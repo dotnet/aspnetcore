@@ -4,11 +4,13 @@ using Microsoft.Owin;
 namespace Microsoft.AspNet.Mvc
 {
     public class Controller
-    {
-        public void Initialize(IOwinContext context)
+    { 
+        public void Initialize(IActionResultHelper actionResultHelper)
         {
-            Context = context;
+            Result = actionResultHelper;
         }
+
+        public IActionResultHelper Result { get; private set; }
 
         public IOwinContext Context { get; set; }
     }

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.CoreServices;
 using Microsoft.Owin;
@@ -35,20 +37,46 @@ namespace Microsoft.AspNet.Mvc
                 throw new InvalidOperationException(String.Format("Couldn't find controller '{0}'.", controllerName));
             }
 
-            var controllerBase = controller as Controller;
-
-            if (controllerBase != null)
-            {
-                // TODO: Make this the controller context
-                controllerBase.Initialize(context);
-            }
-
             var controllerContext = new ControllerContext(context, controller);
+
+            Initialize(controller, controllerContext);
 
             IActionInvokerFactory invokerFactory = _serviceProvider.GetService<IActionInvokerFactory>();
             var invoker = invokerFactory.CreateInvoker(controllerContext);
 
             return invoker.InvokeActionAsync(actionName);
+        }
+
+        private void Initialize(object controller, ControllerContext controllerContext)
+        {
+            var controllerType = controller.GetType();
+
+            foreach (var prop in controllerType.GetProperties())
+            {
+                if (prop.Name == "Context")
+                {
+                    if (prop.PropertyType == typeof(IOwinContext))
+                    {
+                        prop.SetValue(controller, controllerContext.HttpContext);
+                    }
+                    else if (prop.PropertyType == typeof(IDictionary<string, object>))
+                    {
+                        prop.SetValue(controller, controllerContext.HttpContext.Environment);
+                    }
+                }
+            }
+
+            var method = controllerType.GetMethod("Initialize");
+
+            if (method == null)
+            {
+                return;
+            }
+
+            var args = method.GetParameters()
+                             .Select(p => _serviceProvider.GetService(p.ParameterType)).ToArray();
+
+            method.Invoke(controller, args);
         }
 
         private static string GetPartOrDefault(string[] parts, int index, string defaultValue)

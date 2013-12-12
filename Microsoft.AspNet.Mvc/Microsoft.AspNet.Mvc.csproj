@@ -40,6 +40,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActionResultHelper.cs" />
     <Compile Include="ContentResult.cs" />
     <Compile Include="EmptyResult.cs" />
     <Compile Include="IActionResult.cs" />
@@ -51,6 +52,7 @@
     <Compile Include="HttpStatusCodeResult.cs" />
     <Compile Include="IActionInvoker.cs" />
     <Compile Include="IActionInvokerFactory.cs" />
+    <Compile Include="IActionResultHelper.cs" />
     <Compile Include="IControllerFactory.cs" />
     <Compile Include="MvcHandler.cs" />
     <Compile Include="MvcServices.cs" />

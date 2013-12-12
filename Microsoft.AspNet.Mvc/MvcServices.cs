@@ -12,10 +12,11 @@ namespace Microsoft.AspNet.Mvc
             return services;
         }
 
-        private static void DoCallback(Action<Type, Type> callback)
+        public static void DoCallback(Action<Type, Type> callback)
         {
             callback(typeof(IControllerFactory), typeof(DefaultControllerFactory));
             callback(typeof(IActionInvokerFactory), typeof(ControllerActionInvokerFactory));
+            callback(typeof(IActionResultHelper), typeof(ActionResultHelper));
         }
     }
 }
