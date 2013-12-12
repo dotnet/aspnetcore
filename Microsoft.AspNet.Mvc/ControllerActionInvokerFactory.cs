@@ -1,15 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
+﻿
 namespace Microsoft.AspNet.Mvc
 {
     public class ControllerActionInvokerFactory : IActionInvokerFactory
     {
+        private readonly IActionResultFactory _actionResultFactory;
+
+        public ControllerActionInvokerFactory(IActionResultFactory actionResultFactory)
+        {
+            _actionResultFactory = actionResultFactory;
+        }
+
         public IActionInvoker CreateInvoker(ControllerContext context)
         {
-            return new ControllerActionInvoker(context);
+            return new ControllerActionInvoker(context, _actionResultFactory);
         }
     }
 }

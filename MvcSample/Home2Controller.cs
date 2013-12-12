@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNet.Mvc;
+﻿using System.Net.Http;
+using Microsoft.AspNet.Mvc;
 using Microsoft.Owin;
 
 namespace MvcSample

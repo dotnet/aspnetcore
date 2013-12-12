@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNet.Mvc;
+﻿using System.Net.Http;
+using Microsoft.AspNet.Mvc;
 using Microsoft.Owin;
 
 namespace MvcSample
@@ -26,6 +27,14 @@ namespace MvcSample
         public void Raw()
         {
             Context.Response.Write("Hello World raw");
+        }
+
+        public HttpResponseMessage Hello2()
+        {
+            var responseMessage = new HttpResponseMessage();
+            responseMessage.Content = new StringContent("Hello World");
+
+            return responseMessage;
         }
     }
 }

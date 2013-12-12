@@ -33,16 +33,26 @@
     <Reference Include="Microsoft.Owin">
       <HintPath>..\packages\Microsoft.Owin.2.0.2\lib\net45\Microsoft.Owin.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="Owin">
       <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.Formatting, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.0.0\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActionResultFactory.cs" />
     <Compile Include="ActionResultHelper.cs" />
     <Compile Include="ContentResult.cs" />
     <Compile Include="EmptyResult.cs" />
+    <Compile Include="HttpResponseMessageActionResult.cs" />
     <Compile Include="IActionResult.cs" />
     <Compile Include="Controller.cs" />
     <Compile Include="ControllerActionInvoker.cs" />
@@ -52,6 +62,7 @@
     <Compile Include="HttpStatusCodeResult.cs" />
     <Compile Include="IActionInvoker.cs" />
     <Compile Include="IActionInvokerFactory.cs" />
+    <Compile Include="IActionResultFactory.cs" />
     <Compile Include="IActionResultHelper.cs" />
     <Compile Include="IControllerFactory.cs" />
     <Compile Include="MvcHandler.cs" />

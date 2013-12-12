@@ -17,6 +17,7 @@ namespace Microsoft.AspNet.Mvc
             callback(typeof(IControllerFactory), typeof(DefaultControllerFactory));
             callback(typeof(IActionInvokerFactory), typeof(ControllerActionInvokerFactory));
             callback(typeof(IActionResultHelper), typeof(ActionResultHelper));
+            callback(typeof(IActionResultFactory), typeof(ActionResultFactory));
         }
     }
 }

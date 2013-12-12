@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -7,11 +6,13 @@ namespace Microsoft.AspNet.Mvc
 {
     public class ControllerActionInvoker : IActionInvoker
     {
-        private ControllerContext _context;
+        private readonly ControllerContext _context;
+        private readonly IActionResultFactory _actionResultFactory;
 
-        public ControllerActionInvoker(ControllerContext context)
+        public ControllerActionInvoker(ControllerContext context, IActionResultFactory actionResultFactory)
         {
             _context = context;
+            _actionResultFactory = actionResultFactory;
         }
 
         public Task InvokeActionAsync(string actionName)
@@ -23,31 +24,11 @@ namespace Microsoft.AspNet.Mvc
                 throw new InvalidOperationException(String.Format("Could not find action method '{0}'", actionName));
             }
 
-            object actionReturnValue = method.Invoke(_context.Controller, null); ;
+            object actionReturnValue = method.Invoke(_context.Controller, null);
 
-            IActionResult actionResult = CreateResult(actionReturnValue);
+            IActionResult actionResult = _actionResultFactory.CreateActionResult(actionReturnValue);
 
             return actionResult.ExecuteResultAsync(_context);
-        }
-
-        private IActionResult CreateResult(object actionReturnValue)
-        {
-            IActionResult actionResult = actionReturnValue as IActionResult;
-
-            if (actionResult != null)
-            {
-                return actionResult;
-            }
-
-            if (actionReturnValue != null)
-            {
-                return new ContentResult
-                {
-                    Content = Convert.ToString(actionReturnValue, CultureInfo.InvariantCulture)
-                };
-            }
-
-            return new EmptyResult();
         }
     }
 }
