@@ -13,7 +13,7 @@ namespace MvcSample
         {
             return new ContentResult
             {
-                Content = "Hello World"
+                Content = "Hello World From Content"
             };
         }
     }
