@@ -12,6 +12,8 @@ namespace MvcSample
     {
         public void Configuration(IAppBuilder app)
         {
+            app.UseErrorPage();
+
             var handler = new MvcHandler();
 
             // Pretending to be routing

@@ -40,14 +40,17 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ContentResult.cs" />
+    <Compile Include="EmptyResult.cs" />
+    <Compile Include="IActionResult.cs" />
     <Compile Include="Controller.cs" />
     <Compile Include="ControllerActionInvoker.cs" />
     <Compile Include="ControllerActionInvokerFactory.cs" />
     <Compile Include="ControllerContext.cs" />
     <Compile Include="DefaultControllerFactory.cs" />
+    <Compile Include="HttpStatusCodeResult.cs" />
     <Compile Include="IActionInvoker.cs" />
     <Compile Include="IActionInvokerFactory.cs" />
-    <Compile Include="IController.cs" />
     <Compile Include="IControllerFactory.cs" />
     <Compile Include="MvcHandler.cs" />
     <Compile Include="MvcServices.cs" />

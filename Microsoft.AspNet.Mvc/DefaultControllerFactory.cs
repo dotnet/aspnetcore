@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Reflection;
 using Microsoft.AspNet.CoreServices;
 using Microsoft.Owin;
 
@@ -17,6 +16,11 @@ namespace Microsoft.AspNet.Mvc
 
         public object CreateController(IOwinContext context, string controllerName)
         {
+            if (!controllerName.EndsWith("Controller", StringComparison.OrdinalIgnoreCase))
+            {
+                controllerName += "Controller";
+            }
+
             foreach (var a in AppDomain.CurrentDomain.GetAssemblies())
             {
                 var type = a.GetType(controllerName) ?? 

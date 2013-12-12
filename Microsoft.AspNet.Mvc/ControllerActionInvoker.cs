@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Globalization;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Mvc
@@ -17,16 +16,38 @@ namespace Microsoft.AspNet.Mvc
 
         public Task InvokeActionAsync(string actionName)
         {
-            var method = _context.Controller.GetType().GetMethod(actionName);
+            var method = _context.Controller.GetType().GetMethod(actionName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
 
             if (method == null)
             {
                 throw new InvalidOperationException(String.Format("Could not find action method '{0}'", actionName));
             }
 
-            method.Invoke(_context.Controller, null);
+            object actionReturnValue = method.Invoke(_context.Controller, null); ;
 
-            return Task.FromResult(0);
+            IActionResult actionResult = CreateResult(actionReturnValue);
+
+            return actionResult.ExecuteResultAsync(_context);
+        }
+
+        private IActionResult CreateResult(object actionReturnValue)
+        {
+            IActionResult actionResult = actionReturnValue as IActionResult;
+
+            if (actionResult != null)
+            {
+                return actionResult;
+            }
+
+            if (actionReturnValue != null)
+            {
+                return new ContentResult
+                {
+                    Content = Convert.ToString(actionReturnValue, CultureInfo.InvariantCulture)
+                };
+            }
+
+            return new EmptyResult();
         }
     }
 }

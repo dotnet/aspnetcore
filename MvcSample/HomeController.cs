@@ -8,5 +8,13 @@ namespace MvcSample
         {
             return "Hello World";
         }
+
+        public IActionResult Something()
+        {
+            return new ContentResult
+            {
+                Content = "Hello World"
+            };
+        }
     }
 }
