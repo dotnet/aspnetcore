@@ -15,9 +15,13 @@ namespace Microsoft.AspNet.Mvc
         public static void DoCallback(Action<Type, Type> callback)
         {
             callback(typeof(IControllerFactory), typeof(DefaultControllerFactory));
-            callback(typeof(IActionInvokerFactory), typeof(ControllerActionInvokerFactory));
+            callback(typeof(IActionInvokerFactory), typeof(ActionInvokerFactory));
             callback(typeof(IActionResultHelper), typeof(ActionResultHelper));
             callback(typeof(IActionResultFactory), typeof(ActionResultFactory));
+
+            // TODO: Should be many
+            callback(typeof(IActionDescriptorProvider), typeof(ActionDescriptorProvider));
+            callback(typeof(IActionInvokerProvider), typeof(ActionInvokerProvider));
         }
     }
 }

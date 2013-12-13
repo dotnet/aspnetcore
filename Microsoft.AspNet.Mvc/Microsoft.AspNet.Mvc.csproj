@@ -48,16 +48,22 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActionDescriptor.cs" />
+    <Compile Include="ActionDescriptorProvider.cs" />
+    <Compile Include="ActionInvokerProvider.cs" />
     <Compile Include="ActionResultFactory.cs" />
     <Compile Include="ActionResultHelper.cs" />
     <Compile Include="ContentResult.cs" />
+    <Compile Include="ControllerBasedActionDescriptor.cs" />
+    <Compile Include="RequestContext.cs" />
     <Compile Include="EmptyResult.cs" />
     <Compile Include="HttpResponseMessageActionResult.cs" />
+    <Compile Include="IActionDescriptorProvider.cs" />
+    <Compile Include="IActionInvokerProvider.cs" />
     <Compile Include="IActionResult.cs" />
     <Compile Include="Controller.cs" />
     <Compile Include="ControllerActionInvoker.cs" />
-    <Compile Include="ControllerActionInvokerFactory.cs" />
-    <Compile Include="ControllerContext.cs" />
+    <Compile Include="ActionInvokerFactory.cs" />
     <Compile Include="DefaultControllerFactory.cs" />
     <Compile Include="HttpStatusCodeResult.cs" />
     <Compile Include="IActionInvoker.cs" />
@@ -68,6 +74,7 @@
     <Compile Include="MvcHandler.cs" />
     <Compile Include="MvcServices.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Routing\IRouteData.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

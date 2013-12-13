@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc
 
         public string ContentType { get; set; }
 
-        public async Task ExecuteResultAsync(ControllerContext context)
+        public async Task ExecuteResultAsync(RequestContext context)
         {
             if (context == null)
             {

@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Mvc
             _statusCode = statusCode;
         }
 
-        public async Task ExecuteResultAsync(ControllerContext context)
+        public async Task ExecuteResultAsync(RequestContext context)
         {
             context.HttpContext.Response.StatusCode = _statusCode;
         }

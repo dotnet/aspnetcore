@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc
             ResponseMessage = responseMessage;
         }
 
-        public async Task ExecuteResultAsync(ControllerContext context)
+        public async Task ExecuteResultAsync(RequestContext context)
         {
             var response = context.HttpContext.Response;
             response.StatusCode = (int)ResponseMessage.StatusCode;

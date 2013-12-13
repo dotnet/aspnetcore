@@ -4,6 +4,6 @@ namespace Microsoft.AspNet.Mvc
 {
     public interface IActionResult
     {
-        Task ExecuteResultAsync(ControllerContext context);
+        Task ExecuteResultAsync(RequestContext context);
     }
 }
