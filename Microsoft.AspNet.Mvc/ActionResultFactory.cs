@@ -20,6 +20,14 @@ namespace Microsoft.AspNet.Mvc
                 return new HttpResponseMessageActionResult(responseMessage);
             }
 
+            if (actionReturnValue is string)
+            {
+                return new ContentResult
+                {
+                     Content = (string)actionReturnValue
+                };
+            }
+
             // all other object types are treated as an http response message action result
             var content = new ObjectContent(actionReturnValue.GetType(),
                                             actionReturnValue,
