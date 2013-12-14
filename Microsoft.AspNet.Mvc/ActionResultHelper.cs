@@ -23,7 +23,11 @@ namespace Microsoft.AspNet.Mvc
 
         public IActionResult Json(object value)
         {
-            // TODO: Make this work at some point
+            throw new NotImplementedException();
+        }
+
+        public IActionResult View()
+        {
             throw new NotImplementedException();
         }
     }

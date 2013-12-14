@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Mvc
                 throw new InvalidOperationException(String.Format("Couldn't find controller '{0}'.", _descriptor.ControllerName));
             }
 
-            Initialize(controller, _requestContext);
+            Initialize(controller);
 
             var method = controller.GetType().GetMethod(_descriptor.ActionName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
 
@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Mvc
             return actionResult.ExecuteResultAsync(_requestContext);
         }
 
-        private void Initialize(object controller, RequestContext requestContext)
+        private void Initialize(object controller)
         {
             var controllerType = controller.GetType();
 
@@ -62,11 +62,11 @@ namespace Microsoft.AspNet.Mvc
                 {
                     if (prop.PropertyType == typeof(IOwinContext))
                     {
-                        prop.SetValue(controller, requestContext.HttpContext);
+                        prop.SetValue(controller, _requestContext.HttpContext);
                     }
                     else if (prop.PropertyType == typeof(IDictionary<string, object>))
                     {
-                        prop.SetValue(controller, requestContext.HttpContext.Environment);
+                        prop.SetValue(controller, _requestContext.HttpContext.Environment);
                     }
                 }
             }

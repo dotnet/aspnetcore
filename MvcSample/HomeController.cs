@@ -36,5 +36,10 @@ namespace MvcSample
 
             return responseMessage;
         }
+
+        public IActionResult MyView()
+        {
+            return Result.View();
+        }
     }
 }
