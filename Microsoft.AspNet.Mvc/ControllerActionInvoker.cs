@@ -47,7 +47,8 @@ namespace Microsoft.AspNet.Mvc
 
             object actionReturnValue = method.Invoke(controller, null);
 
-            IActionResult actionResult = _actionResultFactory.CreateActionResult(actionReturnValue);
+            // If it's not already an IActionResult then call into the factory
+            var actionResult = actionReturnValue as IActionResult ?? _actionResultFactory.CreateActionResult(actionReturnValue);
 
             return actionResult.ExecuteResultAsync(_requestContext);
         }

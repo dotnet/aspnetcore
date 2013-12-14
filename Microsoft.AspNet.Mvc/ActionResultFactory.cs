@@ -7,13 +7,6 @@ namespace Microsoft.AspNet.Mvc
     {
         public IActionResult CreateActionResult(object actionReturnValue)
         {
-            var actionResult = actionReturnValue as IActionResult;
-
-            if (actionResult != null)
-            {
-                return actionResult;
-            }
-
             var responseMessage = actionReturnValue as HttpResponseMessage;
             if (responseMessage != null)
             {
