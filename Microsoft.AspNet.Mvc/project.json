@@ -1,0 +1,17 @@
+{
+  "dependencies": [
+    { "Owin": { "version": "1.0" } },
+    { "Newtonsoft.Json": { "version": "4.5.11" } },
+    { "Microsoft.Owin": { "version": "2.0.2" } },
+    { "Microsoft.AspNet.WebApi.Client": { "version": "5.0.0" } },
+    { "Microsoft.AspNet.CoreServices" : { } }
+  ],
+  "configurations": [
+    { "net45": { 
+        "dependencies": [ 
+            { "System.Net.Http" : { } }
+        ]
+      }
+    }
+  ]
+}

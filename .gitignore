@@ -24,3 +24,4 @@ PublishProfiles/
 *.ncrunchsolution
 *.log
 *.vspx
+/.symbols
