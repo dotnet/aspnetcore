@@ -57,8 +57,8 @@ namespace Microsoft.AspNet.CoreServices
                 throw new ArgumentNullException("type");
             }
 
-            ConstructorInfo[] constructors = type
-                .GetConstructors()
+            ConstructorInfo[] constructors = type.GetTypeInfo()
+                .DeclaredConstructors
                 .Where(IsInjectable)
                 .ToArray();
 

@@ -11,7 +11,8 @@
         "dependencies": [ 
             { "System.Net.Http" : { } }
         ]
-      }
+      },
+      "k10" : { }
     }
   ]
 }

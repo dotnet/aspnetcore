@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,10 +42,10 @@ namespace Microsoft.AspNet.CoreServices
 
         private object GetMultiService(Type collectionType)
         {
-            if (collectionType.IsGenericType &&
+            if (collectionType.GetTypeInfo().IsGenericType &&
                 collectionType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
             {
-                Type serviceType = collectionType.GetGenericArguments().Single();
+                Type serviceType = collectionType.GetTypeInfo().GenericTypeArguments.Single();
                 Type listType = typeof(List<>).MakeGenericType(serviceType);
                 var services = (IList)Activator.CreateInstance(listType);
 
