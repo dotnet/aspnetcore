@@ -20,12 +20,13 @@ namespace Microsoft.AspNet.Mvc
             _serviceProvider = serviceProvider ?? MvcServices.Create();
         }
 
-        public Task ExecuteAsync(IOwinContext context)
+        public Task ExecuteAsync(IOwinContext context, IRouteData routeData)
         {
-            var routeData = new FakeRouteData(context);
+            var requestContext = new RequestContext(context, routeData);
 
             IActionInvokerFactory invokerFactory = _serviceProvider.GetService<IActionInvokerFactory>();
-            var invoker = invokerFactory.CreateInvoker(new RequestContext(context, routeData));
+
+            var invoker = invokerFactory.CreateInvoker(requestContext);
 
             return invoker.InvokeActionAsync();
         }

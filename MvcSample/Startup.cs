@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.Owin;
 using Owin;
 
@@ -16,10 +17,12 @@ namespace MvcSample
 
             var handler = new MvcHandler();
 
-            // Pretending to be routing
             app.Run(async context =>
             {
-                await handler.ExecuteAsync(context);
+                // Pretending to be routing
+                var routeData = new FakeRouteData(context);
+
+                await handler.ExecuteAsync(context, routeData);
             });
         }
     }
