@@ -1,0 +1,66 @@
+
+var PROJECT='AspNetAbstractions'
+var VERSION='0.1.0'
+var FULL_VERSION='${VERSION}'
+var AUTHORS='${PROJECT} contributors'
+
+var BASE_DIR='${Directory.GetCurrentDirectory()}'
+var TARGET_DIR='${Path.Combine(BASE_DIR, "target")}'
+var BUILD_DIR='${Path.Combine(TARGET_DIR, "build")}'
+var TEST_DIR='${Path.Combine(TARGET_DIR, "test")}'
+
+default SRC='.'
+default BUILD_PROJECTS='${Files.Include(SRC+"/**/*.csproj")}'
+default TEST_PROJECTS='${Files.Include(SRC+"/**/*.Tests.csproj")}'
+
+use namespace='System.Xml.Linq'
+
+-// include range of standard general targets. run "sake targets" to display
+use-standard-lifecycle
+
+-// include sets of standard work targets. features include 'nuget,xunit,nunit'
+use-standard-goals features='nuget,xunit'
+
+-// additional work targets are defined below
+
+#nuget-prepare target='package-prepare' description='Compile primary project'
+  for each='var projectFile in BUILD_PROJECTS.Except(TEST_PROJECTS)' 
+    var outputDirName='${Path.GetFileNameWithoutExtension(projectFile)}'
+
+    var outputDir='${Path.Combine(BUILD_DIR, outputDirName)}'
+
+    copy sourceDir='${Path.GetDirectoryName(projectFile)}' include='*.nuspec' overwrite='${true}'
+
+    var doc='${XDocument.Load(projectFile)}'
+    var ns='http://schemas.microsoft.com/developer/msbuild/2003'
+    var itemGroups='${doc.Elements(XName.Get("Project", ns)).Elements(XName.Get("ItemGroup", ns))}'
+    var compileItems='${itemGroups.Elements(XName.Get("Compile", ns))}'
+    var contentItems='${itemGroups.Elements(XName.Get("Content", ns))}'
+    var noneItems='${itemGroups.Elements(XName.Get("None", ns))}'
+    var razorItems='${contentItems.Union(noneItems).Where(x=>x.Attribute("Include").Value.EndsWith(".cshtml"))}'
+
+    for each='var compileElt in compileItems.Union(razorItems)'
+      var linkElt='${compileElt.Elements(XName.Get("Link", ns)).SingleOrDefault()}'
+
+      var sourceFile='${compileElt.Attribute("Include").Value}'
+      var targetFile='${linkElt == null ? sourceFile : linkElt.Value}'
+
+      var sourceFull='${Path.Combine(Path.GetDirectoryName(projectFile), sourceFile)}'
+      var targetFull='${Path.Combine(outputDir, "src", targetFile)}'
+      directory create='${Path.GetDirectoryName(targetFull)}'
+      -File.Copy(sourceFull, targetFull, true);
+
+#nuget-package target='package' description='Create NuGet packages'
+  for each='var file in Files.Include(BUILD_DIR + "/**/*.nuspec")'
+    var baseName='${Path.GetFileNameWithoutExtension(file)}'
+    var nugetProperties='${new Dictionary<string,string> {
+    	{"id", baseName},
+    	{"authors", AUTHORS},
+    	{"title", baseName},
+    	{"description", baseName},
+    	{"licenseUrl", "about:blank"},
+    	{"projectUrl", "about:blank"},
+    	{"tags", "Katana"},
+    }}'
+    var props='${string.Join(";", nugetProperties.Select(kv=>kv.Key+"="+kv.Value).ToArray())}'
+    nuget-pack nuspecFile='${file}' packageVersion='${FULL_VERSION}' outputDir='${TARGET_DIR}' extra='-NoPackageAnalysis -Properties "${props}"'

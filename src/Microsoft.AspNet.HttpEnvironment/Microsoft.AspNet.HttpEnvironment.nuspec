@@ -1,0 +1,22 @@
+﻿<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <authors>$authors$</authors>
+    <owners>$authors$</owners>
+    <licenseUrl>$licenseUrl$</licenseUrl>
+    <projectUrl>$projectUrl$</projectUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <title>$title$</title>
+    <description>$title$</description>
+    <tags>$tags$</tags>
+    <dependencies>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="$id$.dll" target="lib\net45" />
+    <file src="$id$.xml" target="lib\net45" />
+    <file src="$id$.pdb" target="lib\net45" />
+    <file src="src\**" target="src" />
+  </files>
+</package>
