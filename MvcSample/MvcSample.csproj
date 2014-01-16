@@ -67,6 +67,7 @@
   <ItemGroup>
     <Compile Include="Home2Controller.cs" />
     <Compile Include="HomeController.cs" />
+    <Compile Include="Models\Class1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>

@@ -37,9 +37,15 @@ namespace MvcSample
             return responseMessage;
         }
 
-        public IActionResult MyView()
+        public User User()
         {
-            return Result.View();
+            User user = new User()
+            {
+                Name = "My name",
+                Address = "My address"
+            };
+
+            return user;
         }
     }
 }

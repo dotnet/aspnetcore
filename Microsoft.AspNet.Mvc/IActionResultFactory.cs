@@ -1,8 +1,10 @@
-﻿
+﻿using Microsoft.Owin;
+using System;
+
 namespace Microsoft.AspNet.Mvc
 {
     public interface IActionResultFactory
     {
-        IActionResult CreateActionResult(object actionReturnValue);
+        IActionResult CreateActionResult(Type declaredReturnType, object actionReturnValue, RequestContext requestContext);
     }
 }

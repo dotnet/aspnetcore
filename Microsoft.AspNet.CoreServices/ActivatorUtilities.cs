@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Microsoft.AspNet.CoreServices
@@ -81,6 +83,24 @@ namespace Microsoft.AspNet.CoreServices
         private static bool IsInjectable(ConstructorInfo constructor)
         {
             return constructor.IsPublic && constructor.GetParameters().Length != 0;
+        }
+
+        public static Func<TBase> Create<TBase>(Type instanceType) where TBase : class
+        {
+            Contract.Assert(instanceType != null);
+            NewExpression newInstanceExpression = Expression.New(instanceType);
+            return Expression.Lambda<Func<TBase>>(newInstanceExpression).Compile();
+        }
+
+        public static Func<TInstance> Create<TInstance>() where TInstance : class
+        {
+            return Create<TInstance>(typeof(TInstance));
+        }
+
+        public static Func<object> Create(Type instanceType)
+        {
+            Contract.Assert(instanceType != null);
+            return Create<object>(instanceType);
         }
     }
 }
