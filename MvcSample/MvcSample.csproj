@@ -70,8 +70,18 @@
     <Compile Include="Models\Class1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
+    <Compile Include="Views\Layout.cs" />
+    <Compile Include="Views\MyView.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNet.CoreServices\Microsoft.AspNet.CoreServices.csproj">
+      <Project>{ec38534c-a2d1-413f-97d1-55eef5d2fb71}</Project>
+      <Name>Microsoft.AspNet.CoreServices</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Microsoft.AspNet.Mvc.Razor\Microsoft.AspNet.Mvc.Razor.csproj">
+      <Project>{224a14d0-eca7-441c-ae89-b6e66a57ef9b}</Project>
+      <Name>Microsoft.AspNet.Mvc.Razor</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Microsoft.AspNet.Mvc\Microsoft.AspNet.Mvc.csproj">
       <Project>{2a0c26f1-0240-4ae1-ae00-4691c291b122}</Project>
       <Name>Microsoft.AspNet.Mvc</Name>

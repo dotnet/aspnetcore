@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.AspNet.CoreServices;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.Owin;
 using Owin;
@@ -15,8 +17,12 @@ namespace MvcSample
         {
             app.UseErrorPage();
 
-            var handler = new MvcHandler();
-
+            var serviceProvider = MvcServices.Create();
+            serviceProvider.AddInstance<IVirtualPathFactory>(new MetadataVirtualPathProvider(GetType().Assembly));
+            serviceProvider.Add<IViewEngine, RazorViewEngine>();
+            
+            var handler = new MvcHandler(serviceProvider);
+            
             app.Run(async context =>
             {
                 // Pretending to be routing

@@ -6,7 +6,7 @@ namespace Microsoft.AspNet.Mvc
 {
     public static class MvcServices
     {
-        public static IServiceProvider Create()
+        public static ServiceProvider Create()
         {
             var services = new ServiceProvider();
             DoCallback((service, implementation) => services.Add(service, implementation));
@@ -20,6 +20,7 @@ namespace Microsoft.AspNet.Mvc
             callback(typeof(IActionResultHelper), typeof(ActionResultHelper));
             callback(typeof(IActionResultFactory), typeof(ActionResultFactory));
             callback(typeof(IContentNegotiator), typeof(DefaultContentNegotiator));
+
 
             // TODO: Should be many
             callback(typeof(IActionDescriptorProvider), typeof(ActionDescriptorProvider));

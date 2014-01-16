@@ -20,6 +20,11 @@ namespace Microsoft.AspNet.Mvc
             _serviceProvider = serviceProvider ?? MvcServices.Create();
         }
 
+        //public ServiceProvider ServiceProvider
+        //{
+        //    get { return (ServiceProvider)_serviceProvider; }
+        //}
+
         public Task ExecuteAsync(IOwinContext context, IRouteData routeData)
         {
             var requestContext = new RequestContext(context, routeData);

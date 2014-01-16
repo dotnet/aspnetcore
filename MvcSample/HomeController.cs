@@ -47,5 +47,10 @@ namespace MvcSample
 
             return user;
         }
+
+        public IActionResult MyView()
+        {
+            return Result.View();
+        }
     }
 }

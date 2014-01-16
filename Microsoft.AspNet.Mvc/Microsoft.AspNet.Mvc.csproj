@@ -61,6 +61,9 @@
     <Compile Include="DefaultContentNegotiator.cs" />
     <Compile Include="Extensions\IEnumerableExtensions.cs" />
     <Compile Include="Formatters\JQeryMvcForUrlEncodedFormatter.cs" />
+    <Compile Include="View\CompositeViewEngine.cs" />
+    <Compile Include="View\IView.cs" />
+    <Compile Include="View\IViewEngine.cs" />
     <Compile Include="FormattingUtilities.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
     <Compile Include="IOwinContentNegotiator.cs" />
@@ -84,6 +87,9 @@
     <Compile Include="MvcServices.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Routing\IRouteData.cs" />
+    <Compile Include="View\ViewContext.cs" />
+    <Compile Include="View\ViewEngineResult.cs" />
+    <Compile Include="View\ViewResult.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
