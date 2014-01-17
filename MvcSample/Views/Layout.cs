@@ -6,7 +6,7 @@ namespace MvcSample.Views
     [VirtualPath("~/Views/Shared/_Layout.cshtml")]
     public class Layout : RazorView
     {
-        protected override void Execute()
+        public override void Execute()
         {
             WriteLiteral("<html>");
             WriteLiteral("<body>");

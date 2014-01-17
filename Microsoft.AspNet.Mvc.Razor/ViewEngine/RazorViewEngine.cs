@@ -13,10 +13,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             "~/Views/Shared/{0}.cshtml",
         };
         private readonly IActionDescriptorProvider _actionDescriptorProvider;
-        private readonly IVirtualPathFactory _virtualPathFactory;
+        private readonly IVirtualPathViewFactory _virtualPathFactory;
 
         public RazorViewEngine(IActionDescriptorProvider actionDescriptorProvider, 
-                               IVirtualPathFactory virtualPathFactory)
+                               IVirtualPathViewFactory virtualPathFactory)
         {
             _actionDescriptorProvider = actionDescriptorProvider;
             _virtualPathFactory = virtualPathFactory;
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             for (int i = 0; i < _viewLocationFormats.Length; i++)
             {
                 string path = String.Format(CultureInfo.InvariantCulture, _viewLocationFormats[i], viewName, controllerName);
-                RazorView view = (RazorView)(await _virtualPathFactory.CreateInstance(path));
+                IView view = await _virtualPathFactory.CreateInstance(path);
                 if (view != null)
                 {
                     return ViewEngineResult.Found(view);

@@ -13,18 +13,14 @@ namespace Microsoft.AspNet.Mvc.Razor
     {
         public IOwinContext Context { get; set; }
 
-        public object Model { get; set; }
-
         public string Layout { get; set; }
 
         protected TextWriter Output { get; set; }
 
         private string BodyContent { get; set; }
 
-        public async Task RenderAsync(ViewContext context, TextWriter writer)
+        public virtual async Task RenderAsync(ViewContext context, TextWriter writer)
         {
-            Model = context.Model;
-
             var contentBuilder = new StringBuilder(1024);
             using (var bodyWriter = new StringWriter(contentBuilder))
             {
@@ -45,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private async Task RenderLayoutAsync(ViewContext context, TextWriter writer, string bodyContent)
         {
-            var virtualPathFactory = context.ServiceProvider.GetService<IVirtualPathFactory>();
+            var virtualPathFactory = context.ServiceProvider.GetService<IVirtualPathViewFactory>();
             RazorView razorView = (RazorView)(await virtualPathFactory.CreateInstance(Layout));
             if (razorView == null)
             {
@@ -57,7 +53,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             await razorView.RenderAsync(context, writer);
         }
 
-        protected abstract void Execute();
+        public abstract void Execute();
 
         public virtual void Write(object value)
         {
@@ -93,12 +89,13 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
-        protected virtual void RenderBody()
+        protected virtual string RenderBody()
         {
-            if (BodyContent != null)
+            if (BodyContent == null)
             {
-                WriteLiteral(BodyContent);
+                throw new InvalidOperationException("RenderBody cannot be called at this point because you're not executing a layout");
             }
+            return BodyContent;
         }
     }
 }

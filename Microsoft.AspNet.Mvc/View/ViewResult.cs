@@ -38,7 +38,6 @@ namespace Microsoft.AspNet.Mvc
                     var viewContext = new ViewContext(context.HttpContext, context.RouteData, Model)
                     {
                         ServiceProvider = _serviceProvider
-
                     };
                     await view.RenderAsync(viewContext, writer);
                 }

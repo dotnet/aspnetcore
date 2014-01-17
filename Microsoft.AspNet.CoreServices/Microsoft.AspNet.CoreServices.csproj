@@ -30,17 +30,31 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Owin.FileSystems">
+      <HintPath>..\packages\Microsoft.Owin.FileSystems.2.1.0-rc1\lib\net40\Microsoft.Owin.FileSystems.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Caching" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActivatorUtilities.cs" />
+    <Compile Include="Compilation\CompilationFailedException.cs" />
+    <Compile Include="Compilation\CompilationMessage.cs" />
+    <Compile Include="Compilation\CompilationResult.cs" />
+    <Compile Include="Compilation\CompilerCache.cs" />
+    <Compile Include="Compilation\CscBasedCompilationService.cs" />
+    <Compile Include="Compilation\DefaultCompilationService.cs" />
+    <Compile Include="Compilation\ICompilationService.cs" />
     <Compile Include="ServiceProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceProviderExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="project.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

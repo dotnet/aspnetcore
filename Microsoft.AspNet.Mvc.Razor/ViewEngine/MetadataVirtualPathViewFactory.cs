@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
-    public class MetadataVirtualPathProvider : IVirtualPathFactory
+    public class MetadataVirtualPathViewFactory : IVirtualPathViewFactory
     {
         private readonly Dictionary<string, Type> _viewMetadata;
 
-        public MetadataVirtualPathProvider(Assembly assembly)
+        public MetadataVirtualPathViewFactory(Assembly assembly)
         {
             var metadataType = assembly.GetType("ViewMetadata");
             if (metadataType != null)
@@ -29,13 +29,13 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
-        public Task<object> CreateInstance(string virtualPath)
+        public Task<IView> CreateInstance(string virtualPath)
         {
             Type type;
-            object view = null;
+            IView view = null;
             if (_viewMetadata.TryGetValue(virtualPath, out type))
             {
-                view = (RazorView)Activator.CreateInstance(type);
+                view = (IView)Activator.CreateInstance(type);
             }
             return Task.FromResult(view);
         }

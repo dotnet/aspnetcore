@@ -53,6 +53,7 @@
     <Compile Include="ActionInvokerProvider.cs" />
     <Compile Include="ActionResultFactory.cs" />
     <Compile Include="ActionResultHelper.cs" />
+    <Compile Include="ActionResultHelperExtensions.cs" />
     <Compile Include="ActionResults\NoContentResult.cs" />
     <Compile Include="ActionResults\NegotiatedContentResult.cs" />
     <Compile Include="ActionResults\ContentResult.cs" />

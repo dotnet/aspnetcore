@@ -36,12 +36,12 @@ namespace Microsoft.AspNet.Mvc
             throw new NotImplementedException();
         }
 
-        public IActionResult View()
+        public IActionResult View(string view, object model)
         {
             return new ViewResult(_serviceProvider, _viewEngine)
             {
-                ViewName = null,
-                Model = null
+                ViewName = view,
+                Model = model
             };
         }
     }

@@ -12,8 +12,8 @@ namespace Microsoft.AspNet.Mvc
             Model = model;
         }
 
-        public object Model { get; private set; }
-
         public IServiceProvider ServiceProvider { get; set; }
+
+        public object Model { get; private set; }
     }
 }

@@ -6,6 +6,6 @@ namespace Microsoft.AspNet.Mvc
         IActionResult Content(string value);
         IActionResult Content(string value, string contentType);
         IActionResult Json(object value);
-        IActionResult View();
+        IActionResult View(string view, object model);
     }
 }
