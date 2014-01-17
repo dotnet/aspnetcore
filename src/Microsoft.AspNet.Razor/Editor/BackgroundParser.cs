@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -321,7 +322,7 @@ namespace Microsoft.AspNet.Razor.Editor
                                 DocumentParseCompleteEventArgs args = null;
                                 using (var linkedCancel = CancellationTokenSource.CreateLinkedTokenSource(_shutdownToken, parcel.CancelToken))
                                 {
-                                    if (parcel != null && !linkedCancel.IsCancellationRequested)
+                                    if (!linkedCancel.IsCancellationRequested)
                                     {
                                         // Collect ALL changes
 #if EDITOR_TRACING
@@ -330,60 +331,67 @@ namespace Microsoft.AspNet.Razor.Editor
                                             RazorEditorTrace.TraceLine(RazorResources.Trace_CollectedDiscardedChanges, fileNameOnly, _previouslyDiscarded.Count);
                                         }
 #endif
-                                        var allChanges = Enumerable.Concat(
-                                            _previouslyDiscarded ?? Enumerable.Empty<TextChange>(), parcel.Changes).ToList();
-                                        var finalChange = allChanges.LastOrDefault();
-                                        if (finalChange != null)
+                                        List<TextChange> allChanges;
+
+                                        if (_previouslyDiscarded != null)
                                         {
+                                            allChanges = Enumerable.Concat(_previouslyDiscarded, parcel.Changes).ToList();
+                                        }
+                                        else
+                                        {
+                                            allChanges = parcel.Changes.ToList();
+                                        }
+
+                                        TextChange finalChange = allChanges.Last();
+#if EDITOR_TRACING
+                                        sw.Start();
+#endif
+                                        GeneratorResults results = ParseChange(finalChange.NewBuffer, linkedCancel.Token);
+#if EDITOR_TRACING
+                                        sw.Stop();
+                                        elapsedMs = sw.ElapsedMilliseconds;
+                                        sw.Reset();
+#endif
+                                        RazorEditorTrace.TraceLine(
+                                            RazorResources.Trace_ParseComplete,
+                                            fileNameOnly,
+                                            elapsedMs.HasValue ? elapsedMs.Value.ToString(CultureInfo.InvariantCulture) : "?");
+
+                                        if (results != null && !linkedCancel.IsCancellationRequested)
+                                        {
+                                            // Clear discarded changes list
+                                            _previouslyDiscarded = null;
+
+                                            // Take the current tree and check for differences
 #if EDITOR_TRACING
                                             sw.Start();
 #endif
-                                            GeneratorResults results = ParseChange(finalChange.NewBuffer, linkedCancel.Token);
+                                            bool treeStructureChanged = _currentParseTree == null || TreesAreDifferent(_currentParseTree, results.Document, allChanges, parcel.CancelToken);
 #if EDITOR_TRACING
                                             sw.Stop();
                                             elapsedMs = sw.ElapsedMilliseconds;
                                             sw.Reset();
 #endif
-                                            RazorEditorTrace.TraceLine(
-                                                RazorResources.Trace_ParseComplete,
+                                            _currentParseTree = results.Document;
+                                            RazorEditorTrace.TraceLine(RazorResources.Trace_TreesCompared,
                                                 fileNameOnly,
-                                                elapsedMs.HasValue ? elapsedMs.Value.ToString() : "?");
+                                                elapsedMs.HasValue ? elapsedMs.Value.ToString(CultureInfo.InvariantCulture) : "?",
+                                                treeStructureChanged);
 
-                                            if (results != null && !linkedCancel.IsCancellationRequested)
+                                            // Build Arguments
+                                            args = new DocumentParseCompleteEventArgs()
                                             {
-                                                // Clear discarded changes list
-                                                _previouslyDiscarded = null;
-
-                                                // Take the current tree and check for differences
-#if EDITOR_TRACING
-                                                sw.Start();
-#endif
-                                                bool treeStructureChanged = _currentParseTree == null || TreesAreDifferent(_currentParseTree, results.Document, allChanges, parcel.CancelToken);
-#if EDITOR_TRACING
-                                                sw.Stop();
-                                                elapsedMs = sw.ElapsedMilliseconds;
-                                                sw.Reset();
-#endif
-                                                _currentParseTree = results.Document;
-                                                RazorEditorTrace.TraceLine(RazorResources.Trace_TreesCompared,
-                                                    fileNameOnly,
-                                                    elapsedMs.HasValue ? elapsedMs.Value.ToString() : "?",
-                                                    treeStructureChanged);
-
-                                                // Build Arguments
-                                                args = new DocumentParseCompleteEventArgs()
-                                                {
-                                                    GeneratorResults = results,
-                                                    SourceChange = finalChange,
-                                                    TreeStructureChanged = treeStructureChanged
-                                                };
-                                            }
-                                            else
-                                            {
-                                                // Parse completed but we were cancelled in the mean time. Add these to the discarded changes set
-                                                RazorEditorTrace.TraceLine(RazorResources.Trace_ChangesDiscarded, fileNameOnly, allChanges.Count);
-                                                _previouslyDiscarded = allChanges;
-                                            }
+                                                GeneratorResults = results,
+                                                SourceChange = finalChange,
+                                                TreeStructureChanged = treeStructureChanged
+                                            };
+                                        }
+                                        else
+                                        {
+                                            // Parse completed but we were cancelled in the mean time. Add these to the discarded changes set
+                                            RazorEditorTrace.TraceLine(RazorResources.Trace_ChangesDiscarded, fileNameOnly, allChanges.Count);
+                                            _previouslyDiscarded = allChanges;
+                                        }
 
 #if CHECK_TREE
                                             if (args != null)
@@ -402,7 +410,6 @@ namespace Microsoft.AspNet.Razor.Editor
                                                     "Found a span with an absolute offset outside the source file");
                                             }
 #endif
-                                        }
                                     }
                                 }
                                 if (args != null)

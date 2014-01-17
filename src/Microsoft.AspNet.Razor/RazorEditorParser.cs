@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Razor
     /// NOTE: Additional flags can be applied to the PartialParseResult, see that enum for more details.  However,
     ///       the Accepted or Rejected flags will ALWAYS be present
     /// 
-    /// A change can only be incrementally parsed if a single, unique, Span (see System.Web.Razor.Parser.SyntaxTree) in the syntax tree can
+    /// A change can only be incrementally parsed if a single, unique, Span (see Microsoft.AspNet.Razor.Parser.SyntaxTree) in the syntax tree can
     /// be identified as owning the entire change.  For example, if a change overlaps with multiple spans, the change cannot be
     /// parsed incrementally and a full reparse is necessary.  A Span "owns" a change if the change occurs either a) entirely
     /// within it's boundaries or b) it is a pure insertion (see TextChange) at the end of a Span whose CanGrow flag (see Span) is
@@ -175,7 +175,7 @@ namespace Microsoft.AspNet.Razor
             elapsedMs = sw.ElapsedMilliseconds;
             sw.Reset();
 #endif
-            RazorEditorTrace.TraceLine(RazorResources.Trace_EditorProcessedChange, Path.GetFileName(FileName), changeString, elapsedMs.HasValue ? elapsedMs.Value.ToString() : "?", result.ToString());
+            RazorEditorTrace.TraceLine(RazorResources.Trace_EditorProcessedChange, Path.GetFileName(FileName), changeString, elapsedMs.HasValue ? elapsedMs.Value.ToString(CultureInfo.InvariantCulture) : "?", result.ToString());
             return result;
         }
 

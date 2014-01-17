@@ -65,6 +65,11 @@ namespace Microsoft.AspNet.Razor.Text
         public ITextBuffer NewBuffer { get; private set; }
         public ITextBuffer OldBuffer { get; private set; }
 
+        /// <remark>
+        /// Note: This property is not thread safe, and will move position on the textbuffer while being read.
+        /// https://aspnetwebstack.codeplex.com/workitem/1317, tracks making this immutable and improving the access
+        /// to ITextBuffer to be thread safe.
+        /// </remark>
         public string OldText
         {
             get
@@ -77,6 +82,11 @@ namespace Microsoft.AspNet.Razor.Text
             }
         }
 
+        /// <remark>
+        /// Note: This property is not thread safe, and will move position on the textbuffer while being read.
+        /// https://aspnetwebstack.codeplex.com/workitem/1317, tracks making this immutable and improving the access
+        /// to ITextBuffer to be thread safe.
+        /// </remark>
         public string NewText
         {
             get
@@ -166,14 +176,21 @@ namespace Microsoft.AspNet.Razor.Text
             return this;
         }
 
-        private string GetText(ITextBuffer buffer, int position, int length)
+        private static string GetText(ITextBuffer buffer, int position, int length)
         {
+            // Optimization for the common case of one char inserts, in this case we don't even need to seek the buffer.
+            if (length == 0)
+            {
+                return String.Empty;
+            }
+
             int oldPosition = buffer.Position;
             try
             {
                 buffer.Position = position;
-                // Optimization for the common case of one char inserts
-                if (NewLength == 1)
+
+                // Optimization for the common case of one char inserts, in this case we seek the buffer.
+                if (length == 1)
                 {
                     return ((char)buffer.Read()).ToString();
                 }
@@ -184,6 +201,8 @@ namespace Microsoft.AspNet.Razor.Text
                     {
                         char c = (char)buffer.Read();
                         builder.Append(c);
+
+                        // This check is probably not necessary, will revisit when fixing https://aspnetwebstack.codeplex.com/workitem/1317
                         if (Char.IsHighSurrogate(c))
                         {
                             builder.Append((char)buffer.Read());

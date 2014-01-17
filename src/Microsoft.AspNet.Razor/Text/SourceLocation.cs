@@ -58,11 +58,6 @@ namespace Microsoft.AspNet.Razor.Text
 
         public bool Equals(SourceLocation other)
         {
-            if (other == null)
-            {
-                throw new ArgumentNullException("other");
-            }
-
             return AbsoluteIndex == other.AbsoluteIndex &&
                    LineIndex == other.LineIndex &&
                    CharacterIndex == other.CharacterIndex;
