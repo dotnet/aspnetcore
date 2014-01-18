@@ -1,0 +1,10 @@
+﻿@helper Italic(string s) {
+    s = s.ToUpper();
+    @helper Bold(string s) {
+        s = s.ToUpper();
+        <strong>@s</strong>
+    }
+    <em>@Bold(s)</em>
+}
+
+@Italic("Hello")

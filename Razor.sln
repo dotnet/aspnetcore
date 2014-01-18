@@ -5,6 +5,14 @@ VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Razor", "src\Microsoft.AspNet.Razor\Microsoft.AspNet.Razor.csproj", "{E75D8296-3BA6-4E67-AFEB-90FF77460B15}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3C0D6505-79B3-49D0-B4C3-176F0F1836ED}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{92463391-81BE-462B-AC3C-78C6C760741F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Razor.Test", "test\Microsoft.AspNet.Razor.Test\Microsoft.AspNet.Razor.Test.csproj", "{0BB62A1D-E6B5-49FA-9E3C-6AF679A66DFE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.TestCommon", "test\Microsoft.TestCommon\Microsoft.TestCommon.csproj", "{FCCC4CB7-BAF7-4A57-9F89-E5766FE536C0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,8 +23,21 @@ Global
 		{E75D8296-3BA6-4E67-AFEB-90FF77460B15}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E75D8296-3BA6-4E67-AFEB-90FF77460B15}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E75D8296-3BA6-4E67-AFEB-90FF77460B15}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0BB62A1D-E6B5-49FA-9E3C-6AF679A66DFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0BB62A1D-E6B5-49FA-9E3C-6AF679A66DFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0BB62A1D-E6B5-49FA-9E3C-6AF679A66DFE}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{0BB62A1D-E6B5-49FA-9E3C-6AF679A66DFE}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{FCCC4CB7-BAF7-4A57-9F89-E5766FE536C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCCC4CB7-BAF7-4A57-9F89-E5766FE536C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCCC4CB7-BAF7-4A57-9F89-E5766FE536C0}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCCC4CB7-BAF7-4A57-9F89-E5766FE536C0}.Release|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E75D8296-3BA6-4E67-AFEB-90FF77460B15} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
+		{0BB62A1D-E6B5-49FA-9E3C-6AF679A66DFE} = {92463391-81BE-462B-AC3C-78C6C760741F}
+		{FCCC4CB7-BAF7-4A57-9F89-E5766FE536C0} = {92463391-81BE-462B-AC3C-78C6C760741F}
 	EndGlobalSection
 EndGlobal

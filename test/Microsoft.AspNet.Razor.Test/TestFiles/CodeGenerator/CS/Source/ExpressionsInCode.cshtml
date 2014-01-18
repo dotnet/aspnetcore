@@ -1,0 +1,16 @@
+﻿@{
+    object foo = null;
+    string bar = "Foo";
+}
+
+@if(foo != null) {
+    @foo
+} else {
+    <p>Foo is Null!</p>
+}
+
+<p>
+@if(!String.IsNullOrEmpty(bar)) {
+    @(bar.Replace("F", "B"))
+}
+</p>
