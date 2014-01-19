@@ -34,68 +34,34 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataAttribute.cs" />
-    <Compile Include="EnumHelperTestBase.cs" />
     <Compile Include="ExceptionAssertions.cs" />
+    <Compile Include="FactAttribute.cs" />
     <Compile Include="InlineDataAttribute.cs" />
-    <Compile Include="MatrixTheoryDataSet.cs" />
-    <Compile Include="Microsoft\TestCommon\DataSets\TestDataHolder.cs" />
-    <Compile Include="Microsoft\TestCommon\Types\ByteEnum.cs" />
-    <Compile Include="Microsoft\TestCommon\Types\SByteEnum.cs" />
-    <Compile Include="Microsoft\TestCommon\Types\ShortEnum.cs" />
-    <Compile Include="Microsoft\TestCommon\Types\UIntEnum.cs" />
-    <Compile Include="Microsoft\TestCommon\Types\UShortEnum.cs" />
+    <Compile Include="Microsoft\TestCommon\GenericTypeAssert.cs" />
+    <Compile Include="Microsoft\TestCommon\MediaTypeHeaderValueComparer.cs" />
+    <Compile Include="Microsoft\TestCommon\ParsedMediaTypeHeaderValue.cs" />
+    <Compile Include="Microsoft\TestCommon\RegexReplacement.cs" />
+    <Compile Include="Microsoft\TestCommon\TimeoutConstant.cs" />
     <Compile Include="Platform.cs" />
     <Compile Include="PlatformInfo.cs" />
-    <Compile Include="PortReserver.cs" />
     <Compile Include="PropertyDataAttribute.cs" />
+    <Compile Include="ReflectionAssert.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="ReplaceCultureAttribute.cs" />
-    <Compile Include="RestoreThreadPrincipalAttribute.cs" />
     <Compile Include="Assert.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="CultureReplacer.cs" />
-    <Compile Include="FactAttribute.cs" />
-    <Compile Include="StringAssertions.cs" />
-    <Compile Include="StringAssertException.cs" />
+    <Compile Include="TestFile.cs" />
     <Compile Include="TheoryAttribute.cs" />
-    <Compile Include="DictionaryEqualityComparer.cs" />
-    <Compile Include="ForceGCAttribute.cs" />
-    <Compile Include="MemberHelper.cs" />
-    <Compile Include="Microsoft\TestCommon\DataSets\RefTypeTestData.cs" />
-    <Compile Include="Microsoft\TestCommon\DataSets\TestDataVariations.cs" />
-    <Compile Include="Microsoft\TestCommon\DataSets\ValueTypeTestData.cs" />
-    <Compile Include="Microsoft\TestCommon\GenericTypeAssert.cs" />
     <Compile Include="Microsoft\TestCommon\HttpAssert.cs" />
     <Compile Include="Microsoft\TestCommon\MediaTypeAssert.cs" />
-    <Compile Include="Microsoft\TestCommon\MediaTypeHeaderValueComparer.cs" />
-    <Compile Include="Microsoft\TestCommon\ParsedMediaTypeHeaderValue.cs" />
-    <Compile Include="Microsoft\TestCommon\RegexReplacement.cs" />
-    <Compile Include="Microsoft\TestCommon\RuntimeEnvironment.cs" />
     <Compile Include="Microsoft\TestCommon\SerializerAssert.cs" />
     <Compile Include="Microsoft\TestCommon\StreamAssert.cs" />
     <Compile Include="Microsoft\TestCommon\TaskAssert.cs" />
-    <Compile Include="Microsoft\TestCommon\DataSets\TestData.cs" />
-    <Compile Include="Microsoft\TestCommon\TestDataSetAttribute.cs" />
-    <Compile Include="Microsoft\TestCommon\TimeoutConstant.cs" />
     <Compile Include="Microsoft\TestCommon\TypeAssert.cs" />
-    <Compile Include="Microsoft\TestCommon\Types\FlagsEnum.cs" />
-    <Compile Include="Microsoft\TestCommon\Types\INameAndIdContainer.cs" />
-    <Compile Include="Microsoft\TestCommon\Types\ISerializableType.cs" />
-    <Compile Include="Microsoft\TestCommon\Types\LongEnum.cs" />
-    <Compile Include="Microsoft\TestCommon\Types\SimpleEnum.cs" />
-    <Compile Include="Microsoft\TestCommon\DataSets\CommonUnitTestDataSets.cs" />
     <Compile Include="Microsoft\TestCommon\XmlAssert.cs" />
-    <Compile Include="PreAppStartTestHelper.cs" />
-    <Compile Include="PreserveSyncContextAttribute.cs" />
-    <Compile Include="ReflectionAssert.cs" />
-    <Compile Include="TaskExtensions.cs" />
-    <Compile Include="TestFile.cs" />
-    <Compile Include="TestHelper.cs" />
-    <Compile Include="TheoryDataSet.cs" />
-    <Compile Include="ThreadPoolSyncContext.cs" />
-    <Compile Include="TraitAttribute.cs" />
-    <Compile Include="VersionTestHelper.cs" />
-    <Compile Include="WebUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
