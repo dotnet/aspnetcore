@@ -37,17 +37,10 @@
     <Compile Include="ExceptionAssertions.cs" />
     <Compile Include="FactAttribute.cs" />
     <Compile Include="InlineDataAttribute.cs" />
-    <Compile Include="Microsoft\TestCommon\GenericTypeAssert.cs" />
-    <Compile Include="Microsoft\TestCommon\MediaTypeHeaderValueComparer.cs" />
-    <Compile Include="Microsoft\TestCommon\ParsedMediaTypeHeaderValue.cs" />
-    <Compile Include="Microsoft\TestCommon\RegexReplacement.cs" />
     <Compile Include="Microsoft\TestCommon\TimeoutConstant.cs" />
     <Compile Include="Platform.cs" />
     <Compile Include="PlatformInfo.cs" />
     <Compile Include="PropertyDataAttribute.cs" />
-    <Compile Include="ReflectionAssert.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="ReplaceCultureAttribute.cs" />
     <Compile Include="Assert.cs">
       <SubType>Code</SubType>
@@ -55,13 +48,6 @@
     <Compile Include="CultureReplacer.cs" />
     <Compile Include="TestFile.cs" />
     <Compile Include="TheoryAttribute.cs" />
-    <Compile Include="Microsoft\TestCommon\HttpAssert.cs" />
-    <Compile Include="Microsoft\TestCommon\MediaTypeAssert.cs" />
-    <Compile Include="Microsoft\TestCommon\SerializerAssert.cs" />
-    <Compile Include="Microsoft\TestCommon\StreamAssert.cs" />
-    <Compile Include="Microsoft\TestCommon\TaskAssert.cs" />
-    <Compile Include="Microsoft\TestCommon\TypeAssert.cs" />
-    <Compile Include="Microsoft\TestCommon\XmlAssert.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
