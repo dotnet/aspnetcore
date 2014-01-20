@@ -6,6 +6,7 @@ using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.Internal.Web.Utils;
 using System;
+using Microsoft.AspNet.Razor.Generator.Compiler;
 
 namespace Microsoft.AspNet.Razor.Generator
 {
@@ -26,6 +27,15 @@ namespace Microsoft.AspNet.Razor.Generator
         public LocationTagged<string> Signature { get; private set; }
         public LocationTagged<string> Footer { get; set; }
         public bool HeaderComplete { get; private set; }
+
+        public void GenerateStartBlockCode(SyntaxTreeNode target, CodeTreeBuilder codeTreeBuilder, CodeGeneratorContext context)
+        {
+            HelperChunk chunk = codeTreeBuilder.StartChunkBlock<HelperChunk>(target, context, topLevel: true);
+
+            chunk.Signature = Signature;
+            chunk.Footer = Footer;
+            chunk.HeaderComplete = HeaderComplete;
+        }
 
         public override void GenerateStartBlockCode(Block target, CodeGeneratorContext context)
         {
@@ -53,6 +63,14 @@ namespace Microsoft.AspNet.Razor.Generator
             _statementCollectorToken = context.ChangeStatementCollector(AddStatementToHelper);
             _oldWriter = context.TargetWriterName;
             context.TargetWriterName = HelperWriterName;
+
+            // TODO: Make this generate the primary generator
+            GenerateStartBlockCode(target, context.CodeTreeBuilder, context);
+        }
+
+        public void GenerateEndBlockCode(SyntaxTreeNode target, CodeTreeBuilder codeTreeBuilder, CodeGeneratorContext context)
+        {
+            codeTreeBuilder.EndChunkBlock();
         }
 
         public override void GenerateEndBlockCode(Block target, CodeGeneratorContext context)
@@ -75,6 +93,9 @@ namespace Microsoft.AspNet.Razor.Generator
 
             context.GeneratedClass.Members.Add(new CodeSnippetTypeMember(_writer.Content));
             context.TargetWriterName = _oldWriter;
+
+            // TODO: Make this generate the primary generator
+            GenerateEndBlockCode(target, context.CodeTreeBuilder, context);
         }
 
         public override bool Equals(object obj)

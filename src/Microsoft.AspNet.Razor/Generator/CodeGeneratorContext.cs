@@ -12,12 +12,13 @@ using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Resources;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Utils;
+using Microsoft.AspNet.Razor.Generator.Compiler;
 
 namespace Microsoft.AspNet.Razor.Generator
 {
     public class CodeGeneratorContext
     {
-        private const string DesignTimeHelperMethodName = "__RazorDesignTimeHelpers__";
+        internal const string DesignTimeHelperMethodName = "__RazorDesignTimeHelpers__";
 
         private int _nextDesignTimePragmaId = 1;
         private bool _expressionHelperVariableWriten;
@@ -44,6 +45,8 @@ namespace Microsoft.AspNet.Razor.Generator
         public string TargetWriterName { get; set; }
         public CodeMemberMethod TargetMethod { get; set; }
 
+        public CodeTreeBuilder CodeTreeBuilder { get; set; }
+
         public string CurrentBufferedStatement
         {
             get { return _currentBuffer == null ? String.Empty : _currentBuffer.Builder.ToString(); }
@@ -58,6 +61,7 @@ namespace Microsoft.AspNet.Razor.Generator
         {
             CodeGeneratorContext context = new CodeGeneratorContext()
             {
+                CodeTreeBuilder = new CodeTreeBuilder(),
                 Host = host,
                 CodeWriterFactory = writerFactory,
                 SourceFile = shouldGenerateLinePragmas ? sourceFile : null,
@@ -102,6 +106,7 @@ namespace Microsoft.AspNet.Razor.Generator
             }
             _designTimeHelperMethod.Statements.Insert(_designTimeHelperMethod.Statements.Count - 1, statement);
         }
+
 
         [SuppressMessage("Microsoft.Usage", "CA2233:OperationsShouldNotOverflow", MessageId = "generatedCodeStart+1", Justification = "There is no risk of overflow in this case")]
         public int AddCodeMapping(SourceLocation sourceLocation, int generatedCodeStart, int generatedCodeLength)

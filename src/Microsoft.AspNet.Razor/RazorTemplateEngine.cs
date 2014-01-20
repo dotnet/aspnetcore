@@ -7,6 +7,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Generator.Compiler;
+using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Text;
 
@@ -175,8 +177,15 @@ namespace Microsoft.AspNet.Razor
                 designTimeLineMappings = generator.Context.CodeMappings;
             }
 
+            var builder = new CSharpCodeBuilder(generator.Context.CodeTreeBuilder.CodeTree, rootNamespace, Host, sourceFileName);
+            CodeBuilderResult builderResult = builder.Build();
+
             // Collect results and return
-            return new GeneratorResults(results, generator.Context.CompileUnit, designTimeLineMappings);
+            return new GeneratorResults(results, builderResult)
+            {
+                CCU = generator.Context.CompileUnit,
+                CT = generator.Context.CodeTreeBuilder.CodeTree
+            };
         }
 
         protected internal virtual RazorCodeGenerator CreateCodeGenerator(string className, string rootNamespace, string sourceFileName)

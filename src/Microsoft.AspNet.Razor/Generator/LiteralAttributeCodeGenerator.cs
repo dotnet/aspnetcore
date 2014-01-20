@@ -5,6 +5,7 @@ using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.Internal.Web.Utils;
 using System;
+using Microsoft.AspNet.Razor.Generator.Compiler;
 
 namespace Microsoft.AspNet.Razor.Generator
 {
@@ -32,6 +33,16 @@ namespace Microsoft.AspNet.Razor.Generator
             {
                 return;
             }
+
+            LiteralCodeAttributeChunk chunk = context.CodeTreeBuilder.StartChunkBlock<LiteralCodeAttributeChunk>(target, context);
+            chunk.Prefix = Prefix;
+            chunk.Value = Value;
+
+            if (ValueGenerator != null)
+            {
+                chunk.ValueLocation = ValueGenerator.Location;
+            }
+
             ExpressionRenderingMode oldMode = context.ExpressionRenderingMode;
             context.BufferStatementFragment(context.BuildCodeString(cw =>
             {
@@ -63,6 +74,8 @@ namespace Microsoft.AspNet.Razor.Generator
                 context.ExpressionRenderingMode = oldMode;
                 context.AddStatement(context.BuildCodeString(cw =>
                 {
+                    chunk.ValueLocation = ValueGenerator.Location;
+
                     cw.WriteParameterSeparator();
                     cw.WriteSnippet(ValueGenerator.Location.AbsoluteIndex.ToString(CultureInfo.CurrentCulture));
                     cw.WriteEndMethodInvoke();
@@ -79,6 +92,8 @@ namespace Microsoft.AspNet.Razor.Generator
             {
                 context.FlushBufferedStatement();
             }
+
+            context.CodeTreeBuilder.EndChunkBlock();
         }
 
         public override string ToString()

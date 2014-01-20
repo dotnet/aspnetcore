@@ -6,6 +6,7 @@ using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.Internal.Web.Utils;
 using System;
+using Microsoft.AspNet.Razor.Generator.Compiler;
 
 namespace Microsoft.AspNet.Razor.Generator
 {
@@ -29,6 +30,13 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public LocationTagged<string> Prefix { get; private set; }
         public SourceLocation ValueStart { get; private set; }
+
+        public void GenerateStartBlockCode(SyntaxTreeNode target, CodeTreeBuilder codeTreeBuilder, CodeGeneratorContext context)
+        {
+            DynamicCodeAttributeChunk chunk = codeTreeBuilder.StartChunkBlock<DynamicCodeAttributeChunk>(target, context);
+            chunk.Start = ValueStart;
+            chunk.Prefix = Prefix;
+        }
 
         public override void GenerateStartBlockCode(Block target, CodeGeneratorContext context)
         {
@@ -74,6 +82,14 @@ namespace Microsoft.AspNet.Razor.Generator
 
             _oldTargetWriter = context.TargetWriterName;
             context.TargetWriterName = ValueWriterName;
+
+            // TODO: Make this generate the primary generator
+            GenerateStartBlockCode(target, context.CodeTreeBuilder, context);
+        }
+
+        public void GenerateEndBlockCode(SyntaxTreeNode target, CodeTreeBuilder codeTreeBuilder, CodeGeneratorContext context)
+        {
+            codeTreeBuilder.EndChunkBlock();
         }
 
         public override void GenerateEndBlockCode(Block target, CodeGeneratorContext context)
@@ -118,6 +134,10 @@ namespace Microsoft.AspNet.Razor.Generator
 
             context.AddStatement(generatedCode);
             context.TargetWriterName = _oldTargetWriter;
+
+
+            // TODO: Make this generate the primary generator
+            GenerateEndBlockCode(target, context.CodeTreeBuilder, context);
         }
 
         public override string ToString()

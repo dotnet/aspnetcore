@@ -2,6 +2,7 @@
 
 using System;
 using System.CodeDom;
+using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 
 namespace Microsoft.AspNet.Razor.Generator
@@ -15,6 +16,11 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public string LayoutPath { get; set; }
 
+        public void GenerateCode(SyntaxTreeNode target, CodeTreeBuilder codeTreeBuilder, CodeGeneratorContext context)
+        {
+            codeTreeBuilder.AddSetLayoutChunk(LayoutPath, target, context);
+        }
+
         public override void GenerateCode(Span target, CodeGeneratorContext context)
         {
             if (!context.Host.DesignTimeMode && !String.IsNullOrEmpty(context.Host.GeneratedClassContext.LayoutPropertyName))
@@ -24,6 +30,9 @@ namespace Microsoft.AspNet.Razor.Generator
                         new CodePropertyReferenceExpression(null, context.Host.GeneratedClassContext.LayoutPropertyName),
                         new CodePrimitiveExpression(LayoutPath)));
             }
+
+            // TODO: Make this generate the primary generator
+            GenerateCode(target, context.CodeTreeBuilder, context);
         }
 
         public override string ToString()

@@ -2,6 +2,7 @@
 
 using System;
 using System.CodeDom;
+using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 
 namespace Microsoft.AspNet.Razor.Generator
@@ -14,6 +15,11 @@ namespace Microsoft.AspNet.Razor.Generator
         }
 
         public string BaseType { get; private set; }
+
+        public void GenerateCode(Span target, CodeTreeBuilder codeTreeBuilder, CodeGeneratorContext context)
+        {
+            codeTreeBuilder.AddSetBaseTypeChunk(target.Content, target, context);
+        }
 
         public override void GenerateCode(Span target, CodeGeneratorContext context)
         {
@@ -38,6 +44,9 @@ namespace Microsoft.AspNet.Razor.Generator
                 };
                 context.AddDesignTimeHelperStatement(stmt);
             }
+
+            // TODO: Make this generate the primary generator
+            GenerateCode(target, context.CodeTreeBuilder, context);
         }
 
         protected virtual string ResolveType(CodeGeneratorContext context, string baseType)

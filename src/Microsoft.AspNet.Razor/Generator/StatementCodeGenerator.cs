@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
+using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 
@@ -7,6 +8,11 @@ namespace Microsoft.AspNet.Razor.Generator
 {
     public class StatementCodeGenerator : SpanCodeGenerator
     {
+        public void GenerateCode(Span target, CodeTreeBuilder codeTreeBuilder, CodeGeneratorContext context)
+        {
+            codeTreeBuilder.AddStatementChunk(target.Content, target, context);
+        }
+
         public override void GenerateCode(Span target, CodeGeneratorContext context)
         {
             context.FlushBufferedStatement();
@@ -23,6 +29,9 @@ namespace Microsoft.AspNet.Razor.Generator
             context.AddStatement(
                 generatedCode,
                 context.GenerateLinePragma(target, paddingCharCount));
+
+            // TODO: Make this generate the primary generator
+            GenerateCode(target, context.CodeTreeBuilder, context);
         }
 
         public override string ToString()

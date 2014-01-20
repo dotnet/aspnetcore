@@ -1,0 +1,14 @@
+﻿@helper foo(int bar)
+{
+    <div>@bar</div>
+}
+
+@helper foo2(string bar)
+{
+    <div>@bar</div>
+    <script src="@Url.Content("~/Scripts/jquery-1.6.2.min.js")" type="text/javascript"></script>
+}
+
+<span>Hello WOrld</span>
+
+<script src="@Url.Content("~/Scripts/jquery-1.6.2.min.js")" type="text/javascript"></script>

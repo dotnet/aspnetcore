@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.Internal.Web.Utils;
 using System;
+using Microsoft.AspNet.Razor.Generator.Compiler;
 
 namespace Microsoft.AspNet.Razor.Generator
 {
@@ -18,6 +19,19 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public string Namespace { get; private set; }
         public int NamespaceKeywordLength { get; set; }
+
+        public void GenerateCode(Span target, CodeTreeBuilder codeTreeBuilder, CodeGeneratorContext context)
+        {
+            string ns = Namespace;
+
+            if (!String.IsNullOrEmpty(ns) && Char.IsWhiteSpace(ns[0]))
+            {
+                ns = ns.Substring(1);
+            }
+
+            // TODO: Verify namespace hasn't already been added.
+            codeTreeBuilder.AddUsingChunk(ns, target, context);
+        }
 
         public override void GenerateCode(Span target, CodeGeneratorContext context)
         {
@@ -43,6 +57,9 @@ namespace Microsoft.AspNet.Razor.Generator
 
             // Attach our info to the existing/new import.
             import.LinePragma = context.GenerateLinePragma(target);
+
+            // TODO: Make this generate the primary generator
+            GenerateCode(target, context.CodeTreeBuilder, context);
         }
 
         public override string ToString()

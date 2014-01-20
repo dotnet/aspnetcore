@@ -3,6 +3,7 @@
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.Internal.Web.Utils;
 using System;
+using Microsoft.AspNet.Razor.Generator.Compiler;
 
 namespace Microsoft.AspNet.Razor.Generator
 {
@@ -15,6 +16,13 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public string SectionName { get; private set; }
 
+        public void GenerateStartBlockCode(SyntaxTreeNode target, CodeTreeBuilder codeTreeBuilder, CodeGeneratorContext context)
+        {
+            SectionChunk chunk = codeTreeBuilder.StartChunkBlock<SectionChunk>(target, context);
+
+            chunk.Name = SectionName;
+        }
+
         public override void GenerateStartBlockCode(Block target, CodeGeneratorContext context)
         {
             string startBlock = context.BuildCodeString(cw =>
@@ -25,6 +33,14 @@ namespace Microsoft.AspNet.Razor.Generator
                 cw.WriteStartLambdaDelegate();
             });
             context.AddStatement(startBlock);
+
+            // TODO: Make this generate the primary generator
+            GenerateStartBlockCode(target, context.CodeTreeBuilder, context);
+        }
+
+        public void GenerateEndBlockCode(SyntaxTreeNode target, CodeTreeBuilder codeTreeBuilder, CodeGeneratorContext context)
+        {
+            codeTreeBuilder.EndChunkBlock();
         }
 
         public override void GenerateEndBlockCode(Block target, CodeGeneratorContext context)
@@ -36,6 +52,9 @@ namespace Microsoft.AspNet.Razor.Generator
                 cw.WriteEndStatement();
             });
             context.AddStatement(startBlock);
+
+            // TODO: Make this generate the primary generator
+            GenerateEndBlockCode(target, context.CodeTreeBuilder, context);
         }
 
         public override bool Equals(object obj)

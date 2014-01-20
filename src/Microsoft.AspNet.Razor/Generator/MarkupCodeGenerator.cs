@@ -1,12 +1,18 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 
 namespace Microsoft.AspNet.Razor.Generator
 {
     public class MarkupCodeGenerator : SpanCodeGenerator
     {
+        public void GenerateCode(Span target, CodeTreeBuilder codeTreeBuilder, CodeGeneratorContext context)
+        {
+            codeTreeBuilder.AddLiteralChunk(target.Content, target, context);
+        }
+
         public override void GenerateCode(Span target, CodeGeneratorContext context)
         {
             if (!context.Host.DesignTimeMode && String.IsNullOrEmpty(target.Content))
@@ -44,6 +50,9 @@ namespace Microsoft.AspNet.Razor.Generator
             {
                 context.AddContextCall(target, context.Host.GeneratedClassContext.EndContextMethodName, isLiteral: true);
             }
+
+            // TODO: Make this generate the primary generator
+            GenerateCode(target, context.CodeTreeBuilder, context);
         }
 
         public override string ToString()

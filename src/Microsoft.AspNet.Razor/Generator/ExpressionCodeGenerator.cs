@@ -2,12 +2,19 @@
 
 using System;
 using System.Linq;
+using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 
 namespace Microsoft.AspNet.Razor.Generator
 {
     public class ExpressionCodeGenerator : HybridCodeGenerator
     {
+        public void GenerateStartBlockCode(SyntaxTreeNode target, CodeTreeBuilder codeTreeBuilder, CodeGeneratorContext context)
+        {
+            ExpressionBlockChunk chunk = codeTreeBuilder.StartChunkBlock<ExpressionBlockChunk>(target, context);
+            chunk.RenderingMode = context.ExpressionRenderingMode;
+        }
+
         public override void GenerateStartBlockCode(Block target, CodeGeneratorContext context)
         {
             if (context.Host.EnableInstrumentation && context.ExpressionRenderingMode == ExpressionRenderingMode.WriteToOutput)
@@ -47,6 +54,14 @@ namespace Microsoft.AspNet.Razor.Generator
 
             context.BufferStatementFragment(writeInvocation);
             context.MarkStartOfGeneratedCode();
+
+            // TODO: Make this generate the primary generator
+            GenerateStartBlockCode(target, context.CodeTreeBuilder, context);
+        }
+
+        public void GenerateEndBlockCode(SyntaxTreeNode target, CodeTreeBuilder codeTreeBuilder, CodeGeneratorContext context)
+        {
+            codeTreeBuilder.EndChunkBlock();
         }
 
         public override void GenerateEndBlockCode(Block target, CodeGeneratorContext context)
@@ -83,6 +98,14 @@ namespace Microsoft.AspNet.Razor.Generator
                     context.AddContextCall(contentSpan, context.Host.GeneratedClassContext.EndContextMethodName, false);
                 }
             }
+
+            // TODO: Make this generate the primary generator
+            GenerateEndBlockCode(target, context.CodeTreeBuilder, context);
+        }
+
+        public void GenerateCode(Span target, CodeTreeBuilder codeTreeBuilder, CodeGeneratorContext context)
+        {
+            codeTreeBuilder.AddExpressionChunk(target.Content, context.ExpressionRenderingMode, target, context);
         }
 
         public override void GenerateCode(Span target, CodeGeneratorContext context)
@@ -93,6 +116,9 @@ namespace Microsoft.AspNet.Razor.Generator
                 sourceSpan = target;
             }
             context.BufferStatementFragment(target.Content, sourceSpan);
+
+            // TODO: Make this generate the primary generator
+            GenerateCode(target, context.CodeTreeBuilder, context);
         }
 
         public override string ToString()

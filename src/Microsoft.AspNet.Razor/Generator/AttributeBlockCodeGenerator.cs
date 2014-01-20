@@ -5,6 +5,7 @@ using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.Internal.Web.Utils;
 using System;
+using Microsoft.AspNet.Razor.Generator.Compiler;
 
 namespace Microsoft.AspNet.Razor.Generator
 {
@@ -21,12 +22,22 @@ namespace Microsoft.AspNet.Razor.Generator
         public LocationTagged<string> Prefix { get; private set; }
         public LocationTagged<string> Suffix { get; private set; }
 
+        public void GenerateStartBlockCode(SyntaxTreeNode target, CodeTreeBuilder codeTreeBuilder, CodeGeneratorContext context)
+        {
+            CodeAttributeChunk chunk = codeTreeBuilder.StartChunkBlock<CodeAttributeChunk>(target, context);
+
+            chunk.Attribute = Name;
+            chunk.Prefix = Prefix;
+            chunk.Suffix = Suffix;
+        }
+
         public override void GenerateStartBlockCode(Block target, CodeGeneratorContext context)
         {
             if (context.Host.DesignTimeMode)
             {
                 return; // Don't generate anything!
             }
+
             context.FlushBufferedStatement();
             context.AddStatement(context.BuildCodeString(cw =>
             {
@@ -49,6 +60,14 @@ namespace Microsoft.AspNet.Razor.Generator
                 // In VB, we need a line continuation
                 cw.WriteLineContinuation();
             }));
+
+            // TODO: Make this generate the primary generator
+            GenerateStartBlockCode(target, context.CodeTreeBuilder, context);
+        }
+
+        public void GenerateEndBlockCode(SyntaxTreeNode target, CodeTreeBuilder codeTreeBuilder, CodeGeneratorContext context)
+        {
+            codeTreeBuilder.EndChunkBlock();
         }
 
         public override void GenerateEndBlockCode(Block target, CodeGeneratorContext context)
@@ -57,12 +76,16 @@ namespace Microsoft.AspNet.Razor.Generator
             {
                 return; // Don't generate anything!
             }
+
             context.FlushBufferedStatement();
             context.AddStatement(context.BuildCodeString(cw =>
             {
                 cw.WriteEndMethodInvoke();
                 cw.WriteEndStatement();
             }));
+
+            // TODO: Make this generate the primary generator
+            GenerateEndBlockCode(target, context.CodeTreeBuilder, context);
         }
 
         public override string ToString()

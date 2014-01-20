@@ -13,6 +13,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <Prefer32Bit>false</Prefer32Bit>
+    <DefineConstants>
+    </DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
@@ -49,6 +51,7 @@
     <Compile Include="Framework\TestSpanBuilder.cs" />
     <Compile Include="Framework\VBHtmlCodeParserTestBase.cs" />
     <Compile Include="Framework\VBHtmlMarkupParserTestBase.cs" />
+    <Compile Include="Generator\CodeTree\CodeTreeGenerationTest.cs" />
     <Compile Include="Generator\GeneratedCodeMappingTest.cs" />
     <Compile Include="Generator\PaddingTest.cs" />
     <Compile Include="Generator\TabTest.cs" />
@@ -160,6 +163,7 @@
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\SimpleUnspacedIf.DesignTime.Tabs.cs" />
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\HtmlCommentWithQuote_Single.cs" />
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\HtmlCommentWithQuote_Double.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\CodeTree.cs" />
     <Compile Include="Text\LineTrackingStringBufferTest.cs" />
     <Compile Include="Tokenizer\VBTokenizerLiteralTest.cs" />
     <Compile Include="Tokenizer\VBTokenizerIdentifierTest.cs" />
@@ -411,6 +415,7 @@
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\SimpleUnspacedIf.cshtml" />
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\HtmlCommentWithQuote_Double.cshtml" />
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\HtmlCommentWithQuote_Single.cshtml" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\CodeTree.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\Blocks.vb" />

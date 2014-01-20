@@ -1,12 +1,18 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 
 namespace Microsoft.AspNet.Razor.Generator
 {
     public class ResolveUrlCodeGenerator : SpanCodeGenerator
     {
+        public void GenerateCode(Span target, CodeTreeBuilder codeTreeBuilder, CodeGeneratorContext context)
+        {
+            codeTreeBuilder.AddResolveUrlChunk(target.Content, target, context);
+        }
+
         public override void GenerateCode(Span target, CodeGeneratorContext context)
         {
             // Check if the host supports it
@@ -73,6 +79,9 @@ namespace Microsoft.AspNet.Razor.Generator
             {
                 context.AddContextCall(target, context.Host.GeneratedClassContext.EndContextMethodName, isLiteral: false);
             }
+
+            // TODO: Make this generate the primary generator
+            GenerateCode(target, context.CodeTreeBuilder, context);
         }
 
         public override string ToString()
