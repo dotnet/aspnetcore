@@ -25,3 +25,4 @@ PublishProfiles/
 *.log
 *.vspx
 /.symbols
+nuget.exe

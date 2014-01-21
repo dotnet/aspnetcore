@@ -3,13 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Mvc", "Microsoft.AspNet.Mvc\Microsoft.AspNet.Mvc.csproj", "{2A0C26F1-0240-4AE1-AE00-4691C291B122}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Mvc", "src\Microsoft.AspNet.Mvc\Microsoft.AspNet.Mvc.csproj", "{2A0C26F1-0240-4AE1-AE00-4691C291B122}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MvcSample", "MvcSample\MvcSample.csproj", "{069EA0A1-BB68-41D1-A973-3429EC09264C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MvcSample", "samples\MvcSample\MvcSample.csproj", "{069EA0A1-BB68-41D1-A973-3429EC09264C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.CoreServices", "Microsoft.AspNet.CoreServices\Microsoft.AspNet.CoreServices.csproj", "{EC38534C-A2D1-413F-97D1-55EEF5D2FB71}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.CoreServices", "src\Microsoft.AspNet.CoreServices\Microsoft.AspNet.CoreServices.csproj", "{EC38534C-A2D1-413F-97D1-55EEF5D2FB71}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Mvc.Razor", "Microsoft.AspNet.Mvc.Razor\Microsoft.AspNet.Mvc.Razor.csproj", "{224A14D0-ECA7-441C-AE89-B6E66A57EF9B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Mvc.Razor", "src\Microsoft.AspNet.Mvc.Razor\Microsoft.AspNet.Mvc.Razor.csproj", "{224A14D0-ECA7-441C-AE89-B6E66A57EF9B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{DAAE4C74-D06F-4874-A166-33305D2643CE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{32285FA4-6B46-4D6B-A840-2B13E4C8B58E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,5 +40,11 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{069EA0A1-BB68-41D1-A973-3429EC09264C} = {DAAE4C74-D06F-4874-A166-33305D2643CE}
+		{EC38534C-A2D1-413F-97D1-55EEF5D2FB71} = {32285FA4-6B46-4D6B-A840-2B13E4C8B58E}
+		{2A0C26F1-0240-4AE1-AE00-4691C291B122} = {32285FA4-6B46-4D6B-A840-2B13E4C8B58E}
+		{224A14D0-ECA7-441C-AE89-B6E66A57EF9B} = {32285FA4-6B46-4D6B-A840-2B13E4C8B58E}
 	EndGlobalSection
 EndGlobal

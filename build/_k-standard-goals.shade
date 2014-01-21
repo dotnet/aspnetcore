@@ -1,0 +1,43 @@
+use namespace="System"
+use namespace="System.IO"
+use import="Files"
+
+default BASE_DIR='${Directory.GetCurrentDirectory()}'
+default TARGET_DIR='${Path.Combine(BASE_DIR, "artifacts")}'
+default BUILD_DIR='${Path.Combine(TARGET_DIR, "build")}'
+default TEST_DIR='${Path.Combine(TARGET_DIR, "test")}'
+
+@{
+  E("K_BUILD_VERSION", "t" + DateTime.UtcNow.ToString("yyMMddHHmmss"));
+}
+
+#target-dir-clean target="clean"
+  directory delete="${TARGET_DIR}"
+
+#build-clean target='clean'
+  k-clean each='var projectFile in Files.Include("src/**/project.json")'
+
+#build-compile target='compile'
+  k-build each='var projectFile in Files.Include("src/**/project.json")'
+  @{
+    foreach (var nupkg in Files.Include(Path.Combine(BUILD_DIR, "*/*.nupkg"))) 
+    {
+      File.Copy(nupkg, Path.Combine(BUILD_DIR, Path.GetFileName(nupkg)), true);
+    }
+  }
+
+#nuget-install target='install' description='Copy NuGet packages to local repo'
+  @{
+    var HOME_DIR = E("HOME");
+    if (string.IsNullOrEmpty(HOME_DIR))
+    {
+      HOME_DIR = E("HOMEDRIVE") + E("HOMEPATH");
+    }
+  }
+  copy sourceDir='${BUILD_DIR}' include='*.nupkg' outputDir='${Path.Combine(HOME_DIR, ".nuget")}' overwrite='${true}'
+
+
+functions @{
+    string E(string key) { return Environment.GetEnvironmentVariable(key); }
+    void E(string key, string value) { Environment.SetEnvironmentVariable(key, value); }
+}

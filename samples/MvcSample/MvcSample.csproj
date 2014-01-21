@@ -41,21 +41,21 @@
   <ItemGroup>
     <Reference Include="Microsoft.Owin, Version=2.0.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.Owin.2.0.2\lib\net45\Microsoft.Owin.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Owin.2.0.2\lib\net45\Microsoft.Owin.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Owin.Diagnostics">
-      <HintPath>..\packages\Microsoft.Owin.Diagnostics.2.0.2\lib\net40\Microsoft.Owin.Diagnostics.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Owin.Diagnostics.2.0.2\lib\net40\Microsoft.Owin.Diagnostics.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Owin.FileSystems, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.Owin.FileSystems.2.1.0-rc1\lib\net40\Microsoft.Owin.FileSystems.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Owin.FileSystems.2.1.0-rc1\lib\net40\Microsoft.Owin.FileSystems.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Owin">
-      <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
+      <HintPath>..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -76,15 +76,15 @@
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.AspNet.CoreServices\Microsoft.AspNet.CoreServices.csproj">
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.CoreServices\Microsoft.AspNet.CoreServices.csproj">
       <Project>{ec38534c-a2d1-413f-97d1-55eef5d2fb71}</Project>
       <Name>Microsoft.AspNet.CoreServices</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Microsoft.AspNet.Mvc.Razor\Microsoft.AspNet.Mvc.Razor.csproj">
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.Mvc.Razor\Microsoft.AspNet.Mvc.Razor.csproj">
       <Project>{224a14d0-eca7-441c-ae89-b6e66a57ef9b}</Project>
       <Name>Microsoft.AspNet.Mvc.Razor</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Microsoft.AspNet.Mvc\Microsoft.AspNet.Mvc.csproj">
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.Mvc\Microsoft.AspNet.Mvc.csproj">
       <Project>{2a0c26f1-0240-4ae1-ae00-4691c291b122}</Project>
       <Name>Microsoft.AspNet.Mvc</Name>
     </ProjectReference>
