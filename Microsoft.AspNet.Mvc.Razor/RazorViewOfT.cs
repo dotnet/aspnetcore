@@ -7,9 +7,12 @@ namespace Microsoft.AspNet.Mvc.Razor
     {
         public TModel Model { get; set; }
 
+        public dynamic ViewData { get; set; }
+
         public override Task RenderAsync(ViewContext context, TextWriter writer)
         {
-            Model = (TModel)context.Model;
+            ViewData = context.ViewData;
+            Model = (TModel)ViewData.Model;
             return base.RenderAsync(context, writer);
         }
     }

@@ -8,10 +8,13 @@ namespace Microsoft.AspNet.Mvc
         public void Initialize(IActionResultHelper actionResultHelper)
         {
             Result = actionResultHelper;
+            ViewData = new ViewDataDictionary();
         }
 
         public IActionResultHelper Result { get; private set; }
 
         public IOwinContext Context { get; set; }
+
+        public ViewDataDictionary ViewData { get; private set; }
     }
 }

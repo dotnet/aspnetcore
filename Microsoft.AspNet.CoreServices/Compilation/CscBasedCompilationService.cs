@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -32,18 +33,18 @@ namespace Microsoft.AspNet.CoreServices
             }
             args.AppendFormat("\"{0}\"", fileInfo.PhysicalPath);
             var outputStream = new MemoryStream();
-            var errorStream = new MemoryStream();
 
             // common execute
             var process = CreateProcess(args.ToString());
-            int exitCode = await Start(process, outputStream, errorStream);
+            int exitCode = await Start(process, outputStream);
 
             string output = GetString(outputStream);
-            string error = GetString(errorStream);
             if (exitCode != 0)
             {
-                return CompilationResult.Failed(String.Empty, error.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
-                                                                   .Select(e => new CompilationMessage(e)));
+                IEnumerable<CompilationMessage> messages = output.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+                                                                 .Skip(3)
+                                                                 .Select(e => new CompilationMessage(e));
+                return CompilationResult.Failed(String.Empty, messages);
             }
 
             var type = Assembly.LoadFrom(outFile)
@@ -63,7 +64,7 @@ namespace Microsoft.AspNet.CoreServices
             return String.Empty;
         }
 
-        private static async Task<int> Start(Process process, Stream output, Stream error)
+        private static async Task<int> Start(Process process, Stream output)
         {
             var tcs = new TaskCompletionSource<int>();
             process.EnableRaisingEvents = true;
@@ -74,18 +75,10 @@ namespace Microsoft.AspNet.CoreServices
 
             process.Start();
 
-            var tasks = new[]
-            {
-                process.StandardOutput.BaseStream.CopyToAsync(output),
-                process.StandardError.BaseStream.CopyToAsync(error)
-            };
+            var copyTask = process.StandardOutput.BaseStream.CopyToAsync(output);
+            await Task.WhenAll(tcs.Task, copyTask);
 
-            int result = await tcs.Task;
-
-            // Process has exited, draining the stdout and stderr
-            await Task.WhenAll(tasks);
-
-            return result;
+            return process.ExitCode;
         }
 
         internal Process CreateProcess(string arguments)

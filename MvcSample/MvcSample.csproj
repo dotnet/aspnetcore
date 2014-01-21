@@ -74,8 +74,6 @@
     <Compile Include="Models\Class1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
-    <Compile Include="Views\Layout.cs" />
-    <Compile Include="Views\MyView.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNet.CoreServices\Microsoft.AspNet.CoreServices.csproj">

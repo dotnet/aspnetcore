@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc
 
         public string ViewName {get; set; }
 
-        public object Model { get; set; }
+        public ViewDataDictionary ViewData { get; set; }
 
         public async Task ExecuteResultAsync(RequestContext context)
         {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc
                 context.HttpContext.Response.ContentType = "text/html";
                 using (var writer = new StreamWriter(context.HttpContext.Response.Body, Encoding.UTF8, 1024, leaveOpen: true))
                 {
-                    var viewContext = new ViewContext(context.HttpContext, context.RouteData, Model)
+                    var viewContext = new ViewContext(context.HttpContext, context.RouteData, ViewData)
                     {
                         ServiceProvider = _serviceProvider
                     };

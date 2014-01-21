@@ -6,14 +6,14 @@ namespace Microsoft.AspNet.Mvc
 {
     public class ViewContext : RequestContext
     {
-        public ViewContext(IOwinContext context, IRouteData routeData, object model) :
+        public ViewContext(IOwinContext context, IRouteData routeData, ViewDataDictionary viewData) :
             base(context, routeData)
         {
-            Model = model;
+            ViewData = viewData;
         }
 
         public IServiceProvider ServiceProvider { get; set; }
 
-        public object Model { get; private set; }
+        public ViewDataDictionary ViewData { get; private set; }
     }
 }

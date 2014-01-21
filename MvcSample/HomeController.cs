@@ -50,7 +50,8 @@ namespace MvcSample
 
         public IActionResult MyView()
         {
-            return Result.View(User());
+            ViewData.Model = User();
+            return Result.View(ViewData);
         }
     }
 }

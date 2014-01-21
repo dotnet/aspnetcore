@@ -5,17 +5,17 @@ namespace Microsoft.AspNet.Mvc
     {
         public static IActionResult View(this IActionResultHelper actionResultHelper)
         {
-            return actionResultHelper.View(view: null, model: null);
+            return actionResultHelper.View(view: null, viewData: null);
         }
 
         public static IActionResult View(this IActionResultHelper actionResultHelper, string view)
         {
-            return actionResultHelper.View(view, model: null);
+            return actionResultHelper.View(view, viewData: null);
         }
 
-        public static IActionResult View(this IActionResultHelper actionResultHelper, object model)
+        public static IActionResult View(this IActionResultHelper actionResultHelper, ViewDataDictionary viewData)
         {
-            return actionResultHelper.View(view: null, model: model);
+            return actionResultHelper.View(view: null, viewData: viewData);
         }
     }
 }

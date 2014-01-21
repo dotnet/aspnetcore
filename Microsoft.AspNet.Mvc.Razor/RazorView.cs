@@ -89,13 +89,13 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
-        protected virtual string RenderBody()
+        protected virtual HtmlString RenderBody()
         {
             if (BodyContent == null)
             {
                 throw new InvalidOperationException("RenderBody cannot be called at this point because you're not executing a layout");
             }
-            return BodyContent;
+            return new HtmlString(BodyContent);
         }
     }
 }

@@ -89,6 +89,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Routing\IRouteData.cs" />
     <Compile Include="View\ViewContext.cs" />
+    <Compile Include="View\ViewDataDictionary.cs" />
     <Compile Include="View\ViewEngineResult.cs" />
     <Compile Include="View\ViewResult.cs" />
   </ItemGroup>
