@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{224A14D0-ECA7-441C-AE89-B6E66A57EF9B}</ProjectGuid>
+    <ProjectGuid>{AB4CDC03-176C-460F-8955-4202F6D53FED}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.AspNet.Mvc.Razor</RootNamespace>
-    <AssemblyName>Microsoft.AspNet.Mvc.Razor</AssemblyName>
+    <RootNamespace>Microsoft.AspNet.Mvc</RootNamespace>
+    <AssemblyName>Microsoft.AspNet.Mvc.Forms</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -30,50 +30,32 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Owin, Version=2.0.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Microsoft.Owin.2.0.2\lib\net45\Microsoft.Owin.dll</HintPath>
+    <Reference Include="Microsoft.Owin">
+      <HintPath>..\..\packages\Microsoft.Owin.2.1.0\lib\net45\Microsoft.Owin.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Owin.FileSystems">
-      <HintPath>..\..\packages\Microsoft.Owin.FileSystems.2.1.0-rc1\lib\net40\Microsoft.Owin.FileSystems.dll</HintPath>
-    </Reference>
-    <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="Owin">
       <HintPath>..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.AspNet.Razor.3.0.0\lib\net45\System.Web.Razor.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+    <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="RazorViewOfT.cs" />
-    <Compile Include="Razor\MvcCSharpRazorCodeGenerator.cs" />
-    <Compile Include="Razor\MvcCSharpRazorCodeParser.cs" />
-    <Compile Include="Razor\MvcRazorHost.cs" />
-    <Compile Include="Razor\RazorCompilationService.cs" />
-    <Compile Include="Razor\SetModelTypeCodeGenerator.cs" />
-    <Compile Include="ViewEngine\IVirtualPathViewFactory.cs" />
-    <Compile Include="ViewEngine\MetadataVirtualPathViewFactory.cs" />
-    <Compile Include="RazorView.cs" />
-    <Compile Include="ViewEngine\RazorViewEngine.cs" />
+    <Compile Include="CryptoUtil.cs" />
+    <Compile Include="Html\FormMethod.cs" />
+    <Compile Include="Html\HtmlHelper.cs" />
+    <Compile Include="Html\HtmlHelperOfT.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Html\HtmlString.cs" />
+    <Compile Include="Html\InputType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ViewEngine\VirtualFileSystem.cs" />
-    <Compile Include="ViewEngine\VirtualPathAttribute.cs" />
-    <Compile Include="ViewEngine\VirtualPathViewFactory.cs" />
+    <Compile Include="Html\TagBuilder.cs" />
+    <Compile Include="Html\TagRenderMode.cs" />
+    <Compile Include="TypeHelpers.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.AspNet.Mvc.Forms\Microsoft.AspNet.Mvc.Forms.csproj">
-      <Project>{ab4cdc03-176c-460f-8955-4202f6d53fed}</Project>
-      <Name>Microsoft.AspNet.Mvc.Html</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Microsoft.AspNet.CoreServices\Microsoft.AspNet.CoreServices.csproj">
       <Project>{ec38534c-a2d1-413f-97d1-55eef5d2fb71}</Project>
       <Name>Microsoft.AspNet.CoreServices</Name>
@@ -85,7 +67,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="project.json" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
