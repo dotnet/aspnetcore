@@ -1,0 +1,17 @@
+@{/*
+
+k-build 
+    Builds project. Downloads and executes k sdk tools.
+
+projectFile='' 
+    Required. Path to the project.json to build.
+
+*/}
+
+var projectFolder='${Path.GetDirectoryName(projectFile)}'
+var projectName='${Path.GetFileName(projectFolder)}'
+var projectBin='${Path.Combine(projectFolder, "bin")}'
+
+directory delete="${projectBin}"
+k command='build ${projectFolder}'
+copy sourceDir='${projectBin}' outputDir='${Path.Combine(BUILD_DIR, projectName)}'

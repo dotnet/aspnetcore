@@ -1,7 +1,6 @@
 {
-  "dependencies": [],
-  "configurations": [
-    { "net45": {} },
-    { "k10": {} }
-  ]
+  "configurations": {
+    "net45": {},
+    "k10": {}
+  }
 }
