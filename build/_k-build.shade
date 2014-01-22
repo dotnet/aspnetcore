@@ -12,6 +12,6 @@ var projectFolder='${Path.GetDirectoryName(projectFile)}'
 var projectName='${Path.GetFileName(projectFolder)}'
 var projectBin='${Path.Combine(projectFolder, "bin")}'
 
--// directory delete="${projectBin}"
+directory delete="${projectBin}"
 k command='build ${projectFolder}'
 copy sourceDir='${projectBin}' outputDir='${Path.Combine(BUILD_DIR, projectName)}'
