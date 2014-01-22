@@ -11,7 +11,10 @@ default TEST_DIR='${Path.Combine(TARGET_DIR, "test")}'
   E("K_BUILD_VERSION", "t" + DateTime.UtcNow.ToString("yyMMddHHmmss"));
 }
 
-#target-dir-clean target="clean"
+#target-default target='default'
+  k-restore
+
+#target-dir-clean target='clean'
   directory delete="${TARGET_DIR}"
 
 #build-clean target='clean'
