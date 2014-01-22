@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Owin.FileSystems;
 
-namespace Microsoft.AspNet.CoreServices
+namespace Microsoft.AspNet.Mvc.Razor
 {
     public class DefaultCompilationService : ICompilationService
     {

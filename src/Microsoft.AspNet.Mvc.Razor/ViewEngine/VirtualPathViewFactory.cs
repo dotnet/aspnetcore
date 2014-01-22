@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.CoreServices;
+using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.Owin.FileSystems;
 
 namespace Microsoft.AspNet.Mvc.Razor

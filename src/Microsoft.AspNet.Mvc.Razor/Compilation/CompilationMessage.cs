@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Microsoft.AspNet.CoreServices
+namespace Microsoft.AspNet.Mvc.Razor
 {
     public class CompilationMessage
     {

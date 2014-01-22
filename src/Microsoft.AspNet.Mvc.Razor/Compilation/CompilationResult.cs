@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.AspNet.CoreServices
+namespace Microsoft.AspNet.Mvc.Razor
 {
     public class CompilationResult
     {

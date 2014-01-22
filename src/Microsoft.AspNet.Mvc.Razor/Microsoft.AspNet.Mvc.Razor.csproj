@@ -54,6 +54,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Compilation\CompilationFailedException.cs" />
+    <Compile Include="Compilation\CompilationMessage.cs" />
+    <Compile Include="Compilation\CompilationResult.cs" />
+    <Compile Include="Compilation\CompilerCache.cs" />
+    <Compile Include="Compilation\CscBasedCompilationService.cs" />
+    <Compile Include="Compilation\DefaultCompilationService.cs" />
+    <Compile Include="Compilation\ICompilationService.cs" />
     <Compile Include="RazorViewOfT.cs" />
     <Compile Include="Razor\MvcCSharpRazorCodeGenerator.cs" />
     <Compile Include="Razor\MvcCSharpRazorCodeParser.cs" />

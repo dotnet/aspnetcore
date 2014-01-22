@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Owin.FileSystems;
 
-namespace Microsoft.AspNet.CoreServices
+namespace Microsoft.AspNet.Mvc.Razor
 {
     public class CscBasedCompilationService : ICompilationService
     {

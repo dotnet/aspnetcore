@@ -5,7 +5,7 @@
     "Microsoft.Owin": "2.0.2",
     "Microsoft.Owin.FileSystems": "2.0.2",
     "Microsoft.AspNet.WebApi.Client": "5.0.0",
-    "Microsoft.AspNet.CoreServices" : ""
+    "Microsoft.AspNet.Mvc.Razor" : ""
   },
   "configurations": {
     "net45": { 
