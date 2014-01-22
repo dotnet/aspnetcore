@@ -1,20 +1,49 @@
-﻿using System.Threading.Tasks;
-using Microsoft.Owin;
+﻿using Microsoft.Owin;
 
 namespace Microsoft.AspNet.Mvc
 {
     public class Controller
-    { 
+    {
         public void Initialize(IActionResultHelper actionResultHelper)
         {
             Result = actionResultHelper;
-            ViewData = new ViewDataDictionary();
+            ViewData = new ViewData<object>();
         }
 
         public IActionResultHelper Result { get; private set; }
 
         public IOwinContext Context { get; set; }
 
-        public ViewDataDictionary ViewData { get; private set; }
+        public ViewData<object> ViewData { get; set; }
+
+        public dynamic ViewBag
+        {
+            get { return ViewData; }
+        }
+
+        public IActionResult View()
+        {
+            return View(view: null);
+        }
+
+        public IActionResult View(string view)
+        {
+            object model = null;
+            return View(view, model);
+        }
+
+        public IActionResult View<TModel>(TModel model)
+        {
+            return View(view: null, model: model);
+        }
+
+        public IActionResult View<TModel>(string view, TModel model)
+        {
+            var viewDataDictionary = new ViewData<TModel>
+            {
+                Model = model
+            };
+            return Result.View(view, viewDataDictionary);
+        }
     }
 }

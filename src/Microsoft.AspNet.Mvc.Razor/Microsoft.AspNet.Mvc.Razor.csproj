@@ -54,7 +54,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="HtmlString.cs" />
     <Compile Include="RazorViewOfT.cs" />
     <Compile Include="Razor\MvcCSharpRazorCodeGenerator.cs" />
     <Compile Include="Razor\MvcCSharpRazorCodeParser.cs" />
@@ -71,6 +70,10 @@
     <Compile Include="ViewEngine\VirtualPathViewFactory.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNet.Mvc.Forms\Microsoft.AspNet.Mvc.Forms.csproj">
+      <Project>{ab4cdc03-176c-460f-8955-4202f6d53fed}</Project>
+      <Name>Microsoft.AspNet.Mvc.Html</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Microsoft.AspNet.CoreServices\Microsoft.AspNet.CoreServices.csproj">
       <Project>{ec38534c-a2d1-413f-97d1-55eef5d2fb71}</Project>
       <Name>Microsoft.AspNet.CoreServices</Name>

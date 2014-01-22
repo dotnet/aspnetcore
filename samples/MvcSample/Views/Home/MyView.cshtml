@@ -1,6 +1,7 @@
-﻿@{
+﻿@model MvcSample.User 
+@{
     Layout = "~/Views/Shared/_Layout.cshtml";
-    ViewData.Title = "Home Page";
+    ViewBag.Title = "Home Page";
 }
 
 <div class="jumbotron">
@@ -10,6 +11,7 @@
 </div>
 
 <div class="row">
+    <h3>Hello @Model.Name!</h3>
     <div class="col-md-4">
         <h2>Getting started</h2>
         <p>

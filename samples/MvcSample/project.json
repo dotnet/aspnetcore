@@ -1,15 +1,14 @@
 {
-  "dependencies": [
-    { "Owin": { "version": "1.0" } },
-    { "Microsoft.Owin.Diagnostics": { "version": "2.0.2" } },
-    { "Microsoft.Owin": { "version": "2.0.2" } },
-    { "Microsoft.AspNet.Mvc": { "version": "" } },
-  ],
-  "configurations": [
-    { "net45": { 
-        "dependencies": [ 
-            { "System.Net.Http" : { } }
-        ] }
+  "dependencies": {
+    "Owin": { "version": "1.0" },
+    "Microsoft.Owin.Diagnostics": { "version": "2.0.2" },
+    "Microsoft.Owin": { "version": "2.0.2" },
+    "Microsoft.AspNet.Mvc": { "version": "" },
+  },
+  "configurations": { 
+	"net45": { 
+        "dependencies": { 
+            "System.Net.Http" : { }
+        }
     }
-  ]
 }

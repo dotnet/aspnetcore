@@ -42,15 +42,15 @@ namespace Microsoft.AspNet.Mvc.Razor
         private async Task RenderLayoutAsync(ViewContext context, TextWriter writer, string bodyContent)
         {
             var virtualPathFactory = context.ServiceProvider.GetService<IVirtualPathViewFactory>();
-            RazorView razorView = (RazorView)(await virtualPathFactory.CreateInstance(Layout));
-            if (razorView == null)
+            RazorView layoutView = (RazorView)(await virtualPathFactory.CreateInstance(Layout));
+            if (layoutView == null)
             {
                 string message = String.Format(CultureInfo.CurrentCulture, "The layout view '{0}' could not be located.", Layout);
                 throw new InvalidOperationException(message);
             }
 
-            razorView.BodyContent = bodyContent;
-            await razorView.RenderAsync(context, writer);
+            layoutView.BodyContent = bodyContent;
+            await layoutView.RenderAsync(context, writer);
         }
 
         public abstract void Execute();

@@ -4,21 +4,41 @@ using System.Dynamic;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class ViewDataDictionary : DynamicObject
+    public class ViewData : DynamicObject
     {
         private Dictionary<object, dynamic> _data;
 
-        public ViewDataDictionary()
+        public ViewData()
         {
             _data = new Dictionary<object, dynamic>();
         }
 
-        public ViewDataDictionary(ViewDataDictionary source)
+        public ViewData(ViewData source)
         {
             _data = new Dictionary<object, dynamic>(source._data);
         }
 
-        public object Model { get; set; }
+        public dynamic this[string index]
+        {
+            get
+            {
+                dynamic result;
+                if (_data.TryGetValue(index, out result))
+                {
+                    result = _data[index];
+                }
+                else
+                {
+                    result = null;
+                }
+
+                return result;
+            }
+            set
+            {
+                _data[index] = (dynamic)value;
+            }
+        }
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
@@ -44,15 +64,7 @@ namespace Microsoft.AspNet.Mvc
             }
 
             object index = indexes[0];
-
-            if (_data.TryGetValue(index, out result))
-            {
-                result = _data[index];
-            }
-            else
-            {
-                result = null;
-            }
+            result = this[(string)index];
             return true;
         }
 
@@ -65,7 +77,7 @@ namespace Microsoft.AspNet.Mvc
 
             object index = indexes[0];
             // This cast should always succeed assuming TValue is dynamic.
-            _data[index] = (dynamic)value;
+            this[(string)index] = value;
             return true;
         }
     }

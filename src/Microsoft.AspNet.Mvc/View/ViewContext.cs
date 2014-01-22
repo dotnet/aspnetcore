@@ -6,7 +6,7 @@ namespace Microsoft.AspNet.Mvc
 {
     public class ViewContext : RequestContext
     {
-        public ViewContext(IOwinContext context, IRouteData routeData, ViewDataDictionary viewData) :
+        public ViewContext(IOwinContext context, IRouteData routeData, ViewData viewData) :
             base(context, routeData)
         {
             ViewData = viewData;
@@ -14,6 +14,6 @@ namespace Microsoft.AspNet.Mvc
 
         public IServiceProvider ServiceProvider { get; set; }
 
-        public ViewDataDictionary ViewData { get; private set; }
+        public ViewData ViewData { get; private set; }
     }
 }

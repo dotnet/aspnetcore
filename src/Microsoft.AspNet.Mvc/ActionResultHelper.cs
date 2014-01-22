@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Mvc
             throw new NotImplementedException();
         }
 
-        public IActionResult View(string view, ViewDataDictionary viewData)
+        public IActionResult View(string view, ViewData viewData)
         {
             return new ViewResult(_serviceProvider, _viewEngine)
             {
