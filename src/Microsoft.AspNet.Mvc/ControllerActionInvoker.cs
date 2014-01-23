@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNet.CoreServices;
+using Microsoft.AspNet.DependencyInjection;
 using Microsoft.Owin;
 
 namespace Microsoft.AspNet.Mvc

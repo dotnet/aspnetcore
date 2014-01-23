@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.CoreServices;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.Owin;
+using Microsoft.AspNet.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -10,20 +10,10 @@ namespace Microsoft.AspNet.Mvc
     {
         private readonly IServiceProvider _serviceProvider;
 
-        public MvcHandler()
-            : this(null)
-        {
-        }
-
         public MvcHandler(IServiceProvider serviceProvider)
         {
-            _serviceProvider = serviceProvider ?? MvcServices.Create();
+            _serviceProvider = serviceProvider;
         }
-
-        //public ServiceProvider ServiceProvider
-        //{
-        //    get { return (ServiceProvider)_serviceProvider; }
-        //}
 
         public Task ExecuteAsync(IOwinContext context, IRouteData routeData)
         {

@@ -1,6 +1,5 @@
 ﻿using System;
-using Microsoft.AspNet.CoreServices;
-using System.Net.Http.Formatting;
+using Microsoft.AspNet.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -19,7 +18,6 @@ namespace Microsoft.AspNet.Mvc
             callback(typeof(IActionInvokerFactory), typeof(ActionInvokerFactory));
             callback(typeof(IActionResultHelper), typeof(ActionResultHelper));
             callback(typeof(IActionResultFactory), typeof(ActionResultFactory));
-            callback(typeof(IContentNegotiator), typeof(DefaultContentNegotiator));
 
 
             // TODO: Should be many

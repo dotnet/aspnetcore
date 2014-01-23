@@ -30,8 +30,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Owin">
-      <HintPath>..\..\packages\Microsoft.Owin.2.0.2\lib\net45\Microsoft.Owin.dll</HintPath>
+    <Reference Include="Microsoft.AspNet.DependencyInjection, Version=0.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.AspNet.DependencyInjection.0.1-alpha-t140123020341\lib\net45\Microsoft.AspNet.DependencyInjection.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.Owin.2.1.0\lib\net45\Microsoft.Owin.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
@@ -41,11 +46,6 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Net.Http.Formatting, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.0.0\lib\net45\System.Net.Http.Formatting.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActionDescriptor.cs" />
@@ -54,22 +54,15 @@
     <Compile Include="ActionResultFactory.cs" />
     <Compile Include="ActionResultHelper.cs" />
     <Compile Include="ActionResults\NoContentResult.cs" />
-    <Compile Include="ActionResults\NegotiatedContentResult.cs" />
     <Compile Include="ActionResults\ContentResult.cs" />
-    <Compile Include="ActionResults\ObjectContent.cs" />
     <Compile Include="ControllerBasedActionDescriptor.cs" />
-    <Compile Include="DefaultContentNegotiator.cs" />
     <Compile Include="Extensions\IEnumerableExtensions.cs" />
-    <Compile Include="Formatters\JQeryMvcForUrlEncodedFormatter.cs" />
     <Compile Include="View\CompositeViewEngine.cs" />
     <Compile Include="View\IView.cs" />
     <Compile Include="View\IViewEngine.cs" />
-    <Compile Include="FormattingUtilities.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
-    <Compile Include="IOwinContentNegotiator.cs" />
     <Compile Include="RequestContext.cs" />
     <Compile Include="EmptyResult.cs" />
-    <Compile Include="HttpResponseMessageActionResult.cs" />
     <Compile Include="IActionDescriptorProvider.cs" />
     <Compile Include="IActionInvokerProvider.cs" />
     <Compile Include="IActionResult.cs" />
@@ -96,12 +89,6 @@
   <ItemGroup>
     <None Include="packages.config" />
     <Content Include="project.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Microsoft.AspNet.CoreServices\Microsoft.AspNet.CoreServices.csproj">
-      <Project>{ec38534c-a2d1-413f-97d1-55eef5d2fb71}</Project>
-      <Name>Microsoft.AspNet.CoreServices</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

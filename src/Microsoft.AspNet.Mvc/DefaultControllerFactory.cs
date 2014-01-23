@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using Microsoft.AspNet.CoreServices;
+using Microsoft.AspNet.DependencyInjection;
 using Microsoft.Owin;
 
 namespace Microsoft.AspNet.Mvc
@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc
 
             foreach (var a in AppDomain.CurrentDomain.GetAssemblies())
             {
-                var type = a.GetType(controllerName) ?? 
+                var type = a.GetType(controllerName) ??
                            a.GetType(a.GetName().Name + "." + controllerName) ??
                     a.GetTypes().FirstOrDefault(t => t.Name.Equals(controllerName, StringComparison.OrdinalIgnoreCase));
 

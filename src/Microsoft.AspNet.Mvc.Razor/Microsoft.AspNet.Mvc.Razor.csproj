@@ -30,12 +30,17 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Owin, Version=2.0.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.AspNet.DependencyInjection, Version=0.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Microsoft.Owin.2.0.2\lib\net45\Microsoft.Owin.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.AspNet.DependencyInjection.0.1-alpha-t140123020341\lib\net45\Microsoft.AspNet.DependencyInjection.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Owin.FileSystems">
-      <HintPath>..\..\packages\Microsoft.Owin.FileSystems.2.1.0-rc1\lib\net40\Microsoft.Owin.FileSystems.dll</HintPath>
+    <Reference Include="Microsoft.Owin, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.Owin.2.1.0\lib\net45\Microsoft.Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.FileSystems, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.Owin.FileSystems.2.1.0\lib\net40\Microsoft.Owin.FileSystems.dll</HintPath>
     </Reference>
     <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -43,15 +48,11 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.AspNet.Razor.3.0.0\lib\net45\System.Web.Razor.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.AspNet.Razor.3.1.0\lib\net45\System.Web.Razor.dll</HintPath>
     </Reference>
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Compilation\CompilationFailedException.cs" />
@@ -80,10 +81,6 @@
     <ProjectReference Include="..\Microsoft.AspNet.Mvc.Forms\Microsoft.AspNet.Mvc.Forms.csproj">
       <Project>{ab4cdc03-176c-460f-8955-4202f6d53fed}</Project>
       <Name>Microsoft.AspNet.Mvc.Html</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Microsoft.AspNet.CoreServices\Microsoft.AspNet.CoreServices.csproj">
-      <Project>{ec38534c-a2d1-413f-97d1-55eef5d2fb71}</Project>
-      <Name>Microsoft.AspNet.CoreServices</Name>
     </ProjectReference>
     <ProjectReference Include="..\Microsoft.AspNet.Mvc\Microsoft.AspNet.Mvc.csproj">
       <Project>{2a0c26f1-0240-4ae1-ae00-4691c291b122}</Project>

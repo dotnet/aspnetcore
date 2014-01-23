@@ -2,17 +2,12 @@
   "dependencies": {
     "Owin": "1.0",
     "Newtonsoft.Json": "4.5.11",
-    "Microsoft.Owin": "2.0.2",
-    "Microsoft.Owin.FileSystems": "2.0.2",
-    "Microsoft.AspNet.WebApi.Client": "5.0.0",
+    "Microsoft.Owin": "2.1.0",
+    "Microsoft.Owin.FileSystems": "2.1.0",
     "Microsoft.AspNet.Mvc.Razor" : ""
   },
   "configurations": {
-    "net45": { 
-      "dependencies": { 
-         "System.Net.Http" : ""
-      }
-    },
-      "k10" : { }
+    "net45": { },
+    "k10" : { }
   }
 }

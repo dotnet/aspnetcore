@@ -30,7 +30,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Owin">
+    <Reference Include="Microsoft.Owin, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Microsoft.Owin.2.1.0\lib\net45\Microsoft.Owin.dll</HintPath>
     </Reference>
     <Reference Include="Owin">
@@ -56,10 +57,6 @@
     <Compile Include="TypeHelpers.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.AspNet.CoreServices\Microsoft.AspNet.CoreServices.csproj">
-      <Project>{ec38534c-a2d1-413f-97d1-55eef5d2fb71}</Project>
-      <Name>Microsoft.AspNet.CoreServices</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Microsoft.AspNet.Mvc\Microsoft.AspNet.Mvc.csproj">
       <Project>{2a0c26f1-0240-4ae1-ae00-4691c291b122}</Project>
       <Name>Microsoft.AspNet.Mvc</Name>

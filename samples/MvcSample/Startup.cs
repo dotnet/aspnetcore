@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.CoreServices;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.Routing;
@@ -18,9 +17,10 @@ namespace MvcSample
         {
             app.UseErrorPage();
 
-            string appRoot = Environment.GetEnvironmentVariable("WEB_ROOT") ??
-                             AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
             var serviceProvider = MvcServices.Create();
+
+            string appRoot = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
+
             var fileSystem = new PhysicalFileSystem(appRoot);
             serviceProvider.AddInstance<IFileSystem>(new VirtualFileSystem(fileSystem));
             serviceProvider.AddInstance<ICompilationService>(new RazorCompilationService(new CscBasedCompilationService()));

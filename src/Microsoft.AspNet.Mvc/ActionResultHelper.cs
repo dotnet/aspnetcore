@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.AspNet.CoreServices;
 
 namespace Microsoft.AspNet.Mvc
 {

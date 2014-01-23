@@ -4,8 +4,8 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.CoreServices;
 using Microsoft.Owin;
+using Microsoft.AspNet.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
