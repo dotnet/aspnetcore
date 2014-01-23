@@ -1,9 +1,0 @@
-{
-  "dependencies": {
-    "Microsoft.Owin.FileSystems": "2.0.2"
-  },
-  "configurations": {
-    "net45": {},
-    "k10": {}
-  }
-}
