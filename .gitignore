@@ -1,0 +1,17 @@
+bin
+obj
+*.suo
+*.user
+_ReSharper.*
+*.DS_Store
+*.userprefs
+*.pidb
+*.vspx
+*.psess
+packages
+target
+artifacts
+StyleCop.Cache
+node_modules
+*.snk
+.nuget/NuGet.exe

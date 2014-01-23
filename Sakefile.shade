@@ -1,0 +1,55 @@
+
+var PROJECT='AspNet'
+var VERSION='0.1.0'
+
+use namespace='System'
+use namespace='System.IO'
+use namespace='System.Collections.Generic'
+
+var repos='${new Dictionary<string,string> {
+    {"HttpAbstractions", "git@github.com:aspnet/HttpAbstractions.git"},
+    {"DependencyInjection", "git@github.com:aspnet/DependencyInjection.git"},
+    {"FileSystem", "git@github.com:aspnet/FileSystem.git"},
+    {"Logging", "git@github.com:aspnet/Logging.git"},
+    {"Data", "git@github.com:aspnet/Data.git"},
+    {"Razor", "git@github.com:aspnet/Razor.git"},
+    {"Mvc", "git@github.com:aspnet/Mvc.git"},
+}}'
+
+#default .pull .install
+
+#pull
+
+#install .pull
+
+#git-pull target='pull' 
+    @{
+        foreach(var repo in repos) 
+        {
+            if(Directory.Exists(repo.Key)) 
+            {
+                GitPull(repo.Value, "dev", repo.Key);
+            } 
+            else 
+            {
+                GitClone(repo.Value, "dev");
+            }
+        }
+    }
+
+#build-install target='install'
+    @{
+        foreach(var repo in repos) 
+        {
+            Exec("build.cmd", "install", repo.Key);
+        }
+    }
+
+macro name='GitPull' gitUri='string' gitBranch='string' gitFolder='string'
+    git-pull
+
+macro name='GitClone' gitUri='string' gitBranch='string'
+    git-clone
+
+macro name='Exec' program='string' commandline='string' workingdir='string'
+    exec
