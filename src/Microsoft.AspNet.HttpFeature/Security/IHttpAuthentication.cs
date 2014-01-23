@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using System.Security.Principal;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Interfaces.Security;
 
-namespace Microsoft.AspNet.Interfaces.Security
+namespace Microsoft.AspNet.HttpFeature.Security
 {
     public interface IHttpAuthentication
     {

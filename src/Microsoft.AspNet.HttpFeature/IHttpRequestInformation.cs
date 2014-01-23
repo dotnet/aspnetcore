@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace Microsoft.AspNet.Interfaces
+namespace Microsoft.AspNet.HttpFeature
 {
-    public interface IHttpRequest
+    public interface IHttpRequestInformation
     {
         string Protocol { get; set; }
         string Scheme { get; set; }

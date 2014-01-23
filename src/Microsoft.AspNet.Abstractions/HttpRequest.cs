@@ -3,11 +3,11 @@ using System.IO;
 
 namespace Microsoft.AspNet.Abstractions
 {
-    public abstract class HttpRequestBase
+    public abstract class HttpRequest
     {
         // TODO - review IOwinRequest for properties
 
-        public abstract HttpContextBase HttpContext { get; }
+        public abstract HttpContext HttpContext { get; }
 
         public abstract Uri Uri { get;  }
         public abstract PathString PathBase { get; set; }

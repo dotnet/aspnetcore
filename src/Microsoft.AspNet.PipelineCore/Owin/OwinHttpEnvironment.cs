@@ -6,13 +6,13 @@ using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.HttpEnvironment;
+using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.Interfaces;
 
 namespace Microsoft.AspNet.PipelineCore.Owin
 {
     public class OwinHttpEnvironment :
-        IHttpRequest, IHttpResponse, IHttpConnection, IHttpSendFile, IHttpTransportLayerSecurity
+        IHttpRequestInformation, IHttpResponseInformation, IHttpConnection, IHttpSendFile, IHttpTransportLayerSecurity
     {
         public IDictionary<string, object> Environment { get; set; }
 
@@ -36,84 +36,84 @@ namespace Microsoft.AspNet.PipelineCore.Owin
             Environment[key] = value;
         }
 
-        string IHttpRequest.Protocol
+        string IHttpRequestInformation.Protocol
         {
             get { return Prop<string>("owin.RequestProtocol"); }
             set { Prop("owin.RequestProtocol", value); }
         }
 
-        Uri IHttpRequest.Uri
+        Uri IHttpRequestInformation.Uri
         {
             get { throw new NotImplementedException(); }
         }
 
-        string IHttpRequest.Scheme
+        string IHttpRequestInformation.Scheme
         {
             get { return Prop<string>("owin.RequestScheme"); }
             set { Prop("owin.RequestScheme", value); }
         }
 
-        string IHttpRequest.Method
+        string IHttpRequestInformation.Method
         {
             get { return Prop<string>("owin.RequestMethod"); }
             set { Prop("owin.RequestMethod", value); }
         }
 
-        string IHttpRequest.PathBase
+        string IHttpRequestInformation.PathBase
         {
             get { return Prop<string>("owin.RequestPathBase"); }
             set { Prop("owin.RequestPathBase", value); }
         }
 
-        string IHttpRequest.Path
+        string IHttpRequestInformation.Path
         {
             get { return Prop<string>("owin.RequestPath"); }
             set { Prop("owin.RequestPath", value); }
         }
 
-        string IHttpRequest.QueryString
+        string IHttpRequestInformation.QueryString
         {
             get { return Prop<string>("owin.RequestQueryString"); }
             set { Prop("owin.RequestQueryString", value); }
         }
 
-        IDictionary<string, string[]> IHttpRequest.Headers
+        IDictionary<string, string[]> IHttpRequestInformation.Headers
         {
             get { return Prop<IDictionary<string, string[]>>("owin.RequestHeaders"); }
             set { Prop("owin.RequestHeaders", value); }
         }
 
-        Stream IHttpRequest.Body
+        Stream IHttpRequestInformation.Body
         {
             get { return Prop<Stream>("owin.RequestBody"); }
             set { Prop("owin.RequestBody", value); }
         }
 
-        int IHttpResponse.StatusCode
+        int IHttpResponseInformation.StatusCode
         {
             get { return Prop<int>("owin.ResponseStatusCode"); }
             set { Prop("owin.ResponseStatusCode", value); }
         }
 
-        string IHttpResponse.ReasonPhrase
+        string IHttpResponseInformation.ReasonPhrase
         {
             get { return Prop<string>("owin.ResponseReasonPhrase"); }
             set { Prop("owin.ResponseReasonPhrase", value); }
         }
 
-        IDictionary<string, string[]> IHttpResponse.Headers
+        IDictionary<string, string[]> IHttpResponseInformation.Headers
         {
             get { return Prop<IDictionary<string, string[]>>("owin.ResponseHeaders"); }
             set { Prop("owin.ResponseHeaders", value); }
         }
 
-        Stream IHttpResponse.Body
+        Stream IHttpResponseInformation.Body
         {
             get { return Prop<Stream>("owin.ResponseBody"); }
             set { Prop("owin.ResponseBody", value); }
         }
 
-        void IHttpResponse.OnSendingHeaders(Action<object> callback, object state)
+        void IHttpResponseInformation.OnSendingHeaders(Action<object> callback, object state)
         {
             // TODO: 
         }

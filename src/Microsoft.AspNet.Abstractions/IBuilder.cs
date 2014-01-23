@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Abstractions
         IBuilder New();
         RequestDelegate Build();
 
-        object GetFeature(Type type);    
-        void SetFeature(Type type, object feature);
+        object GetItem(Type type);    
+        void SetItem(Type type, object feature);
     }
 }

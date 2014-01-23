@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{46D69EC9-7096-49D8-A184-A9BB5B2419A1}</ProjectGuid>
+    <ProjectGuid>{8C671AE3-1188-499F-A2A2-3A0B117B33CE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.AspNet.HttpEnvironment</RootNamespace>
-    <AssemblyName>Microsoft.AspNet.HttpEnvironment</AssemblyName>
+    <RootNamespace>Microsoft.AspNet.FeatureModel.Tests</RootNamespace>
+    <AssemblyName>Microsoft.AspNet.FeatureModel.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -28,24 +28,29 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\Microsoft.AspNet.HttpEnvironment.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Shouldly">
+      <HintPath>..\..\packages\Shouldly.1.1.1.1\lib\35\Shouldly.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="xunit">
+      <HintPath>..\..\packages\xunit.1.9.2\lib\net20\xunit.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="HttpEnvironment.cs" />
-    <Compile Include="IHttpEnvironment.cs" />
+    <Compile Include="Class1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.AspNet.FeatureModel\Microsoft.AspNet.FeatureModel.csproj">
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.FeatureModel\Microsoft.AspNet.FeatureModel.csproj">
       <Project>{A780873E-09F9-4E44-AE06-AF00C4E88E1E}</Project>
       <Name>Microsoft.AspNet.FeatureModel</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Microsoft.AspNet.HttpEnvironment.nuspec" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -1,4 +1,4 @@
-﻿namespace Microsoft.AspNet.Interfaces
+﻿namespace Microsoft.AspNet.HttpFeature
 {
     public interface IHttpBuffering
     {

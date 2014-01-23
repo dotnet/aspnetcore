@@ -1,24 +1,24 @@
 ﻿using System.IO;
 using Microsoft.AspNet.Abstractions;
-using Microsoft.AspNet.HttpEnvironment;
-using Microsoft.AspNet.Interfaces;
+using Microsoft.AspNet.HttpFeature;
+using Microsoft.AspNet.HttpFeature.Security;
 
 namespace Microsoft.AspNet.PipelineCore
 {
-    public class HttpResponse : HttpResponseBase
+    public class DefaultHttpResponse : HttpResponse
     {
-        private readonly HttpContext _context;
-        private IHttpResponse _response;
+        private readonly DefaultHttpContext _context;
+        private IHttpResponseInformation _response;
         private int _revision;
 
-        public HttpResponse(HttpContext context)
+        public DefaultHttpResponse(DefaultHttpContext context)
         {
             _context = context;
         }
 
-        private IHttpResponse IHttpResponse
+        private IHttpResponseInformation IHttpResponse
         {
-            get { return EnsureCurrent(_response) ?? (_response = _context.GetFeature<IHttpResponse>()); }
+            get { return EnsureCurrent(_response) ?? (_response = _context.GetInterface<IHttpResponseInformation>()); }
         }
 
         private T EnsureCurrent<T>(T feature) where T : class
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.PipelineCore
             return null;
         } 
 
-        public override HttpContextBase HttpContext { get { return _context; } }
+        public override HttpContext HttpContext { get { return _context; } }
 
         public override int StatusCode
         {

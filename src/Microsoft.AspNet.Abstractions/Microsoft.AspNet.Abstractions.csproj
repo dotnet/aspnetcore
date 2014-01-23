@@ -36,9 +36,9 @@
   <ItemGroup>
     <Compile Include="IBuilder.cs" />
     <Compile Include="PathString.cs" />
-    <Compile Include="HttpContextBase.cs" />
-    <Compile Include="HttpRequestBase.cs" />
-    <Compile Include="HttpResponseBase.cs" />
+    <Compile Include="HttpContext.cs" />
+    <Compile Include="HttpRequest.cs" />
+    <Compile Include="HttpResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueryString.cs" />
     <Compile Include="RequestDelegate.cs" />

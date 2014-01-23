@@ -1,31 +1,31 @@
 ﻿using System;
 using System.IO;
 using Microsoft.AspNet.Abstractions;
-using Microsoft.AspNet.HttpEnvironment;
+using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.Interfaces;
 
 namespace Microsoft.AspNet.PipelineCore
 {
-    public class HttpRequest : HttpRequestBase
+    public class DefaultHttpRequest : HttpRequest
     {
-        private readonly HttpContext _context;
+        private readonly DefaultHttpContext _context;
         private int _revision;
-        private IHttpRequest _request;
+        private IHttpRequestInformation _request;
         private IHttpConnection _connection;
 
-        public HttpRequest(HttpContext context)
+        public DefaultHttpRequest(DefaultHttpContext context)
         {
             _context = context;
         }
 
-        private IHttpRequest IHttpRequest
+        private IHttpRequestInformation IHttpRequest
         {
-            get { return EnsureCurrent(_request) ?? (_request = _context.GetFeature<IHttpRequest>()); }
+            get { return EnsureCurrent(_request) ?? (_request = _context.GetInterface<IHttpRequestInformation>()); }
         }
 
         private IHttpConnection IHttpConnection
         {
-            get { return EnsureCurrent(_connection) ?? (_connection = _context.GetFeature<IHttpConnection>()); }
+            get { return EnsureCurrent(_connection) ?? (_connection = _context.GetInterface<IHttpConnection>()); }
         }
 
         private T EnsureCurrent<T>(T feature) where T : class
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.PipelineCore
             return null;
         } 
 
-        public override HttpContextBase HttpContext { get { return _context; } }
+        public override HttpContext HttpContext { get { return _context; } }
 
         public override Uri Uri
         {

@@ -4,45 +4,52 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.FeatureModel;
-using Microsoft.AspNet.HttpEnvironment;
-using Microsoft.AspNet.Interfaces;
-using Microsoft.AspNet.PipelineCore.Owin;
 
 namespace Microsoft.AspNet.PipelineCore
 {
     public class Builder : IBuilder
     {
-        private readonly IFeatureContainer _features;
+        private readonly IInterfaceDictionary _interfaces;
+        private readonly IDictionary<string, object> _properties;
         private readonly IList<Entry> _components = new List<Entry>();
 
         public Builder()
         {
-            _features = new FeatureModel.FeatureContainer();
+            _interfaces = new InterfaceDictionary();
+            _properties = new Dictionary<string, object>();
         }
 
-        public Builder(IFeatureContainer features)
+        public Builder(IInterfaceDictionary interfaces, IDictionary<string, object> properties)
         {
-            _features = features;
+            _interfaces = interfaces;
+            _properties = properties;
         }
 
         public void Dispose()
         {
-            _features.Dispose();
+            _interfaces.Dispose();
         }
 
-        public virtual object GetFeature(Type type)
+        public virtual object GetItem(Type key)
         {
-            return _features.GetFeature(type);
+            object value;
+            return _interfaces.TryGetValue(key, out value);
         }
 
-        public virtual void SetFeature(Type type, object feature)
+        public virtual void SetItem(Type key, object value)
         {
-            _features.SetFeature(type, feature);
+            _interfaces[key] = value;
         }
 
-        public virtual int Revision
+        public virtual object GetItem(string key)
         {
-            get { return _features.Revision; }
+            object value;
+            return _properties.TryGetValue(key, out value);
+        }
+
+        public virtual void SetItem(string key, object value)
+        {
+            _properties[key] = value;
         }
 
         public IBuilder Use(object middleware, params object[] args)
@@ -65,7 +72,7 @@ namespace Microsoft.AspNet.PipelineCore
 
         public IBuilder New()
         {
-            return new Builder(_features);
+            return new Builder(_interfaces, _properties);
         }
 
         public RequestDelegate Build()

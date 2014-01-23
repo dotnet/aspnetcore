@@ -1,7 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Interfaces
+namespace Microsoft.AspNet.HttpFeature
 {
     public interface IHttpSendFile
     {

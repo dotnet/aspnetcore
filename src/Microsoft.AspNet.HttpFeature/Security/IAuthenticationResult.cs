@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Security.Claims;
+using Microsoft.AspNet.HttpFeature.Security;
 
+// ReSharper disable once CheckNamespace
 namespace Microsoft.AspNet.Interfaces.Security
 {
     public interface IAuthenticationResult

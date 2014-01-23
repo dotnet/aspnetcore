@@ -34,10 +34,10 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IFeatureContainer.cs" />
-    <Compile Include="FeatureContainer.cs" />
+    <Compile Include="IInterfaceDictionary.cs" />
+    <Compile Include="InterfaceDictionary.cs" />
     <Compile Include="Implementation\Converter.cs" />
-    <Compile Include="ObjectFeatureContainer.cs" />
+    <Compile Include="InterfaceObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

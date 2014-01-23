@@ -1,7 +1,7 @@
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Interfaces
+namespace Microsoft.AspNet.HttpFeature
 {
     public interface IHttpTransportLayerSecurity
     {

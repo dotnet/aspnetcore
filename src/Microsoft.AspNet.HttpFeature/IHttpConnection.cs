@@ -1,6 +1,6 @@
 using System.Net;
 
-namespace Microsoft.AspNet.Interfaces
+namespace Microsoft.AspNet.HttpFeature
 {
     public interface IHttpConnection
     {

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace Microsoft.AspNet.Interfaces
+namespace Microsoft.AspNet.HttpFeature
 {
-    public interface IHttpResponse
+    public interface IHttpResponseInformation
     {
         int StatusCode { get; set; }
         string ReasonPhrase { get; set; }

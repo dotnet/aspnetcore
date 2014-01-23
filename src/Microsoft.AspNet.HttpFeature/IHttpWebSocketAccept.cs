@@ -1,7 +1,7 @@
 using System.Net.WebSockets;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Interfaces
+namespace Microsoft.AspNet.HttpFeature
 {
     public interface IHttpWebSocketAccept
     {

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Security.Claims;
 
-namespace Microsoft.AspNet.Interfaces.Security
+namespace Microsoft.AspNet.HttpFeature.Security
 {
     public interface IAuthenticationSignIn
     {

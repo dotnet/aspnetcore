@@ -12,8 +12,8 @@ namespace Microsoft.AspNet.PipelineCore.Tests
             var builder = new Builder();
             var app = builder.Build();
 
-            var mockHttpContext = new Moq.Mock<HttpContextBase>();
-            var mockHttpResponse = new Moq.Mock<HttpResponseBase>();
+            var mockHttpContext = new Moq.Mock<HttpContext>();
+            var mockHttpResponse = new Moq.Mock<HttpResponse>();
             mockHttpContext.SetupGet(x => x.Response).Returns(mockHttpResponse.Object);
             mockHttpResponse.SetupProperty(x => x.StatusCode);
 

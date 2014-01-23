@@ -7,13 +7,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Abstractio
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.FeatureModel", "src\Microsoft.AspNet.FeatureModel\Microsoft.AspNet.FeatureModel.csproj", "{A780873E-09F9-4E44-AE06-AF00C4E88E1E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.HttpEnvironment", "src\Microsoft.AspNet.HttpEnvironment\Microsoft.AspNet.HttpEnvironment.csproj", "{46D69EC9-7096-49D8-A184-A9BB5B2419A1}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.HttpFeature", "src\Microsoft.AspNet.HttpFeature\Microsoft.AspNet.HttpFeature.csproj", "{42309978-0661-41D8-8654-39453265C5F9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.PipelineCore", "src\Microsoft.AspNet.PipelineCore\Microsoft.AspNet.PipelineCore.csproj", "{A4D3E280-8838-4614-9B99-4874C3CBDF82}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.PipelineCore.Tests", "src\Microsoft.AspNet.PipelineCore.Tests\Microsoft.AspNet.PipelineCore.Tests.csproj", "{86942914-0334-4352-87ED-B971281C74E2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.FeatureModel.Tests", "test\Microsoft.AspNet.FeatureModel.Tests\Microsoft.AspNet.FeatureModel.Tests.csproj", "{8C671AE3-1188-499F-A2A2-3A0B117B33CE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,10 +29,6 @@ Global
 		{A780873E-09F9-4E44-AE06-AF00C4E88E1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A780873E-09F9-4E44-AE06-AF00C4E88E1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A780873E-09F9-4E44-AE06-AF00C4E88E1E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{46D69EC9-7096-49D8-A184-A9BB5B2419A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{46D69EC9-7096-49D8-A184-A9BB5B2419A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{46D69EC9-7096-49D8-A184-A9BB5B2419A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{46D69EC9-7096-49D8-A184-A9BB5B2419A1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{42309978-0661-41D8-8654-39453265C5F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{42309978-0661-41D8-8654-39453265C5F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{42309978-0661-41D8-8654-39453265C5F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -45,6 +41,10 @@ Global
 		{86942914-0334-4352-87ED-B971281C74E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{86942914-0334-4352-87ED-B971281C74E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{86942914-0334-4352-87ED-B971281C74E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C671AE3-1188-499F-A2A2-3A0B117B33CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C671AE3-1188-499F-A2A2-3A0B117B33CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C671AE3-1188-499F-A2A2-3A0B117B33CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C671AE3-1188-499F-A2A2-3A0B117B33CE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

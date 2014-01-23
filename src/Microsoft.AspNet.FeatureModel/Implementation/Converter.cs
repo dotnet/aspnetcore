@@ -352,7 +352,7 @@ namespace Microsoft.AspNet.FeatureModel.Implementation
         static Type CreateWrapperType(Type targetType, Type sourceType, VerificationSucceededResult result)
         {
             Dictionary<MethodInfo, MethodInfo> mappings = result.methodMappings;
-            Type baseType = Assembly.GetExecutingAssembly().GetType("InterfaceMapper.BaseType`1").MakeGenericType(sourceType);
+            Type baseType = typeof(BaseType<>).MakeGenericType(sourceType);
             TypeBuilder tb = modb.DefineType("ProxyType" + counter++ + " wrapping:" + sourceType.Name + " to look like:" + targetType.Name, TypeAttributes.Class, baseType, new Type[] { targetType });
             ConstructorBuilder cb = tb.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, new Type[] { sourceType });
             ILGenerator il = cb.GetILGenerator();

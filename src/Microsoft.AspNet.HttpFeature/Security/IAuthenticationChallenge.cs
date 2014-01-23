@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Interfaces
+namespace Microsoft.AspNet.HttpFeature.Security
 {
     public interface IAuthenticationChallenge
     {

@@ -46,8 +46,8 @@
     <Compile Include="Security\IHttpAuthentication.cs" />
     <Compile Include="IHttpBuffering.cs" />
     <Compile Include="IHttpConnection.cs" />
-    <Compile Include="IHttpRequest.cs" />
-    <Compile Include="IHttpResponse.cs" />
+    <Compile Include="IHttpRequestInformation.cs" />
+    <Compile Include="IHttpResponseInformation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

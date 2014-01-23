@@ -36,9 +36,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Builder.cs" />
-    <Compile Include="HttpContext.cs" />
-    <Compile Include="HttpRequest.cs" />
-    <Compile Include="HttpResponse.cs" />
+    <Compile Include="DefaultHttpContext.cs" />
+    <Compile Include="DefaultHttpRequest.cs" />
+    <Compile Include="DefaultHttpResponse.cs" />
     <Compile Include="Owin\OwinConstants.cs" />
     <Compile Include="Owin\OwinHttpEnvironment.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -51,10 +51,6 @@
     <ProjectReference Include="..\Microsoft.AspNet.Abstractions\Microsoft.AspNet.Abstractions.csproj">
       <Project>{4e1520b1-01f4-481b-96a2-24067eaa52fa}</Project>
       <Name>Microsoft.AspNet.Abstractions</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Microsoft.AspNet.HttpEnvironment\Microsoft.AspNet.HttpEnvironment.csproj">
-      <Project>{46D69EC9-7096-49D8-A184-A9BB5B2419A1}</Project>
-      <Name>Microsoft.AspNet.HttpEnvironment</Name>
     </ProjectReference>
     <ProjectReference Include="..\Microsoft.AspNet.HttpFeature\Microsoft.AspNet.HttpFeature.csproj">
       <Project>{42309978-0661-41d8-8654-39453265c5f9}</Project>

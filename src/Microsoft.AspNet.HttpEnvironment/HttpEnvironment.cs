@@ -2,7 +2,7 @@
 
 namespace Microsoft.AspNet.HttpEnvironment
 {
-    public abstract class HttpEnvironmentBase : FeatureContainer, IHttpEnvironment
+    public abstract class HttpEnvironment : InterfaceDictionary, IHttpEnvironment
     {
     }
 }

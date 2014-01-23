@@ -1,9 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Security.Claims;
 using System.Threading;
 
-namespace Microsoft.AspNet.Interfaces
+namespace Microsoft.AspNet.HttpFeature
 {
     public interface IHttpApplicationInformation
     {
