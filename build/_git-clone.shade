@@ -1,5 +1,6 @@
 
 
+
 default gitBranch=''
 
 var gitCommand='clone ${gitUri}'

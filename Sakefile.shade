@@ -16,10 +16,10 @@ var repos='${new Dictionary<string,string> {
     {"Mvc", "git@github.com:aspnet/Mvc.git"},
 }}'
 
-#default .pull .install
+#default .compile
 
 #pull
-
+#compile .pull
 #install .pull
 
 #git-pull target='pull' 
@@ -37,7 +37,38 @@ var repos='${new Dictionary<string,string> {
         }
     }
 
-#build-install target='install'
+#only-compile target='compile'
+    @{
+        var failed = new Dictionary<string,Exception>();
+        foreach(var repo in repos) 
+        {
+            try
+            {
+                Log.Info(string.Format("Building {0}", repo.Key));
+                Exec("build.cmd", "compile", repo.Key);
+                Log.Info(string.Format("Build {0} succeeded", repo.Key));
+            }
+            catch(Exception ex)
+            {
+                Log.Warn(string.Format("Build {0} failed: {1}", repo.Key, ex.Message));
+                failed[repo.Key] = ex;
+            }
+        }
+        foreach(var repo in repos)
+        {
+            Exception ex;
+            if (failed.TryGetValue(repo.Key, out ex))
+            {
+                Log.Warn(string.Format("Build {0} failed: {1}", repo.Key, ex.Message));
+            }
+            else
+            {
+                Log.Info(string.Format("Build {0} succeeded", repo.Key));
+            }
+        }
+    }
+
+#only-install target='install'
     @{
         foreach(var repo in repos) 
         {
