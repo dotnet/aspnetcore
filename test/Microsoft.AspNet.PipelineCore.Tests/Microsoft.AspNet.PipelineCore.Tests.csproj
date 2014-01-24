@@ -59,11 +59,11 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.AspNet.Abstractions\Microsoft.AspNet.Abstractions.net45.csproj">
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.Abstractions\Microsoft.AspNet.Abstractions.net45.csproj">
       <Project>{d36288af-8a0e-48dd-8af8-15b72f91c70a}</Project>
       <Name>Microsoft.AspNet.Abstractions.net45</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Microsoft.AspNet.PipelineCore\Microsoft.AspNet.PipelineCore.net45.csproj">
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.PipelineCore\Microsoft.AspNet.PipelineCore.net45.csproj">
       <Project>{68a538ba-d542-49cb-9615-b4f5a4e78c87}</Project>
       <Name>Microsoft.AspNet.PipelineCore.net45</Name>
     </ProjectReference>
