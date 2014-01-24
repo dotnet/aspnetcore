@@ -213,9 +213,9 @@
     <Compile Include="Utils\MiscAssert.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.Razor\Microsoft.AspNet.Razor.csproj">
-      <Project>{e75d8296-3ba6-4e67-afeb-90ff77460b15}</Project>
-      <Name>Microsoft.AspNet.Razor</Name>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.Razor\Microsoft.AspNet.Razor.net45.csproj">
+      <Project>{8b129ff9-0b8f-4e0c-8dfc-0137d8550fb7}</Project>
+      <Name>Microsoft.AspNet.Razor.net45</Name>
     </ProjectReference>
     <ProjectReference Include="..\Microsoft.TestCommon\Microsoft.TestCommon.csproj">
       <Project>{FCCC4CB7-BAF7-4A57-9F89-E5766FE536C0}</Project>

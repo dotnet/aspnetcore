@@ -13,6 +13,7 @@ default TEST_DIR='${Path.Combine(TARGET_DIR, "test")}'
 
 #target-default target='default'
   k-restore
+  k-generate-projects solutionPath='${BASE_DIR}'
 
 #target-dir-clean target='clean'
   directory delete="${TARGET_DIR}"
