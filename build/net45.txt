@@ -4,61 +4,47 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{A4D3E280-8838-4614-9B99-4874C3CBDF82}</ProjectGuid>
+    <ProjectGuid>{{ProjectGuid}}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.AspNet.PipelineCore</RootNamespace>
-    <AssemblyName>Microsoft.AspNet.PipelineCore</AssemblyName>
+    <RootNamespace>{Name}</RootNamespace>
+    <AssemblyName>{Name}</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <BaseIntermediateOutputPath>obj/net45</BaseIntermediateOutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <OutputPath>bin\Debug\net45</OutputPath>
+    <DefineConstants>DEBUG;TRACE;NET45</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <OutputPath>bin\Release\net45</OutputPath>
+    <DefineConstants>TRACE;NET45</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\Microsoft.AspNet.PipelineCore.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="mscorlib" />
     <Reference Include="System" />
+    <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
+    {References}
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Builder.cs" />
-    <Compile Include="DefaultHttpContext.cs" />
-    <Compile Include="DefaultHttpRequest.cs" />
-    <Compile Include="DefaultHttpResponse.cs" />
-    <Compile Include="Owin\OwinConstants.cs" />
-    <Compile Include="Owin\OwinHttpEnvironment.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    {Files}
+    <Content Include="project.json" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.AspNet.FeatureModel\Microsoft.AspNet.FeatureModel.csproj">
-      <Project>{A780873E-09F9-4E44-AE06-AF00C4E88E1E}</Project>
-      <Name>Microsoft.AspNet.FeatureModel</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Microsoft.AspNet.Abstractions\Microsoft.AspNet.Abstractions.csproj">
-      <Project>{4e1520b1-01f4-481b-96a2-24067eaa52fa}</Project>
-      <Name>Microsoft.AspNet.Abstractions</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Microsoft.AspNet.HttpFeature\Microsoft.AspNet.HttpFeature.csproj">
-      <Project>{42309978-0661-41d8-8654-39453265c5f9}</Project>
-      <Name>Microsoft.AspNet.HttpFeature</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Microsoft.AspNet.PipelineCore.nuspec" />
+  {ProjectReferences}
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

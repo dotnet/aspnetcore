@@ -1,0 +1,5 @@
+
+default gitFolder=''
+
+exec program='git' commandline='${gitCommand}' workingdir='${gitFolder}'
+

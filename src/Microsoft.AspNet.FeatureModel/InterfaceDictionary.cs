@@ -42,11 +42,19 @@ namespace Microsoft.AspNet.FeatureModel
             {
                 if (_featureByFeatureType.TryGetValue(actualType, out feature))
                 {
-                    if (type.IsInstanceOfType(feature))
+#if NET45
+                    var isInstanceOfType = type.IsInstanceOfType(feature);
+#else
+                    var isInstanceOfType = feature != null && type == feature.GetType();
+#endif
+
+                    if (isInstanceOfType)
                     {
                         return feature;
                     }
+#if NET45
                     return Converter.Convert(type, actualType, feature);
+#endif
                 }
             }
 

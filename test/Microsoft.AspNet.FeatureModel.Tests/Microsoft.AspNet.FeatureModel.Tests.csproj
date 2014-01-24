@@ -47,10 +47,13 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.FeatureModel\Microsoft.AspNet.FeatureModel.csproj">
-      <Project>{A780873E-09F9-4E44-AE06-AF00C4E88E1E}</Project>
-      <Name>Microsoft.AspNet.FeatureModel</Name>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.FeatureModel\Microsoft.AspNet.FeatureModel.net45.csproj">
+      <Project>{95aee59d-bf51-47cb-a957-c03d909cc148}</Project>
+      <Name>Microsoft.AspNet.FeatureModel.net45</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
 using Microsoft.AspNet.FeatureModel.Implementation;
@@ -25,10 +26,12 @@ namespace Microsoft.AspNet.FeatureModel
 
         public object GetInterface(Type type)
         {
+#if NET45
             if (type.IsInstanceOfType(_instance))
             {
                 return _instance;
             }
+            
             foreach (var interfaceType in _instance.GetType().GetInterfaces())
             {
                 if (interfaceType.FullName == type.FullName)
@@ -36,6 +39,7 @@ namespace Microsoft.AspNet.FeatureModel
                     return Converter.Convert(interfaceType, type, _instance);
                 }
             }
+#endif
             return null;
         }
 

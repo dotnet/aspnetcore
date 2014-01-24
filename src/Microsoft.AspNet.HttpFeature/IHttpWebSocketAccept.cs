@@ -1,3 +1,4 @@
+#if NET45
 using System.Net.WebSockets;
 using System.Threading.Tasks;
 
@@ -9,3 +10,4 @@ namespace Microsoft.AspNet.HttpFeature
         Task<WebSocket> AcceptAsync();
     }
 }
+#endif

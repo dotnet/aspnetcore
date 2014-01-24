@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNet.FeatureModel.Implementation
 {
+    #if NET45
     public abstract class NonGenericProxyBase
     {
         public readonly Type WrappedType;
@@ -381,4 +382,5 @@ namespace Microsoft.AspNet.FeatureModel.Implementation
         }
 
     }
+    #endif
 }

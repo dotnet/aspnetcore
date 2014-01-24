@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
+#if NET45
 using System.Security.Cryptography.X509Certificates;
+#endif
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.HttpFeature;
@@ -117,23 +119,23 @@ namespace Microsoft.AspNet.PipelineCore.Owin
         {
             // TODO: 
         }
-
+#if NET45
         IPAddress IHttpConnection.RemoteIpAddress
         {
             get { return IPAddress.Parse(Prop<string>(OwinConstants.CommonKeys.RemoteIpAddress)); }
             set { Prop(OwinConstants.CommonKeys.RemoteIpAddress, value.ToString()); }
         }
 
-        int IHttpConnection.RemotePort
-        {
-            get { return int.Parse(Prop<string>(OwinConstants.CommonKeys.RemotePort)); }
-            set { Prop(OwinConstants.CommonKeys.RemotePort, value.ToString(CultureInfo.InvariantCulture)); }
-        }
-
         IPAddress IHttpConnection.LocalIpAddress
         {
             get { return IPAddress.Parse(Prop<string>(OwinConstants.CommonKeys.LocalIpAddress)); }
             set { Prop(OwinConstants.CommonKeys.LocalIpAddress, value.ToString()); }
+        }
+#endif
+        int IHttpConnection.RemotePort
+        {
+            get { return int.Parse(Prop<string>(OwinConstants.CommonKeys.RemotePort)); }
+            set { Prop(OwinConstants.CommonKeys.RemotePort, value.ToString(CultureInfo.InvariantCulture)); }
         }
 
         int IHttpConnection.LocalPort
@@ -152,13 +154,13 @@ namespace Microsoft.AspNet.PipelineCore.Owin
         {
             throw new NotImplementedException();
         }
-
+#if NET45
         X509Certificate IHttpTransportLayerSecurity.ClientCertificate
         {
             get { return Prop<X509Certificate>(OwinConstants.CommonKeys.ClientCertificate); }
             set { Prop(OwinConstants.CommonKeys.ClientCertificate, value); }
         }
-
+#endif
         Task IHttpTransportLayerSecurity.LoadAsync()
         {
             throw new NotImplementedException();

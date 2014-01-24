@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"/>
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{E31D45AC-70F3-47D4-9625-A4D8C6AA1B6B}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Microsoft.AspNet.PipelineCore</RootNamespace>
+    <AssemblyName>Microsoft.AspNet.PipelineCore</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <BaseIntermediateOutputPath>obj/K</BaseIntermediateOutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\K</OutputPath>
+    <DefineConstants>DEBUG;TRACE;K10</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\K</OutputPath>
+    <DefineConstants>TRACE;K10</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Builder.cs" />
+<Compile Include="DefaultHttpContext.cs" />
+<Compile Include="DefaultHttpRequest.cs" />
+<Compile Include="DefaultHttpResponse.cs" />
+<Compile Include="Owin\OwinConstants.cs" />
+<Compile Include="Owin\OwinHttpEnvironment.cs" />
+<Compile Include="Properties\AssemblyInfo.cs" />
+    <Content Include="project.json"/>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.FeatureModel\Microsoft.AspNet.FeatureModel.k10.csproj">
+          <Project>{E9AF7046-E24C-4071-B7AF-7981F2D1A613}</Project>
+          <Name>Microsoft.AspNet.FeatureModel</Name>
+        </ProjectReference><ProjectReference Include="..\..\src\Microsoft.AspNet.Abstractions\Microsoft.AspNet.Abstractions.k10.csproj">
+          <Project>{7D19BA93-ABFD-4D49-9AA9-DB55AF6BD6F1}</Project>
+          <Name>Microsoft.AspNet.Abstractions</Name>
+        </ProjectReference><ProjectReference Include="..\..\src\Microsoft.AspNet.HttpFeature\Microsoft.AspNet.HttpFeature.k10.csproj">
+          <Project>{9295515C-6603-46BB-92EB-1C5F6B0E84C9}</Project>
+          <Name>Microsoft.AspNet.HttpFeature</Name>
+        </ProjectReference>
+  </ItemGroup>
+  <Import Project="..\..\packages\ProjectK.0.0.1-pre-30121-096\Framework\K\v1.0\ProjectK.CSharp.targets"/>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

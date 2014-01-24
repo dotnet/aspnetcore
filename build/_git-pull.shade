@@ -1,0 +1,8 @@
+
+
+default gitBranch=''
+
+var gitCommand='pull ${gitUri}'
+set gitCommand='${gitCommand} ${gitBranch}' if='!string.IsNullOrEmpty(gitBranch)'
+
+git 
