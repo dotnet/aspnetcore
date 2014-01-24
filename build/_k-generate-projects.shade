@@ -1,0 +1,330 @@
+use namespace="System"
+use namespace="System.Collections.Generic"
+use namespace="System.IO"
+use namespace="System.Linq"
+use namespace="System.Reflection"
+use namespace="System.Text"
+use namespace="System.Web.Script.Serialization"
+use namespace="System.Xml.Linq"
+
+use assembly="System.Web.Extensions, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35"
+
+@{/*
+
+k-generate-projects
+    Generate csproj files from project.json
+
+solutionPath='' 
+    Required. Path to the solution directory
+
+*/}
+
+content var='net45' include href='net45.txt'
+content var='k10' include href='k10.txt'
+
+@{
+    ProjectGenerator.Logger = Log;
+
+    var templates = new Dictionary<string, string> {
+        { "net45", net45 },
+        { "k10", k10 }
+    };
+
+    ProjectGenerator.MakeProjects(solutionPath, templates);
+}
+
+functions
+    @{
+        class ProjectGenerator
+        {
+            public static Sake.Engine.Logging.ILog Logger { get; set; }
+
+            static void Log(string message, params object[] args)
+            {
+                Logger.Info(String.Format(message, args));
+            }
+
+            static void Warn(string message, params object[] args)
+            {
+                Logger.Warn(String.Format(message, args));
+            }
+
+            public static void MakeProjects(string solutionPath, IDictionary<string, string> templates)
+            {
+                var jsonFiles = GetJsonFiles(solutionPath);
+                var projectMapping = GetProjectMapping(solutionPath, jsonFiles);
+
+                Log("Found {0} projects", jsonFiles.Length);
+
+                foreach (var p in jsonFiles)
+                {
+                    Log(p);
+                }
+
+                foreach (var path in jsonFiles)
+                {
+                    ProduceProjectFilesForProject(path, projectMapping, templates);
+                }
+            }
+
+            private static string[] GetJsonFiles(string solutionPath)
+            {
+                Func<string, string[]> getFiles = dir =>
+                {
+                    string path = Path.Combine(solutionPath, dir);
+
+                    if (!Directory.Exists(path))
+                    {
+                        return new string[0];
+                    }
+
+                    return Directory.GetFiles(path, "project.json", SearchOption.AllDirectories);
+                };
+
+                return getFiles("src").Concat(getFiles("samples"))
+                                      .Concat(getFiles("test"))
+                                      .ToArray();
+            }
+
+            private static IDictionary<string, object> GetProjectMapping(string solutionPath, string[] jsonFiles)
+            {
+                var dict = new Dictionary<string, object>();
+
+                foreach (var path in jsonFiles)
+                {
+                    string projectDir = Path.GetDirectoryName(path);
+                    string projectName = projectDir.Substring(Path.GetDirectoryName(projectDir).Length).Trim(Path.DirectorySeparatorChar);
+
+                    // {  
+                    //   "p1" : { "net45" : "id", "k10" : "pid1", path: "src\p1" },
+                    //   "p2" : { "net45" : "id", "k10" : "pid2", path: "src\p2" }
+                    // }
+                    //
+
+                    string net45Project = Path.Combine(projectDir, GetProjectFileName(projectName, "net45"));
+                    string k10Project = Path.Combine(projectDir, GetProjectFileName(projectName, "k10"));
+
+                    var configs = new Dictionary<string, object>();
+                    configs["net45"] = GetProjectGuidFromFileOrCreateNew(net45Project);
+                    configs["k10"] = GetProjectGuidFromFileOrCreateNew(k10Project);
+                    configs["path"] = Path.GetDirectoryName(path.Substring(solutionPath.Length).TrimStart(Path.DirectorySeparatorChar));
+
+                    dict[projectName] = configs;
+                }
+
+                return dict;
+            }
+
+            private static string GetProjectGuidFromFileOrCreateNew(string projectPath)
+            {
+                if (!File.Exists(projectPath))
+                {
+                    return Guid.NewGuid().ToString().ToUpper();
+                }
+
+                var projectGuid = XDocument.Parse(File.ReadAllText(projectPath))
+                    .Descendants()
+                    .FirstOrDefault(e => e.Name.LocalName.Equals("ProjectGuid"));
+
+                if (projectGuid == null)
+                {
+                    return Guid.NewGuid().ToString();
+                }
+
+                return projectGuid.Value.Trim((char)'{', (char)'}');
+            }
+
+            private static void ProduceProjectFilesForProject(string jsonPath, 
+                                                              IDictionary<string, object> projectMapping,
+                                                              IDictionary<string, string> templates)
+            {
+                var serializer = new JavaScriptSerializer();
+
+                string projectDir = Path.GetDirectoryName(jsonPath);
+                string projectName = projectDir.Substring(Path.GetDirectoryName(projectDir).Length).Trim(Path.DirectorySeparatorChar);
+
+                Log("Generated projects for {0}", projectName);
+
+                var jsonText = File.ReadAllText(jsonPath);
+
+                var d = serializer.DeserializeObject(jsonText) as IDictionary<string, object>;
+                var configs = GetObject(d, "configurations");
+                var references = GetObject(d, "dependencies") ?? new Dictionary<string, object>();
+
+                // Get the list of files
+                var filesString = String.Join(Environment.NewLine,
+                    Directory.GetFiles(projectDir, "*.cs", SearchOption.AllDirectories)
+                    .Select(p => p.Substring(projectDir.Length).Trim(Path.DirectorySeparatorChar))
+                    .Where(p => !p.StartsWith("obj"))
+                    .Select(p => String.Format(
+        @"<Compile Include=""{0}"" />", p)));
+
+                // Add the config file if it's there
+                if (File.Exists(Path.Combine(projectDir, "packages.config")))
+                {
+                    filesString += "<Content Include=\"packages.config\" />";
+                }
+
+                var packageReferences = references.Where(r => !String.IsNullOrEmpty((string)r.Value))
+                                                  .ToDictionary(k => k.Key, k => (string)k.Value);
+
+                var projectReferences = references.Where(r => String.IsNullOrEmpty((string)r.Value))
+                                                  .Select(r => r.Key)
+                                                  .ToArray();
+
+
+                // HACK: Assume the packages folder is 2 up from the projectDir
+                string packagesDir = Path.GetFullPath(Path.Combine(projectDir, "..", "..", "packages"));
+
+                foreach (var targetFramework in configs.Keys)
+                {
+                    string id = (string)GetObject(projectMapping, projectName)[targetFramework];
+
+                    var template = templates[targetFramework]
+                                       .Replace("{ProjectGuid}", id)
+                                       .Replace("{Name}", projectName)
+                                       .Replace("{Files}", filesString)
+                                       .Replace("{ProjectReferences}", BuildProjectReferences(projectReferences, targetFramework, projectMapping))
+                                       .Replace("{References}", BuildReferences(packageReferences, packagesDir, targetFramework, GetCandidates(targetFramework)));
+
+                    if (targetFramework.StartsWith("k"))
+                    {
+                        template = template.Replace("{CSharpTargetsPath}", GetProjectKTargets(packagesDir));
+                    }
+
+                    string output = Path.Combine(projectDir, GetProjectFileName(projectName, targetFramework));
+
+                    Log("Generated {0}", output);
+
+                    File.WriteAllText(output, template);
+                }
+            }
+
+            private static string GetProjectKTargets(string packagesDir)
+            {
+                var projectK = Directory.GetDirectories(packagesDir, "ProjectK*")
+                                     .Select(p => new { Path = p, Build = Int32.Parse(p.Substring(p.LastIndexOf('-') + 1)) })
+                                     .OrderByDescending(p => p.Build)
+                                     .FirstOrDefault();
+
+                if (projectK == null)
+                {
+                    Warn("Project K targets aren't installed");
+                    return "";
+                }
+
+                return Path.Combine("..", "..", projectK.Path.Substring(projectK.Path.IndexOf("packages")), "Framework\\K\\v1.0\\ProjectK.CSharp.targets");
+            }
+
+            private static string GetProjectFileName(string projectName, string config)
+            {
+                return projectName + "." + config + ".csproj";
+            }
+
+            private static string BuildProjectReferences(string[] projectReferences, string config, IDictionary<string, object> projectMapping)
+            {
+                if (projectReferences.Length == 0)
+                {
+                    return "";
+                }
+
+                var sb = new StringBuilder();
+
+                foreach (var reference in projectReferences)
+                {
+                    var info = GetObject(projectMapping, reference);
+
+                    if (info == null)
+                    {
+                        Warn("No project reference found for {0}", reference);
+                        continue;
+                    }
+
+                    string projectFileName = GetProjectFileName(reference, config);
+                    string path = Path.Combine((string)info["path"], projectFileName);
+
+                    sb.AppendFormat(@"<ProjectReference Include=""..\..\{0}"">
+          <Project>{{{1}}}</Project>
+          <Name>{2}</Name>
+        </ProjectReference>", path, info[config], reference);
+                }
+
+                return sb.ToString();
+            }
+
+            private static string[] GetCandidates(string config)
+            {
+                if (config == "net45")
+                {
+                    return new[] { "net45", "net40", "net35", "net20" };
+                }
+
+                return new[] { config };
+            }
+
+            private static string BuildReferences(IDictionary<string, string> references, string packagesDir, string configName, string[] candidates)
+            {
+                if (references.Count == 0)
+                {
+                    return "";
+                }
+
+                Log("Building package references for {0}", configName);
+
+                var sb = new StringBuilder();
+
+                foreach (var reference in references)
+                {
+                    var version = (string)reference.Value;
+
+                    string pattern = version.IndexOf("*") != -1 ? reference.Key + "*" : reference.Key + "." + reference.Value;
+
+                    var packageDir = Directory.GetDirectories(packagesDir, pattern).FirstOrDefault();
+
+                    if (packageDir == null)
+                    {
+                        Warn(reference.Key + " = " + version + " ==> UNRESOLVED");
+                        continue;
+                    }
+
+                    Log(reference.Key + " = " + version + " ==> " + packageDir);
+
+                    var candidate = candidates.Select(c => Path.Combine(packageDir, "lib", c))
+                                                   .FirstOrDefault(Directory.Exists);
+
+                    if (candidate == null)
+                    {
+                        Warn("Unable to find package reference for {0}, target framework = {1}", reference.Key, configName);
+                        continue;
+                    }
+
+                    var dlls = Directory.EnumerateFiles(candidate, "*.dll")
+                                        .Distinct()
+                                        .Where(File.Exists)
+                                        .ToList();
+
+                    foreach (var dllPath in dlls)
+                    {
+                        sb.AppendFormat(@"
+        <Reference Include=""{0}"">
+        <SpecificVersion>False</SpecificVersion>
+        <HintPath>..\..\{1}</HintPath>
+        </Reference>", AssemblyName.GetAssemblyName(dllPath).FullName, dllPath.Substring(dllPath.IndexOf("packages")));
+                    }
+                }
+
+                return sb.ToString();
+            }
+
+            private static IDictionary<string, object> GetObject(IDictionary<string, object> obj, string key)
+            {
+                object value;
+                if (obj.TryGetValue(key, out value))
+                {
+                    return value as IDictionary<string, object>;
+                }
+
+                return null;
+            }
+        }
+    }
