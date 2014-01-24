@@ -24,8 +24,10 @@ namespace Microsoft.AspNet.Mvc
             foreach (var a in AppDomain.CurrentDomain.GetAssemblies())
             {
                 var type = a.GetType(controllerName) ??
-                           a.GetType(a.GetName().Name + "." + controllerName) ??
-                    a.GetTypes().FirstOrDefault(t => t.Name.Equals(controllerName, StringComparison.OrdinalIgnoreCase));
+                           a.GetType(a.GetName().Name + "." + controllerName);
+#if NET45
+                type = type ?? a.GetTypes().FirstOrDefault(t => t.Name.Equals(controllerName, StringComparison.OrdinalIgnoreCase));
+#endif
 
                 if (type != null)
                 {

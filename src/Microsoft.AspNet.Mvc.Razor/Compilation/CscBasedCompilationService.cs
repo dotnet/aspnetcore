@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if NET45
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -110,4 +111,4 @@ namespace Microsoft.AspNet.Mvc.Razor
 
     }
 }
-
+#endif

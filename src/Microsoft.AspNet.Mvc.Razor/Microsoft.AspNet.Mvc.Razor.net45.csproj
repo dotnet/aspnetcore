@@ -46,6 +46,10 @@
         <SpecificVersion>False</SpecificVersion>
         <HintPath>..\..\packages\Microsoft.AspNet.Abstractions.0.1-alpha-t140124091736\lib\net45\Microsoft.AspNet.Abstractions.dll</HintPath>
         </Reference>
+        <Reference Include="Microsoft.AspNet.DependencyInjection, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null">
+        <SpecificVersion>False</SpecificVersion>
+        <HintPath>..\..\packages\Microsoft.AspNet.DependencyInjection.0.1-alpha-t140123020341\lib\net45\Microsoft.AspNet.DependencyInjection.dll</HintPath>
+        </Reference>
         <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
         <SpecificVersion>False</SpecificVersion>
         <HintPath>..\..\packages\Microsoft.AspNet.Razor.3.1.0\lib\net45\System.Web.Razor.dll</HintPath>

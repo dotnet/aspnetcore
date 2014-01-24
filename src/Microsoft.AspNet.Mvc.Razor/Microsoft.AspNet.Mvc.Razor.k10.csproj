@@ -66,6 +66,10 @@
         <SpecificVersion>False</SpecificVersion>
         <HintPath>..\..\packages\Microsoft.AspNet.Abstractions.0.1-alpha-t140124091736\lib\k10\Microsoft.AspNet.Abstractions.dll</HintPath>
         </Reference>
+        <Reference Include="Microsoft.AspNet.DependencyInjection, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null">
+        <SpecificVersion>False</SpecificVersion>
+        <HintPath>..\..\packages\Microsoft.AspNet.DependencyInjection.0.1-alpha-t140123020341\lib\k10\Microsoft.AspNet.DependencyInjection.dll</HintPath>
+        </Reference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNet.Mvc\Microsoft.AspNet.Mvc.k10.csproj">

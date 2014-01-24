@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
+using System.Reflection;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
@@ -67,8 +68,7 @@ namespace Microsoft.AspNet.Mvc
 
                 if (htmlAttributes != null)
                 {
-                    PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(htmlAttributes);
-                    foreach (PropertyDescriptor prop in properties)
+                    foreach (var prop in htmlAttributes.GetType().GetRuntimeProperties())
                     {
                         object val = prop.GetValue(htmlAttributes);
                         result.Add(prop.Name, val);

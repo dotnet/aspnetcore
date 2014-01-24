@@ -15,17 +15,19 @@ namespace Microsoft.AspNet.Mvc.Razor
             var metadataType = assembly.GetType("ViewMetadata");
             if (metadataType != null)
             {
-                object metadata = metadataType.GetProperty("Metadata", BindingFlags.Static | BindingFlags.Public)
+                object metadata = metadataType.GetRuntimeProperties().First(prop => prop.Name == "Metadata")
                                               .GetValue(obj: null);
 
                 _viewMetadata = new Dictionary<string, Type>((Dictionary<string, Type>)metadata, StringComparer.OrdinalIgnoreCase);
             }
             else
             {
+#if NET45
                 // Code to support precompiled views generated via RazorGenerator
                 _viewMetadata = assembly.GetExportedTypes()
                                         .Where(type => typeof(RazorView).IsAssignableFrom(type))
                                         .ToDictionary(type => GetVirtualPath(type), StringComparer.OrdinalIgnoreCase);
+#endif
             }
         }
 
@@ -42,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private static string GetVirtualPath(Type type)
         {
-            VirtualPathAttribute attribute = type.GetCustomAttribute<VirtualPathAttribute>();
+            VirtualPathAttribute attribute = type.GetTypeInfo().GetCustomAttribute<VirtualPathAttribute>();
             return attribute.VirtualPath;
         }
     }

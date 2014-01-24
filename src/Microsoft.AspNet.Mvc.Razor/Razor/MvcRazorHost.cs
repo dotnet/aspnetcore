@@ -1,4 +1,5 @@
-﻿using System.Web.Razor;
+﻿#if NET45
+using System.Web.Razor;
 using System.Web.Razor.Generator;
 using System.Web.Razor.Parser;
 
@@ -51,3 +52,4 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
     }
 }
+#endif

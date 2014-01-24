@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Mvc
 {
     internal static class TypeExtensions
     {
-#if NETFX_CORE
+#if NETFX_CORE || K10
         private static bool EqualTo(this Type[] t1, Type[] t2)
         {
             if (t1.Length != t2.Length)
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Mvc
             return (matchesInterface(queryType)) ? queryType : queryType.GetInterfaces().FirstOrDefault(matchesInterface);
         }
 
-#if NETFX_CORE
+#if NETFX_CORE || K10
         public static Type[] GetGenericArguments(this Type type)
         {
             return type.GetTypeInfo().GenericTypeArguments;
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Mvc
         }
 #endif
 
-#if NETFX_CORE
+#if NETFX_CORE || K10
         public static bool IsAssignableFrom(this Type type, Type c)
         {
             return type.GetTypeInfo().IsAssignableFrom(c.GetTypeInfo());
@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.Mvc
 
         public static bool IsGenericType(this Type type)
         {
-#if NETFX_CORE
+#if NETFX_CORE || K10
             return type.GetTypeInfo().IsGenericType;
 #else
             return type.IsGenericType;
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Mvc
 
         public static bool IsInterface(this Type type)
         {
-#if NETFX_CORE
+#if NETFX_CORE || K10
             return type.GetTypeInfo().IsInterface;
 #else
             return type.IsInterface;
@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.Mvc
 
         public static bool IsValueType(this Type type)
         {
-#if NETFX_CORE
+#if NETFX_CORE || K10
             return type.GetTypeInfo().IsValueType;
 #else
             return type.IsValueType;

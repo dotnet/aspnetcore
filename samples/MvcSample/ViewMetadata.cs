@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if VIEWMETADATA
+using System;
 using System.Collections.Generic;
 
 public class ViewMetadata
@@ -21,3 +22,4 @@ public class ViewMetadata
         }
     }
 }
+#endif

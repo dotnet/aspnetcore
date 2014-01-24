@@ -1,4 +1,4 @@
-﻿#if NET45
+﻿#if OWIN
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;

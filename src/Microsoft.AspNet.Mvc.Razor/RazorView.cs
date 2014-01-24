@@ -71,7 +71,9 @@ namespace Microsoft.AspNet.Mvc.Razor
                 }
                 else
                 {
+#if NET45
                     WebUtility.HtmlEncode(content.ToString(), writer);
+#endif
                 }
             }
         }

@@ -17,7 +17,11 @@ namespace Microsoft.AspNet.Mvc
 
             HttpResponse response = context.HttpContext.Response;
 
+#if NET45
             response.StatusCode = (int)HttpStatusCode.NoContent;
+#else
+            response.StatusCode = 204;
+#endif
 
             await Task.FromResult(false);
 

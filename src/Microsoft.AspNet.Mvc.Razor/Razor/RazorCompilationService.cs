@@ -1,4 +1,5 @@
-﻿using System.CodeDom.Compiler;
+﻿#if NET45
+using System.CodeDom.Compiler;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -59,3 +60,4 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
     }
 }
+#endif

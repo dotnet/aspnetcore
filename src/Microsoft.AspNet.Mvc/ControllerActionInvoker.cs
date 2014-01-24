@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Mvc
 
             Initialize(controller);
 
-            var method = controller.GetType().GetMethod(_descriptor.ActionName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+            var method = controller.GetType().GetRuntimeMethods().FirstOrDefault(m => m.Name.Equals(_descriptor.ActionName, StringComparison.OrdinalIgnoreCase));
 
             if (method == null)
             {
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Mvc
         {
             var controllerType = controller.GetType();
 
-            foreach (var prop in controllerType.GetProperties())
+            foreach (var prop in controllerType.GetRuntimeProperties())
             {
                 if (prop.Name == "Context")
                 {
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Mvc
                 }
             }
 
-            var method = controllerType.GetMethod("Initialize");
+            var method = controllerType.GetTypeInfo().GetDeclaredMethod("Initialize");
 
             if (method == null)
             {
