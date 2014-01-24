@@ -1,4 +1,6 @@
 ﻿using System.IO;
+using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.HttpFeature.Security;
@@ -28,7 +30,7 @@ namespace Microsoft.AspNet.PipelineCore
             _response = null;
             _revision = _context.Revision;
             return null;
-        } 
+        }
 
         public override HttpContext HttpContext { get { return _context; } }
 
@@ -39,5 +41,24 @@ namespace Microsoft.AspNet.PipelineCore
         }
 
         public override Stream Body { get { return _response.Body; } set { _response.Body = value; } }
+
+        public override string ContentType
+        {
+            get
+            {
+                var contentTypeValues = IHttpResponse.Headers["Content-Type"];
+                return contentTypeValues.Length == 0 ? null : contentTypeValues[0];
+            }
+            set
+            {
+                IHttpResponse.Headers["Content-Type"] = new[] { value };
+            }
+        }
+
+        public override Task WriteAsync(string data)
+        {
+            var bytes = Encoding.UTF8.GetBytes(data);
+            return Body.WriteAsync(bytes, 0, bytes.Length);
+        }
     }
 }
