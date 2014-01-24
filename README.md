@@ -3,9 +3,9 @@ Universe
 
 Getting started
 
-  git clone git@github.com:aspnet/Universe.git
-  cd Universe
-  build
+    git clone git@github.com:aspnet/Universe.git
+    cd Universe
+    build
 
 The default build will clone all known repos as subfolders. The clone will be the dev branch.
 
