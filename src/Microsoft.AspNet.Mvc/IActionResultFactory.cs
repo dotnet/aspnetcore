@@ -1,5 +1,4 @@
-﻿using Microsoft.Owin;
-using System;
+﻿using System;
 
 namespace Microsoft.AspNet.Mvc
 {

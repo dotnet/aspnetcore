@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNet.Mvc.Routing;
-using Microsoft.Owin;
 
 namespace Microsoft.AspNet.Mvc
 {

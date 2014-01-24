@@ -4,14 +4,14 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Owin;
 using Microsoft.AspNet.DependencyInjection;
+using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
     public abstract class RazorView : IView
     {
-        public IOwinContext Context { get; set; }
+        public HttpContext Context { get; set; }
 
         public string Layout { get; set; }
 

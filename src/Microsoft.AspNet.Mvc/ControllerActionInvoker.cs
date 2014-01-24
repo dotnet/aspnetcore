@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.DependencyInjection;
-using Microsoft.Owin;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -16,8 +16,8 @@ namespace Microsoft.AspNet.Mvc
         private readonly IServiceProvider _serviceProvider;
 
         public ControllerActionInvoker(RequestContext requestContext,
-                                       ControllerBasedActionDescriptor descriptor, 
-                                       IActionResultFactory actionResultFactory, 
+                                       ControllerBasedActionDescriptor descriptor,
+                                       IActionResultFactory actionResultFactory,
                                        IServiceProvider serviceProvider)
         {
             _requestContext = requestContext;
@@ -61,13 +61,9 @@ namespace Microsoft.AspNet.Mvc
             {
                 if (prop.Name == "Context")
                 {
-                    if (prop.PropertyType == typeof(IOwinContext))
+                    if (prop.PropertyType == typeof(HttpContext))
                     {
                         prop.SetValue(controller, _requestContext.HttpContext);
-                    }
-                    else if (prop.PropertyType == typeof(IDictionary<string, object>))
-                    {
-                        prop.SetValue(controller, _requestContext.HttpContext.Environment);
                     }
                 }
             }

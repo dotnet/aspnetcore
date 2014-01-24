@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Owin;
 using System.Net;
+using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc
                 throw new ArgumentNullException("context");
             }
 
-            IOwinResponse response = context.HttpContext.Response;
+            HttpResponse response = context.HttpContext.Response;
 
             response.StatusCode = (int)HttpStatusCode.NoContent;
 

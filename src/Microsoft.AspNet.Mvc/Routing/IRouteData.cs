@@ -1,5 +1,5 @@
 ﻿using System;
-using Microsoft.Owin;
+using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.Mvc.Routing
 {
@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.Routing
     {
         private readonly string[] _parts;
 
-        public FakeRouteData(IOwinContext context)
+        public FakeRouteData(HttpContext context)
         {
             _parts = (context.Request.PathBase + context.Request.Path).Value.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
         }

@@ -1,12 +1,12 @@
 ﻿using System;
+using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Mvc.Routing;
-using Microsoft.Owin;
 
 namespace Microsoft.AspNet.Mvc
 {
     public class RequestContext
     {
-        public RequestContext(IOwinContext context, IRouteData routeData)
+        public RequestContext(HttpContext context, IRouteData routeData)
         {
             if (context == null)
             {
@@ -24,6 +24,6 @@ namespace Microsoft.AspNet.Mvc
 
         public virtual IRouteData RouteData { get; set; }
 
-        public virtual IOwinContext HttpContext { get; set; }
+        public virtual HttpContext HttpContext { get; set; }
     }
 }

@@ -1,6 +1,5 @@
-﻿using System.Net.Http;
+﻿using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Mvc;
-using Microsoft.Owin;
 
 namespace MvcSample
 {
@@ -13,7 +12,7 @@ namespace MvcSample
 
         public IActionResultHelper Result { get; private set; }
 
-        public IOwinContext Context { get; private set; }
+        public HttpContext Context { get; private set; }
 
         public string Index()
         {
@@ -35,7 +34,7 @@ namespace MvcSample
 
         public void Raw()
         {
-            Context.Response.Write("Hello World raw");
+            Context.Response.WriteAsync("Hello World raw");
         }
     }
 }

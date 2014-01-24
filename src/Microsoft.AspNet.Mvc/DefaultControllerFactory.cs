@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
+using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.DependencyInjection;
-using Microsoft.Owin;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc
             _serviceProvider = serviceProvider;
         }
 
-        public object CreateController(IOwinContext context, string controllerName)
+        public object CreateController(HttpContext context, string controllerName)
         {
             if (!controllerName.EndsWith("Controller", StringComparison.OrdinalIgnoreCase))
             {

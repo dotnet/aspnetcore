@@ -1,4 +1,4 @@
-﻿using Microsoft.Owin;
+﻿using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Mvc
 
         public IActionResultHelper Result { get; private set; }
 
-        public IOwinContext Context { get; set; }
+        public HttpContext Context { get; set; }
 
         public ViewData<object> ViewData { get; set; }
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if NET45
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Razor;
@@ -39,3 +40,4 @@ namespace MvcSample
         }
     }
 }
+#endif

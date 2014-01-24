@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Owin;
+using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc
                 throw new ArgumentNullException("context");
             }
 
-            IOwinResponse response = context.HttpContext.Response;
+            HttpResponse response = context.HttpContext.Response;
 
             if (!String.IsNullOrEmpty(ContentType))
             {

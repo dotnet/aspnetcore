@@ -1,10 +1,10 @@
-﻿using Microsoft.Owin;
+﻿using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.Mvc
 {
     public interface IControllerFactory
     {
-        object CreateController(IOwinContext context, string controllerName);
+        object CreateController(HttpContext context, string controllerName);
 
         void ReleaseController(object controller);
     }

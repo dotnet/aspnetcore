@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Routing;
-using Microsoft.Owin;
 using Microsoft.AspNet.DependencyInjection;
+using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc
             _serviceProvider = serviceProvider;
         }
 
-        public Task ExecuteAsync(IOwinContext context, IRouteData routeData)
+        public Task ExecuteAsync(HttpContext context, IRouteData routeData)
         {
             var requestContext = new RequestContext(context, routeData);
 

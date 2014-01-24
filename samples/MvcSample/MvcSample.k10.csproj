@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"/>
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{A7D7CD66-A407-4144-8AB7-07F895F87137}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>MvcSample</RootNamespace>
+    <AssemblyName>MvcSample</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <BaseIntermediateOutputPath>obj/K</BaseIntermediateOutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\K</OutputPath>
+    <DefineConstants>DEBUG;TRACE;K10</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\K</OutputPath>
+    <DefineConstants>TRACE;K10</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Home2Controller.cs" />
+<Compile Include="HomeController.cs" />
+<Compile Include="Startup.cs" />
+<Compile Include="ViewMetadata.cs" />
+<Compile Include="Models\Class1.cs" />
+<Compile Include="Properties\AssemblyInfo.cs" /><Content Include="packages.config" />
+    <Content Include="project.json"/>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.Mvc\Microsoft.AspNet.Mvc.k10.csproj">
+          <Project>{BA88E212-5889-48DC-823F-A3A67DDEF123}</Project>
+          <Name>Microsoft.AspNet.Mvc</Name>
+        </ProjectReference><ProjectReference Include="..\..\src\Microsoft.AspNet.Mvc.Razor\Microsoft.AspNet.Mvc.Razor.k10.csproj">
+          <Project>{0D2C8C3D-AFC3-4E1F-A6D8-9F690EE5E063}</Project>
+          <Name>Microsoft.AspNet.Mvc.Razor</Name>
+        </ProjectReference>
+  </ItemGroup>
+  <Import Project="..\..\packages\ProjectK.0.0.1-pre-30121-096\Framework\K\v1.0\ProjectK.CSharp.targets"/>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

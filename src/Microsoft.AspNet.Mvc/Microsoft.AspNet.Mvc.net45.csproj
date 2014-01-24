@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"/>
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{64BD92BA-F313-496C-ACE6-B9C4C10C420E}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Microsoft.AspNet.Mvc</RootNamespace>
+    <AssemblyName>Microsoft.AspNet.Mvc</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <BaseIntermediateOutputPath>obj/net45</BaseIntermediateOutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\net45</OutputPath>
+    <DefineConstants>DEBUG;TRACE;NET45</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\net45</OutputPath>
+    <DefineConstants>TRACE;NET45</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib"/>
+    <Reference Include="System"/>
+    <Reference Include="System.Core"/>
+    <Reference Include="Microsoft.CSharp"/>
+    
+        <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
+        <SpecificVersion>False</SpecificVersion>
+        <HintPath>..\..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
+        </Reference>
+        <Reference Include="Microsoft.AspNet.DependencyInjection, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null">
+        <SpecificVersion>False</SpecificVersion>
+        <HintPath>..\..\packages\Microsoft.AspNet.DependencyInjection.0.1-alpha-t140123020341\lib\net45\Microsoft.AspNet.DependencyInjection.dll</HintPath>
+        </Reference>
+        <Reference Include="Microsoft.AspNet.Abstractions, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null">
+        <SpecificVersion>False</SpecificVersion>
+        <HintPath>..\..\packages\Microsoft.AspNet.Abstractions.0.1-alpha-t140124091736\lib\net45\Microsoft.AspNet.Abstractions.dll</HintPath>
+        </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ActionDescriptor.cs" />
+<Compile Include="ActionDescriptorProvider.cs" />
+<Compile Include="ActionInvokerFactory.cs" />
+<Compile Include="ActionInvokerProvider.cs" />
+<Compile Include="ActionResultFactory.cs" />
+<Compile Include="ActionResultHelper.cs" />
+<Compile Include="Controller.cs" />
+<Compile Include="ControllerActionInvoker.cs" />
+<Compile Include="ControllerBasedActionDescriptor.cs" />
+<Compile Include="DefaultControllerFactory.cs" />
+<Compile Include="EmptyResult.cs" />
+<Compile Include="HttpStatusCodeResult.cs" />
+<Compile Include="IActionDescriptorProvider.cs" />
+<Compile Include="IActionInvoker.cs" />
+<Compile Include="IActionInvokerFactory.cs" />
+<Compile Include="IActionInvokerProvider.cs" />
+<Compile Include="IActionResult.cs" />
+<Compile Include="IActionResultFactory.cs" />
+<Compile Include="IActionResultHelper.cs" />
+<Compile Include="IControllerFactory.cs" />
+<Compile Include="MvcHandler.cs" />
+<Compile Include="MvcServices.cs" />
+<Compile Include="RequestContext.cs" />
+<Compile Include="ActionResults\ContentResult.cs" />
+<Compile Include="ActionResults\NoContentResult.cs" />
+<Compile Include="Extensions\IEnumerableExtensions.cs" />
+<Compile Include="Extensions\TypeExtensions.cs" />
+<Compile Include="Properties\AssemblyInfo.cs" />
+<Compile Include="Routing\IRouteData.cs" />
+<Compile Include="View\CompositeViewEngine.cs" />
+<Compile Include="View\IView.cs" />
+<Compile Include="View\IViewEngine.cs" />
+<Compile Include="View\ViewContext.cs" />
+<Compile Include="View\ViewData.cs" />
+<Compile Include="View\ViewDataOfTModel.cs" />
+<Compile Include="View\ViewEngineResult.cs" />
+<Compile Include="View\ViewResult.cs" /><Content Include="packages.config" />
+    <Content Include="project.json"/>
+  </ItemGroup>
+  <ItemGroup>
+  
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
