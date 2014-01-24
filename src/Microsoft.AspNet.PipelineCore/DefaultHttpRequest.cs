@@ -70,5 +70,85 @@ namespace Microsoft.AspNet.PipelineCore
             get { return IHttpRequest.Body; }
             set { IHttpRequest.Body = value; }
         }
+
+        public override string Method
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public override string Scheme
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public override bool IsSecure
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public override HostString Host
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public override IReadableStringCollection Query
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public override string Protocol
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public override IHeaderDictionary Headers
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public override IReadableStringCollection Cookies
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public override System.Threading.CancellationToken CallCanceled
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
     }
 }

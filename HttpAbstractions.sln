@@ -21,11 +21,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.PipelineCo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.PipelineCore.k10", "src\Microsoft.AspNet.PipelineCore\Microsoft.AspNet.PipelineCore.k10.csproj", "{E31CF247-FDA9-4007-B194-A7DBAC18532C}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D38DDB2B-1138-4F45-8A6A-9499E880F620}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{1D737C82-F2F1-40B6-AE95-A3D878612E91}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.PipelineCore.Tests", "test\Microsoft.AspNet.PipelineCore.Tests\Microsoft.AspNet.PipelineCore.Tests.csproj", "{86942914-0334-4352-87ED-B971281C74E2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.FeatureModel.Tests", "test\Microsoft.AspNet.FeatureModel.Tests\Microsoft.AspNet.FeatureModel.Tests.csproj", "{8C671AE3-1188-499F-A2A2-3A0B117B33CE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Abstractions.Owin.net45", "src\Microsoft.AspNet.Abstractions.Owin\Microsoft.AspNet.Abstractions.Owin.net45.csproj", "{E6B7056F-547E-4B96-9E58-858DDDAE75D3}"
 EndProject

@@ -53,6 +53,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BuilderTests.cs" />
+    <Compile Include="Builder.cs" />
+    <Compile Include="Collections\FormCollection.cs" />
+    <Compile Include="Collections\HeaderDictionary.cs" />
+    <Compile Include="Collections\ReadableStringCollection.cs" />
+    <Compile Include="Collections\RequestCookieCollection.cs" />
+    <Compile Include="Collections\ResponseCookieCollection.cs" />
+    <Compile Include="DefaultHttpContext.cs" />
+    <Compile Include="DefaultHttpRequest.cs" />
+    <Compile Include="DefaultHttpResponse.cs" />
+    <Compile Include="Infrastructure\Constants.cs" />
+    <Compile Include="Infrastructure\ParsingHelpers.cs" />
+    <Compile Include="Owin\OwinConstants.cs" />
+    <Compile Include="Owin\OwinHttpEnvironment.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
