@@ -46,6 +46,13 @@
     <Content Include="project.json"/>
   </ItemGroup>
   <ItemGroup>
+    
+        <Reference Include="Microsoft.AspNet.Abstractions, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null">
+        <SpecificVersion>False</SpecificVersion>
+        <HintPath>..\..\packages\Microsoft.AspNet.Abstractions.0.1-alpha-t140124091736\lib\k10\Microsoft.AspNet.Abstractions.dll</HintPath>
+        </Reference>
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNet.Mvc\Microsoft.AspNet.Mvc.k10.csproj">
           <Project>{BA88E212-5889-48DC-823F-A3A67DDEF123}</Project>
           <Name>Microsoft.AspNet.Mvc</Name>
