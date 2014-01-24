@@ -37,6 +37,9 @@
     <Content Include="project.json" />
   </ItemGroup>
   <ItemGroup>
+    {References}
+  </ItemGroup>
+  <ItemGroup>
     {ProjectReferences}
   </ItemGroup>
   <Import Project="{CSharpTargetsPath}" />
