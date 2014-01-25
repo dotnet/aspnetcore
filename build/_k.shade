@@ -12,20 +12,14 @@ kProgram='...'
 command=''
 
 */}
+nuget-install package='ProjectK' outputDir='packages' extra='-nocache -pre' 
+@{
+    string packagesDir = Path.Combine(Directory.GetCurrentDirectory(), "packages"),
+           projectKDir = Directory.EnumerateDirectories(packagesDir, "ProjectK*")
+                                  .OrderByDescending(p => Int32.Parse(p.Substring(p.LastIndexOf('-') + 1)))
+                                  .First();
+    
+}
 
-default kLatestSuccessful='\\wsr-teamcity\Drops\ProjectK.Main\latest-successful\sdk'
-default kVersion=''
-
-test if='string.IsNullOrEmpty(kVersion)'
-  for each='var file in System.IO.Directory.EnumerateFiles(kLatestSuccessful).Select(System.IO.Path.GetFileName)'
-    test if='file.StartsWith("ProjectK.") && file.EndsWith(".nupkg")'
-      - kVersion = file.Substring("ProjectK.".Length, file.Length - "ProjectK.".Length - ".nupkg".Length);
-
-default kProgram='packages/ProjectK.${kVersion}/tools/k.cmd'
-
--// Download xunit from nuget sources if not already present
-test if='!File.Exists(kProgram)'
-  log info='Installing ProjectK ${kVersion} from ${kLatestSuccessful}'
-  nuget-install package='ProjectK' packageVersion='${kVersion}' outputDir='packages' extra='-Source ${kLatestSuccessful}'
-
+default kProgram='${projectKDir}/tools/k.cmd'
 exec program='${Path.GetFullPath(kProgram)}' commandline='${command}'

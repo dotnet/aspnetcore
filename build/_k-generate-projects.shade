@@ -233,9 +233,9 @@ functions
             private static string GetProjectKTargets(string packagesDir)
             {
                 var projectK = Directory.GetDirectories(packagesDir, "ProjectK*")
-                                     .Select(p => new { Path = p, Build = Int32.Parse(p.Substring(p.LastIndexOf('-') + 1)) })
-                                     .OrderByDescending(p => p.Build)
-                                     .FirstOrDefault();
+                                           .Select(p => new { Path = p, Build = Int32.Parse(p.Substring(p.LastIndexOf('-') + 1)) })
+                                           .OrderByDescending(p => p.Build)
+                                           .FirstOrDefault();
 
                 if (projectK == null)
                 {
