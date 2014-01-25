@@ -40,7 +40,7 @@
     
         <Reference Include="Microsoft.AspNet.Abstractions, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null">
         <SpecificVersion>False</SpecificVersion>
-        <HintPath>..\..\packages\Microsoft.AspNet.Abstractions.0.1-alpha-t140124091736\lib\net45\Microsoft.AspNet.Abstractions.dll</HintPath>
+        <HintPath>..\..\packages\Microsoft.AspNet.Abstractions.0.1-alpha-t140125104446\lib\net45\Microsoft.AspNet.Abstractions.dll</HintPath>
         </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -53,7 +53,7 @@
 <Compile Include="Html\InputType.cs" />
 <Compile Include="Html\TagBuilder.cs" />
 <Compile Include="Html\TagRenderMode.cs" />
-<Compile Include="Properties\AssemblyInfo.cs" /><Content Include="packages.config" />
+<Compile Include="Properties\AssemblyInfo.cs" />
     <Content Include="project.json"/>
   </ItemGroup>
   <ItemGroup>

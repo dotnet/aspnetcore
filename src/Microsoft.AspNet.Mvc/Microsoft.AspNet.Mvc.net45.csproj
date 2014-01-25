@@ -44,11 +44,11 @@
         </Reference>
         <Reference Include="Microsoft.AspNet.DependencyInjection, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null">
         <SpecificVersion>False</SpecificVersion>
-        <HintPath>..\..\packages\Microsoft.AspNet.DependencyInjection.0.1-alpha-t140123020341\lib\net45\Microsoft.AspNet.DependencyInjection.dll</HintPath>
+        <HintPath>..\..\packages\Microsoft.AspNet.DependencyInjection.0.1-alpha-t140125113429\lib\net45\Microsoft.AspNet.DependencyInjection.dll</HintPath>
         </Reference>
         <Reference Include="Microsoft.AspNet.Abstractions, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null">
         <SpecificVersion>False</SpecificVersion>
-        <HintPath>..\..\packages\Microsoft.AspNet.Abstractions.0.1-alpha-t140124091736\lib\net45\Microsoft.AspNet.Abstractions.dll</HintPath>
+        <HintPath>..\..\packages\Microsoft.AspNet.Abstractions.0.1-alpha-t140125104446\lib\net45\Microsoft.AspNet.Abstractions.dll</HintPath>
         </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -88,7 +88,7 @@
 <Compile Include="View\ViewData.cs" />
 <Compile Include="View\ViewDataOfTModel.cs" />
 <Compile Include="View\ViewEngineResult.cs" />
-<Compile Include="View\ViewResult.cs" /><Content Include="packages.config" />
+<Compile Include="View\ViewResult.cs" />
     <Content Include="project.json"/>
   </ItemGroup>
   <ItemGroup>

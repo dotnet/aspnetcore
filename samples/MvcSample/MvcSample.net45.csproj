@@ -40,11 +40,11 @@
     
         <Reference Include="Microsoft.AspNet.FileSystems, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
         <SpecificVersion>False</SpecificVersion>
-        <HintPath>..\..\packages\Microsoft.AspNet.FileSystems.0.1-alpha-t140124092009\lib\net45\Microsoft.AspNet.FileSystems.dll</HintPath>
+        <HintPath>..\..\packages\Microsoft.AspNet.FileSystems.0.1-alpha-t140125101521\lib\net45\Microsoft.AspNet.FileSystems.dll</HintPath>
         </Reference>
         <Reference Include="Microsoft.AspNet.Abstractions, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null">
         <SpecificVersion>False</SpecificVersion>
-        <HintPath>..\..\packages\Microsoft.AspNet.Abstractions.0.1-alpha-t140124091736\lib\net45\Microsoft.AspNet.Abstractions.dll</HintPath>
+        <HintPath>..\..\packages\Microsoft.AspNet.Abstractions.0.1-alpha-t140125104446\lib\net45\Microsoft.AspNet.Abstractions.dll</HintPath>
         </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -53,7 +53,7 @@
 <Compile Include="Startup.cs" />
 <Compile Include="ViewMetadata.cs" />
 <Compile Include="Models\Class1.cs" />
-<Compile Include="Properties\AssemblyInfo.cs" /><Content Include="packages.config" />
+<Compile Include="Properties\AssemblyInfo.cs" />
     <Content Include="project.json"/>
   </ItemGroup>
   <ItemGroup>

@@ -42,14 +42,14 @@
 <Compile Include="Html\InputType.cs" />
 <Compile Include="Html\TagBuilder.cs" />
 <Compile Include="Html\TagRenderMode.cs" />
-<Compile Include="Properties\AssemblyInfo.cs" /><Content Include="packages.config" />
+<Compile Include="Properties\AssemblyInfo.cs" />
     <Content Include="project.json"/>
   </ItemGroup>
   <ItemGroup>
     
         <Reference Include="Microsoft.AspNet.Abstractions, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null">
         <SpecificVersion>False</SpecificVersion>
-        <HintPath>..\..\packages\Microsoft.AspNet.Abstractions.0.1-alpha-t140124091736\lib\k10\Microsoft.AspNet.Abstractions.dll</HintPath>
+        <HintPath>..\..\packages\Microsoft.AspNet.Abstractions.0.1-alpha-t140125104446\lib\k10\Microsoft.AspNet.Abstractions.dll</HintPath>
         </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -58,7 +58,7 @@
           <Name>Microsoft.AspNet.Mvc</Name>
         </ProjectReference>
   </ItemGroup>
-  <Import Project="..\..\packages\ProjectK.0.0.1-pre-30121-096\Framework\K\v1.0\ProjectK.CSharp.targets"/>
+  <Import Project="..\..\packages\ProjectK.0.0.1-pre-30125-098\Framework\K\v1.0\ProjectK.CSharp.targets"/>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
