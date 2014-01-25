@@ -43,7 +43,10 @@
   <ItemGroup>
     
   </ItemGroup>
-  <Import Project="..\..\packages\ProjectK.0.0.1-pre-30121-096\Framework\K\v1.0\ProjectK.CSharp.targets"/>
+  <ItemGroup>
+    
+  </ItemGroup>
+  <Import Project="..\..\packages\ProjectK.0.0.1-pre-30124-097\Framework\K\v1.0\ProjectK.CSharp.targets"/>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

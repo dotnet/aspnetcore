@@ -1,9 +1,0 @@
-
-
-
-default gitBranch=''
-
-var gitCommand='clone ${gitUri}'
-set gitCommand='${gitCommand} --branch ${gitBranch}' if='!string.IsNullOrEmpty(gitBranch)'
-
-git 
