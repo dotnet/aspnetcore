@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>KBuild</id>
+    <title>The ProjectK build tools</title>
+    <version>0.0</version>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <description>ProjectK build tooling</description>
+    <language>en-US</language>
+  </metadata>
+</package>

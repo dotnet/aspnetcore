@@ -16,11 +16,18 @@ var repos='${new Dictionary<string,string> {
     {"Mvc", "git@github.com:aspnet/Mvc.git"},
 }}'
 
+default BASE_DIR='${Directory.GetCurrentDirectory()}'
+default TARGET_DIR='${Path.Combine(BASE_DIR, "artifacts")}'
+
 #default .compile
 
 #pull
 #compile .pull
 #install .pull
+
+#pack
+    directory create='${TARGET_DIR}'
+    nuget-pack nuspecFile='${Path.Combine(BASE_DIR, "build", "KBuild.nuspec")}' packageVersion='${VERSION}' outputDir='${TARGET_DIR}'
 
 #git-pull target='pull' 
     @{
