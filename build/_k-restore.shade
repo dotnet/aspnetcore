@@ -1,7 +1,0 @@
-@{/*
-
-k-restore 
-    Restores nuget packages required for k projects. Downloads and executes k sdk tools.
-*/}
-
-k command='restore'

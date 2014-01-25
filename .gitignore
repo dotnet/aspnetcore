@@ -26,3 +26,4 @@ PublishProfiles/
 *.vspx
 /.symbols
 nuget.exe
+build/
