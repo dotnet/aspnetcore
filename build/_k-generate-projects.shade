@@ -149,7 +149,7 @@ functions
 
                 var d = serializer.DeserializeObject(jsonText) as IDictionary<string, object>;
                 var configs = GetObject(d, "configurations");
-                var references = GetObject(d, "dependencies") ?? new Dictionary<string, object>();
+                var dependencies = GetObject(d, "dependencies") ?? new Dictionary<string, object>();
 
                 // Get the list of files
                 var filesString = String.Join(Environment.NewLine,
@@ -159,33 +159,48 @@ functions
                     .Select(p => String.Format(
         @"<Compile Include=""{0}"" />", p)));
 
-                // Add the config file if it's there
-                if (File.Exists(Path.Combine(projectDir, "packages.config")))
-                {
-                    filesString += "<Content Include=\"packages.config\" />";
-                }
+                var packageReferences = dependencies.Where(r => !projectMapping.ContainsKey(r.Key))
+                                                    .ToDictionary(k => k.Key, k => (string)k.Value);
 
-                var packageReferences = references.Where(r => !String.IsNullOrEmpty((string)r.Value))
-                                                  .ToDictionary(k => k.Key, k => (string)k.Value);
-
-                var projectReferences = references.Where(r => String.IsNullOrEmpty((string)r.Value))
-                                                  .Select(r => r.Key)
-                                                  .ToArray();
+                var projectReferences = dependencies.Where(r => projectMapping.ContainsKey(r.Key))
+                                                    .Select(r => r.Key)
+                                                    .ToList();
 
 
                 // HACK: Assume the packages folder is 2 up from the projectDir
                 string packagesDir = Path.GetFullPath(Path.Combine(projectDir, "..", "..", "packages"));
 
-                foreach (var targetFramework in configs.Keys)
+                foreach (var pair in configs)
                 {
+                    var targetFramework = pair.Key;
+                    var props = (IDictionary<string, object>)pair.Value;
+
                     string id = (string)GetObject(projectMapping, projectName)[targetFramework];
+
+                    var specificDependencies = GetObject(props, "dependencies") ?? new Dictionary<string, object>();
+                    var gacReferences = new List<string>();
+
+                    foreach(var dep in specificDependencies)
+                    {
+                        if (!projectMapping.ContainsKey(dep.Key))
+                        {
+                            if(String.IsNullOrEmpty((string)dep.Value))
+                            {
+                                gacReferences.Add(dep.Key);
+                            }
+                        }
+                        else
+                        {
+                            projectReferences.Add(dep.Key);
+                        }
+                    }
 
                     var template = templates[targetFramework]
                                        .Replace("{ProjectGuid}", id)
                                        .Replace("{Name}", projectName)
                                        .Replace("{Files}", filesString)
                                        .Replace("{ProjectReferences}", BuildProjectReferences(projectReferences, targetFramework, projectMapping))
-                                       .Replace("{References}", BuildReferences(packageReferences, packagesDir, targetFramework, GetCandidates(targetFramework)));
+                                       .Replace("{References}", BuildReferences(packageReferences, gacReferences, packagesDir, targetFramework, GetCandidates(targetFramework)));
 
                     if (targetFramework.StartsWith("k"))
                     {
@@ -221,9 +236,9 @@ functions
                 return projectName + "." + config + ".csproj";
             }
 
-            private static string BuildProjectReferences(string[] projectReferences, string config, IDictionary<string, object> projectMapping)
+            private static string BuildProjectReferences(IList<string> projectReferences, string config, IDictionary<string, object> projectMapping)
             {
-                if (projectReferences.Length == 0)
+                if (projectReferences.Count == 0)
                 {
                     return "";
                 }
@@ -262,16 +277,18 @@ functions
                 return new[] { config };
             }
 
-            private static string BuildReferences(IDictionary<string, string> references, string packagesDir, string configName, string[] candidates)
+            private static string BuildReferences(IDictionary<string, string> references, List<string> gacReferences, string packagesDir, string configName, string[] candidates)
             {
-                if (references.Count == 0)
-                {
-                    return "";
-                }
-
                 Log("Building package references for {0}", configName);
 
                 var sb = new StringBuilder();
+
+                foreach(var gacRef in gacReferences)
+                {
+                    sb.AppendFormat(@"
+<Reference Include=""{0}""></Reference>
+", gacRef);
+                }
 
                 foreach (var reference in references)
                 {
