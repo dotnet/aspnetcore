@@ -31,15 +31,7 @@ default TEST_DIR='${Path.Combine(TARGET_DIR, "test")}'
   }
 
 #nuget-install target='install' description='Copy NuGet packages to local repo'
-  @{
-    var HOME_DIR = E("HOME");
-    if (string.IsNullOrEmpty(HOME_DIR))
-    {
-      HOME_DIR = E("HOMEDRIVE") + E("HOMEPATH");
-    }
-  }
-  copy sourceDir='${BUILD_DIR}' include='*.nupkg' outputDir='${Path.Combine(HOME_DIR, ".nuget")}' overwrite='${true}'
-
+  nuget-local-publish sourcePackagesDir='${BUILD_DIR}'
 
 functions @{
     string E(string key) { return Environment.GetEnvironmentVariable(key); }

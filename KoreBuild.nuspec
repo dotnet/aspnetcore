@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <metadata>
-    <id>KBuild</id>
+    <id>KoreBuild</id>
     <title>The ProjectK build tools</title>
     <version>0.0</version>
     <authors>Microsoft</authors>
@@ -9,4 +9,7 @@
     <description>ProjectK build tooling</description>
     <language>en-US</language>
   </metadata>
+  <files>
+    <file src="build\*.*" target="build" /> 
+  </files> 
 </package>

@@ -27,7 +27,10 @@ default TARGET_DIR='${Path.Combine(BASE_DIR, "artifacts")}'
 
 #pack
     directory create='${TARGET_DIR}'
-    nuget-pack nuspecFile='${Path.Combine(BASE_DIR, "build", "KBuild.nuspec")}' packageVersion='${VERSION}' outputDir='${TARGET_DIR}'
+    nuget-pack nuspecFile='${Path.Combine(BASE_DIR, "KoreBuild.nuspec")}' packageVersion='${VERSION}' outputDir='${TARGET_DIR}'
+
+#pack-install .pack
+    nuget-local-publish sourcePackagesDir='${TARGET_DIR}' 
 
 #git-pull target='pull' 
     @{
