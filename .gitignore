@@ -21,3 +21,4 @@ PublishProfiles/
 *DS_Store
 *.ncrunchsolution
 .nuget/NuGet.exe
+build/
