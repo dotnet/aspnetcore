@@ -19,18 +19,18 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\K</OutputPath>
-    <DefineConstants>DEBUG;TRACE;K10</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;K10;{Defines}</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <WarningLevel>4</WarningLevel>{ExtraProperties}
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\K</OutputPath>
-    <DefineConstants>TRACE;K10</DefineConstants>
+    <DefineConstants>TRACE;K10;{Defines}</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <WarningLevel>4</WarningLevel>{ExtraProperties}
   </PropertyGroup>
   <ItemGroup>
     {Files}

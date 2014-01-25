@@ -150,6 +150,7 @@ functions
                 var d = serializer.DeserializeObject(jsonText) as IDictionary<string, object>;
                 var configs = GetObject(d, "configurations") ?? new Dictionary<string, object>();
                 var dependencies = GetObject(d, "dependencies") ?? new Dictionary<string, object>();
+                var compilationOptions = GetObject(d, "compilationOptions") ?? new Dictionary<string, object>();
 
                 if(configs.Count == 0)
                 {
@@ -173,6 +174,11 @@ functions
                                                     .Select(r => r.Key)
                                                     .ToList();
 
+                var defines = Get<IEnumerable<object>>(compilationOptions, "define") ?? new object[0];
+                object unsafeValue = Get<object>(compilationOptions, "allowUnsafe");
+                bool allowUnsafeCode = unsafeValue == null ? false : (bool)unsafeValue;
+
+                string extraProperties = allowUnsafeCode ? "\n<AllowUnsafeBlocks>true</AllowUnsafeBlocks>" : "";
 
                 // HACK: Assume the packages folder is 2 up from the projectDir
                 string packagesDir = Path.GetFullPath(Path.Combine(projectDir, "..", "..", "packages"));
@@ -205,6 +211,8 @@ functions
                     var template = templates[targetFramework]
                                        .Replace("{ProjectGuid}", id)
                                        .Replace("{Name}", projectName)
+                                       .Replace("{Defines}", String.Join(";", defines.Select(def => def.ToString())))
+                                       .Replace("{ExtraProperties}", extraProperties)
                                        .Replace("{Files}", filesString)
                                        .Replace("{ProjectReferences}", BuildProjectReferences(projectReferences, targetFramework, projectMapping))
                                        .Replace("{References}", BuildReferences(packageReferences, gacReferences, packagesDir, targetFramework, GetCandidates(targetFramework)));
@@ -340,15 +348,20 @@ functions
                 return sb.ToString();
             }
 
-            private static IDictionary<string, object> GetObject(IDictionary<string, object> obj, string key)
+            private static T Get<T>(IDictionary<string, object> obj, string key) where T : class
             {
                 object value;
                 if (obj.TryGetValue(key, out value))
                 {
-                    return value as IDictionary<string, object>;
+                    return value as T;
                 }
 
                 return null;
+            }
+
+            private static IDictionary<string, object> GetObject(IDictionary<string, object> obj, string key)
+            {
+                return Get<IDictionary<string, object>>(obj, key);
             }
         }
     }
