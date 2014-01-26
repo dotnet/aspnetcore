@@ -30,14 +30,12 @@ namespace MvcSample
 
             var handler = new MvcHandler(serviceProvider);
 
-            app.Run(async context =>
+            app.RunHttpContext(async context =>
             {
-                var httpContext = new OwinHttpContext(context);
-
                 // Pretending to be routing
-                var routeData = new FakeRouteData(httpContext);
+                var routeData = new FakeRouteData(context);
 
-                await handler.ExecuteAsync(httpContext, routeData);
+                await handler.ExecuteAsync(context, routeData);
             });
         }
     }

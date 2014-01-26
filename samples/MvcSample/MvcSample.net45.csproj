@@ -19,7 +19,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\net45</OutputPath>
-    <DefineConstants>DEBUG;TRACE;NET45</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;NET45;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -28,7 +28,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\net45</OutputPath>
-    <DefineConstants>TRACE;NET45</DefineConstants>
+    <DefineConstants>TRACE;NET45;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -52,11 +52,15 @@
         </Reference>
         <Reference Include="Microsoft.AspNet.FileSystems, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
         <SpecificVersion>False</SpecificVersion>
-        <HintPath>..\..\packages\Microsoft.AspNet.FileSystems.0.1-alpha-t140125101521\lib\net45\Microsoft.AspNet.FileSystems.dll</HintPath>
+        <HintPath>..\..\packages\Microsoft.AspNet.FileSystems.0.1-alpha-t140125113323\lib\net45\Microsoft.AspNet.FileSystems.dll</HintPath>
         </Reference>
         <Reference Include="Microsoft.AspNet.Abstractions, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null">
         <SpecificVersion>False</SpecificVersion>
-        <HintPath>..\..\packages\Microsoft.AspNet.Abstractions.0.1-alpha-t140125104446\lib\net45\Microsoft.AspNet.Abstractions.dll</HintPath>
+        <HintPath>..\..\packages\Microsoft.AspNet.Abstractions.0.1-alpha-t140126002929\lib\net45\Microsoft.AspNet.Abstractions.dll</HintPath>
+        </Reference>
+        <Reference Include="Microsoft.AspNet.Abstractions.Owin, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null">
+        <SpecificVersion>False</SpecificVersion>
+        <HintPath>..\..\packages\Microsoft.AspNet.Abstractions.Owin.0.1-alpha-t140126002929\lib\net45\Microsoft.AspNet.Abstractions.Owin.dll</HintPath>
         </Reference>
         <Reference Include="Microsoft.AspNet.DependencyInjection, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null">
         <SpecificVersion>False</SpecificVersion>
@@ -66,7 +70,6 @@
   <ItemGroup>
     <Compile Include="Home2Controller.cs" />
 <Compile Include="HomeController.cs" />
-<Compile Include="OwinHttpContext.cs" />
 <Compile Include="Startup.cs" />
 <Compile Include="ViewMetadata.cs" />
 <Compile Include="Models\Class1.cs" />

@@ -19,7 +19,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\K</OutputPath>
-    <DefineConstants>DEBUG;TRACE;K10</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;K10;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -28,14 +28,13 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\K</OutputPath>
-    <DefineConstants>TRACE;K10</DefineConstants>
+    <DefineConstants>TRACE;K10;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Home2Controller.cs" />
 <Compile Include="HomeController.cs" />
-<Compile Include="OwinHttpContext.cs" />
 <Compile Include="Startup.cs" />
 <Compile Include="ViewMetadata.cs" />
 <Compile Include="Models\Class1.cs" />
@@ -46,11 +45,11 @@
     
         <Reference Include="Microsoft.AspNet.FileSystems, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
         <SpecificVersion>False</SpecificVersion>
-        <HintPath>..\..\packages\Microsoft.AspNet.FileSystems.0.1-alpha-t140125101521\lib\k10\Microsoft.AspNet.FileSystems.dll</HintPath>
+        <HintPath>..\..\packages\Microsoft.AspNet.FileSystems.0.1-alpha-t140125113323\lib\k10\Microsoft.AspNet.FileSystems.dll</HintPath>
         </Reference>
         <Reference Include="Microsoft.AspNet.Abstractions, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null">
         <SpecificVersion>False</SpecificVersion>
-        <HintPath>..\..\packages\Microsoft.AspNet.Abstractions.0.1-alpha-t140125104446\lib\k10\Microsoft.AspNet.Abstractions.dll</HintPath>
+        <HintPath>..\..\packages\Microsoft.AspNet.Abstractions.0.1-alpha-t140126002929\lib\k10\Microsoft.AspNet.Abstractions.dll</HintPath>
         </Reference>
         <Reference Include="Microsoft.AspNet.DependencyInjection, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null">
         <SpecificVersion>False</SpecificVersion>
