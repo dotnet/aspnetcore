@@ -88,6 +88,41 @@ functions
 
             private static IDictionary<string, object> GetProjectMapping(string solutionPath, string[] jsonFiles)
             {
+                var solutionProjects = new Dictionary<string, string>();
+
+                foreach (var solutionFile in Directory.GetFiles(solutionPath, "*.sln"))
+                {
+                    foreach (var line in File.ReadAllLines(solutionFile))
+                    {
+                        if (!line.StartsWith("Project", StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
+
+                        var eq = line.IndexOf('=');
+
+                        if (eq == -1)
+                        {
+                            continue;
+                        }
+
+                        var parts = line.Substring(eq + 1).Trim().Split((char)',')
+                                        .Select(p => p.Trim().Trim((char)'"'))
+                                        .ToList();
+
+                        if (parts.Count != 3)
+                        {
+                            continue;
+                        }
+
+                        string name = parts[0];
+                        string path = Path.Combine(solutionPath, parts[1]);
+                        string guid = parts[2].Trim((char)'{', (char)'}');
+
+                        solutionProjects[path] = guid;
+                    }
+                }
+                
                 var dict = new Dictionary<string, object>();
 
                 foreach (var path in jsonFiles)
@@ -95,18 +130,18 @@ functions
                     string projectDir = Path.GetDirectoryName(path);
                     string projectName = projectDir.Substring(Path.GetDirectoryName(projectDir).Length).Trim(Path.DirectorySeparatorChar);
 
-                    // {  
-                    //   "p1" : { "net45" : "id", "k10" : "pid1", path: "src\p1" },
-                    //   "p2" : { "net45" : "id", "k10" : "pid2", path: "src\p2" }
-                    // }
-                    //
-
                     string net45Project = Path.Combine(projectDir, GetProjectFileName(projectName, "net45"));
                     string k10Project = Path.Combine(projectDir, GetProjectFileName(projectName, "k10"));
 
                     var configs = new Dictionary<string, object>();
-                    configs["net45"] = GetProjectGuidFromFileOrCreateNew(net45Project);
-                    configs["k10"] = GetProjectGuidFromFileOrCreateNew(k10Project);
+                    configs["net45"] = solutionProjects.ContainsKey(net45Project) ? 
+                        solutionProjects[net45Project] :
+                        GetProjectGuidFromFileOrCreateNew(net45Project);
+
+                    configs["k10"] = solutionProjects.ContainsKey(k10Project) ?
+                        solutionProjects[k10Project] :
+                        GetProjectGuidFromFileOrCreateNew(k10Project);
+
                     configs["path"] = Path.GetDirectoryName(path.Substring(solutionPath.Length).TrimStart(Path.DirectorySeparatorChar));
 
                     dict[projectName] = configs;
