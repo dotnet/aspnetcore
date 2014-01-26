@@ -1,18 +1,19 @@
 {
   "version" : "0.1-alpha-*",
   "dependencies": {
-    "Owin": "1.0",
-    "Microsoft.Owin": "2.1.0",
-    "Microsoft.Owin.Diagnostics": "2.1.0",
     "Microsoft.AspNet.FileSystems": "0.1-alpha-*",
     "Microsoft.AspNet.Abstractions": "0.1-alpha-*",
-    "Microsoft.AspNet.Abstractions.Owin": "0.1-alpha-*",
     "Microsoft.AspNet.DependencyInjection" : "0.1-alpha-*",
     "Microsoft.AspNet.Mvc" : "",
     "Microsoft.AspNet.Mvc.Razor" : ""
   },
   "configurations": {
-    "net45": { },
+    "net45": { 
+      "Owin": "1.0",
+      "Microsoft.Owin": "2.1.0",
+      "Microsoft.Owin.Diagnostics": "2.1.0",
+      "Microsoft.AspNet.Abstractions.Owin": "0.1-alpha-*"
+    },
     "k10" : { }
   }
 }

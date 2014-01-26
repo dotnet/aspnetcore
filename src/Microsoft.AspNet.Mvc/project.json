@@ -1,7 +1,7 @@
 {
   "version" : "0.1-alpha-*",
   "dependencies": {
-    "Newtonsoft.Json": "4.5.11",
+    "Newtonsoft.Json": "5.0.8",
     "Microsoft.AspNet.DependencyInjection" : "0.1-alpha-*",
     "Microsoft.AspNet.Abstractions": "0.1-alpha-*"
   },
