@@ -9,7 +9,9 @@
   },
   "configurations": {
     "net45": {
-      "Microsoft.AspNet.Razor" : "3.1.0"
+      "dependencies": {
+         "Microsoft.AspNet.Razor" : "3.1.0"
+       }
     },
     "k10" : { }
   }
