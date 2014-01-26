@@ -8,11 +8,13 @@
 *.suo
 *.cache
 *.docstates
+_ReSharper.*
 *.csproj.user
 *[Rr]e[Ss]harper.user
 _ReSharper.*/
 packages/*
 artifacts/*
+msbuild.log
 PublishProfiles/
 *.psess
 *.vsp
@@ -20,5 +22,10 @@ PublishProfiles/
 *.userprefs
 *DS_Store
 *.ncrunchsolution
-.nuget/NuGet.exe
+*.log
+*.vspx
+/.symbols
+nuget.exe
 build/
+*net45.csproj
+*k10.csproj
