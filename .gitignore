@@ -27,3 +27,5 @@ PublishProfiles/
 /.symbols
 nuget.exe
 build/
+*net45.csproj
+*k10.csproj
