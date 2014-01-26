@@ -1,4 +1,4 @@
-﻿#if OWIN
+﻿#if NET45
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
@@ -32,10 +32,12 @@ namespace MvcSample
 
             app.Run(async context =>
             {
-                // Pretending to be routing
-                var routeData = new FakeRouteData(context);
+                var httpContext = new OwinHttpContext(context);
 
-                await handler.ExecuteAsync(context, routeData);
+                // Pretending to be routing
+                var routeData = new FakeRouteData(httpContext);
+
+                await handler.ExecuteAsync(httpContext, routeData);
             });
         }
     }

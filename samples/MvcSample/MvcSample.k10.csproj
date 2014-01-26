@@ -35,6 +35,7 @@
   <ItemGroup>
     <Compile Include="Home2Controller.cs" />
 <Compile Include="HomeController.cs" />
+<Compile Include="OwinHttpContext.cs" />
 <Compile Include="Startup.cs" />
 <Compile Include="ViewMetadata.cs" />
 <Compile Include="Models\Class1.cs" />
@@ -50,6 +51,10 @@
         <Reference Include="Microsoft.AspNet.Abstractions, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null">
         <SpecificVersion>False</SpecificVersion>
         <HintPath>..\..\packages\Microsoft.AspNet.Abstractions.0.1-alpha-t140125104446\lib\k10\Microsoft.AspNet.Abstractions.dll</HintPath>
+        </Reference>
+        <Reference Include="Microsoft.AspNet.DependencyInjection, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null">
+        <SpecificVersion>False</SpecificVersion>
+        <HintPath>..\..\packages\Microsoft.AspNet.DependencyInjection.0.1-alpha-t140125113429\lib\k10\Microsoft.AspNet.DependencyInjection.dll</HintPath>
         </Reference>
   </ItemGroup>
   <ItemGroup>
