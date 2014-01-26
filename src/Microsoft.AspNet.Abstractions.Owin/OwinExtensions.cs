@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if NET45
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Abstractions.Owin;
@@ -11,10 +12,11 @@ namespace Owin
         {
             app.Run(context =>
             {
-                var httpContext = new OwinHttpContext(context);
+                var httpContext = new MicrosoftOwinHttpContext(context);
 
                 return handler(httpContext);
             });
         }
     }
 }
+#endif

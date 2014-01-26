@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if NET45
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
@@ -6,13 +7,13 @@ using Microsoft.Owin;
 
 namespace Microsoft.AspNet.Abstractions.Owin
 {
-    public class OwinHttpContext : HttpContext
+    public class MicrosoftOwinHttpContext : HttpContext
     {
         private readonly IOwinContext _context;
         private readonly HttpRequest _request;
         private readonly HttpResponse _response;
 
-        public OwinHttpContext(IOwinContext context)
+        public MicrosoftOwinHttpContext(IOwinContext context)
         {
             _context = context;
             _request = new OwinHttpRequest(this, context.Request);
@@ -173,3 +174,4 @@ namespace Microsoft.AspNet.Abstractions.Owin
         }
     }
 }
+#endif
