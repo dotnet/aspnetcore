@@ -308,10 +308,9 @@ functions
                 foreach (var reference in references)
                 {
                     var version = (string)reference.Value;
+                    var pattern = reference.Key + "." + version;
 
-                    string pattern = version.IndexOf("*") != -1 ? reference.Key + "*" : reference.Key + "." + reference.Value;
-
-                    var packageDir = Directory.GetDirectories(packagesDir, pattern).FirstOrDefault();
+                    var packageDir = Directory.GetDirectories(packagesDir, pattern).OrderByDescending(p => p).FirstOrDefault();
 
                     if (packageDir == null)
                     {
