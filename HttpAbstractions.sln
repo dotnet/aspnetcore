@@ -27,6 +27,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{1D737C82-F
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.PipelineCore.Tests", "test\Microsoft.AspNet.PipelineCore.Tests\Microsoft.AspNet.PipelineCore.Tests.csproj", "{86942914-0334-4352-87ED-B971281C74E2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Abstractions.Owin.net45", "src\Microsoft.AspNet.Abstractions.Owin\Microsoft.AspNet.Abstractions.Owin.net45.csproj", "{3D838D54-3F3B-4E5C-81DF-68875FDD2B7A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -73,6 +75,10 @@ Global
 		{86942914-0334-4352-87ED-B971281C74E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{86942914-0334-4352-87ED-B971281C74E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{86942914-0334-4352-87ED-B971281C74E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D838D54-3F3B-4E5C-81DF-68875FDD2B7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D838D54-3F3B-4E5C-81DF-68875FDD2B7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D838D54-3F3B-4E5C-81DF-68875FDD2B7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D838D54-3F3B-4E5C-81DF-68875FDD2B7A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -88,5 +94,6 @@ Global
 		{68A538BA-D542-49CB-9615-B4F5A4E78C87} = {D38DDB2B-1138-4F45-8A6A-9499E880F620}
 		{E31D45AC-70F3-47D4-9625-A4D8C6AA1B6B} = {D38DDB2B-1138-4F45-8A6A-9499E880F620}
 		{D36288AF-8A0E-48DD-8AF8-15B72F91C70A} = {D38DDB2B-1138-4F45-8A6A-9499E880F620}
+		{3D838D54-3F3B-4E5C-81DF-68875FDD2B7A} = {D38DDB2B-1138-4F45-8A6A-9499E880F620}
 	EndGlobalSection
 EndGlobal

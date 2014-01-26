@@ -1,0 +1,11 @@
+{
+  "version": "0.1-alpha-*",
+  "dependencies": {
+    "Owin": "1.0",
+    "Microsoft.Owin": "2.1.0",
+    "Microsoft.AspNet.Abstractions": ""
+  },
+  "configurations": {
+    "net45": { }
+  }
+}
