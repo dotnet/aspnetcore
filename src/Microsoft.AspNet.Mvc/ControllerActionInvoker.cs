@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Mvc
                 }
             }
 
-            var method = controllerType.GetTypeInfo().GetDeclaredMethod("Initialize");
+            var method = controllerType.GetRuntimeMethods().FirstOrDefault(m => m.Name.Equals("Initialize", StringComparison.OrdinalIgnoreCase));
 
             if (method == null)
             {
