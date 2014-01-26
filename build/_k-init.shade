@@ -1,0 +1,8 @@
+@{/*
+
+k-setup 
+    Restores the SDK and build system required for k projects.
+*/}
+
+nuget-install package='ProjectK' outputDir='packages' extra='-pre' 
+

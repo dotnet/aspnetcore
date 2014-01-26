@@ -1,7 +1,7 @@
 @{/*
 
 k 
-    Run klr commands in your project. Downloads and executes k sdk.
+    Run klr commands in your project. Executes k sdk.
 
 kVersion='0.0.1-pre-30109-087'
     May be passed to override the nuget package version holding xunit console runner.

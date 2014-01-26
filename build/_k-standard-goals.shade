@@ -12,7 +12,7 @@ default TEST_DIR='${Path.Combine(TARGET_DIR, "test")}'
 }
 
 #target-default target='default'
-  nuget-install package='ProjectK' outputDir='packages' extra='-pre'
+  k-init
   k-restore
   k-generate-projects solutionPath='${BASE_DIR}'
 
