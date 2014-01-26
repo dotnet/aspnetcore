@@ -266,10 +266,18 @@ functions
                     }
 
                     string output = Path.Combine(projectDir, GetProjectFileName(projectName, targetFramework));
+                    string current = File.ReadAllText(output);
 
-                    Log("Generated {0}", output);
+                    if (current != template) 
+                    {
+                        File.WriteAllText(output, template);
 
-                    File.WriteAllText(output, template);
+                        Log("Generated {0}", output);
+                    }
+                    else
+                    {
+                        Log("No changes required for {0}", output);
+                    }
                 }
             }
 
