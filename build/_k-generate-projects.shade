@@ -185,6 +185,8 @@ functions
 
                 foreach (var pair in configs)
                 {
+                    var allPackageReferences = new Dictionary<string, string>(packageReferences);
+
                     var targetFramework = pair.Key;
                     var props = (IDictionary<string, object>)pair.Value;
 
@@ -197,9 +199,15 @@ functions
                     {
                         if (!projectMapping.ContainsKey(dep.Key))
                         {
-                            if(String.IsNullOrEmpty((string)dep.Value))
+                            var version = (string)dep.Value;
+
+                            if(String.IsNullOrEmpty(version))
                             {
                                 gacReferences.Add(dep.Key);
+                            }
+                            else
+                            {
+                                allPackageReferences[dep.Key] = version;
                             }
                         }
                         else
@@ -215,7 +223,7 @@ functions
                                        .Replace("{ExtraProperties}", extraProperties)
                                        .Replace("{Files}", filesString)
                                        .Replace("{ProjectReferences}", BuildProjectReferences(projectReferences, targetFramework, projectMapping))
-                                       .Replace("{References}", BuildReferences(packageReferences, gacReferences, packagesDir, targetFramework, GetCandidates(targetFramework)));
+                                       .Replace("{References}", BuildReferences(allPackageReferences, gacReferences, packagesDir, targetFramework, GetCandidates(targetFramework)));
 
                     if (targetFramework.StartsWith("k"))
                     {
