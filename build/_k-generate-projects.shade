@@ -266,7 +266,16 @@ functions
                     }
 
                     string output = Path.Combine(projectDir, GetProjectFileName(projectName, targetFramework));
-                    string current = File.ReadAllText(output);
+                    string current = "";
+                    
+                    try
+                    {
+                        current = File.Exists(output) ? File.ReadAllText(output) : "";
+                    }
+                    catch (Exception ex)
+                    {
+                        Warn(ex.Message);
+                    }
 
                     if (current != template) 
                     {
