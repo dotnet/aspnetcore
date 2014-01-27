@@ -26,6 +26,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Abstractions.Owin.net45", "src\Microsoft.AspNet.Abstractions.Owin\Microsoft.AspNet.Abstractions.Owin.net45.csproj", "{E6B7056F-547E-4B96-9E58-858DDDAE75D3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Abstractions.Owin.k10", "src\Microsoft.AspNet.Abstractions.Owin\Microsoft.AspNet.Abstractions.Owin.k10.csproj", "{C5C104A4-EE38-4D77-AC77-DF599FD5443A}"
+
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

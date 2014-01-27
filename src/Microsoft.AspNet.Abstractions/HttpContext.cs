@@ -1,13 +1,15 @@
 using System;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Abstractions
 {
     public abstract class HttpContext : IDisposable
     {
-        // TODO - review IOwinContext for properties
-
         public abstract HttpRequest Request { get; }
+
         public abstract HttpResponse Response { get; }
+        
+        public abstract IDictionary<object, object> Items { get; }
 
         public abstract void Dispose();
 

@@ -18,6 +18,7 @@ namespace Microsoft.AspNet.PipelineCore
         }
 
         public override HttpRequest Request { get { return _request; } }
+
         public override HttpResponse Response { get { return _response; } }
 
         public int Revision { get { return _environment.Revision; } }

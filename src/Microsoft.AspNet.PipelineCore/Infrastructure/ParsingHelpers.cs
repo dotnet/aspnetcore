@@ -1,4 +1,5 @@
 using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.PipelineCore.Collections;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -514,21 +515,32 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
 
         private static readonly char[] SemicolonAndComma = new[] { ';', ',' };
 
+        internal static T GetItem<T>(HttpRequest request, string key)
+        {
+            object value;
+            return request.HttpContext.Items.TryGetValue(key, out value) ? (T)value : default(T);
+        }
+
+        internal static void SetItem<T>(HttpRequest request, string key, T value)
+        {
+            request.HttpContext.Items[key] = value;
+        }
+
         internal static IDictionary<string, string> GetCookies(HttpRequest request)
         {
-            var cookies = request.Get<IDictionary<string, string>>("Microsoft.Owin.Cookies#dictionary");
+            var cookies = GetItem<IDictionary<string, string>>(request, "Microsoft.Owin.Cookies#dictionary");
             if (cookies == null)
             {
                 cookies = new Dictionary<string, string>(StringComparer.Ordinal);
-                request.Set("Microsoft.Owin.Cookies#dictionary", cookies);
+                SetItem(request, "Microsoft.Owin.Cookies#dictionary", cookies);
             }
 
             string text = GetHeader(request.Headers, "Cookie");
-            if (request.Get<string>("Microsoft.Owin.Cookies#text") != text)
+            if (GetItem<string>(request, "Microsoft.Owin.Cookies#text") != text)
             {
                 cookies.Clear();
                 ParseDelimited(text, SemicolonAndComma, AddCookieCallback, cookies);
-                request.Set("Microsoft.Owin.Cookies#text", text);
+                SetItem(request, "Microsoft.Owin.Cookies#text", text);
             }
             return cookies;
         }
@@ -570,14 +582,9 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
                 scanIndex = delimiterIndex + 1;
             }
         }
-
-        internal static string GetJoinedValue(IDictionary<string, string[]> Store, string key)
-        {
-            throw new NotImplementedException();
-        }
     }
 
-    internal static partial class OwinHelpers
+    internal static partial class ParsingHelpers
     {
         public static string GetHeader(IDictionary<string, string[]> headers, string key)
         {
@@ -768,7 +775,7 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
         }
     }
 
-    internal static partial class OwinHelpers
+    internal static partial class ParsingHelpers
     {
         private static readonly Action<string, string, object> AppendItemCallback = (name, value, state) =>
         {
@@ -789,15 +796,15 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
 
         internal static IDictionary<string, string[]> GetQuery(HttpRequest request)
         {
-            var query = request.Get<IDictionary<string, string[]>>("Microsoft.Owin.Query#dictionary");
+            var query = GetItem<IDictionary<string, string[]>>(request, "Microsoft.Owin.Query#dictionary");
             if (query == null)
             {
                 query = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
-                request.Set("Microsoft.Owin.Query#dictionary", query);
+                SetItem(request, "Microsoft.Owin.Query#dictionary", query);
             }
 
             string text = request.QueryString.Value;
-            if (request.Get<string>("Microsoft.Owin.Query#text") != text)
+            if (GetItem<string>(request, "Microsoft.Owin.Query#text") != text)
             {
                 query.Clear();
                 var accumulator = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
@@ -806,7 +813,7 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
                 {
                     query.Add(kv.Key, kv.Value.ToArray());
                 }
-                request.Set("Microsoft.Owin.Query#text", text);
+                SetItem(request, "Microsoft.Owin.Query#text", text);
             }
             return query;
         }
@@ -842,7 +849,7 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
         }
     }
 
-    internal static partial class OwinHelpers
+    internal static partial class ParsingHelpers
     {
         internal static string GetHost(HttpRequest request)
         {
