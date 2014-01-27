@@ -1,6 +1,6 @@
 
 var PROJECT='AspNet'
-var VERSION='0.1.0'
+var VERSION='0.1.${Environment.GetEnvironmentVariable("BUILD_NUMBER") ?? "0"}'
 
 use namespace='System'
 use namespace='System.IO'
@@ -13,11 +13,11 @@ var repos='${new Dictionary<string,string> {
     {"Logging", "git@github.com:aspnet/Logging.git"},
     {"Data", "git@github.com:aspnet/Data.git"},
     {"Razor", "git@github.com:aspnet/Razor.git"},
-    {"Mvc", "git@github.com:aspnet/Mvc.git"},
+    {"WebFx", "git@github.com:aspnet/WebFx.git"},
 }}'
 
 default BASE_DIR='${Directory.GetCurrentDirectory()}'
-default TARGET_DIR='${Path.Combine(BASE_DIR, "artifacts")}'
+default TARGET_DIR='${Path.Combine(BASE_DIR, "artifacts", "build")}'
 
 #default .compile
 
@@ -49,7 +49,7 @@ default TARGET_DIR='${Path.Combine(BASE_DIR, "artifacts")}'
 
 #only-compile target='compile'
     @{
-        var failed = new Dictionary<string,Exception>();
+        var failed = new Dictionary<string, Exception>();
         foreach(var repo in repos) 
         {
             try
