@@ -185,7 +185,6 @@ functions
                 var d = serializer.DeserializeObject(jsonText) as IDictionary<string, object>;
                 var configs = GetObject(d, "configurations") ?? new Dictionary<string, object>();
                 var dependencies = GetObject(d, "dependencies") ?? new Dictionary<string, object>();
-                var compilationOptions = GetObject(d, "compilationOptions") ?? new Dictionary<string, object>();
 
                 if(configs.Count == 0)
                 {
@@ -209,12 +208,6 @@ functions
                                                     .Select(r => r.Key)
                                                     .ToList();
 
-                var defines = Get<IEnumerable<object>>(compilationOptions, "define") ?? new object[0];
-                object unsafeValue = Get<object>(compilationOptions, "allowUnsafe");
-                bool allowUnsafeCode = unsafeValue == null ? false : (bool)unsafeValue;
-
-                string extraProperties = allowUnsafeCode ? "\n<AllowUnsafeBlocks>true</AllowUnsafeBlocks>" : "";
-
                 // HACK: Assume the packages folder is 2 up from the projectDir
                 string packagesDir = Path.GetFullPath(Path.Combine(projectDir, "..", "..", "packages"));
 
@@ -224,6 +217,14 @@ functions
 
                     var targetFramework = pair.Key;
                     var props = (IDictionary<string, object>)pair.Value;
+
+                    var compilationOptions = GetObject(props, "compilationOptions") ?? new Dictionary<string, object>();
+
+                    var defines = Get<IEnumerable<object>>(compilationOptions, "define") ?? new object[0];
+                    object unsafeValue = Get<object>(compilationOptions, "allowUnsafe");
+                    bool allowUnsafeCode = unsafeValue == null ? false : (bool)unsafeValue;
+
+                    string extraProperties = allowUnsafeCode ? "\n<AllowUnsafeBlocks>true</AllowUnsafeBlocks>" : "";
 
                     string id = (string)GetObject(projectMapping, projectName)[targetFramework];
 
