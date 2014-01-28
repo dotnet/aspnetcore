@@ -1,3 +1,0 @@
-﻿@Code
-    Test()
-End Code

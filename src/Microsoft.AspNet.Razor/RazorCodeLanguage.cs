@@ -14,8 +14,7 @@ namespace Microsoft.AspNet.Razor
     {
         private static IDictionary<string, RazorCodeLanguage> _services = new Dictionary<string, RazorCodeLanguage>(StringComparer.OrdinalIgnoreCase)
         {
-            { "cshtml", new CSharpRazorCodeLanguage() },
-            { "vbhtml", new VBRazorCodeLanguage() }
+            { "cshtml", new CSharpRazorCodeLanguage() }
         };
 
         /// <summary>
@@ -30,11 +29,12 @@ namespace Microsoft.AspNet.Razor
         /// The name of the language (for use in System.Web.Compilation.BuildProvider.GetDefaultCompilerTypeForLanguage)
         /// </summary>
         public abstract string LanguageName { get; }
-
+#if NET45
         /// <summary>
         /// The type of the CodeDOM provider for this language
         /// </summary>
         public abstract Type CodeDomProviderType { get; }
+#endif
 
         /// <summary>
         /// Gets the RazorCodeLanguage registered for the specified file extension

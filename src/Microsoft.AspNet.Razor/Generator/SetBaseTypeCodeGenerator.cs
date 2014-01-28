@@ -23,6 +23,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override void GenerateCode(Span target, CodeGeneratorContext context)
         {
+#if NET45
             context.GeneratedClass.BaseTypes.Clear();
             context.GeneratedClass.BaseTypes.Add(new CodeTypeReference(ResolveType(context, BaseType.Trim())));
 
@@ -44,6 +45,7 @@ namespace Microsoft.AspNet.Razor.Generator
                 };
                 context.AddDesignTimeHelperStatement(stmt);
             }
+#endif
 
             // TODO: Make this generate the primary generator
             GenerateCode(target, context.CodeTreeBuilder, context);

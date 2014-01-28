@@ -9,6 +9,7 @@ using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 
 namespace Microsoft.AspNet.Razor.Generator
 {
+    #if NET45
     internal static class CodeGeneratorPaddingHelper
     {
         private static readonly char[] _newLineChars = { '\r', '\n' };
@@ -201,4 +202,5 @@ namespace Microsoft.AspNet.Razor.Generator
             return padding;
         }
     }
+#endif
 }

@@ -76,7 +76,9 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override void OnComplete()
         {
+#if NET45
             Context.FlushBufferedStatement();
+#endif
         }
 
         private void EnsureContextInitialized()
@@ -90,6 +92,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         protected virtual void Initialize(CodeGeneratorContext context)
         {
+#if NET45
             context.Namespace.Imports.AddRange(Host.NamespaceImports.Select(s => new CodeNamespaceImport(s)).ToArray());
 
             if (!String.IsNullOrEmpty(Host.DefaultBaseClass))
@@ -99,6 +102,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
             // Dev10 Bug 937438: Generate explicit Parameter-less constructor on Razor generated class
             context.GeneratedClass.Members.Add(new CodeConstructor() { Attributes = MemberAttributes.Public });
+#endif
         }
     }
 }

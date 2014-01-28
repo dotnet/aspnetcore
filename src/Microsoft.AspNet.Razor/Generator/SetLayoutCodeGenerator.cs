@@ -23,6 +23,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override void GenerateCode(Span target, CodeGeneratorContext context)
         {
+#if NET45
             if (!context.Host.DesignTimeMode && !String.IsNullOrEmpty(context.Host.GeneratedClassContext.LayoutPropertyName))
             {
                 context.TargetMethod.Statements.Add(
@@ -30,6 +31,7 @@ namespace Microsoft.AspNet.Razor.Generator
                         new CodePropertyReferenceExpression(null, context.Host.GeneratedClassContext.LayoutPropertyName),
                         new CodePrimitiveExpression(LayoutPath)));
             }
+#endif
 
             // TODO: Make this generate the primary generator
             GenerateCode(target, context.CodeTreeBuilder, context);

@@ -12,7 +12,6 @@ namespace Microsoft.AspNet.Razor.Test
             // Assert
             Assert.Equal(2, RazorCodeLanguage.Languages.Count);
             Assert.IsType<CSharpRazorCodeLanguage>(RazorCodeLanguage.Languages["cshtml"]);
-            Assert.IsType<VBRazorCodeLanguage>(RazorCodeLanguage.Languages["vbhtml"]);
         }
 
         [Fact]

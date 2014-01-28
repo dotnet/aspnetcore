@@ -39,6 +39,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override void GenerateStartBlockCode(Block target, CodeGeneratorContext context)
         {
+#if NET45
             _writer = context.CreateCodeWriter();
 
             string prefix = context.BuildCodeString(
@@ -61,6 +62,7 @@ namespace Microsoft.AspNet.Razor.Generator
             }
 
             _statementCollectorToken = context.ChangeStatementCollector(AddStatementToHelper);
+#endif
             _oldWriter = context.TargetWriterName;
             context.TargetWriterName = HelperWriterName;
 
@@ -75,6 +77,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override void GenerateEndBlockCode(Block target, CodeGeneratorContext context)
         {
+#if NET45
             _statementCollectorToken.Dispose();
             if (HeaderComplete)
             {
@@ -92,6 +95,8 @@ namespace Microsoft.AspNet.Razor.Generator
             _writer.WriteHelperTrailer();
 
             context.GeneratedClass.Members.Add(new CodeSnippetTypeMember(_writer.Content));
+
+#endif
             context.TargetWriterName = _oldWriter;
 
             // TODO: Make this generate the primary generator
@@ -120,6 +125,7 @@ namespace Microsoft.AspNet.Razor.Generator
             return "Helper:" + Signature.ToString("F", CultureInfo.CurrentCulture) + ";" + (HeaderComplete ? "C" : "I");
         }
 
+#if NET45
         private void AddStatementToHelper(string statement, CodeLinePragma pragma)
         {
             if (pragma != null)
@@ -133,5 +139,6 @@ namespace Microsoft.AspNet.Razor.Generator
                 _writer.WriteLinePragma();
             }
         }
+#endif
     }
 }

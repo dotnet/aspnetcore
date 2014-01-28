@@ -1,3 +1,0 @@
-﻿@Code
-Foo
-'End Code

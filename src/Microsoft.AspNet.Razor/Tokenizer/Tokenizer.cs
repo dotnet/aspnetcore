@@ -321,7 +321,9 @@ namespace Microsoft.AspNet.Razor.Tokenizer
         [Conditional("DEBUG")]
         internal void AssertCurrent(char current)
         {
+#if NET45
             Debug.Assert(CurrentCharacter == current, "CurrentCharacter Assumption violated", "Assumed that the current character would be {0}, but it is actually {1}", current, CurrentCharacter);
+#endif
         }
 
         ISymbol ITokenizer.NextSymbol()

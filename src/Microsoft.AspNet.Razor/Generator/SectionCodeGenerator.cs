@@ -25,6 +25,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override void GenerateStartBlockCode(Block target, CodeGeneratorContext context)
         {
+#if NET45
             string startBlock = context.BuildCodeString(cw =>
             {
                 cw.WriteStartMethodInvoke(context.Host.GeneratedClassContext.DefineSectionMethodName);
@@ -33,6 +34,7 @@ namespace Microsoft.AspNet.Razor.Generator
                 cw.WriteStartLambdaDelegate();
             });
             context.AddStatement(startBlock);
+#endif
 
             // TODO: Make this generate the primary generator
             GenerateStartBlockCode(target, context.CodeTreeBuilder, context);
@@ -45,6 +47,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override void GenerateEndBlockCode(Block target, CodeGeneratorContext context)
         {
+#if NET45
             string startBlock = context.BuildCodeString(cw =>
             {
                 cw.WriteEndLambdaDelegate();
@@ -52,6 +55,7 @@ namespace Microsoft.AspNet.Razor.Generator
                 cw.WriteEndStatement();
             });
             context.AddStatement(startBlock);
+#endif
 
             // TODO: Make this generate the primary generator
             GenerateEndBlockCode(target, context.CodeTreeBuilder, context);

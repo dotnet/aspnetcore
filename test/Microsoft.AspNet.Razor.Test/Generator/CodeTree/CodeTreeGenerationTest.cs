@@ -22,6 +22,6 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 File.WriteAllText("./testfile_ct.cs", results.GeneratedCode);
                 File.WriteAllText("./testfile_cd.cs", codDOMOutput);
             }, designTimeMode: false);
-        }
+        }   
     }
 }

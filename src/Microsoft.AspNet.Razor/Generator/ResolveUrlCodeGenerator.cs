@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Razor.Generator
                 new MarkupCodeGenerator().GenerateCode(target, context);
                 return;
             }
-
+#if NET45
             if (!context.Host.DesignTimeMode && String.IsNullOrEmpty(target.Content))
             {
                 return;
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Razor.Generator
             {
                 context.AddContextCall(target, context.Host.GeneratedClassContext.EndContextMethodName, isLiteral: false);
             }
-
+#endif
             // TODO: Make this generate the primary generator
             GenerateCode(target, context.CodeTreeBuilder, context);
         }

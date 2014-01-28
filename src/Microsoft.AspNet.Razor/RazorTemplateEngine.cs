@@ -166,15 +166,18 @@ namespace Microsoft.AspNet.Razor
             RazorCodeGenerator generator = CreateCodeGenerator(className, rootNamespace, sourceFileName);
             generator.DesignTimeMode = Host.DesignTimeMode;
             generator.Visit(results);
-
+#if NET45
             // Post process code
             Host.PostProcessGeneratedCode(generator.Context);
+#endif
 
             // Extract design-time mappings
             IDictionary<int, GeneratedCodeMapping> designTimeLineMappings = null;
             if (Host.DesignTimeMode)
             {
+#if NET45
                 designTimeLineMappings = generator.Context.CodeMappings;
+#endif
             }
 
             var builder = new CSharpCodeBuilder(generator.Context.CodeTreeBuilder.CodeTree, rootNamespace, Host, sourceFileName);
@@ -183,7 +186,9 @@ namespace Microsoft.AspNet.Razor
             // Collect results and return
             return new GeneratorResults(results, builderResult)
             {
+#if NET45
                 CCU = generator.Context.CompileUnit,
+#endif
                 CT = generator.Context.CodeTreeBuilder.CodeTree
             };
         }

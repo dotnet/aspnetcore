@@ -11,8 +11,6 @@ namespace Microsoft.AspNet.Razor
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
     public sealed class RazorDirectiveAttribute : Attribute
     {
-        private readonly object _typeId = new object();
-
         public RazorDirectiveAttribute(string name, string value)
         {
             if (String.IsNullOrEmpty(name))
@@ -22,11 +20,6 @@ namespace Microsoft.AspNet.Razor
 
             Name = name;
             Value = value;
-        }
-
-        public override object TypeId
-        {
-            get { return _typeId; }
         }
 
         public string Name { get; private set; }

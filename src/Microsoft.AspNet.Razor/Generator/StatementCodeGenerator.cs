@@ -15,6 +15,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override void GenerateCode(Span target, CodeGeneratorContext context)
         {
+#if NET45
             context.FlushBufferedStatement();
 
             string generatedCode = context.BuildCodeString(cw =>
@@ -29,6 +30,7 @@ namespace Microsoft.AspNet.Razor.Generator
             context.AddStatement(
                 generatedCode,
                 context.GenerateLinePragma(target, paddingCharCount));
+#endif
 
             // TODO: Make this generate the primary generator
             GenerateCode(target, context.CodeTreeBuilder, context);

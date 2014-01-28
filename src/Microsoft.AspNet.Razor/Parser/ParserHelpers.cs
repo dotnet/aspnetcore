@@ -33,7 +33,11 @@ namespace Microsoft.AspNet.Razor.Parser
                    value == '\f' ||
                    value == '\t' ||
                    value == '\u000B' || // Vertical Tab
+#if NET45
                    Char.GetUnicodeCategory(value) == UnicodeCategory.SpaceSeparator;
+#else
+                   Char.IsSeparator(value);
+#endif
         }
 
         [SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly", MessageId = "Whitespace", Justification = "This would be a breaking change in a shipping API")]
@@ -88,7 +92,11 @@ namespace Microsoft.AspNet.Razor.Parser
 
         public static bool IsDecimalDigit(char value)
         {
+#if NET45
             return Char.GetUnicodeCategory(value) == UnicodeCategory.DecimalDigitNumber;
+#else
+            return Char.IsDigit(value);
+#endif
         }
 
         public static bool IsLetterOrDecimalDigit(char value)
@@ -98,29 +106,49 @@ namespace Microsoft.AspNet.Razor.Parser
 
         public static bool IsLetter(char value)
         {
+#if NET45
             var cat = Char.GetUnicodeCategory(value);
+
             return cat == UnicodeCategory.UppercaseLetter
                    || cat == UnicodeCategory.LowercaseLetter
                    || cat == UnicodeCategory.TitlecaseLetter
                    || cat == UnicodeCategory.ModifierLetter
                    || cat == UnicodeCategory.OtherLetter
                    || cat == UnicodeCategory.LetterNumber;
+#else
+            return Char.IsLetter(value);
+#endif
+            
         }
 
         public static bool IsFormatting(char value)
         {
+#if NET45
             return Char.GetUnicodeCategory(value) == UnicodeCategory.Format;
+#else
+            return false; // TODO: Make the above work
+#endif
         }
 
         public static bool IsCombining(char value)
         {
+#if NET45
             var cat = Char.GetUnicodeCategory(value);
+
             return cat == UnicodeCategory.SpacingCombiningMark || cat == UnicodeCategory.NonSpacingMark;
+#else
+            return false; // TODO: Make the above work
+#endif
+            
         }
 
         public static bool IsConnecting(char value)
         {
+#if NET45
             return Char.GetUnicodeCategory(value) == UnicodeCategory.ConnectorPunctuation;
+#else
+            return false; // TODO: Make the above work
+#endif
         }
 
         public static string SanitizeClassName(string inputName)

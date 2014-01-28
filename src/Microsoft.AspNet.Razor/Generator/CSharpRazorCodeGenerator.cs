@@ -24,8 +24,9 @@ namespace Microsoft.AspNet.Razor.Generator
         protected override void Initialize(CodeGeneratorContext context)
         {
             base.Initialize(context);
-
+#if NET45
             context.GeneratedClass.Members.Insert(0, new CodeSnippetTypeMember(HiddenLinePragma));
+#endif
         }
     }
 }

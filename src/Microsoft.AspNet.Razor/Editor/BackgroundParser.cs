@@ -424,7 +424,9 @@ namespace Microsoft.AspNet.Razor.Editor
                         else
                         {
                             RazorEditorTrace.TraceLine(RazorResources.Trace_NoChangesArrived, fileNameOnly, parcel.Changes.Count);
+#if NET45
                             Thread.Yield();
+#endif
                         }
                     }
                 }

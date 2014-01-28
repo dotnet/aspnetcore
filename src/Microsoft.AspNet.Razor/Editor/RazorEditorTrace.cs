@@ -24,10 +24,12 @@ namespace Microsoft.AspNet.Razor.Editor
                 bool enabled;
                 if (Boolean.TryParse(Environment.GetEnvironmentVariable("RAZOR_EDITOR_TRACE"), out enabled))
                 {
+#if NET45
                     Trace.WriteLine(String.Format(
                         CultureInfo.CurrentCulture,
                         RazorResources.Trace_Startup,
                         enabled ? RazorResources.Trace_Enabled : RazorResources.Trace_Disabled));
+#endif
                     _enabled = enabled;
                 }
                 else
@@ -43,10 +45,12 @@ namespace Microsoft.AspNet.Razor.Editor
         {
             if (IsEnabled())
             {
+#if NET45
                 Trace.WriteLine(String.Format(
                     CultureInfo.CurrentCulture,
                     RazorResources.Trace_Format,
                     String.Format(CultureInfo.CurrentCulture, format, args)));
+#endif
             }
         }
     }

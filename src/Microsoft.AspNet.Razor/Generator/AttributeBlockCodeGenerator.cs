@@ -33,6 +33,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override void GenerateStartBlockCode(Block target, CodeGeneratorContext context)
         {
+#if NET45
             if (context.Host.DesignTimeMode)
             {
                 return; // Don't generate anything!
@@ -56,10 +57,8 @@ namespace Microsoft.AspNet.Razor.Generator
                 cw.WriteLocationTaggedString(Prefix);
                 cw.WriteParameterSeparator();
                 cw.WriteLocationTaggedString(Suffix);
-
-                // In VB, we need a line continuation
-                cw.WriteLineContinuation();
             }));
+#endif
 
             // TODO: Make this generate the primary generator
             GenerateStartBlockCode(target, context.CodeTreeBuilder, context);
@@ -72,6 +71,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override void GenerateEndBlockCode(Block target, CodeGeneratorContext context)
         {
+#if NET45
             if (context.Host.DesignTimeMode)
             {
                 return; // Don't generate anything!
@@ -83,7 +83,7 @@ namespace Microsoft.AspNet.Razor.Generator
                 cw.WriteEndMethodInvoke();
                 cw.WriteEndStatement();
             }));
-
+#endif
             // TODO: Make this generate the primary generator
             GenerateEndBlockCode(target, context.CodeTreeBuilder, context);
         }

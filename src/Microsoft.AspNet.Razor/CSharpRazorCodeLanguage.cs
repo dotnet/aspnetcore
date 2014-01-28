@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Razor
         {
             get { return CSharpLanguageName; }
         }
-
+#if NET45
         /// <summary>
         /// Returns the type of the CodeDOM provider for this language
         /// </summary>
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Razor
         {
             get { return typeof(CSharpCodeProvider); }
         }
-
+#endif
         /// <summary>
         /// Constructs a new instance of the code parser for this language
         /// </summary>

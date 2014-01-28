@@ -37,8 +37,9 @@ namespace Microsoft.AspNet.Razor
         public string GeneratedCode { get; private set; }
         public IList<LineMapping> DesignTimeLineMappings { get; private set; }
 
+#if NET45
         public CodeCompileUnit CCU { get; set; }
-
+#endif
         internal CodeTree CT { get; set; }
     }
 }

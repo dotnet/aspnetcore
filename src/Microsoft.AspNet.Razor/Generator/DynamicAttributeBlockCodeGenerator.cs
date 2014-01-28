@@ -40,6 +40,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override void GenerateStartBlockCode(Block target, CodeGeneratorContext context)
         {
+#if NET45
             if (context.Host.DesignTimeMode)
             {
                 return; // Don't generate anything!
@@ -47,10 +48,13 @@ namespace Microsoft.AspNet.Razor.Generator
 
             // What kind of block is nested within
             string generatedCode;
+#endif
             Block child = target.Children.Where(n => n.IsBlock).Cast<Block>().FirstOrDefault();
+
             if (child != null && child.Type == BlockType.Expression)
             {
                 _isExpression = true;
+#if NET45
                 generatedCode = context.BuildCodeString(cw =>
                 {
                     cw.WriteParameterSeparator();
@@ -59,10 +63,11 @@ namespace Microsoft.AspNet.Razor.Generator
                     cw.WriteParameterSeparator();
                     cw.WriteStartMethodInvoke("Tuple.Create", "System.Object", "System.Int32");
                 });
-
+#endif
                 _oldRenderingMode = context.ExpressionRenderingMode;
                 context.ExpressionRenderingMode = ExpressionRenderingMode.InjectCode;
             }
+#if NET45
             else
             {
                 generatedCode = context.BuildCodeString(cw =>
@@ -79,7 +84,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
             context.MarkEndOfGeneratedCode();
             context.BufferStatementFragment(generatedCode);
-
+#endif
             _oldTargetWriter = context.TargetWriterName;
             context.TargetWriterName = ValueWriterName;
 
@@ -102,6 +107,7 @@ namespace Microsoft.AspNet.Razor.Generator
             string generatedCode;
             if (_isExpression)
             {
+#if NET45
                 generatedCode = context.BuildCodeString(cw =>
                 {
                     cw.WriteParameterSeparator();
@@ -113,8 +119,10 @@ namespace Microsoft.AspNet.Razor.Generator
                     cw.WriteEndMethodInvoke();
                     cw.WriteLineContinuation();
                 });
+#endif
                 context.ExpressionRenderingMode = _oldRenderingMode;
             }
+#if NET45
             else
             {
                 generatedCode = context.BuildCodeString(cw =>
@@ -133,8 +141,8 @@ namespace Microsoft.AspNet.Razor.Generator
             }
 
             context.AddStatement(generatedCode);
+#endif
             context.TargetWriterName = _oldTargetWriter;
-
 
             // TODO: Make this generate the primary generator
             GenerateEndBlockCode(target, context.CodeTreeBuilder, context);

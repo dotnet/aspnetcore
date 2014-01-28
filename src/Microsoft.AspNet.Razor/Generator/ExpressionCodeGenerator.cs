@@ -17,6 +17,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override void GenerateStartBlockCode(Block target, CodeGeneratorContext context)
         {
+#if NET45
             if (context.Host.EnableInstrumentation && context.ExpressionRenderingMode == ExpressionRenderingMode.WriteToOutput)
             {
                 Span contentSpan = target.Children
@@ -54,6 +55,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
             context.BufferStatementFragment(writeInvocation);
             context.MarkStartOfGeneratedCode();
+#endif
 
             // TODO: Make this generate the primary generator
             GenerateStartBlockCode(target, context.CodeTreeBuilder, context);
@@ -66,6 +68,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override void GenerateEndBlockCode(Block target, CodeGeneratorContext context)
         {
+#if NET45
             string endBlock = context.BuildCodeString(cw =>
             {
                 if (context.ExpressionRenderingMode == ExpressionRenderingMode.WriteToOutput)
@@ -98,6 +101,7 @@ namespace Microsoft.AspNet.Razor.Generator
                     context.AddContextCall(contentSpan, context.Host.GeneratedClassContext.EndContextMethodName, false);
                 }
             }
+#endif
 
             // TODO: Make this generate the primary generator
             GenerateEndBlockCode(target, context.CodeTreeBuilder, context);
@@ -110,12 +114,14 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override void GenerateCode(Span target, CodeGeneratorContext context)
         {
+#if NET45
             Span sourceSpan = null;
             if (context.CreateCodeWriter().SupportsMidStatementLinePragmas || context.ExpressionRenderingMode == ExpressionRenderingMode.WriteToOutput)
             {
                 sourceSpan = target;
             }
             context.BufferStatementFragment(target.Content, sourceSpan);
+#endif
 
             // TODO: Make this generate the primary generator
             GenerateCode(target, context.CodeTreeBuilder, context);

@@ -5,7 +5,9 @@ using System.Globalization;
 
 namespace Microsoft.AspNet.Razor.Text
 {
+#if NET45
     [Serializable]
+#endif
     public struct SourceLocation : IEquatable<SourceLocation>, IComparable<SourceLocation>
     {
         public static readonly SourceLocation Undefined = CreateUndefined();

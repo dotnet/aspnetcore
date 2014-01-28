@@ -20,11 +20,6 @@ namespace Microsoft.AspNet.Razor.Generator
     {
         internal const string DesignTimeHelperMethodName = "__RazorDesignTimeHelpers__";
 
-        private int _nextDesignTimePragmaId = 1;
-        private bool _expressionHelperVariableWriten;
-        private CodeMemberMethod _designTimeHelperMethod;
-        private StatementBuffer _currentBuffer = new StatementBuffer();
-
         private CodeGeneratorContext()
         {
             ExpressionRenderingMode = ExpressionRenderingMode.WriteToOutput;
@@ -33,60 +28,27 @@ namespace Microsoft.AspNet.Razor.Generator
         // Internal/Private state. Technically consumers might want to use some of these but they can implement them independently if necessary.
         // It's way safer to make them internal for now, especially with the code generator stuff in a bit of flux.
         internal ExpressionRenderingMode ExpressionRenderingMode { get; set; }
+        public string SourceFile { get; internal set; }
+
+        #region deletable
+#if NET45
+        private int _nextDesignTimePragmaId = 1;
+        private bool _expressionHelperVariableWriten;
+        private CodeMemberMethod _designTimeHelperMethod;
+        private StatementBuffer _currentBuffer = new StatementBuffer();
+
         private Action<string, CodeLinePragma> StatementCollector { get; set; }
         private Func<CodeWriter> CodeWriterFactory { get; set; }
 
-        public string SourceFile { get; internal set; }
         public CodeCompileUnit CompileUnit { get; internal set; }
+
         public CodeNamespace Namespace { get; internal set; }
         public CodeTypeDeclaration GeneratedClass { get; internal set; }
-        public RazorEngineHost Host { get; private set; }
-        public IDictionary<int, GeneratedCodeMapping> CodeMappings { get; private set; }
-        public string TargetWriterName { get; set; }
         public CodeMemberMethod TargetMethod { get; set; }
-
-        public CodeTreeBuilder CodeTreeBuilder { get; set; }
-
+        public IDictionary<int, GeneratedCodeMapping> CodeMappings { get; private set; }
         public string CurrentBufferedStatement
         {
             get { return _currentBuffer == null ? String.Empty : _currentBuffer.Builder.ToString(); }
-        }
-
-        public static CodeGeneratorContext Create(RazorEngineHost host, string className, string rootNamespace, string sourceFile, bool shouldGenerateLinePragmas)
-        {
-            return Create(host, null, className, rootNamespace, sourceFile, shouldGenerateLinePragmas);
-        }
-
-        internal static CodeGeneratorContext Create(RazorEngineHost host, Func<CodeWriter> writerFactory, string className, string rootNamespace, string sourceFile, bool shouldGenerateLinePragmas)
-        {
-            CodeGeneratorContext context = new CodeGeneratorContext()
-            {
-                CodeTreeBuilder = new CodeTreeBuilder(),
-                Host = host,
-                CodeWriterFactory = writerFactory,
-                SourceFile = shouldGenerateLinePragmas ? sourceFile : null,
-                CompileUnit = new CodeCompileUnit(),
-                Namespace = new CodeNamespace(rootNamespace),
-                GeneratedClass = new CodeTypeDeclaration(className)
-                {
-                    IsClass = true
-                },
-                TargetMethod = new CodeMemberMethod()
-                {
-                    Name = host.GeneratedClassContext.ExecuteMethodName,
-                    Attributes = MemberAttributes.Override | MemberAttributes.Public
-                },
-                CodeMappings = new Dictionary<int, GeneratedCodeMapping>()
-            };
-            context.CompileUnit.Namespaces.Add(context.Namespace);
-            context.Namespace.Types.Add(context.GeneratedClass);
-            context.GeneratedClass.Members.Add(context.TargetMethod);
-
-            context.Namespace.Imports.AddRange(host.NamespaceImports
-                                                   .Select(s => new CodeNamespaceImport(s))
-                                                   .ToArray());
-
-            return context;
         }
 
         public void AddDesignTimeHelperStatement(CodeSnippetStatement statement)
@@ -184,7 +146,7 @@ namespace Microsoft.AspNet.Razor.Generator
                 }
 
                 int paddingLength; // unused, in this case there is enough context in the original code to calculate the right padding length
-                                   // (padded.Length - _currentBuffer.Builder.Length)
+                // (padded.Length - _currentBuffer.Builder.Length)
 
                 string padded = CodeGeneratorPaddingHelper.Pad(Host, _currentBuffer.Builder.ToString(), sourceSpan, start, out paddingLength);
                 _currentBuffer.GeneratedCodeStart = start + (padded.Length - _currentBuffer.Builder.Length);
@@ -334,6 +296,53 @@ namespace Microsoft.AspNet.Razor.Generator
             {
                 CodeLength = Builder.Length - GeneratedCodeStart;
             }
+        }
+#endif
+        #endregion
+
+        public RazorEngineHost Host { get; private set; }
+        public string TargetWriterName { get; set; }
+
+        public CodeTreeBuilder CodeTreeBuilder { get; set; }
+
+        public static CodeGeneratorContext Create(RazorEngineHost host, string className, string rootNamespace, string sourceFile, bool shouldGenerateLinePragmas)
+        {
+            return Create(host, null, className, rootNamespace, sourceFile, shouldGenerateLinePragmas);
+        }
+
+        internal static CodeGeneratorContext Create(RazorEngineHost host, Func<CodeWriter> writerFactory, string className, string rootNamespace, string sourceFile, bool shouldGenerateLinePragmas)
+        {
+            CodeGeneratorContext context = new CodeGeneratorContext()
+            {
+                CodeTreeBuilder = new CodeTreeBuilder(),
+                Host = host,
+                SourceFile = shouldGenerateLinePragmas ? sourceFile : null,
+#if NET45
+                CodeWriterFactory = writerFactory,
+                CompileUnit = new CodeCompileUnit(),
+                Namespace = new CodeNamespace(rootNamespace),
+                GeneratedClass = new CodeTypeDeclaration(className)
+                {
+                    IsClass = true
+                },
+                TargetMethod = new CodeMemberMethod()
+                {
+                    Name = host.GeneratedClassContext.ExecuteMethodName,
+                    Attributes = MemberAttributes.Override | MemberAttributes.Public
+                },
+                CodeMappings = new Dictionary<int, GeneratedCodeMapping>()
+#endif
+            };
+#if NET45
+            context.CompileUnit.Namespaces.Add(context.Namespace);
+            context.Namespace.Types.Add(context.GeneratedClass);
+            context.GeneratedClass.Members.Add(context.TargetMethod);
+
+            context.Namespace.Imports.AddRange(host.NamespaceImports
+                                                   .Select(s => new CodeNamespaceImport(s))
+                                                   .ToArray());
+#endif
+            return context;
         }
     }
 }

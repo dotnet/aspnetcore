@@ -9,6 +9,7 @@ namespace Microsoft.AspNet.Razor.Generator
     {
         public override void GenerateStartBlockCode(Block target, CodeGeneratorContext context)
         {
+#if NET45
             // Flush the buffered statement since we're interrupting it with a comment.
             if (!String.IsNullOrEmpty(context.CurrentBufferedStatement))
             {
@@ -16,6 +17,7 @@ namespace Microsoft.AspNet.Razor.Generator
                 context.BufferStatementFragment(context.BuildCodeString(cw => cw.WriteLineContinuation()));
             }
             context.FlushBufferedStatement();
+#endif
         }
     }
 }

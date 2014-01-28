@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Razor.Generator
         public abstract void WriteSnippet(string snippet);
         public abstract void WriteStringLiteral(string literal);
         public abstract int WriteVariableDeclaration(string type, string name, string value);
-
+#if NET45
         public virtual void WriteLinePragma()
         {
             WriteLinePragma(null);
@@ -70,6 +70,17 @@ namespace Microsoft.AspNet.Razor.Generator
                 WriteLinePragma(pragma.LineNumber, pragma.FileName);
             }
         }
+
+        public CodeSnippetStatement ToStatement()
+        {
+            return new CodeSnippetStatement(Content);
+        }
+
+        public CodeSnippetTypeMember ToTypeMember()
+        {
+            return new CodeSnippetTypeMember(Content);
+        }
+#endif
 
         public virtual void WriteHiddenLinePragma()
         {
@@ -157,7 +168,9 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public virtual void WriteBooleanLiteral(bool value)
         {
+#if NET45
             WriteSnippet(value.ToString(CultureInfo.InvariantCulture));
+#endif
         }
 
         public void Dispose()
@@ -172,16 +185,6 @@ namespace Microsoft.AspNet.Razor.Generator
             {
                 InnerWriter.GetStringBuilder().Clear();
             }
-        }
-
-        public CodeSnippetStatement ToStatement()
-        {
-            return new CodeSnippetStatement(Content);
-        }
-
-        public CodeSnippetTypeMember ToTypeMember()
-        {
-            return new CodeSnippetTypeMember(Content);
         }
 
         protected internal abstract void EmitStartLambdaDelegate(string[] parameterNames);

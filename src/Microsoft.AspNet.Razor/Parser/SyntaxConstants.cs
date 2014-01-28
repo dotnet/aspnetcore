@@ -27,26 +27,5 @@ namespace Microsoft.AspNet.Razor.Parser
             public static readonly string LayoutKeyword = "layout";
             public static readonly string SessionStateKeyword = "sessionstate";
         }
-
-        [SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible", Justification = "Class is nested to provide better organization")]
-        public static class VB
-        {
-            public static readonly int ImportsKeywordLength = 7;
-            public static readonly string EndKeyword = "End";
-            public static readonly string CodeKeyword = "Code";
-            public static readonly string FunctionsKeyword = "Functions";
-            public static readonly string SectionKeyword = "Section";
-            public static readonly string StrictKeyword = "Strict";
-            public static readonly string ExplicitKeyword = "Explicit";
-            public static readonly string OffKeyword = "Off";
-            public static readonly string HelperKeyword = "Helper";
-            public static readonly string SelectCaseKeyword = "Select Case";
-            public static readonly string LayoutKeyword = "Layout";
-            public static readonly string EndCodeKeyword = "End Code";
-            public static readonly string EndHelperKeyword = "End Helper";
-            public static readonly string EndFunctionsKeyword = "End Functions";
-            public static readonly string EndSectionKeyword = "End Section";
-            public static readonly string SessionStateKeyword = "SessionState";
-        }
     }
 }

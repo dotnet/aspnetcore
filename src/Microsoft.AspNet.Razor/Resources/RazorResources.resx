@@ -177,10 +177,6 @@
     // OK here to use types from System.Drawing in the page.
 }</value>
   </data>
-  <data name="ParseError_Sections_Cannot_Be_Nested" xml:space="preserve">
-    <value>Section blocks ("{0}") cannot be nested.  Only one level of section blocks are allowed.</value>
-    <comment>{0} is one of SectionExample_VB or SectionExample_CS based on the language.</comment>
-  </data>
   <data name="ParseError_SingleLine_ControlFlowStatements_Not_Allowed" xml:space="preserve">
     <value>Expected a "{0}" but found a "{1}".  Block statements must be enclosed in "{{" and "}}".  You cannot use single-statement control-flow statements in CSHTML pages. For example, the following is not allowed:
 
@@ -209,10 +205,6 @@ Instead, wrap the contents of the block in "{{}}":
   </data>
   <data name="ParseError_Unterminated_String_Literal" xml:space="preserve">
     <value>Unterminated string literal.  Strings that start with a quotation mark (") must be terminated before the end of the line.  However, strings that start with @ and a quotation mark (@") can span multiple lines.</value>
-  </data>
-  <data name="ParseError_InvalidOptionValue" xml:space="preserve">
-    <value>"{1}" is not a valid value for the "{0}" option. The "Option {0}" statement must be followed by either "On" or "Off". </value>
-    <comment>{0} is either Strict or Explicit and represent VB's "Option Strict" and "Option Explicit" keywords</comment>
   </data>
   <data name="ParseError_UnknownOption" xml:space="preserve">
     <value>Unknown option: "{0}".</value>
@@ -251,14 +243,8 @@ Instead, wrap the contents of the block in "{{}}":
   <data name="ErrorComponent_Whitespace" xml:space="preserve">
     <value>space or line break</value>
   </data>
-  <data name="ParseError_Unexpected_Character_At_Start_Of_CodeBlock_VB" xml:space="preserve">
-    <value>"{0}" is not valid at the start of a code block.  Only identifiers, keywords, comments, and "(" are valid.</value>
-  </data>
   <data name="ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock" xml:space="preserve">
     <value>End-of-file was found after the "@" character.  "@" must be followed by a valid code block.  If you want to output an "@", escape it using the sequence: "@@"</value>
-  </data>
-  <data name="ParseError_Unexpected_WhiteSpace_At_Start_Of_CodeBlock_VB" xml:space="preserve">
-    <value>A space or line break was encountered after the "@" character.  Only valid identifiers, keywords, comments, and "(" are valid at the start of a code block and they must occur immediately following "@" with no space in between.</value>
   </data>
   <data name="Structure_Member_CannotBeNull" xml:space="preserve">
     <value>The {0} property of the {1} structure cannot be null.</value>
@@ -346,43 +332,6 @@ Instead, wrap the contents of the block in "{{}}":
   </data>
   <data name="ErrorComponent_Newline" xml:space="preserve">
     <value>line break</value>
-  </data>
-  <data name="SectionExample_VB" xml:space="preserve">
-    <value>@Section Header ... End Section</value>
-    <comment>In VBHTML, the @Section keyword is case-insensitive (as with all VB keywords), but the standard practice is to Title Case it</comment>
-  </data>
-  <data name="VBSymbol_CharacterLiteral" xml:space="preserve">
-    <value>&lt;&lt;character literal&gt;&gt;</value>
-  </data>
-  <data name="VBSymbol_Comment" xml:space="preserve">
-    <value>&lt;&lt;comment&gt;&gt;</value>
-  </data>
-  <data name="VBSymbol_DateLiteral" xml:space="preserve">
-    <value>&lt;&lt;date literal&gt;&gt;</value>
-  </data>
-  <data name="VBSymbol_FloatingPointLiteral" xml:space="preserve">
-    <value>&lt;&lt;floating point literal&gt;&gt;</value>
-  </data>
-  <data name="VBSymbol_Identifier" xml:space="preserve">
-    <value>&lt;&lt;identifier&gt;&gt;</value>
-  </data>
-  <data name="VBSymbol_IntegerLiteral" xml:space="preserve">
-    <value>&lt;&lt;integer literal&gt;&gt;</value>
-  </data>
-  <data name="VBSymbol_Keyword" xml:space="preserve">
-    <value>&lt;&lt;keyword&gt;&gt;</value>
-  </data>
-  <data name="VBSymbol_NewLine" xml:space="preserve">
-    <value>&lt;&lt;newline sequence&gt;&gt;</value>
-  </data>
-  <data name="VBSymbol_RazorComment" xml:space="preserve">
-    <value>&lt;&lt;razor comment&gt;&gt;</value>
-  </data>
-  <data name="VBSymbol_StringLiteral" xml:space="preserve">
-    <value>&lt;&lt;string literal&gt;&gt;</value>
-  </data>
-  <data name="VBSymbol_WhiteSpace" xml:space="preserve">
-    <value>&lt;&lt;white space&gt;&gt;</value>
   </data>
   <data name="HtmlSymbol_NewLine" xml:space="preserve">
     <value>&lt;&lt;newline sequence&gt;&gt;</value>

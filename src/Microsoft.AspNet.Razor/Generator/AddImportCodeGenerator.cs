@@ -35,6 +35,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override void GenerateCode(Span target, CodeGeneratorContext context)
         {
+#if NET45
             // Try to find the namespace in the existing imports
             string ns = Namespace;
             if (!String.IsNullOrEmpty(ns) && Char.IsWhiteSpace(ns[0]))
@@ -57,7 +58,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
             // Attach our info to the existing/new import.
             import.LinePragma = context.GenerateLinePragma(target);
-
+#endif
             // TODO: Make this generate the primary generator
             GenerateCode(target, context.CodeTreeBuilder, context);
         }

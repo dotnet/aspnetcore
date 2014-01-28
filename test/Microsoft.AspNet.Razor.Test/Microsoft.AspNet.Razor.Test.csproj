@@ -49,8 +49,6 @@
     <Compile Include="Framework\ParserTestBase.cs" />
     <Compile Include="Framework\RawTextSymbol.cs" />
     <Compile Include="Framework\TestSpanBuilder.cs" />
-    <Compile Include="Framework\VBHtmlCodeParserTestBase.cs" />
-    <Compile Include="Framework\VBHtmlMarkupParserTestBase.cs" />
     <Compile Include="Generator\CodeTree\CodeTreeGenerationTest.cs" />
     <Compile Include="Generator\GeneratedCodeMappingTest.cs" />
     <Compile Include="Generator\PaddingTest.cs" />
@@ -76,35 +74,14 @@
     <Compile Include="Parser\Html\HtmlAttributeTest.cs" />
     <Compile Include="Parser\Html\HtmlUrlAttributeTest.cs" />
     <Compile Include="Parser\ParserVisitorExtensionsTest.cs" />
-    <Compile Include="Parser\VB\VBRazorCommentsTest.cs" />
-    <Compile Include="Parser\VB\VBLayoutDirectiveTest.cs" />
-    <Compile Include="Parser\VB\VBAutoCompleteTest.cs" />
     <Compile Include="Parser\Html\HtmlTagsTest.cs" />
-    <Compile Include="Parser\VB\VBContinueStatementTest.cs" />
-    <Compile Include="Parser\VB\VBDirectiveTest.cs" />
-    <Compile Include="Parser\VB\VBExitStatementTest.cs" />
-    <Compile Include="Parser\VB\VBExplicitExpressionTest.cs" />
-    <Compile Include="Parser\VB\VBImplicitExpressionTest.cs" />
-    <Compile Include="Parser\VB\VBReservedWordsTest.cs" />
     <Compile Include="Parser\CSharp\CSharpReservedWordsTest.cs" />
-    <Compile Include="Parser\PartialParsing\VBPartialParsingTest.cs" />
     <Compile Include="Parser\PartialParsing\CSharpPartialParsingTest.cs" />
-    <Compile Include="Parser\VB\VBHelperTest.cs" />
     <Compile Include="Parser\CSharp\CSharpHelperTest.cs" />
     <Compile Include="Generator\RazorCodeGeneratorTest.cs" />
     <Compile Include="Parser\PartialParsing\PartialParsingTestBase.cs" />
-    <Compile Include="Parser\VB\VBNestedStatementsTest.cs" />
-    <Compile Include="Parser\VB\VBStatementTest.cs" />
     <Compile Include="Parser\WhitespaceRewriterTest.cs" />
     <Compile Include="RazorCodeLanguageTest.cs" />
-    <Compile Include="Parser\VB\VBHtmlDocumentTest.cs" />
-    <Compile Include="Parser\VB\VBErrorTest.cs" />
-    <Compile Include="Parser\VB\VBSectionTest.cs" />
-    <Compile Include="Parser\VB\VBTemplateTest.cs" />
-    <Compile Include="Parser\VB\VBExpressionsInCodeTest.cs" />
-    <Compile Include="Parser\VB\VBSpecialKeywordsTest.cs" />
-    <Compile Include="Parser\VB\VBBlockTest.cs" />
-    <Compile Include="Parser\VB\VBToMarkupSwitchTest.cs" />
     <Compile Include="Editor\RazorEditorParserTest.cs" />
     <Compile Include="RazorDirectiveAttributeTest.cs" />
     <Compile Include="RazorEngineHostTest.cs" />
@@ -165,12 +142,6 @@
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\HtmlCommentWithQuote_Double.cs" />
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\CodeTree.cs" />
     <Compile Include="Text\LineTrackingStringBufferTest.cs" />
-    <Compile Include="Tokenizer\VBTokenizerLiteralTest.cs" />
-    <Compile Include="Tokenizer\VBTokenizerIdentifierTest.cs" />
-    <Compile Include="Tokenizer\VBTokenizerCommentTest.cs" />
-    <Compile Include="Tokenizer\VBTokenizerOperatorsTest.cs" />
-    <Compile Include="Tokenizer\VBTokenizerTestBase.cs" />
-    <Compile Include="Tokenizer\VBTokenizerTest.cs" />
     <Compile Include="Tokenizer\CSharpTokenizerCommentTest.cs" />
     <Compile Include="Tokenizer\CSharpTokenizerLiteralTest.cs" />
     <Compile Include="Tokenizer\CSharpTokenizerIdentifierTest.cs" />
@@ -182,14 +153,12 @@
     <Compile Include="Tokenizer\HtmlTokenizerTestBase.cs" />
     <Compile Include="Tokenizer\TokenizerTestBase.cs" />
     <Compile Include="Utils\MiscUtils.cs" />
-    <Compile Include="Generator\VBRazorCodeGeneratorTest.cs" />
     <Compile Include="Generator\CSharpRazorCodeGeneratorTest.cs" />
     <Compile Include="CSharpRazorCodeLanguageTest.cs" />
     <Compile Include="Parser\CallbackParserListenerTest.cs" />
     <Compile Include="Parser\CSharp\CSharpExplicitExpressionTest.cs" />
     <Compile Include="Parser\CSharp\CSharpSectionTest.cs" />
     <Compile Include="Parser\BlockTest.cs" />
-    <Compile Include="Parser\VB\VBExpressionTest.cs" />
     <Compile Include="Text\BufferingTextReaderTest.cs" />
     <Compile Include="Parser\CSharp\CSharpErrorTest.cs" />
     <Compile Include="Parser\CSharp\CSharpImplicitExpressionTest.cs" />
@@ -210,7 +179,6 @@
     <Compile Include="Utils\SpanAssert.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="VBRazorCodeLanguageTest.cs" />
     <Compile Include="Text\TextChangeTest.cs" />
     <Compile Include="Text\TextReaderExtensionsTest.cs" />
     <Compile Include="Utils\EnumerableUtils.cs" />
@@ -232,45 +200,6 @@
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\CodeBlock.vbhtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\ExplicitExpression.vbhtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\MarkupInCodeBlock.vbhtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\Blocks.vbhtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\ImplicitExpression.vbhtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\NoLinePragmas.vbhtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\Imports.vbhtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\ExpressionsInCode.vbhtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\FunctionsBlock.vbhtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\Options.vbhtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\Templates.vbhtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\Sections.vbhtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\DesignTime.vbhtml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\Templates.cshtml" />
@@ -296,25 +225,16 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\Inherits.cshtml" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\Inherits.vbhtml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\NestedHelpers.cshtml" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\NestedHelpers.vbhtml" />
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\Instrumented.cshtml" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\Instrumented.vbhtml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\RazorComments.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\RazorComments.vbhtml" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\ParserError.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\ParserError.vbhtml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\ImplicitExpressionAtEOF.cshtml" />
@@ -335,25 +255,7 @@
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\EmptyImplicitExpression.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\CodeBlockAtEOF.vbhtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\EmptyExplicitExpression.vbhtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\EmptyImplicitExpression.vbhtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\ExplicitExpressionAtEOF.vbhtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\ImplicitExpressionAtEOF.vbhtml" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\UnfinishedExpressionInCode.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\UnfinishedExpressionInCode.vbhtml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="TestFiles\DesignTime\Simple.cshtml" />
@@ -371,22 +273,7 @@
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\HelpersMissingOpenParen.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\HelpersMissingOpenParen.vbhtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\Helpers.vbhtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\HelpersMissingCloseParen.vbhtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\HelpersMissingName.vbhtml" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\NestedCodeBlocks.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\NestedCodeBlocks.vbhtml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\InlineBlocks.cshtml" />
@@ -395,20 +282,13 @@
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\EmptyImplicitExpressionInCode.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\EmptyImplicitExpressionInCode.vbhtml" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\HiddenSpansInCode.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\ResolveUrl.cshtml" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\ResolveUrl.vbhtml" />
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\LayoutDirective.cshtml" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\LayoutDirective.vbhtml" />
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\ConditionalAttributes.cshtml" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\ConditionalAttributes.vbhtml" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Source\EmptySection.vbhtml" />
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\OpenedIf.cshtml" />
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\FunctionsBlock_Tabs.cshtml" />
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\FunctionsBlockMinimal.cshtml" />
@@ -418,56 +298,7 @@
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\CodeTree.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\Blocks.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\CodeBlock.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\CodeBlockAtEOF.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\Comments.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\ConditionalAttributes.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\DesignTime.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\EmptyExplicitExpression.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\EmptyImplicitExpression.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\EmptyImplicitExpressionInCode.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\ExplicitExpression.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\ExplicitExpressionAtEOF.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\ExpressionsInCode.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\FunctionsBlock.DesignTime.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\FunctionsBlock.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\Helpers.Instance.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\Helpers.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\HelpersMissingCloseParen.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\HelpersMissingName.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\HelpersMissingOpenParen.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\ImplicitExpression.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\ImplicitExpressionAtEOF.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\Imports.DesignTime.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\Imports.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\Inherits.Designtime.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\Inherits.Runtime.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\Instrumented.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\LayoutDirective.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\MarkupInCodeBlock.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\NestedCodeBlocks.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\NestedHelpers.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\NoLinePragmas.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\Options.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\ParserError.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\RazorComments.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\ResolveUrl.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\Sections.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\Templates.vb" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\UnfinishedExpressionInCode.vb" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\RazorComments.DesignTime.vb" />
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="Properties\" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\EmptySection.vb" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\VB\Output\FunctionsBlock.DesignTime.Tabs.vb" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

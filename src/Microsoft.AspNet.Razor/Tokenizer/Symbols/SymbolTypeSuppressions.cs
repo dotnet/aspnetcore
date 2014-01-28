@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
-// Centralized all the supressions for the CSharpSymbolType and VBSymbolType enum members here for clarity. They are
-// not in the CodeAnalysisDictionary because they are special case exclusions
-
 using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Foreach", Scope = "member", Target = "Microsoft.AspNet.Razor.Tokenizer.Symbols.CSharpKeyword.#Foreach", Justification = Justifications.SymbolTypeNames)]
@@ -14,11 +11,6 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Uint", Scope = "member", Target = "Microsoft.AspNet.Razor.Tokenizer.Symbols.CSharpKeyword.#Uint", Justification = Justifications.SymbolTypeNames)]
 [assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Ulong", Scope = "member", Target = "Microsoft.AspNet.Razor.Tokenizer.Symbols.CSharpKeyword.#Ulong", Justification = Justifications.SymbolTypeNames)]
 [assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Ushort", Scope = "member", Target = "Microsoft.AspNet.Razor.Tokenizer.Symbols.CSharpKeyword.#Ushort", Justification = Justifications.SymbolTypeNames)]
-[assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Val", Scope = "member", Target = "Microsoft.AspNet.Razor.Tokenizer.Symbols.VBKeyword.#ByVal", Justification = Justifications.SymbolTypeNames)]
-[assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Sng", Scope = "member", Target = "Microsoft.AspNet.Razor.Tokenizer.Symbols.VBKeyword.#CSng", Justification = Justifications.SymbolTypeNames)]
-[assembly: SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly", MessageId = "ReDim", Scope = "member", Target = "Microsoft.AspNet.Razor.Tokenizer.Symbols.VBKeyword.#ReDim", Justification = Justifications.SymbolTypeNames)]
-[assembly: SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "Re", Scope = "member", Target = "Microsoft.AspNet.Razor.Tokenizer.Symbols.VBKeyword.#ReDim", Justification = Justifications.SymbolTypeNames)]
-[assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Str", Scope = "member", Target = "Microsoft.AspNet.Razor.Tokenizer.Symbols.VBKeyword.#CStr", Justification = Justifications.SymbolTypeNames)]
 
 internal static partial class Justifications
 {

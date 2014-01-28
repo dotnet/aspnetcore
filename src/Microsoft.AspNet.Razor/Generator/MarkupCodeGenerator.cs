@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Razor.Generator
             {
                 return;
             }
-
+#if NET45
             if (context.Host.EnableInstrumentation)
             {
                 context.AddContextCall(target, context.Host.GeneratedClassContext.BeginContextMethodName, isLiteral: true);
@@ -50,6 +50,7 @@ namespace Microsoft.AspNet.Razor.Generator
             {
                 context.AddContextCall(target, context.Host.GeneratedClassContext.EndContextMethodName, isLiteral: true);
             }
+#endif
 
             // TODO: Make this generate the primary generator
             GenerateCode(target, context.CodeTreeBuilder, context);

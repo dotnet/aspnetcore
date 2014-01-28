@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Razor
         {
             get { return _outputDebuggingEnabled; }
         }
-
+#if NET45
         [SuppressMessage("Microsoft.Security", "CA2141:TransparentMethodsMustNotSatisfyLinkDemandsFxCopRule", Justification = "This is debug only")]
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "This is debug only")]
         [SuppressMessage("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider", MessageId = "System.IO.StringWriter.#ctor", Justification = "This is debug only")]
@@ -69,7 +69,7 @@ namespace Microsoft.AspNet.Razor
                 }
             });
         }
-
+#endif
         internal static void WriteDebugTree(string sourceFile, Block document, PartialParseResult result, TextChange change, RazorEditorParser parser, bool treeStructureChanged)
         {
             if (!OutputDebuggingEnabled)

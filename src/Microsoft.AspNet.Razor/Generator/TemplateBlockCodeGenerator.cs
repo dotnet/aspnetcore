@@ -19,6 +19,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override void GenerateStartBlockCode(Block target, CodeGeneratorContext context)
         {
+#if NET45
             string generatedCode = context.BuildCodeString(cw =>
             {
                 cw.WriteStartLambdaExpression(ItemParameterName);
@@ -29,6 +30,7 @@ namespace Microsoft.AspNet.Razor.Generator
             context.MarkEndOfGeneratedCode();
             context.BufferStatementFragment(generatedCode);
             context.FlushBufferedStatement();
+#endif
 
             _oldTargetWriter = context.TargetWriterName;
             context.TargetWriterName = TemplateWriterName;
@@ -44,6 +46,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override void GenerateEndBlockCode(Block target, CodeGeneratorContext context)
         {
+#if NET45
             string generatedCode = context.BuildCodeString(cw =>
             {
                 cw.WriteEndLambdaDelegate();
@@ -52,6 +55,7 @@ namespace Microsoft.AspNet.Razor.Generator
             });
 
             context.BufferStatementFragment(generatedCode);
+#endif
             context.TargetWriterName = _oldTargetWriter;
 
             // TODO: Make this generate the primary generator

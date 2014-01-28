@@ -44,17 +44,22 @@ namespace Microsoft.AspNet.Razor.Generator
             }
 
             ExpressionRenderingMode oldMode = context.ExpressionRenderingMode;
+#if NET45
             context.BufferStatementFragment(context.BuildCodeString(cw =>
             {
                 cw.WriteParameterSeparator();
                 cw.WriteStartMethodInvoke("Tuple.Create");
                 cw.WriteLocationTaggedString(Prefix);
                 cw.WriteParameterSeparator();
+#endif
                 if (ValueGenerator != null)
                 {
+#if NET45
                     cw.WriteStartMethodInvoke("Tuple.Create", "System.Object", "System.Int32");
+#endif
                     context.ExpressionRenderingMode = ExpressionRenderingMode.InjectCode;
                 }
+#if NET45
                 else
                 {
                     cw.WriteLocationTaggedString(Value);
@@ -62,20 +67,22 @@ namespace Microsoft.AspNet.Razor.Generator
                     // literal: true - This attribute value is a literal value
                     cw.WriteBooleanLiteral(true);
                     cw.WriteEndMethodInvoke();
-
-                    // In VB, we need a line continuation
-                    cw.WriteLineContinuation();
                 }
             }));
+#endif
             if (ValueGenerator != null)
             {
                 ValueGenerator.Value.GenerateCode(target, context);
+#if NET45
                 context.FlushBufferedStatement();
+#endif
                 context.ExpressionRenderingMode = oldMode;
+#if NET45
                 context.AddStatement(context.BuildCodeString(cw =>
                 {
+#endif
                     chunk.ValueLocation = ValueGenerator.Location;
-
+#if NET45
                     cw.WriteParameterSeparator();
                     cw.WriteSnippet(ValueGenerator.Location.AbsoluteIndex.ToString(CultureInfo.CurrentCulture));
                     cw.WriteEndMethodInvoke();
@@ -83,14 +90,12 @@ namespace Microsoft.AspNet.Razor.Generator
                     // literal: false - This attribute value is not a literal value, it is dynamically generated
                     cw.WriteBooleanLiteral(false);
                     cw.WriteEndMethodInvoke();
-
-                    // In VB, we need a line continuation
-                    cw.WriteLineContinuation();
                 }));
             }
             else
             {
                 context.FlushBufferedStatement();
+#endif
             }
 
             context.CodeTreeBuilder.EndChunkBlock();
