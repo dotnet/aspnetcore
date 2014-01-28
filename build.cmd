@@ -8,7 +8,7 @@ md .nuget
 
 :restore
 IF EXIST build goto run
-.nuget\NuGet.exe install KoreBuild -ExcludeVersion -o packages -nocache
+.nuget\NuGet.exe install KoreBuild -ExcludeVersion -o packages -nocache -pre
 xcopy packages\KoreBuild\build build\ /Y
 .nuget\NuGet.exe install Sake -version 0.2 -o packages
 
