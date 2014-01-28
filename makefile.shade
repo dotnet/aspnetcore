@@ -1,10 +1,11 @@
 
 var PROJECT='AspNet'
-var VERSION='0.1.${Environment.GetEnvironmentVariable("BUILD_NUMBER") ?? "0"}'
+var VERSION='0.2.0-dev'
 
 use namespace='System'
 use namespace='System.IO'
 use namespace='System.Collections.Generic'
+use import="BuildEnv"
 
 var repos='${new Dictionary<string,string> {
     {"HttpAbstractions", "git@github.com:aspnet/HttpAbstractions.git"},
@@ -18,6 +19,10 @@ var repos='${new Dictionary<string,string> {
 
 default BASE_DIR='${Directory.GetCurrentDirectory()}'
 default TARGET_DIR='${Path.Combine(BASE_DIR, "artifacts", "build")}'
+
+@{
+    VERSION += "-" + BuildNumber;
+}
 
 #default .compile
 

@@ -1,0 +1,14 @@
+
+use namespace="System"
+
+functions
+  @{
+    string BuildNumber
+    {
+        get 
+        {
+            return Environment.GetEnvironmentVariable("BUILD_NUMBER") ?? 
+                   "t" + DateTime.UtcNow.ToString("yyMMddHHmmss");
+        }
+    }
+  }

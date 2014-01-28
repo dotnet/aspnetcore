@@ -1,6 +1,7 @@
 use namespace="System"
 use namespace="System.IO"
 use import="Files"
+use import="BuildEnv"
 
 default BASE_DIR='${Directory.GetCurrentDirectory()}'
 default TARGET_DIR='${Path.Combine(BASE_DIR, "artifacts")}'
@@ -8,7 +9,7 @@ default BUILD_DIR='${Path.Combine(TARGET_DIR, "build")}'
 default TEST_DIR='${Path.Combine(TARGET_DIR, "test")}'
 
 @{
-  E("K_BUILD_VERSION", "t" + DateTime.UtcNow.ToString("yyMMddHHmmss"));
+  E("K_BUILD_VERSION", BuildNumber);
 }
 
 #target-default target='default'
