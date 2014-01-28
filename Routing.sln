@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Routing.net45", "src\Microsoft.AspNet.Routing\Microsoft.AspNet.Routing.net45.csproj", "{16537084-C16D-4885-B90F-18BAC218F85B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0E966C37-7334-4D96-AAF6-9F49FBD166E3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Routing.k10", "src\Microsoft.AspNet.Routing\Microsoft.AspNet.Routing.k10.csproj", "{1366B89C-F603-4088-B313-FA053C51BAC6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{16537084-C16D-4885-B90F-18BAC218F85B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16537084-C16D-4885-B90F-18BAC218F85B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16537084-C16D-4885-B90F-18BAC218F85B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16537084-C16D-4885-B90F-18BAC218F85B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1366B89C-F603-4088-B313-FA053C51BAC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1366B89C-F603-4088-B313-FA053C51BAC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1366B89C-F603-4088-B313-FA053C51BAC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1366B89C-F603-4088-B313-FA053C51BAC6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{16537084-C16D-4885-B90F-18BAC218F85B} = {0E966C37-7334-4D96-AAF6-9F49FBD166E3}
+		{1366B89C-F603-4088-B313-FA053C51BAC6} = {0E966C37-7334-4D96-AAF6-9F49FBD166E3}
+	EndGlobalSection
+EndGlobal
