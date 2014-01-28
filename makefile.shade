@@ -14,6 +14,7 @@ var repos='${new Dictionary<string,string> {
     {"Logging", "git@github.com:aspnet/Logging.git"},
     {"Data", "git@github.com:aspnet/Data.git"},
     {"Razor", "git@github.com:aspnet/Razor.git"},
+    {"Routing", "git@github.com:aspnet/Routing.git"},
     {"WebFx", "git@github.com:aspnet/WebFx.git"},
 }}'
 
