@@ -13,6 +13,8 @@ command=''
 
 */}
 
+nuget-install package='ProjectK' outputDir='packages' extra='-pre' once='ProjectK-NuGet'
+
 @{
     string packagesDir = Path.Combine(Directory.GetCurrentDirectory(), "packages"),
            projectKDir = Directory.EnumerateDirectories(packagesDir, "ProjectK*")

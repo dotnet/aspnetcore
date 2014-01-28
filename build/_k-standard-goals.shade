@@ -13,7 +13,6 @@ default TEST_DIR='${Path.Combine(TARGET_DIR, "test")}'
 }
 
 #repo-initialize target='initialize'
-  k-init
   k-restore
   k-generate-projects solutionPath='${BASE_DIR}'
 
