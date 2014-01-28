@@ -1,0 +1,9 @@
+﻿@if (ViewBag.CartCount > 0)
+{
+    <li>
+        <a href="@Url.Action("Index", "ShoppingCart")" title="@ViewBag.CartSummary"> 
+            <span class="glyphicon glyphicon glyphicon-shopping-cart"></span>
+            @ViewBag.CartCount
+            </a>
+    </li>
+}

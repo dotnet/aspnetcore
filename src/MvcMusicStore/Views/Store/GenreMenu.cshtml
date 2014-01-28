@@ -1,0 +1,19 @@
+﻿@model IEnumerable<MvcMusicStore.Models.Genre>
+
+<li class="dropdown">
+    <a href="@Url.Action("Store")" class="dropdown-toggle" data-toggle="dropdown">Store <b class="caret"></b></a>
+    <ul class="dropdown-menu">
+        @foreach (var genre in Model)
+        {
+            <li>
+                @Html.ActionLink(genre.Name,
+                    "Browse", "Store",
+                    new { Genre = genre.Name }, null)
+            </li>
+        }
+        <li class="divider"></li>
+        <li>
+            @Html.ActionLink("More...", "Index", "Store")
+        </li>
+    </ul>
+</li>

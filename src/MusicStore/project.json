@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "Microsoft.AspNet.Abstractions": "0.1-alpha-*",
+    "Microsoft.AspNet.DependencyInjection" : "0.1-alpha-*",
+    "Microsoft.AspNet.Mvc" : "0.1-alpha-*"
+  }
+}
