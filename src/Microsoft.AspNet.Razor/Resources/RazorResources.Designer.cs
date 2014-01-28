@@ -11,6 +11,7 @@
 namespace Microsoft.AspNet.Razor.Resources
 {
     using System;
+    using System.Reflection;
 
 
     /// <summary>
@@ -47,8 +48,10 @@ namespace Microsoft.AspNet.Razor.Resources
                 {
 #if NET45
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.AspNet.Razor.Resources.RazorResources", typeof(RazorResources).Assembly);
-                    resourceMan = temp;
+#else
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.AspNet.Razor.Resources.RazorResources", typeof(RazorResources).GetTypeInfo().Assembly);
 #endif
+                    resourceMan = temp;
                 }
                 return resourceMan;
             }

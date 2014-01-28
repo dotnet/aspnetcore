@@ -11,7 +11,7 @@
 namespace Microsoft.Internal.Web.Utils
 {
     using System;
-
+    using System.Reflection;
 
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
@@ -43,12 +43,15 @@ namespace Microsoft.Internal.Web.Utils
         {
             get
             {
+                if (object.ReferenceEquals(resourceMan, null))
+                {
 #if NET45
-                if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.AspNet.Razor.Common.CommonResources", typeof(CommonResources).Assembly);
+#else
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.AspNet.Razor.Common.CommonResources", typeof(CommonResources).GetTypeInfo().Assembly);
+#endif
                     resourceMan = temp;
                 }
-#endif
                 return resourceMan;
             }
         }
