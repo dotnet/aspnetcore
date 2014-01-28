@@ -10,4 +10,4 @@ projectFile=''
 
 var projectFolder='${Path.GetDirectoryName(projectFile)}'
 
-k command='clean ${projectFolder}'
+directory delete='${Path.Combine(projectFolder, "bin")}'
