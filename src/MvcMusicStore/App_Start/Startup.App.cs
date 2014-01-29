@@ -1,46 +1,54 @@
-﻿using Microsoft.AspNet.Identity;
+﻿using System.Configuration;
+using System.Threading.Tasks;
+using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
-using Microsoft.Owin;
-using Microsoft.Owin.Security.Cookies;
 using MvcMusicStore.Models;
 using Owin;
-using System.Configuration;
-using System.Threading.Tasks;
 
 namespace MvcMusicStore
 {
     public partial class Startup
     {
+        private const string RoleName = "Administrator";
+
         public void ConfigureApp(IAppBuilder app)
         {
-            System.Data.Entity.Database.SetInitializer(new MvcMusicStore.Models.SampleData());
-
-            CreateAdminUser();
-        }
-
-        private async void CreateAdminUser()
-        {
-            string _username = ConfigurationManager.AppSettings["DefaultAdminUsername"];
-            string _password = ConfigurationManager.AppSettings["DefaultAdminPassword"];
-            string _role = "Administrator";
-
-            var context = new ApplicationDbContext();
-            var userManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(context));
-            var roleManager = new RoleManager<IdentityRole>(new RoleStore<IdentityRole>(context));
-
-            var role = new IdentityRole(_role);
-            var result = await roleManager.RoleExistsAsync(_role);
-            if (result == false)
+            using (var context = new MusicStoreEntities())
             {
-                await roleManager.CreateAsync(role);
+                context.Database.Delete();
+                context.Database.Create();
+
+                new SampleData().Seed(context);
             }
 
-            var user = await userManager.FindByNameAsync(_username);
-            if (user == null)
+            CreateAdminUser().Wait();
+        }
+
+        private async Task CreateAdminUser()
+        {
+            var username = ConfigurationManager.AppSettings["DefaultAdminUsername"];
+            var password = ConfigurationManager.AppSettings["DefaultAdminPassword"];
+
+            using (var context = new ApplicationDbContext())
             {
-                user = new ApplicationUser { UserName = _username };
-                await userManager.CreateAsync(user, _password);
-                await userManager.AddToRoleAsync(user.Id, _role);
+                var userManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(context));
+                var roleManager = new RoleManager<IdentityRole>(new RoleStore<IdentityRole>(context));
+
+                var role = new IdentityRole(RoleName);
+                
+                var result = await roleManager.RoleExistsAsync(RoleName);
+                if (!result)
+                {
+                    await roleManager.CreateAsync(role);
+                }
+
+                var user = await userManager.FindByNameAsync(username);
+                if (user == null)
+                {
+                    user = new ApplicationUser { UserName = username };
+                    await userManager.CreateAsync(user, password);
+                    await userManager.AddToRoleAsync(user.Id, RoleName);
+                }
             }
         }
     }

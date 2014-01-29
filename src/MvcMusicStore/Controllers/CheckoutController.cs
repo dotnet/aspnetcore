@@ -1,5 +1,6 @@
 ﻿using System;
-using System.Linq;
+using System.Data.Entity;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using MvcMusicStore.Models;
 
@@ -8,78 +9,56 @@ namespace MvcMusicStore.Controllers
     [Authorize]
     public class CheckoutController : Controller
     {
-        MusicStoreEntities storeDB = new MusicStoreEntities();
-        const string PromoCode = "FREE";
+        private const string PromoCode = "FREE";
 
-        //
+        private readonly MusicStoreEntities _storeContext = new MusicStoreEntities();
+
         // GET: /Checkout/
-
         public ActionResult AddressAndPayment()
         {
             return View();
         }
 
-        //
         // POST: /Checkout/AddressAndPayment
-
         [HttpPost]
-        public ActionResult AddressAndPayment(FormCollection values)
+        public async Task<ActionResult> AddressAndPayment(FormCollection values)
         {
             var order = new Order();
             TryUpdateModel(order);
 
-            try
+            if (ModelState.IsValid 
+                && string.Equals(values["PromoCode"], PromoCode, StringComparison.OrdinalIgnoreCase))
             {
-                if (string.Equals(values["PromoCode"], PromoCode,
-                    StringComparison.OrdinalIgnoreCase) == false)
-                {
-                    return View(order);
-                }
-                else
-                {
-                    order.Username = User.Identity.Name;
-                    order.OrderDate = DateTime.Now;
+                order.Username = User.Identity.Name;
+                order.OrderDate = DateTime.Now;
 
-                    //Add the Order
-                    storeDB.Orders.Add(order);
+                _storeContext.Orders.Add(order);
 
-                    //Process the order
-                    var cart = ShoppingCart.GetCart(storeDB, this.HttpContext);
-                    cart.CreateOrder(order);
+                await ShoppingCart.GetCart(_storeContext, this).CreateOrder(order);
 
-                    // Save all changes
-                    storeDB.SaveChanges();
+                await _storeContext.SaveChangesAsync();
 
-                    return RedirectToAction("Complete",
-                        new { id = order.OrderId });
-                }
-
+                return RedirectToAction("Complete", new { id = order.OrderId });
             }
-            catch
-            {
-                //Invalid - redisplay with errors
-                return View(order);
-            }
+
+            return View(order);
         }
 
-        //
         // GET: /Checkout/Complete
-
-        public ActionResult Complete(int id)
+        public async Task<ActionResult> Complete(int id)
         {
-            // Validate customer owns this order
-            bool isValid = storeDB.Orders.Any(
-                o => o.OrderId == id &&
-                o.Username == User.Identity.Name);
+            return await _storeContext.Orders.AnyAsync(o => o.OrderId == id && o.Username == User.Identity.Name)
+                ? View(id)
+                : View("Error");
+        }
 
-            if (isValid)
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
             {
-                return View(id);
+                _storeContext.Dispose();
             }
-            else
-            {
-                return View("Error");
-            }
+            base.Dispose(disposing);
         }
     }
 }
