@@ -1,5 +1,4 @@
-﻿using System;
-
+﻿
 namespace Microsoft.AspNet.Mvc.Razor
 {
     public class CompilationMessage
@@ -9,7 +8,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             Message = message;
         }
 
-        public string Message {get; private set;}
+        public string Message { get; private set; }
 
         public override string ToString()
         {

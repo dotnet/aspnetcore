@@ -8,9 +8,9 @@ namespace Microsoft.AspNet.Mvc.Razor
     public class VirtualPathViewFactory : IVirtualPathViewFactory
     {
         private readonly IFileSystem _fileSystem;
-        private readonly ICompilationService _compilationService;
+        private readonly IRazorCompilationService _compilationService;
 
-        public VirtualPathViewFactory(IFileSystem fileSystem, ICompilationService compilationService)
+        public VirtualPathViewFactory(IFileSystem fileSystem, IRazorCompilationService compilationService)
         {
             _fileSystem = fileSystem;
             _compilationService = compilationService;

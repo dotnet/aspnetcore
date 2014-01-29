@@ -4,15 +4,12 @@
     "Microsoft.AspNet.FileSystems": "0.1-alpha-*",
     "Microsoft.AspNet.Abstractions": "0.1-alpha-*",
     "Microsoft.AspNet.DependencyInjection": "0.1-alpha-*",
+    "Microsoft.AspNet.Razor": "0.1-alpha-*",
     "Microsoft.AspNet.Mvc" : "",
     "Microsoft.AspNet.Mvc.Forms" : ""
   },
   "configurations": {
-    "net45": {
-      "dependencies": {
-         "Microsoft.AspNet.Razor" : "3.1.0"
-       }
-    },
+    "net45": {},
     "k10" : { }
   }
 }

@@ -1,7 +1,6 @@
-﻿#if NET45
-using System.Web.Razor;
-using System.Web.Razor.Generator;
-using System.Web.Razor.Parser;
+﻿using Microsoft.AspNet.Razor;
+using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Parser;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -37,19 +36,5 @@ namespace Microsoft.AspNet.Mvc.Razor
                 NamespaceImports.Add(ns);
             }
         }
-
-        public override RazorCodeGenerator DecorateCodeGenerator(RazorCodeGenerator incomingCodeGenerator)
-        {
-            return new MvcCSharpRazorCodeGenerator(incomingCodeGenerator.ClassName,
-                                                       incomingCodeGenerator.RootNamespaceName,
-                                                       incomingCodeGenerator.SourceFileName,
-                                                       incomingCodeGenerator.Host);
-        }
-
-        public override ParserBase DecorateCodeParser(ParserBase incomingCodeParser)
-        {
-            return new MvcCSharpRazorCodeParser();
-        }
     }
 }
-#endif

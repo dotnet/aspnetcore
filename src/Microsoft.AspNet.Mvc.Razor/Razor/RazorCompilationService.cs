@@ -1,20 +1,17 @@
-﻿#if NET45
-using System.CodeDom.Compiler;
+﻿using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
-using System.Web.Razor;
-using Microsoft.CSharp;
+using Microsoft.AspNet.Razor;
 using Microsoft.Owin.FileSystems;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
-    public class RazorCompilationService : ICompilationService
+    public class RazorCompilationService : IRazorCompilationService
     {
-        private static readonly string _tempPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-        private readonly IFileSystem _tempFileSystem = new PhysicalFileSystem(Path.GetTempPath());
+        private static readonly CompilerCache _cache = new CompilerCache();
         private readonly ICompilationService _baseCompilationService;
-        private readonly CompilerCache _cache = new CompilerCache();
 
         public RazorCompilationService(ICompilationService compilationService)
         {
@@ -30,34 +27,49 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             var host = new MvcRazorHost();
             var engine = new RazorTemplateEngine(host);
+
+            var namespaceBuilder = GenerateNamespace(file);
+            
             GeneratorResults results;
             using (TextReader rdr = new StreamReader(file.CreateReadStream()))
             {
-                results = engine.GenerateCode(rdr, '_' + Path.GetFileNameWithoutExtension(file.Name), "Asp", file.PhysicalPath ?? file.Name);
+                results = engine.GenerateCode(rdr, '_' + file.Name, namespaceBuilder.ToString(), file.PhysicalPath ?? file.Name);
             }
 
-            string generatedCode;
-
-            using (var writer = new StringWriter())
-            using (var codeProvider = new CSharpCodeProvider())
+            if (!results.Success)
             {
-                codeProvider.GenerateCodeFromCompileUnit(results.GeneratedCode, writer, new CodeGeneratorOptions());
-                generatedCode = writer.ToString();
+                return CompilationResult.Failed(results.GeneratedCode, results.ParserErrors.Select(e => new CompilationMessage(e.Message)));
             }
 
-            if (!results.Success) 
+            return await _baseCompilationService.Compile(results.GeneratedCode);
+        }
+
+        private static StringBuilder GenerateNamespace(IFileInfo file)
+        {
+            string virtualPath = file.PhysicalPath;
+            if (virtualPath.StartsWith("~/", StringComparison.Ordinal))
             {
-                return CompilationResult.Failed(generatedCode, results.ParserErrors.Select(e => new CompilationMessage(e.Message)));
+                virtualPath = virtualPath.Substring(2);
             }
 
-            Directory.CreateDirectory(_tempPath);
-            string tempFile = Path.Combine(_tempPath, Path.GetRandomFileName() + ".cs");
+            var namespaceBuilder = new StringBuilder(virtualPath.Length);
 
-            File.WriteAllText(tempFile, generatedCode);
-
-            _tempFileSystem.TryGetFileInfo(tempFile, out file);
-            return await _baseCompilationService.Compile(file);
+            foreach (char c in Path.GetDirectoryName(virtualPath))
+            {
+                if (c == Path.DirectorySeparatorChar)
+                {
+                    namespaceBuilder.Append('.');
+                }
+                else if (!Char.IsLetterOrDigit(c))
+                {
+                    namespaceBuilder.Append('_');
+                }
+                else
+                {
+                    namespaceBuilder.Append(c);
+                }
+            }
+            return namespaceBuilder;
         }
     }
 }
-#endif

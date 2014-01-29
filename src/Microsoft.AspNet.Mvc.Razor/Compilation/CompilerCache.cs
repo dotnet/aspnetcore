@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         public CompilerCache()
         {
-            _cache = new ConcurrentDictionary<string,Type>(StringComparer.OrdinalIgnoreCase);
+            _cache = new ConcurrentDictionary<string, Type>(StringComparer.OrdinalIgnoreCase);
         }
 
         public async Task<CompilationResult> GetOrAdd(IFileInfo file, Func<Task<CompilationResult>> compile)

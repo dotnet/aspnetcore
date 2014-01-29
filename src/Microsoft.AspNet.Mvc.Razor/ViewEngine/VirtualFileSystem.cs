@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Microsoft.Owin.FileSystems;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
-    public class VirtualFileSystem : IFileSystem
+    public class VirtualFileSystem : IVirtualFileSystem
     {
         private readonly IFileSystem _fileSystem;
 
@@ -16,13 +18,21 @@ namespace Microsoft.AspNet.Mvc.Razor
         public bool TryGetFileInfo(string subpath, out IFileInfo fileInfo)
         {
             string translated = TranslatePath(subpath);
-            return _fileSystem.TryGetFileInfo(translated, out fileInfo);
+            if (_fileSystem.TryGetFileInfo(translated, out fileInfo))
+            {
+                fileInfo = new VirtualFile(subpath, fileInfo);
+            }
+            return false;
         }
 
         public bool TryGetDirectoryContents(string subpath, out IEnumerable<IFileInfo> contents)
         {
             string translated = TranslatePath(subpath);
-            return _fileSystem.TryGetDirectoryContents(translated, out contents);
+            if (_fileSystem.TryGetDirectoryContents(translated, out contents))
+            {
+                contents = contents.Select(c => new VirtualFile(subpath + '/' + c.Name, c));
+            }
+            return false;
         }
 
         private static string TranslatePath(string path)

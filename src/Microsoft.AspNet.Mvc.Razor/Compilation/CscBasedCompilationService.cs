@@ -22,9 +22,10 @@ namespace Microsoft.AspNet.Mvc.Razor
                                  @"Microsoft.NET\Framework\v4.0.30319\csc.exe");
         }
 
-        public async Task<CompilationResult> Compile(IFileInfo fileInfo)
+        public async Task<CompilationResult> Compile(string contents)
         {
             Directory.CreateDirectory(_tempDir);
+            string inFile = Path.Combine(_tempDir, Path.GetRandomFileName() + ".cs");
             string outFile = Path.Combine(_tempDir, Path.GetRandomFileName() + ".dll");
             StringBuilder args = new StringBuilder("/target:library ");
             args.AppendFormat("/out:\"{0}\" ", outFile);
@@ -32,7 +33,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 args.AppendFormat("/R:\"{0}\" ", file);
             }
-            args.AppendFormat("\"{0}\"", fileInfo.PhysicalPath);
+            args.AppendFormat("\"{0}\"", inFile);
             var outputStream = new MemoryStream();
 
             // common execute
