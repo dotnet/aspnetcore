@@ -8,6 +8,11 @@ namespace MvcMusicStore.Models
     [Bind(Include = "FirstName,LastName,Address,City,State,PostalCode,Country,Phone,Email")]
     public class Order
     {
+        public Order()
+        {
+            OrderDetails = new List<OrderDetail>();
+        }
+
         [ScaffoldColumn(false)]
         public int OrderId  { get; set; }
 

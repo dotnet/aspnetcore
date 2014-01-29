@@ -1,57 +1,49 @@
-﻿using MvcMusicStore.Models;
-using System;
-using System.Collections.Generic;
+﻿using System.Data.Entity;
 using System.Linq;
-using System.Web;
+using System.Threading.Tasks;
 using System.Web.Mvc;
+using MvcMusicStore.Models;
 
 namespace MvcMusicStore.Controllers
 {
     public class StoreController : Controller
     {
-        MusicStoreEntities storeDB = new MusicStoreEntities();
-        //
+        private readonly MusicStoreEntities _storeContext = new MusicStoreEntities();
+
         // GET: /Store/
-
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
-            var genres = storeDB.Genres.ToList();
-
-            return View(genres);
+            return View(await _storeContext.Genres.ToListAsync());
         }
 
-
-        //
         // GET: /Store/Browse?genre=Disco
-
-        public ActionResult Browse(string genre)
+        public async Task<ActionResult> Browse(string genre)
         {
-            // Retrieve Genre genre and its Associated associated Albums albums from database
-            var genreModel = storeDB.Genres.Include("Albums")
-                .Single(g => g.Name == genre);
-
-            return View(genreModel);
+            return View(await _storeContext.Genres.Include("Albums").SingleAsync(g => g.Name == genre));
         }
 
-        public ActionResult Details(int id) 
+        public async Task<ActionResult> Details(int id)
         {
-            var album = storeDB.Albums.Find(id);
+            var album = await _storeContext.Albums.FindAsync(id);
 
-            return View(album);
+            return album != null ? View(album) : (ActionResult)HttpNotFound();
         }
 
         [ChildActionOnly]
         public ActionResult GenreMenu()
         {
-            var genres = storeDB.Genres
-                .OrderByDescending(
-                    g => g.Albums.Sum(
-                    a => a.OrderDetails.Sum(
-                    od => od.Quantity)))
-                .Take(9)
-                .ToList();
+            return PartialView(
+                _storeContext.Genres.OrderByDescending(
+                    g => g.Albums.Sum(a => a.OrderDetails.Sum(od => od.Quantity))).Take(9).ToList());
+        }
 
-            return PartialView(genres);
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _storeContext.Dispose();
+            }
+            base.Dispose(disposing);
         }
     }
 }

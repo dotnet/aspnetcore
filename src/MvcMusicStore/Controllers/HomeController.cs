@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System.Data.Entity;
 using System.Linq;
-using System.Web;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using MvcMusicStore.Models;
 
@@ -8,28 +8,24 @@ namespace MvcMusicStore.Controllers
 {
     public class HomeController : Controller
     {
-        private MusicStoreEntities storeDB = new MusicStoreEntities();
-        //
+        private readonly MusicStoreEntities _storeContext = new MusicStoreEntities();
+
         // GET: /Home/
-
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
-            // Get most popular albums
-            var albums = GetTopSellingAlbums(6);
-
-            return View(albums);
+            return View(await _storeContext.Albums
+                .OrderByDescending(a => a.OrderDetails.Count())
+                .Take(6)
+                .ToListAsync());
         }
 
-
-        private List<Album> GetTopSellingAlbums(int count)
+        protected override void Dispose(bool disposing)
         {
-            // Group the order details by album and return
-            // the albums with the highest count
-
-            return storeDB.Albums
-                .OrderByDescending(a => a.OrderDetails.Count())
-                .Take(count)
-                .ToList();
+            if (disposing)
+            {
+                _storeContext.Dispose();
+            }
+            base.Dispose(disposing);
         }
     }
 }
