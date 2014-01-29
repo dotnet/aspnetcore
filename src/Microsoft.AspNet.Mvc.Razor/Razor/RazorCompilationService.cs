@@ -12,10 +12,12 @@ namespace Microsoft.AspNet.Mvc.Razor
     {
         private static readonly CompilerCache _cache = new CompilerCache();
         private readonly ICompilationService _baseCompilationService;
+        private readonly IMvcRazorHost _razorHost;
 
-        public RazorCompilationService(ICompilationService compilationService)
+        public RazorCompilationService(ICompilationService compilationService, IMvcRazorHost razorHost)
         {
             _baseCompilationService = compilationService;
+            _razorHost = razorHost;
         }
 
         public Task<CompilationResult> Compile(IFileInfo file)
@@ -25,15 +27,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private async Task<CompilationResult> CompileCore(IFileInfo file)
         {
-            var host = new MvcRazorHost();
-            var engine = new RazorTemplateEngine(host);
-
-            var namespaceBuilder = GenerateNamespace(file);
-            
             GeneratorResults results;
-            using (TextReader rdr = new StreamReader(file.CreateReadStream()))
+            using (Stream inputStream = file.CreateReadStream())
             {
-                results = engine.GenerateCode(rdr, '_' + file.Name, namespaceBuilder.ToString(), file.PhysicalPath ?? file.Name);
+                results = _razorHost.GenerateCode(file.PhysicalPath, inputStream);
             }
 
             if (!results.Success)

@@ -6,10 +6,11 @@
     "Microsoft.AspNet.DependencyInjection": "0.1-alpha-*",
     "Microsoft.AspNet.Razor": "0.1-alpha-*",
     "Microsoft.AspNet.Mvc" : "",
-    "Microsoft.AspNet.Mvc.Forms" : ""
+    "Microsoft.AspNet.Mvc.Forms" : "",
+    "Microsoft.AspNet.Mvc.Razor.Host" : ""
   },
   "configurations": {
     "net45": {},
-    "k10" : { }
+    "k10" : {}
   }
 }

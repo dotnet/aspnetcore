@@ -22,9 +22,11 @@ namespace MvcSample
 
             string appRoot = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
 
-            var fileSystem = new PhysicalFileSystem(appRoot);
-            serviceProvider.AddInstance<IFileSystem>(new VirtualFileSystem(fileSystem));
-            serviceProvider.AddInstance<ICompilationService>(new RazorCompilationService(new CscBasedCompilationService()));
+            serviceProvider.AddInstance<IFileSystem>(new PhysicalFileSystem(appRoot));
+            serviceProvider.Add<IVirtualFileSystem, VirtualFileSystem>();
+            serviceProvider.Add<IMvcRazorHost, MvcRazorHost>();
+            serviceProvider.Add<ICompilationService, CscBasedCompilationService>();
+            serviceProvider.Add<IRazorCompilationService, RazorCompilationService>();
             serviceProvider.Add<IVirtualPathViewFactory, VirtualPathViewFactory>();
             serviceProvider.Add<IViewEngine, RazorViewEngine>();
 
