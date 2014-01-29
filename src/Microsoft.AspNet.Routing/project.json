@@ -1,12 +1,13 @@
 {
   "version": "0.1-alpha-*",
-  "dependencies": {},
+  "dependencies": {
+  },
   "configurations": {
     "net45": {
-	      "dependencies": {
+        "dependencies": {
           "Owin": "1.0"
       }
-	},
+    },
     "k10" : { }
   }
 }
