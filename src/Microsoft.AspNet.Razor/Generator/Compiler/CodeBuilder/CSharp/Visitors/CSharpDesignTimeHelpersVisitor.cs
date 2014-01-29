@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 {
     public class CSharpDesignTimeHelpersVisitor : CodeVisitor
     {
-        private const string InheritsHelper = "__inheritsHelper";
+        internal const string InheritsHelper = "__inheritsHelper";
 
         private CSharpCodeWriter _writer;
         // TODO: No need for the entire host

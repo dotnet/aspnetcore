@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 
@@ -39,6 +40,7 @@ namespace Microsoft.AspNet.Razor
 
 #if NET45
         public CodeCompileUnit CCU { get; set; }
+        public IDictionary<int, GeneratedCodeMapping> OLDDesignTimeLineMappings { get; set; }
 #endif
         internal CodeTree CT { get; set; }
     }

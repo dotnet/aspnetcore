@@ -188,7 +188,8 @@ namespace Microsoft.AspNet.Razor
             {
 #if NET45
                 CCU = generator.Context.CompileUnit,
-#endif
+                OLDDesignTimeLineMappings = designTimeLineMappings,
+#endif                
                 CT = generator.Context.CodeTreeBuilder.CodeTree
             };
         }
