@@ -57,21 +57,28 @@ default TARGET_DIR='${Path.Combine(BASE_DIR, "artifacts", "build")}'
 
 #init
     @{
+        var templatePath = Path.Combine(BASE_DIR, "build-template");
+        var templateFiles = Files.Include(templatePath + Path.DirectorySeparatorChar + "*.*").Select(Path.GetFileName).ToList();
+
         foreach(var repo in repos)
         {
-            foreach (string file in new[]
-              {
-                 ".gitattributes",
-                 ".gitignore",
-                 "build.cmd",
-                 "makefile.shade",
-                 "NuGet.Config",
-              })
+            foreach (string fileName in templateFiles)
             {
-                 if (!File.Exists(repo.Key + @"\" + file))
-                 {
-                      File.Copy(@"Template\" + file, repo.Key + @"\" + file);
-                 }
+                var targetFile = Path.Combine(repo.Key, fileName);
+                var sourceFile = Path.Combine(templatePath, fileName);
+
+                // Don't update the makefile
+                if(fileName.Equals("makefile.shake", StringComparison.OrdinalIgnoreCase) && File.Exists(targetFile))
+                {
+                    continue;
+                }
+
+                if(!File.Exists(targetFile) || 
+                   (File.ReadAllText(sourceFile) != File.ReadAllText(targetFile)))
+                {
+                    Log.Info("Updating " + fileName + " to " + repo.Key);
+                    File.Copy(sourceFile, targetFile, true);
+                }
             }
         }
     }
