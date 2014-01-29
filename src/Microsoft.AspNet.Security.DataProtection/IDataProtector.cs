@@ -1,10 +1,12 @@
 ﻿using System;
 
-namespace Microsoft.AspNet.Security.DataProtection {
+namespace Microsoft.AspNet.Security.DataProtection
+{
     /// <summary>
     /// Represents an object that can perform cryptographic operations.
     /// </summary>
-    public interface IDataProtector : IDisposable {
+    public interface IDataProtector : IDisposable
+    {
         /// <summary>
         /// Given a subpurpose, returns a new IDataProtector that has unique cryptographic keys tied <em>both</em> the purpose
         /// that was used to create this IDataProtector instance <em>and</em> the purpose that is provided as a parameter

@@ -1,8 +1,10 @@
 ﻿using System;
 
-namespace Microsoft.AspNet.Security.DataProtection {
+namespace Microsoft.AspNet.Security.DataProtection
+{
     // from bcrypt.h
-    internal static class Constants {
+    internal static class Constants
+    {
         internal const int MAX_STACKALLOC_BYTES = 256; // greatest number of bytes that we'll ever allow to stackalloc in a single frame
 
         // BCrypt(Import/Export)Key BLOB types

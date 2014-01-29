@@ -1,8 +1,10 @@
 ﻿using System;
 
-namespace Microsoft.AspNet.Security.DataProtection {
+namespace Microsoft.AspNet.Security.DataProtection
+{
     // from bcrypt.h
-    internal enum BCryptKeyDerivationBufferType {
+    internal enum BCryptKeyDerivationBufferType
+    {
         KDF_HASH_ALGORITHM = 0x0,
         KDF_SECRET_PREPEND = 0x1,
         KDF_SECRET_APPEND = 0x2,

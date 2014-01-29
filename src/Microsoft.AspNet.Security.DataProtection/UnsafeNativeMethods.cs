@@ -6,12 +6,13 @@ using System.Security;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Security.DataProtection {
+namespace Microsoft.AspNet.Security.DataProtection
+{
 #if NET45
     [SuppressUnmanagedCodeSecurity]
 #endif
-    internal unsafe static class UnsafeNativeMethods {
-
+    internal static unsafe class UnsafeNativeMethods
+    {
         private const string BCRYPT_LIB = "bcrypt.dll";
         private const string KERNEL32_LIB = "kernel32.dll";
 
