@@ -7,10 +7,9 @@ md .nuget
 @powershell -NoProfile -ExecutionPolicy unrestricted -Command "$ProgressPreference = 'SilentlyContinue'; Invoke-WebRequest 'https://www.nuget.org/nuget.exe' -OutFile '.nuget\NuGet.exe'"
 
 :restore
-IF EXIST build goto run
+IF EXIST packages\KoreBuild goto run
 .nuget\NuGet.exe install KoreBuild -ExcludeVersion -o packages -nocache -pre
-xcopy packages\KoreBuild\build build\ /Y
-.nuget\NuGet.exe install Sake -version 0.2 -o packages
+.nuget\NuGet.exe install Sake -version 0.2 -o packages -ExcludeVersion
 
 :run
-packages\Sake.0.2\tools\Sake.exe -I build -f makefile.shade %*
+packages\Sake\tools\Sake.exe -I packages\KoreBuild\build -f makefile.shade %*
