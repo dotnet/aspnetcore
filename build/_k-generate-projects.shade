@@ -392,8 +392,14 @@ functions
 
                     Log(reference.Key + " = " + version + " ==> " + packageDir);
 
-                    var candidate = candidates.Select(c => Path.Combine(packageDir, "lib", c))
-                                                   .FirstOrDefault(Directory.Exists);
+                    var libPath = Path.Combine(packageDir, "lib");
+                    
+                    var candidate 
+                        = candidates.Select(c => Path.Combine(libPath, c))
+                                    .FirstOrDefault(Directory.Exists)
+                                        ?? candidates
+                                             .SelectMany(c => Directory.GetDirectories(libPath, "*" + c + "*"))
+                                             .FirstOrDefault();
 
                     if (candidate == null)
                     {
