@@ -195,12 +195,10 @@ functions
                 }
 
                 // Get the list of files
-                var filesString = String.Join(Environment.NewLine,
-                    Directory.GetFiles(projectDir, "*.cs", SearchOption.AllDirectories)
-                    .Select(p => p.Substring(projectDir.Length).Trim(Path.DirectorySeparatorChar))
-                    .Where(p => !p.StartsWith("obj"))
-                    .Select(p => String.Format(
-        @"<Compile Include=""{0}"" />", p)));
+                var filesString
+                    = String.Join(Environment.NewLine,
+                        BuildFileList(projectDir, "*.cs", "Compile"),
+                        BuildFileList(projectDir, "*.resx", "EmbeddedResource"));
 
                 var packageReferences = dependencies.Where(r => !projectMapping.ContainsKey(r.Key))
                                                     .ToDictionary(k => k.Key, k => (string)k.Value);
@@ -300,6 +298,15 @@ functions
                         Log("No changes required for {0}", output);
                     }
                 }
+            }
+
+            private static string BuildFileList(string projectDir, string pattern, string elementName)
+            {
+                return String.Join(Environment.NewLine,
+                    Directory.GetFiles(projectDir, pattern, SearchOption.AllDirectories)
+                    .Select(p => p.Substring(projectDir.Length).Trim(Path.DirectorySeparatorChar))
+                    .Where(p => !p.StartsWith(@"obj\"))
+                    .Select(p => String.Format(@"<{0} Include=""{1}"" />", elementName, p)));
             }
 
             private static string GetProjectKTargets(string packagesDir)
