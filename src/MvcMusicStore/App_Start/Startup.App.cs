@@ -1,4 +1,5 @@
 ﻿using System.Configuration;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using MvcMusicStore.Models;
@@ -20,10 +21,10 @@ namespace MvcMusicStore
                 new SampleData().Seed(context);
             }
 
-            CreateAdminUser();
+            CreateAdminUser().Wait();
         }
 
-        private async void CreateAdminUser()
+        private async Task CreateAdminUser()
         {
             var username = ConfigurationManager.AppSettings["DefaultAdminUsername"];
             var password = ConfigurationManager.AppSettings["DefaultAdminPassword"];

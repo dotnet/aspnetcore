@@ -131,16 +131,24 @@ namespace MvcMusicStore.Controllers
         // GET: /Account/Manage
         public async Task<ActionResult> Manage(ManageMessageId? message)
         {
-            ViewBag.StatusMessage =
-                message == ManageMessageId.ChangePasswordSuccess
-                    ? "Your password has been changed."
-                    : message == ManageMessageId.SetPasswordSuccess
-                        ? "Your password has been set."
-                        : message == ManageMessageId.RemoveLoginSuccess
-                            ? "The external login was removed."
-                            : message == ManageMessageId.Error
-                                ? "An error has occurred."
-                                : "";
+            switch (message)
+            {
+                case ManageMessageId.ChangePasswordSuccess:
+                    ViewBag.StatusMessage = "Your password has been changed.";
+                    break;
+                case ManageMessageId.SetPasswordSuccess:
+                    ViewBag.StatusMessage = "Your password has been set.";
+                    break;
+                case ManageMessageId.RemoveLoginSuccess:
+                    ViewBag.StatusMessage = "The external login was removed.";
+                    break;
+                case ManageMessageId.Error:
+                    ViewBag.StatusMessage = "An error has occurred.";
+                    break;
+                default:
+                    ViewBag.StatusMessage = "";
+                    break;
+            }
 
             ViewBag.HasLocalPassword = await HasPasswordAsync();
             ViewBag.ReturnUrl = Url.Action("Manage");
