@@ -3,7 +3,9 @@
   "dependencies": {
     "Newtonsoft.Json": "5.0.8",
     "Microsoft.AspNet.DependencyInjection" : "0.1-alpha-*",
-    "Microsoft.AspNet.Abstractions": "0.1-alpha-*"
+    "Microsoft.AspNet.Abstractions": "0.1-alpha-*",
+    "Microsoft.AspNet.Mvc.ModelBinding": "",
+    "Microsoft.AspNet.Mvc.Rendering": ""
   },
   "configurations": {
     "net45": { },

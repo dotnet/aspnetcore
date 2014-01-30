@@ -40,33 +40,5 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             return await _baseCompilationService.Compile(results.GeneratedCode);
         }
-
-        private static StringBuilder GenerateNamespace(IFileInfo file)
-        {
-            string virtualPath = file.PhysicalPath;
-            if (virtualPath.StartsWith("~/", StringComparison.Ordinal))
-            {
-                virtualPath = virtualPath.Substring(2);
-            }
-
-            var namespaceBuilder = new StringBuilder(virtualPath.Length);
-
-            foreach (char c in Path.GetDirectoryName(virtualPath))
-            {
-                if (c == Path.DirectorySeparatorChar)
-                {
-                    namespaceBuilder.Append('.');
-                }
-                else if (!Char.IsLetterOrDigit(c))
-                {
-                    namespaceBuilder.Append('_');
-                }
-                else
-                {
-                    namespaceBuilder.Append(c);
-                }
-            }
-            return namespaceBuilder;
-        }
     }
 }
