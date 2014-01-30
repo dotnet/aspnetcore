@@ -15,6 +15,8 @@
           "Owin": "1.0",
           "Microsoft.Owin": "2.1.0",
           "Microsoft.Owin.Diagnostics": "2.1.0",
+          "Microsoft.Owin.Hosting": "2.1.0",
+          "Microsoft.Owin.Host.HttpListener": "2.1.0",
           "Microsoft.AspNet.Abstractions.Owin": "0.1-alpha-*"
        }
     },

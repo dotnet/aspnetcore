@@ -1,14 +1,11 @@
 ﻿#if NET45
 using System;
-using System.Threading.Tasks;
+using System.IO;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.Routing;
-using Microsoft.Owin;
 using Microsoft.Owin.FileSystems;
 using Owin;
-
-[assembly: OwinStartup(typeof(MvcSample.Startup))]
 
 namespace MvcSample
 {
@@ -20,7 +17,12 @@ namespace MvcSample
 
             var serviceProvider = MvcServices.Create();
 
-            string appRoot = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
+            // HACK to determine app root.
+            string appRoot = Environment.CurrentDirectory;
+            while (!String.IsNullOrEmpty(appRoot) && !appRoot.TrimEnd(Path.DirectorySeparatorChar).EndsWith("MvcSample"))
+            {
+                appRoot = Path.GetDirectoryName(appRoot);
+            }
 
             serviceProvider.AddInstance<IFileSystem>(new PhysicalFileSystem(appRoot));
             serviceProvider.Add<IVirtualFileSystem, VirtualFileSystem>();
