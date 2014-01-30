@@ -199,7 +199,13 @@ functions
                     = String.Join(Environment.NewLine,
                         BuildFileList(projectDir, "*.cs", "Compile"),
                         BuildFileList(projectDir, "*.resx", "EmbeddedResource"));
-
+                
+                bool isSample = Path.GetDirectoryName(projectDir)
+                                    .TrimEnd(Path.DirectorySeparatorChar)
+                                    .EndsWith("samples");
+                
+                Log("Processing sample project '{0}'", projectName);
+                
                 var packageReferences = dependencies.Where(r => !projectMapping.ContainsKey(r.Key))
                                                     .ToDictionary(k => k.Key, k => (string)k.Value);
 
@@ -227,7 +233,11 @@ functions
                     object specificUnsafeValue = Get<object>(specificCompilationOptions, "allowUnsafe");
                     bool allowUnsafeCode = unsafeValue == null ? sharedAllowUnsafeCode : (bool)specificUnsafeValue;
 
-                    string extraProperties = allowUnsafeCode ? "\n<AllowUnsafeBlocks>true</AllowUnsafeBlocks>" : "";
+                    string extraProperties = (allowUnsafeCode ? "\n<AllowUnsafeBlocks>true</AllowUnsafeBlocks>" : "");
+                    if (isSample)
+                    {
+                        extraProperties += GenerateStartupAction(projectDir, projectName, packagesDir, pair.Key);
+                    }
 
                     string id = (string)GetObject(projectMapping, projectName)[targetFramework];
 
@@ -307,6 +317,26 @@ functions
                     .Select(p => p.Substring(projectDir.Length).Trim(Path.DirectorySeparatorChar))
                     .Where(p => !p.StartsWith(@"obj\"))
                     .Select(p => String.Format(@"<{0} Include=""{1}"" />", elementName, p)));
+            }
+            
+            private static string GenerateStartupAction(string projectRoot, string projectName, string packagesDir, string configType)
+            {
+                // packages\ProjectK.*\tools\bin\klr.exe 
+                // packages\ProjectK.*\tools\Microsoft.Net.ApplicationHost\bin\net45\Microsoft.Net.ApplicationHost.dll 
+                
+                string klrPath = Directory.EnumerateFiles(packagesDir, "klr.exe", SearchOption.AllDirectories).FirstOrDefault();
+                if (klrPath == null)
+                {
+                    Warn("Unable to locate klr.exe under packages");
+                    return "";
+                }
+                
+                string toolsDir = Path.GetDirectoryName(Path.GetDirectoryName(klrPath));
+                string outputDll = Path.Combine(projectRoot, "bin", "Debug", configType == "k10" ? "k" : "net45", projectName + ".dll");
+                
+                return String.Format(@"<StartAction>Program</StartAction>
+                         <StartProgram>{0}</StartProgram>
+                         <StartArguments>{1}</StartArguments>", klrPath, outputDll);
             }
 
             private static string GetProjectKTargets(string packagesDir)
