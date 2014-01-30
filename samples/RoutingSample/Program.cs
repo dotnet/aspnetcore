@@ -5,7 +5,7 @@ using Microsoft.Owin.Hosting;
 
 namespace RoutingSample
 {
-    internal static class Program
+    public class Program
     {
         public static void Main(string[] args)
         {
