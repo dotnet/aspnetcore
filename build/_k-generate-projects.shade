@@ -194,11 +194,19 @@ functions
                     configs["net45"] = new Dictionary<string, object>();
                 }
 
-                // Get the list of files
-                var filesString
+                // Build the list of cs files
+                var csFiles 
                     = String.Join(Environment.NewLine,
-                        BuildFileList(projectDir, "*.cs", "Compile"),
-                        BuildFileList(projectDir, "*.resx", "EmbeddedResource"));
+                        FindFilesOfType(projectDir, "*.cs")
+                            .Select(p => String.Format(@"<Compile Include=""{0}"" />", p)));
+
+                // Build the list of resx files
+                var resxFiles
+                    = String.Join(Environment.NewLine,
+                        FindFilesOfType(projectDir, "*.resx")
+                            .Select(p => String.Format(@"<EmbeddedResource Include=""{0}"">
+    <LogicalName>{1}.{2}.resources</LogicalName>
+</EmbeddedResource>", p, projectName, Path.GetFileNameWithoutExtension(p))));
                 
                 bool isSample = Path.GetDirectoryName(projectDir)
                                     .TrimEnd(Path.DirectorySeparatorChar)
@@ -276,7 +284,7 @@ functions
                                        .Replace("{Name}", projectName)
                                        .Replace("{Defines}", String.Join(";", defines))
                                        .Replace("{ExtraProperties}", extraProperties)
-                                       .Replace("{Files}", filesString)
+                                       .Replace("{Files}", String.Join(Environment.NewLine, csFiles, resxFiles))
                                        .Replace("{ProjectReferences}", BuildProjectReferences(projectReferences, targetFramework, projectMapping))
                                        .Replace("{References}", BuildReferences(allPackageReferences, gacReferences, packagesDir, targetFramework, GetCandidates(targetFramework)));
 
@@ -310,13 +318,11 @@ functions
                 }
             }
 
-            private static string BuildFileList(string projectDir, string pattern, string elementName)
+            private static IEnumerable<string> FindFilesOfType(string projectDir, string pattern)
             {
-                return String.Join(Environment.NewLine,
-                    Directory.GetFiles(projectDir, pattern, SearchOption.AllDirectories)
-                    .Select(p => p.Substring(projectDir.Length).Trim(Path.DirectorySeparatorChar))
-                    .Where(p => !p.StartsWith(@"obj\"))
-                    .Select(p => String.Format(@"<{0} Include=""{1}"" />", elementName, p)));
+                return Directory.GetFiles(projectDir, pattern, SearchOption.AllDirectories)
+                        .Select(p => p.Substring(projectDir.Length).Trim(Path.DirectorySeparatorChar))
+                        .Where(p => !p.StartsWith(@"obj\"));
             }
             
             private static string GenerateStartupAction(string projectRoot, string projectName, string packagesDir, string configType)
