@@ -47,9 +47,9 @@ namespace Microsoft.AspNet.Razor.Resources
                 if (object.ReferenceEquals(resourceMan, null))
                 {
 #if NET45
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.AspNet.Razor.Resources.RazorResources", typeof(RazorResources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.AspNet.Razor.RazorResources", typeof(RazorResources).Assembly);
 #else
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.AspNet.Razor.Resources.RazorResources", typeof(RazorResources).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.AspNet.Razor.RazorResources", typeof(RazorResources).GetTypeInfo().Assembly);
 #endif
                     resourceMan = temp;
                 }
