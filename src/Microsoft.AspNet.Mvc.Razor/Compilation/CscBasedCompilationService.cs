@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             string outFile = Path.Combine(_tempDir, Path.GetRandomFileName() + ".dll");
             StringBuilder args = new StringBuilder("/target:library ");
             args.AppendFormat("/out:\"{0}\" ", outFile);
-            foreach (var file in  Directory.EnumerateFiles(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "*.dll"))
+            foreach (var file in Directory.EnumerateFiles(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "*.dll"))
             {
                 args.AppendFormat("/R:\"{0}\" ", file);
             }
@@ -37,8 +37,18 @@ namespace Microsoft.AspNet.Mvc.Razor
             var outputStream = new MemoryStream();
 
             // common execute
-            var process = CreateProcess(args.ToString());
-            int exitCode = await Start(process, outputStream);
+            Process process = CreateProcess(args.ToString());
+            int exitCode;
+            try
+            {
+                File.WriteAllText(inFile, contents);
+                exitCode = await Start(process, outputStream);
+            }
+            finally
+            {
+                File.Delete(inFile);
+            }
+
 
             string output = GetString(outputStream);
             if (exitCode != 0)

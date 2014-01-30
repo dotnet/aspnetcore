@@ -13,12 +13,16 @@ namespace Microsoft.AspNet.Mvc
         {
         }
 
-        public ViewData(ViewData<TModel> source)
-            : base(source)
+        public new TModel Model
         {
-            Model = source.Model;
+            get { return (TModel)base.Model; }
+            set { SetModel(value); }
         }
 
-        public TModel Model { get; set; }
+        protected override void SetModel(object value)
+        {
+            // TODO: Add checks for cast
+            base.SetModel((TModel)value);
+        }
     }
 }

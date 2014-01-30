@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.Owin.FileSystems;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
     public class VirtualPathViewFactory : IVirtualPathViewFactory
     {
-        private readonly IFileSystem _fileSystem;
+        private readonly IVirtualFileSystem _fileSystem;
         private readonly IRazorCompilationService _compilationService;
 
-        public VirtualPathViewFactory(IFileSystem fileSystem, IRazorCompilationService compilationService)
+        public VirtualPathViewFactory(IVirtualFileSystem fileSystem, IRazorCompilationService compilationService)
         {
             _fileSystem = fileSystem;
             _compilationService = compilationService;

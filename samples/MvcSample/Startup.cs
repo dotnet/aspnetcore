@@ -17,16 +17,12 @@ namespace MvcSample
 
             var serviceProvider = MvcServices.Create();
 
-            // HACK to determine app root.
-            string appRoot = Environment.CurrentDirectory;
-            while (!String.IsNullOrEmpty(appRoot) && !appRoot.TrimEnd(Path.DirectorySeparatorChar).EndsWith("MvcSample"))
-            {
-                appRoot = Path.GetDirectoryName(appRoot);
-            }
+            // HACK appbase doesn't seem to work. When in VS we're pointing at bin\Debug\Net45, so move up 3 directories
+            string appRoot = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "..", "..", ".."));
 
             serviceProvider.AddInstance<IFileSystem>(new PhysicalFileSystem(appRoot));
             serviceProvider.Add<IVirtualFileSystem, VirtualFileSystem>();
-            serviceProvider.Add<IMvcRazorHost, MvcRazorHost>();
+            serviceProvider.AddInstance<IMvcRazorHost>(new MvcRazorHost("Microsoft.AspNet.Mvc.Razor.RazorView<dynamic>"));
             serviceProvider.Add<ICompilationService, CscBasedCompilationService>();
             serviceProvider.Add<IRazorCompilationService, RazorCompilationService>();
             serviceProvider.Add<IVirtualPathViewFactory, VirtualPathViewFactory>();

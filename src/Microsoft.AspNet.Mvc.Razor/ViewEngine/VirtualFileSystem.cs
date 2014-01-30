@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Microsoft.Owin.FileSystems;
 
@@ -21,6 +20,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             if (_fileSystem.TryGetFileInfo(translated, out fileInfo))
             {
                 fileInfo = new VirtualFile(subpath, fileInfo);
+                return true;
             }
             return false;
         }
@@ -31,6 +31,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             if (_fileSystem.TryGetDirectoryContents(translated, out contents))
             {
                 contents = contents.Select(c => new VirtualFile(subpath + '/' + c.Name, c));
+                return true;
             }
             return false;
         }

@@ -6,7 +6,8 @@ namespace Microsoft.AspNet.Mvc
 {
     public class ViewData : DynamicObject
     {
-        private Dictionary<object, dynamic> _data;
+        private readonly Dictionary<object, dynamic> _data;
+        private object _model;
 
         public ViewData()
         {
@@ -15,7 +16,14 @@ namespace Microsoft.AspNet.Mvc
 
         public ViewData(ViewData source)
         {
-            _data = new Dictionary<object, dynamic>(source._data);
+            _data = source._data;
+            SetModel(source.Model);
+        }
+
+        public object Model
+        {
+            get { return _model; }
+            set { SetModel(value); }
         }
 
         public dynamic this[string index]
@@ -79,6 +87,14 @@ namespace Microsoft.AspNet.Mvc
             // This cast should always succeed assuming TValue is dynamic.
             this[(string)index] = value;
             return true;
+        }
+
+        // This method will execute before the derived type's instance constructor executes. Derived types must
+        // be aware of this and should plan accordingly. For example, the logic in SetModel() should be simple
+        // enough so as not to depend on the "this" pointer referencing a fully constructed object.
+        protected virtual void SetModel(object value)
+        {
+            _model = value;
         }
     }
 }

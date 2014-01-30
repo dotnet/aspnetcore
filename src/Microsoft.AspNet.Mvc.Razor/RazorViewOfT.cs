@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             var viewData = context.ViewData as ViewData<TModel>;
             ViewData = viewData ?? new ViewData<TModel>(context.ViewData);
-            Model = (TModel)ViewData.Model;
+            Model = ViewData.Model;
             InitHelpers(context);
 
             return base.RenderAsync(context, writer);
