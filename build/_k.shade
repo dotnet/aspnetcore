@@ -16,9 +16,26 @@ command=''
 nuget-install package='ProjectK' outputDir='packages' extra='-pre' once='ProjectK-NuGet'
 
 @{
+    Func<string, long> getVersion = version => {
+        var dash = version.LastIndexOf('-');
+
+        if(dash != -1)
+        {
+            var lastToken = version.Substring(dash + 1);
+
+            if(lastToken.StartsWith("t"))
+            {
+                return Int64.Parse(lastToken.Substring(1));
+            }
+
+            return Int64.Parse(lastToken);
+        } 
+        return Int64.MaxValue;
+    };
+
     string packagesDir = Path.Combine(Directory.GetCurrentDirectory(), "packages"),
            projectKDir = Directory.EnumerateDirectories(packagesDir, "ProjectK*")
-                                  .OrderByDescending(p => Int32.Parse(p.Substring(p.LastIndexOf('-') + 1)))
+                                  .OrderByDescending(getVersion)
                                   .First();
     
 }
