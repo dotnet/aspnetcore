@@ -40,6 +40,8 @@ namespace Microsoft.AspNet.Razor
             get { return _outputDebuggingEnabled; }
         }
 #if NET45
+        // No CodeDOM in CoreCLR
+
         [SuppressMessage("Microsoft.Security", "CA2141:TransparentMethodsMustNotSatisfyLinkDemandsFxCopRule", Justification = "This is debug only")]
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "This is debug only")]
         [SuppressMessage("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider", MessageId = "System.IO.StringWriter.#ctor", Justification = "This is debug only")]

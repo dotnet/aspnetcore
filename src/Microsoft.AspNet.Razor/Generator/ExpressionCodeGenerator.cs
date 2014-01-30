@@ -18,6 +18,8 @@ namespace Microsoft.AspNet.Razor.Generator
         public override void GenerateStartBlockCode(Block target, CodeGeneratorContext context)
         {
 #if NET45
+            // No CodeDOM + This code will not be needed once we transition to the CodeTree
+
             if (context.Host.EnableInstrumentation && context.ExpressionRenderingMode == ExpressionRenderingMode.WriteToOutput)
             {
                 Span contentSpan = target.Children
@@ -69,6 +71,8 @@ namespace Microsoft.AspNet.Razor.Generator
         public override void GenerateEndBlockCode(Block target, CodeGeneratorContext context)
         {
 #if NET45
+            // No CodeDOM + This code will not be needed once we transition to the CodeTree
+
             string endBlock = context.BuildCodeString(cw =>
             {
                 if (context.ExpressionRenderingMode == ExpressionRenderingMode.WriteToOutput)
@@ -115,6 +119,8 @@ namespace Microsoft.AspNet.Razor.Generator
         public override void GenerateCode(Span target, CodeGeneratorContext context)
         {
 #if NET45
+            // No CodeDOM + This code will not be needed once we transition to the CodeTree
+
             Span sourceSpan = null;
             if (context.CreateCodeWriter().SupportsMidStatementLinePragmas || context.ExpressionRenderingMode == ExpressionRenderingMode.WriteToOutput)
             {

@@ -11,13 +11,14 @@ namespace Microsoft.AspNet.Razor.Tokenizer
         public static bool IsIdentifierStart(char character)
         {
             return Char.IsLetter(character) ||
-                   character == '_'
+                   character == '_' ||
 #if NET45 
-                   || Char.GetUnicodeCategory(character) == UnicodeCategory.LetterNumber
+                   // No GetUnicodeCategory on Char in CoreCLR
+
+                   Char.GetUnicodeCategory(character) == UnicodeCategory.LetterNumber;
 #else
-                   || Char.IsLetterOrDigit(character)
+                   CharUnicodeInfo.GetUnicodeCategory(character) == UnicodeCategory.LetterNumber;
 #endif
-                   ; // Ln
         }
 
         public static bool IsIdentifierPart(char character)
@@ -39,16 +40,19 @@ namespace Microsoft.AspNet.Razor.Tokenizer
 
         private static bool IsIdentifierPartByUnicodeCategory(char character)
         {
+            UnicodeCategory category;
 #if NET45 
-            UnicodeCategory category = Char.GetUnicodeCategory(character);
-            
+            // No GetUnicodeCategory on Char in CoreCLR
+
+            category = Char.GetUnicodeCategory(character);
+#else
+            category = CharUnicodeInfo.GetUnicodeCategory(character);
+#endif
+
             return category == UnicodeCategory.NonSpacingMark || // Mn
                    category == UnicodeCategory.SpacingCombiningMark || // Mc
                    category == UnicodeCategory.ConnectorPunctuation || // Pc
                    category == UnicodeCategory.Format; // Cf
-#else
-            return false; // TODO: Make the above work
-#endif
         }
     }
 }

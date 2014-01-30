@@ -288,7 +288,11 @@ namespace Microsoft.AspNet.Razor.Parser
                     if (_infiniteLoopGuardCount > InfiniteLoopCountThreshold)
                     {
 #if NET45
+                        // No Debug.Fail in CoreCLR
+
                         Debug.Fail("An internal parser error is causing an infinite loop at this location.");
+#else
+                        Debug.Assert(false, "An internal parser error is causing an infinite loop at this location.");
 #endif
                         _terminated = true;
                         return true;

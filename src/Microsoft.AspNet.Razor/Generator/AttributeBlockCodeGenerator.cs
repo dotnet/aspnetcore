@@ -34,6 +34,9 @@ namespace Microsoft.AspNet.Razor.Generator
         public override void GenerateStartBlockCode(Block target, CodeGeneratorContext context)
         {
 #if NET45
+            // No CodeDOM in CoreCLR.
+            // #if'd the entire section because once we transition over to the CodeTree we will not need all this code.
+
             if (context.Host.DesignTimeMode)
             {
                 return; // Don't generate anything!
@@ -72,6 +75,9 @@ namespace Microsoft.AspNet.Razor.Generator
         public override void GenerateEndBlockCode(Block target, CodeGeneratorContext context)
         {
 #if NET45
+            // No CodeDOM in CoreCLR (AddStatement and FlushBufferedStatement etc. utilize it).
+            // #if'd the entire section because once we transition over to the CodeTree we will not need all this code.
+
             if (context.Host.DesignTimeMode)
             {
                 return; // Don't generate anything!

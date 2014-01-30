@@ -24,6 +24,8 @@ namespace Microsoft.AspNet.Razor.Generator
         public override void GenerateCode(Span target, CodeGeneratorContext context)
         {
 #if NET45
+            // No CodeDOM
+
             if (!context.Host.DesignTimeMode && !String.IsNullOrEmpty(context.Host.GeneratedClassContext.LayoutPropertyName))
             {
                 context.TargetMethod.Statements.Add(

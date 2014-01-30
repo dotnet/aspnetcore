@@ -40,6 +40,8 @@ namespace Microsoft.AspNet.Razor.Generator
         public override void GenerateStartBlockCode(Block target, CodeGeneratorContext context)
         {
 #if NET45
+            // No CodeDOM + This code will not be needed once we transition to the CodeTree
+
             _writer = context.CreateCodeWriter();
 
             string prefix = context.BuildCodeString(
@@ -78,6 +80,8 @@ namespace Microsoft.AspNet.Razor.Generator
         public override void GenerateEndBlockCode(Block target, CodeGeneratorContext context)
         {
 #if NET45
+            // No CodeDOM + This code will not be needed once we transition to the CodeTree
+
             _statementCollectorToken.Dispose();
             if (HeaderComplete)
             {
@@ -126,6 +130,8 @@ namespace Microsoft.AspNet.Razor.Generator
         }
 
 #if NET45
+        // No CodeDOM + This code will not be needed once we transition to the CodeTree
+
         private void AddStatementToHelper(string statement, CodeLinePragma pragma)
         {
             if (pragma != null)

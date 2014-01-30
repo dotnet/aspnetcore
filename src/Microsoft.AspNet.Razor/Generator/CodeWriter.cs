@@ -54,6 +54,8 @@ namespace Microsoft.AspNet.Razor.Generator
         public abstract void WriteStringLiteral(string literal);
         public abstract int WriteVariableDeclaration(string type, string name, string value);
 #if NET45
+        // No CodeDOM in CoreCLR
+
         public virtual void WriteLinePragma()
         {
             WriteLinePragma(null);
@@ -169,6 +171,9 @@ namespace Microsoft.AspNet.Razor.Generator
         public virtual void WriteBooleanLiteral(bool value)
         {
 #if NET45
+            // ToString does not take a parameter in CoreCLR
+            // #if'd the entire section because once we transition over to the CodeTree we will not need all this code.
+
             WriteSnippet(value.ToString(CultureInfo.InvariantCulture));
 #endif
         }

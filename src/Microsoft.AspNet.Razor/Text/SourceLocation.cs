@@ -6,6 +6,7 @@ using System.Globalization;
 namespace Microsoft.AspNet.Razor.Text
 {
 #if NET45
+    // No Serializable attribute in CoreCLR (no need for it anymore?)
     [Serializable]
 #endif
     public struct SourceLocation : IEquatable<SourceLocation>, IComparable<SourceLocation>

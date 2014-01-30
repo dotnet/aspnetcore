@@ -39,6 +39,8 @@ namespace Microsoft.AspNet.Razor
         public IList<LineMapping> DesignTimeLineMappings { get; private set; }
 
 #if NET45
+        // No CodeDOM + This code will not be needed once we transition to the CodeTree
+
         public CodeCompileUnit CCU { get; set; }
         public IDictionary<int, GeneratedCodeMapping> OLDDesignTimeLineMappings { get; set; }
 #endif

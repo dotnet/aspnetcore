@@ -41,6 +41,8 @@ namespace Microsoft.AspNet.Razor.Generator
         public override void GenerateStartBlockCode(Block target, CodeGeneratorContext context)
         {
 #if NET45
+            // This code will not be needed once we transition to the CodeTree
+
             if (context.Host.DesignTimeMode)
             {
                 return; // Don't generate anything!
@@ -55,6 +57,8 @@ namespace Microsoft.AspNet.Razor.Generator
             {
                 _isExpression = true;
 #if NET45
+                // No CodeDOM + This code will not be needed once we transition to the CodeTree
+
                 generatedCode = context.BuildCodeString(cw =>
                 {
                     cw.WriteParameterSeparator();
@@ -68,6 +72,8 @@ namespace Microsoft.AspNet.Razor.Generator
                 context.ExpressionRenderingMode = ExpressionRenderingMode.InjectCode;
             }
 #if NET45
+            // No CodeDOM + This code will not be needed once we transition to the CodeTree
+
             else
             {
                 generatedCode = context.BuildCodeString(cw =>
@@ -108,6 +114,8 @@ namespace Microsoft.AspNet.Razor.Generator
             if (_isExpression)
             {
 #if NET45
+                // No CodeDOM + This code will not be needed once we transition to the CodeTree
+
                 generatedCode = context.BuildCodeString(cw =>
                 {
                     cw.WriteParameterSeparator();
@@ -123,6 +131,8 @@ namespace Microsoft.AspNet.Razor.Generator
                 context.ExpressionRenderingMode = _oldRenderingMode;
             }
 #if NET45
+            // No CodeDOM + This code will not be needed once we transition to the CodeTree
+
             else
             {
                 generatedCode = context.BuildCodeString(cw =>

@@ -16,6 +16,8 @@ namespace Microsoft.AspNet.Razor.Generator
         public override void GenerateCode(Span target, CodeGeneratorContext context)
         {
 #if NET45
+            // No CodeDOM + This code will not be needed once we transition to the CodeTree
+
             context.FlushBufferedStatement();
 
             string generatedCode = context.BuildCodeString(cw =>

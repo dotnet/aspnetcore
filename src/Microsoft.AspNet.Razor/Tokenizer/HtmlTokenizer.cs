@@ -153,7 +153,11 @@ namespace Microsoft.AspNet.Razor.Tokenizer
                 return EndSymbol(HtmlSymbolType.DoubleHyphen);
             default:
 #if NET45
-                    Debug.Fail("Unexpected symbol!");
+                // No Debug.Fail in CoreCLR
+
+                Debug.Fail("Unexpected symbol!");
+#else
+                Debug.Assert(false, "Unexpected symbol");
 #endif
                 return EndSymbol(HtmlSymbolType.Unknown);
             }

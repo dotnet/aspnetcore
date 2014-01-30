@@ -25,6 +25,9 @@ namespace Microsoft.AspNet.Razor.Generator
         {
             base.Initialize(context);
 #if NET45
+            // No CodeDOM in CoreCLR.
+            // #if'd the entire section because once we transition over to the CodeTree we will not need all this code.
+
             context.GeneratedClass.Members.Insert(0, new CodeSnippetTypeMember(HiddenLinePragma));
 #endif
         }

@@ -22,6 +22,8 @@ namespace Microsoft.AspNet.Razor
             get { return CSharpLanguageName; }
         }
 #if NET45
+        // No CodeDOM in CoreCLR
+
         /// <summary>
         /// Returns the type of the CodeDOM provider for this language
         /// </summary>

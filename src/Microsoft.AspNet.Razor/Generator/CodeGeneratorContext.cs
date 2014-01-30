@@ -32,6 +32,9 @@ namespace Microsoft.AspNet.Razor.Generator
 
         #region deletable
 #if NET45
+        // This section is #if'd because it contains SOME incompatible pieces but also will not be needed once we transition over 
+        // to using the CodeTree
+
         private int _nextDesignTimePragmaId = 1;
         private bool _expressionHelperVariableWriten;
         private CodeMemberMethod _designTimeHelperMethod;
@@ -318,6 +321,9 @@ namespace Microsoft.AspNet.Razor.Generator
                 Host = host,
                 SourceFile = shouldGenerateLinePragmas ? sourceFile : null,
 #if NET45
+                // This section is #if'd because it contains SOME incompatible pieces but also will not be needed once we transition over 
+                // to using the CodeTree
+
                 CodeWriterFactory = writerFactory,
                 CompileUnit = new CodeCompileUnit(),
                 Namespace = new CodeNamespace(rootNamespace),
@@ -334,6 +340,8 @@ namespace Microsoft.AspNet.Razor.Generator
 #endif
             };
 #if NET45
+            // No CodeDOM in CoreCLR.
+
             context.CompileUnit.Namespaces.Add(context.Namespace);
             context.Namespace.Types.Add(context.GeneratedClass);
             context.GeneratedClass.Members.Add(context.TargetMethod);

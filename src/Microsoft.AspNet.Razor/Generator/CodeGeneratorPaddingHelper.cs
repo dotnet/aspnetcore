@@ -10,6 +10,8 @@ using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 namespace Microsoft.AspNet.Razor.Generator
 {
     #if NET45
+    // This section is #if'd because it is no longer needed for the CodeTree transition.
+
     internal static class CodeGeneratorPaddingHelper
     {
         private static readonly char[] _newLineChars = { '\r', '\n' };

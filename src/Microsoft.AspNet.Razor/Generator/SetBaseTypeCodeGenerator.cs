@@ -24,6 +24,8 @@ namespace Microsoft.AspNet.Razor.Generator
         public override void GenerateCode(Span target, CodeGeneratorContext context)
         {
 #if NET45
+            // No CodeDOM + This code will not be needed once we transition to the CodeTree
+
             context.GeneratedClass.BaseTypes.Clear();
             context.GeneratedClass.BaseTypes.Add(new CodeTypeReference(ResolveType(context, BaseType.Trim())));
 

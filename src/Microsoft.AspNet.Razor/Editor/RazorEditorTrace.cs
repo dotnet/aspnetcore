@@ -25,6 +25,8 @@ namespace Microsoft.AspNet.Razor.Editor
                 if (Boolean.TryParse(Environment.GetEnvironmentVariable("RAZOR_EDITOR_TRACE"), out enabled))
                 {
 #if NET45
+                    // No Trace in CoreCLR
+
                     Trace.WriteLine(String.Format(
                         CultureInfo.CurrentCulture,
                         RazorResources.Trace_Startup,
@@ -46,6 +48,8 @@ namespace Microsoft.AspNet.Razor.Editor
             if (IsEnabled())
             {
 #if NET45
+                // No Trace in CoreCLR
+
                 Trace.WriteLine(String.Format(
                     CultureInfo.CurrentCulture,
                     RazorResources.Trace_Format,

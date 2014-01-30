@@ -30,6 +30,8 @@ namespace Microsoft.AspNet.Razor
         /// </summary>
         public abstract string LanguageName { get; }
 #if NET45
+        // No CodeDOM in CoreCLR
+
         /// <summary>
         /// The type of the CodeDOM provider for this language
         /// </summary>

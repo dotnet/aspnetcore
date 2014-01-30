@@ -322,7 +322,11 @@ namespace Microsoft.AspNet.Razor.Tokenizer
         internal void AssertCurrent(char current)
         {
 #if NET45
+            // No Debug.Assert with this many arguments in CoreCLR
+
             Debug.Assert(CurrentCharacter == current, "CurrentCharacter Assumption violated", "Assumed that the current character would be {0}, but it is actually {1}", current, CurrentCharacter);
+#else
+            Debug.Assert(CurrentCharacter == current, String.Format("CurrentCharacter Assumption violated.  Assumed that the current character would be {0}, but it is actually {1}", current, CurrentCharacter));
 #endif
         }
 

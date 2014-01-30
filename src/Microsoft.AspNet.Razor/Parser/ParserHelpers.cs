@@ -34,9 +34,11 @@ namespace Microsoft.AspNet.Razor.Parser
                    value == '\t' ||
                    value == '\u000B' || // Vertical Tab
 #if NET45
+                   // No GetUnicodeCategory on Char in CoreCLR
+
                    Char.GetUnicodeCategory(value) == UnicodeCategory.SpaceSeparator;
 #else
-                   Char.IsSeparator(value);
+                   CharUnicodeInfo.GetUnicodeCategory(value) == UnicodeCategory.SpaceSeparator;
 #endif
         }
 
@@ -93,9 +95,11 @@ namespace Microsoft.AspNet.Razor.Parser
         public static bool IsDecimalDigit(char value)
         {
 #if NET45
+            // No GetUnicodeCategory on Char in CoreCLR
+
             return Char.GetUnicodeCategory(value) == UnicodeCategory.DecimalDigitNumber;
 #else
-            return Char.IsDigit(value);
+            return CharUnicodeInfo.GetUnicodeCategory(value) == UnicodeCategory.DecimalDigitNumber;
 #endif
         }
 
@@ -106,48 +110,57 @@ namespace Microsoft.AspNet.Razor.Parser
 
         public static bool IsLetter(char value)
         {
+            UnicodeCategory cat;
 #if NET45
-            var cat = Char.GetUnicodeCategory(value);
+            // No GetUnicodeCategory on Char in CoreCLR
 
+            cat = Char.GetUnicodeCategory(value);
+#else
+            cat = CharUnicodeInfo.GetUnicodeCategory(value);
+#endif
             return cat == UnicodeCategory.UppercaseLetter
                    || cat == UnicodeCategory.LowercaseLetter
                    || cat == UnicodeCategory.TitlecaseLetter
                    || cat == UnicodeCategory.ModifierLetter
                    || cat == UnicodeCategory.OtherLetter
                    || cat == UnicodeCategory.LetterNumber;
-#else
-            return Char.IsLetter(value);
-#endif
-            
         }
 
         public static bool IsFormatting(char value)
         {
 #if NET45
+            // No GetUnicodeCategory on Char in CoreCLR
+
             return Char.GetUnicodeCategory(value) == UnicodeCategory.Format;
 #else
-            return false; // TODO: Make the above work
+
+            return CharUnicodeInfo.GetUnicodeCategory(value) == UnicodeCategory.Format;
 #endif
         }
 
         public static bool IsCombining(char value)
         {
+            UnicodeCategory cat;
 #if NET45
-            var cat = Char.GetUnicodeCategory(value);
+            // No GetUnicodeCategory on Char in CoreCLR
+
+            cat = Char.GetUnicodeCategory(value);
+#else
+            cat = CharUnicodeInfo.GetUnicodeCategory(value);
+#endif
 
             return cat == UnicodeCategory.SpacingCombiningMark || cat == UnicodeCategory.NonSpacingMark;
-#else
-            return false; // TODO: Make the above work
-#endif
-            
+
         }
 
         public static bool IsConnecting(char value)
         {
 #if NET45
+            // No GetUnicodeCategory on Char in CoreCLR
+
             return Char.GetUnicodeCategory(value) == UnicodeCategory.ConnectorPunctuation;
 #else
-            return false; // TODO: Make the above work
+            return CharUnicodeInfo.GetUnicodeCategory(value) == UnicodeCategory.ConnectorPunctuation;
 #endif
         }
 

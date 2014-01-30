@@ -10,6 +10,8 @@ namespace Microsoft.AspNet.Razor.Generator
         public override void GenerateStartBlockCode(Block target, CodeGeneratorContext context)
         {
 #if NET45
+            // No CodeDOM + This code will not be needed once we transition to the CodeTree
+
             // Flush the buffered statement since we're interrupting it with a comment.
             if (!String.IsNullOrEmpty(context.CurrentBufferedStatement))
             {

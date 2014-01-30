@@ -145,7 +145,10 @@ namespace Microsoft.AspNet.Razor.Parser
                 return CSharpSymbolType.LessThan;
             default:
 #if NET45
-                    Debug.Fail("FlipBracket must be called with a bracket character");
+                // No Debug.Fail
+                Debug.Fail("FlipBracket must be called with a bracket character");
+#else
+                Debug.Assert(false, "FlipBracket must be called with a bracket character");
 #endif
                 return CSharpSymbolType.Unknown;
             }

@@ -310,6 +310,11 @@ namespace Microsoft.AspNet.Razor.Editor
                 {
                     RazorEditorTrace.TraceLine(RazorResources.Trace_BackgroundThreadStart, fileNameOnly);
                     EnsureOnThread();
+
+#if K10
+                    var spinWait = new SpinWait();
+#endif
+
                     while (!_shutdownToken.IsCancellationRequested)
                     {
                         // Grab the parcel of work to do
@@ -425,7 +430,12 @@ namespace Microsoft.AspNet.Razor.Editor
                         {
                             RazorEditorTrace.TraceLine(RazorResources.Trace_NoChangesArrived, fileNameOnly, parcel.Changes.Count);
 #if NET45
+                            // No Yield in CoreCLR
+
                             Thread.Yield();
+#else
+                            // This does the equivalent of thread.yield under the covers.
+                            spinWait.SpinOnce();
 #endif
                         }
                     }

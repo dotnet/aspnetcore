@@ -77,6 +77,8 @@ namespace Microsoft.AspNet.Razor.Generator
         public override void OnComplete()
         {
 #if NET45
+            // No CodeDOM + This code will not be needed once we transition to the CodeTree
+
             Context.FlushBufferedStatement();
 #endif
         }

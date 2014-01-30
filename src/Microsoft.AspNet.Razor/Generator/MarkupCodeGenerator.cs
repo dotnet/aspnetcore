@@ -20,6 +20,8 @@ namespace Microsoft.AspNet.Razor.Generator
                 return;
             }
 #if NET45
+            // No CodeDOM + This code will not be needed once we transition to the CodeTree
+
             if (context.Host.EnableInstrumentation)
             {
                 context.AddContextCall(target, context.Host.GeneratedClassContext.BeginContextMethodName, isLiteral: true);

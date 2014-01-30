@@ -36,6 +36,9 @@ namespace Microsoft.AspNet.Razor.Generator
         public override void GenerateCode(Span target, CodeGeneratorContext context)
         {
 #if NET45
+            // No CodeDOM in CoreCLR.
+            // #if'd the entire section because once we transition over to the CodeTree we will not need all this code.
+
             // Try to find the namespace in the existing imports
             string ns = Namespace;
             if (!String.IsNullOrEmpty(ns) && Char.IsWhiteSpace(ns[0]))

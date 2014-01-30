@@ -36,6 +36,8 @@ namespace Microsoft.AspNet.Razor.Generator
         public override void GenerateCode(Span target, CodeGeneratorContext context)
         {
 #if NET45
+            // No CodeDOM + This code will not be needed once we transition to the CodeTree
+
             var attributeType = new CodeTypeReference(typeof(RazorDirectiveAttribute));
             var attributeDeclaration = new CodeAttributeDeclaration(
                 attributeType,

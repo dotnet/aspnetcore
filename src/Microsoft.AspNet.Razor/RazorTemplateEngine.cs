@@ -167,6 +167,8 @@ namespace Microsoft.AspNet.Razor
             generator.DesignTimeMode = Host.DesignTimeMode;
             generator.Visit(results);
 #if NET45
+            // No CodeDOM in CoreCLR, this calls into CodeDOM dependent code.
+
             // Post process code
             Host.PostProcessGeneratedCode(generator.Context);
 #endif
@@ -176,6 +178,8 @@ namespace Microsoft.AspNet.Razor
             if (Host.DesignTimeMode)
             {
 #if NET45
+                // No CodeDOM in CoreCLR, this calls into CodeDOM dependent code.
+
                 designTimeLineMappings = generator.Context.CodeMappings;
 #endif
             }
@@ -187,9 +191,12 @@ namespace Microsoft.AspNet.Razor
             return new GeneratorResults(results, builderResult)
             {
 #if NET45
+                // No CodeDOM in CoreCLR, this calls into CodeDOM dependent code.
+                // Also this code will be removed once we transition into the CodeTree
+
                 CCU = generator.Context.CompileUnit,
                 OLDDesignTimeLineMappings = designTimeLineMappings,
-#endif                
+#endif
                 CT = generator.Context.CodeTreeBuilder.CodeTree
             };
         }
