@@ -1,0 +1,8 @@
+{
+  "version" : "0.1-pre-*",
+  "dependencies": {},
+  "configurations": {
+    "net45": {},
+    "k10": {}
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "version" : "0.1-pre-*",
+  "dependencies": {
+    "Microsoft.AspNet.Identity" : "0.1-alpha-*"
+  },
+  "configurations": {
+    "net45": {},
+    "k10": {}
+  }
+}
