@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.CSharp;
-using System;
 
 namespace Microsoft.AspNet.Razor
 {

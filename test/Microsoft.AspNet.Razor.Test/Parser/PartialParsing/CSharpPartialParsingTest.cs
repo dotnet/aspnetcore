@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
+using System;
+using System.Web.WebPages.TestUtils;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.AspNet.Razor.Text;
-using System.Web.WebPages.TestUtils;
 using Microsoft.TestCommon;
-using System;
 
 namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
 {

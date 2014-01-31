@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.Internal.Web.Utils;
-using System;
 
 namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
 {

@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNet.Razor.Editor;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
 using Microsoft.Internal.Web.Utils;
-using System;
 
 namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
 {

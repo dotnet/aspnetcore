@@ -4,10 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Microsoft.Internal.Web.Utils;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
+using Microsoft.Internal.Web.Utils;
 
 namespace Microsoft.AspNet.Razor.Editor
 {

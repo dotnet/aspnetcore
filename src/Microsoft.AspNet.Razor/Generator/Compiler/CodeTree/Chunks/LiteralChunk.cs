@@ -1,5 +1,4 @@
-﻿using System;
-
+﻿
 namespace Microsoft.AspNet.Razor.Generator.Compiler
 {
     public class LiteralChunk : Chunk

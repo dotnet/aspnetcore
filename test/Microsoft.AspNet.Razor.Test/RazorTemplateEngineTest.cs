@@ -2,10 +2,10 @@
 
 using System.IO;
 using System.Threading;
+using System.Web.WebPages.TestUtils;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Text;
-using System.Web.WebPages.TestUtils;
 using Microsoft.TestCommon;
 using Moq;
 

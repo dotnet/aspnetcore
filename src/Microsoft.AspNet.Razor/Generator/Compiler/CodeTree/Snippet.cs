@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.AspNet.Razor.Text;
+﻿using Microsoft.AspNet.Razor.Text;
 
 namespace Microsoft.AspNet.Razor.Generator.Compiler
 {

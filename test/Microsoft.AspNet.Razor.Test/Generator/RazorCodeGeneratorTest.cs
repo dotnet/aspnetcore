@@ -2,6 +2,7 @@
 
 //#define GENERATE_BASELINES
 
+using System;
 using System.CodeDom;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
@@ -9,12 +10,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Web.WebPages.TestUtils;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Utils;
-using System.Web.WebPages.TestUtils;
 using Microsoft.TestCommon;
-using System;
 
 namespace Microsoft.AspNet.Razor.Test.Generator
 {

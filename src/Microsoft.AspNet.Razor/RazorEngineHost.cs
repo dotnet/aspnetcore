@@ -4,7 +4,6 @@ using System;
 using System.CodeDom;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Contracts;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser;
 

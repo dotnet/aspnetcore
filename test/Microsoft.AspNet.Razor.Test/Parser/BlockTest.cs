@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System.Linq;
+using System.Web.WebPages.TestUtils;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.AspNet.Razor.Text;
-using System.Web.WebPages.TestUtils;
 using Microsoft.TestCommon;
 
 namespace Microsoft.AspNet.Razor.Test.Parser

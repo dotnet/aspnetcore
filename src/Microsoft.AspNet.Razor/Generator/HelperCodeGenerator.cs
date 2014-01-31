@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
+using System;
 using System.CodeDom;
 using System.Globalization;
+using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.Internal.Web.Utils;
-using System;
-using Microsoft.AspNet.Razor.Generator.Compiler;
 
 namespace Microsoft.AspNet.Razor.Generator
 {
