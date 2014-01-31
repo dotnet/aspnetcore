@@ -1,5 +1,4 @@
 ﻿using System;
-using Shouldly;
 using Xunit;
 
 namespace Microsoft.AspNet.FeatureModel.Tests
@@ -14,11 +13,11 @@ namespace Microsoft.AspNet.FeatureModel.Tests
 
             interfaces.Add(typeof(IThing), thing);
 
-            interfaces[typeof(IThing)].ShouldBe(thing);
+            Assert.Equal(interfaces[typeof(IThing)], thing);
 
             object thing2;
-            interfaces.TryGetValue(typeof(IThing), out thing2).ShouldBe(true);
-            thing2.ShouldBe(thing);
+            Assert.True(interfaces.TryGetValue(typeof(IThing), out thing2));
+            Assert.Equal(thing2, thing);
         }
 
         [Fact]
@@ -29,11 +28,11 @@ namespace Microsoft.AspNet.FeatureModel.Tests
 
             interfaces[typeof(IThing)] = thing;
 
-            interfaces[typeof(IThing)].ShouldBe(thing);
+            Assert.Equal(interfaces[typeof(IThing)], thing);
 
             object thing2;
-            interfaces.TryGetValue(typeof(IThing), out thing2).ShouldBe(true);
-            thing2.ShouldBe(thing);
+            Assert.True(interfaces.TryGetValue(typeof(IThing), out thing2));
+            Assert.Equal(thing2, thing);
         }
 
         [Fact]
@@ -44,7 +43,7 @@ namespace Microsoft.AspNet.FeatureModel.Tests
 
             interfaces.Add(typeof(IThing), thing);
 
-            Should.Throw<ArgumentException>(() => interfaces.Add(typeof(IThing), thing));
+            Assert.Throws<ArgumentException>(() => interfaces.Add(typeof(IThing), thing));
         }
     }
 }

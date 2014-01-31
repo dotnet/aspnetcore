@@ -60,6 +60,7 @@
 <Compile Include="Infrastructure\FeatureReference.cs" />
 <Compile Include="Infrastructure\ParsingHelpers.cs" />
 <Compile Include="Properties\AssemblyInfo.cs" />
+
     <Content Include="project.json"/>
   </ItemGroup>
   <ItemGroup>

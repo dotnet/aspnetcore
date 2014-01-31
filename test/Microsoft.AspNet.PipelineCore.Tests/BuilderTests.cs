@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNet.Abstractions;
-using Shouldly;
 using Xunit;
 
 namespace Microsoft.AspNet.PipelineCore.Tests
@@ -18,7 +17,7 @@ namespace Microsoft.AspNet.PipelineCore.Tests
             mockHttpResponse.SetupProperty(x => x.StatusCode);
 
             app.Invoke(mockHttpContext.Object);
-            mockHttpContext.Object.Response.StatusCode.ShouldBe(404);
+            Assert.Equal(mockHttpContext.Object.Response.StatusCode, 404);
         }
     }
 }
