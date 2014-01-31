@@ -14,6 +14,11 @@ namespace Microsoft.AspNet.HttpFeature
         string QueryString { get; set; }
         IDictionary<string, string[]> Headers { get; set; }
         Stream Body { get; set; }
-        Uri Uri { get; }
+        // FURI: Uri Uri { get; }
+    }
+
+    public interface ICanHasSession
+    {
+        
     }
 }

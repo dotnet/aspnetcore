@@ -4,25 +4,12 @@ using Xunit;
 
 namespace Microsoft.AspNet.FeatureModel.Tests
 {
-    public interface IThing
-    {
-        string Hello();
-    }
-
-    public class Thing : IThing
-    {
-        public string Hello()
-        {
-            return "World";
-        }
-    }
-
     public class InterfaceDictionaryTests
     {
         [Fact]
         public void AddedInterfaceIsReturned()
         {
-            var interfaces = new InterfaceDictionary();
+            var interfaces = new FeatureCollection();
             var thing = new Thing();
 
             interfaces.Add(typeof(IThing), thing);
@@ -37,7 +24,7 @@ namespace Microsoft.AspNet.FeatureModel.Tests
         [Fact]
         public void IndexerAlsoAddsItems()
         {
-            var interfaces = new InterfaceDictionary();
+            var interfaces = new FeatureCollection();
             var thing = new Thing();
 
             interfaces[typeof(IThing)] = thing;
@@ -52,7 +39,7 @@ namespace Microsoft.AspNet.FeatureModel.Tests
         [Fact]
         public void SecondCallToAddThrowsException()
         {
-            var interfaces = new InterfaceDictionary();
+            var interfaces = new FeatureCollection();
             var thing = new Thing();
 
             interfaces.Add(typeof(IThing), thing);

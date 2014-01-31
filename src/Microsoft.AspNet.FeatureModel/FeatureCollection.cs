@@ -6,19 +6,19 @@ using Microsoft.AspNet.FeatureModel.Implementation;
 
 namespace Microsoft.AspNet.FeatureModel
 {
-    public class InterfaceDictionary : IInterfaceDictionary
+    public class FeatureCollection : IFeatureCollection
     {
-        private readonly IInterfaceDictionary _defaults;
+        private readonly IFeatureCollection _defaults;
         private readonly IDictionary<Type, object> _featureByFeatureType = new Dictionary<Type, object>();
         private readonly IDictionary<string, Type> _featureTypeByName = new Dictionary<string, Type>();
         private readonly object _containerSync = new Object();
         private int _containerRevision;
 
-        public InterfaceDictionary()
+        public FeatureCollection()
         {
         }
 
-        public InterfaceDictionary(IInterfaceDictionary defaults)
+        public FeatureCollection(IFeatureCollection defaults)
         {
             _defaults = defaults;
         }
@@ -174,7 +174,8 @@ namespace Microsoft.AspNet.FeatureModel
 
         public bool TryGetValue(Type key, out object value)
         {
-            throw new NotImplementedException();
+            value = GetInterface(key);
+            return value != null;
         }
 
         public object this[Type key]

@@ -1,9 +1,0 @@
-{
-  "dependencies": {
-    "Microsoft.AspNet.FeatureModel" : ""
-  },
-  "configurations": {
-    "net45": { },
-    "k10" : { }
-  }
-}

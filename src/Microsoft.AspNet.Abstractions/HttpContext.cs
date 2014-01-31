@@ -13,18 +13,18 @@ namespace Microsoft.AspNet.Abstractions
 
         public abstract void Dispose();
 
-        public abstract object GetInterface(Type type);
+        public abstract object GetFeature(Type type);
 
-        public abstract void SetInterface(Type type, object instance);
+        public abstract void SetFeature(Type type, object instance);
 
-        public virtual T GetInterface<T>()
+        public virtual T GetFeature<T>()
         {
-            return (T)GetInterface(typeof(T));
+            return (T)GetFeature(typeof(T));
         }
 
-        public virtual void SetInterface<T>(T instance)
+        public virtual void SetFeature<T>(T instance)
         {
-            SetInterface(typeof(T), instance);
+            SetFeature(typeof(T), instance);
         }
     }
 }

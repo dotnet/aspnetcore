@@ -59,12 +59,6 @@ namespace Microsoft.AspNet.Abstractions
         public abstract IReadableStringCollection Query { get; }
 
         /// <summary>
-        /// Gets the uniform resource identifier (URI) associated with the request.
-        /// </summary>
-        /// <returns>The uniform resource identifier (URI) associated with the request.</returns>
-        public abstract Uri Uri { get; }
-
-        /// <summary>
         /// Gets or set the owin.RequestProtocol.
         /// </summary>
         /// <returns>The owin.RequestProtocol.</returns>

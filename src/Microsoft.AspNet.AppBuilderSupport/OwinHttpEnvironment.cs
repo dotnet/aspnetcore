@@ -9,12 +9,16 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.HttpFeature;
-using Microsoft.AspNet.Interfaces;
 
 namespace Microsoft.AspNet.PipelineCore.Owin
 {
     public class OwinHttpEnvironment :
-        IHttpRequestInformation, IHttpResponseInformation, IHttpConnection, IHttpSendFile, IHttpTransportLayerSecurity
+        IHttpRequestInformation, 
+        IHttpResponseInformation, 
+        IHttpConnection, 
+        IHttpSendFile, 
+        IHttpTransportLayerSecurity,
+        ICanHasOwinEnvironment
     {
         public IDictionary<string, object> Environment { get; set; }
 
@@ -42,11 +46,6 @@ namespace Microsoft.AspNet.PipelineCore.Owin
         {
             get { return Prop<string>("owin.RequestProtocol"); }
             set { Prop("owin.RequestProtocol", value); }
-        }
-
-        Uri IHttpRequestInformation.Uri
-        {
-            get { throw new NotImplementedException(); }
         }
 
         string IHttpRequestInformation.Scheme

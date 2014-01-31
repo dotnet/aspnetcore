@@ -1,98 +1,91 @@
 ﻿using System;
 using System.IO;
 using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.HttpFeature;
-using Microsoft.AspNet.Interfaces;
+using Microsoft.AspNet.PipelineCore.Infrastructure;
 
 namespace Microsoft.AspNet.PipelineCore
 {
     public class DefaultHttpRequest : HttpRequest
     {
         private readonly DefaultHttpContext _context;
-        private int _revision;
-        private IHttpRequestInformation _request;
-        private IHttpConnection _connection;
+        private readonly IFeatureCollection _features;
 
-        public DefaultHttpRequest(DefaultHttpContext context)
+        private FeatureReference<IHttpRequestInformation> _request = new FeatureReference<IHttpRequestInformation>();
+        private FeatureReference<IHttpConnection> _connection = new FeatureReference<IHttpConnection>();
+        private FeatureReference<IHttpTransportLayerSecurity> _transportLayerSecurity = new FeatureReference<IHttpTransportLayerSecurity>();
+        private FeatureReference<ICanHasQuery> _canHasQuery = new FeatureReference<ICanHasQuery>();
+        private FeatureReference<ICanHasRequestCookies> _canHasCookies = new FeatureReference<ICanHasRequestCookies>();
+
+        public DefaultHttpRequest(DefaultHttpContext context, IFeatureCollection features)
         {
             _context = context;
+            _features = features;
         }
 
-        private IHttpRequestInformation IHttpRequest
+        private IHttpRequestInformation HttpRequestInformation
         {
-            get { return EnsureCurrent(_request) ?? (_request = _context.GetInterface<IHttpRequestInformation>()); }
+            get { return _request.Fetch(_features); }
         }
 
-        private IHttpConnection IHttpConnection
+        private IHttpConnection HttpConnection
         {
-            get { return EnsureCurrent(_connection) ?? (_connection = _context.GetInterface<IHttpConnection>()); }
+            get { return _connection.Fetch(_features); }
         }
 
-        private T EnsureCurrent<T>(T feature) where T : class
+        private IHttpTransportLayerSecurity HttpTransportLayerSecurity
         {
-            if (_revision == _context.Revision) return feature;
+            get { return _transportLayerSecurity.Fetch(_features); }
+        }
 
-            _request = null;
-            _connection = null;
-            _revision = _context.Revision;
-            return null;
-        } 
+        private ICanHasQuery CanHasQuery
+        {
+            get { return _canHasQuery.Fetch(_features) ?? _canHasQuery.Update(_features, new DefaultCanHasQuery(_features)); }
+        }
+
+        private ICanHasRequestCookies CanHasRequestCookies
+        {
+            get { return _canHasCookies.Fetch(_features) ?? _canHasCookies.Update(_features, new DefaultCanHasRequestCookies(_features)); }
+        }
+
 
         public override HttpContext HttpContext { get { return _context; } }
 
-        public override Uri Uri
-        {
-            get { return IHttpRequest.Uri; }
-        }
-
-        //public override Uri Uri { get { _request} }
-
         public override PathString PathBase
         {
-            get { return new PathString(IHttpRequest.PathBase); }
-            set { IHttpRequest.PathBase = value.Value; }
+            get { return new PathString(HttpRequestInformation.PathBase); }
+            set { HttpRequestInformation.PathBase = value.Value; }
         }
 
         public override PathString Path
         {
-            get { return new PathString(IHttpRequest.Path); }
-            set { IHttpRequest.Path = value.Value; }
+            get { return new PathString(HttpRequestInformation.Path); }
+            set { HttpRequestInformation.Path = value.Value; }
         }
 
         public override QueryString QueryString
         {
-            get { return new QueryString(IHttpRequest.QueryString); }
-            set { IHttpRequest.QueryString = value.Value; }
+            get { return new QueryString(HttpRequestInformation.QueryString); }
+            set { HttpRequestInformation.QueryString = value.Value; }
         }
 
         public override Stream Body
         {
-            get { return IHttpRequest.Body; }
-            set { IHttpRequest.Body = value; }
+            get { return HttpRequestInformation.Body; }
+            set { HttpRequestInformation.Body = value; }
         }
 
         public override string Method
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
+            get { return HttpRequestInformation.Method; }
+            set { HttpRequestInformation.Method = value; }
         }
 
         public override string Scheme
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
+            get { return HttpRequestInformation.Scheme; }
+            set { HttpRequestInformation.Scheme = value; }
         }
 
         public override bool IsSecure
@@ -114,19 +107,13 @@ namespace Microsoft.AspNet.PipelineCore
 
         public override IReadableStringCollection Query
         {
-            get { throw new NotImplementedException(); }
+            get { return CanHasQuery.Query; }
         }
 
         public override string Protocol
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
+            get { return HttpRequestInformation.Protocol; }
+            set { HttpRequestInformation.Protocol = value; }
         }
 
         public override IHeaderDictionary Headers
@@ -136,7 +123,7 @@ namespace Microsoft.AspNet.PipelineCore
 
         public override IReadableStringCollection Cookies
         {
-            get { throw new NotImplementedException(); }
+            get { return CanHasRequestCookies.Cookies; }
         }
 
         public override System.Threading.CancellationToken CallCanceled

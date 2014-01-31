@@ -9,17 +9,17 @@ namespace Microsoft.AspNet.PipelineCore
 {
     public class Builder : IBuilder
     {
-        private readonly IInterfaceDictionary _interfaces;
+        private readonly IFeatureCollection _interfaces;
         private readonly IDictionary<string, object> _properties;
-        private readonly IList<Entry> _components = new List<Entry>();
+        private readonly IList<Func<RequestDelegate, RequestDelegate>> _components = new List<Func<RequestDelegate, RequestDelegate>>();
 
         public Builder()
         {
-            _interfaces = new InterfaceDictionary();
+            _interfaces = new FeatureCollection();
             _properties = new Dictionary<string, object>();
         }
 
-        public Builder(IInterfaceDictionary interfaces, IDictionary<string, object> properties)
+        public Builder(IFeatureCollection interfaces, IDictionary<string, object> properties)
         {
             _interfaces = interfaces;
             _properties = properties;
@@ -52,22 +52,15 @@ namespace Microsoft.AspNet.PipelineCore
             _properties[key] = value;
         }
 
-        public IBuilder Use(object middleware, params object[] args)
+        public IBuilder Use(Func<RequestDelegate, RequestDelegate> middleware)
         {
-            _components.Add(new Entry(middleware, args));
+            _components.Add(middleware);
             return this;
         }
 
-        class Entry
+        public IBuilder Run(RequestDelegate handler)
         {
-            private readonly object _middleware;
-            private readonly object[] _args;
-
-            public Entry(object middleware, object[] args)
-            {
-                _middleware = middleware;
-                _args = args;
-            }
+            return Use(next => handler);
         }
 
         public IBuilder New()
@@ -81,20 +74,10 @@ namespace Microsoft.AspNet.PipelineCore
 
             foreach (var component in _components.Reverse())
             {
-                app = Activate(component, app);
+                app = component(app);
             }
 
             return app;
-        }
-
-        private RequestDelegate Activate(Entry component, RequestDelegate app)
-        {
-            return app;
-        }
-
-        public Func<TContext, Task> Adapt<TContext>(object app)
-        {
-            return null;
         }
     }
 }

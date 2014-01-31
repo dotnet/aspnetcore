@@ -545,6 +545,11 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
             return cookies;
         }
 
+        internal static void ParseCookies(string cookiesHeader, IDictionary<string, string> cookiesCollection)
+        {
+            ParseDelimited(cookiesHeader, SemicolonAndComma, AddCookieCallback, cookiesCollection);
+        }
+
         internal static void ParseDelimited(string text, char[] delimiters, Action<string, string, object> callback, object state)
         {
             int textLength = text.Length;
@@ -851,19 +856,19 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
 
     internal static partial class ParsingHelpers
     {
-        internal static string GetHost(HttpRequest request)
-        {
-            IHeaderDictionary headers = request.Headers;
+        //internal static string GetHost(HttpRequest request)
+        //{
+        //    IHeaderDictionary headers = request.Headers;
 
-            string host = GetHeader(headers, "Host");
-            if (!string.IsNullOrWhiteSpace(host))
-            {
-                return host;
-            }
+        //    string host = GetHeader(headers, "Host");
+        //    if (!string.IsNullOrWhiteSpace(host))
+        //    {
+        //        return host;
+        //    }
 
-            string localIpAddress = request.LocalIpAddress ?? "localhost";
-            var localPort = request.Get<string>(OwinConstants.CommonKeys.LocalPort);
-            return string.IsNullOrWhiteSpace(localPort) ? localIpAddress : (localIpAddress + ":" + localPort);
-        }
+        //    string localIpAddress = request.LocalIpAddress ?? "localhost";
+        //    var localPort = request.Get<string>(OwinConstants.CommonKeys.LocalPort);
+        //    return string.IsNullOrWhiteSpace(localPort) ? localIpAddress : (localIpAddress + ":" + localPort);
+        //}
     }
 }

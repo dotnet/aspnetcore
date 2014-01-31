@@ -1,16 +1,17 @@
 ﻿using System;
-using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Linq;
 using Microsoft.AspNet.FeatureModel.Implementation;
 
 namespace Microsoft.AspNet.FeatureModel
 {
-    public class InterfaceObject : IInterfaceDictionary
+    public class FeatureObject : IFeatureCollection
     {
         private readonly object _instance;
 
-        public InterfaceObject(object instance)
+        public FeatureObject(object instance)
         {
             _instance = instance;
         }
@@ -31,7 +32,7 @@ namespace Microsoft.AspNet.FeatureModel
             {
                 return _instance;
             }
-            
+
             foreach (var interfaceType in _instance.GetType().GetInterfaces())
             {
                 if (interfaceType.FullName == type.FullName)
@@ -55,7 +56,16 @@ namespace Microsoft.AspNet.FeatureModel
 
         public IEnumerator<KeyValuePair<Type, object>> GetEnumerator()
         {
-            throw new NotImplementedException();
+            return GetTypeInterfaces()
+                .Select(interfaceType => new KeyValuePair<Type, object>(interfaceType, _instance))
+                .GetEnumerator();
+        }
+
+        private IEnumerable<Type> GetTypeInterfaces()
+        {
+            return _instance.GetType()
+                .GetTypeInfo()
+                .ImplementedInterfaces;
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -80,7 +90,23 @@ namespace Microsoft.AspNet.FeatureModel
 
         public void CopyTo(KeyValuePair<Type, object>[] array, int arrayIndex)
         {
-            throw new NotImplementedException();
+            var enumerator = GetTypeInterfaces().GetEnumerator();
+            for (var index = 0; index != arrayIndex; ++index)
+            {
+                if (!enumerator.MoveNext())
+                {
+                    throw new IndexOutOfRangeException();
+                }
+            }
+
+            for (var index = 0; index != array.Length; ++index)
+            {
+                if (!enumerator.MoveNext())
+                {
+                    throw new IndexOutOfRangeException();
+                }
+                array[index] = new KeyValuePair<Type, object>(enumerator.Current, _instance);
+            }
         }
 
         public bool Remove(KeyValuePair<Type, object> item)
@@ -90,17 +116,17 @@ namespace Microsoft.AspNet.FeatureModel
 
         public int Count
         {
-            get { throw new NotImplementedException(); }
+            get { return GetTypeInterfaces().Count(); }
         }
 
         public bool IsReadOnly
         {
-            get { throw new NotImplementedException(); }
+            get { return true; }
         }
 
         public bool ContainsKey(Type key)
         {
-            throw new NotImplementedException();
+            return key.GetTypeInfo().IsAssignableFrom(_instance.GetType().GetTypeInfo());
         }
 
         public void Add(Type key, object value)
@@ -115,23 +141,33 @@ namespace Microsoft.AspNet.FeatureModel
 
         public bool TryGetValue(Type key, out object value)
         {
-            throw new NotImplementedException();
+            value = GetInterface(key);
+            return value != null;
         }
 
         public object this[Type key]
         {
-            get { throw new NotImplementedException(); }
+            get { return GetInterface(key); }
             set { throw new NotImplementedException(); }
         }
 
         public ICollection<Type> Keys
         {
-            get { throw new NotImplementedException(); }
+            get { return GetTypeInterfaces().ToArray(); }
         }
 
         public ICollection<object> Values
         {
-            get { throw new NotImplementedException(); }
+            get
+            {
+                var length = GetTypeInterfaces().Count();
+                var array = new object[length];
+                for (var index = 0; index != length; ++index)
+                {
+                    array[index] = _instance;
+                }
+                return array;
+            }
         }
     }
 }
