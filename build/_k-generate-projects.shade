@@ -336,13 +336,19 @@ functions
                     Warn("Unable to locate klr.exe under packages");
                     return "";
                 }
-                
-                string toolsDir = Path.GetDirectoryName(Path.GetDirectoryName(klrPath));
-                string outputDll = Path.Combine(projectRoot, "bin", "Debug", configType == "k10" ? "k" : "net45", projectName + ".dll");
+
+                var toolsDir = Path.GetDirectoryName(Path.GetDirectoryName(klrPath));
+                var appHostPath = Path.Combine(toolsDir, 
+                                               "Microsoft.Net.ApplicationHost", 
+                                               configType, 
+                                               "Microsoft.Net.ApplicationHost.dll");
+
+                var klrSwitches = configType == "k10" ? "--core45" : "--net45";
+                var args = klrSwitches + " " + appHostPath + " " + projectRoot + " --nobin";
                 
                 return String.Format(@"<StartAction>Program</StartAction>
                          <StartProgram>{0}</StartProgram>
-                         <StartArguments>{1}</StartArguments>", klrPath, outputDll);
+                         <StartArguments>{1}</StartArguments>", klrPath, args);
             }
 
             private static string GetProjectKTargets(string packagesDir)
