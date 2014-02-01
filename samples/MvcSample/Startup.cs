@@ -1,6 +1,7 @@
 ﻿#if NET45
 using System;
 using System.IO;
+using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.Routing;
@@ -15,6 +16,12 @@ namespace MvcSample
         {
             app.UseErrorPage();
 
+            // Temporary bridge from katana to Owin
+            app.UseBuilder(ConfigureMvc);
+        }
+
+        private void ConfigureMvc(IBuilder builder)
+        {
             var serviceProvider = MvcServices.Create();
 
             // HACK appbase doesn't seem to work. When in VS we're pointing at bin\Debug\Net45, so move up 3 directories
@@ -30,7 +37,7 @@ namespace MvcSample
 
             var handler = new MvcHandler(serviceProvider);
 
-            app.RunHttpContext(async context =>
+            builder.Run(async context =>
             {
                 // Pretending to be routing
                 var routeData = new FakeRouteData(context);
