@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
         }
 
         public static readonly FeatureReference<T> Default = new FeatureReference<T>(default(T), -1);
- 
+
         public T Fetch(IFeatureCollection features)
         {
             if (_revision == features.Revision) return _feature;

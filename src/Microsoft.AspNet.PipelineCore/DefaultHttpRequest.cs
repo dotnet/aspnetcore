@@ -12,11 +12,11 @@ namespace Microsoft.AspNet.PipelineCore
         private readonly DefaultHttpContext _context;
         private readonly IFeatureCollection _features;
 
-        private FeatureReference<IHttpRequestInformation> _request = new FeatureReference<IHttpRequestInformation>();
-        private FeatureReference<IHttpConnection> _connection = new FeatureReference<IHttpConnection>();
-        private FeatureReference<IHttpTransportLayerSecurity> _transportLayerSecurity = new FeatureReference<IHttpTransportLayerSecurity>();
-        private FeatureReference<ICanHasQuery> _canHasQuery = new FeatureReference<ICanHasQuery>();
-        private FeatureReference<ICanHasRequestCookies> _canHasCookies = new FeatureReference<ICanHasRequestCookies>();
+        private FeatureReference<IHttpRequestInformation> _request = FeatureReference<IHttpRequestInformation>.Default;
+        private FeatureReference<IHttpConnection> _connection = FeatureReference<IHttpConnection>.Default;
+        private FeatureReference<IHttpTransportLayerSecurity> _transportLayerSecurity = FeatureReference<IHttpTransportLayerSecurity>.Default;
+        private FeatureReference<ICanHasQuery> _canHasQuery = FeatureReference<ICanHasQuery>.Default;
+        private FeatureReference<ICanHasRequestCookies> _canHasCookies = FeatureReference<ICanHasRequestCookies>.Default;
 
         public DefaultHttpRequest(DefaultHttpContext context, IFeatureCollection features)
         {

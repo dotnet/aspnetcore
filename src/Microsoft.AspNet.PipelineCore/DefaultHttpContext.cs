@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.PipelineCore
             _request = new DefaultHttpRequest(this, features);
             _response = new DefaultHttpResponse(this, features);
 
-            _canHasItems = new FeatureReference<ICanHasItems>();
+            _canHasItems = FeatureReference<ICanHasItems>.Default;
         }
 
         ICanHasItems CanHasItems
