@@ -11,9 +11,14 @@ kProgram='...'
 
 command=''
 
+prefetch='true'
+    May be passed if fetching k from nuget is required before running
+
 */}
 
-nuget-install package='ProjectK' outputDir='packages' extra='-pre' once='ProjectK-NuGet'
+default prefetch='${true}'
+
+nuget-install package='ProjectK' outputDir='packages' extra='-pre' once='ProjectK-NuGet' if='prefetch'
 
 @{
     Func<string, long> getVersion = version => {

@@ -17,10 +17,15 @@ k-generate-projects
 solutionPath='' 
     Required. Path to the solution directory
 
+skipNet45='false'
+    Optional. Skip net45 project regeneration
+
 */}
 
 content var='net45' include href='net45.txt'
 content var='k10' include href='k10.txt'
+
+default skipNet45='${false}'
 
 @{
     ProjectGenerator.Logger = Log;
@@ -29,6 +34,11 @@ content var='k10' include href='k10.txt'
         { "net45", net45 },
         { "k10", k10 }
     };
+
+    if(skipNet45)
+    {
+        templates.Remove("net45");
+    }
 
     ProjectGenerator.MakeProjects(solutionPath, templates);
 }
@@ -245,9 +255,17 @@ functions
 
                 foreach (var pair in configs)
                 {
+                    var targetFramework = pair.Key;
+                    
+                    string projectTemplate;
+                    if(!templates.TryGetValue(targetFramework, out projectTemplate))
+                    {
+                        Warn("Skipping project generation for " + projectName + " - " + targetFramework);
+                        continue;
+                    }
+
                     var allPackageReferences = new Dictionary<string, string>(packageReferences);
 
-                    var targetFramework = pair.Key;
                     var props = (IDictionary<string, object>)pair.Value;
 
                     var specificCompilationOptions = GetObject(props, "compilationOptions") ?? compilationOptions ?? new Dictionary<string, object>();
@@ -294,7 +312,7 @@ functions
                         }
                     }
 
-                    var template = templates[targetFramework]
+                    var template = projectTemplate
                                        .Replace("{ProjectGuid}", id)
                                        .Replace("{Name}", projectName)
                                        .Replace("{Defines}", String.Join(";", defines))
@@ -359,7 +377,7 @@ functions
                                                "Microsoft.Net.ApplicationHost.dll");
 
                 var klrSwitches = configType == "k10" ? "--core45" : "--net45";
-                var args = klrSwitches + " " + appHostPath + " " + projectRoot + " --nobin";
+                var args = klrSwitches + " " + appHostPath + " --nobin " + projectRoot;
                 
                 return String.Format(@"<StartAction>Program</StartAction>
                          <StartProgram>{0}</StartProgram>

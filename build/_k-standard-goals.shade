@@ -2,6 +2,7 @@ use namespace="System"
 use namespace="System.IO"
 use import="Files"
 use import="BuildEnv"
+use import="FileWatcher"
 
 default BASE_DIR='${Directory.GetCurrentDirectory()}'
 default TARGET_DIR='${Path.Combine(BASE_DIR, "artifacts")}'
@@ -34,7 +35,53 @@ default TEST_DIR='${Path.Combine(TARGET_DIR, "test")}'
 #nuget-install target='install' description='Copy NuGet packages to local repo'
   nuget-local-publish sourcePackagesDir='${BUILD_DIR}'
 
+
+#watch
+  @{
+    var watcher = new FileWatcher(BASE_DIR);
+
+    foreach (var file in Directory.EnumerateFiles(BASE_DIR, "*.json", SearchOption.AllDirectories))
+    {
+        watcher.WatchFile(file);
+    }
+
+    foreach (var file in Directory.EnumerateFiles(BASE_DIR, "*.cs", SearchOption.AllDirectories))
+    {
+        watcher.WatchFile(file);
+    }
+
+    foreach (var dir in Directory.EnumerateDirectories(BASE_DIR, "*.*", SearchOption.AllDirectories))
+    {
+        watcher.WatchDirectory(dir, ".cs");
+        watcher.WatchDirectory(dir, ".json");
+    }
+
+    watcher.OnChanged += path => 
+    {
+      Log.Info("Change detected in " + path);
+      bool restore = path.EndsWith("project.json");
+
+      try
+      {
+        UpdateProjects(BASE_DIR, restore);
+      }
+      catch (Exception ex)
+      {
+        Log.Warn(ex.Message);
+      }
+
+      Log.Info("Waiting for changes...");
+    };
+
+    Log.Info("Waiting for changes...");
+    Console.ReadLine();
+  }
+
 functions @{
     string E(string key) { return Environment.GetEnvironmentVariable(key); }
     void E(string key, string value) { Environment.SetEnvironmentVariable(key, value); }
 }
+
+macro name='UpdateProjects' basePath='string' restore='bool'
+    k command='restore' prefetch='${false}' if='restore'
+    k-generate-projects solutionPath='${basePath}' skipNet45='${!restore}'
