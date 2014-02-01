@@ -40,6 +40,11 @@ namespace Microsoft.AspNet.FeatureModel
                     return Converter.Convert(interfaceType, type, _instance);
                 }
             }
+#else
+            if (_instance != null && type == _instance.GetType())
+            {
+                return _instance;
+            }
 #endif
             return null;
         }
