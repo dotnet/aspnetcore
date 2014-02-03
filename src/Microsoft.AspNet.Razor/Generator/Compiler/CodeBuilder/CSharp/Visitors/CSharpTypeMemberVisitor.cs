@@ -5,12 +5,12 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
     public class CSharpTypeMemberVisitor : CodeVisitor
     {
         private CSharpCodeWriter _writer;
-        private string _sourceFile;
+        private CodeGeneratorContext _context;
 
-        public CSharpTypeMemberVisitor(CSharpCodeWriter writer, string sourceFile)
+        public CSharpTypeMemberVisitor(CSharpCodeWriter writer, CodeGeneratorContext context)
         {
             _writer = writer;
-            _sourceFile = sourceFile;
+            _context = context;
         }
 
         protected override void Visit(TypeMemberChunk chunk)
@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
             if (code != null)
             {
-                using (_writer.BuildLineMapping(chunk.Start, code.Value.Length, _sourceFile))
+                using (_writer.BuildLineMapping(chunk.Start, code.Value.Length, _context.SourceFile))
                 {
                     _writer.WriteLine(code.Value);
                 }

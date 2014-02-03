@@ -2,6 +2,8 @@
 
 using System;
 using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Generator.Compiler;
+using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.CSharp;
 
@@ -46,6 +48,11 @@ namespace Microsoft.AspNet.Razor
         public override RazorCodeGenerator CreateCodeGenerator(string className, string rootNamespaceName, string sourceFileName, RazorEngineHost host)
         {
             return new CSharpRazorCodeGenerator(className, rootNamespaceName, sourceFileName, host);
+        }
+
+        public override CodeBuilder CreateBuilder(CodeGeneratorContext codeGeneratorContext)
+        {
+            return new CSharpCodeBuilder(codeGeneratorContext);
         }
     }
 }

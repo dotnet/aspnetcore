@@ -5,27 +5,24 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
     {
         internal const string InheritsHelper = "__inheritsHelper";
 
-        private CSharpCodeWriter _writer;
-        // TODO: No need for the entire host
-        private RazorEngineHost _host;
-        private string _sourceFile;
+        private readonly CSharpCodeWriter _writer;
+        private readonly CodeGeneratorContext _context;
 
-        public CSharpDesignTimeHelpersVisitor(CSharpCodeWriter writer, RazorEngineHost host, string sourceFile)
+        public CSharpDesignTimeHelpersVisitor(CSharpCodeWriter writer, CodeGeneratorContext context)
         {
             _writer = writer;
-            _host = host;
-            _sourceFile = sourceFile;
+            _context = context;
         }
 
-        public void Accept(CodeTree tree)
+        public override void Accept(System.Collections.Generic.IList<Chunk> chunks)
         {
-            if(_host.DesignTimeMode)
+            if (_context.Host.DesignTimeMode)
             {
-                using(_writer.BuildMethodDeclaration("private","void", "@"+CodeGeneratorContext.DesignTimeHelperMethodName))
+                using (_writer.BuildMethodDeclaration("private", "void", "@" + CodeGeneratorContext.DesignTimeHelperMethodName))
                 {
                     using (_writer.BuildDisableWarningScope())
                     {
-                        Accept(tree.Chunks);
+                        Accept(chunks);
                     }
                 }
             }
@@ -33,9 +30,9 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
         protected override void Visit(SetBaseTypeChunk chunk)
         {
-            if (_host.DesignTimeMode)
+            if (_context.Host.DesignTimeMode)
             {
-                using (CSharpLineMappingWriter lineMappingWriter = _writer.BuildLineMapping(chunk.Start, chunk.TypeName.Length, _sourceFile))
+                using (CSharpLineMappingWriter lineMappingWriter = _writer.BuildLineMapping(chunk.Start, chunk.TypeName.Length, _context.SourceFile))
                 {
                     _writer.Indent(chunk.Start.CharacterIndex);
 

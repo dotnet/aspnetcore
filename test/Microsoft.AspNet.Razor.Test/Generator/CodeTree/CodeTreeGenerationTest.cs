@@ -6,7 +6,7 @@ using Microsoft.TestCommon;
 namespace Microsoft.AspNet.Razor.Test.Generator
 {
     public class CodeTreeGenerationTest : CSharpRazorCodeGeneratorTest
-    {        
+    {
         [Fact]
         public void CodeTreeComparisonTest()
         {
@@ -16,6 +16,6 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 File.WriteAllText("./testfile_ct.cs", results.GeneratedCode);
                 File.WriteAllText("./testfile_cd.cs", codDOMOutput);
             }, designTimeMode: true);
-        }   
+        }
     }
 }

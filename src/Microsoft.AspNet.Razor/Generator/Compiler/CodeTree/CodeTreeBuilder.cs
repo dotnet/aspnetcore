@@ -6,8 +6,8 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
 {
     public class CodeTreeBuilder
     {
+        private readonly Stack<ChunkBlock> _blockChain;
         private Chunk _lastChunk;
-        private Stack<ChunkBlock> _blockChain;
 
         public CodeTreeBuilder()
         {

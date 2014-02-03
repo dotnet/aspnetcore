@@ -29,6 +29,8 @@ namespace Microsoft.AspNet.Razor.Generator
         // It's way safer to make them internal for now, especially with the code generator stuff in a bit of flux.
         internal ExpressionRenderingMode ExpressionRenderingMode { get; set; }
         public string SourceFile { get; internal set; }
+        public string RootNamespace { get; private set; }
+        public string ClassName { get; private set; }
 
         #region deletable
 #if NET45
@@ -46,6 +48,7 @@ namespace Microsoft.AspNet.Razor.Generator
         public CodeCompileUnit CompileUnit { get; internal set; }
 
         public CodeNamespace Namespace { get; internal set; }
+
         public CodeTypeDeclaration GeneratedClass { get; internal set; }
         public CodeMemberMethod TargetMethod { get; set; }
         public IDictionary<int, GeneratedCodeMapping> CodeMappings { get; private set; }
@@ -320,6 +323,8 @@ namespace Microsoft.AspNet.Razor.Generator
                 CodeTreeBuilder = new CodeTreeBuilder(),
                 Host = host,
                 SourceFile = shouldGenerateLinePragmas ? sourceFile : null,
+                RootNamespace = rootNamespace,
+                ClassName = className,
 #if NET45
                 // This section is #if'd because it contains SOME incompatible pieces but also will not be needed once we transition over 
                 // to using the CodeTree
