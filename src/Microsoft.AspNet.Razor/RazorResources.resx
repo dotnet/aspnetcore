@@ -403,4 +403,7 @@ Instead, wrap the contents of the block in "{{}}":
   <data name="Trace_TreesCompared" xml:space="preserve">
     <value>[BG][{0}] Trees Compared in {1} milliseconds. Different = {2}</value>
   </data>
+  <data name="ParseError_Sections_Cannot_Be_Nested" xml:space="preserve">
+    <value>Section blocks ("{0}") cannot be nested.  Only one level of section blocks are allowed.</value>
+  </data>
 </root>
