@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.Routing
 {
-    internal class DefaultRouteEngine : IRouteEngine
+    public class DefaultRouteEngine : IRouteEngine
     {
         public DefaultRouteEngine(IRouteCollection routes)
         {
@@ -19,7 +18,7 @@ namespace Microsoft.AspNet.Routing
             private set;
         }
 
-        public async Task<bool> Invoke(IDictionary<string, object> context)
+        public async Task<bool> Invoke(HttpContext context)
         {
             RouteContext routeContext = new RouteContext(context);
 
@@ -30,6 +29,8 @@ namespace Microsoft.AspNet.Routing
                 RouteMatch match = route.Match(routeContext);
                 if (match != null)
                 {
+                    context.SetFeature<IRouteValues>(new RouteValues(match.Values));
+
                     await match.Endpoint.Invoke(context);
                     return true;
                 }

@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.PipelineCore.Owin;
 using Microsoft.AspNet.Routing;
 
 namespace RoutingSample
@@ -16,9 +18,10 @@ namespace RoutingSample
             _appFunc = appFunc;
         }
 
-        public Task Invoke(IDictionary<string, object> context)
+        public Task Invoke(HttpContext context)
         {
-            return _appFunc(context);
+            var owinContext = context.GetFeature<ICanHasOwinEnvironment>().Environment;
+            return _appFunc(owinContext);
         }
     }
 }

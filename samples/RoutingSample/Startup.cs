@@ -6,6 +6,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Routing.Owin;
 using Owin;
+using Microsoft.AspNet.PipelineCore.Owin;
+using Microsoft.AspNet.Routing;
+using System;
+using Microsoft.AspNet.Abstractions;
 
 namespace RoutingSample
 {
@@ -14,6 +18,7 @@ namespace RoutingSample
         public void Configuration(IAppBuilder appBuilder)
         {
             var routes = appBuilder.UseRouter();
+            
 
             OwinRouteEndpoint endpoint1 = new OwinRouteEndpoint(async (context) => await WriteToBodyAsync(context, "match1"));
             OwinRouteEndpoint endpoint2 = new OwinRouteEndpoint(async (context) => await WriteToBodyAsync(context, "Hello, World!"));

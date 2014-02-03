@@ -1,16 +1,13 @@
 ﻿﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
-#if NET45
-
-using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.Routing.Owin
 {
     public class RouterMiddleware
     {
-        public RouterMiddleware(Func<IDictionary<string, object>, Task> next, IRouteEngine engine)
+        public RouterMiddleware(RequestDelegate next, IRouteEngine engine)
         {
             Next = next;
             Engine = engine;
@@ -22,13 +19,13 @@ namespace Microsoft.AspNet.Routing.Owin
             set;
         }
 
-        private Func<IDictionary<string, object>, Task> Next
+        private RequestDelegate Next
         {
             get;
             set;
         }
 
-        public async Task Invoke(IDictionary<string, object> context)
+        public async Task Invoke(HttpContext context)
         {
             if (!(await Engine.Invoke(context)))
             {
@@ -37,5 +34,3 @@ namespace Microsoft.AspNet.Routing.Owin
         }
     }
 }
-
-#endif

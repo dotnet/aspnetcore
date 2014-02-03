@@ -1,23 +1,20 @@
 ﻿﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
-#if NET45
-
-using Owin;
+using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.Routing.Owin
 {
-    public static class AppBuilderExtensions
+    public static class BuilderExtensions
     {
-        public static IRouteCollection UseRouter(this IAppBuilder builder)
+        public static IRouteCollection UseRouter(this IBuilder builder)
         {
             var routes = new DefaultRouteCollection();
             var engine = new DefaultRouteEngine(routes);
 
-            builder.Use(typeof(RouterMiddleware), engine);
+            builder.Use((next) => new RouterMiddleware(next, engine).Invoke);
 
             return routes;
         }
     }
 }
 
-#endif
