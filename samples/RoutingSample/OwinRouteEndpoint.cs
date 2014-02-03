@@ -1,5 +1,7 @@
 ﻿﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
+#if NET45
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -18,10 +20,14 @@ namespace RoutingSample
             _appFunc = appFunc;
         }
 
-        public Task Invoke(HttpContext context)
+        public async Task<bool> Send(HttpContext context)
         {
             var owinContext = context.GetFeature<ICanHasOwinEnvironment>().Environment;
             return _appFunc(owinContext);
+            await _appFunc(owinContext);
+            return true;
         }
     }
 }
+
+#endif

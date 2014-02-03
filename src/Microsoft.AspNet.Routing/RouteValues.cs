@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Routing
 {
-    internal class RouteValues : IRouteValues
+    public class RouteValues : IRouteValues
     {
         public RouteValues(IDictionary<string, object> values)
         {

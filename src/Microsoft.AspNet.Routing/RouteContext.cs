@@ -4,7 +4,7 @@ using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.Routing
 {
-    public sealed class RouteContext
+    public class RouteContext
     {
         public RouteContext(HttpContext context)
         {

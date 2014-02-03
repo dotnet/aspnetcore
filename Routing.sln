@@ -17,6 +17,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{95359B4B-4
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Routing.Tests.net45", "test\Microsoft.AspNet.Routing.Tests\Microsoft.AspNet.Routing.Tests.net45.csproj", "{3775A966-0876-45C3-A67F-0E544BC48D55}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoutingSample.k10", "samples\RoutingSample\RoutingSample.k10.csproj", "{1BB31C1A-C6F8-4C00-BD30-92EF775276BE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{3775A966-0876-45C3-A67F-0E544BC48D55}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3775A966-0876-45C3-A67F-0E544BC48D55}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3775A966-0876-45C3-A67F-0E544BC48D55}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1BB31C1A-C6F8-4C00-BD30-92EF775276BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1BB31C1A-C6F8-4C00-BD30-92EF775276BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1BB31C1A-C6F8-4C00-BD30-92EF775276BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1BB31C1A-C6F8-4C00-BD30-92EF775276BE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -47,6 +53,7 @@ Global
 		{16537084-C16D-4885-B90F-18BAC218F85B} = {0E966C37-7334-4D96-AAF6-9F49FBD166E3}
 		{1366B89C-F603-4088-B313-FA053C51BAC6} = {0E966C37-7334-4D96-AAF6-9F49FBD166E3}
 		{121DC7B4-E29B-45E1-BF7E-314842F99A0D} = {C3ADD55B-B9C7-4061-8AD4-6A70D1AE3B2E}
+		{1BB31C1A-C6F8-4C00-BD30-92EF775276BE} = {C3ADD55B-B9C7-4061-8AD4-6A70D1AE3B2E}
 		{3775A966-0876-45C3-A67F-0E544BC48D55} = {95359B4B-4C85-4B44-A75B-0621905C4CF6}
 	EndGlobalSection
 EndGlobal

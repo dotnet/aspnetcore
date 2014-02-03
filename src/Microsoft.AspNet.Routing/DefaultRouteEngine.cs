@@ -31,8 +31,11 @@ namespace Microsoft.AspNet.Routing
                 {
                     context.SetFeature<IRouteValues>(new RouteValues(match.Values));
 
-                    await match.Endpoint.Invoke(context);
-                    return true;
+                    var accepted = await match.Endpoint.Send(context);
+                    if (accepted)
+                    {
+                        return true;
+                    }
                 }
             }
 

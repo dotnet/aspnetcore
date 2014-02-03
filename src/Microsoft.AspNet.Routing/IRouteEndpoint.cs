@@ -7,6 +7,6 @@ namespace Microsoft.AspNet.Routing
 {
     public interface IRouteEndpoint
     {
-        Task Invoke(HttpContext context);
+        Task<bool> Send(HttpContext context);
     }
 }

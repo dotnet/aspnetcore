@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Routing
     /// The result of matching a route. Includes an <see cref="IRouteEndpoint"/> to invoke and an optional collection of
     /// captured values.
     /// </summary>
-    public sealed class RouteMatch
+    public class RouteMatch
     {
         public RouteMatch(IRouteEndpoint endpoint)
             : this(endpoint, null)
