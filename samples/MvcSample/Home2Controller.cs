@@ -42,10 +42,18 @@ namespace MvcSample
 
         public IActionResult UserJson()
         {
-            return new JsonResult(new User() { Name = "User Name", Address = "Home Address" })
+            return new JsonResult(_user)
             {
                 Encoding = Encoding.UTF8
             };
+        }
+
+        public IActionResult HelperUserJson()
+        {
+            JsonResult jsonResult = (JsonResult)Result.Json(_user);
+            jsonResult.Indent = false;
+
+            return jsonResult;
         }
 
         public User User()

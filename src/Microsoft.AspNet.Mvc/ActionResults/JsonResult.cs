@@ -24,6 +24,7 @@ namespace Microsoft.AspNet.Mvc
             Encoding = Encoding.UTF8;
 
             _returnValue = returnValue;
+            _jsonSerializerSettings = CreateSerializerSettings();
         }
 
         public JsonSerializerSettings SerializerSettings
@@ -84,7 +85,7 @@ namespace Microsoft.AspNet.Mvc
             JsonWriter jsonWriter = new JsonTextWriter(new StreamWriter(writeStream, effectiveEncoding));
             if (Indent)
             {
-                jsonWriter.Formatting = Newtonsoft.Json.Formatting.Indented;
+                jsonWriter.Formatting = Formatting.Indented;
             }
 
             return jsonWriter;

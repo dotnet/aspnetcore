@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc
 
         public IActionResult Json(object value)
         {
-            throw new NotImplementedException();
+            return new JsonResult(value);
         }
 
         public IActionResult View(string view, ViewData viewData)
