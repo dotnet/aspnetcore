@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
         {
             AddChunk(new ExpressionChunk
             {
-                Code = new Snippet(expression),
+                Code = expression,
                 RenderingMode = renderingMode
             }, association, context);
         }
@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
         {
             AddChunk(new StatementChunk
             {
-                Code = new Snippets(code),
+                Code = code,
             }, association, context);
         }
 
@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
         {
             AddChunk(new TypeMemberChunk
             {
-                Code = new Snippets(code),
+                Code = code,
             }, association, context, topLevel: true);
         }
 
@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
         {
             AddChunk(new LiteralCodeAttributeChunk
             {
-                Code = new Snippet(code),
+                Code = code,
             }, association, context);
         }
 
