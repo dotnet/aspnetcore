@@ -3,8 +3,17 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Razor.Generator.Compiler
 {
-    public abstract class ChunkVisitor : IChunkVisitor
+    public abstract class ChunkVisitor<T> : IChunkVisitor where T : CodeWriter
     {
+        public ChunkVisitor(T writer, CodeGeneratorContext context)
+        {
+            Writer = writer;
+            Context = context;
+        }
+
+        protected T Writer { get; private set; }
+        protected CodeGeneratorContext Context { get; private set; }
+
         public void Accept(IList<Chunk> chunks)
         {
             if (chunks == null)

@@ -25,11 +25,11 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 // Separate the usings and the class
                 writer.WriteLine();
 
-                var baseTypeVisitor = new CSharpBaseTypeVisitor(writer);
+                var baseTypeVisitor = new CSharpBaseTypeVisitor(writer, Context);
                 baseTypeVisitor.Accept(Tree.Chunks);
 
                 string baseType = baseTypeVisitor.CurrentBaseType ?? Host.DefaultBaseClass;
-                new CSharpClassAttributeVisitor(writer).Accept(Tree.Chunks);
+                new CSharpClassAttributeVisitor(writer, Context).Accept(Tree.Chunks);
 
                 IEnumerable<string> baseTypes = String.IsNullOrEmpty(baseType) ? Enumerable.Empty<string>() :
                                                                                  new string[] { baseType };
@@ -44,8 +44,6 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                     new CSharpTypeMemberVisitor(writer, Context).Accept(Tree.Chunks);
                     new CSharpDesignTimeHelpersVisitor(writer, Context).AcceptTree(Tree);
                   
-                    // TODO: resolve variable declarations
-
                     writer.WriteLineHiddenDirective();
                     using (writer.BuildConstructor(Context.ClassName))
                     {
@@ -68,7 +66,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         private void AddImports(CodeTree codeTree, CSharpCodeWriter writer, IEnumerable<string> defaultImports)
         {
             // Write out using directives
-            var usingVisitor = new CSharpUsingVisitor(writer, Context.SourceFile);
+            var usingVisitor = new CSharpUsingVisitor(writer, Context);
             foreach (Chunk chunk in Tree.Chunks)
             {
                 usingVisitor.Accept(chunk);

@@ -29,7 +29,6 @@ namespace Microsoft.AspNet.Razor.Generator
                 ns = ns.Substring(1);
             }
 
-            // TODO: Verify namespace hasn't already been added.
             codeTreeBuilder.AddUsingChunk(ns, target, context);
         }
 

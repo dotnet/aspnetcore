@@ -1,26 +1,20 @@
 ﻿
 namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 {
-    public class CSharpDesignTimeHelpersVisitor : CodeVisitor
+    public class CSharpDesignTimeHelpersVisitor : CodeVisitor<CSharpCodeWriter>
     {
         internal const string InheritsHelper = "__inheritsHelper";
 
-        private readonly CSharpCodeWriter _writer;
-        private readonly CodeGeneratorContext _context;
-
         public CSharpDesignTimeHelpersVisitor(CSharpCodeWriter writer, CodeGeneratorContext context)
-        {
-            _writer = writer;
-            _context = context;
-        }
+            : base(writer, context) { }
 
         public void AcceptTree(CodeTree tree)
         {
-            if (_context.Host.DesignTimeMode)
+            if (Context.Host.DesignTimeMode)
             {
-                using (_writer.BuildMethodDeclaration("private", "void", "@" + CodeGeneratorContext.DesignTimeHelperMethodName))
+                using (Writer.BuildMethodDeclaration("private", "void", "@" + CodeGeneratorContext.DesignTimeHelperMethodName))
                 {
-                    using (_writer.BuildDisableWarningScope())
+                    using (Writer.BuildDisableWarningScope())
                     {
                         Accept(tree.Chunks);
                     }
@@ -30,17 +24,17 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
         protected override void Visit(SetBaseTypeChunk chunk)
         {
-            if (_context.Host.DesignTimeMode)
+            if (Context.Host.DesignTimeMode)
             {
-                using (CSharpLineMappingWriter lineMappingWriter = _writer.BuildLineMapping(chunk.Start, chunk.TypeName.Length, _context.SourceFile))
+                using (CSharpLineMappingWriter lineMappingWriter = Writer.BuildLineMapping(chunk.Start, chunk.TypeName.Length, Context.SourceFile))
                 {
-                    _writer.Indent(chunk.Start.CharacterIndex);
+                    Writer.Indent(chunk.Start.CharacterIndex);
 
                     lineMappingWriter.MarkLineMappingStart();
-                    _writer.Write(chunk.TypeName);
+                    Writer.Write(chunk.TypeName);
                     lineMappingWriter.MarkLineMappingEnd();
 
-                    _writer.Write(" ").Write(InheritsHelper).Write(" = null;");
+                    Writer.Write(" ").Write(InheritsHelper).Write(" = null;");
                 }
             }
         }

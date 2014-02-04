@@ -1,14 +1,10 @@
 ﻿
 namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 {
-    public class CSharpBaseTypeVisitor : CodeVisitor
+    public class CSharpBaseTypeVisitor : CodeVisitor<CSharpCodeWriter>
     {
-        private CSharpCodeWriter _writer;
-
-        public CSharpBaseTypeVisitor(CSharpCodeWriter writer)
-        {
-            _writer = writer;
-        }
+        public CSharpBaseTypeVisitor(CSharpCodeWriter writer, CodeGeneratorContext context)
+            : base(writer, context) { }
 
         public string CurrentBaseType { get; set; }
 

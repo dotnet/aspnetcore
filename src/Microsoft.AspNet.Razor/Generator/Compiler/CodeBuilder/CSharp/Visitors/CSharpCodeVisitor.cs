@@ -4,24 +4,20 @@ using System.Linq;
 
 namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 {
-    public class CSharpCodeVisitor : CodeVisitor
+    public class CSharpCodeVisitor : CodeVisitor<CSharpCodeWriter>
     {
         private const string ValueWriterName = "__razor_attribute_value_writer";
 
-        private readonly CSharpCodeWriter _writer;
-        private readonly CodeGeneratorContext _context;
+        public CSharpCodeVisitor(CSharpCodeWriter writer, CodeGeneratorContext context)
+            : base(writer, context) { }
 
-        public CSharpCodeVisitor(CSharpCodeWriter writer, CodeGeneratorContext context) 
-        {
-            _writer = writer;
-            _context = context;
-        }
+
 
         protected override void Visit(SetLayoutChunk chunk)
         {
-            if (!_context.Host.DesignTimeMode && !String.IsNullOrEmpty(_context.Host.GeneratedClassContext.LayoutPropertyName))
+            if (!Context.Host.DesignTimeMode && !String.IsNullOrEmpty(Context.Host.GeneratedClassContext.LayoutPropertyName))
             {
-                _writer.Write(_context.Host.GeneratedClassContext.LayoutPropertyName)
+                Writer.Write(Context.Host.GeneratedClassContext.LayoutPropertyName)
                        .Write(" = ")
                        .WriteStringLiteral(chunk.Layout)
                        .WriteLine(";");
@@ -30,76 +26,76 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
         protected override void Visit(TemplateChunk chunk)
         {
-            _writer.Write(TemplateBlockCodeGenerator.ItemParameterName).Write(" => ")
-                   .WriteStartNewObject(_context.Host.GeneratedClassContext.TemplateTypeName);
+            Writer.Write(TemplateBlockCodeGenerator.ItemParameterName).Write(" => ")
+                   .WriteStartNewObject(Context.Host.GeneratedClassContext.TemplateTypeName);
 
-            using (_writer.BuildLambda(endLine: false, parameterNames: TemplateBlockCodeGenerator.TemplateWriterName))
+            using (Writer.BuildLambda(endLine: false, parameterNames: TemplateBlockCodeGenerator.TemplateWriterName))
             {
                 Visit((ChunkBlock)chunk);
             }
 
-            _writer.WriteEndMethodInvocation(false).WriteLine();
+            Writer.WriteEndMethodInvocation(false).WriteLine();
         }
 
         protected override void Visit(ResolveUrlChunk chunk)
         {
-            if (!_context.Host.DesignTimeMode && String.IsNullOrEmpty(chunk.Url))
+            if (!Context.Host.DesignTimeMode && String.IsNullOrEmpty(chunk.Url))
             {
                 return;
             }
 
             // TODO: Add instrumentation
 
-            if (!String.IsNullOrEmpty(chunk.Url) && !_context.Host.DesignTimeMode)
+            if (!String.IsNullOrEmpty(chunk.Url) && !Context.Host.DesignTimeMode)
             {
                 if (chunk.RenderingMode == ExpressionRenderingMode.WriteToOutput)
                 {
                     if (!String.IsNullOrEmpty(chunk.WriterName))
                     {
-                        _writer.WriteStartMethodInvocation(_context.Host.GeneratedClassContext.WriteLiteralToMethodName)
+                        Writer.WriteStartMethodInvocation(Context.Host.GeneratedClassContext.WriteLiteralToMethodName)
                                .Write(chunk.WriterName)
                                .WriteParameterSeparator();
                     }
                     else
                     {
-                        _writer.WriteStartMethodInvocation(_context.Host.GeneratedClassContext.WriteLiteralMethodName);
+                        Writer.WriteStartMethodInvocation(Context.Host.GeneratedClassContext.WriteLiteralMethodName);
                     }
                 }
 
-                _writer.WriteStartMethodInvocation(_context.Host.GeneratedClassContext.ResolveUrlMethodName)
+                Writer.WriteStartMethodInvocation(Context.Host.GeneratedClassContext.ResolveUrlMethodName)
                        .WriteStringLiteral(chunk.Url)
                        .WriteEndMethodInvocation(endLine: false);
 
                 if (chunk.RenderingMode == ExpressionRenderingMode.WriteToOutput)
                 {
-                    _writer.WriteEndMethodInvocation();
+                    Writer.WriteEndMethodInvocation();
                 }
             }
         }
 
         protected override void Visit(LiteralChunk chunk)
         {
-            if (!_context.Host.DesignTimeMode && String.IsNullOrEmpty(chunk.Text))
+            if (!Context.Host.DesignTimeMode && String.IsNullOrEmpty(chunk.Text))
             {
                 return;
             }
 
             // TODO: Add instrumentation
 
-            if (!String.IsNullOrEmpty(chunk.Text) && !_context.Host.DesignTimeMode)
+            if (!String.IsNullOrEmpty(chunk.Text) && !Context.Host.DesignTimeMode)
             {
                 if (!String.IsNullOrEmpty(chunk.WriterName))
                 {
-                    _writer.WriteStartMethodInvocation(_context.Host.GeneratedClassContext.WriteLiteralToMethodName)
+                    Writer.WriteStartMethodInvocation(Context.Host.GeneratedClassContext.WriteLiteralToMethodName)
                            .Write(chunk.WriterName)
                            .WriteParameterSeparator();
                 }
                 else
                 {
-                    _writer.WriteStartMethodInvocation(_context.Host.GeneratedClassContext.WriteLiteralMethodName);
+                    Writer.WriteStartMethodInvocation(Context.Host.GeneratedClassContext.WriteLiteralMethodName);
                 }
 
-                _writer.WriteStringLiteral(chunk.Text)
+                Writer.WriteStringLiteral(chunk.Text)
                        .WriteEndMethodInvocation();
             }
 
@@ -111,88 +107,83 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             // TODO: Handle instrumentation
             // TODO: Refactor
 
-            if (!_context.Host.DesignTimeMode && chunk.RenderingMode == ExpressionRenderingMode.InjectCode)
+            if (!Context.Host.DesignTimeMode && chunk.RenderingMode == ExpressionRenderingMode.InjectCode)
             {
                 Visit((ChunkBlock)chunk);
             }
             else
             {
-                if (_context.Host.DesignTimeMode)
+                if (Context.Host.DesignTimeMode)
                 {
-                    _writer.WriteStartAssignment("__o");
+                    Writer.WriteStartAssignment("__o");
                 }
                 else if (chunk.RenderingMode == ExpressionRenderingMode.WriteToOutput)
                 {
-                    // TODO: Abstract padding out?
-
                     if (!String.IsNullOrEmpty(chunk.WriterName))
                     {
-                        _writer.WriteStartMethodInvocation(_context.Host.GeneratedClassContext.WriteToMethodName)
+                        Writer.WriteStartMethodInvocation(Context.Host.GeneratedClassContext.WriteToMethodName)
                                .Write(chunk.WriterName)
                                .WriteParameterSeparator();
                     }
                     else
                     {
-                        _writer.WriteStartMethodInvocation(_context.Host.GeneratedClassContext.WriteMethodName);
+                        Writer.WriteStartMethodInvocation(Context.Host.GeneratedClassContext.WriteMethodName);
                     }
                 }
 
                 Visit((ChunkBlock)chunk);
 
-                if (_context.Host.DesignTimeMode)
+                if (Context.Host.DesignTimeMode)
                 {
-                    _writer.WriteLine(";");
+                    Writer.WriteLine(";");
                 }
                 else if (chunk.RenderingMode == ExpressionRenderingMode.WriteToOutput)
                 {
-                    _writer.WriteEndMethodInvocation();
+                    Writer.WriteEndMethodInvocation();
                 }
             }
         }
 
         protected override void Visit(ExpressionChunk chunk)
         {
-            using (_writer.BuildLineMapping(chunk.Start, chunk.Code.Value.Length, _context.SourceFile))
+            using (Writer.BuildLineMapping(chunk.Start, chunk.Code.Length, Context.SourceFile))
             {
-                _writer.Indent(chunk.Start.CharacterIndex)
-                        .Write(chunk.Code.Value);
+                Writer.Indent(chunk.Start.CharacterIndex)
+                        .Write(chunk.Code);
             }
         }
 
         protected override void Visit(StatementChunk chunk)
         {
-            foreach (Snippet snippet in chunk.Code)
+            using (Writer.BuildLineMapping(chunk.Start, chunk.Code.Length, Context.SourceFile))
             {
-                using (_writer.BuildLineMapping(chunk.Start, snippet.Value.Length, _context.SourceFile))
-                {
-                    _writer.Indent(chunk.Start.CharacterIndex);
-                    _writer.WriteLine(snippet.Value);
-                }
+                Writer.Indent(chunk.Start.CharacterIndex);
+                Writer.WriteLine(chunk.Code);
             }
         }
 
         protected override void Visit(DynamicCodeAttributeChunk chunk)
         {
-            if (_context.Host.DesignTimeMode)
+            if (Context.Host.DesignTimeMode)
             {
                 return; // Don't generate anything!
             }
 
             Chunk code = chunk.Children.FirstOrDefault();
 
-            _writer.WriteParameterSeparator()
+            Writer.WriteParameterSeparator()
                    .WriteLine();
 
             if (code is ExpressionChunk || code is ExpressionBlockChunk)
             {
-                _writer.WriteStartMethodInvocation("Tuple.Create")
+                Writer.WriteStartMethodInvocation("Tuple.Create")
                         .WriteLocationTaggedString(chunk.Prefix)
                         .WriteParameterSeparator()
                         .WriteStartMethodInvocation("Tuple.Create", new string[] { "System.Object", "System.Int32" });
 
                 Accept(code);
 
-                _writer.WriteParameterSeparator()
+                Writer.WriteParameterSeparator()
                        .Write(chunk.Start.AbsoluteIndex.ToString(CultureInfo.CurrentCulture))
                        .WriteEndMethodInvocation(false)
                        .WriteParameterSeparator()
@@ -201,18 +192,18 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             }
             else
             {
-                _writer.WriteStartMethodInvocation("Tuple.Create")
+                Writer.WriteStartMethodInvocation("Tuple.Create")
                        .WriteLocationTaggedString(chunk.Prefix)
                        .WriteParameterSeparator()
                        .WriteStartMethodInvocation("Tuple.Create", new string[] { "System.Object", "System.Int32" })
-                       .WriteStartNewObject(_context.Host.GeneratedClassContext.TemplateTypeName);
+                       .WriteStartNewObject(Context.Host.GeneratedClassContext.TemplateTypeName);
 
-                using (_writer.BuildLambda(endLine: false, parameterNames: ValueWriterName))
+                using (Writer.BuildLambda(endLine: false, parameterNames: ValueWriterName))
                 {
                     Visit((ChunkBlock)chunk);
                 }
 
-                _writer.WriteEndMethodInvocation(false)
+                Writer.WriteEndMethodInvocation(false)
                        .WriteParameterSeparator()
                        .Write(chunk.Start.AbsoluteIndex.ToString(CultureInfo.CurrentCulture))
                        .WriteEndMethodInvocation(endLine: false)
@@ -224,23 +215,23 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
         protected override void Visit(LiteralCodeAttributeChunk chunk)
         {
-            if (_context.Host.DesignTimeMode)
+            if (Context.Host.DesignTimeMode)
             {
                 return; // Don't generate anything!
             }
 
-            _writer.WriteParameterSeparator()
+            Writer.WriteParameterSeparator()
                    .WriteStartMethodInvocation("Tuple.Create")
                    .WriteLocationTaggedString(chunk.Prefix)
                    .WriteParameterSeparator();
 
             if (chunk.Children.Count > 0 || chunk.Value == null)
             {
-                _writer.WriteStartMethodInvocation("Tuple.Create", new string[] { "System.Object", "System.Int32" });
+                Writer.WriteStartMethodInvocation("Tuple.Create", new string[] { "System.Object", "System.Int32" });
 
                 Visit((ChunkBlock)chunk);
 
-                _writer.WriteParameterSeparator()
+                Writer.WriteParameterSeparator()
                        .Write(chunk.ValueLocation.AbsoluteIndex.ToString(CultureInfo.CurrentCulture))
                        .WriteEndMethodInvocation(false)
                        .WriteParameterSeparator()
@@ -250,7 +241,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             }
             else
             {
-                _writer.WriteLocationTaggedString(chunk.Value)
+                Writer.WriteLocationTaggedString(chunk.Value)
                        .WriteParameterSeparator()
                        .WriteBooleanLiteral(true)
                        .WriteEndMethodInvocation(false);
@@ -259,23 +250,23 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
         protected override void Visit(CodeAttributeChunk chunk)
         {
-            if (_context.Host.DesignTimeMode)
+            if (Context.Host.DesignTimeMode)
             {
                 return; // Don't generate anything!
             }
 
             if (!String.IsNullOrEmpty(chunk.WriterName))
             {
-                _writer.WriteStartMethodInvocation(_context.Host.GeneratedClassContext.WriteAttributeToMethodName)
+                Writer.WriteStartMethodInvocation(Context.Host.GeneratedClassContext.WriteAttributeToMethodName)
                        .Write(chunk.WriterName)
                        .WriteParameterSeparator();
             }
             else
             {
-                _writer.WriteStartMethodInvocation(_context.Host.GeneratedClassContext.WriteAttributeMethodName);
+                Writer.WriteStartMethodInvocation(Context.Host.GeneratedClassContext.WriteAttributeMethodName);
             }
 
-            _writer.WriteStringLiteral(chunk.Attribute)
+            Writer.WriteStringLiteral(chunk.Attribute)
                    .WriteParameterSeparator()
                    .WriteLocationTaggedString(chunk.Prefix)
                    .WriteParameterSeparator()
@@ -283,21 +274,21 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
             Visit((ChunkBlock)chunk);
 
-            _writer.WriteEndMethodInvocation();
+            Writer.WriteEndMethodInvocation();
         }
 
         protected override void Visit(SectionChunk chunk)
         {
-            _writer.WriteStartMethodInvocation(_context.Host.GeneratedClassContext.DefineSectionMethodName)
+            Writer.WriteStartMethodInvocation(Context.Host.GeneratedClassContext.DefineSectionMethodName)
                    .WriteStringLiteral(chunk.Name)
                    .WriteParameterSeparator();
 
-            using (_writer.BuildLambda(false))
+            using (Writer.BuildLambda(false))
             {
                 Visit((ChunkBlock)chunk);
             }
 
-            _writer.WriteEndMethodInvocation();
+            Writer.WriteEndMethodInvocation();
         }
     }
 }

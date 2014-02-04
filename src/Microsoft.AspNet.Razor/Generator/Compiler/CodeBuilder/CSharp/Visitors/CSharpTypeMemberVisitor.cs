@@ -1,27 +1,19 @@
-﻿using System.Linq;
+﻿using System;
 
 namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 {
-    public class CSharpTypeMemberVisitor : CodeVisitor
+    public class CSharpTypeMemberVisitor : CodeVisitor<CSharpCodeWriter>
     {
-        private CSharpCodeWriter _writer;
-        private CodeGeneratorContext _context;
-
         public CSharpTypeMemberVisitor(CSharpCodeWriter writer, CodeGeneratorContext context)
-        {
-            _writer = writer;
-            _context = context;
-        }
+            : base(writer, context) { }
 
         protected override void Visit(TypeMemberChunk chunk)
         {
-            Snippet code = chunk.Code.FirstOrDefault();
-
-            if (code != null)
+            if (!String.IsNullOrEmpty(chunk.Code))
             {
-                using (_writer.BuildLineMapping(chunk.Start, code.Value.Length, _context.SourceFile))
+                using (Writer.BuildLineMapping(chunk.Start, chunk.Code.Length, Context.SourceFile))
                 {
-                    _writer.WriteLine(code.Value);
+                    Writer.WriteLine(chunk.Code);
                 }
             }
         }

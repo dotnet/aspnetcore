@@ -2,18 +2,15 @@
 
 namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 {
-    public class CSharpHelperVisitor : CodeVisitor
+    public class CSharpHelperVisitor : CodeVisitor<CSharpCodeWriter>
     {
         private const string HelperWriterName = "__razor_helper_writer";
 
-        private readonly CSharpCodeWriter _writer;
-        private readonly CodeGeneratorContext _context;
         private CSharpCodeVisitor _codeVisitor;
 
         public CSharpHelperVisitor(CSharpCodeWriter writer, CodeGeneratorContext context)
+            : base(writer, context)
         {
-            _writer = writer;
-            _context = context;
             _codeVisitor = new CSharpCodeVisitor(writer, context);
         }
 
@@ -21,42 +18,42 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         {
             IDisposable lambdaScope = null;
 
-            using (CSharpLineMappingWriter mappingWriter = _writer.BuildLineMapping(chunk.Signature.Location, chunk.Signature.Value.Length, _context.SourceFile))
+            using (CSharpLineMappingWriter mappingWriter = Writer.BuildLineMapping(chunk.Signature.Location, chunk.Signature.Value.Length, Context.SourceFile))
             {
-                string accessibility = "public " + (_context.Host.StaticHelpers ? "static" : String.Empty);
+                string accessibility = "public " + (Context.Host.StaticHelpers ? "static" : String.Empty);
 
-                _writer.Write(accessibility).Write(" ").Write(_context.Host.GeneratedClassContext.TemplateTypeName).Write(" ");
+                Writer.Write(accessibility).Write(" ").Write(Context.Host.GeneratedClassContext.TemplateTypeName).Write(" ");
                 mappingWriter.MarkLineMappingStart();
-                _writer.Write(chunk.Signature);
+                Writer.Write(chunk.Signature);
                 mappingWriter.MarkLineMappingEnd();
             }
 
-            if(chunk.HeaderComplete)
+            if (chunk.HeaderComplete)
             {
-                _writer.WriteStartReturn()
-                       .WriteStartNewObject(_context.Host.GeneratedClassContext.TemplateTypeName);
+                Writer.WriteStartReturn()
+                       .WriteStartNewObject(Context.Host.GeneratedClassContext.TemplateTypeName);
 
-                lambdaScope = _writer.BuildLambda(endLine: false, parameterNames: HelperWriterName);
+                lambdaScope = Writer.BuildLambda(endLine: false, parameterNames: HelperWriterName);
             }
-            
+
             // Generate children code
             _codeVisitor.Accept(chunk.Children);
 
             if (chunk.HeaderComplete)
             {
                 lambdaScope.Dispose();
-                _writer.WriteEndMethodInvocation();
+                Writer.WriteEndMethodInvocation();
             }
 
-            if(chunk.Footer != null && !String.IsNullOrEmpty(chunk.Footer.Value))
+            if (chunk.Footer != null && !String.IsNullOrEmpty(chunk.Footer.Value))
             {
-                using(_writer.BuildLineMapping(chunk.Footer.Location, chunk.Footer.Value.Length, _context.SourceFile))
+                using (Writer.BuildLineMapping(chunk.Footer.Location, chunk.Footer.Value.Length, Context.SourceFile))
                 {
-                    _writer.Write(chunk.Footer);
+                    Writer.Write(chunk.Footer);
                 }
             }
 
-            _writer.WriteLine();
+            Writer.WriteLine();
         }
     }
 }

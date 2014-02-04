@@ -2,16 +2,11 @@
 
 namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 {
-    // TODO: This class shares a lot of the same properties as the other CSharpCodeVisitor, make common base?
-    public class CSharpUsingVisitor : CodeVisitor
+    public class CSharpUsingVisitor : CodeVisitor<CSharpCodeWriter>
     {
-        private CSharpCodeWriter _writer;
-        private string _sourceFile;
-
-        public CSharpUsingVisitor(CSharpCodeWriter writer, string sourceFile)
+        public CSharpUsingVisitor(CSharpCodeWriter writer, CodeGeneratorContext context)
+            : base(writer, context)
         {
-            _writer = writer;
-            _sourceFile = sourceFile;
             ImportedUsings = new List<string>();
         }
 
@@ -19,10 +14,10 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
         protected override void Visit(UsingChunk chunk)
         {
-            using (_writer.BuildLineMapping(chunk.Start, chunk.Association.Length, _sourceFile))
+            using (Writer.BuildLineMapping(chunk.Start, chunk.Association.Length, Context.SourceFile))
             {
                 ImportedUsings.Add(chunk.Namespace);
-                _writer.WriteUsing(chunk.Namespace);
+                Writer.WriteUsing(chunk.Namespace);
             }
         }
     }

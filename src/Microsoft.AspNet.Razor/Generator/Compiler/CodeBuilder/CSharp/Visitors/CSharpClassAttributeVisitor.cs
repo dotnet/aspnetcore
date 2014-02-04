@@ -2,24 +2,20 @@
 
 namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 {
-    public class CSharpClassAttributeVisitor : CodeVisitor
+    public class CSharpClassAttributeVisitor : CodeVisitor<CSharpCodeWriter>
     {
-        private CSharpCodeWriter _writer;
-
-        public CSharpClassAttributeVisitor(CSharpCodeWriter writer)
-        {
-            _writer = writer;
-        }
+        public CSharpClassAttributeVisitor(CSharpCodeWriter writer, CodeGeneratorContext context)
+            : base(writer, context) { }
 
         protected override void Visit(SessionStateChunk chunk)
         {
-            _writer.Write("[")
-                   .Write(typeof(RazorDirectiveAttribute).FullName)
-                   .Write("(")
-                   .WriteStringLiteral(SyntaxConstants.CSharp.SessionStateKeyword)
-                   .WriteParameterSeparator()
-                   .WriteStringLiteral(chunk.Value)
-                   .WriteLine(")]");
+            Writer.Write("[")
+                  .Write(typeof(RazorDirectiveAttribute).FullName)
+                  .Write("(")
+                  .WriteStringLiteral(SyntaxConstants.CSharp.SessionStateKeyword)
+                  .WriteParameterSeparator()
+                  .WriteStringLiteral(chunk.Value)
+                  .WriteLine(")]");
         }
     }
 }
