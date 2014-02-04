@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNet.Abstractions;
+﻿using System.Text;
+using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Mvc;
-using System.Text;
 
 namespace MvcSample
 {
