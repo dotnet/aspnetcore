@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class JsonResult : IActionResult
+    public class JsonResult : IJsonResult
     {
         private readonly object _returnValue;
 

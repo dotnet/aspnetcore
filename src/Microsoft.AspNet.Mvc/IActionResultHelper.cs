@@ -5,7 +5,7 @@ namespace Microsoft.AspNet.Mvc
     {
         IActionResult Content(string value);
         IActionResult Content(string value, string contentType);
-        IActionResult Json(object value);
+        IJsonResult Json(object value);
         IActionResult View(string view, ViewData viewData);
     }
 }

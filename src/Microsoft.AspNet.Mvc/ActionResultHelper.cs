@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc
             };
         }
 
-        public IActionResult Json(object value)
+        public IJsonResult Json(object value)
         {
             return new JsonResult(value);
         }

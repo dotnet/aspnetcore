@@ -4,6 +4,13 @@ namespace Microsoft.AspNet.Mvc
 {
     public class ActionResultFactory : IActionResultFactory
     {
+        private readonly IActionResultHelper _result;
+
+        public ActionResultFactory(IActionResultHelper result)
+        {
+            _result = result;
+        }
+
         public IActionResult CreateActionResult(Type declaredReturnType, object actionReturnValue, RequestContext requestContext)
         {
             // optimize common path
@@ -45,7 +52,7 @@ namespace Microsoft.AspNet.Mvc
                 };
             }
 
-            return new JsonResult(actionReturnValue);
+            return _result.Json(actionReturnValue);
         }
     }
 }
