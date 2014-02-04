@@ -5,7 +5,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
 {
     public abstract class ChunkVisitor : IChunkVisitor
     {
-        public virtual void Accept(IList<Chunk> chunks)
+        public void Accept(IList<Chunk> chunks)
         {
             if (chunks == null)
             {

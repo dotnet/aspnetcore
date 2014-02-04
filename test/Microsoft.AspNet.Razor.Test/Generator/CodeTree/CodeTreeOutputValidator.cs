@@ -114,7 +114,6 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         private static void ValidateCodeTreeContainsAll(string codeTreeCode, string codeDOMCode, string regex)
         {
             var matches = Regex.Matches(codeDOMCode, regex);
-            Assert.NotEmpty(matches);
 
             for (int i = 0; i < matches.Count; i++)
             {

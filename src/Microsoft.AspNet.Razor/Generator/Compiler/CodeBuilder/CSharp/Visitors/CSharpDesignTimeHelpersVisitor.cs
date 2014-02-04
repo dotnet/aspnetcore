@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             _context = context;
         }
 
-        public override void Accept(System.Collections.Generic.IList<Chunk> chunks)
+        public void AcceptTree(CodeTree tree)
         {
             if (_context.Host.DesignTimeMode)
             {
@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 {
                     using (_writer.BuildDisableWarningScope())
                     {
-                        Accept(chunks);
+                        Accept(tree.Chunks);
                     }
                 }
             }

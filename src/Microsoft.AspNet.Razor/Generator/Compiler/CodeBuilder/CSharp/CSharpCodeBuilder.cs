@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
                     new CSharpHelperVisitor(writer, Context).Accept(Tree.Chunks);
                     new CSharpTypeMemberVisitor(writer, Context).Accept(Tree.Chunks);
-                    new CSharpDesignTimeHelpersVisitor(writer, Context).Accept(Tree.Chunks);
+                    new CSharpDesignTimeHelpersVisitor(writer, Context).AcceptTree(Tree);
                   
                     // TODO: resolve variable declarations
 
