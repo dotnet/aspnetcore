@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             string outFile = Path.Combine(_tempDir, Path.GetRandomFileName() + ".dll");
             StringBuilder args = new StringBuilder("/target:library ");
             args.AppendFormat("/out:\"{0}\" ", outFile);
-            foreach (var file in Directory.EnumerateFiles(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "*.dll"))
+            foreach (var file in Directory.EnumerateFiles(Directory.GetCurrentDirectory(), "*.dll"))
             {
                 args.AppendFormat("/R:\"{0}\" ", file);
             }

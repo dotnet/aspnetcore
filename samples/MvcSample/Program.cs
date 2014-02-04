@@ -1,5 +1,6 @@
 ﻿using System;
 #if NET45
+using System.Diagnostics;
 using Microsoft.Owin.Hosting;
 #endif
 
@@ -15,6 +16,7 @@ namespace MvcSample
             using (WebApp.Start<Startup>(new StartOptions(baseUrl)))
             {
                 Console.WriteLine("Listening at {0}", baseUrl);
+                Process.Start(baseUrl);
                 Console.WriteLine("Press any key to exit");
                 Console.ReadKey();
             }
