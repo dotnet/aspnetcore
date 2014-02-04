@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Mvc
         private readonly object _returnValue;
 
         private JsonSerializerSettings _jsonSerializerSettings;
-        private Encoding _encoding;
+        private Encoding _encoding = Encoding.UTF8;
 
         public JsonResult(object returnValue)
         {
@@ -20,8 +20,6 @@ namespace Microsoft.AspNet.Mvc
             {
                 throw new ArgumentNullException("returnValue");
             }
-
-            Encoding = Encoding.UTF8;
 
             _returnValue = returnValue;
             _jsonSerializerSettings = CreateSerializerSettings();
@@ -61,7 +59,29 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        public virtual JsonSerializerSettings CreateSerializerSettings()
+        public async Task ExecuteResultAsync(RequestContext context)
+        {
+            HttpResponse response = context.HttpContext.Response;
+
+            Stream writeStream = response.Body;
+
+            if (response.ContentType == null)
+            {
+                response.ContentType = "application/json";
+            }
+
+            using (JsonWriter jsonWriter = CreateJsonWriter(writeStream, Encoding))
+            {
+                jsonWriter.CloseOutput = false;
+
+                JsonSerializer jsonSerializer = CreateJsonSerializer();
+                jsonSerializer.Serialize(jsonWriter, _returnValue);
+
+                jsonWriter.Flush();
+            }
+        }
+
+        private JsonSerializerSettings CreateSerializerSettings()
         {
             return new JsonSerializerSettings()
             {
@@ -73,14 +93,14 @@ namespace Microsoft.AspNet.Mvc
             };
         }
 
-        public virtual JsonSerializer CreateJsonSerializer()
+        private JsonSerializer CreateJsonSerializer()
         {
             JsonSerializer jsonSerializer = JsonSerializer.Create(SerializerSettings);
 
             return jsonSerializer;
         }
 
-        public virtual JsonWriter CreateJsonWriter(Stream writeStream, Encoding effectiveEncoding)
+        private JsonWriter CreateJsonWriter(Stream writeStream, Encoding effectiveEncoding)
         {
             JsonWriter jsonWriter = new JsonTextWriter(new StreamWriter(writeStream, effectiveEncoding));
             if (Indent)
@@ -89,25 +109,6 @@ namespace Microsoft.AspNet.Mvc
             }
 
             return jsonWriter;
-        }
-
-        public async Task ExecuteResultAsync(RequestContext context)
-        {
-            HttpResponse response = context.HttpContext.Response;
-
-            Stream writeStream = response.Body;
-
-            response.ContentType = "application/json";
-
-            using (JsonWriter jsonWriter = CreateJsonWriter(writeStream, Encoding))
-            {
-                jsonWriter.CloseOutput = false;
-
-                JsonSerializer jsonSerializer = CreateJsonSerializer();
-                jsonSerializer.Serialize(jsonWriter, _returnValue);
-
-                jsonWriter.Flush();
-            }
         }
     }
 }
