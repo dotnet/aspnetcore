@@ -9,8 +9,8 @@ namespace Microsoft.AspNet.Mvc.Razor
     {
         private static readonly string[] _viewLocationFormats = new[]
         {
-            "~/Views/{1}/{0}.cshtml",
-            "~/Views/Shared/{0}.cshtml",
+            "/Views/{1}/{0}.cshtml",
+            "/Views/Shared/{0}.cshtml",
         };
         private readonly IActionDescriptorProvider _actionDescriptorProvider;
         private readonly IVirtualPathViewFactory _virtualPathFactory;
@@ -41,19 +41,41 @@ namespace Microsoft.AspNet.Mvc.Razor
                 viewName = actionDescriptor.ActionName;
             }
 
-            string controllerName = actionDescriptor.ControllerName;
-            var searchedLocations = new List<string>(_viewLocationFormats.Length);
-            for (int i = 0; i < _viewLocationFormats.Length; i++)
+            if (String.IsNullOrEmpty(viewName))
             {
-                string path = String.Format(CultureInfo.InvariantCulture, _viewLocationFormats[i], viewName, controllerName);
-                IView view = await _virtualPathFactory.CreateInstance(path);
-                if (view != null)
-                {
-                    return ViewEngineResult.Found(view);
-                }
-                searchedLocations.Add(path);
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "viewName");
             }
-            return ViewEngineResult.NotFound(searchedLocations);
+
+            bool nameRepresentsPath = IsSpecificPath(viewName);
+
+            if (nameRepresentsPath)
+            {
+                IView view = await _virtualPathFactory.CreateInstance(viewName);
+                return view != null ? ViewEngineResult.Found(view) :
+                                      ViewEngineResult.NotFound(new[] { viewName });
+            }
+            else
+            {
+                string controllerName = actionDescriptor.ControllerName;
+                var searchedLocations = new List<string>(_viewLocationFormats.Length);
+                for (int i = 0; i < _viewLocationFormats.Length; i++)
+                {
+                    string path = String.Format(CultureInfo.InvariantCulture, _viewLocationFormats[i], viewName, controllerName);
+                    IView view = await _virtualPathFactory.CreateInstance(path);
+                    if (view != null)
+                    {
+                        return ViewEngineResult.Found(view);
+                    }
+                    searchedLocations.Add(path);
+                }
+                return ViewEngineResult.NotFound(searchedLocations);
+            }
+        }
+
+        private static bool IsSpecificPath(string name)
+        {
+            char c = name[0];
+            return (name[0] == '/');
         }
     }
 }

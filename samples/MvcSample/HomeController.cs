@@ -5,9 +5,9 @@ namespace MvcSample
 {
     public class HomeController : Controller
     {
-        public string Index()
+        public IActionResult Index()
         {
-            return "Hello World";
+            return View("MyView", User());
         }
 
         public IActionResult Something()

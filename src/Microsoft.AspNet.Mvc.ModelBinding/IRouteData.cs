@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.Routing
         {
             if (name.Equals("controller", StringComparison.OrdinalIgnoreCase))
             {
-                return GetPartOrDefault(0, "HomeController");
+                return GetPartOrDefault(0, "Home");
             }
             else if (name.Equals("action", StringComparison.OrdinalIgnoreCase))
             {

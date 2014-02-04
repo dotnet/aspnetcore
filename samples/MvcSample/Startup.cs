@@ -28,7 +28,6 @@ namespace MvcSample
             string appRoot = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "..", "..", ".."));
 
             serviceProvider.AddInstance<IFileSystem>(new PhysicalFileSystem(appRoot));
-            serviceProvider.Add<IVirtualFileSystem, VirtualFileSystem>();
             serviceProvider.AddInstance<IMvcRazorHost>(new MvcRazorHost("Microsoft.AspNet.Mvc.Razor.RazorView<dynamic>"));
             serviceProvider.Add<ICompilationService, CscBasedCompilationService>();
             serviceProvider.Add<IRazorCompilationService, RazorCompilationService>();
