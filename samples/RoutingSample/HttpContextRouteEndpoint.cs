@@ -9,9 +9,9 @@ namespace RoutingSample
 {
     public class HttpContextRouteEndpoint : IRouteEndpoint
     {
-        private readonly Func<HttpContext, Task> _appFunc;
+        private readonly RequestDelegate _appFunc;
 
-        public HttpContextRouteEndpoint(Func<HttpContext, Task> appFunc)
+        public HttpContextRouteEndpoint(RequestDelegate appFunc)
         {
             _appFunc = appFunc;
         }

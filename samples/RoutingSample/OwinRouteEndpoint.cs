@@ -23,7 +23,6 @@ namespace RoutingSample
         public async Task<bool> Send(HttpContext context)
         {
             var owinContext = context.GetFeature<ICanHasOwinEnvironment>().Environment;
-            return _appFunc(owinContext);
             await _appFunc(owinContext);
             return true;
         }
