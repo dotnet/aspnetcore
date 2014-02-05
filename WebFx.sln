@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+VisualStudioVersion = 12.0.30110.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{DAAE4C74-D06F-4874-A166-33305D2643CE}"
 EndProject
@@ -38,6 +38,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "net45", "net45", "{222CA408-93EE-473A-9325-D04989EC9FEF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "k10", "k10", "{CE037E26-9EB5-48E2-B73B-06C6FF6CC9F5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Mvc.ModelBinding.Test.net45", "test\Microsoft.AspNet.Mvc.ModelBinding.Test\Microsoft.AspNet.Mvc.ModelBinding.Test.net45.csproj", "{42195A56-42C0-4CFF-A982-B6E24EFC6356}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -93,6 +97,10 @@ Global
 		{236CDB04-8FDA-4152-9A5B-7F98C19C663A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{236CDB04-8FDA-4152-9A5B-7F98C19C663A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{236CDB04-8FDA-4152-9A5B-7F98C19C663A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42195A56-42C0-4CFF-A982-B6E24EFC6356}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42195A56-42C0-4CFF-A982-B6E24EFC6356}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42195A56-42C0-4CFF-A982-B6E24EFC6356}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42195A56-42C0-4CFF-A982-B6E24EFC6356}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -114,5 +122,6 @@ Global
 		{BA88E212-5889-48DC-823F-A3A67DDEF123} = {4EB70D0E-E27E-4C42-AB58-BC8B325EDFB3}
 		{501817DD-8143-4A50-888D-99896A82CD12} = {222CA408-93EE-473A-9325-D04989EC9FEF}
 		{A7D7CD66-A407-4144-8AB7-07F895F87137} = {CE037E26-9EB5-48E2-B73B-06C6FF6CC9F5}
+		{42195A56-42C0-4CFF-A982-B6E24EFC6356} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
 	EndGlobalSection
 EndGlobal

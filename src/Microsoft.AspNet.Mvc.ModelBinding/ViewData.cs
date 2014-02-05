@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Dynamic;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class ViewData : DynamicObject
     {
@@ -16,6 +16,11 @@ namespace Microsoft.AspNet.Mvc
 
         public ViewData(ViewData source)
         {
+            if (source == null)
+            {
+                throw new ArgumentNullException("source");
+            }
+
             _data = source._data;
             SetModel(source.Model);
         }

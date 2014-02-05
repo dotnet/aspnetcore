@@ -1,0 +1,12 @@
+{
+  "version" : "0.1-alpha-*",
+  "dependencies": {
+    "Microsoft.AspNet.Mvc.ModelBinding" : "0.1-alpha-*",
+    "Moq": "4.0.10827",
+    "Xunit": "1.9.1",
+    "Xunit.extensions": "1.9.1"
+  },
+  "configurations": {
+    "net45": { }
+  }
+}

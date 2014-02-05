@@ -2,7 +2,7 @@
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Mvc.Routing;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class ViewContext : RequestContext
     {

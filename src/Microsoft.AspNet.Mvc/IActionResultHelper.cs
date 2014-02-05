@@ -1,4 +1,5 @@
-﻿
+﻿using Microsoft.AspNet.Mvc.ModelBinding;
+
 namespace Microsoft.AspNet.Mvc
 {
     public interface IActionResultHelper
