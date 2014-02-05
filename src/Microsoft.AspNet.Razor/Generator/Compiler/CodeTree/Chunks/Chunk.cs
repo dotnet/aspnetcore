@@ -7,6 +7,5 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
     {
         public SourceLocation Start { get; set; }
         public SyntaxTreeNode Association { get; set; }
-        public string WriterName { get; set; }
     }
 }

@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Razor.Generator
                 return;
             }
 
-            LiteralCodeAttributeChunk chunk = context.CodeTreeBuilder.StartChunkBlock<LiteralCodeAttributeChunk>(target, context);
+            LiteralCodeAttributeChunk chunk = context.CodeTreeBuilder.StartChunkBlock<LiteralCodeAttributeChunk>(target);
             chunk.Prefix = Prefix;
             chunk.Value = Value;
 

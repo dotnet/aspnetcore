@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public void GenerateStartBlockCode(SyntaxTreeNode target, CodeTreeBuilder codeTreeBuilder, CodeGeneratorContext context)
         {
-            DynamicCodeAttributeChunk chunk = codeTreeBuilder.StartChunkBlock<DynamicCodeAttributeChunk>(target, context);
+            DynamicCodeAttributeChunk chunk = codeTreeBuilder.StartChunkBlock<DynamicCodeAttributeChunk>(target);
             chunk.Start = ValueStart;
             chunk.Prefix = Prefix;
         }

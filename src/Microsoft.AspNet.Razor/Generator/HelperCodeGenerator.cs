@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public void GenerateStartBlockCode(SyntaxTreeNode target, CodeTreeBuilder codeTreeBuilder, CodeGeneratorContext context)
         {
-            HelperChunk chunk = codeTreeBuilder.StartChunkBlock<HelperChunk>(target, context, topLevel: true);
+            HelperChunk chunk = codeTreeBuilder.StartChunkBlock<HelperChunk>(target, topLevel: true);
 
             chunk.Signature = Signature;
             chunk.Footer = Footer;

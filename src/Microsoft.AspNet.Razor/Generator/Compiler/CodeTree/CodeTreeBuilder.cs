@@ -17,13 +17,12 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
 
         public CodeTree CodeTree { get; private set; }
 
-        public void AddChunk(Chunk chunk, SyntaxTreeNode association, CodeGeneratorContext context, bool topLevel = false)
+        public void AddChunk(Chunk chunk, SyntaxTreeNode association, bool topLevel = false)
         {
             _lastChunk = chunk;
 
             chunk.Start = association.Start;
             chunk.Association = association;
-            chunk.WriterName = context.TargetWriterName;
 
             // If we're not in the middle of a chunk block
             if (_blockChain.Count == 0 || topLevel == true)
@@ -36,7 +35,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
             }
         }
 
-        public void AddLiteralChunk(string literal, SyntaxTreeNode association, CodeGeneratorContext context)
+        public void AddLiteralChunk(string literal, SyntaxTreeNode association)
         {
             if (_lastChunk is LiteralChunk)
             {
@@ -47,94 +46,92 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
                 AddChunk(new LiteralChunk
                 {
                     Text = literal,
-                }, association, context);
+                }, association);
             }
         }
 
-        public void AddExpressionChunk(string expression, ExpressionRenderingMode renderingMode, SyntaxTreeNode association, CodeGeneratorContext context)
+        public void AddExpressionChunk(string expression, SyntaxTreeNode association)
         {
             AddChunk(new ExpressionChunk
             {
-                Code = expression,
-                RenderingMode = renderingMode
-            }, association, context);
+                Code = expression
+            }, association);
         }
 
-        public void AddStatementChunk(string code, SyntaxTreeNode association, CodeGeneratorContext context)
+        public void AddStatementChunk(string code, SyntaxTreeNode association)
         {
             AddChunk(new StatementChunk
             {
                 Code = code,
-            }, association, context);
+            }, association);
         }
 
-        public void AddUsingChunk(string usingNamespace, SyntaxTreeNode association, CodeGeneratorContext context)
+        public void AddUsingChunk(string usingNamespace, SyntaxTreeNode association)
         {
             AddChunk(new UsingChunk
             {
                 Namespace = usingNamespace,
-            }, association, context, topLevel: true);
+            }, association, topLevel: true);
         }
 
-        public void AddTypeMemberChunk(string code, SyntaxTreeNode association, CodeGeneratorContext context)
+        public void AddTypeMemberChunk(string code, SyntaxTreeNode association)
         {
             AddChunk(new TypeMemberChunk
             {
                 Code = code,
-            }, association, context, topLevel: true);
+            }, association, topLevel: true);
         }
 
-        public void AddLiteralCodeAttributeChunk(string code, SyntaxTreeNode association, CodeGeneratorContext context)
+        public void AddLiteralCodeAttributeChunk(string code, SyntaxTreeNode association)
         {
             AddChunk(new LiteralCodeAttributeChunk
             {
                 Code = code,
-            }, association, context);
+            }, association);
         }
 
-        public void AddResolveUrlChunk(string url, SyntaxTreeNode association, CodeGeneratorContext context)
+        public void AddResolveUrlChunk(string url, SyntaxTreeNode association)
         {
             AddChunk(new ResolveUrlChunk
             {
-                Url = url,
-                RenderingMode = context.ExpressionRenderingMode
-            }, association, context);
+                Url = url
+            }, association);
         }
 
-        public void AddSetLayoutChunk(string layout, SyntaxTreeNode association, CodeGeneratorContext context)
+        public void AddSetLayoutChunk(string layout, SyntaxTreeNode association)
         {
             AddChunk(new SetLayoutChunk
             {
                 Layout = layout
-            }, association, context);
+            }, association);
         }
 
-        public void AddSetBaseTypeChunk(string typeName, SyntaxTreeNode association, CodeGeneratorContext context)
+        public void AddSetBaseTypeChunk(string typeName, SyntaxTreeNode association)
         {
             AddChunk(new SetBaseTypeChunk
             {
                 TypeName = typeName.Trim()
-            }, association, context, topLevel: true);
+            }, association, topLevel: true);
         }
 
-        public void AddSessionStateChunk(string value, SyntaxTreeNode association, CodeGeneratorContext context)
+        public void AddSessionStateChunk(string value, SyntaxTreeNode association)
         {
             AddChunk(new SessionStateChunk
             {
                 Value = value
-            }, association, context, topLevel: true);
+            }, association, topLevel: true);
         }
 
-        public T StartChunkBlock<T>(SyntaxTreeNode association, CodeGeneratorContext context) where T : ChunkBlock
+        public T StartChunkBlock<T>(SyntaxTreeNode association) where T : ChunkBlock
         {
-            return StartChunkBlock<T>(association, context, topLevel: false);
+            return StartChunkBlock<T>(association, topLevel: false);
         }
 
-        public T StartChunkBlock<T>(SyntaxTreeNode association, CodeGeneratorContext context, bool topLevel) where T : ChunkBlock
+        public T StartChunkBlock<T>(SyntaxTreeNode association, bool topLevel) where T : ChunkBlock
         {
             T chunk = (T)Activator.CreateInstance(typeof(T));
 
-            AddChunk(chunk, association, context, topLevel);
+            AddChunk(chunk, association, topLevel);
 
             _blockChain.Push(chunk);
 

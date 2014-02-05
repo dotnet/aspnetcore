@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Razor.Generator
                 ns = ns.Substring(1);
             }
 
-            codeTreeBuilder.AddUsingChunk(ns, target, context);
+            codeTreeBuilder.AddUsingChunk(ns, target);
         }
 
         public override void GenerateCode(Span target, CodeGeneratorContext context)

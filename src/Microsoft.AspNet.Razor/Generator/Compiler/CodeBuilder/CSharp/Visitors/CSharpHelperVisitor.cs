@@ -36,8 +36,13 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 lambdaScope = Writer.BuildLambda(endLine: false, parameterNames: HelperWriterName);
             }
 
+            string currentTargetWriterName = Context.TargetWriterName;
+            Context.TargetWriterName = HelperWriterName;
+
             // Generate children code
             _codeVisitor.Accept(chunk.Children);
+
+            Context.TargetWriterName = currentTargetWriterName;
 
             if (chunk.HeaderComplete)
             {

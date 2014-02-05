@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Razor.Generator
         {
             if (Name == SyntaxConstants.CSharp.SessionStateKeyword)
             {
-                codeTreeBuilder.AddSessionStateChunk(Value, target, context);
+                codeTreeBuilder.AddSessionStateChunk(Value, target);
             }
         }
 

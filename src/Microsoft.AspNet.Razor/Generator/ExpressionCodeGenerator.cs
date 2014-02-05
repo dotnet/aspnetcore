@@ -11,8 +11,7 @@ namespace Microsoft.AspNet.Razor.Generator
     {
         public void GenerateStartBlockCode(SyntaxTreeNode target, CodeTreeBuilder codeTreeBuilder, CodeGeneratorContext context)
         {
-            ExpressionBlockChunk chunk = codeTreeBuilder.StartChunkBlock<ExpressionBlockChunk>(target, context);
-            chunk.RenderingMode = context.ExpressionRenderingMode;
+            ExpressionBlockChunk chunk = codeTreeBuilder.StartChunkBlock<ExpressionBlockChunk>(target);
         }
 
         public override void GenerateStartBlockCode(Block target, CodeGeneratorContext context)
@@ -113,7 +112,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public void GenerateCode(Span target, CodeTreeBuilder codeTreeBuilder, CodeGeneratorContext context)
         {
-            codeTreeBuilder.AddExpressionChunk(target.Content, context.ExpressionRenderingMode, target, context);
+            codeTreeBuilder.AddExpressionChunk(target.Content, target);
         }
 
         public override void GenerateCode(Span target, CodeGeneratorContext context)

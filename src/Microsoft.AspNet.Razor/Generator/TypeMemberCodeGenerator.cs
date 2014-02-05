@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Razor.Generator
     {
         public void GenerateCode(Span target, CodeTreeBuilder codeTreeBuilder, CodeGeneratorContext context)
         {
-            codeTreeBuilder.AddTypeMemberChunk(target.Content, target, context);
+            codeTreeBuilder.AddTypeMemberChunk(target.Content, target);
         }
 
         public override void GenerateCode(Span target, CodeGeneratorContext context)

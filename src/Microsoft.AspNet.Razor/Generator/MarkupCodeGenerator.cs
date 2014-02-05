@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Razor.Generator
     {
         public void GenerateCode(Span target, CodeTreeBuilder codeTreeBuilder, CodeGeneratorContext context)
         {
-            codeTreeBuilder.AddLiteralChunk(target.Content, target, context);
+            codeTreeBuilder.AddLiteralChunk(target.Content, target);
         }
 
         public override void GenerateCode(Span target, CodeGeneratorContext context)

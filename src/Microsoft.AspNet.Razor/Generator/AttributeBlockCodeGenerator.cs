@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public void GenerateStartBlockCode(SyntaxTreeNode target, CodeTreeBuilder codeTreeBuilder, CodeGeneratorContext context)
         {
-            CodeAttributeChunk chunk = codeTreeBuilder.StartChunkBlock<CodeAttributeChunk>(target, context);
+            CodeAttributeChunk chunk = codeTreeBuilder.StartChunkBlock<CodeAttributeChunk>(target);
 
             chunk.Attribute = Name;
             chunk.Prefix = Prefix;

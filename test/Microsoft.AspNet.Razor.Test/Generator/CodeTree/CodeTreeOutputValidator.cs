@@ -11,7 +11,10 @@ namespace Microsoft.AspNet.Razor.Test.Generator
     {
         public static void ValidateResults(string codeTreeCode, string codeDOMCode, IList<LineMapping> codeTreeMappings, IDictionary<int, GeneratedCodeMapping> codeDOMMappings)
         {
-            Assert.Equal(codeTreeMappings.Count, codeDOMMappings.Values.Count);
+            if (codeDOMMappings != null)
+            {
+                Assert.Equal(codeTreeMappings.Count, codeDOMMappings.Values.Count);
+            }
 
             ValidateNamespace(codeTreeCode, codeDOMCode);
             ValidateClass(codeTreeCode, codeDOMCode);

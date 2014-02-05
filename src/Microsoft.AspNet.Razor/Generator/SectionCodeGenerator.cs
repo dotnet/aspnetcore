@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public void GenerateStartBlockCode(SyntaxTreeNode target, CodeTreeBuilder codeTreeBuilder, CodeGeneratorContext context)
         {
-            SectionChunk chunk = codeTreeBuilder.StartChunkBlock<SectionChunk>(target, context);
+            SectionChunk chunk = codeTreeBuilder.StartChunkBlock<SectionChunk>(target);
 
             chunk.Name = SectionName;
         }

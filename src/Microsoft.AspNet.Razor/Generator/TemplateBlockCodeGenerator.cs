@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public void GenerateStartBlockCode(SyntaxTreeNode target, CodeTreeBuilder codeTreeBuilder, CodeGeneratorContext context)
         {
-            codeTreeBuilder.StartChunkBlock<TemplateChunk>(target, context);
+            codeTreeBuilder.StartChunkBlock<TemplateChunk>(target);
         }
 
         public override void GenerateStartBlockCode(Block target, CodeGeneratorContext context)
