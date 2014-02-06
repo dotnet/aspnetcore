@@ -1,0 +1,50 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30110.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.StaticFiles.net45", "src\Microsoft.AspNet.StaticFiles\Microsoft.AspNet.StaticFiles.net45.csproj", "{49278B83-CC12-49EA-8F61-D143863DD21B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.StaticFiles.k10", "src\Microsoft.AspNet.StaticFiles\Microsoft.AspNet.StaticFiles.k10.csproj", "{297551FE-7539-4E43-A6B8-165C7789F48D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{40EE0889-960E-41B4-A3D3-9CE963EB0797}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{8B21A3A9-9CA6-4857-A6E0-1A3203404B60}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StaticFileSample.k10", "samples\StaticFileSample\StaticFileSample.k10.csproj", "{8C5384FC-24F3-47F2-897C-A151604F011C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StaticFileSample.net45", "samples\StaticFileSample\StaticFileSample.net45.csproj", "{742E16CD-8217-4386-AAF0-5F116E62CD82}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{49278B83-CC12-49EA-8F61-D143863DD21B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49278B83-CC12-49EA-8F61-D143863DD21B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49278B83-CC12-49EA-8F61-D143863DD21B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49278B83-CC12-49EA-8F61-D143863DD21B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{297551FE-7539-4E43-A6B8-165C7789F48D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{297551FE-7539-4E43-A6B8-165C7789F48D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{297551FE-7539-4E43-A6B8-165C7789F48D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{297551FE-7539-4E43-A6B8-165C7789F48D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C5384FC-24F3-47F2-897C-A151604F011C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C5384FC-24F3-47F2-897C-A151604F011C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C5384FC-24F3-47F2-897C-A151604F011C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C5384FC-24F3-47F2-897C-A151604F011C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{742E16CD-8217-4386-AAF0-5F116E62CD82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{742E16CD-8217-4386-AAF0-5F116E62CD82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{742E16CD-8217-4386-AAF0-5F116E62CD82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{742E16CD-8217-4386-AAF0-5F116E62CD82}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{297551FE-7539-4E43-A6B8-165C7789F48D} = {40EE0889-960E-41B4-A3D3-9CE963EB0797}
+		{49278B83-CC12-49EA-8F61-D143863DD21B} = {40EE0889-960E-41B4-A3D3-9CE963EB0797}
+		{8C5384FC-24F3-47F2-897C-A151604F011C} = {8B21A3A9-9CA6-4857-A6E0-1A3203404B60}
+		{742E16CD-8217-4386-AAF0-5F116E62CD82} = {8B21A3A9-9CA6-4857-A6E0-1A3203404B60}
+	EndGlobalSection
+EndGlobal
