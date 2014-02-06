@@ -1,6 +1,8 @@
 {
   "version" : "0.1-pre-*",
-  "dependencies": {},
+  "dependencies": {
+    "Microsoft.AspNet.DependencyInjection" : "0.1-alpha-*"
+  },
   "configurations": {
     "net45": {},
     "k10": {}
