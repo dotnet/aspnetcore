@@ -1,8 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.HttpFeature;
+using Microsoft.AspNet.PipelineCore.Collections;
 using Microsoft.AspNet.PipelineCore.Infrastructure;
 
 namespace Microsoft.AspNet.PipelineCore
@@ -118,7 +120,7 @@ namespace Microsoft.AspNet.PipelineCore
 
         public override IHeaderDictionary Headers
         {
-            get { throw new NotImplementedException(); }
+            get { return new HeaderDictionary(HttpRequestInformation.Headers); }
         }
 
         public override IReadableStringCollection Cookies
@@ -130,7 +132,8 @@ namespace Microsoft.AspNet.PipelineCore
         {
             get
             {
-                throw new NotImplementedException();
+                return CancellationToken.None;
+                // throw new NotImplementedException();
             }
             set
             {
