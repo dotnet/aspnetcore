@@ -1,5 +1,5 @@
 {
-  "version" : "0.1-pre-*",
+  "version" : "0.1-alpha-*",
   "dependencies": {
     "Microsoft.AspNet.DependencyInjection" : "0.1-alpha-*"
   },
