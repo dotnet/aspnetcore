@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Routing;
-using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.DependencyInjection;
+using Microsoft.AspNet.Mvc.Routing;
 
 namespace Microsoft.AspNet.Mvc
 {

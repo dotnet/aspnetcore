@@ -9,7 +9,8 @@
     "Microsoft.AspNet.Mvc.ModelBinding" : "",
     "Microsoft.AspNet.Mvc.Rendering" : "",
     "Microsoft.AspNet.Mvc.Razor" : "",
-    "Microsoft.AspNet.Mvc.Razor.Host" : ""
+    "Microsoft.AspNet.Mvc.Razor.Host" : "",
+    "Microsoft.AspNet.Mvc.Startup" : ""
   },
   "configurations": {
     "net45": {
