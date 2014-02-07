@@ -2,17 +2,23 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
+using System.Reflection;
 #if NET45
 using System.Security.Cryptography.X509Certificates;
 #endif
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.HttpFeature;
+using Microsoft.AspNet.FeatureModel;
 
 namespace Microsoft.AspNet.PipelineCore.Owin
 {
+    using SendFileFunc = Func<string, long, long?, CancellationToken, Task>;
+
     public class OwinHttpEnvironment :
+        IFeatureCollection,
         IHttpRequestInformation, 
         IHttpResponseInformation, 
         IHttpConnection, 
@@ -149,9 +155,40 @@ namespace Microsoft.AspNet.PipelineCore.Owin
             set { Prop(OwinConstants.CommonKeys.LocalPort, value); }
         }
 
+        private bool SupportsSendFile
+        {
+            get
+            {
+                object obj;
+                return Environment.TryGetValue(OwinConstants.SendFiles.SendAsync, out obj) && obj != null;
+            }
+        }
+
         Task IHttpSendFile.SendFileAsync(string path, long offset, long? length, CancellationToken cancellation)
         {
-            throw new NotImplementedException();
+            object obj;
+            if (Environment.TryGetValue(OwinConstants.SendFiles.SendAsync, out obj))
+            {
+                SendFileFunc func = (SendFileFunc)obj;
+                return func(path, offset, length, cancellation);
+            }
+            throw new NotSupportedException(OwinConstants.SendFiles.SendAsync);
+        }
+
+        private bool SupportsClientCerts
+        {
+            get
+            {
+                object obj;
+                if (string.Equals("https", ((IHttpRequestInformation)this).Scheme, StringComparison.OrdinalIgnoreCase)
+                    && (Environment.TryGetValue(OwinConstants.CommonKeys.LoadClientCertAsync, out obj)
+                        || Environment.TryGetValue(OwinConstants.CommonKeys.ClientCertificate, out obj))
+                    && obj != null)
+                {
+                    return true;
+                }
+                return false;
+            }
         }
 #if NET45
         X509Certificate IHttpTransportLayerSecurity.ClientCertificate
@@ -163,6 +200,147 @@ namespace Microsoft.AspNet.PipelineCore.Owin
         Task IHttpTransportLayerSecurity.LoadAsync()
         {
             throw new NotImplementedException();
+        }
+
+        public int Revision
+        {
+            get { return 0; } // Not modifiable
+        }
+
+        public void Add(Type key, object value)
+        {
+            throw new NotSupportedException();
+        }
+
+        public bool ContainsKey(Type key)
+        {
+            // Does this type implement the requested interface?
+            if (key.GetTypeInfo().IsAssignableFrom(this.GetType().GetTypeInfo()))
+            {
+                // Check for conditional features
+                if (key == typeof(IHttpSendFile))
+                {
+                    return SupportsSendFile;
+                }
+                else if (key == typeof(IHttpTransportLayerSecurity))
+                {
+                    return SupportsClientCerts;
+                }
+
+                // The rest of the features are always supported.
+                return true;
+            }
+            return false;
+        }
+
+        public ICollection<Type> Keys
+        {
+            get
+            {
+                IList<Type> keys = new List<Type>()
+                {
+                    typeof(IHttpRequestInformation),
+                    typeof(IHttpResponseInformation),
+                    typeof(IHttpConnection),
+                    typeof(ICanHasOwinEnvironment),
+                };
+                if (SupportsSendFile)
+                {
+                    keys.Add(typeof(IHttpSendFile));
+                }
+                if (SupportsClientCerts)
+                {
+                    keys.Add(typeof(IHttpTransportLayerSecurity));
+                }
+                return keys;
+            }
+        }
+
+        public bool Remove(Type key)
+        {
+            throw new NotSupportedException();
+        }
+
+        public bool TryGetValue(Type key, out object value)
+        {
+            if (ContainsKey(key))
+            {
+                value = this;
+                return true;
+            }
+            value = null;
+            return false;
+        }
+
+        public ICollection<object> Values
+        {
+            get { throw new NotSupportedException(); }
+        }
+
+        public object this[Type key]
+        {
+            get
+            {
+                object value;
+                if (TryGetValue(key, out value))
+                {
+                    return value;
+                }
+                throw new KeyNotFoundException(key.FullName);
+            }
+            set
+            {
+                throw new NotSupportedException();
+            }
+        }
+
+        public void Add(KeyValuePair<Type, object> item)
+        {
+            throw new NotSupportedException();
+        }
+
+        public void Clear()
+        {
+            throw new NotSupportedException();
+        }
+
+        public bool Contains(KeyValuePair<Type, object> item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CopyTo(KeyValuePair<Type, object>[] array, int arrayIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int Count
+        {
+            get { return Keys.Count; }
+        }
+
+        public bool IsReadOnly
+        {
+            get { return true; }
+        }
+
+        public bool Remove(KeyValuePair<Type, object> item)
+        {
+            throw new NotSupportedException();
+        }
+
+        public IEnumerator<KeyValuePair<Type, object>> GetEnumerator()
+        {
+            return Keys.Select(type => new KeyValuePair<Type, object>(type, this[type])).GetEnumerator();
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        public void Dispose()
+        {
         }
     }
 }

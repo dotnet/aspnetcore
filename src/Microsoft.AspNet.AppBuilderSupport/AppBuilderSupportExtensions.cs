@@ -31,8 +31,7 @@ namespace Owin
                     return app.Invoke(
                         new DefaultHttpContext(
                             new FeatureCollection(
-                                new FeatureObject(
-                                    new OwinHttpEnvironment(env)))));
+                                    new OwinHttpEnvironment(env))));
                 };
             };
             return appBuilder.Use(middleware1);

@@ -56,6 +56,7 @@
         internal static class CommonKeys
         {
             public const string ClientCertificate = "ssl.ClientCertificate";
+            public const string LoadClientCertAsync = "ssl.LoadClientCertAsync";
             public const string RemoteIpAddress = "server.RemoteIpAddress";
             public const string RemotePort = "server.RemotePort";
             public const string LocalIpAddress = "server.LocalIpAddress";
