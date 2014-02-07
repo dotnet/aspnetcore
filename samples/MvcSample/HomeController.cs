@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNet.Mvc;
-using Microsoft.Owin;
+using MvcSample.Models;
 
 namespace MvcSample
 {

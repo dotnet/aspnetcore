@@ -1,4 +1,4 @@
-﻿namespace MvcSample
+﻿namespace MvcSample.Models
 {
     public class User
     {
