@@ -1,11 +1,11 @@
 ﻿#if NET45
 using System;
 using System.IO;
-using Microsoft.AspNet.Abstractions;
-using Microsoft.Owin.FileSystems;
 using Microsoft.AspNet;
-using Owin;
+using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.StaticFiles;
+using Owin;
 
 namespace StaticFilesSample
 {

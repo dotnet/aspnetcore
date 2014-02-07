@@ -8,9 +8,9 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.StaticFiles.Infrastructure;
-using Microsoft.Owin.FileSystems;
 
 namespace Microsoft.AspNet.StaticFiles
 {

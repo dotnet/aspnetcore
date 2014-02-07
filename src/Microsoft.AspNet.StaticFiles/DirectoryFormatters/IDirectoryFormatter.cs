@@ -2,8 +2,8 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Owin.FileSystems;
 using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.FileSystems;
 
 namespace Microsoft.AspNet.StaticFiles.DirectoryFormatters
 {

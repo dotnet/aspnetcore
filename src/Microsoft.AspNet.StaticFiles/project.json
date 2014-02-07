@@ -6,11 +6,7 @@
     "Microsoft.AspNet.FileSystems" : "0.1-alpha-*"
   },
   "configurations": {
-    "net45": { 
-      "dependencies": {
-        "Owin" : "1.0"
-      }
-    },
+    "net45": { },
     "k10" : { }
   }
 }

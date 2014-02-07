@@ -3,7 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
-using Microsoft.Owin.FileSystems;
+using Microsoft.AspNet.FileSystems;
 
 namespace Microsoft.AspNet.StaticFiles
 {

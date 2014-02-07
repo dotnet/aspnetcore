@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Owin.FileSystems;
 using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.FileSystems;
 
 namespace Microsoft.AspNet.StaticFiles.Infrastructure
 {
