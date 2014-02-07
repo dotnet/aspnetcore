@@ -136,7 +136,7 @@
     <value>The route template cannot start with a '/' or '~' character and it cannot contain a '?' character.</value>
   </data>
   <data name="TemplateRoute_MismatchedParameter" xml:space="preserve">
-    <value>There is an incomplete parameter in this path segment: '{0}'. Check that each '{{' character has a matching '}}' character.</value>
+    <value>There is an incomplete parameter in the route template. Check that each '{' character has a matching '}' character.</value>
   </data>
   <data name="TemplateRoute_RepeatedParameter" xml:space="preserve">
     <value>The route parameter name '{0}' appears more than one time in the route template.</value>

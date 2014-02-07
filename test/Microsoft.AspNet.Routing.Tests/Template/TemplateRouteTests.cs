@@ -20,12 +20,13 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             TemplateRoute r = CreateRoute("{controller}/{action}/{id}", null);
 
             // Act
-            var rd = r.Match(new RouteContext(context));
+            var match = r.Match(new RouteContext(context));
 
             // Assert
-            Assert.Equal("Bank", rd.Values["controller"]);
-            Assert.Equal("DoAction", rd.Values["action"]);
-            Assert.Equal("123", rd.Values["id"]);
+            Assert.NotNull(match);
+            Assert.Equal("Bank", match.Values["controller"]);
+            Assert.Equal("DoAction", match.Values["action"]);
+            Assert.Equal("123", match.Values["id"]);
         }
 
         [Fact]
@@ -736,7 +737,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             else
             {
                 Assert.NotNull(match);
-                Assert.Equal<int>(match.Values.Count, expectedValues.Count);
+                Assert.Equal<int>(expectedValues.Count, match.Values.Count);
                 foreach (string key in match.Values.Keys)
                 {
                     Assert.Equal(expectedValues[key], match.Values[key]);

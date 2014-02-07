@@ -4,6 +4,7 @@
 
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Routing.Owin;
+using Microsoft.AspNet.Routing.Template;
 using Owin;
 
 namespace RoutingSample
@@ -25,7 +26,7 @@ namespace RoutingSample
             var endpoint2 = new HttpContextRouteEndpoint(async (context) => await context.Response.WriteAsync("Hello, World!"));
 
             routes.Add(new PrefixRoute(endpoint1, "api/store"));
-            routes.Add(new PrefixRoute(endpoint1, "api/checkout"));
+            routes.Add(new TemplateRoute(endpoint1, "api/checkout/{*extra}"));
             routes.Add(new PrefixRoute(endpoint2, "hello/world"));
             routes.Add(new PrefixRoute(endpoint1, ""));
         }

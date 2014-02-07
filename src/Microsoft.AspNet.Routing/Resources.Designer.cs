@@ -10,7 +10,6 @@
 
 namespace Microsoft.AspNet.Routing {
     using System;
-    using System.Reflection;
     
     
     /// <summary>
@@ -40,7 +39,7 @@ namespace Microsoft.AspNet.Routing {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.AspNet.Routing.Resources", IntrospectionExtensions.GetTypeInfo(typeof(Resources)).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.AspNet.Routing.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -116,7 +115,7 @@ namespace Microsoft.AspNet.Routing {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to There is an incomplete parameter in this path segment: &apos;{0}&apos;. Check that each &apos;{{&apos; character has a matching &apos;}}&apos; character..
+        ///   Looks up a localized string similar to There is an incomplete parameter in the route template. Check that each &apos;{&apos; character has a matching &apos;}&apos; character..
         /// </summary>
         internal static string TemplateRoute_MismatchedParameter {
             get {

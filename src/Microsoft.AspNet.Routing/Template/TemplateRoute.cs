@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Routing.Template
     {
         private readonly IDictionary<string, object> _defaults;
         private readonly IRouteEndpoint _endpoint;
-        private readonly TemplateParsedRoute _parsedRoute;
+        private readonly ParsedTemplate _parsedRoute;
         private readonly string _routeTemplate;
 
         public TemplateRoute(IRouteEndpoint endpoint, string routeTemplate)
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Routing.Template
             _defaults = defaults ?? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
             // The parser will throw for invalid routes.
-            _parsedRoute = TemplateRouteParser.Parse(RouteTemplate);
+            _parsedRoute = TemplateParser.Parse(RouteTemplate);
         }
 
         public IDictionary<string, object> Defaults
