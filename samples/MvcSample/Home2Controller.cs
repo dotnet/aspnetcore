@@ -19,7 +19,7 @@ namespace MvcSample.RandomNameSpace
 
         public string Index()
         {
-            return "Hello World";
+            return "Hello World: my namespace is " + this.GetType().Namespace;
         }
 
         public IActionResult Something()

@@ -1,7 +1,6 @@
-﻿
-namespace Microsoft.AspNet.Mvc
+﻿namespace Microsoft.AspNet.Mvc
 {
-    public class ControllerBasedActionDescriptor : ActionDescriptor
+    public class ControllerActionRouteContext : RouteContext
     {
         public string ControllerName { get; set; }
 

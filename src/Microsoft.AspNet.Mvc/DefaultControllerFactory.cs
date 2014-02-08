@@ -26,12 +26,12 @@ namespace Microsoft.AspNet.Mvc
 
             var controllers = _controllerCache.GetController(controllerName);
 
-            try
+            if (controllers != null)
             {
-                var type = controllers.SingleOrDefault().ControllerType;
-
-                if (type != null)
+                try
                 {
+                    var type = controllers.Single().ControllerType;
+
                     try
                     {
                         return ActivatorUtilities.CreateInstance(_serviceProvider, type);
@@ -40,10 +40,10 @@ namespace Microsoft.AspNet.Mvc
                     {
                     }
                 }
-            }
-            catch (InvalidOperationException)
-            {
-                throw new InvalidOperationException("Ambiguity: Duplicate controllers match the controller name");
+                catch (InvalidOperationException)
+                {
+                    throw new InvalidOperationException("Ambiguity: Duplicate controllers match the controller name");
+                }
             }
 
             return null;

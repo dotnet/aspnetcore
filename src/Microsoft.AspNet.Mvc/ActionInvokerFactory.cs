@@ -6,23 +6,23 @@ namespace Microsoft.AspNet.Mvc
     public class ActionInvokerFactory : IActionInvokerFactory
     {
         private readonly IActionResultFactory _actionResultFactory;
-        private readonly IActionDescriptorProvider _actionDescriptorProvider;
         private readonly IActionInvokerProvider _actionInvokerProvider;
+        private readonly IRouteContextProvider _routeContextProvider;
 
         public ActionInvokerFactory(IActionResultFactory actionResultFactory,
-                                    IActionDescriptorProvider actionDescriptorProvider, 
+                                    IRouteContextProvider actionDescriptorProvider, 
                                     IActionInvokerProvider actionInvokerProvider)
         {
             _actionResultFactory = actionResultFactory;
-            _actionDescriptorProvider = actionDescriptorProvider;
+            _routeContextProvider = actionDescriptorProvider;
             _actionInvokerProvider = actionInvokerProvider;
         }
 
         public IActionInvoker CreateInvoker(RequestContext requestContext)
         {
-            ActionDescriptor descriptor = _actionDescriptorProvider.CreateDescriptor(requestContext);
+            RouteContext routeContext = _routeContextProvider.CreateDescriptor(requestContext);
 
-            return _actionInvokerProvider.GetInvoker(requestContext, descriptor);
+            return _actionInvokerProvider.GetInvoker(requestContext, routeContext);
         }
     }
 }

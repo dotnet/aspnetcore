@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-
 namespace Microsoft.AspNet.Mvc
 {
     public abstract class ControllerCache

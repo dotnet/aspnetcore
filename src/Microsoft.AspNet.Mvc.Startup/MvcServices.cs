@@ -21,12 +21,11 @@ namespace Microsoft.AspNet.Mvc.Startup
         {
             Services = new ServiceProvider();
 
-            AddAndRegisterForFinalization<ControllerCache, DefaultControllerCache>();
             AddAndRegisterForFinalization<IControllerFactory, DefaultControllerFactory>();
             AddAndRegisterForFinalization<IActionInvokerFactory, ActionInvokerFactory>();
             AddAndRegisterForFinalization<IActionResultHelper, ActionResultHelper>();
             AddAndRegisterForFinalization<IActionResultFactory, ActionResultFactory>();
-            AddAndRegisterForFinalization<IActionDescriptorProvider, ActionDescriptorProvider>();
+            AddAndRegisterForFinalization<IRouteContextProvider, ControllerActionBasedRouteContextProvider>();
             AddAndRegisterForFinalization<IActionInvokerProvider, ActionInvokerProvider>();
 
             // need singleton support here.

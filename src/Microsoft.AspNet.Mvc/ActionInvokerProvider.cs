@@ -7,20 +7,20 @@ namespace Microsoft.AspNet.Mvc
     {
         private readonly IActionResultFactory _actionResultFactory;
         private readonly IServiceProvider _serviceProvider;
-        private readonly IControllerFactory _controrllerFactory;
+        private readonly IControllerFactory _controllerFactory;
 
         public ActionInvokerProvider(IActionResultFactory actionResultFactory,
                                      IControllerFactory controllerFactory,
                                      IServiceProvider serviceProvider)
         {
             _actionResultFactory = actionResultFactory;
-            _controrllerFactory = controllerFactory;
+            _controllerFactory = controllerFactory;
             _serviceProvider = serviceProvider;
         }
 
-        public IActionInvoker GetInvoker(RequestContext requestContext, ActionDescriptor descriptor)
+        public IActionInvoker GetInvoker(RequestContext requestContext, RouteContext routeContext)
         {
-            var controllerActionDescriptor = descriptor as ControllerBasedActionDescriptor;
+            var controllerActionDescriptor = routeContext as ControllerActionRouteContext;
 
             if (controllerActionDescriptor != null)
             {
@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc
                     requestContext,
                     controllerActionDescriptor,
                     _actionResultFactory,
-                    _controrllerFactory,
+                    _controllerFactory,
                     _serviceProvider);
             }
 

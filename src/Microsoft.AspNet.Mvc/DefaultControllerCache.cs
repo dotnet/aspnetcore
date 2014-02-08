@@ -28,7 +28,14 @@ namespace Microsoft.AspNet.Mvc
                 throw new InvalidOperationException("Finalizing the setup must happen prior to accessing controllers");
             }
 
-            return Controllers[controllerName];
+            IEnumerable<ControllerDescriptor> descriptors = null;
+
+            if (Controllers.TryGetValue(controllerName, out descriptors))
+            {
+                return descriptors;
+            }
+
+            return null;
         }
 
         public Dictionary<string, IEnumerable<ControllerDescriptor>> ScanAppDomain()
