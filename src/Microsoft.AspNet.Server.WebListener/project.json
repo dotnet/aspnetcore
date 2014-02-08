@@ -1,0 +1,8 @@
+{
+     "version": "0.1-alpha-*",
+	  "compilationOptions" : { "allowUnsafe": true },
+       "configurations": {
+            "net45" : { },
+            "k10" : { }
+       }
+}

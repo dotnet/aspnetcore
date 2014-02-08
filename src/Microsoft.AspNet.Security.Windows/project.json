@@ -1,0 +1,14 @@
+{
+     "version": "0.1-alpha-*",
+     "dependencies": {
+     },
+     "compilationOptions" : { "allowUnsafe": true },
+     "configurations":
+     {
+            "net45" : {
+                 "dependencies": {
+                      "Owin": "1.0"
+                 }
+            }
+     }
+}

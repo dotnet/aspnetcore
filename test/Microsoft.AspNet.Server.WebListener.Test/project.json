@@ -1,0 +1,16 @@
+{
+  "version" : "0.1-alpha-*",
+  "dependencies": {
+    "Microsoft.AspNet.Server.WebListener" : ""
+  },
+  "configurations": {
+    "net45": {
+      "dependencies": {
+          "XUnit": "1.9.2",
+          "XUnit.Extensions": "1.9.2",
+          "System.Net.Http": "",
+          "System.Net.Http.WebRequest": ""
+       }
+    }
+  }
+}
