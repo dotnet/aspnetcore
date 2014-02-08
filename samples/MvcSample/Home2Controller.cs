@@ -2,7 +2,7 @@
 using Microsoft.AspNet.Mvc;
 using MvcSample.Models;
 
-namespace MvcSample
+namespace MvcSample.RandomNameSpace
 {
     public class Home2Controller
     {

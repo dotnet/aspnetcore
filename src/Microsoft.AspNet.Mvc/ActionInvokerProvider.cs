@@ -1,16 +1,20 @@
 ﻿using System;
+using Microsoft.AspNet.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc
 {
     public class ActionInvokerProvider : IActionInvokerProvider
     {
-        private IActionResultFactory _actionResultFactory;
-        private IServiceProvider _serviceProvider;
+        private readonly IActionResultFactory _actionResultFactory;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly IControllerFactory _controrllerFactory;
 
         public ActionInvokerProvider(IActionResultFactory actionResultFactory,
+                                     IControllerFactory controllerFactory,
                                      IServiceProvider serviceProvider)
         {
             _actionResultFactory = actionResultFactory;
+            _controrllerFactory = controllerFactory;
             _serviceProvider = serviceProvider;
         }
 
@@ -24,6 +28,7 @@ namespace Microsoft.AspNet.Mvc
                     requestContext,
                     controllerActionDescriptor,
                     _actionResultFactory,
+                    _controrllerFactory,
                     _serviceProvider);
             }
 

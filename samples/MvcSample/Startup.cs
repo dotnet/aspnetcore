@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.Startup;
@@ -24,8 +25,11 @@ namespace MvcSample
             // HACK appbase doesn't seem to work. When in VS we're pointing at bin\Debug\Net45, so move up 3 directories
             string appRoot = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "..", "..", ".."));
 
-            var serviceProvider = MvcServices.Create(appRoot);
-            var handler = new MvcHandler(serviceProvider);
+            var mvcServices = new MvcServices(appRoot);
+
+            mvcServices.Finalize();
+
+            var handler = (MvcHandler)(ActivatorUtilities.CreateInstance(mvcServices.Services, typeof(MvcHandler)));
 
             builder.Run(async context =>
             {

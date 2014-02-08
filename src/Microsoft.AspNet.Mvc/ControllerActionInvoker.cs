@@ -14,22 +14,24 @@ namespace Microsoft.AspNet.Mvc
         private readonly ControllerBasedActionDescriptor _descriptor;
         private readonly IActionResultFactory _actionResultFactory;
         private readonly IServiceProvider _serviceProvider;
+        private readonly IControllerFactory _controllerFactory;
 
         public ControllerActionInvoker(RequestContext requestContext,
                                        ControllerBasedActionDescriptor descriptor,
                                        IActionResultFactory actionResultFactory,
+                                       IControllerFactory controllerFactory,
                                        IServiceProvider serviceProvider)
         {
             _requestContext = requestContext;
             _descriptor = descriptor;
             _actionResultFactory = actionResultFactory;
+            _controllerFactory = controllerFactory;
             _serviceProvider = serviceProvider;
         }
 
         public Task InvokeActionAsync()
         {
-            var factory = _serviceProvider.GetService<IControllerFactory>();
-            object controller = factory.CreateController(_requestContext.HttpContext, _descriptor.ControllerName);
+            object controller = _controllerFactory.CreateController(_requestContext.HttpContext, _descriptor.ControllerName);
 
             if (controller == null)
             {

@@ -8,20 +8,18 @@ namespace Microsoft.AspNet.Mvc
 {
     public class MvcHandler
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IActionInvokerFactory _actionInvokerFactory;
 
-        public MvcHandler(IServiceProvider serviceProvider)
+        public MvcHandler(IActionInvokerFactory actionInvokerFactory)
         {
-            _serviceProvider = serviceProvider;
+            _actionInvokerFactory = actionInvokerFactory;
         }
 
         public Task ExecuteAsync(HttpContext context, IRouteData routeData)
         {
             var requestContext = new RequestContext(context, routeData);
 
-            IActionInvokerFactory invokerFactory = _serviceProvider.GetService<IActionInvokerFactory>();
-
-            var invoker = invokerFactory.CreateInvoker(requestContext);
+            var invoker = _actionInvokerFactory.CreateInvoker(requestContext);
 
             return invoker.InvokeActionAsync();
         }

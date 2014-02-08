@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Abstractions;
@@ -10,10 +9,12 @@ namespace Microsoft.AspNet.Mvc
     public class DefaultControllerFactory : IControllerFactory
     {
         private readonly IServiceProvider _serviceProvider;
+        private readonly ControllerCache _controllerCache;
 
-        public DefaultControllerFactory(IServiceProvider serviceProvider)
+        public DefaultControllerFactory(IServiceProvider serviceProvider, ControllerCache cache)
         {
             _serviceProvider = serviceProvider;
+            _controllerCache = cache;
         }
 
         public object CreateController(HttpContext context, string controllerName)
@@ -23,29 +24,26 @@ namespace Microsoft.AspNet.Mvc
                 controllerName += "Controller";
             }
 
-            foreach (var a in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                try
-                {
-                    var type = a.GetType(controllerName) ??
-                               a.GetType(a.GetName().Name + "." + controllerName);
-#if NET45
-                    type = type ?? a.GetTypes().FirstOrDefault(t => t.Name.Equals(controllerName, StringComparison.OrdinalIgnoreCase));
-#endif
+            var controllers = _controllerCache.GetController(controllerName);
 
-                    if (type != null)
+            try
+            {
+                var type = controllers.SingleOrDefault().ControllerType;
+
+                if (type != null)
+                {
+                    try
                     {
                         return ActivatorUtilities.CreateInstance(_serviceProvider, type);
                     }
+                    catch (ReflectionTypeLoadException)
+                    {
+                    }
                 }
-                catch (ReflectionTypeLoadException)
-                {
-                    // TODO: Trace here 
-                }
-                catch (Exception)
-                {
-                    // TODO: Trace here
-                }
+            }
+            catch (InvalidOperationException)
+            {
+                throw new InvalidOperationException("Ambiguity: Duplicate controllers match the controller name");
             }
 
             return null;
