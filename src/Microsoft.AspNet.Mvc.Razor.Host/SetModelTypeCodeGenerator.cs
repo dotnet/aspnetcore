@@ -23,14 +23,6 @@ namespace Microsoft.AspNet.Mvc.Razor
                 baseType);
         }
 
-        public override bool Equals(object obj)
-        {
-            SetModelTypeCodeGenerator other = obj as SetModelTypeCodeGenerator;
-            return other != null &&
-                   base.Equals(obj) &&
-                   String.Equals(_genericTypeFormat, other._genericTypeFormat, StringComparison.Ordinal);
-        }
-
         public override string ToString()
         {
             return "Model:" + BaseType;
