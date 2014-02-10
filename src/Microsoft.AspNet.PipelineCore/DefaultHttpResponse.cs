@@ -51,11 +51,9 @@ namespace Microsoft.AspNet.PipelineCore
         {
             get
             {
-                string[] values;
                 long value;
-                if (HttpResponseInformation.Headers.TryGetValue(Constants.Headers.ContentLength, out values)
-                    && values != null && values.Length > 0 && !string.IsNullOrWhiteSpace(values[0])
-                    && long.TryParse(values[0], out value))
+                string rawValue = Headers.Get(Constants.Headers.ContentLength);
+                if (!string.IsNullOrWhiteSpace(rawValue) && long.TryParse(rawValue, out value))
                 {
                     return value;
                 }

@@ -169,7 +169,7 @@ namespace Microsoft.AspNet.PipelineCore.Owin
             object obj;
             if (Environment.TryGetValue(OwinConstants.SendFiles.SendAsync, out obj))
             {
-                SendFileFunc func = (SendFileFunc)obj;
+                var func = (SendFileFunc)obj;
                 return func(path, offset, length, cancellation);
             }
             throw new NotSupportedException(OwinConstants.SendFiles.SendAsync);
@@ -237,7 +237,7 @@ namespace Microsoft.AspNet.PipelineCore.Owin
         {
             get
             {
-                IList<Type> keys = new List<Type>()
+                var keys = new List<Type>()
                 {
                     typeof(IHttpRequestInformation),
                     typeof(IHttpResponseInformation),
@@ -306,12 +306,30 @@ namespace Microsoft.AspNet.PipelineCore.Owin
 
         public bool Contains(KeyValuePair<Type, object> item)
         {
-            throw new NotImplementedException();
+            object result;
+            return TryGetValue(item.Key, out result) && result.Equals(item.Value);
         }
 
         public void CopyTo(KeyValuePair<Type, object>[] array, int arrayIndex)
         {
-            throw new NotImplementedException();
+            if (array == null)
+            {
+                throw new ArgumentNullException("array");
+            }
+            if (arrayIndex < 0 || arrayIndex > array.Length)
+            {
+                throw new ArgumentOutOfRangeException("arrayIndex", arrayIndex, string.Empty);
+            }
+            var keys = Keys;
+            if (keys.Count > array.Length - arrayIndex)
+            {
+                throw new ArgumentException();
+            }
+
+            foreach (var key in keys)
+            {
+                array[arrayIndex++] = new KeyValuePair<Type, object>(key, this[key]);
+            }
         }
 
         public int Count

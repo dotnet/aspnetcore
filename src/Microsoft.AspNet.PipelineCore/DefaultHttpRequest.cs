@@ -132,8 +132,8 @@ namespace Microsoft.AspNet.PipelineCore
         {
             get
             {
+                // TODO: Which feature exposes this?
                 return CancellationToken.None;
-                // throw new NotImplementedException();
             }
             set
             {
