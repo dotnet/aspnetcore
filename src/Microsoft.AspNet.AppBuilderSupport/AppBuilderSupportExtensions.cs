@@ -16,7 +16,7 @@ namespace Owin
     {
         public static IAppBuilder UseBuilder(this IAppBuilder appBuilder, Action<IBuilder> configuration)
         {
-            IBuilder builder = new Builder();
+            IBuilder builder = new Builder(null);
             configuration(builder);
             Func<AppFunc,AppFunc> middleware1 = next1 => {
                 Func<RequestDelegate,RequestDelegate> middleware2 = next2 => {

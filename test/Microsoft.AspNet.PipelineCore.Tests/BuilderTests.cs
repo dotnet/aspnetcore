@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.PipelineCore.Tests
         [Fact]
         public void BuildReturnsCallableDelegate()
         {
-            var builder = new Builder();
+            var builder = new Builder(null);
             var app = builder.Build();
 
             var mockHttpContext = new Moq.Mock<HttpContext>();
