@@ -1,0 +1,14 @@
+{
+  "version": "0.1-alpha-*",
+  "dependencies":{
+    "Microsoft.AspNet.DependencyInjection":"0.1-alpha-*",
+    "Microsoft.AspNet.Configuration":"0.1-alpha-*",
+    "Microsoft.AspNet.PipelineCore":"0.1-alpha-*",
+    "Microsoft.AspNet.Abstractions":"0.1-alpha-*",
+    "Microsoft.AspNet.FeatureModel":"0.1-alpha-*"
+  },
+  "configurations": {
+    "net45" : {},
+    "k10" : {}
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "version": "0.1-alpha-*",
+  "dependencies": {
+    "xunit": "1.9.2",
+	"Microsoft.AspNet.Hosting":"",
+	"Microsoft.AspNet.Abstractions":"0.1-alpha-*",
+	"Microsoft.AspNet.DependencyInjection":"0.1-alpha-*"
+  },
+  "configurations": {
+    "net45": {}
+  }
+}
