@@ -57,6 +57,8 @@ default TARGET_DIR='${Path.Combine(BASE_DIR, "artifacts", "build")}'
             else 
             {
                 GitClone(repo.Value, "dev");
+                GitConfig("bugtraq.url", "http://github.com/aspnet/" + repo.Key + "/issues/%BUGID%", repo.Key);
+                GitConfig("bugtraq.logregex", @"#(\d+)", repo.Key);
             }
         }
     }
@@ -133,6 +135,9 @@ macro name='GitPull' gitUri='string' gitBranch='string' gitFolder='string'
 
 macro name='GitClone' gitUri='string' gitBranch='string'
     git-clone
+
+macro name='GitConfig' gitOptionName='string' gitOptionValue='string' gitFolder='string'
+    git-config
 
 macro name='Exec' program='string' commandline='string' workingdir='string'
     exec
