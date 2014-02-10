@@ -45,11 +45,7 @@ namespace Microsoft.Internal.Web.Utils
             {
                 if (object.ReferenceEquals(resourceMan, null))
                 {
-#if NET45
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.AspNet.Razor.Common.CommonResources", typeof(CommonResources).Assembly);
-#else
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.AspNet.Razor.Common.CommonResources", typeof(CommonResources).GetTypeInfo().Assembly);
-#endif
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.AspNet.Razor.CommonResources", System.Reflection.IntrospectionExtensions.GetTypeInfo(typeof(CommonResources)).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
