@@ -9,35 +9,33 @@ namespace Microsoft.AspNet.Mvc
     public class DefaultControllerFactory : IControllerFactory
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly ControllerCache _controllerCache;
+        private readonly IControllerDescriptorProvider _controllerDescriptorProvider;
 
-        public DefaultControllerFactory(IServiceProvider serviceProvider, ControllerCache cache)
+        public DefaultControllerFactory(IServiceProvider serviceProvider, IControllerDescriptorProvider controllerDescriptorProvider)
         {
             _serviceProvider = serviceProvider;
-            _controllerCache = cache;
+            _controllerDescriptorProvider = controllerDescriptorProvider;
         }
 
         public object CreateController(HttpContext context, string controllerName)
-        {
-            if (!controllerName.EndsWith("Controller", StringComparison.OrdinalIgnoreCase))
-            {
-                controllerName += "Controller";
-            }
-
-            var controllers = _controllerCache.GetController(controllerName);
+        {            
+            var controllers = _controllerDescriptorProvider.GetControllers(controllerName);
 
             if (controllers != null)
             {
                 try
                 {
-                    var type = controllers.Single().ControllerType;
+                    var descriptor = controllers.SingleOrDefault();
 
-                    try
+                    if (descriptor != null)
                     {
-                        return ActivatorUtilities.CreateInstance(_serviceProvider, type);
-                    }
-                    catch (ReflectionTypeLoadException)
-                    {
+                        try
+                        {
+                            return ActivatorUtilities.CreateInstance(_serviceProvider, descriptor.ControllerType);
+                        }
+                        catch (ReflectionTypeLoadException)
+                        {
+                        }
                     }
                 }
                 catch (InvalidOperationException)
@@ -51,7 +49,6 @@ namespace Microsoft.AspNet.Mvc
 
         public void ReleaseController(object controller)
         {
-
         }
     }
 }

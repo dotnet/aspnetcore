@@ -27,9 +27,7 @@ namespace MvcSample
 
             var mvcServices = new MvcServices(appRoot);
 
-            mvcServices.Finalize();
-
-            var handler = (MvcHandler)(ActivatorUtilities.CreateInstance(mvcServices.Services, typeof(MvcHandler)));
+            var handler = ActivatorUtilities.CreateInstance<MvcHandler>(mvcServices.Services);
 
             builder.Run(async context =>
             {

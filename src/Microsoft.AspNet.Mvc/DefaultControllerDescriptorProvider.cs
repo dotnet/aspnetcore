@@ -5,24 +5,34 @@ using System.Reflection;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class DefaultControllerCache : ControllerCache, IFinalizeSetup
+    public class DefaultControllerDescriptorProvider : IControllerDescriptorProvider
     {
-        private readonly SkipAssemblies _skipAssemblies;
+        private readonly ControllerAssemblyProvider _controllerAssemblyProvider;
 
         public IReadOnlyDictionary<string, IEnumerable<ControllerDescriptor>> Controllers { get; protected set; }
 
-        public virtual void FinalizeSetup()
+        public void FinalizeSetup()
         {
             Controllers = ScanAppDomain();
         }
 
-        public DefaultControllerCache(SkipAssemblies skipAssemblies)
+        public DefaultControllerDescriptorProvider(ControllerAssemblyProvider controllerAssemblyProvider)
         {
-            _skipAssemblies = skipAssemblies ?? new SkipNoAssemblies();
+            if (controllerAssemblyProvider == null)
+            {
+                throw new ArgumentNullException("controllerAssemblyProvider");
+            }
+
+            _controllerAssemblyProvider = controllerAssemblyProvider;
         }
 
-        public override IEnumerable<ControllerDescriptor> GetController(string controllerName)
+        public IEnumerable<ControllerDescriptor> GetControllers(string controllerName)
         {
+            if (!controllerName.EndsWith("Controller", StringComparison.OrdinalIgnoreCase))
+            {
+                controllerName += "Controller";
+            }
+
             if (Controllers == null)
             {
                 throw new InvalidOperationException("Finalizing the setup must happen prior to accessing controllers");
@@ -35,14 +45,14 @@ namespace Microsoft.AspNet.Mvc
                 return descriptors;
             }
 
-            return null;
+            return Enumerable.Empty<ControllerDescriptor>();
         }
 
         public Dictionary<string, IEnumerable<ControllerDescriptor>> ScanAppDomain()
         {
             var dictionary = new Dictionary<string, IEnumerable<ControllerDescriptor>>(StringComparer.Ordinal);
 
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().Where(AllowAssembly))
+            foreach (var assembly in _controllerAssemblyProvider.Assemblies)
             {
                 foreach (var type in assembly.DefinedTypes.Where(IsController).Select(info => info.AsType()))
                 {
@@ -70,17 +80,12 @@ namespace Microsoft.AspNet.Mvc
             }
 
             bool validController = typeInfo.IsClass &&
-                              !typeInfo.IsAbstract &&
-                              !typeInfo.ContainsGenericParameters;
+                                   !typeInfo.IsAbstract &&
+                                   !typeInfo.ContainsGenericParameters;
 
             validController = validController && typeInfo.Name.EndsWith("Controller", StringComparison.OrdinalIgnoreCase);
 
             return validController;
-        }
-
-        private bool AllowAssembly(Assembly assembly)
-        {
-            return !_skipAssemblies.Skip(assembly, SkipAssemblies.ControllerDiscoveryScope);
         }
     }
 }

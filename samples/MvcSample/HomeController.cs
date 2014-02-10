@@ -1,8 +1,5 @@
 ﻿using Microsoft.AspNet.Mvc;
-<<<<<<< HEAD
 using MvcSample.Models;
-=======
->>>>>>> Support per process caching of controller discovery
 
 namespace MvcSample
 {
