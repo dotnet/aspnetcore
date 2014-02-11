@@ -18,7 +18,7 @@ prefetch='true'
 
 default prefetch='${true}'
 
-nuget-install package='ProjectK' outputDir='packages' extra='-pre' once='ProjectK-NuGet' if='prefetch'
+nuget-install package='ProjectK' outputDir='packages' extra='-pre -nocache' once='ProjectK-NuGet' if='prefetch'
 
 @{
     Func<string, long> getVersion = version => {

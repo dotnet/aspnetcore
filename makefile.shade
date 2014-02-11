@@ -70,8 +70,8 @@ default TARGET_DIR='${Path.Combine(BASE_DIR, "artifacts", "build")}'
         {
             foreach (string fileName in templateFiles)
             {
-                var targetFile = Path.Combine(repo.Key, fileName);
-                var sourceFile = Path.Combine(templatePath, fileName);
+                var targetFile = Path.Combine(Directory.GetCurrentDirectory(), repo.Key, fileName);
+                var sourceFile = Path.Combine(Directory.GetCurrentDirectory(), templatePath, fileName);
 
                 // Don't update the makefile
                 if(fileName.Equals("makefile.shake", StringComparison.OrdinalIgnoreCase) && File.Exists(targetFile))
@@ -79,7 +79,7 @@ default TARGET_DIR='${Path.Combine(BASE_DIR, "artifacts", "build")}'
                     continue;
                 }
 
-                if(!File.Exists(targetFile) || 
+                if(!File.Exists(sourceFile) || 
                    (File.ReadAllText(sourceFile) != File.ReadAllText(targetFile)))
                 {
                     Log.Info("Updating " + fileName + " to " + repo.Key);
