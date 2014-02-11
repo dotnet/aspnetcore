@@ -110,3 +110,6 @@ functions @{
 macro name='UpdateProjects' basePath='string' restore='bool'
     k command='restore' prefetch='${false}' if='restore'
     k-generate-projects solutionPath='${basePath}' skipNet45='${!restore}'
+
+macro name='Exec' program='string' commandline='string'
+    exec
