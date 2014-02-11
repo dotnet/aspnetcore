@@ -10,12 +10,12 @@ namespace Microsoft.AspNet.Hosting
 {
     public static class HostingServices
     {
-        public static IEnumerable<IServiceDescriptor> DefaultServices()
+        public static IEnumerable<IServiceDescriptor> GetDefaultServices()
         {
-            return DefaultServices(new EmptyConfiguration());
+            return GetDefaultServices(new EmptyConfiguration());
         }
 
-        public static IEnumerable<IServiceDescriptor> DefaultServices(IConfiguration configuration)
+        public static IEnumerable<IServiceDescriptor> GetDefaultServices(IConfiguration configuration)
         {
             yield return DescribeService<IHostingEngine, HostingEngine>(configuration);
             yield return DescribeService<IServerFactoryProvider, ServerFactoryProvider>(configuration);

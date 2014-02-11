@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Hosting.Tests
         [Fact]
         public void DefaultServicesLocateStartupByNameAndNamespace()
         {
-            IServiceProvider services = new ServiceProvider().Add(HostingServices.DefaultServices());
+            IServiceProvider services = new ServiceProvider().Add(HostingServices.GetDefaultServices());
 
             var manager = services.GetService<IStartupManager>();
 
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Hosting.Tests
         public void StartupClassMayHaveHostingServicesInjected()
         {
             IServiceProvider services = new ServiceProvider()
-                .Add(HostingServices.DefaultServices())
+                .Add(HostingServices.GetDefaultServices())
                 .AddInstance<IFakeStartupCallback>(this);
 
             var manager = services.GetService<IStartupManager>();

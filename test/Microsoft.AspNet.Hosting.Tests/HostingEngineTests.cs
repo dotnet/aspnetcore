@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Hosting.Tests
         public void HostingEngineCanBeResolvedWithDefaultServices()
         {
             var services = new ServiceProvider()
-                .Add(HostingServices.DefaultServices());
+                .Add(HostingServices.GetDefaultServices());
 
             var engine = services.GetService<IHostingEngine>();
 
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Hosting.Tests
         public void HostingEngineCanBeStarted()
         {
             var services = new ServiceProvider()
-                .Add(HostingServices.DefaultServices()
+                .Add(HostingServices.GetDefaultServices()
                     .Where(descriptor => descriptor.ServiceType != typeof(IServerManager)))
                 .AddInstance<IServerManager>(this);
 

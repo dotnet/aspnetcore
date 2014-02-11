@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Hosting
         {
             var context = new HostingContext
             {
-                Services = new ServiceProvider().Add(HostingServices.DefaultServices())
+                Services = new ServiceProvider().Add(HostingServices.GetDefaultServices())
             };
 
             var engine = context.Services.GetService<IHostingEngine>();
