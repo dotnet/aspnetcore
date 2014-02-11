@@ -3,6 +3,7 @@
 #if NET45
 
 using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Owin;
 using Microsoft.AspNet.Routing.Template;
 using Owin;
@@ -25,10 +26,13 @@ namespace RoutingSample
             var endpoint1 = new HttpContextRouteEndpoint(async (context) => await context.Response.WriteAsync("match1"));
             var endpoint2 = new HttpContextRouteEndpoint(async (context) => await context.Response.WriteAsync("Hello, World!"));
 
-            routes.Add(new PrefixRoute(endpoint1, "api/store"));
-            routes.Add(new TemplateRoute(endpoint1, "api/checkout/{*extra}"));
-            routes.Add(new PrefixRoute(endpoint2, "hello/world"));
-            routes.Add(new PrefixRoute(endpoint1, ""));
+            var rb1 = new RouteBuilder(endpoint1, routes);
+            rb1.AddPrefixRoute("api/store");
+            rb1.AddTemplateRoute("api/checkout/{*extra}");
+
+            var rb2 = new RouteBuilder(endpoint2, routes);
+            rb2.AddPrefixRoute("hello/world");
+            rb2.AddPrefixRoute("");
         }
     }
 }
