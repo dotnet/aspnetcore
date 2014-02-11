@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Hosting.Startup
 
         public Action<IBuilder> LoadStartup(string applicationName, IList<string> diagnosticMessages)
         {
-            if (String.IsNullOrWhiteSpace(applicationName))
+            if (String.IsNullOrEmpty(applicationName))
             {
                 return _next.LoadStartup(applicationName, diagnosticMessages);
             }

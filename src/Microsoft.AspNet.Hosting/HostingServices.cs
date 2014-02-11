@@ -40,16 +40,16 @@ namespace Microsoft.AspNet.Hosting
             LifecycleKind lifecycle)
         {
             var serviceTypeName = serviceType.FullName;
-            var implemenationTypeName = configuration.Get(serviceTypeName);
-            if (!String.IsNullOrEmpty(implemenationTypeName))
+            var implementationTypeName = configuration.Get(serviceTypeName);
+            if (!String.IsNullOrEmpty(implementationTypeName))
             {
                 try
                 {
-                    implementationType = Type.GetType(implemenationTypeName);
+                    implementationType = Type.GetType(implementationTypeName);
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception(string.Format("TODO: unable to locate implementation {0} for service {1}", implemenationTypeName, serviceTypeName), ex);
+                    throw new Exception(string.Format("TODO: unable to locate implementation {0} for service {1}", implementationTypeName, serviceTypeName), ex);
                 }
             }
             return new ServiceTypeDescriptor(serviceType, implementationType, lifecycle);
