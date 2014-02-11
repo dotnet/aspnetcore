@@ -8,6 +8,7 @@ default BASE_DIR='${Directory.GetCurrentDirectory()}'
 default TARGET_DIR='${Path.Combine(BASE_DIR, "artifacts")}'
 default BUILD_DIR='${Path.Combine(TARGET_DIR, "build")}'
 default TEST_DIR='${Path.Combine(TARGET_DIR, "test")}'
+default Configuration='Release'
 
 @{
   E("K_BUILD_VERSION", BuildNumber);
@@ -31,6 +32,30 @@ default TEST_DIR='${Path.Combine(TARGET_DIR, "test")}'
       File.Copy(nupkg, Path.Combine(BUILD_DIR, Path.GetFileName(nupkg)), true);
     }
   }
+
+#native-compile target='compile'
+  var programFilesX86 = '${Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)}'
+  var msbuild = '${Path.Combine(programFilesX86, "MSBuild", "12.0", "Bin", "MSBuild.exe")}'
+  var nativeProjects ='${Files.Include(Path.Combine(BASE_DIR, "src", "**", "*.vcxproj"))}'
+
+  @{
+      if(!File.Exists(msbuild))
+      {
+          Log.Warn("msbuild version 12 not found. Please ensure you have the VS 2013 C++ SDK installed.");
+          Environment.Exit(1);
+      }
+      else
+      {
+          foreach (var project in nativeProjects)
+          {
+              Exec(msbuild, project + " /p:Configuration=" + Configuration + ";Platform=Win32");
+              Exec(msbuild, project + " /p:Configuration=" + Configuration + ";Platform=x64");
+          }
+      }
+  }
+
+  copy sourceDir='${Path.GetDirectoryName(project)}' include='bin/**/' outputDir='${Path.Combine(BUILD_DIR, Path.GetFileNameWithoutExtension(project))}' overwrite='${true}' each='var project in nativeProjects'
+
 
 #nuget-install target='install' description='Copy NuGet packages to local repo'
   nuget-local-publish sourcePackagesDir='${BUILD_DIR}'
