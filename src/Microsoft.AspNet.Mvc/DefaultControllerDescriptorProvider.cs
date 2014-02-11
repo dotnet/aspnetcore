@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.Mvc
 {
     public class DefaultControllerDescriptorProvider : IControllerDescriptorProvider
     {
-        private readonly ControllerAssemblyProvider _controllerAssemblyProvider;
+        private readonly IControllerAssemblyProvider _controllerAssemblyProvider;
 
         public IReadOnlyDictionary<string, IEnumerable<ControllerDescriptor>> Controllers { get; protected set; }
 
@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc
             Controllers = ScanAppDomain();
         }
 
-        public DefaultControllerDescriptorProvider(ControllerAssemblyProvider controllerAssemblyProvider)
+        public DefaultControllerDescriptorProvider(IControllerAssemblyProvider controllerAssemblyProvider)
         {
             if (controllerAssemblyProvider == null)
             {

@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public interface ControllerAssemblyProvider
+    public interface IControllerAssemblyProvider
     {
         IEnumerable<Assembly> Assemblies { get; }
     }

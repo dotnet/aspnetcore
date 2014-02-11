@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class AppDomainControllerAssemblyProvider : ControllerAssemblyProvider
+    public class AppDomainControllerAssemblyProvider : IControllerAssemblyProvider
     {
         public IEnumerable<Assembly> Assemblies
         {
