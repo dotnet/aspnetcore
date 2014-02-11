@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Routing.Template
                     var part = routeSegment.Parts[0];
                     if (part.IsLiteral)
                     {
-                        if (!part.Text.Equals(requestSegment, StringComparison.OrdinalIgnoreCase))
+                        if (!string.Equals(part.Text, requestSegment, StringComparison.OrdinalIgnoreCase))
                         {
                             return null;
                         }
