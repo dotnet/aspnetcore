@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
+using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 
 namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 {
@@ -9,9 +10,12 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         private const string ValueWriterName = "__razor_attribute_value_writer";
         private const string TemplateWriterName = "__razor_template_writer";
 
+        private CSharpPaddingBuilder _paddingBuilder;
+
         public CSharpCodeVisitor(CSharpCodeWriter writer, CodeGeneratorContext context)
             : base(writer, context)
         {
+            _paddingBuilder = new CSharpPaddingBuilder(context.Host);
         }
 
         protected override void Visit(SetLayoutChunk chunk)
@@ -152,20 +156,13 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
         protected override void Visit(ExpressionChunk chunk)
         {
-            using (Writer.BuildLineMapping(chunk.Start, chunk.Code.Length, Context.SourceFile))
-            {
-                Writer.Indent(chunk.Start.CharacterIndex)
-                        .Write(chunk.Code);
-            }
+            CreateCodeMapping(chunk.Code, chunk);
         }
 
         protected override void Visit(StatementChunk chunk)
         {
-            using (Writer.BuildLineMapping(chunk.Start, chunk.Code.Length, Context.SourceFile))
-            {
-                Writer.Indent(chunk.Start.CharacterIndex);
-                Writer.WriteLine(chunk.Code);
-            }
+            CreateCodeMapping(chunk.Code, chunk);
+            Writer.WriteLine();
         }
 
         protected override void Visit(DynamicCodeAttributeChunk chunk)
@@ -309,6 +306,18 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             }
 
             Writer.WriteEndMethodInvocation();
+        }
+
+        private void CreateCodeMapping(string code, Chunk chunk)
+        {
+            using (CSharpLineMappingWriter mappingWriter = Writer.BuildLineMapping(chunk.Start, code.Length, Context.SourceFile))
+            {
+                Writer.Write(_paddingBuilder.BuildExpressionPadding((Span)chunk.Association));
+
+                mappingWriter.MarkLineMappingStart();
+                Writer.Write(code);
+                mappingWriter.MarkLineMappingEnd();
+            }
         }
     }
 }

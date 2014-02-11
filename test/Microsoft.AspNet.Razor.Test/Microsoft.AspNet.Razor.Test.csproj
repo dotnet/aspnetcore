@@ -52,6 +52,7 @@
     <Compile Include="Generator\CodeTree\CodeTreeGenerationTest.cs" />
     <Compile Include="Generator\CodeTree\CodeTreeOutputValidator.cs" />
     <Compile Include="Generator\CodeTree\CSharpCodeBuilderTests.cs" />
+    <Compile Include="Generator\CodeTree\CSharpPaddingBuilderTests.cs" />
     <Compile Include="Generator\GeneratedCodeMappingTest.cs" />
     <Compile Include="Generator\PaddingTest.cs" />
     <Compile Include="Generator\TabTest.cs" />
