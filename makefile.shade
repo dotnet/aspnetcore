@@ -8,6 +8,7 @@ use namespace='System.Collections.Generic'
 use import="BuildEnv"
 
 var repos='${new Dictionary<string,string> {
+    {"KRuntime", "git@github.com:aspnet/KRuntime.git"},
     {"HttpAbstractions", "git@github.com:aspnet/HttpAbstractions.git"},
     {"DependencyInjection", "git@github.com:aspnet/DependencyInjection.git"},
     {"FileSystem", "git@github.com:aspnet/FileSystem.git"},
@@ -20,6 +21,9 @@ var repos='${new Dictionary<string,string> {
     {"Razor", "git@github.com:aspnet/Razor.git"},
     {"Routing", "git@github.com:aspnet/Routing.git"},
     {"WebFx", "git@github.com:aspnet/WebFx.git"},
+    {"Hosting", "git@github.com:aspnet/Hosting.git"},
+    {"Helios", "git@github.com:aspnet/Helios.git"},
+    {"WebListener", "git@github.com:aspnet/WebListener.git"}
 }}'
 
 default BASE_DIR='${Directory.GetCurrentDirectory()}'
