@@ -78,8 +78,8 @@ namespace Microsoft.AspNet.PipelineCore
         {
             get
             {
-                var contentTypeValues = HttpResponseInformation.Headers[Constants.Headers.ContentType];
-                return contentTypeValues.Length == 0 ? null : contentTypeValues[0];
+                var contentType = Headers[Constants.Headers.ContentType];
+                return contentType;
             }
             set
             {
