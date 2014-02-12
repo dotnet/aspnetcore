@@ -366,24 +366,43 @@ functions
             
             private static string GenerateStartupAction(string projectRoot, string projectName, string packagesDir, string configType)
             {
-                // packages\ProjectK.*\tools\bin\klr.exe 
-                // packages\ProjectK.*\tools\Microsoft.Net.ApplicationHost\bin\net45\Microsoft.Net.ApplicationHost.dll 
-                
-                string klrPath = Directory.EnumerateFiles(packagesDir, "klr.exe", SearchOption.AllDirectories).FirstOrDefault();
-                if (klrPath == null)
+                // packages\ProjectK.*\tools\bin\x86\klr.exe 
+                // packages\ProjectK.*\tools\net45
+
+                Func<string, long> getVersion = version => {
+                    var dash = version.LastIndexOf('-');
+
+                    if(dash != -1)
+                    {
+                        var lastToken = version.Substring(dash + 1);
+
+                        if(lastToken.StartsWith("t"))
+                        {
+                            return Int64.Parse(lastToken.Substring(1));
+                        }
+
+                        return Int64.Parse(lastToken);
+                    }
+                    return Int64.MaxValue;
+                };
+
+                var projectK = Directory.GetDirectories(packagesDir, "ProjectK*")
+                                           .Select(p => new { Path = p, Build = getVersion(p) })
+                                           .OrderByDescending(p => p.Build)
+                                           .FirstOrDefault();
+
+                if (projectK == null)
                 {
-                    Warn("Unable to locate klr.exe under packages");
+                    Warn("Unable to locate project K package");
                     return "";
                 }
 
-                var toolsDir = Path.GetDirectoryName(Path.GetDirectoryName(klrPath));
-                var appHostPath = Path.Combine(toolsDir, 
-                                               "Microsoft.Net.ApplicationHost", 
-                                               configType, 
-                                               "Microsoft.Net.ApplicationHost.dll");
+                var toolsDir = Path.Combine(projectK.Path, "tools");
+                var klrPath = Path.Combine(toolsDir, "bin", "x86", "klr.exe"); 
 
                 var klrSwitches = configType == "k10" ? "--core45" : "--net45";
-                var args = klrSwitches + " " + appHostPath + " --nobin " + projectRoot;
+                klrSwitches += " --appbase " + projectRoot + " --lib " + Path.Combine(toolsDir, configType);
+                var args = klrSwitches + " Microsoft.Net.ApplicationHost --nobin ";
                 
                 return String.Format(@"<StartAction>Program</StartAction>
                          <StartProgram>{0}</StartProgram>
