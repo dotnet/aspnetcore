@@ -1,40 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.Data.Entity;
 
 namespace MvcMusicStore.Models
 {
-    //public class MusicStoreEntities : DbContext
-    //{
-    //    public DbSet<Album>     Albums { get; set; }
-    //    public DbSet<Genre>     Genres { get; set; }
-    //    public DbSet<Artist>    Artists { get; set; }
-    //    public DbSet<Cart>      Carts { get; set; }
-    //    public DbSet<Order>     Orders { get; set; }
-    //    public DbSet<OrderDetail> OrderDetails { get; set; }
-    //}
-
-    public class MusicStoreEntities : IDisposable
+    public class MusicStoreEntities : EntityContext
     {
-        public List<Album> Albums { get; set; }
-        public List<Genre> Genres { get; set; }
-        public List<Artist> Artists { get; set; }
-        public List<Cart> Carts { get; set; }
-        public List<Order> Orders { get; set; }
-        public List<OrderDetail> OrderDetails { get; set; }
-
-        public void SaveChanges()
+        public MusicStoreEntities()
+            : base(null) // TODO: Fix after discussion of which patterns to use here
         {
-            throw new NotImplementedException();
         }
 
-        public void Dispose()
-        {
-            throw new NotImplementedException();
-        }
-
-        internal object Entry(Album album)
-        {
-            throw new NotImplementedException();
-        }
+        public EntitySet<Album> Albums { get; set; }
+        public EntitySet<Genre> Genres { get; set; }
+        public EntitySet<Artist> Artists { get; set; }
+        public EntitySet<Cart> Carts { get; set; }
+        public EntitySet<Order> Orders { get; set; }
     }
 }

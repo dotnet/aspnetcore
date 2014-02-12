@@ -1,5 +1,7 @@
 ﻿using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
+using Microsoft.Data.Entity;
 using MvcMusicStore.Models;
 using MvcMusicStore.ViewModels;
 
@@ -7,76 +9,56 @@ namespace MvcMusicStore.Controllers
 {
     public class ShoppingCartController : Controller
     {
-        MusicStoreEntities storeDB = new MusicStoreEntities();
+        private readonly MusicStoreEntities _storeContext = new MusicStoreEntities();
 
-        //
         // GET: /ShoppingCart/
-
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var cart = ShoppingCart.GetCart(storeDB, this.Context);
+            var cart = ShoppingCart.GetCart(_storeContext, this);
 
-            // Set up our ViewModel
             var viewModel = new ShoppingCartViewModel
             {
-                CartItems = cart.GetCartItems(),
-                CartTotal = cart.GetTotal()
+                CartItems = await cart.GetCartItems().ToListAsync(),
+                CartTotal = await cart.GetTotal()
             };
 
-            // Return the view
             return View(viewModel);
         }
 
-        //
         // GET: /ShoppingCart/AddToCart/5
-
-        public IActionResult AddToCart(int id)
+        public async Task<IActionResult> AddToCart(int id)
         {
+            var cart = ShoppingCart.GetCart(_storeContext, this);
 
-            // Retrieve the album from the database
-            var addedAlbum = storeDB.Albums
-                .Single(album => album.AlbumId == id);
+            await cart.AddToCart(await _storeContext.Albums.SingleAsync(a => a.AlbumId == id));
 
-            // Add it to the shopping cart
-            var cart = ShoppingCart.GetCart(storeDB, this.Context);
+            await _storeContext.SaveChangesAsync();
 
-            cart.AddToCart(addedAlbum);
-
-            storeDB.SaveChanges();
-
-            // Go back to the main store page for more shopping
-            // return RedirectToAction("Index");
-            return null;
+            return null;//RedirectToAction("Index");
         }
 
-        //
         // AJAX: /ShoppingCart/RemoveFromCart/5
-
-        // [HttpPost]
-        public IActionResult RemoveFromCart(int id)
+        //[HttpPost]
+        public async Task<IActionResult> RemoveFromCart(int id)
         {
-            // Retrieve the current user's shopping cart
-            var cart = ShoppingCart.GetCart(storeDB, this.Context);
+            var cart = ShoppingCart.GetCart(_storeContext, this);
 
-            // Get the name of the album to display confirmation
-            string albumName = storeDB.Carts
-                .Single(item => item.RecordId == id).Album.Title;
+            var albumName = await _storeContext.Carts
+                .Where(i => i.RecordId == id)
+                .Select(i => i.Album.Title)
+                .SingleOrDefaultAsync();
 
-            // Remove from cart
-            int itemCount = cart.RemoveFromCart(id);
+            var itemCount = await cart.RemoveFromCart(id);
 
-            storeDB.SaveChanges();
+            await _storeContext.SaveChangesAsync();
 
-            string removed = (itemCount > 0) ? " 1 copy of " : string.Empty;
-
-            // Display the confirmation message
+            var removed = (itemCount > 0) ? " 1 copy of " : string.Empty;
 
             var results = new ShoppingCartRemoveViewModel
             {
-                Message = removed + albumName +
-                    " has been removed from your shopping cart.",
-                CartTotal = cart.GetTotal(),
-                CartCount = cart.GetCount(),
+                Message = removed + albumName + " has been removed from your shopping cart.",
+                CartTotal = await cart.GetTotal(),
+                CartCount = await cart.GetCount(),
                 ItemCount = itemCount,
                 DeleteId = id
             };
@@ -84,20 +66,29 @@ namespace MvcMusicStore.Controllers
             return Result.Json(results);
         }
 
-        // [ChildActionOnly]
+        //[ChildActionOnly]
         public IActionResult CartSummary()
         {
-            var cart = ShoppingCart.GetCart(storeDB, this.Context);
+            var cart = ShoppingCart.GetCart(_storeContext, this);
 
             var cartItems = cart.GetCartItems()
                 .Select(a => a.Album.Title)
-                .OrderBy(x => x);
+                .OrderBy(x => x)
+                .ToList();
 
-            // ViewBag.CartCount = cartItems.Count();
-            // ViewBag.CartSummary = string.Join("\n", cartItems.Distinct());
+            ViewBag.CartCount = cartItems.Count();
+            ViewBag.CartSummary = string.Join("\n", cartItems.Distinct());
 
-            // return PartialView("CartSummary");
-            return null;
+            return null;//PartialView("CartSummary");
         }
+
+        //protected override void Dispose(bool disposing)
+        //{
+        //    if (disposing)
+        //    {
+        //        _storeContext.Dispose();
+        //    }
+        //    base.Dispose(disposing);
+        //}
     }
 }

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace MvcMusicStore.Models
+﻿namespace MvcMusicStore.Models
 {
     public class Artist
     {

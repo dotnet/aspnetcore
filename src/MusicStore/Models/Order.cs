@@ -1,12 +1,15 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel;
-//using System.ComponentModel.DataAnnotations;
 
 namespace MvcMusicStore.Models
 {
     //[Bind(Include = "FirstName,LastName,Address,City,State,PostalCode,Country,Phone,Email")]
     public class Order
     {
+        public Order()
+        {
+            OrderDetails = new List<OrderDetail>();
+        }
+
         //[ScaffoldColumn(false)]
         public int OrderId { get; set; }
 
@@ -59,7 +62,7 @@ namespace MvcMusicStore.Models
         //[DataType(DataType.EmailAddress)]
         public string Email { get; set; }
 
-        // [ScaffoldColumn(false)]
+        //[ScaffoldColumn(false)]
         public decimal Total { get; set; }
 
         public List<OrderDetail> OrderDetails { get; set; }

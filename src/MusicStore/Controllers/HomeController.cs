@@ -1,34 +1,31 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
+using Microsoft.Data.Entity;
 using MvcMusicStore.Models;
 
 namespace MvcMusicStore.Controllers
 {
     public class HomeController : Controller
     {
-        private MusicStoreEntities storeDB = new MusicStoreEntities();
-        //
+        private readonly MusicStoreEntities _storeContext = new MusicStoreEntities();
+
         // GET: /Home/
-
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            // Get most popular albums
-            var albums = GetTopSellingAlbums(6);
-
-            return View(albums);
-        }
-
-
-        private List<Album> GetTopSellingAlbums(int count)
-        {
-            // Group the order details by album and return
-            // the albums with the highest count
-
-            return storeDB.Albums
+            return View(await _storeContext.Albums
                 .OrderByDescending(a => a.OrderDetails.Count())
-                .Take(count)
-                .ToList();
+                .Take(6)
+                .ToListAsync());
         }
+
+        //protected override void Dispose(bool disposing)
+        //{
+        //    if (disposing)
+        //    {
+        //        _storeContext.Dispose();
+        //    }
+        //    base.Dispose(disposing);
+        //}
     }
 }
