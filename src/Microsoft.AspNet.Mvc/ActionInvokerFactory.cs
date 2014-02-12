@@ -21,7 +21,11 @@ namespace Microsoft.AspNet.Mvc
         public IActionInvoker CreateInvoker(RequestContext requestContext)
         {
             RouteContext routeContext = _routeContextProvider.CreateDescriptor(requestContext);
-
+            if (routeContext == null)
+            {
+                return null;
+            }
+           
             return _actionInvokerProvider.GetInvoker(requestContext, routeContext);
         }
     }

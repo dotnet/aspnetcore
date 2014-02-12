@@ -4,8 +4,8 @@
     {
         public RouteContext CreateDescriptor(RequestContext requestContext)
         {
-            string controllerName = requestContext.RouteData.GetRouteValue("controller");
-            string actionName = requestContext.RouteData.GetRouteValue("action");
+            var controllerName = (string)requestContext.RouteValues["controller"];
+            var actionName = (string)requestContext.RouteValues["action"];
 
             return new ControllerActionRouteContext
             {

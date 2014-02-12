@@ -1,13 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.AspNet.Abstractions;
-using Microsoft.AspNet.Mvc.Routing;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class ViewContext : RequestContext
     {
-        public ViewContext(HttpContext context, IRouteData routeData, ViewData viewData) :
-            base(context, routeData)
+        public ViewContext(HttpContext context, IDictionary<string, object> routeValues, ViewData viewData) :
+            base(context, routeValues)
         {
             ViewData = viewData;
         }

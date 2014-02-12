@@ -1,28 +1,28 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.AspNet.Abstractions;
-using Microsoft.AspNet.Mvc.Routing;
 
 namespace Microsoft.AspNet.Mvc
 {
     public class RequestContext
     {
-        public RequestContext(HttpContext context, IRouteData routeData)
+        public RequestContext(HttpContext context, IDictionary<string, object> routeValues)
         {
             if (context == null)
             {
                 throw new ArgumentNullException("context");
             }
 
-            if (routeData == null)
+            if (routeValues == null)
             {
-                throw new ArgumentNullException("routeData");
+                throw new ArgumentNullException("routeValues");
             }
 
             HttpContext = context;
-            RouteData = routeData;
+            RouteValues = routeValues;
         }
 
-        public virtual IRouteData RouteData { get; set; }
+        public virtual IDictionary<string, object> RouteValues { get; set; }
 
         public virtual HttpContext HttpContext { get; set; }
     }

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.Mvc.Razor;
+using Microsoft.AspNet.Mvc.Routing;
+using Microsoft.AspNet.Routing;
 
 namespace Microsoft.AspNet.Mvc.Startup
 {
