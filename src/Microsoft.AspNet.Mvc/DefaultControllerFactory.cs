@@ -34,12 +34,8 @@ namespace Microsoft.AspNet.Mvc
                             var controller = ActivatorUtilities.CreateInstance(_serviceProvider, descriptor.ControllerType);
 
                             // TODO: How do we feed the controller with context (need DI improvements)
-                            var contextProperty =
-#if NET45
-                            descriptor.ControllerType.GetProperty("Context");
-#else
-                            descriptor.ControllerType.GetRuntimeProperty("Context");
-#endif
+                            var contextProperty = descriptor.ControllerType.GetRuntimeProperty("Context");
+
                             if (contextProperty != null)
                             {
                                 contextProperty.SetMethod.Invoke(controller, new [] { context });
