@@ -207,16 +207,13 @@ functions
                 // Templates
                 const string csTemplate = @"<Compile Include=""{0}"" />";
                 const string resxDesignerTemplate = @"<Compile Include=""{0}"">
-      <DependentUpon>{1}</DependentUpon>
+      <DependentUpon>Resources.tt</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>";
                 const string resxTemplate = @"<EmbeddedResource Include=""{0}"">
     <LogicalName>{1}.{2}.resources</LogicalName>
-    <Generator>ResXFileCodeGenerator</Generator>
-    <LastGenOutput>{2}.Designer.cs</LastGenOutput>
-    <CustomToolNamespace>{1}.Resources</CustomToolNamespace>
-</EmbeddedResource>";
+  </EmbeddedResource>";
 
                 // Build the list of resx files
                 var resxFileNames = FindFilesOfType(projectDir, "*.resx");
@@ -230,7 +227,7 @@ functions
                 var csFiles 
                     = String.Join(Environment.NewLine,
                         FindFilesOfType(projectDir, "*.cs")
-                            .Select(p => resxDesignerFiles.Contains(p) ? String.Format(resxDesignerTemplate, p, Path.ChangeExtension(Path.GetFileNameWithoutExtension(p), "resx")) :
+                            .Select(p => resxDesignerFiles.Contains(p) ? String.Format(resxDesignerTemplate, p) :
                                                                          String.Format(csTemplate, p)));
                 
                 bool isSample = Path.GetDirectoryName(projectDir)
@@ -252,6 +249,15 @@ functions
 
                 // HACK: Assume the packages folder is 2 up from the projectDir
                 string packagesDir = Path.GetFullPath(Path.Combine(projectDir, "..", "..", "packages"));
+          
+                string ttFileTemplate = @"<None Include=""..\..\packages\KoreBuild\Build\Resources.tt"">
+  <Link>Properties\Resources.tt</Link>
+  <Generator>TextTemplatingFileGenerator</Generator>
+  <LastGenOutput>_Resources.cs</LastGenOutput>
+  <CustomToolNamespace>{0}</CustomToolNamespace>
+</None>";
+                // Link the tt file from packages dir
+                resxFiles += Environment.NewLine + String.Format(ttFileTemplate, projectName);
 
                 foreach (var pair in configs)
                 {
