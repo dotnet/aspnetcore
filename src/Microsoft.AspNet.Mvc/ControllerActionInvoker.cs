@@ -45,12 +45,14 @@ namespace Microsoft.AspNet.Mvc
 
                 if (method == null)
                 {
-                    throw new InvalidOperationException(String.Format("Could not find action method '{0}'", _descriptor.ActionName));
+                    actionResult = new HttpStatusCodeResult(404);
                 }
+                else
+                {
+                    object actionReturnValue = method.Invoke(controller, null);
 
-                object actionReturnValue = method.Invoke(controller, null);
-
-                actionResult = _actionResultFactory.CreateActionResult(method.ReturnType, actionReturnValue, _requestContext);
+                    actionResult = _actionResultFactory.CreateActionResult(method.ReturnType, actionReturnValue, _requestContext);
+                }
             }
 
             // TODO: This will probably move out once we got filters
