@@ -4,7 +4,6 @@ using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using Microsoft.AspNet.Razor.Resources;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
 
@@ -43,10 +42,9 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             {
                 // We've already passed this symbol
                 throw new InvalidOperationException(
-                    String.Format(CultureInfo.CurrentCulture,
-                                  RazorResources.TokenizerView_CannotPutBack,
-                                  symbol.Start.AbsoluteIndex + symbol.Content.Length,
-                                  Source.Position));
+                    RazorResources.TokenizerView_CannotPutBack(
+                        symbol.Start.AbsoluteIndex + symbol.Content.Length,
+                        Source.Position));
             }
             Source.Position -= symbol.Content.Length;
             Current = null;

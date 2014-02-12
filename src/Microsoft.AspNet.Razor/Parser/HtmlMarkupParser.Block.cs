@@ -7,7 +7,6 @@ using System.Linq;
 using Microsoft.AspNet.Razor.Editor;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Resources;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
 
@@ -666,7 +665,7 @@ namespace Microsoft.AspNet.Razor.Parser
             bool seenClose = Optional(HtmlSymbolType.CloseAngle);
             if (!seenClose)
             {
-                Context.OnError(tag.Item2, RazorResources.ParseError_UnfinishedTag, tag.Item1.Content);
+                Context.OnError(tag.Item2, RazorResources.ParseError_UnfinishedTag(tag.Item1.Content));
             }
             else
             {
@@ -744,7 +743,7 @@ namespace Microsoft.AspNet.Razor.Parser
                         SkipToAndParseCode(HtmlSymbolType.CloseAngle);
                         if (!Optional(HtmlSymbolType.CloseAngle))
                         {
-                            Context.OnError(tagStart, RazorResources.ParseError_UnfinishedTag, "script");
+                            Context.OnError(tagStart, RazorResources.ParseError_UnfinishedTag("script"));
                         }
                         seenEndScript = true;
                     }
@@ -781,11 +780,11 @@ namespace Microsoft.AspNet.Razor.Parser
             }
             if (currentTag != null)
             {
-                Context.OnError(currentTag.Item2, RazorResources.ParseError_MissingEndTag, currentTag.Item1.Content);
+                Context.OnError(currentTag.Item2, RazorResources.ParseError_MissingEndTag(currentTag.Item1.Content));
             }
             else
             {
-                Context.OnError(tagStart, RazorResources.ParseError_UnexpectedEndTag, tagName);
+                Context.OnError(tagStart, RazorResources.ParseError_UnexpectedEndTag(tagName));
             }
             return false;
         }
@@ -800,7 +799,7 @@ namespace Microsoft.AspNet.Razor.Parser
                     tags.Pop();
                 }
                 Tuple<HtmlSymbol, SourceLocation> tag = tags.Pop();
-                Context.OnError(tag.Item2, RazorResources.ParseError_MissingEndTag, tag.Item1.Content);
+                Context.OnError(tag.Item2, RazorResources.ParseError_MissingEndTag(tag.Item1.Content));
             }
             else if (complete)
             {

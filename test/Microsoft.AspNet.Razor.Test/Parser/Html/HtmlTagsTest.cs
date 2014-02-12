@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Resources;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.TestCommon;
 
@@ -40,7 +39,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
             ParseBlockTest("<p></> Bar",
                 new MarkupBlock(
                     Factory.Markup("<p></> ").Accepts(AcceptedCharacters.None)),
-                new RazorError(String.Format(RazorResources.ParseError_MissingEndTag, "p"), 0, 0, 0));
+                new RazorError(RazorResources.ParseError_MissingEndTag("p"), 0, 0, 0));
         }
 
         [Fact]

@@ -23,19 +23,19 @@ namespace Microsoft.AspNet.Razor.Generator
         {
             if (startLine < 0)
             {
-                throw new ArgumentOutOfRangeException("startLine", String.Format(CultureInfo.CurrentCulture, CommonResources.Argument_Must_Be_GreaterThanOrEqualTo, "startLine", "0"));
+                throw new ArgumentOutOfRangeException("startLine", CommonResources.Argument_Must_Be_GreaterThanOrEqualTo(0));
             }
             if (startColumn < 0)
             {
-                throw new ArgumentOutOfRangeException("startColumn", String.Format(CultureInfo.CurrentCulture, CommonResources.Argument_Must_Be_GreaterThanOrEqualTo, "startColumn", "0"));
+                throw new ArgumentOutOfRangeException("startColumn", CommonResources.Argument_Must_Be_GreaterThanOrEqualTo(0));
             }
             if (startGeneratedColumn < 0)
             {
-                throw new ArgumentOutOfRangeException("startGeneratedColumn", String.Format(CultureInfo.CurrentCulture, CommonResources.Argument_Must_Be_GreaterThanOrEqualTo, "startGeneratedColumn", "0"));
+                throw new ArgumentOutOfRangeException("startGeneratedColumn", CommonResources.Argument_Must_Be_GreaterThanOrEqualTo(0));
             }
             if (codeLength < 0)
             {
-                throw new ArgumentOutOfRangeException("codeLength", String.Format(CultureInfo.CurrentCulture, CommonResources.Argument_Must_Be_GreaterThanOrEqualTo, "codeLength", "0"));
+                throw new ArgumentOutOfRangeException("codeLength", CommonResources.Argument_Must_Be_GreaterThanOrEqualTo(0));
             }
 
             StartOffset = startOffset;

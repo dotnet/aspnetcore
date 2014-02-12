@@ -10,7 +10,6 @@ using System.Linq;
 using System.Text;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Resources;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Utils;
 

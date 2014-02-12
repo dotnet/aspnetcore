@@ -3,7 +3,6 @@
 using System;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Resources;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.TestCommon;
@@ -21,7 +20,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                            new DirectiveBlock(
                                Factory.MetaCode(word).Accepts(AcceptedCharacters.None)
                                ),
-                           new RazorError(String.Format(RazorResources.ParseError_ReservedWord, word), SourceLocation.Zero));
+                           new RazorError(RazorResources.ParseError_ReservedWord(word), SourceLocation.Zero));
         }
 
         [Theory]

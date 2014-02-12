@@ -3,7 +3,6 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
-using Microsoft.AspNet.Razor.Resources;
 
 namespace Microsoft.AspNet.Razor.Editor
 {
@@ -21,9 +20,7 @@ namespace Microsoft.AspNet.Razor.Editor
 #if NET45
                     // No Trace in CoreCLR
 
-                    Trace.WriteLine(String.Format(
-                        CultureInfo.CurrentCulture,
-                        RazorResources.Trace_Startup,
+                    Trace.WriteLine(RazorResources.Trace_Startup(
                         enabled ? RazorResources.Trace_Enabled : RazorResources.Trace_Disabled));
 #endif
                     _enabled = enabled;
@@ -44,9 +41,7 @@ namespace Microsoft.AspNet.Razor.Editor
 #if NET45
                 // No Trace in CoreCLR
 
-                Trace.WriteLine(String.Format(
-                    CultureInfo.CurrentCulture,
-                    RazorResources.Trace_Format,
+                Trace.WriteLine(RazorResources.Trace_Format(
                     String.Format(CultureInfo.CurrentCulture, format, args)));
 #endif
             }

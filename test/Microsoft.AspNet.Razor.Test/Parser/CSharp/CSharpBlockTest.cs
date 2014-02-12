@@ -4,7 +4,6 @@ using System;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Resources;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
@@ -45,8 +44,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    ),
                                Factory.Code(" }").AsStatement()),
                            new RazorError(
-                               String.Format(RazorResources.ParseError_Unexpected_Keyword_After_At,
-                                             "if"),
+                               RazorResources.ParseError_Unexpected_Keyword_After_At(
+                                             "if"),     
                                new SourceLocation(13, 0, 13)));
         }
 
@@ -108,7 +107,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
             ImplicitExpressionTest("Html.En(code()", "Html.En(code()",
                                    AcceptedCharacters.Any,
                                    new RazorError(
-                                       String.Format(RazorResources.ParseError_Expected_CloseBracket_Before_EOF,
+                                       RazorResources.ParseError_Expected_CloseBracket_Before_EOF(
                                                      "(", ")"),
                                        new SourceLocation(8, 0, 8)));
         }
@@ -390,7 +389,7 @@ while(true);", BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedC
         {
             const string document = "foreach(var f in Foo) { // foo bar baz";
             SingleSpanBlockTest(document, document, BlockType.Statement, SpanKind.Code,
-                                new RazorError(String.Format(RazorResources.ParseError_Expected_EndOfBlock_Before_EOF, "foreach", '}', '{'), SourceLocation.Zero));
+                                new RazorError(RazorResources.ParseError_Expected_EndOfBlock_Before_EOF("foreach", '}', '{'), SourceLocation.Zero));
         }
 
         [Fact]
@@ -399,7 +398,7 @@ while(true);", BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedC
             const string document = "foreach(var f in Foo) { /* foo bar baz";
             SingleSpanBlockTest(document, document, BlockType.Statement, SpanKind.Code,
                                 new RazorError(String.Format(RazorResources.ParseError_BlockComment_Not_Terminated), 24, 0, 24),
-                                new RazorError(String.Format(RazorResources.ParseError_Expected_EndOfBlock_Before_EOF, "foreach", '}', '{'), SourceLocation.Zero));
+                                new RazorError(RazorResources.ParseError_Expected_EndOfBlock_Before_EOF("foreach", '}', '{'), SourceLocation.Zero));
         }
 
         [Fact]
@@ -407,7 +406,7 @@ while(true);", BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedC
         {
             const string document = "foreach(var f in Foo) { / foo bar baz";
             SingleSpanBlockTest(document, document, BlockType.Statement, SpanKind.Code,
-                                new RazorError(String.Format(RazorResources.ParseError_Expected_EndOfBlock_Before_EOF, "foreach", '}', '{'), SourceLocation.Zero));
+                                new RazorError(RazorResources.ParseError_Expected_EndOfBlock_Before_EOF("foreach", '}', '{'), SourceLocation.Zero));
         }
 
         [Fact]

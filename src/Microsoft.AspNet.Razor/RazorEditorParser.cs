@@ -7,7 +7,6 @@ using System.Globalization;
 using System.IO;
 using Microsoft.AspNet.Razor.Editor;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Resources;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.Internal.Web.Utils;
 
@@ -131,11 +130,10 @@ namespace Microsoft.AspNet.Razor
             Stopwatch sw = new Stopwatch();
             sw.Start();
 #endif
-            RazorEditorTrace.TraceLine(RazorResources.Trace_EditorReceivedChange, Path.GetFileName(FileName), change);
+            RazorEditorTrace.TraceLine(RazorResources.Trace_EditorReceivedChange(Path.GetFileName(FileName), change));
             if (change.NewBuffer == null)
             {
-                throw new ArgumentException(String.Format(CultureInfo.CurrentUICulture,
-                                                          RazorResources.Structure_Member_CannotBeNull,
+                throw new ArgumentException(RazorResources.Structure_Member_CannotBeNull(
                                                           "Buffer",
                                                           "TextChange"), "change");
             }
@@ -171,7 +169,11 @@ namespace Microsoft.AspNet.Razor
             elapsedMs = sw.ElapsedMilliseconds;
             sw.Reset();
 #endif
-            RazorEditorTrace.TraceLine(RazorResources.Trace_EditorProcessedChange, Path.GetFileName(FileName), changeString, elapsedMs.HasValue ? elapsedMs.Value.ToString(CultureInfo.InvariantCulture) : "?", result.ToString());
+            RazorEditorTrace.TraceLine(
+                RazorResources.Trace_EditorProcessedChange(
+                            Path.GetFileName(FileName), 
+                            changeString, elapsedMs.HasValue ? elapsedMs.Value.ToString(CultureInfo.InvariantCulture) : "?", 
+                            result.ToString()));
             return result;
         }
 

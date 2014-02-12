@@ -2,7 +2,6 @@
 
 using System;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Resources;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.TestCommon;
@@ -44,7 +43,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                            designTimeParser: true,
                            expectedErrors: new[]
                            {
-                               new RazorError(String.Format(RazorResources.ParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS, "}"), new SourceLocation(2, 0, 2))
+                               new RazorError(RazorResources.ParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS("}"), new SourceLocation(2, 0, 2))
                            });
         }
 
@@ -64,7 +63,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                            designTimeParser: true,
                            expectedErrors: new[]
                            {
-                               new RazorError(String.Format(RazorResources.ParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS, "."), new SourceLocation(2, 0, 2))
+                               new RazorError(RazorResources.ParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS("."), new SourceLocation(2, 0, 2))
                            });
         }
 

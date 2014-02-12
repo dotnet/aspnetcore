@@ -9,7 +9,6 @@ using System.Linq;
 using Microsoft.AspNet.Razor.Editor;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Resources;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
@@ -73,9 +72,9 @@ namespace Microsoft.AspNet.Razor.Parser
             if (EndOfFile && !mode.HasFlag(BalancingModes.NoErrorOnFailure))
             {
                 Context.OnError(start,
-                                RazorResources.ParseError_Expected_CloseBracket_Before_EOF,
-                                Language.GetSample(left),
-                                Language.GetSample(right));
+                                RazorResources.ParseError_Expected_CloseBracket_Before_EOF(
+                                    Language.GetSample(left),
+                                    Language.GetSample(right)));
             }
 
             return Balance(mode, left, right, start);
@@ -121,9 +120,9 @@ namespace Microsoft.AspNet.Razor.Parser
                     if (!mode.HasFlag(BalancingModes.NoErrorOnFailure))
                     {
                         Context.OnError(start,
-                                        RazorResources.ParseError_Expected_CloseBracket_Before_EOF,
-                                        Language.GetSample(left),
-                                        Language.GetSample(right));
+                                        RazorResources.ParseError_Expected_CloseBracket_Before_EOF(
+                                            Language.GetSample(left),
+                                            Language.GetSample(right)));
                     }
                     if (mode.HasFlag(BalancingModes.BacktrackOnFailure))
                     {
@@ -333,7 +332,7 @@ namespace Microsoft.AspNet.Razor.Parser
             return false;
         }
 
-        protected internal bool Required(TSymbolType expected, bool errorIfNotFound, string errorBase)
+        protected internal bool Required(TSymbolType expected, bool errorIfNotFound, Func<string, string> errorBase)
         {
             bool found = At(expected);
             if (!found && errorIfNotFound)
@@ -353,13 +352,12 @@ namespace Microsoft.AspNet.Razor.Parser
                 }
                 else
                 {
-                    error = String.Format(CultureInfo.CurrentCulture, RazorResources.ErrorComponent_Character, CurrentSymbol.Content);
+                    error = RazorResources.ErrorComponent_Character(CurrentSymbol.Content);
                 }
 
                 Context.OnError(
                     CurrentLocation,
-                    errorBase,
-                    error);
+                    errorBase(error));
             }
             return found;
         }

@@ -4,7 +4,6 @@ using System;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Resources;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
@@ -29,7 +28,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    {
                                        AutoCompleteString = "}"
                                    })),
-                           new RazorError(String.Format(RazorResources.ParseError_Expected_EndOfBlock_Before_EOF, "functions", "}", "{"),
+                           new RazorError(RazorResources.ParseError_Expected_EndOfBlock_Before_EOF("functions", "}", "{"),
                                           1, 0, 1));
         }
 
@@ -50,7 +49,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                                    .With(new AutoCompleteEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString) { AutoCompleteString = "}" })
                                                )
                                ),
-                           new RazorError(String.Format(RazorResources.ParseError_Expected_EndOfBlock_Before_EOF, "helper", "}", "{"),
+                           new RazorError(RazorResources.ParseError_Expected_EndOfBlock_Before_EOF("helper", "}", "{"),
                                           1, 0, 1));
         }
 
@@ -65,7 +64,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                            .Accepts(AcceptedCharacters.Any),
                     new MarkupBlock()),
                 new RazorError(
-                    String.Format(RazorResources.ParseError_Expected_X, "}"),
+                    RazorResources.ParseError_Expected_X("}"),
                     17, 0, 17));
         }
 
@@ -80,7 +79,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    .AsStatement()
                                    .With(new AutoCompleteEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString) { AutoCompleteString = "}" })
                                ),
-                           new RazorError(String.Format(RazorResources.ParseError_Expected_EndOfBlock_Before_EOF, RazorResources.BlockName_Code, "}", "{"),
+                           new RazorError(RazorResources.ParseError_Expected_EndOfBlock_Before_EOF(RazorResources.BlockName_Code, "}", "{"),
                                           1, 0, 1));
         }
 
@@ -100,7 +99,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    {
                                        AutoCompleteString = "}"
                                    })),
-                           new RazorError(String.Format(RazorResources.ParseError_Expected_EndOfBlock_Before_EOF, "functions", "}", "{"),
+                           new RazorError(RazorResources.ParseError_Expected_EndOfBlock_Before_EOF("functions", "}", "{"),
                                           1, 0, 1));
         }
 
@@ -129,7 +128,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                                    .With(new StatementCodeGenerator())
                                                )
                                ),
-                           new RazorError(String.Format(RazorResources.ParseError_Expected_EndOfBlock_Before_EOF, "helper", "}", "{"),
+                           new RazorError(RazorResources.ParseError_Expected_EndOfBlock_Before_EOF("helper", "}", "{"),
                                           1, 0, 1));
         }
 
@@ -145,7 +144,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                            .Accepts(AcceptedCharacters.Any),
                     new MarkupBlock(
                         Factory.Markup("\r\n<p>Foo</p>"))),
-                new RazorError(String.Format(RazorResources.ParseError_Expected_X, "}"),
+                new RazorError(RazorResources.ParseError_Expected_X("}"),
                                 29, 1, 10));
         }
 
@@ -168,7 +167,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.Span(SpanKind.Code, new CSharpSymbol(Factory.LocationTracker.CurrentLocation, String.Empty, CSharpSymbolType.Unknown))
                                    .With(new StatementCodeGenerator())
                                ),
-                           new RazorError(String.Format(RazorResources.ParseError_Expected_EndOfBlock_Before_EOF, RazorResources.BlockName_Code, "}", "{"),
+                           new RazorError(RazorResources.ParseError_Expected_EndOfBlock_Before_EOF(RazorResources.BlockName_Code, "}", "{"),
                                           1, 0, 1));
         }
     }

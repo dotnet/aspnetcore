@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using Microsoft.AspNet.Razor.Resources;
 using Microsoft.AspNet.Razor.Utils;
 
 namespace Microsoft.AspNet.Razor.Text

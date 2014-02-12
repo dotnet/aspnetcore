@@ -3,7 +3,6 @@
 using System;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Resources;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.TestCommon;
@@ -49,7 +48,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    .AsImplicitExpression(KeywordSet)
                                    .Accepts(AcceptedCharacters.NonWhiteSpace)),
                            new RazorError(
-                               String.Format(RazorResources.ParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS, "/"),
+                               RazorResources.ParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS("/"),
                                new SourceLocation(1, 0, 1)));
         }
 
@@ -163,7 +162,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         {
             ImplicitExpressionTest("foo(()", "foo(()",
                                    acceptedCharacters: AcceptedCharacters.Any,
-                                   errors: new RazorError(String.Format(RazorResources.ParseError_Expected_CloseBracket_Before_EOF, "(", ")"), new SourceLocation(4, 0, 4)));
+                                   errors: new RazorError(RazorResources.ParseError_Expected_CloseBracket_Before_EOF("(", ")"), new SourceLocation(4, 0, 4)));
         }
 
         [Fact]

@@ -2,7 +2,6 @@
 
 using System;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Resources;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.TestCommon;
@@ -33,7 +32,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.EmptyCSharp().AsExpression()
                                ),
                            new RazorError(
-                               String.Format(RazorResources.ParseError_Expected_EndOfBlock_Before_EOF,
+                               RazorResources.ParseError_Expected_EndOfBlock_Before_EOF(
                                              RazorResources.BlockName_ExplicitExpression,
                                              ")", "("),
                                new SourceLocation(1, 0, 1)));

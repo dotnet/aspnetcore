@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Razor.Resources;
 using Microsoft.AspNet.Razor.Utils;
 
 namespace Microsoft.AspNet.Razor.Text

@@ -6,7 +6,6 @@ using System.Web.WebPages.TestUtils;
 using Microsoft.AspNet.Razor.Editor;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Resources;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.AspNet.Razor.Test.Utils;
 using Microsoft.AspNet.Razor.Text;
@@ -105,7 +104,7 @@ namespace Microsoft.AspNet.Razor.Test.Editor
                     CreateHost(),
                     "C:\\Foo.cshtml").CheckForStructureChanges(change),
                 "change",
-                String.Format(RazorResources.Structure_Member_CannotBeNull, "Buffer", "TextChange"));
+                RazorResources.Structure_Member_CannotBeNull("Buffer", "TextChange"));
         }
 
         private static RazorEngineHost CreateHost()

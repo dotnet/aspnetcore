@@ -2,7 +2,6 @@
 
 using System;
 using System.Text;
-using Microsoft.AspNet.Razor.Resources;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.TestCommon;
 

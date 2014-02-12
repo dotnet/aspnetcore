@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Resources;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
 
@@ -28,7 +27,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
         protected virtual void ReservedDirective(bool topLevel)
         {
-            Context.OnError(CurrentLocation, String.Format(CultureInfo.CurrentCulture, RazorResources.ParseError_ReservedWord, CurrentSymbol.Content));
+            Context.OnError(CurrentLocation, RazorResources.ParseError_ReservedWord(CurrentSymbol.Content));
             AcceptAndMoveNext();
             Span.EditHandler.AcceptedCharacters = AcceptedCharacters.None;
             Span.CodeGenerator = SpanCodeGenerator.Null;
@@ -319,9 +318,9 @@ namespace Microsoft.AspNet.Razor.Parser
                 if (!At(CSharpSymbolType.LeftBrace))
                 {
                     Context.OnError(CurrentLocation,
-                                    RazorResources.ParseError_SingleLine_ControlFlowStatements_Not_Allowed,
-                                    Language.GetSample(CSharpSymbolType.LeftBrace),
-                                    CurrentSymbol.Content);
+                                    RazorResources.ParseError_SingleLine_ControlFlowStatements_Not_Allowed(
+                                        Language.GetSample(CSharpSymbolType.LeftBrace),
+                                        CurrentSymbol.Content));
                 }
 
                 // Parse the statement and then we're done
@@ -510,8 +509,8 @@ namespace Microsoft.AspNet.Razor.Parser
                 if (At(CSharpSymbolType.Keyword))
                 {
                     Context.OnError(CurrentLocation,
-                                    RazorResources.ParseError_Unexpected_Keyword_After_At,
-                                    CSharpLanguageCharacteristics.GetKeyword(CurrentSymbol.Keyword.Value));
+                                    RazorResources.ParseError_Unexpected_Keyword_After_At(
+                                        CSharpLanguageCharacteristics.GetKeyword(CurrentSymbol.Keyword.Value)));
                 }
                 else if (At(CSharpSymbolType.LeftBrace))
                 {
@@ -604,7 +603,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
             if (EndOfFile)
             {
-                Context.OnError(block.Start, RazorResources.ParseError_Expected_EndOfBlock_Before_EOF, block.Name, '}', '{');
+                Context.OnError(block.Start, RazorResources.ParseError_Expected_EndOfBlock_Before_EOF(block.Name, '}', '{'));
             }
             else if (acceptTerminatingBrace)
             {

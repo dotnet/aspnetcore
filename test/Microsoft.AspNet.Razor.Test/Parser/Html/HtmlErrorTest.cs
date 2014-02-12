@@ -3,7 +3,6 @@
 using System;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Resources;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.TestCommon;
@@ -54,7 +53,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
             ParseBlockTest("</foo> bar baz",
                 new MarkupBlock(
                     Factory.Markup("</foo> ").Accepts(AcceptedCharacters.None)),
-                new RazorError(String.Format(RazorResources.ParseError_UnexpectedEndTag, "foo"), SourceLocation.Zero));
+                new RazorError(RazorResources.ParseError_UnexpectedEndTag("foo"), SourceLocation.Zero));
         }
 
         [Fact]
@@ -63,7 +62,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
             ParseBlockTest("<p><foo></bar>",
                 new MarkupBlock(
                     Factory.Markup("<p><foo></bar>").Accepts(AcceptedCharacters.None)),
-                new RazorError(String.Format(RazorResources.ParseError_MissingEndTag, "p"), new SourceLocation(0, 0, 0)));
+                new RazorError(RazorResources.ParseError_MissingEndTag("p"), new SourceLocation(0, 0, 0)));
         }
 
         [Fact]
@@ -72,7 +71,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
             ParseBlockTest("<foo>blah blah blah blah blah",
                 new MarkupBlock(
                     Factory.Markup("<foo>blah blah blah blah blah")),
-                new RazorError(String.Format(RazorResources.ParseError_MissingEndTag, "foo"), new SourceLocation(0, 0, 0)));
+                new RazorError(RazorResources.ParseError_MissingEndTag("foo"), new SourceLocation(0, 0, 0)));
         }
 
         [Fact]
@@ -84,7 +83,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                     new MarkupBlock(new AttributeBlockCodeGenerator("bar", new LocationTagged<string>(" bar=", 4, 0, 4), new LocationTagged<string>(String.Empty, 12, 0, 12)),
                         Factory.Markup(" bar=").With(SpanCodeGenerator.Null),
                         Factory.Markup("baz").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(String.Empty, 9, 0, 9), new LocationTagged<string>("baz", 9, 0, 9))))),
-                new RazorError(String.Format(RazorResources.ParseError_UnfinishedTag, "foo"), new SourceLocation(0, 0, 0)));
+                new RazorError(RazorResources.ParseError_UnfinishedTag("foo"), new SourceLocation(0, 0, 0)));
         }
     }
 }

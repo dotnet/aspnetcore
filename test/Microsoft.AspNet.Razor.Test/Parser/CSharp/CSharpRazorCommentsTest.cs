@@ -3,7 +3,6 @@
 using System;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Resources;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
 using Microsoft.TestCommon;
@@ -82,7 +81,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         Factory.Code("\r\n")
                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords))),
                 new RazorError(
-                    String.Format(RazorResources.ParseError_Expected_CloseBracket_Before_EOF, "(", ")"),
+                    RazorResources.ParseError_Expected_CloseBracket_Before_EOF("(", ")"),
                     4, 0, 4));
         }
 
@@ -107,7 +106,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                 CSharpSymbolType.Unknown))
                                     .Accepts(AcceptedCharacters.Any)))),
                 new RazorError(RazorResources.ParseError_RazorComment_Not_Terminated, 5, 0, 5),
-                new RazorError(String.Format(RazorResources.ParseError_Expected_CloseBracket_Before_EOF, "(", ")"), 4, 0, 4));
+                new RazorError(RazorResources.ParseError_Expected_CloseBracket_Before_EOF("(", ")"), 4, 0, 4));
         }
 
         [Fact]
@@ -143,8 +142,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                        .Accepts(AcceptedCharacters.None)),
                             Factory.Markup("\r\n}")))),
                 new RazorError(RazorResources.ParseError_TextTagCannotContainAttributes, 8, 1, 4),
-                new RazorError(String.Format(RazorResources.ParseError_MissingEndTag, "text"), 8, 1, 4),
-                new RazorError(String.Format(RazorResources.ParseError_Expected_EndOfBlock_Before_EOF, RazorResources.BlockName_Code, "}", "{"), 1, 0, 1));
+                new RazorError(RazorResources.ParseError_MissingEndTag("text"), 8, 1, 4),
+                new RazorError(RazorResources.ParseError_Expected_EndOfBlock_Before_EOF(RazorResources.BlockName_Code, "}", "{"), 1, 0, 1));
         }
 
         [Fact]
@@ -168,7 +167,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                                                         CSharpSymbolType.Unknown))
                                    .Accepts(AcceptedCharacters.Any)))),
                 new RazorError(RazorResources.ParseError_RazorComment_Not_Terminated, 2, 0, 2),
-                new RazorError(String.Format(RazorResources.ParseError_Expected_EndOfBlock_Before_EOF, RazorResources.BlockName_Code, "}", "{"), 1, 0, 1));
+                new RazorError(RazorResources.ParseError_Expected_EndOfBlock_Before_EOF(RazorResources.BlockName_Code, "}", "{"), 1, 0, 1));
         }
     }
 }
