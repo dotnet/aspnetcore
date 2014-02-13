@@ -129,18 +129,19 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
         public CSharpCodeWriter WriteUsing(string name)
         {
-            int throwAway;
-
-            return WriteUsing(name, out throwAway);
+            return WriteUsing(name, endLine: true);
         }
 
-        public CSharpCodeWriter WriteUsing(string name, out int writeSize)
+        public CSharpCodeWriter WriteUsing(string name, bool endLine)
         {
-            string output = String.Format("using {0};", name);
+            Write(String.Format("using {0}", name));
 
-            writeSize = output.Length;
+            if(endLine)
+            {
+                WriteLine(";");
+            }
 
-            return WriteLine(output);
+            return this;
         }
 
         public CSharpCodeWriter WriteLineDefaultDirective()

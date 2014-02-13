@@ -14,11 +14,14 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
         protected override void Visit(UsingChunk chunk)
         {
+            ImportedUsings.Add(chunk.Namespace);
+
             using (Writer.BuildLineMapping(chunk.Start, chunk.Association.Length, Context.SourceFile))
             {
-                ImportedUsings.Add(chunk.Namespace);
-                Writer.WriteUsing(chunk.Namespace);
+                Writer.WriteUsing(chunk.Namespace, endLine: false);
             }
+
+            Writer.WriteLine(";");
         }
     }
 }
