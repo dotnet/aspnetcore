@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
 
         private void TryAutoSpace(string spaceCharacter)
         {
-            if (_autoSpace && !Char.IsWhiteSpace(_writer.LastWrite.Last()))
+            if (_autoSpace && _writer.LastWrite.Length > 0 && !Char.IsWhiteSpace(_writer.LastWrite.Last()))
             {
                 _writer.Write(spaceCharacter);
             }

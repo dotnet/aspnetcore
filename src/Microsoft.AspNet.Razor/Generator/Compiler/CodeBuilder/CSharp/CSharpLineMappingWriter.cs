@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 documentLocation: _documentMapping,
                 generatedLocation: new MappingLocation(_generatedLocation, _generatedContentLength));
 
-            if (_writer.LastWrite.Last() != '\n')
+            if (_writer.ToString().Last() != '\n')
             {
                 _writer.WriteLine();
             }
