@@ -18,14 +18,13 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         {
             IDisposable lambdaScope = null;
 
+            string accessibility = "public " + (Context.Host.StaticHelpers ? "static" : String.Empty);
+
+            Writer.Write(accessibility).Write(" ").Write(Context.Host.GeneratedClassContext.TemplateTypeName).Write(" ");
+
             using (CSharpLineMappingWriter mappingWriter = Writer.BuildLineMapping(chunk.Signature.Location, chunk.Signature.Value.Length, Context.SourceFile))
             {
-                string accessibility = "public " + (Context.Host.StaticHelpers ? "static" : String.Empty);
-
-                Writer.Write(accessibility).Write(" ").Write(Context.Host.GeneratedClassContext.TemplateTypeName).Write(" ");
-                mappingWriter.MarkLineMappingStart();
                 Writer.Write(chunk.Signature);
-                mappingWriter.MarkLineMappingEnd();
             }
 
             if (chunk.HeaderComplete)
