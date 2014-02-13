@@ -1,4 +1,5 @@
 ﻿@using MvcSample.Models
+@model User
 @{
     Layout = "/Views/Shared/_Layout.cshtml";
     ViewBag.Title = "Home Page";
@@ -9,11 +10,8 @@
     <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
     <p><a href="http://asp.net" class="btn btn-primary btn-large">Learn more &raquo;</a></p>
 </div>
-@{
-    var user = new User { Name = "Test user" };
-}
 <div class="row">
-    <h3>Hello @user.Name!</h3>
+    <h3>Hello @Model.Name!</h3>
     <div class="col-md-4">
         <h2>Getting started</h2>
         <p>

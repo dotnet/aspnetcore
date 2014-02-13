@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Parser;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -17,16 +18,20 @@ namespace Microsoft.AspNet.Mvc.Razor
             "Microsoft.AspNet.Mvc.Razor"
         };
 
+        // CodeGenerationContext.DefaultBaseClass is set to MyBaseType<dynamic>. 
+        // This field holds the type name without the generic decoration (MyBaseType)
+        private readonly string _baseType;
+
         public MvcRazorHost(Type baseType)
             : this(baseType.FullName)
         {
-
         }
 
         public MvcRazorHost(string baseType)
             : base(new CSharpRazorCodeLanguage())
         {
-            DefaultBaseClass = baseType;
+            _baseType = baseType;
+            DefaultBaseClass = baseType + "<dynamic>";
             GeneratedClassContext = new GeneratedClassContext(
                 executeMethodName: "Execute",
                 writeMethodName: "Write",
@@ -59,6 +64,11 @@ namespace Microsoft.AspNet.Mvc.Razor
                 var engine = new RazorTemplateEngine(this);
                 return engine.GenerateCode(reader, className, classNamespace, rootRelativePath);
             }
+        }
+
+        public override ParserBase DecorateCodeParser(ParserBase incomingCodeParser)
+        {
+            return new MvcRazorCodeParser(_baseType);
         }
 
         private static string GenerateNamespace(string rootRelativePath)

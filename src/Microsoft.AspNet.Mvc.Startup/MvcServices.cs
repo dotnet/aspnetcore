@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Mvc.Startup
 
             AddInstance<IControllerDescriptorProvider>(provider);
             AddInstance<IFileSystem>(new PhysicalFileSystem(appRoot));
-            AddInstance<IMvcRazorHost>(new MvcRazorHost("Microsoft.AspNet.Mvc.Razor.RazorView<dynamic>"));
+            AddInstance<IMvcRazorHost>(new MvcRazorHost(typeof(RazorView).FullName));
 
 #if NET45
             Add<ICompilationService, CscBasedCompilationService>();

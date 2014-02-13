@@ -47,6 +47,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Mvc.Startu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Mvc.Startup.k10", "src\Microsoft.AspNet.Mvc.Startup\Microsoft.AspNet.Mvc.Startup.k10.csproj", "{43ECCFDF-E646-4766-B339-F5CCD69DD6C3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Mvc.Razor.Host.Test.net45", "test\Microsoft.AspNet.Mvc.Razor.Host.Test\Microsoft.AspNet.Mvc.Razor.Host.Test.net45.csproj", "{537CC0EE-4B62-4789-9AE9-94BE28E0D25A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -113,6 +115,10 @@ Global
 		{43ECCFDF-E646-4766-B339-F5CCD69DD6C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{43ECCFDF-E646-4766-B339-F5CCD69DD6C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{43ECCFDF-E646-4766-B339-F5CCD69DD6C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{537CC0EE-4B62-4789-9AE9-94BE28E0D25A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{537CC0EE-4B62-4789-9AE9-94BE28E0D25A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{537CC0EE-4B62-4789-9AE9-94BE28E0D25A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{537CC0EE-4B62-4789-9AE9-94BE28E0D25A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -137,5 +143,6 @@ Global
 		{501817DD-8143-4A50-888D-99896A82CD12} = {222CA408-93EE-473A-9325-D04989EC9FEF}
 		{A7D7CD66-A407-4144-8AB7-07F895F87137} = {CE037E26-9EB5-48E2-B73B-06C6FF6CC9F5}
 		{42195A56-42C0-4CFF-A982-B6E24EFC6356} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
+		{537CC0EE-4B62-4789-9AE9-94BE28E0D25A} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
 	EndGlobalSection
 EndGlobal

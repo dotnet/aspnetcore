@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using Microsoft.AspNet.Mvc.Razor.Host;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Text;
@@ -8,13 +9,15 @@ namespace Microsoft.AspNet.Mvc.Razor
 {
     public class MvcRazorCodeParser : CSharpCodeParser
     {
+        private const string GenericTypeFormat = "{0}<{1}>";
         private const string ModelKeyword = "model";
-        private const string GenericTypeFormatString = "{0}<{1}>";
+        private readonly string _baseType;
         private SourceLocation? _endInheritsLocation;
         private bool _modelStatementFound;
 
-        public MvcRazorCodeParser()
+        public MvcRazorCodeParser(string baseType)
         {
+            _baseType = baseType;
             MapDirectives(ModelDirective, ModelKeyword);
         }
 
@@ -33,7 +36,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             if (_modelStatementFound && _endInheritsLocation.HasValue)
             {
-                Context.OnError(_endInheritsLocation.Value, String.Format(CultureInfo.CurrentCulture, "MvcResources.MvcRazorCodeParser_CannotHaveModelAndInheritsKeyword", ModelKeyword));
+                Context.OnError(_endInheritsLocation.Value, Resources.MvcRazorCodeParser_CannotHaveModelAndInheritsKeyword(ModelKeyword));
             }
         }
 
@@ -45,14 +48,12 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             SourceLocation endModelLocation = CurrentLocation;
 
-            BaseTypeDirective(
-                String.Format(CultureInfo.CurrentCulture,
-                              "MvcResources.MvcRazorCodeParser_ModelKeywordMustBeFollowedByTypeName", ModelKeyword),
-                CreateModelCodeGenerator);
+            BaseTypeDirective(Resources.MvcRazorCodeParser_ModelKeywordMustBeFollowedByTypeName(ModelKeyword),
+                              CreateModelCodeGenerator);
 
             if (_modelStatementFound)
             {
-                Context.OnError(endModelLocation, String.Format(CultureInfo.CurrentCulture, "MvcResources.MvcRazorCodeParser_OnlyOneModelStatementIsAllowed", ModelKeyword));
+                Context.OnError(endModelLocation, Resources.MvcRazorCodeParser_OnlyOneModelStatementIsAllowed(ModelKeyword));
             }
 
             _modelStatementFound = true;
@@ -62,7 +63,12 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private SpanCodeGenerator CreateModelCodeGenerator(string model)
         {
-            return new SetModelTypeCodeGenerator(model, GenericTypeFormatString);
+            // In the event we have an empty model, the name we generate does not matter since it's a parser error.
+            // We'll use the non-generic version of the base type.
+            string baseType = String.IsNullOrEmpty(model) ?
+                                    _baseType :
+                                    String.Format(CultureInfo.InvariantCulture, GenericTypeFormat, _baseType, model);
+            return new SetBaseTypeCodeGenerator(baseType);
         }
     }
 }
