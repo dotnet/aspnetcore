@@ -308,7 +308,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             Writer.WriteEndMethodInvocation();
         }
 
-        private void CreateCodeMapping(string code, Chunk chunk)
+        public void CreateCodeMapping(string code, Chunk chunk)
         {
             using (CSharpLineMappingWriter mappingWriter = Writer.BuildLineMapping(chunk.Start, code.Length, Context.SourceFile))
             {

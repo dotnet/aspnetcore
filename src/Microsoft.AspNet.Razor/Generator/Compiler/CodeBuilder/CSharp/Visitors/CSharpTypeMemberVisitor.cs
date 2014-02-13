@@ -4,17 +4,19 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 {
     public class CSharpTypeMemberVisitor : CodeVisitor<CSharpCodeWriter>
     {
+        private CSharpCodeVisitor _csharpCodeVisitor;
+
         public CSharpTypeMemberVisitor(CSharpCodeWriter writer, CodeGeneratorContext context)
-            : base(writer, context) { }
+            : base(writer, context)
+        {
+            _csharpCodeVisitor = new CSharpCodeVisitor(writer, context);
+        }
 
         protected override void Visit(TypeMemberChunk chunk)
         {
             if (!String.IsNullOrEmpty(chunk.Code))
             {
-                using (Writer.BuildLineMapping(chunk.Start, chunk.Code.Length, Context.SourceFile))
-                {
-                    Writer.WriteLine(chunk.Code);
-                }
+                _csharpCodeVisitor.CreateCodeMapping(chunk.Code, chunk);
             }
         }
     }
