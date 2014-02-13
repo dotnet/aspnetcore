@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Razor.Test
         public void ServicesPropertyContainsEntriesForCSharpCodeLanguageService()
         {
             // Assert
-            Assert.Equal(2, RazorCodeLanguage.Languages.Count);
+            Assert.Equal(1, RazorCodeLanguage.Languages.Count);
             Assert.IsType<CSharpRazorCodeLanguage>(RazorCodeLanguage.Languages["cshtml"]);
         }
 

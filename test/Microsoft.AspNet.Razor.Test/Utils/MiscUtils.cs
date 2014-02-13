@@ -10,11 +10,6 @@ namespace Microsoft.AspNet.Razor.Test.Utils
     {
         public const int TimeoutInSeconds = 1;
 
-        public static string StripRuntimeVersion(string s)
-        {
-            return Regex.Replace(s, @"Runtime Version:[\d.]*", "Runtime Version:N.N.NNNNN.N");
-        }
-
         public static void DoWithTimeoutIfNotDebugging(Func<int, bool> withTimeout)
         {
 #if DEBUG

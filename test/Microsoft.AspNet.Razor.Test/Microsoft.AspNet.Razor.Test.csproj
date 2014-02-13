@@ -38,7 +38,25 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CodeCompileUnitExtensions.cs" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.Razor\Microsoft.AspNet.Razor.net45.csproj">
+      <Project>{8b129ff9-0b8f-4e0c-8dfc-0137d8550fb7}</Project>
+      <Name>Microsoft.AspNet.Razor.net45</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Microsoft.TestCommon\Microsoft.TestCommon.csproj">
+      <Project>{FCCC4CB7-BAF7-4A57-9F89-E5766FE536C0}</Project>
+      <Name>Microsoft.TestCommon</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CSharpRazorCodeLanguageTest.cs" />
+    <Compile Include="Editor\RazorEditorParserTest.cs" />
     <Compile Include="Framework\BlockExtensions.cs" />
     <Compile Include="Framework\BlockTypes.cs" />
     <Compile Include="Framework\CodeParserTestBase.cs" />
@@ -53,200 +71,135 @@
     <Compile Include="Generator\CodeTree\CodeTreeOutputValidator.cs" />
     <Compile Include="Generator\CodeTree\CSharpCodeBuilderTests.cs" />
     <Compile Include="Generator\CodeTree\CSharpPaddingBuilderTests.cs" />
-    <Compile Include="Generator\GeneratedCodeMappingTest.cs" />
-    <Compile Include="Generator\PaddingTest.cs" />
+    <Compile Include="Generator\CSharpRazorCodeGeneratorTest.cs" />
+    <Compile Include="Generator\LineMappingTest.cs" />
+    <Compile Include="Generator\RazorCodeGeneratorTest.cs" />
     <Compile Include="Generator\TabTest.cs" />
     <Compile Include="Generator\TestSpan.cs" />
+    <Compile Include="Parser\BlockTest.cs" />
+    <Compile Include="Parser\CallbackParserListenerTest.cs" />
     <Compile Include="Parser\CSharp\CSharpAutoCompleteTest.cs" />
+    <Compile Include="Parser\CSharp\CSharpBlockTest.cs" />
     <Compile Include="Parser\CSharp\CSharpDirectivesTest.cs" />
+    <Compile Include="Parser\CSharp\CSharpErrorTest.cs" />
+    <Compile Include="Parser\CSharp\CSharpExplicitExpressionTest.cs" />
+    <Compile Include="Parser\CSharp\CSharpHelperTest.cs" />
+    <Compile Include="Parser\CSharp\CSharpImplicitExpressionTest.cs" />
     <Compile Include="Parser\CSharp\CSharpLayoutDirectiveTest.cs" />
     <Compile Include="Parser\CSharp\CSharpNestedStatementsTest.cs" />
     <Compile Include="Parser\CSharp\CSharpRazorCommentsTest.cs" />
+    <Compile Include="Parser\CSharp\CSharpReservedWordsTest.cs" />
+    <Compile Include="Parser\CSharp\CSharpSectionTest.cs" />
+    <Compile Include="Parser\CSharp\CSharpSpecialBlockTest.cs" />
     <Compile Include="Parser\CSharp\CSharpStatementTest.cs" />
     <Compile Include="Parser\CSharp\CSharpTemplateTest.cs" />
-    <Compile Include="Parser\CSharp\CSharpToMarkupSwitchTest.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Parser\CSharp\CSharpVerbatimBlockTest.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="Parser\CSharp\CSharpToMarkupSwitchTest.cs" />
+    <Compile Include="Parser\CSharp\CSharpVerbatimBlockTest.cs" />
     <Compile Include="Parser\CSharp\CSharpWhitespaceHandlingTest.cs" />
-    <Compile Include="Parser\CSharp\CsHtmlDocumentTest.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Parser\Html\HtmlAttributeTest.cs" />
-    <Compile Include="Parser\Html\HtmlUrlAttributeTest.cs" />
-    <Compile Include="Parser\ParserVisitorExtensionsTest.cs" />
+    <Compile Include="Parser\Html\HtmlBlockTest.cs" />
+    <Compile Include="Parser\Html\HtmlDocumentTest.cs" />
+    <Compile Include="Parser\Html\HtmlErrorTest.cs" />
+    <Compile Include="Parser\Html\HtmlParserTestUtils.cs" />
     <Compile Include="Parser\Html\HtmlTagsTest.cs" />
-    <Compile Include="Parser\CSharp\CSharpReservedWordsTest.cs" />
+    <Compile Include="Parser\Html\HtmlToCodeSwitchTest.cs" />
+    <Compile Include="Parser\Html\HtmlUrlAttributeTest.cs" />
+    <Compile Include="Parser\ParserContextTest.cs" />
+    <Compile Include="Parser\ParserVisitorExtensionsTest.cs" />
     <Compile Include="Parser\PartialParsing\CSharpPartialParsingTest.cs" />
-    <Compile Include="Parser\CSharp\CSharpHelperTest.cs" />
-    <Compile Include="Generator\RazorCodeGeneratorTest.cs" />
     <Compile Include="Parser\PartialParsing\PartialParsingTestBase.cs" />
+    <Compile Include="Parser\RazorParserTest.cs" />
     <Compile Include="Parser\WhitespaceRewriterTest.cs" />
     <Compile Include="RazorCodeLanguageTest.cs" />
-    <Compile Include="Editor\RazorEditorParserTest.cs" />
     <Compile Include="RazorDirectiveAttributeTest.cs" />
     <Compile Include="RazorEngineHostTest.cs" />
     <Compile Include="RazorTemplateEngineTest.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\Blocks.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\CodeBlock.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\CodeBlockAtEOF.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\Comments.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\ConditionalAttributes.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\DesignTime.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\EmptyCodeBlock.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\EmptyExplicitExpression.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\EmptyImplicitExpression.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\EmptyImplicitExpressionInCode.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\ExplicitExpression.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\ExplicitExpressionAtEOF.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\ExpressionsInCode.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\FunctionsBlock.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\FunctionsBlock.DesignTime.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\Helpers.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\Helpers.Instance.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\HelpersMissingCloseParen.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\HelpersMissingName.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\HelpersMissingOpenBrace.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\HelpersMissingOpenParen.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\HiddenSpansInCode.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\ImplicitExpression.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\ImplicitExpressionAtEOF.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\Imports.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\Imports.DesignTime.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\Inherits.Designtime.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\Inherits.Runtime.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\InlineBlocks.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\Instrumented.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\LayoutDirective.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\MarkupInCodeBlock.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\NestedCodeBlocks.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\NestedHelpers.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\NoLinePragmas.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\ParserError.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\RazorComments.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\ResolveUrl.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\Sections.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\Templates.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\UnfinishedExpressionInCode.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\RazorComments.DesignTime.cs" />
     <Compile Include="StringTextBuffer.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\OpenedIf.DesignTime.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\OpenedIf.DesignTime.Tabs.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\UnfinishedExpressionInCode.Tabs.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\EmptyImplicitExpressionInCode.Tabs.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\DesignTime.Tabs.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\FunctionsBlock.DesignTime.Tabs.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\FunctionsBlock_Tabs.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\FunctionsBlockMinimal.DesignTime.Tabs.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\SimpleUnspacedIf.DesignTime.Tabs.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\HtmlCommentWithQuote_Single.cs" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\HtmlCommentWithQuote_Double.cs" />
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\CodeTree.cs" />
-    <Compile Include="Text\LineTrackingStringBufferTest.cs" />
-    <Compile Include="Tokenizer\CSharpTokenizerCommentTest.cs" />
-    <Compile Include="Tokenizer\CSharpTokenizerLiteralTest.cs" />
-    <Compile Include="Tokenizer\CSharpTokenizerIdentifierTest.cs" />
-    <Compile Include="Tokenizer\CSharpTokenizerOperatorsTest.cs" />
-    <Compile Include="Tokenizer\CSharpTokenizerTestBase.cs" />
-    <Compile Include="Tokenizer\CSharpTokenizerTest.cs" />
-    <Compile Include="Tokenizer\TokenizerLookaheadTest.cs" />
-    <Compile Include="Tokenizer\HtmlTokenizerTest.cs" />
-    <Compile Include="Tokenizer\HtmlTokenizerTestBase.cs" />
-    <Compile Include="Tokenizer\TokenizerTestBase.cs" />
-    <Compile Include="Utils\MiscUtils.cs" />
-    <Compile Include="Generator\CSharpRazorCodeGeneratorTest.cs" />
-    <Compile Include="CSharpRazorCodeLanguageTest.cs" />
-    <Compile Include="Parser\CallbackParserListenerTest.cs" />
-    <Compile Include="Parser\CSharp\CSharpExplicitExpressionTest.cs" />
-    <Compile Include="Parser\CSharp\CSharpSectionTest.cs" />
-    <Compile Include="Parser\BlockTest.cs" />
     <Compile Include="Text\BufferingTextReaderTest.cs" />
-    <Compile Include="Parser\CSharp\CSharpErrorTest.cs" />
-    <Compile Include="Parser\CSharp\CSharpImplicitExpressionTest.cs" />
-    <Compile Include="Parser\CSharp\CSharpSpecialBlockTest.cs" />
-    <Compile Include="Parser\Html\HtmlBlockTest.cs" />
-    <Compile Include="Parser\CSharp\CSharpBlockTest.cs" />
+    <Compile Include="Text\LineTrackingStringBufferTest.cs" />
     <Compile Include="Text\LookaheadTextReaderTestBase.cs" />
+    <Compile Include="Text\SourceLocationTest.cs" />
     <Compile Include="Text\SourceLocationTrackerTest.cs" />
     <Compile Include="Text\TextBufferReaderTest.cs" />
-    <Compile Include="Utils\DisposableActionTest.cs" />
-    <Compile Include="Parser\Html\HtmlDocumentTest.cs" />
-    <Compile Include="Parser\ParserContextTest.cs" />
-    <Compile Include="Parser\Html\HtmlErrorTest.cs" />
-    <Compile Include="Parser\Html\HtmlParserTestUtils.cs" />
-    <Compile Include="Parser\Html\HtmlToCodeSwitchTest.cs" />
-    <Compile Include="Parser\RazorParserTest.cs" />
-    <Compile Include="Text\SourceLocationTest.cs" />
-    <Compile Include="Utils\SpanAssert.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Text\TextChangeTest.cs" />
     <Compile Include="Text\TextReaderExtensionsTest.cs" />
-    <Compile Include="Utils\EnumerableUtils.cs" />
-    <Compile Include="Utils\MiscAssert.cs" />
+    <Compile Include="Tokenizer\CSharpTokenizerCommentTest.cs" />
+    <Compile Include="Tokenizer\CSharpTokenizerIdentifierTest.cs" />
+    <Compile Include="Tokenizer\CSharpTokenizerLiteralTest.cs" />
+    <Compile Include="Tokenizer\CSharpTokenizerOperatorsTest.cs" />
+    <Compile Include="Tokenizer\CSharpTokenizerTest.cs" />
+    <Compile Include="Tokenizer\CSharpTokenizerTestBase.cs" />
+    <Compile Include="Tokenizer\HtmlTokenizerTest.cs" />
+    <Compile Include="Tokenizer\HtmlTokenizerTestBase.cs" />
+    <Compile Include="Tokenizer\TokenizerLookaheadTest.cs" />
+    <Compile Include="Tokenizer\TokenizerTestBase.cs" />
+    <Compile Include="Utils\DisposableActionTest.cs" />
+    <Compile Include="Utils\MiscUtils.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\UnfinishedExpressionInCode.Tabs.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\UnfinishedExpressionInCode.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\Templates.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\SimpleUnspacedIf.DesignTime.Tabs.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\Sections.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\ResolveUrl.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\RazorComments.DesignTime.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\RazorComments.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\ParserError.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\OpenedIf.DesignTime.Tabs.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\OpenedIf.DesignTime.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\NoLinePragmas.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\NestedHelpers.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\NestedCodeBlocks.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\MarkupInCodeBlock.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\LayoutDirective.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\InlineBlocks.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\Inherits.Runtime.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\Inherits.Designtime.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\Imports.DesignTime.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\Imports.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\ImplicitExpressionAtEOF.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\ImplicitExpression.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\HtmlCommentWithQuote_Single.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\HtmlCommentWithQuote_Double.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\HiddenSpansInCode.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\HelpersMissingOpenParen.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\HelpersMissingOpenBrace.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\HelpersMissingCloseParen.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\Helpers.Instance.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\Helpers.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\FunctionsBlockMinimal.DesignTime.Tabs.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\FunctionsBlock_Tabs.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\FunctionsBlock.DesignTime.Tabs.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\FunctionsBlock.DesignTime.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\FunctionsBlock.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\ExpressionsInCode.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\ExplicitExpressionAtEOF.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\ExplicitExpression.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\EmptyImplicitExpressionInCode.Tabs.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\EmptyImplicitExpressionInCode.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\EmptyImplicitExpression.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\EmptyExplicitExpression.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\EmptyCodeBlock.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\DesignTime.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\ConditionalAttributes.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\CodeBlockAtEOF.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\CodeBlock.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\Blocks.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.Razor\Microsoft.AspNet.Razor.net45.csproj">
-      <Project>{8b129ff9-0b8f-4e0c-8dfc-0137d8550fb7}</Project>
-      <Name>Microsoft.AspNet.Razor.net45</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Microsoft.TestCommon\Microsoft.TestCommon.csproj">
-      <Project>{FCCC4CB7-BAF7-4A57-9F89-E5766FE536C0}</Project>
-      <Name>Microsoft.TestCommon</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\nested-1000.html" />
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
-    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\Templates.cshtml" />
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\Blocks.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\CodeBlock.cshtml" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\NoLinePragmas.cshtml" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\ExplicitExpression.cshtml" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\ImplicitExpression.cshtml" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\Imports.cshtml" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\MarkupInCodeBlock.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\DesignTime.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\ExpressionsInCode.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\FunctionsBlock.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\Sections.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\Inherits.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\NestedHelpers.cshtml" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\Instrumented.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\RazorComments.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\ParserError.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\ImplicitExpressionAtEOF.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\CodeBlockAtEOF.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\ExplicitExpressionAtEOF.cshtml" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\ConditionalAttributes.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\DesignTime.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\EmptyCodeBlock.cshtml" />
@@ -258,6 +211,99 @@
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\EmptyImplicitExpression.cshtml" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\EmptyImplicitExpressionInCode.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\ExplicitExpression.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\ExplicitExpressionAtEOF.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\ExpressionsInCode.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\FunctionsBlock.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\FunctionsBlock_Tabs.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\FunctionsBlockMinimal.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\Helpers.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\HelpersMissingCloseParen.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\HelpersMissingOpenBrace.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\HelpersMissingOpenParen.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\HiddenSpansInCode.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\HtmlCommentWithQuote_Double.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\HtmlCommentWithQuote_Single.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\ImplicitExpression.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\ImplicitExpressionAtEOF.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\Imports.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\Inherits.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\InlineBlocks.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\LayoutDirective.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\MarkupInCodeBlock.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\NestedCodeBlocks.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\NestedHelpers.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\NoLinePragmas.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\OpenedIf.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\ParserError.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\RazorComments.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\ResolveUrl.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\Sections.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\SimpleUnspacedIf.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\Templates.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\UnfinishedExpressionInCode.cshtml" />
   </ItemGroup>
   <ItemGroup>
@@ -267,41 +313,11 @@
     <EmbeddedResource Include="TestFiles\DesignTime\Simple.txt" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\Helpers.cshtml" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\HelpersMissingCloseParen.cshtml" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\HelpersMissingName.cshtml" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\HelpersMissingOpenBrace.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\HelpersMissingOpenParen.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\NestedCodeBlocks.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\InlineBlocks.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\EmptyImplicitExpressionInCode.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\HiddenSpansInCode.cshtml" />
+    <EmbeddedResource Include="TestFiles\nested-1000.html" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\ResolveUrl.cshtml" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\LayoutDirective.cshtml" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\ConditionalAttributes.cshtml" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\OpenedIf.cshtml" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\FunctionsBlock_Tabs.cshtml" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\FunctionsBlockMinimal.cshtml" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\SimpleUnspacedIf.cshtml" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\HtmlCommentWithQuote_Double.cshtml" />
-    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\HtmlCommentWithQuote_Single.cshtml" />
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\CodeTree.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

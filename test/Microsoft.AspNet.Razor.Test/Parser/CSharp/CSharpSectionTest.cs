@@ -21,8 +21,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         Factory.CodeTransition(),
                         Factory.MetaCode("section\r\n"))),
                 new RazorError(
-                    RazorResources.ParseError_Unexpected_Character_At_Section_Name_Start(
-                        RazorResources.ErrorComponent_EndOfFile),
+                        RazorResources.ParseError_Unexpected_Character_At_Section_Name_Start(RazorResources.ErrorComponent_EndOfFile),
                     10, 1, 0));
         }
 
@@ -52,8 +51,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         Factory.MetaCode("section         \r\n")),
                     Factory.Markup("    ")),
                 new RazorError(
-                    RazorResources.ParseError_Unexpected_Character_At_Section_Name_Start(
-                        RazorResources.ErrorComponent_EndOfFile),
+                        RazorResources.ParseError_Unexpected_Character_At_Section_Name_Start(RazorResources.ErrorComponent_EndOfFile),
                     23, 1, 4));
         }
 
@@ -82,8 +80,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         Factory.MetaCode("section ")),
                     Factory.Markup("9 { <p>Foo</p> }")),
                 new RazorError(
-                    RazorResources.ParseError_Unexpected_Character_At_Section_Name_Start(
-                        RazorResources.ErrorComponent_Character("9")),
+                        RazorResources.ParseError_Unexpected_Character_At_Section_Name_Start(RazorResources.ErrorComponent_Character("9")),
                     9, 0, 9));
         }
 
@@ -99,7 +96,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     Factory.Markup("-bar { <p>Foo</p> }")),
                 new RazorError(RazorResources.ParseError_MissingOpenBraceAfterSection, 12, 0, 12));
         }
-        
+
         [Fact]
         public void ParserOutputsErrorOnNestedSections()
         {
@@ -123,8 +120,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
                     Factory.EmptyHtml()),
                 new RazorError(
-                    RazorResources.ParseError_Sections_Cannot_Be_Nested(
-                        RazorResources.SectionExample_CS),
+                        RazorResources.ParseError_Sections_Cannot_Be_Nested(RazorResources.SectionExample_CS),
                     23, 0, 23));
         }
 

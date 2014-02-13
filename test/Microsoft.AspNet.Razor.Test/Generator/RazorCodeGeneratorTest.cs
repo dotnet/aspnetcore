@@ -3,8 +3,6 @@
 //#define GENERATE_BASELINES
 
 using System;
-using System.CodeDom;
-using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -12,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Web.WebPages.TestUtils;
 using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Utils;
 using Microsoft.TestCommon;
@@ -36,11 +35,11 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                                string baselineName = null,
                                bool generatePragmas = true,
                                bool designTimeMode = false,
-                               IList<GeneratedCodeMapping> expectedDesignTimePragmas = null,
+                               IList<LineMapping> expectedDesignTimePragmas = null,
                                TestSpan[] spans = null,
                                TabTest tabTest = TabTest.Both,
                                Action<RazorEngineHost> hostConfig = null,
-                               Action<GeneratorResults, string> onResults = null)
+                               Action<GeneratorResults> onResults = null)
         {
             bool testRun = false;
 
@@ -91,11 +90,11 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                                string baselineName,
                                bool generatePragmas,
                                bool designTimeMode,
-                               IList<GeneratedCodeMapping> expectedDesignTimePragmas,
+                               IList<LineMapping> expectedDesignTimePragmas,
                                TestSpan[] spans,
                                bool withTabs,
                                Action<RazorEngineHost> hostConfig,
-                                Action<GeneratorResults, string> onResults = null)
+                                Action<GeneratorResults> onResults = null)
         {
             // Load the test files
             if (baselineName == null)
@@ -142,40 +141,22 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             using (StringTextBuffer buffer = new StringTextBuffer(source))
             {
                 results = engine.GenerateCode(buffer, className: name, rootNamespace: TestRootNamespaceName, sourceFileName: generatePragmas ? String.Format("{0}.{1}", name, FileExtension) : null);
-            }            
-
-            // Generate code
-            CodeCompileUnit ccu = results.CCU;
-            CodeDomProvider codeProvider = (CodeDomProvider)Activator.CreateInstance(host.CodeLanguage.CodeDomProviderType);
-
-            CodeGeneratorOptions options = new CodeGeneratorOptions();
-
-            // Both run-time and design-time use these settings. See:
-            // * $/Dev10/pu/SP_WebTools/venus/html/Razor/Impl/RazorCodeGenerator.cs:204
-            // * $/Dev10/Releases/RTMRel/ndp/fx/src/xsp/System/Web/Compilation/BuildManagerHost.cs:373
-            options.BlankLinesBetweenMembers = false;
-            options.IndentString = String.Empty;
-
-            StringBuilder output = new StringBuilder();
-            using (StringWriter writer = new StringWriter(output))
-            {
-                codeProvider.GenerateCodeFromCompileUnit(ccu, writer, options);
             }
 
-            WriteBaseline(String.Format(@"test\Microsoft.AspNet.Razor.Test\TestFiles\CodeGenerator\{0}\Output\{1}.{2}", LanguageName, baselineName, BaselineExtension), MiscUtils.StripRuntimeVersion(output.ToString()));
+            // Only called if GENERATE_BASELINES is set, otherwise compiled out.
+            WriteBaseline(String.Format(@"test\Microsoft.AspNet.Razor.Test\TestFiles\CodeGenerator\{0}\Output\{1}.{2}", LanguageName, baselineName, BaselineExtension), results.GeneratedCode);
 
 #if !GENERATE_BASELINES
-            string textOutput = MiscUtils.StripRuntimeVersion(output.ToString());
+            string textOutput = results.GeneratedCode;
 
             if (onResults != null)
             {
-                onResults(results, textOutput);
+                onResults(results);
             }
 
             //// Verify code against baseline
             Assert.Equal(expectedOutput, textOutput);
-
-#endif            
+#endif
 
             IEnumerable<Span> generatedSpans = results.Document.Flatten();
 
@@ -197,13 +178,14 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                     Assert.True(results.DesignTimeLineMappings != null && results.DesignTimeLineMappings.Count > 0);
 
                     Assert.Equal(expectedDesignTimePragmas.Count, results.DesignTimeLineMappings.Count);
-/*
-                    Assert.Equal(
-                        expectedDesignTimePragmas.ToArray(),
-                        results.DesignTimeLineMappings
-                               .OrderBy(p => p.Key)
-                               .Select(p => p.Value)
-                               .ToArray());*/
+
+                    for (var i = 0; i < expectedDesignTimePragmas.Count; i++)
+                    {
+                        if(!expectedDesignTimePragmas[i].Equals(results.DesignTimeLineMappings[i]))
+                        {
+                            Assert.True(false, String.Format("Line mapping {0} is not equivalent.", i));
+                        }
+                    }
                 }
             }
         }
@@ -211,7 +193,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         [Conditional("GENERATE_BASELINES")]
         private void WriteBaseline(string baselineFile, string output)
         {
-            string root = RecursiveFind("Runtime.sln", Path.GetFullPath("."));
+            string root = RecursiveFind("Razor.sln", Path.GetFullPath("."));
             string baselinePath = Path.Combine(root, baselineFile);
 
             // Update baseline

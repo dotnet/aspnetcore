@@ -167,7 +167,6 @@ namespace Microsoft.AspNet.Razor.Test
             Assert.Single(results.ParserErrors);
             Assert.NotNull(results.Document);
             Assert.NotNull(results.GeneratedCode);
-            Assert.Null(results.DesignTimeLineMappings);
         }
 
         [Fact]

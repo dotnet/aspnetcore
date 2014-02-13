@@ -134,13 +134,11 @@ namespace Microsoft.AspNet.Razor.Test.Editor
                 parser.CheckForStructureChanges(new TextChange(0, 0, new StringTextBuffer(String.Empty), input.Length, input));
 
                 // Assert
-                MiscUtils.DoWithTimeoutIfNotDebugging(parseComplete.Wait);
-
-                string generatedCode = capturedArgs.GeneratorResults.CCU.GenerateCode<CSharpCodeProvider>();
+                MiscUtils.DoWithTimeoutIfNotDebugging(parseComplete.Wait);                
 
                 Assert.Equal(
                     SimpleCSHTMLDocumentGenerated.ReadAllText(),
-                    MiscUtils.StripRuntimeVersion(generatedCode));
+                    capturedArgs.GeneratorResults.GeneratedCode);
             }
         }
 

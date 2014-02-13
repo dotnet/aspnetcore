@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
     {
         private static readonly char[] _newLineChars = { '\r', '\n' };
 
-        private RazorEngineHost _host;
+        private readonly RazorEngineHost _host;
 
         public CSharpPaddingBuilder(RazorEngineHost host)
         {

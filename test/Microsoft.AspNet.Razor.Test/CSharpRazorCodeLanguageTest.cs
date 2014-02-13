@@ -41,15 +41,5 @@ namespace Microsoft.AspNet.Razor.Test
             Assert.Equal("Baz", generator.SourceFileName);
             Assert.Same(host, generator.Host);
         }
-
-        [Fact]
-        public void CodeDomProviderTypeReturnsVBCodeProvider()
-        {
-            // Arrange
-            RazorCodeLanguage service = new CSharpRazorCodeLanguage();
-
-            // Assert
-            Assert.Equal(typeof(CSharpCodeProvider), service.CodeDomProviderType);
-        }
     }
 }

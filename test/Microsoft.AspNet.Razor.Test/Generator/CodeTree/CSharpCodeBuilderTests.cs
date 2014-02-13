@@ -22,18 +22,19 @@ namespace Microsoft.AspNet.Razor.Test.Generator.CodeTree
 
             // Act
             CodeBuilderResult result = codeBuilder.Build();
-
             // Assert
             Assert.Equal(@"namespace TestNamespace
 {
 #line 1 """"
-using FakeNamespace1;
+using FakeNamespace1
 #line default
 #line hidden
+    ;
 #line 1 """"
-using FakeNamespace2.SubNamespace;
+using FakeNamespace2.SubNamespace
 #line default
 #line hidden
+    ;
 
     public class TestClass
     {

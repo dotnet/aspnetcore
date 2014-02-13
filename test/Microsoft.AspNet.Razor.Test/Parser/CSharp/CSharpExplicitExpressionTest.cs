@@ -32,9 +32,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.EmptyCSharp().AsExpression()
                                ),
                            new RazorError(
-                               RazorResources.ParseError_Expected_EndOfBlock_Before_EOF(
-                                             RazorResources.BlockName_ExplicitExpression,
-                                             ")", "("),
+                                    RazorResources.ParseError_Expected_EndOfBlock_Before_EOF(RazorResources.BlockName_ExplicitExpression, ")", "("),
                                new SourceLocation(1, 0, 1)));
         }
 

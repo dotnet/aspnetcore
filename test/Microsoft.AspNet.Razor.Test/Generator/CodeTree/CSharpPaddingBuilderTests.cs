@@ -6,7 +6,7 @@ using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.TestCommon;
 
-namespace Microsoft.AspNet.Razor.Test.Generator.CodeTree
+namespace Microsoft.AspNet.Razor.Test.Generator
 {
     public class CSharpPaddingBuilderTests
     {
@@ -179,22 +179,6 @@ namespace Microsoft.AspNet.Razor.Test.Generator.CodeTree
 
             Assert.Equal(expectedPadding, padding);
             Assert.Equal(numTabs + numSpaces + code.Length, padded.Length);
-
-            if (numTabs > 0 || numSpaces > 0)
-            {
-                Assert.True(padded.Length > numTabs + numSpaces, "padded string too short");
-            }
-
-            for (int i = 0; i < numTabs; i++)
-            {
-                Assert.Equal('\t', padded[i]);
-            }
-
-            for (int i = numTabs; i < numTabs + numSpaces; i++)
-            {
-                Assert.Equal(' ', padded[i]);
-            }
-
             Assert.Equal(numSpaces + numTabs, padding.Length);
         }
 
