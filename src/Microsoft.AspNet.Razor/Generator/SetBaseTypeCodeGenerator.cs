@@ -16,18 +16,13 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public string BaseType { get; private set; }
 
-        public void GenerateCode(Span target, CodeTreeBuilder codeTreeBuilder, CodeGeneratorContext context)
-        {
-            codeTreeBuilder.AddSetBaseTypeChunk(target.Content, target);
-        }
-
         public override void GenerateCode(Span target, CodeGeneratorContext context)
         {
 #if NET45
             // No CodeDOM + This code will not be needed once we transition to the CodeTree
 
             context.GeneratedClass.BaseTypes.Clear();
-            context.GeneratedClass.BaseTypes.Add(new CodeTypeReference(ResolveType(context, BaseType.Trim())));
+            context.GeneratedClass.BaseTypes.Add(new CodeTypeReference(BaseType.Trim()));
 
             if (context.Host.DesignTimeMode)
             {
@@ -48,14 +43,8 @@ namespace Microsoft.AspNet.Razor.Generator
                 context.AddDesignTimeHelperStatement(stmt);
             }
 #endif
-
             // TODO: Make this generate the primary generator
-            GenerateCode(target, context.CodeTreeBuilder, context);
-        }
-
-        protected virtual string ResolveType(CodeGeneratorContext context, string baseType)
-        {
-            return baseType;
+            context.CodeTreeBuilder.AddSetBaseTypeChunk(BaseType, target);
         }
 
         public override string ToString()
