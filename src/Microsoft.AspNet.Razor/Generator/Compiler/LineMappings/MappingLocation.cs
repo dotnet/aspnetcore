@@ -18,5 +18,30 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
         public int AbsoluteIndex { get; set; }
         public int LineIndex { get; set; }
         public int CharacterIndex { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            MappingLocation other = obj as MappingLocation;
+
+            return AbsoluteIndex == other.AbsoluteIndex &&
+                   ContentLength == other.ContentLength &&
+                   LineIndex == other.LineIndex &&
+                   CharacterIndex == other.CharacterIndex;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        public static bool operator ==(MappingLocation left, MappingLocation right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(MappingLocation left, MappingLocation right)
+        {
+            return !left.Equals(right);
+        }
     }
 }
