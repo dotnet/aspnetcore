@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Hosting.Startup
                     throw new Exception(String.Format("TODO: assembly {0} failed to load message", assemblyName));
                 }
 
-                var type = assembly.GetType(typeName);
+                var type = assembly.GetType(typeName) ?? assembly.GetType(assemblyName + "." + typeName);
                 if (type == null)
                 {
                     throw new Exception(String.Format("TODO: type {0} failed to load message", typeName));
