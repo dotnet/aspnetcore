@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using Microsoft.AspNet.Security.DataProtection.Util;
@@ -170,6 +171,34 @@ namespace Microsoft.AspNet.Security.DataProtection
             }
 
             return checked((int) retVal);
+        }
+
+        // helper function to take a key, apply a purpose, and generate a new subkey ("entropy") for DPAPI-specific scenarios
+        public static byte[] GenerateDpapiSubkey(byte[] previousKey, string purpose)
+        {
+            Debug.Assert(previousKey != null);
+            purpose = purpose ?? String.Empty; // cannot be null
+
+            // create the HMAC object
+            BCryptHashHandle hashHandle;
+            fixed (byte* pPreviousKey = previousKey)
+            {
+                hashHandle = CreateHash(Algorithms.HMACSHA256AlgorithmHandle, pPreviousKey, previousKey.Length);
+            }
+
+            // hash the purpose string, treating it as UTF-16LE
+            using (hashHandle)
+            {
+                byte[] retVal = new byte[256 / 8]; // fixed length output since we're hardcoded to HMACSHA256
+                fixed (byte* pRetVal = retVal)
+                {
+                    fixed (char* pPurpose = purpose)
+                    {
+                        HashData(hashHandle, (byte*)pPurpose, checked(purpose.Length * sizeof(char)), pRetVal, retVal.Length);
+                        return retVal;
+                    }
+                }
+            }
         }
 
         // helper function that's similar to RNGCryptoServiceProvider, but works directly with pointers

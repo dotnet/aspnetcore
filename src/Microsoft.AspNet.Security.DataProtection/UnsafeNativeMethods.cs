@@ -14,6 +14,7 @@ namespace Microsoft.AspNet.Security.DataProtection
     internal static unsafe class UnsafeNativeMethods
     {
         private const string BCRYPT_LIB = "bcrypt.dll";
+        private const string CRYPT32_LIB = "crypt32.dll";
         private const string KERNEL32_LIB = "kernel32.dll";
 
         /*
@@ -147,6 +148,32 @@ namespace Microsoft.AspNet.Security.DataProtection
             [In] IntPtr pbInput,
             [In] uint cbInput,
             [In] uint dwFlags);
+
+        /*
+         * CRYPT32.DLL
+         */
+
+        [DllImport(CRYPT32_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        // http://msdn.microsoft.com/en-us/library/windows/desktop/aa380261(v=vs.85).aspx
+        internal static extern bool CryptProtectData(
+            [In] DATA_BLOB* pDataIn,
+            [In] IntPtr szDataDescr,
+            [In] DATA_BLOB* pOptionalEntropy,
+            [In] IntPtr pvReserved,
+            [In] IntPtr pPromptStruct,
+            [In] uint dwFlags,
+            [Out] out DATA_BLOB pDataOut);
+
+        [DllImport(CRYPT32_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        // http://msdn.microsoft.com/en-us/library/windows/desktop/aa380882(v=vs.85).aspx
+        internal static extern bool CryptUnprotectData(
+            [In] DATA_BLOB* pDataIn,
+            [In] IntPtr ppszDataDescr,
+            [In] DATA_BLOB* pOptionalEntropy,
+            [In] IntPtr pvReserved,
+            [In] IntPtr pPromptStruct,
+            [In] uint dwFlags,
+            [Out] out DATA_BLOB pDataOut);
 
         /*
          * KERNEL32.DLL

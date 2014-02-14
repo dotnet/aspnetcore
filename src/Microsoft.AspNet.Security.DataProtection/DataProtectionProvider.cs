@@ -11,10 +11,11 @@ namespace Microsoft.AspNet.Security.DataProtection
         private const int MASTER_KEY_REQUIRED_LENGTH = 512/8;
 
         private static readonly byte[] MASTER_SUBKEY_GENERATOR = GetMasterSubkeyGenerator();
+        private static readonly byte[] MASTER_DPAPI_ENTROPY = GetMasterSubkeyGenerator(isDpapi: true);
 
-        private static byte[] GetMasterSubkeyGenerator()
+        private static byte[] GetMasterSubkeyGenerator(bool isDpapi = false)
         {
-            TypeInfo typeInfo = typeof (DataProtectionProvider).GetTypeInfo();
+            TypeInfo typeInfo = ((isDpapi) ? typeof(DpapiDataProtectionProviderImpl) : typeof(DataProtectionProvider)).GetTypeInfo();
 
             byte[] retVal = new byte[sizeof (Guid)*2];
             fixed (byte* pRetVal = retVal)
@@ -31,7 +32,15 @@ namespace Microsoft.AspNet.Security.DataProtection
         }
 
         /// <summary>
-        /// Creates a new IDataProtectorFactory with a randomly-generated master key.
+        /// Creates a new IDataProtectionProvider backed by DPAPI.
+        /// </summary>
+        public static IDataProtectionProvider CreateFromDpapi()
+        {
+            return new DpapiDataProtectionProviderImpl(MASTER_DPAPI_ENTROPY);
+        }
+
+        /// <summary>
+        /// Creates a new IDataProtectionProvider with a randomly-generated master key.
         /// </summary>
         public static IDataProtectionProvider CreateNew()
         {
@@ -48,7 +57,7 @@ namespace Microsoft.AspNet.Security.DataProtection
         }
 
         /// <summary>
-        /// Creates a new IDataProtectorFactory with the provided master key.
+        /// Creates a new IDataProtectionProvider with the provided master key.
         /// </summary>
         public static IDataProtectionProvider CreateFromKey(byte[] masterKey)
         {

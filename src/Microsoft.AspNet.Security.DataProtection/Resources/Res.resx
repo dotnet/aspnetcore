@@ -123,4 +123,7 @@
   <data name="DataProtectorImpl_BadEncryptedData" xml:space="preserve">
     <value>The data to decrypt is invalid.</value>
   </data>
+  <data name="DpapiDataProtectorImpl_ProfileNotLoaded" xml:space="preserve">
+    <value>Couldn't protect data. Perhaps the user profile isn't loaded?</value>
+  </data>
 </root>
