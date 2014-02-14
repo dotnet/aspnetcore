@@ -207,9 +207,7 @@ functions
                 // Templates
                 const string csTemplate = @"<Compile Include=""{0}"" />";
                 const string resxDesignerTemplate = @"<Compile Include=""{0}"">
-      <DependentUpon>Resources.tt</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
+      <DependentUpon>{1}.resx</DependentUpon>
     </Compile>";
                 const string resxTemplate = @"<EmbeddedResource Include=""{0}"">
     <LogicalName>{1}.{2}.resources</LogicalName>
@@ -220,15 +218,17 @@ functions
                 var resxDesignerFiles = new HashSet<string>(resxFileNames.Select(f => Path.ChangeExtension(f, "Designer.cs")), 
                                                             StringComparer.OrdinalIgnoreCase);
                 
-                var resxFiles = String.Join(Environment.NewLine,
-                                            resxFileNames.Select(p => String.Format(resxTemplate, p, projectName, Path.GetFileNameWithoutExtension(p))));
+                var resxFiles 
+                    = String.Join(Environment.NewLine,
+                                  resxFileNames.Select(p => String.Format(resxTemplate, p, projectName, Path.GetFileNameWithoutExtension(p))));
                 
                 // Build the list of cs files
                 var csFiles 
                     = String.Join(Environment.NewLine,
                         FindFilesOfType(projectDir, "*.cs")
-                            .Select(p => resxDesignerFiles.Contains(p) ? String.Format(resxDesignerTemplate, p) :
-                                                                         String.Format(csTemplate, p)));
+                            .Select(p => resxDesignerFiles.Contains(p) 
+                                            ? String.Format(resxDesignerTemplate, p, Path.GetFileNameWithoutExtension(p).Replace(".Designer", "")) 
+                                            : String.Format(csTemplate, p)));
                 
                 bool isSample = Path.GetDirectoryName(projectDir)
                                     .TrimEnd(Path.DirectorySeparatorChar)
@@ -253,7 +253,6 @@ functions
                 string ttFileTemplate = @"<None Include=""..\..\packages\KoreBuild\Build\Resources.tt"">
   <Link>Properties\Resources.tt</Link>
   <Generator>TextTemplatingFileGenerator</Generator>
-  <LastGenOutput>_Resources.cs</LastGenOutput>
   <CustomToolNamespace>{0}</CustomToolNamespace>
 </None>";
                 // Link the tt file from packages dir
