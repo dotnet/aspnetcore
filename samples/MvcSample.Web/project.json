@@ -1,6 +1,7 @@
 {
   "version" : "0.1-alpha-*",
   "dependencies": {
+    "Helios" : "0.1-alpha-*",
     "Microsoft.AspNet.Abstractions": "0.1-alpha-*",
     "Microsoft.AspNet.DependencyInjection" : "0.1-alpha-*",
     "Microsoft.AspNet.Routing" : "0.1-alpha-*",
@@ -8,16 +9,7 @@
     "Microsoft.AspNet.Mvc.Startup" : ""
   },
   "configurations": {
-    "net45": {
-      "dependencies": {
-          "Owin": "1.0",
-          "Microsoft.Owin": "2.1.0",
-          "Microsoft.Owin.Diagnostics": "2.1.0",
-          "Microsoft.Owin.Hosting": "2.1.0",
-          "Microsoft.Owin.Host.HttpListener": "2.1.0",
-          "Microsoft.AspNet.AppBuilderSupport": "0.1-alpha-*"
-       }
-    },
+    "net45": { },
     "k10" : { }
   }
 }

@@ -1,36 +1,23 @@
-﻿
-#if NET45
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.DependencyInjection;
-using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Routing;
+using Microsoft.AspNet.Mvc.Startup;
 using Microsoft.AspNet.Routing.Owin;
 using Microsoft.AspNet.Routing.Template;
-using Microsoft.AspNet.Mvc.Startup;
-using Owin;
 
-namespace MvcSample
+namespace MvcSample.Web
 {
     public class Startup
     {
-        public void Configuration(IAppBuilder app)
-        {
-            app.UseErrorPage();
-
-            // Temporary bridge from katana to Owin
-            app.UseBuilder(ConfigureMvc);
-        }
-
-        private void ConfigureMvc(IBuilder builder)
+        public void Configuration(IBuilder app)
         {
             string appRoot = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
 
             var mvcServices = new MvcServices(appRoot);
 
-            var router = builder.UseRouter();
+            var router = app.UseRouter();
 
             var endpoint = ActivatorUtilities.CreateInstance<RouteEndpoint>(mvcServices.Services);
 
@@ -41,4 +28,3 @@ namespace MvcSample
         }
     }
 }
-#endif

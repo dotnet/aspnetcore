@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30110.0
+VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{DAAE4C74-D06F-4874-A166-33305D2643CE}"
 EndProject
@@ -48,6 +48,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Mvc.Startup.k10", "src\Microsoft.AspNet.Mvc.Startup\Microsoft.AspNet.Mvc.Startup.k10.csproj", "{43ECCFDF-E646-4766-B339-F5CCD69DD6C3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Mvc.Razor.Host.Test.net45", "test\Microsoft.AspNet.Mvc.Razor.Host.Test\Microsoft.AspNet.Mvc.Razor.Host.Test.net45.csproj", "{537CC0EE-4B62-4789-9AE9-94BE28E0D25A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MvcSample.Web.net45", "samples\MvcSample.Web\MvcSample.Web.net45.csproj", "{688ABC8B-BFA9-4CFF-9458-A466FEBB0448}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -119,6 +121,10 @@ Global
 		{537CC0EE-4B62-4789-9AE9-94BE28E0D25A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{537CC0EE-4B62-4789-9AE9-94BE28E0D25A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{537CC0EE-4B62-4789-9AE9-94BE28E0D25A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{688ABC8B-BFA9-4CFF-9458-A466FEBB0448}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{688ABC8B-BFA9-4CFF-9458-A466FEBB0448}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{688ABC8B-BFA9-4CFF-9458-A466FEBB0448}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{688ABC8B-BFA9-4CFF-9458-A466FEBB0448}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -141,6 +147,7 @@ Global
 		{BA88E212-5889-48DC-823F-A3A67DDEF123} = {4EB70D0E-E27E-4C42-AB58-BC8B325EDFB3}
 		{43ECCFDF-E646-4766-B339-F5CCD69DD6C3} = {4EB70D0E-E27E-4C42-AB58-BC8B325EDFB3}
 		{501817DD-8143-4A50-888D-99896A82CD12} = {222CA408-93EE-473A-9325-D04989EC9FEF}
+		{688ABC8B-BFA9-4CFF-9458-A466FEBB0448} = {222CA408-93EE-473A-9325-D04989EC9FEF}
 		{A7D7CD66-A407-4144-8AB7-07F895F87137} = {CE037E26-9EB5-48E2-B73B-06C6FF6CC9F5}
 		{42195A56-42C0-4CFF-A982-B6E24EFC6356} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
 		{537CC0EE-4B62-4789-9AE9-94BE28E0D25A} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
