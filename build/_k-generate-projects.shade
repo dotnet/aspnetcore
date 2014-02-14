@@ -22,6 +22,7 @@ skipNet45='false'
 
 */}
 
+content var='web' include href='web.txt'
 content var='net45' include href='net45.txt'
 content var='k10' include href='k10.txt'
 
@@ -32,7 +33,8 @@ default skipNet45='${false}'
 
     var templates = new Dictionary<string, string> {
         { "net45", net45 },
-        { "k10", k10 }
+        { "k10", k10 },
+        { "web", web }
     };
 
     if(skipNet45)
@@ -213,6 +215,8 @@ functions
     <LogicalName>{1}.{2}.resources</LogicalName>
   </EmbeddedResource>";
 
+                const string contentTemplate = @"<Content Include=""{0}"" />";
+
                 // Build the list of resx files
                 var resxFileNames = FindFilesOfType(projectDir, "*.resx");
                 var resxDesignerFiles = new HashSet<string>(resxFileNames.Select(f => Path.ChangeExtension(f, "Designer.cs")), 
@@ -229,10 +233,23 @@ functions
                             .Select(p => resxDesignerFiles.Contains(p) 
                                             ? String.Format(resxDesignerTemplate, p, Path.GetFileNameWithoutExtension(p).Replace(".Designer", "")) 
                                             : String.Format(csTemplate, p)));
+
+                var contentFileExtensions = new [] {
+                    "*.cshtml",
+                    "*.css",
+                    "*.js",
+                    "*.html"
+                };
+
+                var contentFiles = String.Join(Environment.NewLine,
+                                    contentFileExtensions.SelectMany(ext => FindFilesOfType(projectDir, ext))
+                                    .Select(p => String.Format(contentTemplate, p)));
                 
                 bool isSample = Path.GetDirectoryName(projectDir)
                                     .TrimEnd(Path.DirectorySeparatorChar)
                                     .EndsWith("samples");
+
+                bool isWebSample = isSample && projectName.EndsWith("Web", StringComparison.OrdinalIgnoreCase);
                 
                 Log("Processing sample project '{0}'", projectName);
                 
@@ -260,10 +277,12 @@ functions
 
                 foreach (var pair in configs)
                 {
-                    var targetFramework = pair.Key;
-                    
+                    var targetFramework = pair.Key; 
+
+                    var templateKey = isWebSample ? "web" : targetFramework;
+
                     string projectTemplate;
-                    if(!templates.TryGetValue(targetFramework, out projectTemplate))
+                    if(!templates.TryGetValue(templateKey, out projectTemplate))
                     {
                         Warn("Skipping project generation for " + projectName + " - " + targetFramework);
                         continue;
@@ -280,7 +299,25 @@ functions
                     bool allowUnsafeCode = unsafeValue == null ? sharedAllowUnsafeCode : (bool)specificUnsafeValue;
 
                     string extraProperties = (allowUnsafeCode ? "\n<AllowUnsafeBlocks>true</AllowUnsafeBlocks>" : "");
-                    if (isSample)
+
+                    if (isWebSample)
+                    {
+                        var config = Path.Combine(projectDir, "web.config");
+                        if(!File.Exists(config))
+                        {
+                            File.WriteAllText(config, @"<?xml version=""1.0""?>
+<configuration>
+
+    <system.web>
+      <compilation debug=""true"" targetFramework=""4.5"" />
+      <httpRuntime targetFramework=""4.5"" />
+    </system.web>
+
+</configuration>
+");
+                        }
+                    }
+                    else if (isSample)
                     {
                         extraProperties += GenerateStartupAction(projectDir, projectName, packagesDir, pair.Key);
                     }
@@ -322,13 +359,21 @@ functions
                                        .Replace("{Name}", projectName)
                                        .Replace("{Defines}", String.Join(";", defines))
                                        .Replace("{ExtraProperties}", extraProperties)
-                                       .Replace("{Files}", String.Join(Environment.NewLine, csFiles, resxFiles))
+                                       .Replace("{Files}", String.Join(Environment.NewLine, csFiles, resxFiles, contentFiles))
                                        .Replace("{ProjectReferences}", BuildProjectReferences(projectReferences, targetFramework, projectMapping))
                                        .Replace("{References}", BuildReferences(allPackageReferences, gacReferences, packagesDir, targetFramework, GetCandidates(targetFramework)));
 
                     if (targetFramework.StartsWith("k"))
                     {
                         template = template.Replace("{CSharpTargetsPath}", GetProjectKTargets(packagesDir));
+                    }
+
+                    if(isWebSample)
+                    {
+                        template = template.Replace("{Port}", (58189 + (projectName.GetHashCode() % 50)).ToString())
+                                           .Replace("{TargetFramwork}", targetFramework.ToUpper())
+                                           .Replace("{BinPath}", Path.Combine(projectDir, "bin"))
+                                           .Replace("{AspNetLoaderPath}", GetLoaderPath(packagesDir));
                     }
 
                     string output = Path.Combine(projectDir, GetProjectFileName(projectName, targetFramework));
@@ -363,6 +408,21 @@ functions
                         .Where(p => !p.StartsWith(@"obj\"));
             }
             
+            private static string GetLoaderPath(string packagesDir)
+            {
+                var interopPackage = Directory.GetDirectories(packagesDir, "Microsoft.AspNet.Loader.IIS.Interop*")
+                                           .OrderByDescending(d => d)
+                                           .FirstOrDefault();
+
+                if (interopPackage == null)
+                {
+                    Warn("Unable to locate AspNet.Loader.dll");
+                    return null;
+                }
+
+                return Path.Combine(interopPackage, "tools", "AspNet.Loader.dll");
+            }
+
             private static string GenerateStartupAction(string projectRoot, string projectName, string packagesDir, string configType)
             {
                 // packages\ProjectK.*\tools\bin\x86\klr.exe 
@@ -516,6 +576,12 @@ functions
                     Log(reference.Key + " = " + version + " ==> " + packageDir);
 
                     var libPath = Path.Combine(packageDir, "lib");
+
+                    if(!Directory.Exists(libPath))
+                    {
+                        Log(reference.Key + " = " + version + " has no lib folder");
+                        continue;
+                    }
                     
                     var candidate 
                         = candidates.Select(c => Path.Combine(libPath, c))
