@@ -10,14 +10,18 @@ using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Runtime.InteropServices;
+#if NET45
 using System.Security.Authentication.ExtendedProtection;
+using System.Security.Cryptography.X509Certificates;
+#endif
 using System.Security.Principal;
-using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNet.HttpFeature;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
-    internal sealed unsafe class Request : IDisposable
+    internal sealed class Request : IHttpRequestInformation, IHttpConnection, IHttpTransportLayerSecurity, IDisposable
     {
         private RequestContext _requestContext;
         private NativeRequestContext _nativeRequestContext;
@@ -27,29 +31,46 @@ namespace Microsoft.AspNet.Server.WebListener
         private ulong _contextId;
 
         private SslStatus _sslStatus;
+        private string _scheme;
 
         private string _httpMethod;
         private Version _httpVersion;
+        private string _httpProtocolVersion;
 
-        private Uri _requestUri;
+        // private Uri _requestUri;
         private string _rawUrl;
         private string _cookedUrlHost;
         private string _cookedUrlPath;
         private string _cookedUrlQuery;
+        private string _pathBase;
+        private string _path;
 
-        private RequestHeaders _headers;
+#if NET45
+        private X509Certificate _clientCert;
+#endif
+
+        private IDictionary<string, string[]> _headers;
         private BoundaryType _contentBoundaryType;
         private long _contentLength;
+        private Stream _nativeStream;
         private Stream _requestStream;
+
         private SocketAddress _localEndPoint;
         private SocketAddress _remoteEndPoint;
+#if NET45
+        private IPAddress _remoteIpAddress;
+        private IPAddress _localIpAddress;
+#endif
+        private int? _remotePort;
+        private int? _localPort;
+        private bool? _isLocal;
 
         private IPrincipal _user;
 
         private bool _isDisposed = false;
         private CancellationTokenRegistration _disconnectRegistration;
         
-        internal Request(RequestContext httpContext, NativeRequestContext memoryBlob)
+        internal unsafe Request(RequestContext httpContext, NativeRequestContext memoryBlob)
         {
             // TODO: Verbose log
             _requestContext = httpContext;
@@ -80,6 +101,24 @@ namespace Microsoft.AspNet.Server.WebListener
             if (cookedUrl.pQueryString != null && cookedUrl.QueryStringLength > 0)
             {
                 _cookedUrlQuery = Marshal.PtrToStringUni((IntPtr)cookedUrl.pQueryString, cookedUrl.QueryStringLength / 2);
+            }
+
+            Prefix prefix = httpContext.Server.UriPrefixes[(int)_contextId];
+            string orriginalPath = RequestPath;
+
+            // These paths are both unescaped already.
+            if (orriginalPath.Length == prefix.Path.Length - 1)
+            {
+                // They matched exactly except for the trailing slash.
+                _pathBase = orriginalPath;
+                _path = string.Empty;
+            }
+            else
+            {
+                // url: /base/path, prefix: /base/, base: /base, path: /path
+                // url: /, prefix: /, base: , path: /
+                _pathBase = orriginalPath.Substring(0, prefix.Path.Length - 1);
+                _path = orriginalPath.Substring(prefix.Path.Length - 1);
             }
 
             int major = memoryBlob.RequestBlob->Version.MajorVersion;
@@ -155,16 +194,16 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        // Without the leading ?
-        internal string Query
+        // With the leading ?, if any
+        public string QueryString
         {
             get
             {
-                if (!string.IsNullOrWhiteSpace(_cookedUrlQuery))
-                {
-                    return _cookedUrlQuery.Substring(1);
-                }
-                return string.Empty;
+                return _cookedUrlQuery ?? string.Empty;
+            }
+            set
+            {
+                _cookedUrlQuery = value;
             }
         }
 
@@ -175,6 +214,25 @@ namespace Microsoft.AspNet.Server.WebListener
                 return _requestId;
             }
         }
+
+#if NET45
+        X509Certificate IHttpTransportLayerSecurity.ClientCertificate
+        {
+            get
+            {
+                if (_clientCert == null)
+                {
+                    // TODO: Sync
+                    ((IHttpTransportLayerSecurity)this).LoadAsync().Wait();
+                }
+                return _clientCert;
+            }
+            set
+            {
+                _clientCert = value;
+            }
+        }
+#endif
 
         // TODO: Move this to the constructor, that's where it will be called.
         internal long ContentLength64
@@ -210,40 +268,101 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        internal IDictionary<string, string[]> Headers
+        public IDictionary<string, string[]> Headers
         {
             get
             {
                 return _headers;
             }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException("value");
+                }
+                _headers = value;
+            }
         }
 
-        internal string HttpMethod
+        public string Method
         {
             get
             {
                 return _httpMethod;
             }
+            set
+            {
+                _httpMethod = value;
+            }
         }
 
-        internal Stream InputStream
+        internal Stream NativeStream
+        {
+            get
+            {
+                if (_nativeStream == null)
+                {
+                    // TODO: Move this to the constructor (or a lazy Env dictionary)
+                    _nativeStream = HasEntityBody ? new RequestStream(RequestContext) : Stream.Null;
+                }
+                return _nativeStream;
+            }
+        }
+
+        public Stream Body
         {
             get
             {
                 if (_requestStream == null)
                 {
                     // TODO: Move this to the constructor (or a lazy Env dictionary)
-                    _requestStream = HasEntityBody ? new RequestStream(RequestContext) : Stream.Null;
+                    _requestStream = NativeStream;
                 }
                 return _requestStream;
             }
+            set
+            {
+                _requestStream = value;
+            }
         }
 
-        internal bool IsLocal
+        public string PathBase
         {
             get
             {
-                return LocalEndPoint.GetIPAddressString().Equals(RemoteEndPoint.GetIPAddressString());
+                return _pathBase;
+            }
+            set
+            {
+                _pathBase = value;
+            }
+        }
+
+        public string Path
+        {
+            get
+            {
+                return _path;
+            }
+            set
+            {
+                _path = value;
+            }
+        }
+
+        public bool IsLocal
+        {
+            get
+            {
+                if (!_isLocal.HasValue)
+                {
+                    _isLocal = LocalEndPoint.GetIPAddressString().Equals(RemoteEndPoint.GetIPAddressString());
+                }
+                return _isLocal.Value;
+            }
+            set
+            {
+                _isLocal = value;
             }
         }
 
@@ -254,7 +373,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return _sslStatus != SslStatus.Insecure;
             }
         }
-
+        /*
         internal string RawUrl
         {
             get
@@ -262,7 +381,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return _rawUrl;
             }
         }
-
+        */
         internal Version ProtocolVersion
         {
             get
@@ -271,22 +390,34 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        internal string Protocol
+        public string Protocol
         {
             get
             {
-                if (_httpVersion.Major == 1)
+                if (_httpProtocolVersion == null)
                 {
-                    if (_httpVersion.Minor == 1)
+                    if (_httpVersion.Major == 1)
                     {
-                        return "HTTP/1.1";
+                        if (_httpVersion.Minor == 1)
+                        {
+                            _httpProtocolVersion = "HTTP/1.1";
+                        }
+                        else if (_httpVersion.Minor == 0)
+                        {
+                            _httpProtocolVersion = "HTTP/1.0";
+                        }
                     }
-                    else if (_httpVersion.Minor == 0)
+                    else
                     {
-                        return "HTTP/1.0";
+                        _httpProtocolVersion = "HTTP/" + _httpVersion.ToString(2);
                     }
                 }
-                return "HTTP/" + _httpVersion.ToString(2);
+                return _httpProtocolVersion;
+            }
+            set
+            {
+                // TODO: Set _httpVersion?
+                _httpProtocolVersion = value;
             }
         }
 
@@ -326,15 +457,87 @@ namespace Microsoft.AspNet.Server.WebListener
                 return _localEndPoint;
             }
         }
-
-        internal string RequestScheme
+#if NET45
+        public IPAddress RemoteIpAddress
         {
             get
             {
-                return IsSecureConnection ? Constants.HttpsScheme : Constants.HttpScheme;
+                if (_remoteIpAddress == null)
+                {
+                    _remoteIpAddress = IPAddress.Parse(RemoteEndPoint.GetIPAddressString()); // TODO: Create directly from bytes
+                }
+                return _remoteIpAddress;
+            }
+            set
+            {
+                _remoteIpAddress = value;
             }
         }
 
+        public IPAddress LocalIpAddress
+        {
+            get
+            {
+                if (_localIpAddress == null)
+                {
+                    _localIpAddress = IPAddress.Parse(LocalEndPoint.GetIPAddressString()); // TODO: Create directly from bytes
+                }
+                return _localIpAddress;
+            }
+            set
+            {
+                _localIpAddress = value;
+            }
+        }
+#endif
+        public int RemotePort
+        {
+            get
+            {
+                if (!_remotePort.HasValue)
+                {
+                    _remotePort = RemoteEndPoint.GetPort();
+                }
+                return _remotePort.Value;
+            }
+            set
+            {
+                _remotePort = value;
+            }
+        }
+
+        public int LocalPort
+        {
+            get
+            {
+                if (!_localPort.HasValue)
+                {
+                    _localPort = LocalEndPoint.GetPort();
+                }
+                return _localPort.Value;
+            }
+            set
+            {
+                _localPort = value;
+            }
+        }
+
+        public string Scheme
+        {
+            get
+            {
+                if (_scheme == null)
+                {
+                    _scheme = IsSecureConnection ? Constants.HttpsScheme : Constants.HttpScheme;
+                }
+                return _scheme;
+            }
+            set
+            {
+                _scheme = value;
+            }
+        }
+        /*
         internal Uri RequestUri
         {
             get
@@ -348,7 +551,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return _requestUri;
             }
         }
-
+        */
         internal string RequestPath
         {
             get
@@ -391,6 +594,47 @@ namespace Microsoft.AspNet.Server.WebListener
 #endif
         }
 
+        // Populates the client certificate.  The result may be null if there is no client cert.
+        // TODO: Does it make sense for this to be invoked multiple times (e.g. renegotiate)? Client and server code appear to
+        // enable this, but it's unclear what Http.Sys would do.
+        async Task IHttpTransportLayerSecurity.LoadAsync()
+        {
+            if (SslStatus == SslStatus.Insecure)
+            {
+                // Non-SSL
+                return;
+            }
+            // TODO: Verbose log
+#if NET45
+            if (_clientCert != null)
+            {
+                return;
+            }
+
+            ClientCertLoader certLoader = new ClientCertLoader(RequestContext);
+            try
+            {
+                await certLoader.LoadClientCertificateAsync().SupressContext();
+                // Populate the environment.
+                if (certLoader.ClientCert != null)
+                {
+                    _clientCert = certLoader.ClientCert;
+                }
+                // TODO: Expose errors and exceptions?
+            }
+            catch (Exception)
+            {
+                if (certLoader != null)
+                {
+                    certLoader.Dispose();
+                }
+                throw;
+            }
+#else
+            throw new NotImplementedException();
+#endif
+        }
+
         // Use this to save the blob from dispose if this object was never used (never given to a user) and is about to be
         // disposed.
         internal void DetachBlob(NativeRequestContext memoryBlob)
@@ -419,9 +663,9 @@ namespace Microsoft.AspNet.Server.WebListener
                 _nativeRequestContext = null;
             }
             _disconnectRegistration.Dispose();
-            if (_requestStream != null)
+            if (_nativeStream != null)
             {
-                _requestStream.Dispose();
+                _nativeStream.Dispose();
             }
         }
 
@@ -435,9 +679,9 @@ namespace Microsoft.AspNet.Server.WebListener
 
         internal void SwitchToOpaqueMode()
         {
-            if (_requestStream == null || _requestStream == Stream.Null)
+            if (_nativeStream == null || _nativeStream == Stream.Null)
             {
-                _requestStream = new RequestStream(RequestContext);
+                _nativeStream = new RequestStream(RequestContext);
             }
         }
 

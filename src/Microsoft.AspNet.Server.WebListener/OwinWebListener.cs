@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
-    using AppFunc = Func<IDictionary<string, object>, Task>;
+    using AppFunc = Func<object, Task>;
     using LoggerFactoryFunc = Func<string, Func<TraceEventType, int, object, Exception, Func<object, Exception, string>, bool>>;
     using LoggerFunc = Func<TraceEventType, int, object, Exception, Func<object, Exception, string>, bool>;
 
@@ -518,7 +518,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 {
                     // TODO: Make disconnect registration lazy
                     RegisterForDisconnectNotification(requestContext);
-                    await _appFunc(requestContext.Environment).SupressContext();
+                    await _appFunc(requestContext.Features).SupressContext();
                     await requestContext.ProcessResponseAsync().SupressContext();
                 }
                 catch (Exception ex)
@@ -832,7 +832,8 @@ namespace Microsoft.AspNet.Server.WebListener
                 ulong connectionId = requestContext.Request.ConnectionId;
                 CancellationToken ct = GetConnectionCancellation(connectionId);
                 requestContext.Request.RegisterForDisconnect(ct);
-                requestContext.Environment.ConnectionDisconnect = ct;
+                // TODO: Need a feature equivalent for owin.CallCancelled.
+                // requestContext.Environment.ConnectionDisconnect = ct;
             }
             catch (Win32Exception exception)
             {

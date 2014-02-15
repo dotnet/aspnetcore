@@ -13,12 +13,14 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.FeatureModel;
+using Microsoft.AspNet.HttpFeature;
+using Microsoft.AspNet.PipelineCore;
 using Xunit;
 
 namespace Microsoft.AspNet.Server.WebListener.Tests
 {
-    using AppFunc = Func<IDictionary<string, object>, Task>;
-    using SendFileFunc = Func<string, long, long?, CancellationToken, Task>;
+    using AppFunc = Func<object, Task>;
 
     public class ResponseSendFileTests
     {
@@ -32,8 +34,10 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         {
             using (CreateServer(env =>
             {
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 try
                 {
+                    /* TODO:
                     IDictionary<string, object> capabilities = env.Get<IDictionary<string, object>>("server.Capabilities");
                     Assert.NotNull(capabilities);
 
@@ -43,14 +47,15 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
                     Assert.NotNull(support);
 
                     Assert.Equal("Overlapped", support.Get<string>("sendfile.Concurrency"));
+                    */
 
-                    SendFileFunc sendFileAsync = env.Get<SendFileFunc>("sendfile.SendAsync");
-                    Assert.NotNull(sendFileAsync);
+                    var sendFile = httpContext.GetFeature<IHttpSendFile>();
+                    Assert.NotNull(sendFile);
                 }
                 catch (Exception ex)
                 {
                     byte[] body = Encoding.UTF8.GetBytes(ex.ToString());
-                    env.Get<Stream>("owin.ResponseBody").Write(body, 0, body.Length);
+                    httpContext.Response.Body.Write(body, 0, body.Length);
                 }
                 return Task.FromResult(0);
             }))
@@ -72,10 +77,11 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
             bool? appThrew = null;
             using (CreateServer(env =>
             {
-                SendFileFunc sendFileAsync = env.Get<SendFileFunc>("sendfile.SendAsync");
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                var sendFile = httpContext.GetFeature<IHttpSendFile>();
                 try
                 {
-                    sendFileAsync(string.Empty, 0, null, CancellationToken.None).Wait();
+                    sendFile.SendFileAsync(string.Empty, 0, null, CancellationToken.None).Wait();
                     appThrew = false;
                 }
                 catch (Exception)
@@ -103,8 +109,9 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         {
             using (CreateServer(env =>
             {
-                SendFileFunc sendFileAsync = env.Get<SendFileFunc>("sendfile.SendAsync");
-                return sendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                var sendFile = httpContext.GetFeature<IHttpSendFile>();
+                return sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
             }))
             {
                 HttpResponseMessage response = await SendRequestAsync(Address);
@@ -121,8 +128,9 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         {
             using (CreateServer(env =>
             {
-                SendFileFunc sendFileAsync = env.Get<SendFileFunc>("sendfile.SendAsync");
-                return sendFileAsync(RelativeFilePath, 0, null, CancellationToken.None);
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                var sendFile = httpContext.GetFeature<IHttpSendFile>();
+                return sendFile.SendFileAsync(RelativeFilePath, 0, null, CancellationToken.None);
             }))
             {
                 HttpResponseMessage response = await SendRequestAsync(Address);
@@ -139,9 +147,10 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         {
             using (CreateServer(env =>
             {
-                env.Get<IDictionary<string, string[]>>("owin.ResponseHeaders")["Transfer-EncodinG"] = new string[] { "CHUNKED" };
-                SendFileFunc sendFileAsync = env.Get<SendFileFunc>("sendfile.SendAsync");
-                return sendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                var sendFile = httpContext.GetFeature<IHttpSendFile>();
+                httpContext.Response.Headers["Transfer-EncodinG"] = "CHUNKED";
+                return sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
             }))
             {
                 HttpResponseMessage response = await SendRequestAsync(Address);
@@ -158,10 +167,11 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         {
             using (CreateServer(env =>
             {
-                env.Get<IDictionary<string, string[]>>("owin.ResponseHeaders")["Transfer-EncodinG"] = new string[] { "CHUNKED" };
-                SendFileFunc sendFileAsync = env.Get<SendFileFunc>("sendfile.SendAsync");
-                sendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None).Wait();
-                return sendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                var sendFile = httpContext.GetFeature<IHttpSendFile>();
+                httpContext.Response.Headers["Transfer-EncodinG"] = "CHUNKED";
+                sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None).Wait();
+                return sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
             }))
             {
                 HttpResponseMessage response = await SendRequestAsync(Address);
@@ -178,8 +188,9 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         {
             using (CreateServer(env =>
             {
-                SendFileFunc sendFileAsync = env.Get<SendFileFunc>("sendfile.SendAsync");
-                return sendFileAsync(AbsoluteFilePath, 0, FileLength / 2, CancellationToken.None);
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                var sendFile = httpContext.GetFeature<IHttpSendFile>();
+                return sendFile.SendFileAsync(AbsoluteFilePath, 0, FileLength / 2, CancellationToken.None);
             }))
             {
                 HttpResponseMessage response = await SendRequestAsync(Address);
@@ -196,8 +207,9 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         {
             using (CreateServer(env =>
             {
-                SendFileFunc sendFileAsync = env.Get<SendFileFunc>("sendfile.SendAsync");
-                return sendFileAsync(AbsoluteFilePath, 1234567, null, CancellationToken.None);
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                var sendFile = httpContext.GetFeature<IHttpSendFile>();
+                return sendFile.SendFileAsync(AbsoluteFilePath, 1234567, null, CancellationToken.None);
             }))
             {
                 HttpResponseMessage response = await SendRequestAsync(Address);
@@ -210,8 +222,9 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         {
             using (CreateServer(env =>
             {
-                SendFileFunc sendFileAsync = env.Get<SendFileFunc>("sendfile.SendAsync");
-                return sendFileAsync(AbsoluteFilePath, 0, 1234567, CancellationToken.None);
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                var sendFile = httpContext.GetFeature<IHttpSendFile>();
+                return sendFile.SendFileAsync(AbsoluteFilePath, 0, 1234567, CancellationToken.None);
             }))
             {
                 HttpResponseMessage response = await SendRequestAsync(Address);
@@ -224,8 +237,9 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         {
             using (CreateServer(env =>
             {
-                SendFileFunc sendFileAsync = env.Get<SendFileFunc>("sendfile.SendAsync");
-                return sendFileAsync(AbsoluteFilePath, 0, 0, CancellationToken.None);
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                var sendFile = httpContext.GetFeature<IHttpSendFile>();
+                return sendFile.SendFileAsync(AbsoluteFilePath, 0, 0, CancellationToken.None);
             }))
             {
                 HttpResponseMessage response = await SendRequestAsync(Address);
@@ -242,9 +256,10 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         {
             using (CreateServer(env =>
             {
-                env.Get<IDictionary<string, string[]>>("owin.ResponseHeaders")["Content-lenGth"] = new string[] { FileLength.ToString() };
-                SendFileFunc sendFileAsync = env.Get<SendFileFunc>("sendfile.SendAsync");
-                return sendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                var sendFile = httpContext.GetFeature<IHttpSendFile>();
+                httpContext.Response.Headers["Content-lenGth"] = FileLength.ToString();
+                return sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
             }))
             {
                 HttpResponseMessage response = await SendRequestAsync(Address);
@@ -262,9 +277,10 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         {
             using (CreateServer(env =>
             {
-                env.Get<IDictionary<string, string[]>>("owin.ResponseHeaders")["Content-lenGth"] = new string[] { "10" };
-                SendFileFunc sendFileAsync = env.Get<SendFileFunc>("sendfile.SendAsync");
-                return sendFileAsync(AbsoluteFilePath, 0, 10, CancellationToken.None);
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                var sendFile = httpContext.GetFeature<IHttpSendFile>();
+                httpContext.Response.Headers["Content-lenGth"] = "10";
+                return sendFile.SendFileAsync(AbsoluteFilePath, 0, 10, CancellationToken.None);
             }))
             {
                 HttpResponseMessage response = await SendRequestAsync(Address);
@@ -282,9 +298,10 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         {
             using (CreateServer(env =>
             {
-                env.Get<IDictionary<string, string[]>>("owin.ResponseHeaders")["Content-lenGth"] = new string[] { "0" };
-                SendFileFunc sendFileAsync = env.Get<SendFileFunc>("sendfile.SendAsync");
-                return sendFileAsync(AbsoluteFilePath, 0, 0, CancellationToken.None);
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                var sendFile = httpContext.GetFeature<IHttpSendFile>();
+                httpContext.Response.Headers["Content-lenGth"] = "0";
+                return sendFile.SendFileAsync(AbsoluteFilePath, 0, 0, CancellationToken.None);
             }))
             {
                 HttpResponseMessage response = await SendRequestAsync(Address);

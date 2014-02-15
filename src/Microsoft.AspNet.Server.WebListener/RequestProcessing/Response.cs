@@ -14,14 +14,17 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.HttpFeature;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
-    internal sealed unsafe class Response : IDisposable
+    internal sealed unsafe class Response : IHttpResponseInformation, IHttpSendFile, IDisposable
     {
         private ResponseState _responseState;
         private IDictionary<string, string[]> _headers;
-        private ResponseStream _responseStream;
+        private string _reasonPhrase;
+        private ResponseStream _nativeStream;
+        private Stream _responseStream;
         private long _contentLength;
         private BoundaryType _boundaryType;
         private UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE _nativeResponse;
@@ -67,31 +70,55 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        internal Stream OutputStream
+        public int StatusCode
+        {
+            get { return _nativeResponse.StatusCode; }
+            set
+            {
+                if (value <= 100 || 999 < value)
+                {
+                    throw new ArgumentOutOfRangeException("value", value, string.Format(Resources.Exception_InvalidStatusCode, value));
+                }
+                _nativeResponse.StatusCode = (ushort)value;
+            }
+        }
+
+        public string ReasonPhrase
+        {
+            get { return _reasonPhrase; }
+            set { _reasonPhrase = value; }
+        }
+
+        internal ResponseStream NativeStream
         {
             get
             {
                 CheckDisposed();
                 EnsureResponseStream();
-                return _responseStream;
+                return _nativeStream;
             }
         }
 
-        internal int GetStatusCode()
+        public Stream Body
         {
-            int statusCode = _requestContext.Environment.ResponseStatusCode ?? 200;
-            if (statusCode <= 100 || statusCode > 999)
+            get
             {
-                // TODO: Move this validation to the dictionary facade so it throws when the app sets it, rather than durring send?
-                throw new InvalidOperationException(string.Format(Resources.Exception_InvalidStatusCode, statusCode));
+                if (_responseStream == null)
+                {
+                    _responseStream = NativeStream;
+                }
+                return _responseStream;
             }
-            return statusCode;
+            set
+            {
+                _responseStream = value;
+            }
         }
 
         internal string GetReasonPhrase(int statusCode)
         {
             // TODO: Validate user input for illegal chars, length limit, etc.?
-            string reasonPhrase = _requestContext.Environment.ResponseReasonPhrase;
+            string reasonPhrase = ReasonPhrase;
             if (string.IsNullOrWhiteSpace(reasonPhrase))
             {
                 // if the user hasn't set this, generated on the fly, if possible.
@@ -124,11 +151,16 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        internal IDictionary<string, string[]> Headers
+        public IDictionary<string, string[]> Headers
         {
-            get
+            get { return _headers; }
+            set
             {
-                return _headers;
+                if (value == null)
+                {
+                    throw new ArgumentNullException("value");
+                }
+                _headers = value;
             }
         }
 
@@ -142,6 +174,7 @@ namespace Microsoft.AspNet.Server.WebListener
 
         private Version GetProtocolVersion()
         {
+            /*
             Version requestVersion = Request.ProtocolVersion;
             Version responseVersion = requestVersion;
             string protocolVersion = RequestContext.Environment.Get<string>(Constants.HttpResponseProtocolKey);
@@ -170,7 +203,11 @@ namespace Microsoft.AspNet.Server.WebListener
             }
 
             // Return the lesser of the two versions. There are only two, so it it will always be 1.0.
-            return Constants.V1_0;
+            return Constants.V1_0;*/
+
+            // TODO: IHttpResponseInformation does not define a response protocol version. Http.Sys doesn't let
+            // us send anything but 1.1 anyways, but we could at least use it to set things like the connection header.
+            return Request.ProtocolVersion;
         }
 
         public void Dispose()
@@ -188,7 +225,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 }
                 // TODO: Verbose log
                 EnsureResponseStream();
-                _responseStream.Dispose();
+                _nativeStream.Dispose();
                 _responseState = ResponseState.Closed;
             }
         }
@@ -221,9 +258,9 @@ namespace Microsoft.AspNet.Server.WebListener
 
         private void EnsureResponseStream()
         {
-            if (_responseStream == null)
+            if (_nativeStream == null)
             {
-                _responseStream = new ResponseStream(RequestContext);
+                _nativeStream = new ResponseStream(RequestContext);
             }
         }
 
@@ -266,8 +303,6 @@ namespace Microsoft.AspNet.Server.WebListener
 
             // TODO: Verbose log headers
             _responseState = ResponseState.SentHeaders;
-
-            _nativeResponse.StatusCode = (ushort)GetStatusCode();
             string reasonPhrase = GetReasonPhrase(_nativeResponse.StatusCode);
 
             /*
@@ -369,7 +404,7 @@ namespace Microsoft.AspNet.Server.WebListener
             NotifyOnSendingHeaders();
 
             // 401
-            if (GetStatusCode() == (ushort)HttpStatusCode.Unauthorized)
+            if (StatusCode == (ushort)HttpStatusCode.Unauthorized)
             {
                 RequestContext.Server.AuthenticationManager.SetAuthenticationChallenge(this);
             }
@@ -468,7 +503,7 @@ namespace Microsoft.AspNet.Server.WebListener
                     _boundaryType = BoundaryType.Chunked;
                 }
 
-                if (CanSendResponseBody(_requestContext.Response.GetStatusCode()))
+                if (CanSendResponseBody(_requestContext.Response.StatusCode))
                 {
                     _contentLength = -1;
                 }
@@ -708,25 +743,25 @@ namespace Microsoft.AspNet.Server.WebListener
 
         internal void CancelLastWrite(SafeHandle requestQueueHandle)
         {
-            if (_responseStream != null)
+            if (_nativeStream != null)
             {
-                _responseStream.CancelLastWrite(requestQueueHandle);
+                _nativeStream.CancelLastWrite(requestQueueHandle);
             }
         }
 
-        internal Task SendFileAsync(string fileName, long offset, long? count, CancellationToken cancel)
+        public Task SendFileAsync(string path, long offset, long? count, CancellationToken cancel)
         {
             EnsureResponseStream();
-            return _responseStream.SendFileAsync(fileName, offset, count, cancel);
+            return _nativeStream.SendFileAsync(path, offset, count, cancel);
         }
 
         internal void SwitchToOpaqueMode()
         {
             EnsureResponseStream();
-            _responseStream.SwitchToOpaqueMode();
+            _nativeStream.SwitchToOpaqueMode();
         }
 
-        internal void RegisterForOnSendingHeaders(Action<object> callback, object state)
+        public void OnSendingHeaders(Action<object> callback, object state)
         {
             IList<Tuple<Action<object>, object>> actions = _onSendingHeadersActions;
             if (actions == null)

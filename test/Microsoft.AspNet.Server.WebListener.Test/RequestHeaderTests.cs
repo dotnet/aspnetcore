@@ -10,11 +10,13 @@ using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.FeatureModel;
+using Microsoft.AspNet.PipelineCore;
 using Xunit;
 
 namespace Microsoft.AspNet.Server.WebListener.Tests
 {
-    using AppFunc = Func<IDictionary<string, object>, Task>;
+    using AppFunc = Func<object, Task>;
 
     public class RequestHeaderTests
     {
@@ -25,7 +27,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         {
             using (CreateServer(env =>
                 {
-                    var requestHeaders = env.Get<IDictionary<string, string[]>>("owin.RequestHeaders");
+                    var requestHeaders = new DefaultHttpContext((IFeatureCollection)env).Request.Headers;
                     // NOTE: The System.Net client only sends the Connection: keep-alive header on the first connection per service-point.
                     // Assert.Equal(2, requestHeaders.Count);
                     // Assert.Equal("Keep-Alive", requestHeaders.Get("Connection"));
@@ -44,7 +46,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         {
             using (CreateServer(env =>
                 {
-                    var requestHeaders = env.Get<IDictionary<string, string[]>>("owin.RequestHeaders");
+                    var requestHeaders = new DefaultHttpContext((IFeatureCollection)env).Request.Headers;
                     Assert.Equal(4, requestHeaders.Count);
                     Assert.Equal("localhost:8080", requestHeaders.Get("Host"));
                     Assert.Equal("close", requestHeaders.Get("Connection"));

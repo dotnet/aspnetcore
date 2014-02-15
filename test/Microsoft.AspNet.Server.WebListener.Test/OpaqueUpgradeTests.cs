@@ -3,7 +3,7 @@
 //      Copyright (c) Microsoft Corporation.  All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-
+/* TODO: Opaque
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,7 +17,7 @@ using Xunit.Extensions;
 
 namespace Microsoft.AspNet.Server.WebListener.Tests
 {
-    using AppFunc = Func<IDictionary<string, object>, Task>;
+    using AppFunc = Func<object, Task>;
     using OpaqueUpgrade = Action<IDictionary<string, object>, Func<IDictionary<string, object>, Task>>;
 
     public class OpaqueUpgradeTests
@@ -322,3 +322,4 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         }
     }
 }
+*/

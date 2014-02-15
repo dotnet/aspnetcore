@@ -11,12 +11,15 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.FeatureModel;
+using Microsoft.AspNet.HttpFeature;
+using Microsoft.AspNet.PipelineCore;
 using Xunit;
 using Xunit.Extensions;
 
 namespace Microsoft.AspNet.Server.WebListener.Tests
 {
-    using AppFunc = Func<IDictionary<string, object>, Task>;
+    using AppFunc = Func<object, Task>;
 
     public class RequestTests
     {
@@ -27,36 +30,40 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         {
             using (CreateServer(env =>
             {
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 try
                 {
                     // General keys
-                    Assert.Equal("1.0", env.Get<string>("owin.Version"));
-                    Assert.True(env.Get<CancellationToken>("owin.CallCancelled").CanBeCanceled);
+                    // TODO: Assert.True(env.Get<CancellationToken>("owin.CallCancelled").CanBeCanceled);
+
+                    var requestInfo = httpContext.GetFeature<IHttpRequestInformation>();
 
                     // Request Keys
-                    Assert.Equal("GET", env.Get<string>("owin.RequestMethod"));
-                    Assert.Equal(Stream.Null, env.Get<Stream>("owin.RequestBody"));
-                    Assert.NotNull(env.Get<IDictionary<string, string[]>>("owin.RequestHeaders"));
-                    Assert.Equal("http", env.Get<string>("owin.RequestScheme"));
-                    Assert.Equal("/basepath", env.Get<string>("owin.RequestPathBase"));
-                    Assert.Equal("/SomePath", env.Get<string>("owin.RequestPath"));
-                    Assert.Equal("SomeQuery", env.Get<string>("owin.RequestQueryString"));
-                    Assert.Equal("HTTP/1.1", env.Get<string>("owin.RequestProtocol"));
+                    Assert.Equal("GET", requestInfo.Method);
+                    Assert.Equal(Stream.Null, requestInfo.Body);
+                    Assert.NotNull(requestInfo.Headers);
+                    Assert.Equal("http", requestInfo.Scheme);
+                    Assert.Equal("/basepath", requestInfo.PathBase);
+                    Assert.Equal("/SomePath", requestInfo.Path);
+                    Assert.Equal("?SomeQuery", requestInfo.QueryString);
+                    Assert.Equal("HTTP/1.1", requestInfo.Protocol);
 
                     // Server Keys
-                    Assert.NotNull(env.Get<IDictionary<string, object>>("server.Capabilities"));
-                    Assert.Equal("::1", env.Get<string>("server.RemoteIpAddress"));
-                    Assert.NotNull(env.Get<string>("server.RemotePort"));
-                    Assert.Equal("::1", env.Get<string>("server.LocalIpAddress"));
-                    Assert.Equal("8080", env.Get<string>("server.LocalPort"));
-                    Assert.True(env.Get<bool>("server.IsLocal"));
+                    // TODO: Assert.NotNull(env.Get<IDictionary<string, object>>("server.Capabilities"));
+
+                    var connectionInfo = httpContext.GetFeature<IHttpConnection>();
+                    Assert.Equal("::1", connectionInfo.RemoteIpAddress.ToString());
+                    Assert.NotEqual(0, connectionInfo.RemotePort);
+                    Assert.Equal("::1", connectionInfo.LocalIpAddress.ToString());
+                    Assert.NotEqual(0, connectionInfo.LocalPort);
+                    Assert.True(connectionInfo.IsLocal);
 
                     // Note: Response keys are validated in the ResponseTests
                 }
                 catch (Exception ex)
                 {
                     byte[] body = Encoding.ASCII.GetBytes(ex.ToString());
-                    env.Get<Stream>("owin.ResponseBody").Write(body, 0, body.Length);
+                    httpContext.Response.Body.Write(body, 0, body.Length);
                 }
                 return Task.FromResult(0);
             }, "http", "localhost", "8080", "/basepath"))
@@ -78,21 +85,23 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         {
             using (CreateServer(env =>
             {
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 try
                 {
-                    Uri uri = new Uri(requestUri);
-                    string expectedQuery = uri.Query.Length > 0 ? uri.Query.Substring(1) : string.Empty;
+                    var requestInfo = httpContext.GetFeature<IHttpRequestInformation>();
+                    var connectionInfo = httpContext.GetFeature<IHttpConnection>();
+
                     // Request Keys
-                    Assert.Equal(scheme, env.Get<string>("owin.RequestScheme"));
-                    Assert.Equal(expectedPath, env.Get<string>("owin.RequestPath"));
-                    Assert.Equal(expectedPathBase, env.Get<string>("owin.RequestPathBase"));
-                    Assert.Equal(expectedQuery, env.Get<string>("owin.RequestQueryString"));
-                    Assert.Equal(port, env.Get<string>("server.LocalPort"));
+                    Assert.Equal(scheme, requestInfo.Scheme);
+                    Assert.Equal(expectedPath, requestInfo.Path);
+                    Assert.Equal(expectedPathBase, requestInfo.PathBase);
+                    Assert.Equal(string.Empty, requestInfo.QueryString);
+                    Assert.Equal(port, connectionInfo.LocalPort.ToString());
                 }
                 catch (Exception ex)
                 {
                     byte[] body = Encoding.ASCII.GetBytes(ex.ToString());
-                    env.Get<Stream>("owin.ResponseBody").Write(body, 0, body.Length);
+                    httpContext.Response.Body.Write(body, 0, body.Length);
                 }
                 return Task.FromResult(0);
             }, scheme, host, port, pathBase))
@@ -119,15 +128,17 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         {
             using (CreateServer(env =>
             {
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                var requestInfo = httpContext.GetFeature<IHttpRequestInformation>();
                 try
                 {
-                    Assert.Equal(expectedPath, env.Get<string>("owin.RequestPath"));
-                    Assert.Equal(expectedPathBase, env.Get<string>("owin.RequestPathBase"));
+                    Assert.Equal(expectedPath, requestInfo.Path);
+                    Assert.Equal(expectedPathBase, requestInfo.PathBase);
                 }
                 catch (Exception ex)
                 {
                     byte[] body = Encoding.ASCII.GetBytes(ex.ToString());
-                    env.Get<Stream>("owin.ResponseBody").Write(body, 0, body.Length);
+                    httpContext.Response.Body.Write(body, 0, body.Length);
                 }
                 return Task.FromResult(0);
             }))

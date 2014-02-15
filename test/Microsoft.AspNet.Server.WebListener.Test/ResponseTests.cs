@@ -6,13 +6,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNet.FeatureModel;
+using Microsoft.AspNet.HttpFeature;
+using Microsoft.AspNet.PipelineCore;
 using Xunit;
 
 namespace Microsoft.AspNet.Server.WebListener.Tests
 {
-    using AppFunc = Func<IDictionary<string, object>, Task>;
+    using AppFunc = Func<object, Task>;
 
     public class ResponseTests
     {
@@ -23,7 +27,8 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         {
             using (CreateServer(env =>
             {
-                Assert.Equal(200, env["owin.ResponseStatusCode"]);
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                Assert.Equal(200, httpContext.Response.StatusCode);
                 return Task.FromResult(0);
             }))
             {
@@ -40,8 +45,9 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         {
             using (CreateServer(env =>
             {
-                env["owin.ResponseStatusCode"] = 201;
-                env["owin.ResponseProtocol"] = "HTTP/1.0"; // Http.Sys ignores this value
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                httpContext.Response.StatusCode = 201;
+                // TODO: env["owin.ResponseProtocol"] = "HTTP/1.0"; // Http.Sys ignores this value
                 return Task.FromResult(0);
             }))
             {
@@ -58,9 +64,10 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         {
             using (CreateServer(env =>
             {
-                env["owin.ResponseStatusCode"] = 201;
-                env["owin.ResponseReasonPhrase"] = "CustomReasonPhrase";
-                env["owin.ResponseProtocol"] = "HTTP/1.0"; // Http.Sys ignores this value
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                httpContext.Response.StatusCode = 201;
+                httpContext.GetFeature<IHttpResponseInformation>().ReasonPhrase = "CustomReasonPhrase"; // TODO?
+                // TODO: env["owin.ResponseProtocol"] = "HTTP/1.0"; // Http.Sys ignores this value
                 return Task.FromResult(0);
             }))
             {
@@ -77,7 +84,8 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         {
             using (CreateServer(env =>
             {
-                env["owin.ResponseStatusCode"] = 901;
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                httpContext.Response.StatusCode = 901;
                 return Task.FromResult(0);
             }))
             {
@@ -89,28 +97,32 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         }
 
         [Fact]
-        public void Response_100_Throws()
+        public async Task Response_100_Throws()
         {
             using (CreateServer(env =>
             {
-                env["owin.ResponseStatusCode"] = 100;
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                httpContext.Response.StatusCode = 100;
                 return Task.FromResult(0);
             }))
             {
-                Assert.Throws<AggregateException>(() => SendRequestAsync(Address).Result);
+                HttpResponseMessage response = await SendRequestAsync(Address);
+                Assert.Equal(500, (int)response.StatusCode);
             }
         }
 
         [Fact]
-        public void Response_0_Throws()
+        public async Task Response_0_Throws()
         {
             using (CreateServer(env =>
             {
-                env["owin.ResponseStatusCode"] = 0;
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                httpContext.Response.StatusCode = 0;
                 return Task.FromResult(0);
             }))
             {
-                Assert.Throws<AggregateException>(() => SendRequestAsync(Address).Result);
+                HttpResponseMessage response = await SendRequestAsync(Address);
+                Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
             }
         }
         

@@ -11,11 +11,14 @@ using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.FeatureModel;
+using Microsoft.AspNet.HttpFeature;
+using Microsoft.AspNet.PipelineCore;
 using Xunit;
 
 namespace Microsoft.AspNet.Server.WebListener.Tests
 {
-    using AppFunc = Func<IDictionary<string, object>, Task>;
+    using AppFunc = Func<object, Task>;
 
     public class HttpsTests
     {
@@ -39,10 +42,10 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         {
             using (CreateServer(env =>
             {
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 byte[] body = Encoding.UTF8.GetBytes("Hello World");
-                var responseHeaders = env.Get<IDictionary<string, string[]>>("owin.ResponseHeaders");
-                responseHeaders["Content-Length"] = new string[] { body.Length.ToString() };
-                return env.Get<Stream>("owin.ResponseBody").WriteAsync(body, 0, body.Length);
+                httpContext.Response.ContentLength = body.Length;
+                return httpContext.Response.Body.WriteAsync(body, 0, body.Length);
             }))
             {
                 string response = await SendRequestAsync(Address);
@@ -55,12 +58,12 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         {
             using (CreateServer(env =>
             {
-                string input = new StreamReader(env.Get<Stream>("owin.RequestBody")).ReadToEnd();
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                string input = new StreamReader(httpContext.Request.Body).ReadToEnd();
                 Assert.Equal("Hello World", input);
                 byte[] body = Encoding.UTF8.GetBytes("Hello World");
-                var responseHeaders = env.Get<IDictionary<string, string[]>>("owin.ResponseHeaders");
-                responseHeaders["Content-Length"] = new string[] { body.Length.ToString() };
-                env.Get<Stream>("owin.ResponseBody").Write(body, 0, body.Length);
+                httpContext.Response.ContentLength = body.Length;
+                httpContext.Response.Body.Write(body, 0, body.Length);
                 return Task.FromResult(0);
             }))
             {
@@ -72,38 +75,36 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task Https_ClientCertNotSent_ClientCertNotPresent()
         {
-            X509Certificate clientCert = null;
-            using (CreateServer(env =>
+            using (CreateServer(async env =>
             {
-                var loadAsync = env.Get<Func<Task>>("ssl.LoadClientCertAsync");
-                loadAsync().Wait();
-                clientCert = env.Get<X509Certificate>("ssl.ClientCertificate");
-                return Task.FromResult(0);
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                var tls = httpContext.GetFeature<IHttpTransportLayerSecurity>();
+                Assert.NotNull(tls);
+                await tls.LoadAsync();
+                Assert.Null(tls.ClientCertificate);
             }))
             {
                 string response = await SendRequestAsync(Address);
                 Assert.Equal(string.Empty, response);
-                Assert.Null(clientCert);
             }
         }
 
         [Fact]
         public async Task Https_ClientCertRequested_ClientCertPresent()
         {
-            X509Certificate clientCert = null;
-            using (CreateServer(env =>
+            using (CreateServer(async env =>
             {
-                var loadAsync = env.Get<Func<Task>>("ssl.LoadClientCertAsync");
-                loadAsync().Wait();
-                clientCert = env.Get<X509Certificate>("ssl.ClientCertificate");
-                return Task.FromResult(0);
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                var tls = httpContext.GetFeature<IHttpTransportLayerSecurity>();
+                Assert.NotNull(tls);
+                await tls.LoadAsync();
+                Assert.NotNull(tls.ClientCertificate);
             }))
             {
                 X509Certificate2 cert = FindClientCert();
                 Assert.NotNull(cert);
                 string response = await SendRequestAsync(Address, cert);
                 Assert.Equal(string.Empty, response);
-                Assert.NotNull(clientCert);
             }
         }
 

@@ -736,7 +736,7 @@ namespace Microsoft.AspNet.Server.WebListener
                     }
 
                     uint statusCode = 0;
-                    if ((_requestContext.Response.BoundaryType == BoundaryType.Chunked || _requestContext.Response.BoundaryType == BoundaryType.None) && (String.Compare(_requestContext.Request.HttpMethod, "HEAD", StringComparison.OrdinalIgnoreCase) != 0))
+                    if ((_requestContext.Response.BoundaryType == BoundaryType.Chunked || _requestContext.Response.BoundaryType == BoundaryType.None) && (String.Compare(_requestContext.Request.Method, "HEAD", StringComparison.OrdinalIgnoreCase) != 0))
                     {
                         if (_requestContext.Response.BoundaryType == BoundaryType.None)
                         {

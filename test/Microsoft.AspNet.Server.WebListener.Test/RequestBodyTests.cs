@@ -11,11 +11,13 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.FeatureModel;
+using Microsoft.AspNet.PipelineCore;
 using Xunit;
 
 namespace Microsoft.AspNet.Server.WebListener.Tests
 {
-    using AppFunc = Func<IDictionary<string, object>, Task>;
+    using AppFunc = Func<object, Task>;
 
     public class RequestBodyTests
     {
@@ -26,12 +28,11 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         {
             using (CreateServer(env =>
             {
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 byte[] input = new byte[100];
-                int read = env.Get<Stream>("owin.RequestBody").Read(input, 0, input.Length);
-                
-                var responseHeaders = env.Get<IDictionary<string, string[]>>("owin.ResponseHeaders");
-                responseHeaders["Content-Length"] = new string[] { read.ToString() };
-                env.Get<Stream>("owin.ResponseBody").Write(input, 0, read);
+                int read = httpContext.Request.Body.Read(input, 0, input.Length);
+                httpContext.Response.ContentLength = read;
+                httpContext.Response.Body.Write(input, 0, read);
                 return Task.FromResult(0);
             }))
             {
@@ -45,32 +46,28 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         {
             using (CreateServer(async env =>
             {
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 byte[] input = new byte[100];
-                int read = await env.Get<Stream>("owin.RequestBody").ReadAsync(input, 0, input.Length);
-
-                var responseHeaders = env.Get<IDictionary<string, string[]>>("owin.ResponseHeaders");
-                responseHeaders["Content-Length"] = new string[] { read.ToString() };
-                await env.Get<Stream>("owin.ResponseBody").WriteAsync(input, 0, read);
+                int read = await httpContext.Request.Body.ReadAsync(input, 0, input.Length);
+                httpContext.Response.ContentLength = read;
+                await httpContext.Response.Body.WriteAsync(input, 0, read);
             }))
             {
                 string response = await SendRequestAsync(Address, "Hello World");
                 Assert.Equal("Hello World", response);
             }
         }
-
+#if NET45
         [Fact]
         public async Task RequestBody_ReadBeginEnd_Success()
         {
             using (CreateServer(env =>
             {
-                Stream requestStream = env.Get<Stream>("owin.RequestBody");
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 byte[] input = new byte[100];
-                int read = requestStream.EndRead(requestStream.BeginRead(input, 0, input.Length, null, null));
-
-                var responseHeaders = env.Get<IDictionary<string, string[]>>("owin.ResponseHeaders");
-                responseHeaders["Content-Length"] = new string[] { read.ToString() };
-                Stream responseStream = env.Get<Stream>("owin.ResponseBody");
-                responseStream.EndWrite(responseStream.BeginWrite(input, 0, read, null, null));
+                int read = httpContext.Request.Body.EndRead(httpContext.Request.Body.BeginRead(input, 0, input.Length, null, null));
+                httpContext.Response.ContentLength = read;
+                httpContext.Response.Body.EndWrite(httpContext.Response.Body.BeginWrite(input, 0, read, null, null));
                 return Task.FromResult(0);
             }))
             {
@@ -78,18 +75,19 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
                 Assert.Equal("Hello World", response);
             }
         }
-
+#endif
         [Fact]
         public async Task RequestBody_ReadSyncPartialBody_Success()
         {
             StaggardContent content = new StaggardContent();
             using (CreateServer(env =>
             {
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 byte[] input = new byte[10];
-                int read = env.Get<Stream>("owin.RequestBody").Read(input, 0, input.Length);
+                int read = httpContext.Request.Body.Read(input, 0, input.Length);
                 Assert.Equal(5, read);
                 content.Block.Release();
-                read = env.Get<Stream>("owin.RequestBody").Read(input, 0, input.Length);
+                read = httpContext.Request.Body.Read(input, 0, input.Length);
                 Assert.Equal(5, read);
                 return Task.FromResult(0);
             }))
@@ -105,11 +103,12 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
             StaggardContent content = new StaggardContent();
             using (CreateServer(async env =>
             {
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 byte[] input = new byte[10];
-                int read = await env.Get<Stream>("owin.RequestBody").ReadAsync(input, 0, input.Length);
+                int read = await httpContext.Request.Body.ReadAsync(input, 0, input.Length);
                 Assert.Equal(5, read);
                 content.Block.Release();
-                read = await env.Get<Stream>("owin.RequestBody").ReadAsync(input, 0, input.Length);
+                read = await httpContext.Request.Body.ReadAsync(input, 0, input.Length);
                 Assert.Equal(5, read);
             }))
             {

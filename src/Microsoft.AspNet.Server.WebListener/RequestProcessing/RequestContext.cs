@@ -15,17 +15,19 @@ using System.Runtime.InteropServices;
 using System.Security.Authentication.ExtendedProtection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.FeatureModel;
+using Microsoft.AspNet.HttpFeature;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
     using LoggerFunc = Func<TraceEventType, int, object, Exception, Func<object, Exception, string>, bool>;
     using OpaqueFunc = Func<IDictionary<string, object>, Task>;
 
-    internal sealed class RequestContext : IDisposable, CallEnvironment.IPropertySource
+    internal sealed class RequestContext : IDisposable
     {
         private static readonly string[] ZeroContentLength = new[] { "0" };
 
-        private CallEnvironment _environment;
+        private FeatureCollection _features;
         private OwinWebListener _server;
         private Request _request;
         private Response _response;
@@ -41,17 +43,17 @@ namespace Microsoft.AspNet.Server.WebListener
             _memoryBlob = memoryBlob;
             _request = new Request(this, _memoryBlob);
             _response = new Response(this);
-            _environment = new CallEnvironment(this);
             _cts = new CancellationTokenSource();
 
-            PopulateEnvironment();
+            _features = new FeatureCollection();
+            PopulateFeatures();
 
             _request.ReleasePins();
         }
 
-        internal CallEnvironment Environment
+        internal IFeatureCollection Features
         {
-            get { return _environment; }
+            get { return _features; }
         }
 
         internal Request Request
@@ -99,105 +101,31 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        private void PopulateEnvironment()
+        private void PopulateFeatures()
         {
-            // General
-            _environment.OwinVersion = Constants.OwinVersion;
-            _environment.CallCancelled = _cts.Token;
+            _features.Add(typeof(IHttpRequestInformation), Request);
+            _features.Add(typeof(IHttpConnection), Request);
+            if (Request.IsSecureConnection)
+            {
+                // TODO: Should this feature be conditional? Should we add this for HTTP requests?
+                _features.Add(typeof(IHttpTransportLayerSecurity), Request);
+            }
+            _features.Add(typeof(IHttpResponseInformation), Response);
+            _features.Add(typeof(IHttpSendFile), Response);
 
+            // TODO: 
+            // _environment.CallCancelled = _cts.Token;
+            // _environment.User = _request.User;
+            // Opaque/WebSockets
+            // Channel binding
+
+            /*
             // Server
-            _environment.ServerCapabilities = _server.Capabilities;
             _environment.Listener = _server;
-
-            // Request
-            _environment.RequestProtocol = _request.Protocol;
-            _environment.RequestMethod = _request.HttpMethod;
-            _environment.RequestScheme = _request.RequestScheme;
-            _environment.RequestQueryString = _request.Query;
-            _environment.RequestHeaders = _request.Headers;
-
-            SetPaths();
-
-            _environment.ConnectionId = _request.ConnectionId;
-
-            if (_request.IsSecureConnection)
-            {
-                _environment.LoadClientCert = LoadClientCertificateAsync;
-            }
-
-            if (_request.User != null)
-            {
-                _environment.User = _request.User;
-            }
-
-            // Response
-            _environment.ResponseStatusCode = 200;
-            _environment.ResponseHeaders = _response.Headers;
-            _environment.ResponseBody = _response.OutputStream;
-            _environment.SendFileAsync = _response.SendFileAsync;
-
-            _environment.OnSendingHeaders = _response.RegisterForOnSendingHeaders;
-
-            Contract.Assert(!_environment.IsExtraDictionaryCreated,
-                "All server keys should have a reserved slot in the environment.");
+            _environment.ConnectionId = _request.ConnectionId;            
+             */
         }
-
-        // Find the closest matching prefix and use it to separate the request path in to path and base path.
-        // Scheme and port must match. Path will use a longest match. Host names are more complicated due to
-        // wildcards, IP addresses, etc.
-        private void SetPaths()
-        {
-            Prefix prefix = _server.UriPrefixes[(int)Request.ContextId];
-            string orriginalPath = _request.RequestPath;
-
-            // These paths are both unescaped already.
-            if (orriginalPath.Length == prefix.Path.Length - 1)
-            {
-                // They matched exactly except for the trailing slash.
-                _environment.RequestPathBase = orriginalPath;
-                _environment.RequestPath = string.Empty;
-            }
-            else
-            {
-                // url: /base/path, prefix: /base/, base: /base, path: /path
-                // url: /, prefix: /, base: , path: /
-                _environment.RequestPathBase = orriginalPath.Substring(0, prefix.Path.Length - 1);
-                _environment.RequestPath = orriginalPath.Substring(prefix.Path.Length - 1);
-            }
-        }
-
-        // Lazy environment init
-
-        public Stream GetRequestBody()
-        {
-            return _request.InputStream;
-        }
-
-        public string GetRemoteIpAddress()
-        {
-            return _request.RemoteEndPoint.GetIPAddressString();
-        }
-
-        public string GetRemotePort()
-        {
-            return _request.RemoteEndPoint.GetPort().ToString(CultureInfo.InvariantCulture.NumberFormat);
-        }
-
-        public string GetLocalIpAddress()
-        {
-            return _request.LocalEndPoint.GetIPAddressString();
-        }
-
-        public string GetLocalPort()
-        {
-            return _request.LocalEndPoint.GetPort().ToString(CultureInfo.InvariantCulture.NumberFormat);
-        }
-
-        public bool GetIsLocal()
-        {
-            return _request.IsLocal;
-        }
-
+        /*
         public bool TryGetOpaqueUpgrade(ref Action<IDictionary<string, object>, OpaqueFunc> value)
         {
             if (_request.IsUpgradable)
@@ -213,6 +141,7 @@ namespace Microsoft.AspNet.Server.WebListener
             value = Server.GetChannelBinding(Request.ConnectionId, Request.IsSecureConnection);
             return value != null;
         }
+        */
 
         public void Dispose()
         {
@@ -290,42 +219,6 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        // Populates the environment ClicentCertificate.  The result may be null if there is no client cert.
-        // TODO: Does it make sense for this to be invoked multiple times (e.g. renegotiate)? Client and server code appear to
-        // enable this, but it's unclear what Http.Sys would do.
-        private async Task LoadClientCertificateAsync()
-        {
-            if (Request.SslStatus == SslStatus.Insecure)
-            {
-                // Non-SSL
-                return;
-            }
-            // TODO: Verbose log
-#if NET45
-            ClientCertLoader certLoader = new ClientCertLoader(this);
-            try
-            {
-                await certLoader.LoadClientCertificateAsync().SupressContext();
-                // Populate the environment.
-                if (certLoader.ClientCert != null)
-                {
-                    Environment.ClientCert = certLoader.ClientCert;
-                }
-                // TODO: Expose errors and exceptions?
-            }
-            catch (Exception)
-            {
-                if (certLoader != null)
-                {
-                    certLoader.Dispose();
-                }
-                throw;
-            }
-#else
-            throw new NotImplementedException();
-#endif
-        }
-
         internal void OpaqueUpgrade(IDictionary<string, object> parameters, OpaqueFunc callback)
         {
             // Parameters are ignored for now
@@ -339,8 +232,8 @@ namespace Microsoft.AspNet.Server.WebListener
             }
 
             // Set the status code and reason phrase
-            Environment.ResponseStatusCode = (int)HttpStatusCode.SwitchingProtocols;
-            Environment.ResponseReasonPhrase = HttpReasonPhrase.Get(HttpStatusCode.SwitchingProtocols);
+            Response.StatusCode = (int)HttpStatusCode.SwitchingProtocols;
+            Response.ReasonPhrase = HttpReasonPhrase.Get(HttpStatusCode.SwitchingProtocols);
 
             // Store the callback and process it after the stack unwind.
             _opaqueCallback = callback;
@@ -351,7 +244,7 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             // If an upgrade was requested, perform it
             if (!Response.SentHeaders && _opaqueCallback != null
-                && Environment.ResponseStatusCode == (int)HttpStatusCode.SwitchingProtocols)
+                && Response.StatusCode == (int)HttpStatusCode.SwitchingProtocols)
             {
                 Response.SendOpaqueUpgrade();
 
@@ -368,21 +261,21 @@ namespace Microsoft.AspNet.Server.WebListener
 
             opaqueEnv[Constants.OpaqueVersionKey] = Constants.OpaqueVersion;
             // TODO: Separate CT?
-            opaqueEnv[Constants.OpaqueCallCancelledKey] = Environment.CallCancelled;
+            // opaqueEnv[Constants.OpaqueCallCancelledKey] = Environment.CallCancelled;
 
             Request.SwitchToOpaqueMode();
             Response.SwitchToOpaqueMode();
-            opaqueEnv[Constants.OpaqueStreamKey] = new OpaqueStream(Request.InputStream, Response.OutputStream);
+            opaqueEnv[Constants.OpaqueStreamKey] = new OpaqueStream(Request.NativeStream, Response.NativeStream);
 
             return opaqueEnv;
         }
 
         internal void SetFatalResponse()
         {
-            Environment.ResponseStatusCode = 500;
-            Environment.ResponseReasonPhrase = string.Empty;
-            Environment.ResponseHeaders.Clear();
-            Environment.ResponseHeaders.Add(HttpKnownHeaderNames.ContentLength, ZeroContentLength);
+            Response.StatusCode = 500;
+            Response.ReasonPhrase = string.Empty;
+            Response.Headers.Clear();
+            Response.Headers.Add(HttpKnownHeaderNames.ContentLength, ZeroContentLength);
         }
     }
 }

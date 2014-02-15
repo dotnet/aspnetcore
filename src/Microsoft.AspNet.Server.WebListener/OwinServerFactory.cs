@@ -26,7 +26,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
-    using AppFunc = Func<IDictionary<string, object>, Task>;
+    using AppFunc = Func<object, Task>;
     using LoggerFactoryFunc = Func<string, Func<TraceEventType, int, object, Exception, Func<object, Exception, string>, bool>>;
 
     /// <summary>
