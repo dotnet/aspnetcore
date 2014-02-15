@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Mvc
 
                             if (contextProperty != null)
                             {
-                                contextProperty.SetMethod.Invoke(controller, new [] { context });
+                                contextProperty.SetMethod.Invoke(controller, new object[] { context });
                             }
 
                             return controller;

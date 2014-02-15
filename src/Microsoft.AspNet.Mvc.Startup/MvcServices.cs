@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.AspNet.DependencyInjection;
+﻿using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.Routing;
@@ -10,10 +8,6 @@ namespace Microsoft.AspNet.Mvc.Startup
 {
     public class MvcServices
     {
-        private object _lock = new object();
-
-        private List<Type> _typesToFinalize = new List<Type>();
-
         public ServiceProvider Services { get; private set; }
 
         public MvcServices(string appRoot)
@@ -44,9 +38,9 @@ namespace Microsoft.AspNet.Mvc.Startup
             Add<IViewEngine, RazorViewEngine>();
         }
 
-        private void Add<T, U>() where U : T
+        private void Add<T, TU>() where TU : T
         {
-            Services.Add<T, U>();
+            Services.Add<T, TU>();
         }
 
         private void AddInstance<T>(object instance)

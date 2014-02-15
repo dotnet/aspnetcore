@@ -15,7 +15,7 @@ namespace MvcSample.RandomNameSpace
 
         public IActionResultHelper Result { get; private set; }
 
-        public HttpContext Context { get; private set; }
+        public HttpContext Context { get; set; }
 
         public string Index()
         {
