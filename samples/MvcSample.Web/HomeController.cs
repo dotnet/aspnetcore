@@ -2,11 +2,16 @@
 
 namespace MvcSample.Web
 {
-    public class HomeController
+    public class HomeController : Controller
     {
         public string Index()
         {
-            return "Hello World from MVC. Change the controller and save without rebuilding!!";
+            return "Hello from the new MVC";
+        }
+
+        public IActionResult Test()
+        {
+            return View();
         }
     }
 }

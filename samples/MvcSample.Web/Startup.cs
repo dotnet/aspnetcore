@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Mvc.Routing;
@@ -13,7 +14,11 @@ namespace MvcSample.Web
     {
         public void Configuration(IBuilder app)
         {
-            string appRoot = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
+#if NET45
+            var appRoot = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
+#else 
+            var appRoot = (string)typeof(AppDomain).GetRuntimeMethod("GetData", new[] { typeof(string) }).Invoke(AppDomain.CurrentDomain, new object[] { "APPBASE" });
+#endif
 
             var mvcServices = new MvcServices(appRoot);
 
