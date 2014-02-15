@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading;
 using Microsoft.AspNet.FeatureModel.Implementation;
 
@@ -42,11 +43,7 @@ namespace Microsoft.AspNet.FeatureModel
             {
                 if (_featureByFeatureType.TryGetValue(actualType, out feature))
                 {
-#if NET45
                     var isInstanceOfType = type.IsInstanceOfType(feature);
-#else
-                    var isInstanceOfType = feature != null && type == feature.GetType();
-#endif
 
                     if (isInstanceOfType)
                     {
@@ -54,6 +51,8 @@ namespace Microsoft.AspNet.FeatureModel
                     }
 #if NET45
                     return Converter.Convert(type, actualType, feature);
+#else
+                    return null;
 #endif
                 }
             }

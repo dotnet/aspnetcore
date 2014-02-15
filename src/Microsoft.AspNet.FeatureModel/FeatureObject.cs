@@ -27,12 +27,12 @@ namespace Microsoft.AspNet.FeatureModel
 
         public object GetInterface(Type type)
         {
-#if NET45
             if (type.IsInstanceOfType(_instance))
             {
                 return _instance;
             }
 
+#if NET45
             foreach (var interfaceType in _instance.GetType().GetInterfaces())
             {
                 if (interfaceType.FullName == type.FullName)
