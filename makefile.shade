@@ -23,7 +23,9 @@ var repos='${new Dictionary<string,string> {
     {"WebFx", "git@github.com:aspnet/WebFx.git"},
     {"Hosting", "git@github.com:aspnet/Hosting.git"},
     {"Helios", "git@github.com:aspnet/Helios.git"},
-    {"WebListener", "git@github.com:aspnet/WebListener.git"}
+    {"WebListener", "git@github.com:aspnet/WebListener.git"},
+    {"System.Data.Common", "git@github.com:aspnet/System.Data.Common.git"},
+    {"Microsoft.Data.SQLite", "git@github.com:aspnet/Microsoft.Data.SQLite.git"}
 }}'
 
 default BASE_DIR='${Directory.GetCurrentDirectory()}'
