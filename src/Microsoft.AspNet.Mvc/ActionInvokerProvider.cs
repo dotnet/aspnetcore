@@ -18,15 +18,15 @@ namespace Microsoft.AspNet.Mvc
             _serviceProvider = serviceProvider;
         }
 
-        public IActionInvoker GetInvoker(RequestContext requestContext, RouteContext routeContext)
+        public IActionInvoker GetInvoker(RequestContext requestContext, ActionDescriptor actionDescriptor)
         {
-            var controllerActionDescriptor = routeContext as ControllerActionRouteContext;
+            var ad = actionDescriptor as TypeMethodBasedActionDescriptor;
 
-            if (controllerActionDescriptor != null)
+            if (ad != null)
             {
-                return new ControllerActionInvoker(
+                return new TypeMethodBasedActionInvoker(
                     requestContext,
-                    controllerActionDescriptor,
+                    ad,
                     _actionResultFactory,
                     _controllerFactory,
                     _serviceProvider);

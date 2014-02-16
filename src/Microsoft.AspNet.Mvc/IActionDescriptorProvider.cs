@@ -2,8 +2,8 @@
 
 namespace Microsoft.AspNet.Mvc
 {
-    public interface IRouteContextProvider
+    public interface IActionDescriptorProvider
     {
-        RouteContext CreateDescriptor(RequestContext requestContext);
+        ActionDescriptor CreateDescriptor(RequestContext requestContext);
     }
 }

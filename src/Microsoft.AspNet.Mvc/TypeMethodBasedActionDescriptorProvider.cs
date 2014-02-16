@@ -1,13 +1,13 @@
 ﻿namespace Microsoft.AspNet.Mvc
 {
-    public class ControllerActionBasedRouteContextProvider : IRouteContextProvider
+    public class TypeMethodBasedActionDescriptorProvider : IActionDescriptorProvider
     {
-        public RouteContext CreateDescriptor(RequestContext requestContext)
+        public ActionDescriptor CreateDescriptor(RequestContext requestContext)
         {
             var controllerName = (string)requestContext.RouteValues["controller"];
             var actionName = (string)requestContext.RouteValues["action"];
 
-            return new ControllerActionRouteContext
+            return new TypeMethodBasedActionDescriptor()
             {
                 ControllerName = controllerName,
                 ActionName = actionName

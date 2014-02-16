@@ -12,10 +12,11 @@ namespace Microsoft.AspNet.Mvc.Razor
             "/Views/{1}/{0}.cshtml",
             "/Views/Shared/{0}.cshtml",
         };
-        private readonly IRouteContextProvider _actionDescriptorProvider;
+
+        private readonly IActionDescriptorProvider _actionDescriptorProvider;
         private readonly IVirtualPathViewFactory _virtualPathFactory;
 
-        public RazorViewEngine(IRouteContextProvider actionDescriptorProvider, 
+        public RazorViewEngine(IActionDescriptorProvider actionDescriptorProvider, 
                                IVirtualPathViewFactory virtualPathFactory)
         {
             _actionDescriptorProvider = actionDescriptorProvider;
@@ -29,7 +30,9 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         public async Task<ViewEngineResult> FindView(RequestContext requestContext, string viewName)
         {
-            var actionDescriptor = _actionDescriptorProvider.CreateDescriptor(requestContext) as ControllerActionRouteContext;
+            // TODO: We plan to change this on the next CR, so we don't have a strong depenedency directly on the specific
+            // type of the action descriptor
+            var actionDescriptor = _actionDescriptorProvider.CreateDescriptor(requestContext) as TypeMethodBasedActionDescriptor;
             
             if (actionDescriptor == null)
             {

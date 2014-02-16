@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.Startup
             Add<IActionInvokerFactory, ActionInvokerFactory>();
             Add<IActionResultHelper, ActionResultHelper>();
             Add<IActionResultFactory, ActionResultFactory>();
-            Add<IRouteContextProvider, ControllerActionBasedRouteContextProvider>();
+            Add<IActionDescriptorProvider, TypeMethodBasedActionDescriptorProvider>();
             Add<IActionInvokerProvider, ActionInvokerProvider>();
 
             // need singleton support here.

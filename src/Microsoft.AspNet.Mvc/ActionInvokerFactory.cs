@@ -7,10 +7,10 @@ namespace Microsoft.AspNet.Mvc
     {
         private readonly IActionResultFactory _actionResultFactory;
         private readonly IActionInvokerProvider _actionInvokerProvider;
-        private readonly IRouteContextProvider _routeContextProvider;
+        private readonly IActionDescriptorProvider _routeContextProvider;
 
         public ActionInvokerFactory(IActionResultFactory actionResultFactory,
-                                    IRouteContextProvider actionDescriptorProvider, 
+                                    IActionDescriptorProvider actionDescriptorProvider, 
                                     IActionInvokerProvider actionInvokerProvider)
         {
             _actionResultFactory = actionResultFactory;
@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc
 
         public IActionInvoker CreateInvoker(RequestContext requestContext)
         {
-            RouteContext routeContext = _routeContextProvider.CreateDescriptor(requestContext);
+            ActionDescriptor routeContext = _routeContextProvider.CreateDescriptor(requestContext);
             if (routeContext == null)
             {
                 return null;

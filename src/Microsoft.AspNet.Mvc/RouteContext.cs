@@ -1,6 +1,6 @@
 ﻿namespace Microsoft.AspNet.Mvc
 {
-    public class RouteContext
+    public class ActionDescriptor
     {
     }
 }
