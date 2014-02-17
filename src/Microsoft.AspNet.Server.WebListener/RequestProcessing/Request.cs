@@ -356,7 +356,7 @@ namespace Microsoft.AspNet.Server.WebListener
             {
                 if (!_isLocal.HasValue)
                 {
-                    _isLocal = LocalEndPoint.GetIPAddressString().Equals(RemoteEndPoint.GetIPAddressString());
+                    _isLocal = LocalEndPoint.GetIPAddress().Equals(RemoteEndPoint.GetIPAddress());
                 }
                 return _isLocal.Value;
             }
@@ -457,14 +457,14 @@ namespace Microsoft.AspNet.Server.WebListener
                 return _localEndPoint;
             }
         }
-#if NET45
+
         public IPAddress RemoteIpAddress
         {
             get
             {
                 if (_remoteIpAddress == null)
                 {
-                    _remoteIpAddress = IPAddress.Parse(RemoteEndPoint.GetIPAddressString()); // TODO: Create directly from bytes
+                    _remoteIpAddress = RemoteEndPoint.GetIPAddress();
                 }
                 return _remoteIpAddress;
             }
@@ -480,7 +480,7 @@ namespace Microsoft.AspNet.Server.WebListener
             {
                 if (_localIpAddress == null)
                 {
-                    _localIpAddress = IPAddress.Parse(LocalEndPoint.GetIPAddressString()); // TODO: Create directly from bytes
+                    _localIpAddress = LocalEndPoint.GetIPAddress();
                 }
                 return _localIpAddress;
             }
@@ -489,7 +489,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 _localIpAddress = value;
             }
         }
-#endif
+
         public int RemotePort
         {
             get

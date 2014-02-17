@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Globalization;
+using System.Net;
 using System.Text;
 
 namespace Microsoft.AspNet.Server.WebListener
@@ -168,6 +169,36 @@ namespace Microsoft.AspNet.Server.WebListener
                 }
             }
             return _hash;
+        }
+
+        internal IPAddress GetIPAddress()
+        {
+            if (Family == AddressFamily.InterNetworkV6)
+            {
+                return GetIpv6Address();
+            }
+            else if (Family == AddressFamily.InterNetwork)
+            {
+                return GetIPv4Address();
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        private IPAddress GetIpv6Address()
+        {
+            Contract.Assert(Size >= IPv6AddressSize);
+            byte[] bytes = new byte[NumberOfIPv6Labels * 2];
+            Array.Copy(_buffer, 8, bytes, 0, NumberOfIPv6Labels * 2);
+            return new IPAddress(bytes); // TODO: Does scope id matter?
+        }
+
+        private IPAddress GetIPv4Address()
+        {
+            Contract.Assert(Size >= IPv4AddressSize);
+            return new IPAddress(new byte[] { _buffer[4], _buffer[5], _buffer[6], _buffer[7] });
         }
 
         public override string ToString()
