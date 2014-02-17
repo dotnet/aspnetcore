@@ -27,8 +27,7 @@ namespace Microsoft.AspNet.PipelineCore
                 if (_query == null || _queryString != queryString)
                 {
                     _queryString = queryString;
-                    // TODO
-                    _query = new ReadableStringCollection(new Dictionary<string, string[]>());
+                    _query = new ReadableStringCollection(ParsingHelpers.GetQuery(queryString));
                 }
                 return _query;
             }

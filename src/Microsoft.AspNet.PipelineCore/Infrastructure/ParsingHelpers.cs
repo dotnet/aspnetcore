@@ -1,9 +1,9 @@
-using Microsoft.AspNet.Abstractions;
-using Microsoft.AspNet.PipelineCore.Collections;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.PipelineCore.Collections;
 
 namespace Microsoft.AspNet.PipelineCore.Infrastructure
 {
@@ -799,28 +799,14 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
 
         private static readonly char[] AmpersandAndSemicolon = new[] { '&', ';' };
 
-        internal static IDictionary<string, string[]> GetQuery(HttpRequest request)
+        internal static IDictionary<string, string[]> GetQuery(string queryString)
         {
-            var query = GetItem<IDictionary<string, string[]>>(request, "Microsoft.Owin.Query#dictionary");
-            if (query == null)
-            {
-                query = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
-                SetItem(request, "Microsoft.Owin.Query#dictionary", query);
-            }
-
-            string text = request.QueryString.Value;
-            if (GetItem<string>(request, "Microsoft.Owin.Query#text") != text)
-            {
-                query.Clear();
-                var accumulator = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-                ParseDelimited(text, AmpersandAndSemicolon, AppendItemCallback, accumulator);
-                foreach (var kv in accumulator)
-                {
-                    query.Add(kv.Key, kv.Value.ToArray());
-                }
-                SetItem(request, "Microsoft.Owin.Query#text", text);
-            }
-            return query;
+            var accumulator = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+            ParseDelimited(queryString, AmpersandAndSemicolon, AppendItemCallback, accumulator);
+            return accumulator.ToDictionary(
+                    item => item.Key, 
+                    item => item.Value.ToArray(), 
+                    StringComparer.OrdinalIgnoreCase);
         }
 
 #if !NET40
