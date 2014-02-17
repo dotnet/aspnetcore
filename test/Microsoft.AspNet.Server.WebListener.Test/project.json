@@ -1,20 +1,20 @@
 {
-  "version" : "0.1-alpha-*",
-  "dependencies": {
-    "Microsoft.AspNet.Server.WebListener" : "",
-    "Microsoft.AspNet.Abstractions" : "0.1-alpha-*",
-    "Microsoft.AspNet.HttpFeature" : "0.1-alpha-*",
-    "Microsoft.AspNet.FeatureModel" : "0.1-alpha-*",
-    "Microsoft.AspNet.PipelineCore" : "0.1-alpha-*"
-  },
-  "configurations": {
-    "net45": {
-      "dependencies": {
-          "XUnit": "1.9.2",
-          "XUnit.Extensions": "1.9.2",
-          "System.Net.Http": "",
-          "System.Net.Http.WebRequest": ""
-       }
-    }
-  }
+     "version" : "0.1-alpha-*",
+     "dependencies": {
+          "Microsoft.AspNet.Server.WebListener" : "",
+          "Microsoft.AspNet.Abstractions" : "0.1-alpha-*",
+          "Microsoft.AspNet.HttpFeature" : "0.1-alpha-*",
+          "Microsoft.AspNet.FeatureModel" : "0.1-alpha-*",
+          "Microsoft.AspNet.PipelineCore" : "0.1-alpha-*"
+     },
+     "configurations": {
+          "net45": {
+               "dependencies": {
+                    "XUnit": "1.9.2",
+                    "XUnit.Extensions": "1.9.2",
+                    "System.Net.Http": "",
+                    "System.Net.Http.WebRequest": ""
+               }
+          }
+     }
 }
