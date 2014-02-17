@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        public async Task ExecuteResultAsync(RequestContext context)
+        public async Task ExecuteResultAsync(ActionContext context)
         {
             HttpResponse response = context.HttpContext.Response;
 

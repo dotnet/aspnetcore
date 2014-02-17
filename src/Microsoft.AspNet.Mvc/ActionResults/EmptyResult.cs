@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Mvc
             get { return _singleton; }
         }
 
-        public async Task ExecuteResultAsync(RequestContext context)
+        public async Task ExecuteResultAsync(ActionContext context)
         {
         }
     }

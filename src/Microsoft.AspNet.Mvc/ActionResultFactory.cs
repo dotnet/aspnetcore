@@ -11,10 +11,10 @@ namespace Microsoft.AspNet.Mvc
             _result = result;
         }
 
-        public IActionResult CreateActionResult(Type declaredReturnType, object actionReturnValue, RequestContext requestContext)
+        public IActionResult CreateActionResult(Type declaredReturnType, object actionReturnValue, ActionContext actionContext)
         {
             // optimize common path
-            IActionResult actionResult = actionReturnValue as IActionResult;
+            var actionResult = actionReturnValue as IActionResult;
 
             if (actionResult != null)
             {
@@ -38,17 +38,19 @@ namespace Microsoft.AspNet.Mvc
                 throw new InvalidOperationException("HttpActionDescriptor_NoConverterForGenericParamterTypeExists");
             }
 
-            if (declaredReturnType.IsAssignableFrom(typeof(void)))
+            if (declaredReturnType.IsAssignableFrom(typeof(void)) || actionReturnValue == null)
             {
                 return new NoContentResult();
             }
 
-            if (actionReturnValue is string)
+            var actionReturnString = actionReturnValue as string;
+
+            if (actionReturnString != null)
             {
                 return new ContentResult
                 {
                     ContentType = "text/plain",
-                    Content = (string)actionReturnValue,
+                    Content = actionReturnString,
                 };
             }
 

@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc
 
         public ViewData ViewData { get; set; }
 
-        public async Task ExecuteResultAsync(RequestContext context)
+        public async Task ExecuteResultAsync(ActionContext context)
         {
             if (context == null)
             {
@@ -44,9 +44,9 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        private async Task<IView> FindView(RequestContext requestContext, string viewName)
+        private async Task<IView> FindView(ActionContext actionContext, string viewName)
         {
-            ViewEngineResult result = await _viewEngine.FindView(requestContext, viewName);
+            ViewEngineResult result = await _viewEngine.FindView(actionContext, viewName);
             if (!result.Success)
             {
                 string locationsText = String.Join(Environment.NewLine, result.SearchedLocations);

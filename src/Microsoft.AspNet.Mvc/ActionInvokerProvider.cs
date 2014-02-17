@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.AspNet.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -18,14 +17,14 @@ namespace Microsoft.AspNet.Mvc
             _serviceProvider = serviceProvider;
         }
 
-        public IActionInvoker GetInvoker(RequestContext requestContext, ActionDescriptor actionDescriptor)
+        public IActionInvoker GetInvoker(ActionContext actionContext)
         {
-            var ad = actionDescriptor as TypeMethodBasedActionDescriptor;
+            var ad = actionContext.ActionDescriptor as TypeMethodBasedActionDescriptor;
 
             if (ad != null)
             {
                 return new TypeMethodBasedActionInvoker(
-                    requestContext,
+                    actionContext,
                     ad,
                     _actionResultFactory,
                     _controllerFactory,

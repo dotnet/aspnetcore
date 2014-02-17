@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc
 
         public string ContentType { get; set; }
 
-        public async Task ExecuteResultAsync(RequestContext context)
+        public async Task ExecuteResultAsync(ActionContext context)
         {
             if (context == null)
             {
@@ -26,12 +26,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 response.ContentType = ContentType;
             }
-
-            //if (ContentEncoding != null)
-            //{
-            //    response.ContentEncoding = ContentEncoding;
-            //}
-
+           
             if (Content != null)
             {
                 await response.WriteAsync(Content);

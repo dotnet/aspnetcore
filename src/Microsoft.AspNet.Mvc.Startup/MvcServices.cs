@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.Mvc.Razor;
-using Microsoft.AspNet.Mvc.Routing;
-using Microsoft.AspNet.Routing;
 
 namespace Microsoft.AspNet.Mvc.Startup
 {
@@ -15,18 +13,16 @@ namespace Microsoft.AspNet.Mvc.Startup
             Services = new ServiceProvider();
 
             Add<IControllerFactory, DefaultControllerFactory>();
+            Add<IControllerDescriptorFactory, DefaultControllerDescriptorFactory>();
+            Add<IActionSelector, DefaultActionSelector>();
             Add<IActionInvokerFactory, ActionInvokerFactory>();
             Add<IActionResultHelper, ActionResultHelper>();
             Add<IActionResultFactory, ActionResultFactory>();
             Add<IActionDescriptorProvider, TypeMethodBasedActionDescriptorProvider>();
             Add<IActionInvokerProvider, ActionInvokerProvider>();
+            Add<IControllerAssemblyProvider, AppDomainControllerAssemblyProvider>();
+            Add<IActionDiscoveryConventions, DefaultActionDiscoveryConventions>();
 
-            // need singleton support here.
-            // need a design for immutable caches at startup
-            var provider = new DefaultControllerDescriptorProvider(new AppDomainControllerAssemblyProvider());
-            provider.FinalizeSetup();
-
-            AddInstance<IControllerDescriptorProvider>(provider);
             AddInstance<IFileSystem>(new PhysicalFileSystem(appRoot));
             AddInstance<IMvcRazorHost>(new MvcRazorHost(typeof(RazorView).FullName));
 

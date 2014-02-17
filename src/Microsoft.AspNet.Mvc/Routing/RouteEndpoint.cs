@@ -11,6 +11,7 @@ namespace Microsoft.AspNet.Mvc.Routing
     {
         private readonly IServiceProvider _services;
         private IActionInvokerFactory _actionInvokerFactory;
+        private IActionSelector _actionSelector;
 
         // Using service provider here to prevent ordering issues with configuration...
         // IE: creating routes before configuring services, vice-versa.
@@ -32,21 +33,46 @@ namespace Microsoft.AspNet.Mvc.Routing
             }
         }
 
+        private IActionSelector ActionSelector
+        {
+            get
+            {
+                if (_actionSelector == null)
+                {
+                    _actionSelector = _services.GetService<IActionSelector>();
+                }
+
+                return _actionSelector;
+            }
+        }
+
         public async Task<bool> Send(HttpContext context)
         {
             var routeValues = context.GetFeature<IRouteValues>();
             var requestContext = new RequestContext(context, routeValues.Values);
 
-            var invoker = ActionInvokerFactory.CreateInvoker(requestContext);
-            if (invoker == null)
+            var actionDescriptor = ActionSelector.Select(requestContext);
+
+            if (actionDescriptor == null)
             {
                 return false;
             }
-            else
+
+            var invoker = ActionInvokerFactory.CreateInvoker(new ActionContext(context, routeValues.Values, actionDescriptor));
+
+            if (invoker == null)
             {
-                await invoker.InvokeActionAsync();
-                return true;
+                var ex = new InvalidOperationException("Could not instantiate invoker for the actionDescriptor");
+
+                // Add tracing/logging (what do we think of this pattern of tacking on extra data on the exception?)
+                ex.Data.Add("AD", actionDescriptor);
+
+                throw ex;
             }
+
+            await invoker.InvokeActionAsync();
+
+            return true;
         }
     }
 }

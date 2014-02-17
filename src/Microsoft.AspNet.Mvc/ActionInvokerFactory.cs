@@ -1,7 +1,4 @@
-﻿
-using Microsoft.AspNet.Mvc.Routing;
-
-namespace Microsoft.AspNet.Mvc
+﻿namespace Microsoft.AspNet.Mvc
 {
     public class ActionInvokerFactory : IActionInvokerFactory
     {
@@ -18,15 +15,9 @@ namespace Microsoft.AspNet.Mvc
             _actionInvokerProvider = actionInvokerProvider;
         }
 
-        public IActionInvoker CreateInvoker(RequestContext requestContext)
+        public IActionInvoker CreateInvoker(ActionContext actionContext)
         {
-            ActionDescriptor routeContext = _routeContextProvider.CreateDescriptor(requestContext);
-            if (routeContext == null)
-            {
-                return null;
-            }
-           
-            return _actionInvokerProvider.GetInvoker(requestContext, routeContext);
+            return _actionInvokerProvider.GetInvoker(actionContext);
         }
     }
 }

@@ -38,6 +38,10 @@ namespace MvcSample
                 endpoint,
                 "{controller}/{action}",
                 new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase) { { "controller", "Home" }, { "action", "Index" } }));
+            router.Add(new TemplateRoute(
+                endpoint,
+                "{controller}",
+                new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase) { { "controller", "Home" } }));
         }
     }
 }

@@ -4,6 +4,7 @@ namespace Microsoft.AspNet.Mvc
 {
     public interface IViewEngine
     {
-        Task<ViewEngineResult> FindView(RequestContext requestContext, string viewName);
+        // TODO: Relayer to allow this to be ActionContext. We probably need the common MVC assembly
+        Task<ViewEngineResult> FindView(object actionContext, string viewName);
     }
 }

@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNet.Mvc.Routing;
+﻿using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Mvc
 {
     public interface IActionDescriptorProvider
     {
-        ActionDescriptor CreateDescriptor(RequestContext requestContext);
+        IEnumerable<ActionDescriptor> GetDescriptors();
     }
 }

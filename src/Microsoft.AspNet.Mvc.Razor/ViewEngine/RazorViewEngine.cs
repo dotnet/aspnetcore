@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 {
     public class RazorViewEngine : IViewEngine
     {
-        private static readonly string[] _viewLocationFormats = new[]
+        private static readonly string[] _viewLocationFormats =
         {
             "/Views/{1}/{0}.cshtml",
             "/Views/Shared/{0}.cshtml",
@@ -28,11 +28,13 @@ namespace Microsoft.AspNet.Mvc.Razor
             get { return _viewLocationFormats; }
         }
 
-        public async Task<ViewEngineResult> FindView(RequestContext requestContext, string viewName)
+        public async Task<ViewEngineResult> FindView(object context, string viewName)
         {
+            var actionContext = (ActionContext)context;
+
             // TODO: We plan to change this on the next CR, so we don't have a strong depenedency directly on the specific
             // type of the action descriptor
-            var actionDescriptor = _actionDescriptorProvider.CreateDescriptor(requestContext) as TypeMethodBasedActionDescriptor;
+            ActionDescriptor actionDescriptor = actionContext.ActionDescriptor;
             
             if (actionDescriptor == null)
             {
@@ -41,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             
             if (String.IsNullOrEmpty(viewName))
             {
-                viewName = actionDescriptor.ActionName;
+                viewName = actionDescriptor.Name;
             }
 
             if (String.IsNullOrEmpty(viewName))
@@ -59,7 +61,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
             else
             {
-                string controllerName = actionDescriptor.ControllerName;
+                string controllerName = actionDescriptor.Path;
                 var searchedLocations = new List<string>(_viewLocationFormats.Length);
                 for (int i = 0; i < _viewLocationFormats.Length; i++)
                 {

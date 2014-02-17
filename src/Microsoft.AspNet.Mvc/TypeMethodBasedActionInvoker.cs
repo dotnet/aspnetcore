@@ -8,19 +8,19 @@ namespace Microsoft.AspNet.Mvc
 {
     public class TypeMethodBasedActionInvoker : IActionInvoker
     {
-        private readonly RequestContext _requestContext;
+        private readonly ActionContext _actionContext;
         private readonly TypeMethodBasedActionDescriptor _descriptor;
         private readonly IActionResultFactory _actionResultFactory;
         private readonly IServiceProvider _serviceProvider;
         private readonly IControllerFactory _controllerFactory;
 
-        public TypeMethodBasedActionInvoker(RequestContext requestContext,
-                                       TypeMethodBasedActionDescriptor descriptor,
-                                       IActionResultFactory actionResultFactory,
-                                       IControllerFactory controllerFactory,
-                                       IServiceProvider serviceProvider)
+        public TypeMethodBasedActionInvoker(ActionContext actionContext,
+                                            TypeMethodBasedActionDescriptor descriptor,
+                                            IActionResultFactory actionResultFactory,
+                                            IControllerFactory controllerFactory,
+                                            IServiceProvider serviceProvider)
         {
-            _requestContext = requestContext;
+            _actionContext = actionContext;
             _descriptor = descriptor;
             _actionResultFactory = actionResultFactory;
             _controllerFactory = controllerFactory;
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc
         {
             IActionResult actionResult = null;
 
-            object controller = _controllerFactory.CreateController(_requestContext.HttpContext, _descriptor.ControllerName);
+            object controller = _controllerFactory.CreateController(_actionContext.HttpContext, _descriptor);
 
             if (controller == null)
             {
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 Initialize(controller);
 
-                var method = controller.GetType().GetRuntimeMethods().FirstOrDefault(m => m.Name.Equals(_descriptor.ActionName, StringComparison.OrdinalIgnoreCase));
+                var method = _descriptor.MethodInfo;
 
                 if (method == null)
                 {
@@ -51,12 +51,12 @@ namespace Microsoft.AspNet.Mvc
                 {
                     object actionReturnValue = method.Invoke(controller, null);
 
-                    actionResult = _actionResultFactory.CreateActionResult(method.ReturnType, actionReturnValue, _requestContext);
+                    actionResult = _actionResultFactory.CreateActionResult(method.ReturnType, actionReturnValue, _actionContext);
                 }
             }
 
             // TODO: This will probably move out once we got filters
-            return actionResult.ExecuteResultAsync(_requestContext);
+            return actionResult.ExecuteResultAsync(_actionContext);
         }
 
         private void Initialize(object controller)
@@ -69,7 +69,7 @@ namespace Microsoft.AspNet.Mvc
                 {
                     if (prop.PropertyType == typeof(HttpContext))
                     {
-                        prop.SetValue(controller, _requestContext.HttpContext);
+                        prop.SetValue(controller, _actionContext.HttpContext);
                     }
                 }
             }

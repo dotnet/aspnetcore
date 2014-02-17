@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Text;
-using System.Threading.Tasks;
 using System.Net;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.Mvc
 {
     public class NoContentResult : IActionResult
     {
-        public async Task ExecuteResultAsync(RequestContext context)
+        public async Task ExecuteResultAsync(ActionContext context)
         {
             if (context == null)
             {
@@ -24,8 +23,6 @@ namespace Microsoft.AspNet.Mvc
 #endif
 
             await Task.FromResult(false);
-
-            return;
         }
     }
 }
