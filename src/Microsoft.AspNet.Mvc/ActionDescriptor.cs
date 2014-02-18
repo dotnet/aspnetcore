@@ -14,6 +14,8 @@ namespace Microsoft.AspNet.Mvc
 
         public List<HttpMethodConstraint> MethodConstraints { get; set; }
 
-        public IEnumerable<IActionConstraint> DynamicConstraints { get; set; }
+        public List<IActionConstraint> DynamicConstraints { get; set; }
+
+        public List<ParameterDescriptor> Parameters { get; set; }
     }
 }

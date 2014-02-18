@@ -9,14 +9,17 @@ namespace Microsoft.AspNet.Mvc
         private readonly IControllerAssemblyProvider _controllerAssemblyProvider;
         private readonly IActionDiscoveryConventions _conventions;
         private readonly IControllerDescriptorFactory _controllerDescriptorFactory;
+        private readonly IParameterDescriptorFactory _parameterDescriptorFactory;
 
         public TypeMethodBasedActionDescriptorProvider(IControllerAssemblyProvider controllerAssemblyProvider,
                                                        IActionDiscoveryConventions conventions,
-                                                       IControllerDescriptorFactory controllerDescriptorFactory)
+                                                       IControllerDescriptorFactory controllerDescriptorFactory,
+                                                       IParameterDescriptorFactory parameterDescriptorFactory)
         {
             _controllerAssemblyProvider = controllerAssemblyProvider;
             _conventions = conventions;
             _controllerDescriptorFactory = controllerDescriptorFactory;
+            _parameterDescriptorFactory = parameterDescriptorFactory;
         }
 
         public IEnumerable<ActionDescriptor> GetDescriptors()
@@ -45,7 +48,7 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        private static TypeMethodBasedActionDescriptor BuildDescriptor(ControllerDescriptor controllerDescriptor, MethodInfo methodInfo, ActionInfo actionInfo)
+        private TypeMethodBasedActionDescriptor BuildDescriptor(ControllerDescriptor controllerDescriptor, MethodInfo methodInfo, ActionInfo actionInfo)
         {
             var ad = new TypeMethodBasedActionDescriptor
             {
@@ -76,6 +79,8 @@ namespace Microsoft.AspNet.Mvc
             {
                 ad.RouteConstraints.Add(new RouteDataActionConstraint("action", RouteKeyHandling.DenyKey));
             }
+
+            ad.Parameters = methodInfo.GetParameters().Select(p => _parameterDescriptorFactory.GetDescriptor(p)).ToList();
 
             return ad;
         }

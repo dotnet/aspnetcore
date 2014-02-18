@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Razor;
 
 namespace Microsoft.AspNet.Mvc.Startup
@@ -19,6 +20,9 @@ namespace Microsoft.AspNet.Mvc.Startup
             Add<IActionResultHelper, ActionResultHelper>();
             Add<IActionResultFactory, ActionResultFactory>();
             Add<IActionDescriptorProvider, TypeMethodBasedActionDescriptorProvider>();
+            Add<IParameterDescriptorFactory, DefaultParameterDescriptorFactory>();
+            Add<IValueProviderFactory, RouteValueValueProviderFactory>();
+            Add<IValueProviderFactory, QueryStringValueProviderFactory>();
             Add<IActionInvokerProvider, ActionInvokerProvider>();
             Add<IControllerAssemblyProvider, AppDomainControllerAssemblyProvider>();
             Add<IActionDiscoveryConventions, DefaultActionDiscoveryConventions>();
