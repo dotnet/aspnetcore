@@ -16,20 +16,21 @@ namespace Microsoft.AspNet.Routing.Template
             };
         }
 
-        public static TemplatePart CreateParameter(string name, bool isCatchAll)
+        public static TemplatePart CreateParameter(string name, bool isCatchAll, bool isOptional)
         {
             return new TemplatePart()
             {
                 IsParameter = true,
                 Name = name,
                 IsCatchAll = isCatchAll,
+                IsOptional = isOptional,
             };
         }
 
         public bool IsCatchAll { get; private set; }
         public bool IsLiteral { get; private set; }
         public bool IsParameter { get; private set; }
-
+        public bool IsOptional { get; private set; }
         public string Name { get; private set; }
         public string Text { get; private set; }
 
@@ -37,7 +38,7 @@ namespace Microsoft.AspNet.Routing.Template
         {
             if (IsParameter)
             {
-                return "{" + (IsCatchAll ? "*" : string.Empty) + Name + "}";
+                return "{" + (IsCatchAll ? "*" : string.Empty) + Name + (IsOptional ? "?" : string.Empty) + "}";
             }
             else
             {

@@ -126,14 +126,20 @@
   <data name="TemplateRoute_CannotHaveConsecutiveSeparators" xml:space="preserve">
     <value>The route template separator character '/' cannot appear consecutively. It must be separated by either a parameter or a literal value.</value>
   </data>
+  <data name="TemplateRoute_CannotHaveOptionalParameterInMultiSegment" xml:space="preserve">
+    <value>A path segment that contains more than one section, such as a literal section or a parameter, cannot contain an optional parameter.</value>
+  </data>
   <data name="TemplateRoute_CatchAllMustBeLast" xml:space="preserve">
     <value>A catch-all parameter can only appear as the last segment of the route template.</value>
   </data>
+  <data name="TemplateRoute_InvalidLiteral" xml:space="preserve">
+    <value>The literal section '{0}' is invalid. Literal sections cannot contain the '?' character.</value>
+  </data>
   <data name="TemplateRoute_InvalidParameterName" xml:space="preserve">
-    <value>The route parameter name '{0}' is invalid. Route parameter names must be non-empty and cannot contain these characters: "{{", "}}", "/", "?"</value>
+    <value>The route parameter name '{0}' is invalid. Route parameter names must be non-empty and cannot contain these characters: '{{', '}}', '/'. The '?' character marks a parameter as optional, and can only occur at the end of the parameter.</value>
   </data>
   <data name="TemplateRoute_InvalidRouteTemplate" xml:space="preserve">
-    <value>The route template cannot start with a '/' or '~' character and it cannot contain a '?' character.</value>
+    <value>The route template cannot start with a '/' or '~' character.</value>
   </data>
   <data name="TemplateRoute_MismatchedParameter" xml:space="preserve">
     <value>There is an incomplete parameter in the route template. Check that each '{' character has a matching '}' character.</value>

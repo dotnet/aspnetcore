@@ -35,7 +35,24 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
             var expected = new ParsedTemplate(new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
-            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p", false));
+            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p", false, false));
+
+            // Act
+            var actual = TemplateParser.Parse(template);
+
+            // Assert
+            Assert.Equal<ParsedTemplate>(expected, actual, new TemplateParsedRouteEqualityComparer());
+        }
+
+        [Fact]
+        public void Parse_OptionalParameter()
+        {
+            // Arrange
+            var template = "{p?}";
+
+            var expected = new ParsedTemplate(new List<TemplateSegment>());
+            expected.Segments.Add(new TemplateSegment());
+            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p", false, true));
 
             // Act
             var actual = TemplateParser.Parse(template);
@@ -73,11 +90,11 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
             var expected = new ParsedTemplate(new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
-            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1", false));
+            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1", false, false));
             expected.Segments.Add(new TemplateSegment());
-            expected.Segments[1].Parts.Add(TemplatePart.CreateParameter("p2", false));
+            expected.Segments[1].Parts.Add(TemplatePart.CreateParameter("p2", false, false));
             expected.Segments.Add(new TemplateSegment());
-            expected.Segments[2].Parts.Add(TemplatePart.CreateParameter("p3", true));
+            expected.Segments[2].Parts.Add(TemplatePart.CreateParameter("p3", true, false));
 
             // Act
             var actual = TemplateParser.Parse(template);
@@ -95,7 +112,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var expected = new ParsedTemplate(new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateLiteral("cool-"));
-            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1", false));
+            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1", false, false));
 
             // Act
             var actual = TemplateParser.Parse(template);
@@ -112,7 +129,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
             var expected = new ParsedTemplate(new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
-            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1", false));
+            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1", false, false));
             expected.Segments[0].Parts.Add(TemplatePart.CreateLiteral("cool-"));
 
             // Act
@@ -130,9 +147,9 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
             var expected = new ParsedTemplate(new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
-            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1", false));
+            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1", false, false));
             expected.Segments[0].Parts.Add(TemplatePart.CreateLiteral("cool-"));
-            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p2", false));
+            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p2", false, false));
 
             // Act
             var actual = TemplateParser.Parse(template);
@@ -150,7 +167,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var expected = new ParsedTemplate(new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateLiteral("cool-"));
-            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1", false));
+            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1", false, false));
             expected.Segments[0].Parts.Add(TemplatePart.CreateLiteral("-awesome"));
 
             // Act
@@ -215,7 +232,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             Assert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("foo/{*}"),
-                @"The route parameter name '' is invalid. Route parameter names must be non-empty and cannot contain these characters: ""{"", ""}"", ""/"", ""?""" + Environment.NewLine +
+                "The route parameter name '' is invalid. Route parameter names must be non-empty and cannot contain these characters: '{', '}', '/'. " + 
+                "The '?' character marks a parameter as optional, and can only occur at the end of the parameter." + Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 
@@ -269,7 +287,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             Assert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("{a}/{a{aa}/{z}"),
-                @"The route parameter name 'a{aa' is invalid. Route parameter names must be non-empty and cannot contain these characters: ""{"", ""}"", ""/"", ""?""" + Environment.NewLine +
+                "The route parameter name 'a{aa' is invalid. Route parameter names must be non-empty and cannot contain these characters: '{', '}', '/'. " +
+                "The '?' character marks a parameter as optional, and can only occur at the end of the parameter." + Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 
@@ -278,7 +297,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             Assert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("{a}/{}/{z}"),
-                @"The route parameter name '' is invalid. Route parameter names must be non-empty and cannot contain these characters: ""{"", ""}"", ""/"", ""?""" + Environment.NewLine +
+                "The route parameter name '' is invalid. Route parameter names must be non-empty and cannot contain these characters: '{', '}', '/'. " +
+                "The '?' character marks a parameter as optional, and can only occur at the end of the parameter." + Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 
@@ -287,7 +307,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             Assert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("{Controller}.mvc/{?}"),
-                "The route template cannot start with a '/' or '~' character and it cannot contain a '?' character." + Environment.NewLine +
+                "The route parameter name '' is invalid. Route parameter names must be non-empty and cannot contain these characters: '{', '}', '/'. " +
+                "The '?' character marks a parameter as optional, and can only occur at the end of the parameter." + Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 
@@ -323,7 +344,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             Assert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("/foo"),
-                "The route template cannot start with a '/' or '~' character and it cannot contain a '?' character." + Environment.NewLine +
+                "The route template cannot start with a '/' or '~' character." + Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 
@@ -332,7 +353,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             Assert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("~foo"),
-                "The route template cannot start with a '/' or '~' character and it cannot contain a '?' character." + Environment.NewLine +
+                "The route template cannot start with a '/' or '~' character." + Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 
@@ -341,10 +362,29 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             Assert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("foor?bar"),
-                "The route template cannot start with a '/' or '~' character and it cannot contain a '?' character." + Environment.NewLine +
+                "The literal section 'foor?bar' is invalid. Literal sections cannot contain the '?' character." + Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 
+        [Fact]
+        public void InvalidTemplate_ParameterCannotContainQuestionMark_UnlessAtEnd()
+        {
+            Assert.Throws<ArgumentException>(
+                () => TemplateParser.Parse("{foor?b}"),
+                "The route parameter name 'foor?b' is invalid. Route parameter names must be non-empty and cannot contain these characters: '{', '}', '/'. " +
+                "The '?' character marks a parameter as optional, and can only occur at the end of the parameter." + Environment.NewLine +
+                "Parameter name: routeTemplate");
+        }
+
+        [Fact]
+        public void InvalidTemplate_MultiSegmentParameterCannotContainOptionalParameter()
+        {
+            Assert.Throws<ArgumentException>(
+                () => TemplateParser.Parse("{foorb?}-bar-{z}"),
+                "A path segment that contains more than one section, such as a literal section or a parameter, cannot contain an optional parameter." + Environment.NewLine +
+                "Parameter name: routeTemplate");
+        }
+        
         private class TemplateParsedRouteEqualityComparer : IEqualityComparer<ParsedTemplate>
         {
             public bool Equals(ParsedTemplate x, ParsedTemplate y)
@@ -379,6 +419,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                             if (xPart.IsLiteral != yPart.IsLiteral ||
                                 xPart.IsParameter != yPart.IsParameter ||
                                 xPart.IsCatchAll != yPart.IsCatchAll ||
+                                xPart.IsOptional != yPart.IsOptional ||
                                 !String.Equals(xPart.Name, yPart.Name, StringComparison.Ordinal) ||
                                 !String.Equals(xPart.Name, yPart.Name, StringComparison.Ordinal))
                             {

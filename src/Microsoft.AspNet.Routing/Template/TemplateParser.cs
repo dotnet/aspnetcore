@@ -14,6 +14,8 @@ namespace Microsoft.AspNet.Routing.Template
         private const char Separator = '/';
         private const char OpenBrace = '{';
         private const char CloseBrace = '}';
+        private const char EqualsSign = '=';
+        private const char QuestionMark = '?';
         
         public static ParsedTemplate Parse(string routeTemplate)
         {
@@ -174,10 +176,15 @@ namespace Microsoft.AspNet.Routing.Template
             var rawName = context.Capture();
 
             var isCatchAll = rawName.StartsWith("*", StringComparison.Ordinal);
-            var parameterName = isCatchAll ? rawName.Substring(1) : rawName;
+            var isOptional = rawName.EndsWith("?", StringComparison.Ordinal);
+
+            rawName = isCatchAll ? rawName.Substring(1) : rawName;
+            rawName = isOptional ? rawName.Substring(0, rawName.Length - 1) : rawName;
+
+            var parameterName = rawName;
             if (IsValidParameterName(context, parameterName))
             {
-                segment.Parts.Add(TemplatePart.CreateParameter(parameterName, isCatchAll));
+                segment.Parts.Add(TemplatePart.CreateParameter(parameterName, isCatchAll, isOptional));
                 return true;
             }
             else
@@ -250,8 +257,15 @@ namespace Microsoft.AspNet.Routing.Template
             }
 
             var decoded = encoded.Replace("}}", "}").Replace("{{", "}");
-            segment.Parts.Add(TemplatePart.CreateLiteral(decoded));
-            return true;
+            if (IsValidLiteral(context, decoded))
+            {
+                segment.Parts.Add(TemplatePart.CreateLiteral(decoded));
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         private static bool IsAllValid(TemplateParserContext context, List<TemplateSegment> segments)
@@ -287,6 +301,17 @@ namespace Microsoft.AspNet.Routing.Template
                 }
             }
 
+            // if a segment has multiple parts, then the parameters can't be optional
+            for (int i = 0; i < segment.Parts.Count; i++)
+            {
+                var part = segment.Parts[i];
+                if (part.IsParameter && part.IsOptional && segment.Parts.Count > 1)
+                {
+                    context.Error = Resources.TemplateRoute_CannotHaveOptionalParameterInMultiSegment;
+                    return false;
+                }
+            }
+
             // A segment cannot containt two consecutive parameters
             var isLastSegmentParameter = false;
             for (int i = 0; i < segment.Parts.Count; i++)
@@ -315,7 +340,7 @@ namespace Microsoft.AspNet.Routing.Template
             for (int i = 0; i < parameterName.Length; i++)
             {
                 var c = parameterName[i];
-                if (c == '/' || c == '{' || c == '}')
+                if (c == Separator || c == OpenBrace || c == CloseBrace || c == QuestionMark)
                 {
                     context.Error = String.Format(CultureInfo.CurrentCulture, Resources.TemplateRoute_InvalidParameterName, parameterName);
                     return false;
@@ -331,11 +356,24 @@ namespace Microsoft.AspNet.Routing.Template
             return true;
         }
 
+        private static bool IsValidLiteral(TemplateParserContext context, string literal)
+        {
+            Contract.Assert(context != null);
+            Contract.Assert(literal != null);
+
+            if (literal.IndexOf(QuestionMark) != -1)
+            {
+                context.Error = String.Format(CultureInfo.CurrentCulture, Resources.TemplateRoute_InvalidLiteral, literal);
+                return false;
+            }
+
+            return true;
+        }
+
         private static bool IsInvalidRouteTemplate(string routeTemplate)
         {
             return routeTemplate.StartsWith("~", StringComparison.Ordinal) ||
-                   routeTemplate.StartsWith("/", StringComparison.Ordinal) ||
-                   (routeTemplate.IndexOf('?') != -1);
+                   routeTemplate.StartsWith("/", StringComparison.Ordinal);
         }
 
 
