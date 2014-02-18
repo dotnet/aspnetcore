@@ -261,8 +261,12 @@ functions
                                                     .ToList();
 
                 var sharedDefines = Get<IEnumerable<object>>(compilationOptions, "define") ?? new object[0];
+                
                 object unsafeValue = Get<object>(compilationOptions, "allowUnsafe");
                 bool sharedAllowUnsafeCode = unsafeValue == null ? false : (bool)unsafeValue;
+
+                object warningsValue = Get<object>(compilationOptions, "warningsAsErrors");
+                bool sharedWarningsAsErrors = warningsValue == null ? false : (bool)warningsValue;
 
                 // HACK: Assume the packages folder is 2 up from the projectDir
                 string packagesDir = Path.GetFullPath(Path.Combine(projectDir, "..", "..", "packages"));
@@ -295,11 +299,15 @@ functions
                     var specificCompilationOptions = GetObject(props, "compilationOptions") ?? compilationOptions ?? new Dictionary<string, object>();
 
                     var specificDefines = Get<IEnumerable<object>>(specificCompilationOptions, "define") ?? new object[0];
+                    
                     object specificUnsafeValue = Get<object>(specificCompilationOptions, "allowUnsafe");
                     bool allowUnsafeCode = unsafeValue == null ? sharedAllowUnsafeCode : (bool)specificUnsafeValue;
+                    string extraProperties = (allowUnsafeCode ? Environment.NewLine + "<AllowUnsafeBlocks>true</AllowUnsafeBlocks>" : "");
 
-                    string extraProperties = (allowUnsafeCode ? "\n<AllowUnsafeBlocks>true</AllowUnsafeBlocks>" : "");
-
+                    object specificWarningsValue = Get<object>(specificCompilationOptions, "warningsAsErrors");
+                    bool warningsAsErrors = specificWarningsValue == null ? sharedWarningsAsErrors : (bool)specificWarningsValue;
+                    extraProperties += (warningsAsErrors ? Environment.NewLine + "<TreatWarningsAsErrors>true</TreatWarningsAsErrors>" : "");
+                    
                     if (isWebSample)
                     {
                         var config = Path.Combine(projectDir, "web.config");
