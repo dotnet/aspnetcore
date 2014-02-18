@@ -12,13 +12,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
         {
             return Char.IsLetter(character) ||
                    character == '_' ||
-#if NET45 
-                   // No GetUnicodeCategory on Char in CoreCLR
-
-                   Char.GetUnicodeCategory(character) == UnicodeCategory.LetterNumber;
-#else
                    CharUnicodeInfo.GetUnicodeCategory(character) == UnicodeCategory.LetterNumber;
-#endif
         }
 
         public static bool IsIdentifierPart(char character)
@@ -40,14 +34,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
 
         private static bool IsIdentifierPartByUnicodeCategory(char character)
         {
-            UnicodeCategory category;
-#if NET45 
-            // No GetUnicodeCategory on Char in CoreCLR
-
-            category = Char.GetUnicodeCategory(character);
-#else
-            category = CharUnicodeInfo.GetUnicodeCategory(character);
-#endif
+            UnicodeCategory category = CharUnicodeInfo.GetUnicodeCategory(character);
 
             return category == UnicodeCategory.NonSpacingMark || // Mn
                    category == UnicodeCategory.SpacingCombiningMark || // Mc

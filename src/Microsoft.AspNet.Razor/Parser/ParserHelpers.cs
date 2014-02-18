@@ -33,13 +33,7 @@ namespace Microsoft.AspNet.Razor.Parser
                    value == '\f' ||
                    value == '\t' ||
                    value == '\u000B' || // Vertical Tab
-#if NET45
-                   // No GetUnicodeCategory on Char in CoreCLR
-
-                   Char.GetUnicodeCategory(value) == UnicodeCategory.SpaceSeparator;
-#else
                    CharUnicodeInfo.GetUnicodeCategory(value) == UnicodeCategory.SpaceSeparator;
-#endif
         }
 
         [SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly", MessageId = "Whitespace", Justification = "This would be a breaking change in a shipping API")]
@@ -94,13 +88,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
         public static bool IsDecimalDigit(char value)
         {
-#if NET45
-            // No GetUnicodeCategory on Char in CoreCLR
-
-            return Char.GetUnicodeCategory(value) == UnicodeCategory.DecimalDigitNumber;
-#else
             return CharUnicodeInfo.GetUnicodeCategory(value) == UnicodeCategory.DecimalDigitNumber;
-#endif
         }
 
         public static bool IsLetterOrDecimalDigit(char value)
@@ -110,14 +98,8 @@ namespace Microsoft.AspNet.Razor.Parser
 
         public static bool IsLetter(char value)
         {
-            UnicodeCategory cat;
-#if NET45
-            // No GetUnicodeCategory on Char in CoreCLR
+            UnicodeCategory cat = CharUnicodeInfo.GetUnicodeCategory(value);
 
-            cat = Char.GetUnicodeCategory(value);
-#else
-            cat = CharUnicodeInfo.GetUnicodeCategory(value);
-#endif
             return cat == UnicodeCategory.UppercaseLetter
                    || cat == UnicodeCategory.LowercaseLetter
                    || cat == UnicodeCategory.TitlecaseLetter
@@ -128,26 +110,12 @@ namespace Microsoft.AspNet.Razor.Parser
 
         public static bool IsFormatting(char value)
         {
-#if NET45
-            // No GetUnicodeCategory on Char in CoreCLR
-
-            return Char.GetUnicodeCategory(value) == UnicodeCategory.Format;
-#else
-
             return CharUnicodeInfo.GetUnicodeCategory(value) == UnicodeCategory.Format;
-#endif
         }
 
         public static bool IsCombining(char value)
         {
-            UnicodeCategory cat;
-#if NET45
-            // No GetUnicodeCategory on Char in CoreCLR
-
-            cat = Char.GetUnicodeCategory(value);
-#else
-            cat = CharUnicodeInfo.GetUnicodeCategory(value);
-#endif
+            UnicodeCategory cat= CharUnicodeInfo.GetUnicodeCategory(value);
 
             return cat == UnicodeCategory.SpacingCombiningMark || cat == UnicodeCategory.NonSpacingMark;
 
@@ -155,13 +123,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
         public static bool IsConnecting(char value)
         {
-#if NET45
-            // No GetUnicodeCategory on Char in CoreCLR
-
-            return Char.GetUnicodeCategory(value) == UnicodeCategory.ConnectorPunctuation;
-#else
             return CharUnicodeInfo.GetUnicodeCategory(value) == UnicodeCategory.ConnectorPunctuation;
-#endif
         }
 
         public static string SanitizeClassName(string inputName)
