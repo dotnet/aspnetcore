@@ -16,7 +16,7 @@ using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.PipelineCore;
 using Xunit;
 
-namespace Microsoft.AspNet.Server.WebListener.Tests
+namespace Microsoft.AspNet.Server.WebListener.Test
 {
     using AppFunc = Func<object, Task>;
 
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task Https_200OK_Success()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpsServer(env =>
             {
                 return Task.FromResult(0);
             }))
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task Https_SendHelloWorld_Success()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpsServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 byte[] body = Encoding.UTF8.GetBytes("Hello World");
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task Https_EchoHelloWorld_Success()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpsServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 string input = new StreamReader(httpContext.Request.Body).ReadToEnd();
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task Https_ClientCertNotSent_ClientCertNotPresent()
         {
-            using (CreateServer(async env =>
+            using (Utilities.CreateHttpsServer(async env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var tls = httpContext.GetFeature<IHttpTransportLayerSecurity>();
@@ -92,7 +92,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task Https_ClientCertRequested_ClientCertPresent()
         {
-            using (CreateServer(async env =>
+            using (Utilities.CreateHttpsServer(async env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var tls = httpContext.GetFeature<IHttpTransportLayerSecurity>();
@@ -106,23 +106,6 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
                 string response = await SendRequestAsync(Address, cert);
                 Assert.Equal(string.Empty, response);
             }
-        }
-
-        private IDisposable CreateServer(AppFunc app)
-        {
-            IDictionary<string, object> properties = new Dictionary<string, object>();
-            IList<IDictionary<string, object>> addresses = new List<IDictionary<string, object>>();
-            properties["host.Addresses"] = addresses;
-
-            IDictionary<string, object> address = new Dictionary<string, object>();
-            addresses.Add(address);
-
-            address["scheme"] = "https";
-            address["host"] = "localhost";
-            address["port"] = "9090";
-            address["path"] = string.Empty;
-
-            return OwinServerFactory.Create(app, properties);
         }
 
         private async Task<string> SendRequestAsync(string uri, 

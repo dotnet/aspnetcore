@@ -16,7 +16,7 @@ using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.PipelineCore;
 using Xunit;
 
-namespace Microsoft.AspNet.Server.WebListener.Tests
+namespace Microsoft.AspNet.Server.WebListener.Test
 {
     using AppFunc = Func<object, Task>;
 
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task ResponseBody_WriteNoHeaders_DefaultsToChunked()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.Body.Write(new byte[10], 0, 10);
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task ResponseBody_WriteChunked_Chunked()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Request.Headers["transfeR-Encoding"] = " CHunked ";
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task ResponseBody_WriteContentLength_PassedThrough()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.Headers["Content-lenGth"] = " 30 ";
@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task ResponseBody_Http10WriteNoHeaders_DefaultsConnectionClose()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 env["owin.ResponseProtocol"] = "HTTP/1.0";
                 env.Get<Stream>("owin.ResponseBody").Write(new byte[10], 0, 10);
@@ -114,7 +114,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public void ResponseBody_WriteContentLengthNoneWritten_Throws()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.Headers["Content-lenGth"] = " 20 ";
@@ -128,7 +128,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public void ResponseBody_WriteContentLengthNotEnoughWritten_Throws()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.Headers["Content-lenGth"] = " 20 ";
@@ -143,7 +143,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public void ResponseBody_WriteContentLengthTooMuchWritten_Throws()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.Headers["Content-lenGth"] = " 10 ";
@@ -161,7 +161,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         {
             ManualResetEvent waitHandle = new ManualResetEvent(false);
             bool? appThrew = null;
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 try
                 {
@@ -193,23 +193,6 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
                 Assert.True(appThrew.HasValue, "appThrew.HasValue");
                 Assert.True(appThrew.Value, "appThrew.Value");
             }
-        }
-
-        private IDisposable CreateServer(AppFunc app)
-        {
-            IDictionary<string, object> properties = new Dictionary<string, object>();
-            IList<IDictionary<string, object>> addresses = new List<IDictionary<string, object>>();
-            properties["host.Addresses"] = addresses;
-
-            IDictionary<string, object> address = new Dictionary<string, object>();
-            addresses.Add(address);
-
-            address["scheme"] = "http";
-            address["host"] = "localhost";
-            address["port"] = "8080";
-            address["path"] = string.Empty;
-
-            return OwinServerFactory.Create(app, properties);
         }
 
         private async Task<HttpResponseMessage> SendRequestAsync(string uri)

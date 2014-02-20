@@ -15,7 +15,7 @@ using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.PipelineCore;
 using Xunit;
 
-namespace Microsoft.AspNet.Server.WebListener.Tests
+namespace Microsoft.AspNet.Server.WebListener.Test
 {
     using AppFunc = Func<object, Task>;
 
@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task RequestBody_ReadSync_Success()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 byte[] input = new byte[100];
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task RequestBody_ReadAync_Success()
         {
-            using (CreateServer(async env =>
+            using (Utilities.CreateHttpServer(async env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 byte[] input = new byte[100];
@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task RequestBody_ReadBeginEnd_Success()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 byte[] input = new byte[100];
@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         public async Task RequestBody_ReadSyncPartialBody_Success()
         {
             StaggardContent content = new StaggardContent();
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 byte[] input = new byte[10];
@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         public async Task RequestBody_ReadAsyncPartialBody_Success()
         {
             StaggardContent content = new StaggardContent();
-            using (CreateServer(async env =>
+            using (Utilities.CreateHttpServer(async env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 byte[] input = new byte[10];
@@ -115,23 +115,6 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
                 string response = await SendRequestAsync(Address, content);
                 Assert.Equal(string.Empty, response);
             }
-        }
-
-        private IDisposable CreateServer(AppFunc app)
-        {
-            IDictionary<string, object> properties = new Dictionary<string, object>();
-            IList<IDictionary<string, object>> addresses = new List<IDictionary<string, object>>();
-            properties["host.Addresses"] = addresses;
-
-            IDictionary<string, object> address = new Dictionary<string, object>();
-            addresses.Add(address);
-
-            address["scheme"] = "http";
-            address["host"] = "localhost";
-            address["port"] = "8080";
-            address["path"] = string.Empty;
-
-            return OwinServerFactory.Create(app, properties);
         }
 
         private Task<string> SendRequestAsync(string uri, string upload)

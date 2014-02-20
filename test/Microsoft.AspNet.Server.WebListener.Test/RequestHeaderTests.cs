@@ -14,7 +14,7 @@ using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.PipelineCore;
 using Xunit;
 
-namespace Microsoft.AspNet.Server.WebListener.Tests
+namespace Microsoft.AspNet.Server.WebListener.Test
 {
     using AppFunc = Func<object, Task>;
 
@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task RequestHeaders_ClientSendsDefaultHeaders_Success()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
                 {
                     var requestHeaders = new DefaultHttpContext((IFeatureCollection)env).Request.Headers;
                     // NOTE: The System.Net client only sends the Connection: keep-alive header on the first connection per service-point.
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task RequestHeaders_ClientSendsCustomHeaders_Success()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
                 {
                     var requestHeaders = new DefaultHttpContext((IFeatureCollection)env).Request.Headers;
                     Assert.Equal(4, requestHeaders.Count);
@@ -62,23 +62,6 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
 
                 await SendRequestAsync("localhost", 8080, "Custom-Header", customValues);
             }
-        }
-        
-        private IDisposable CreateServer(AppFunc app)
-        {
-            IDictionary<string, object> properties = new Dictionary<string, object>();
-            IList<IDictionary<string, object>> addresses = new List<IDictionary<string, object>>();
-            properties["host.Addresses"] = addresses;
-
-            IDictionary<string, object> address = new Dictionary<string, object>();
-            addresses.Add(address);
-
-            address["scheme"] = "http";
-            address["host"] = "localhost";
-            address["port"] = "8080";
-            address["path"] = string.Empty;
-
-            return OwinServerFactory.Create(app, properties);
         }
         
         private async Task<string> SendRequestAsync(string uri)

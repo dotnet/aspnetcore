@@ -17,9 +17,10 @@ using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.PipelineCore;
 using Xunit;
 
-namespace Microsoft.AspNet.Server.WebListener.Tests
+namespace Microsoft.AspNet.Server.WebListener.Test
 {
     using AppFunc = Func<object, Task>;
+    using Microsoft.AspNet.Hosting.Server;
 
     public class ServerTests
     {
@@ -28,7 +29,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task Server_200OK_Success()
         {
-            using (CreateServer(env => 
+            using (Utilities.CreateHttpServer(env => 
                 {
                     return Task.FromResult(0);
                 }))
@@ -41,7 +42,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task Server_SendHelloWorld_Success()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
                 {
                     var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                     httpContext.Response.ContentLength = 11;
@@ -56,7 +57,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task Server_EchoHelloWorld_Success()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
                 {
                     var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                     string input = new StreamReader(httpContext.Request.Body).ReadToEnd();
@@ -73,7 +74,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public void Server_AppException_ClientReset()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 throw new InvalidOperationException();
             }))
@@ -94,7 +95,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
             int requestCount = 0;
             TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
 
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 if (Interlocked.Increment(ref requestCount) == requestLimit)
                 {
@@ -131,7 +132,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
             int requestCount = 0;
             TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
 
-            using (CreateServer(async env =>
+            using (Utilities.CreateHttpServer(async env =>
             {
                 if (Interlocked.Increment(ref requestCount) == requestLimit)
                 {
@@ -161,7 +162,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
             ManualResetEvent aborted = new ManualResetEvent(false);
             ManualResetEvent canceled = new ManualResetEvent(false);
 
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 CancellationToken ct = env.Get<CancellationToken>("owin.CallCancelled");
                 Assert.True(ct.CanBeCanceled, "CanBeCanceled");
@@ -185,39 +186,29 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
                 Assert.True(canceled.WaitOne(interval), "canceled");
             }
         }
+        */
 
         [Fact]
         public async Task Server_SetQueueLimit_Success()
         {
-            using (CreateServer(env =>
-            {
-                // There's no good way to validate this in code. Just execute it to make sure it doesn't crash.
-                // Run "netsh http show servicestate" to see the current value
-                var listener = env.Get<OwinWebListener>("Microsoft.AspNet.Server.WebListener.OwinWebListener");
-                listener.SetRequestQueueLimit(1001);
-                return Task.FromResult(0);
-            }))
-            {
-                string response = await SendRequestAsync(Address);
-                Assert.Equal(string.Empty, response);
-            }
-        }
-        */
-        private IDisposable CreateServer(AppFunc app)
-        {
-            IDictionary<string, object> properties = new Dictionary<string, object>();
-            IList<IDictionary<string, object>> addresses = new List<IDictionary<string, object>>();
-            properties["host.Addresses"] = addresses;
-
             IDictionary<string, object> address = new Dictionary<string, object>();
-            addresses.Add(address);
-
             address["scheme"] = "http";
             address["host"] = "localhost";
             address["port"] = "8080";
             address["path"] = string.Empty;
 
-            return OwinServerFactory.Create(app, properties);
+            ServerFactory factory = new ServerFactory();
+            IServerConfiguration config = factory.CreateConfiguration();
+            config.Addresses.Add(address);
+
+            OwinWebListener listener = (OwinWebListener)config.AdvancedConfiguration;
+            listener.SetRequestQueueLimit(1001);
+
+            using (factory.Start(config, env => Task.FromResult(0)))
+            {
+                string response = await SendRequestAsync(Address);
+                Assert.Equal(string.Empty, response);
+            }
         }
 
         private async Task<string> SendRequestAsync(string uri)

@@ -14,7 +14,7 @@ using Microsoft.AspNet.PipelineCore;
 using Xunit;
 using Xunit.Extensions;
 
-namespace Microsoft.AspNet.Server.WebListener.Tests
+namespace Microsoft.AspNet.Server.WebListener.Test
 {
     using AppFunc = Func<object, Task>;
 
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [InlineData(AuthenticationType.Kerberos | AuthenticationType.Negotiate | AuthenticationType.Ntlm | AuthenticationType.Digest | AuthenticationType.Basic)]
         public async Task AuthTypes_EnabledButNotChalleneged_PassThrough(AuthenticationType authType)
         {
-            using (CreateServer(authType, env =>
+            using (Utilities.CreateAuthServer(authType, env =>
             {
                 return Task.FromResult(0);
             }))
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [InlineData(AuthenticationType.Basic)]
         public async Task AuthType_Specify401_ChallengesAdded(AuthenticationType authType)
         {
-            using (CreateServer(authType, env =>
+            using (Utilities.CreateAuthServer(authType, env =>
             {
                 new DefaultHttpContext((IFeatureCollection)env).Response.StatusCode = 401;
                 return Task.FromResult(0);
@@ -64,8 +64,13 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task MultipleAuthTypes_Specify401_ChallengesAdded()
         {
-            // TODO: Not implemented - Digest
-            using (CreateServer(AuthenticationType.Kerberos | AuthenticationType.Negotiate | AuthenticationType.Ntlm | /*AuthenticationType.Digest |*/ AuthenticationType.Basic, env =>
+            using (Utilities.CreateAuthServer(
+                AuthenticationType.Kerberos
+                | AuthenticationType.Negotiate
+                | AuthenticationType.Ntlm
+                /* | AuthenticationType.Digest TODO: Not implemented */
+                | AuthenticationType.Basic,
+                env =>
             {
                 new DefaultHttpContext((IFeatureCollection)env).Response.StatusCode = 401;
                 return Task.FromResult(0);
@@ -87,7 +92,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         public async Task AuthTypes_Login_Success(AuthenticationType authType)
         {
             int requestCount = 0;
-            using (CreateServer(authType, env =>
+            using (Utilities.CreateAuthServer(authType, env =>
             {
                 requestCount++;
                 / * // TODO: Expose user as feature.
@@ -105,26 +110,6 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
             }
         }
         */
-        private IDisposable CreateServer(AuthenticationType authType, AppFunc app)
-        {
-            IDictionary<string, object> properties = new Dictionary<string, object>();
-            OwinServerFactory.Initialize(properties);
-            OwinWebListener listener = (OwinWebListener)properties[typeof(OwinWebListener).FullName];
-            listener.AuthenticationManager.AuthenticationTypes = authType;
-
-            IList<IDictionary<string, object>> addresses = new List<IDictionary<string, object>>();
-            properties["host.Addresses"] = addresses;
-
-            IDictionary<string, object> address = new Dictionary<string, object>();
-            addresses.Add(address);
-
-            address["scheme"] = "http";
-            address["host"] = "localhost";
-            address["port"] = "8080";
-            address["path"] = string.Empty;
-
-            return OwinServerFactory.Create(app, properties);
-        }
 
         private async Task<HttpResponseMessage> SendRequestAsync(string uri, bool useDefaultCredentials = false)
         {

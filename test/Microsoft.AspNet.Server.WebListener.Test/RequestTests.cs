@@ -12,12 +12,13 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
+using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.PipelineCore;
 using Xunit;
 using Xunit.Extensions;
 
-namespace Microsoft.AspNet.Server.WebListener.Tests
+namespace Microsoft.AspNet.Server.WebListener.Test
 {
     using AppFunc = Func<object, Task>;
 
@@ -28,7 +29,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task Request_SimpleGet_Success()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateServer("http", "localhost", "8080", "/basepath", env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 try
@@ -66,7 +67,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
                     httpContext.Response.Body.Write(body, 0, body.Length);
                 }
                 return Task.FromResult(0);
-            }, "http", "localhost", "8080", "/basepath"))
+            }))
             {
                 string response = await SendRequestAsync(Address + "/basepath/SomePath?SomeQuery");
                 Assert.Equal(string.Empty, response);
@@ -74,16 +75,15 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         }
 
         [Theory]
-        [InlineData("http", "localhost", "8080", "/", "http://localhost:8080/", "", "/")]
-        [InlineData("http", "localhost", "8080", "/basepath/", "http://localhost:8080/basepath", "/basepath", "")]
-        [InlineData("http", "localhost", "8080", "/basepath/", "http://localhost:8080/basepath/", "/basepath", "/")]
-        [InlineData("http", "localhost", "8080", "/basepath/", "http://localhost:8080/basepath/subpath", "/basepath", "/subpath")]
-        [InlineData("http", "localhost", "8080", "/base path/", "http://localhost:8080/base%20path/sub path", "/base path", "/sub path")]
-        [InlineData("http", "localhost", "8080", "/base葉path/", "http://localhost:8080/base%E8%91%89path/sub%E8%91%89path", "/base葉path", "/sub葉path")]
-        public async Task Request_PathSplitting(string scheme, string host, string port, string pathBase, string requestUri,
-            string expectedPathBase, string expectedPath)
+        [InlineData("/", "http://localhost:8080/", "", "/")]
+        [InlineData("/basepath/", "http://localhost:8080/basepath", "/basepath", "")]
+        [InlineData("/basepath/", "http://localhost:8080/basepath/", "/basepath", "/")]
+        [InlineData("/basepath/", "http://localhost:8080/basepath/subpath", "/basepath", "/subpath")]
+        [InlineData("/base path/", "http://localhost:8080/base%20path/sub path", "/base path", "/sub path")]
+        [InlineData("/base葉path/", "http://localhost:8080/base%E8%91%89path/sub%E8%91%89path", "/base葉path", "/sub葉path")]
+        public async Task Request_PathSplitting(string pathBase, string requestUri, string expectedPathBase, string expectedPath)
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateServer("http", "localhost", "8080", pathBase, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 try
@@ -92,11 +92,11 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
                     var connectionInfo = httpContext.GetFeature<IHttpConnection>();
 
                     // Request Keys
-                    Assert.Equal(scheme, requestInfo.Scheme);
+                    Assert.Equal("http", requestInfo.Scheme);
                     Assert.Equal(expectedPath, requestInfo.Path);
                     Assert.Equal(expectedPathBase, requestInfo.PathBase);
                     Assert.Equal(string.Empty, requestInfo.QueryString);
-                    Assert.Equal(port, connectionInfo.LocalPort.ToString());
+                    Assert.Equal(8080, connectionInfo.LocalPort);
                 }
                 catch (Exception ex)
                 {
@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
                     httpContext.Response.Body.Write(body, 0, body.Length);
                 }
                 return Task.FromResult(0);
-            }, scheme, host, port, pathBase))
+            }))
             {
                 string response = await SendRequestAsync(requestUri);
                 Assert.Equal(string.Empty, response);
@@ -148,41 +148,23 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
             }
         }
 
-        private IDisposable CreateServer(AppFunc app, string scheme, string host, string port, string path)
-        {
-            IDictionary<string, object> properties = new Dictionary<string, object>();
-            IList<IDictionary<string, object>> addresses = new List<IDictionary<string, object>>();
-            properties["host.Addresses"] = addresses;
-
-            IDictionary<string, object> address = new Dictionary<string, object>();
-            addresses.Add(address);
-
-            address["scheme"] = scheme;
-            address["host"] = host;
-            address["port"] = port;
-            address["path"] = path;
-
-            return OwinServerFactory.Create(app, properties);
-        }
-
         private IDisposable CreateServer(AppFunc app)
         {
-            IDictionary<string, object> properties = new Dictionary<string, object>();
-            IList<IDictionary<string, object>> addresses = new List<IDictionary<string, object>>();
-            properties["host.Addresses"] = addresses;
+            ServerFactory factory = new ServerFactory();
+            IServerConfiguration config = factory.CreateConfiguration();
 
             foreach (string path in new[] { "/", "/11", "/2/3", "/2", "/11/2" })
             {
                 IDictionary<string, object> address = new Dictionary<string, object>();
-                addresses.Add(address);
-
                 address["scheme"] = "http";
                 address["host"] = "localhost";
                 address["port"] = "8080";
                 address["path"] = path;
+
+                config.Addresses.Add(address);
             }
 
-            return OwinServerFactory.Create(app, properties);
+            return factory.Start(config, app);
         }
 
         private async Task<string> SendRequestAsync(string uri)

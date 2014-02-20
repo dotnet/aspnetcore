@@ -18,7 +18,7 @@ using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.PipelineCore;
 using Xunit;
 
-namespace Microsoft.AspNet.Server.WebListener.Tests
+namespace Microsoft.AspNet.Server.WebListener.Test
 {
     using AppFunc = Func<object, Task>;
 
@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task ResponseSendFile_SupportKeys_Present()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 try
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         {
             ManualResetEvent waitHandle = new ManualResetEvent(false);
             bool? appThrew = null;
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.GetFeature<IHttpSendFile>();
@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task ResponseSendFile_NoHeaders_DefaultsToChunked()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.GetFeature<IHttpSendFile>();
@@ -126,7 +126,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task ResponseSendFile_RelativeFile_Success()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.GetFeature<IHttpSendFile>();
@@ -145,7 +145,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task ResponseSendFile_Chunked_Chunked()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.GetFeature<IHttpSendFile>();
@@ -165,7 +165,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task ResponseSendFile_MultipleChunks_Chunked()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.GetFeature<IHttpSendFile>();
@@ -186,7 +186,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task ResponseSendFile_ChunkedHalfOfFile_Chunked()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.GetFeature<IHttpSendFile>();
@@ -205,7 +205,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task ResponseSendFile_ChunkedOffsetOutOfRange_Throws()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.GetFeature<IHttpSendFile>();
@@ -220,7 +220,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task ResponseSendFile_ChunkedCountOutOfRange_Throws()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.GetFeature<IHttpSendFile>();
@@ -235,7 +235,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task ResponseSendFile_ChunkedCount0_Chunked()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.GetFeature<IHttpSendFile>();
@@ -254,7 +254,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task ResponseSendFile_ContentLength_PassedThrough()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.GetFeature<IHttpSendFile>();
@@ -275,7 +275,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task ResponseSendFile_ContentLengthSpecific_PassedThrough()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.GetFeature<IHttpSendFile>();
@@ -296,7 +296,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task ResponseSendFile_ContentLength0_PassedThrough()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.GetFeature<IHttpSendFile>();
@@ -312,25 +312,6 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
                 Assert.Null(response.Headers.TransferEncodingChunked);
                 Assert.Equal(0, (await response.Content.ReadAsByteArrayAsync()).Length);
             }
-        }
-        
-        private IDisposable CreateServer(AppFunc app)
-        {
-            IList<IDictionary<string, object>> addresses = new List<IDictionary<string, object>>();
-            IDictionary<string, object> properties = new Dictionary<string, object>();
-            properties["host.Addresses"] = addresses;
-
-            IDictionary<string, object> address = new Dictionary<string, object>();
-            addresses.Add(address);
-
-            address["scheme"] = "http";
-            address["host"] = "localhost";
-            address["port"] = "8080";
-            address["path"] = string.Empty;
-            
-            OwinServerFactory.Initialize(properties);
-
-            return OwinServerFactory.Create(app, properties);
         }
 
         private async Task<HttpResponseMessage> SendRequestAsync(string uri)

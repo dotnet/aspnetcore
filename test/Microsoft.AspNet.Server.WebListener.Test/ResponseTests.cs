@@ -14,9 +14,10 @@ using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.PipelineCore;
 using Xunit;
 
-namespace Microsoft.AspNet.Server.WebListener.Tests
+namespace Microsoft.AspNet.Server.WebListener.Test
 {
     using AppFunc = Func<object, Task>;
+    using Microsoft.AspNet.Hosting.Server;
 
     public class ResponseTests
     {
@@ -25,7 +26,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task Response_ServerSendsDefaultResponse_ServerProvidesStatusCodeAndReasonPhrase()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 Assert.Equal(200, httpContext.Response.StatusCode);
@@ -43,7 +44,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task Response_ServerSendsSpecificStatus_ServerProvidesReasonPhrase()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.StatusCode = 201;
@@ -62,7 +63,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task Response_ServerSendsSpecificStatusAndReasonPhrase_PassedThrough()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.StatusCode = 201;
@@ -82,7 +83,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task Response_ServerSendsCustomStatus_NoReasonPhrase()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.StatusCode = 901;
@@ -99,7 +100,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task Response_100_Throws()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.StatusCode = 100;
@@ -114,7 +115,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task Response_0_Throws()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.StatusCode = 0;
@@ -124,23 +125,6 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
                 HttpResponseMessage response = await SendRequestAsync(Address);
                 Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
             }
-        }
-        
-        private IDisposable CreateServer(AppFunc app)
-        {
-            IDictionary<string, object> properties = new Dictionary<string, object>();
-            IList<IDictionary<string, object>> addresses = new List<IDictionary<string, object>>();
-            properties["host.Addresses"] = addresses;
-
-            IDictionary<string, object> address = new Dictionary<string, object>();
-            addresses.Add(address);
-
-            address["scheme"] = "http";
-            address["host"] = "localhost";
-            address["port"] = "8080";
-            address["path"] = string.Empty;
-
-            return OwinServerFactory.Create(app, properties);
         }
 
         private async Task<HttpResponseMessage> SendRequestAsync(string uri)

@@ -15,7 +15,7 @@ using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.PipelineCore;
 using Xunit;
 
-namespace Microsoft.AspNet.Server.WebListener.Tests
+namespace Microsoft.AspNet.Server.WebListener.Test
 {
     using AppFunc = Func<object, Task>;
 
@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task ResponseHeaders_ServerSendsDefaultHeaders_Success()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 return Task.FromResult(0);
             }))
@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task ResponseHeaders_ServerSendsCustomHeaders_Success()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var responseInfo = httpContext.GetFeature<IHttpResponseInformation>();
@@ -69,7 +69,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task ResponseHeaders_ServerSendsConnectionClose_Closed()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var responseInfo = httpContext.GetFeature<IHttpResponseInformation>();
@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task ResponseHeaders_SendsHttp10_Gets11Close()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 env["owin.ResponseProtocol"] = "HTTP/1.0";
                 return Task.FromResult(0);
@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task ResponseHeaders_SendsHttp10WithBody_Gets11Close()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 env["owin.ResponseProtocol"] = "HTTP/1.0";
                 return env.Get<Stream>("owin.ResponseBody").WriteAsync(new byte[10], 0, 10);
@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task ResponseHeaders_HTTP10Request_Gets11Close()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 return Task.FromResult(0);
             }))
@@ -146,7 +146,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task ResponseHeaders_HTTP10Request_RemovesChunkedHeader()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var responseInfo = httpContext.GetFeature<IHttpResponseInformation>();
@@ -173,7 +173,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task Headers_FlushSendsHeaders_Success()
         {
-            using (CreateServer(
+            using (Utilities.CreateHttpServer(
                 env =>
                 {
                     var httpContext = new DefaultHttpContext((IFeatureCollection)env);
@@ -183,7 +183,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
                     responseHeaders.Add("Custom2", new string[] { "value2a, value2b" });
                     var body = responseInfo.Body;
                     body.Flush();
-                    responseInfo.StatusCode = 404; // Ignored
+                    Assert.Throws<InvalidOperationException>(() => responseInfo.StatusCode = 404);
                     responseHeaders.Add("Custom3", new string[] { "value3a, value3b", "value3c" }); // Ignored
                     return Task.FromResult(0);
                 }))
@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
         [Fact]
         public async Task Headers_FlushAsyncSendsHeaders_Success()
         {
-            using (CreateServer(
+            using (Utilities.CreateHttpServer(
                 async env =>
                 {
                     var httpContext = new DefaultHttpContext((IFeatureCollection)env);
@@ -213,7 +213,7 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
                     responseHeaders.Add("Custom2", new string[] { "value2a, value2b" });
                     var body = responseInfo.Body;
                     await body.FlushAsync();
-                    responseInfo.StatusCode = 404; // Ignored
+                    Assert.Throws<InvalidOperationException>(() => responseInfo.StatusCode = 404);
                     responseHeaders.Add("Custom3", new string[] { "value3a, value3b", "value3c" }); // Ignored
                 }))
             {
@@ -227,23 +227,6 @@ namespace Microsoft.AspNet.Server.WebListener.Tests
                 Assert.Equal(1, response.Headers.GetValues("Custom2").Count());
                 Assert.Equal("value2a, value2b", response.Headers.GetValues("Custom2").First());
             }
-        }
-
-        private IDisposable CreateServer(AppFunc app)
-        {
-            IDictionary<string, object> properties = new Dictionary<string, object>();
-            IList<IDictionary<string, object>> addresses = new List<IDictionary<string, object>>();
-            properties["host.Addresses"] = addresses;
-
-            IDictionary<string, object> address = new Dictionary<string, object>();
-            addresses.Add(address);
-
-            address["scheme"] = "http";
-            address["host"] = "localhost";
-            address["port"] = "8080";
-            address["path"] = string.Empty;
-
-            return OwinServerFactory.Create(app, properties);
         }
 
         private async Task<HttpResponseMessage> SendRequestAsync(string uri)
