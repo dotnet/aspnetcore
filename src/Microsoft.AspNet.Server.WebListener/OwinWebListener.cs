@@ -518,7 +518,8 @@ namespace Microsoft.AspNet.Server.WebListener
                 {
                     // TODO: Make disconnect registration lazy
                     RegisterForDisconnectNotification(requestContext);
-                    await _appFunc(requestContext.Features).SupressContext();
+                    FeatureContext featureContext = new FeatureContext(requestContext);
+                    await _appFunc(featureContext.Features).SupressContext();
                     await requestContext.ProcessResponseAsync().SupressContext();
                 }
                 catch (Exception ex)

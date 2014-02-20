@@ -11,17 +11,15 @@ using System.IO;
 using System.Net;
 using System.Runtime.InteropServices;
 #if NET45
-using System.Security.Authentication.ExtendedProtection;
 using System.Security.Cryptography.X509Certificates;
 #endif
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.HttpFeature;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
-    internal sealed class Request : IHttpRequestInformation, IHttpConnection, IHttpTransportLayerSecurity, IDisposable
+    internal sealed class Request : IDisposable
     {
         private RequestContext _requestContext;
         private NativeRequestContext _nativeRequestContext;
@@ -31,11 +29,9 @@ namespace Microsoft.AspNet.Server.WebListener
         private ulong _contextId;
 
         private SslStatus _sslStatus;
-        private string _scheme;
 
         private string _httpMethod;
         private Version _httpVersion;
-        private string _httpProtocolVersion;
 
         // private Uri _requestUri;
         private string _rawUrl;
@@ -53,17 +49,9 @@ namespace Microsoft.AspNet.Server.WebListener
         private BoundaryType _contentBoundaryType;
         private long _contentLength;
         private Stream _nativeStream;
-        private Stream _requestStream;
 
         private SocketAddress _localEndPoint;
         private SocketAddress _remoteEndPoint;
-#if NET45
-        private IPAddress _remoteIpAddress;
-        private IPAddress _localIpAddress;
-#endif
-        private int? _remotePort;
-        private int? _localPort;
-        private bool? _isLocal;
 
         private IPrincipal _user;
 
@@ -215,25 +203,6 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-#if NET45
-        X509Certificate IHttpTransportLayerSecurity.ClientCertificate
-        {
-            get
-            {
-                if (_clientCert == null)
-                {
-                    // TODO: Sync
-                    ((IHttpTransportLayerSecurity)this).LoadAsync().Wait();
-                }
-                return _clientCert;
-            }
-            set
-            {
-                _clientCert = value;
-            }
-        }
-#endif
-
         // TODO: Move this to the constructor, that's where it will be called.
         internal long ContentLength64
         {
@@ -270,33 +239,15 @@ namespace Microsoft.AspNet.Server.WebListener
 
         public IDictionary<string, string[]> Headers
         {
-            get
-            {
-                return _headers;
-            }
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException("value");
-                }
-                _headers = value;
-            }
+            get { return _headers; }
         }
 
         public string Method
         {
-            get
-            {
-                return _httpMethod;
-            }
-            set
-            {
-                _httpMethod = value;
-            }
+            get { return _httpMethod; }
         }
 
-        internal Stream NativeStream
+        public Stream Body
         {
             get
             {
@@ -309,60 +260,25 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        public Stream Body
-        {
-            get
-            {
-                if (_requestStream == null)
-                {
-                    // TODO: Move this to the constructor (or a lazy Env dictionary)
-                    _requestStream = NativeStream;
-                }
-                return _requestStream;
-            }
-            set
-            {
-                _requestStream = value;
-            }
-        }
-
         public string PathBase
         {
-            get
-            {
-                return _pathBase;
-            }
-            set
-            {
-                _pathBase = value;
-            }
+            get { return _pathBase; }
         }
 
         public string Path
         {
-            get
-            {
-                return _path;
-            }
-            set
-            {
-                _path = value;
-            }
+            get { return _path; }
         }
 
         public bool IsLocal
         {
             get
             {
-                if (!_isLocal.HasValue)
-                {
-                    _isLocal = LocalEndPoint.GetIPAddress().Equals(RemoteEndPoint.GetIPAddress());
-                }
-                return _isLocal.Value;
-            }
-            set
-            {
-                _isLocal = value;
+#if NET45
+                return LocalEndPoint.GetIPAddress().Equals(RemoteEndPoint.GetIPAddress());
+#else
+                throw new NotImplementedException();
+#endif
             }
         }
 
@@ -394,30 +310,19 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             get
             {
-                if (_httpProtocolVersion == null)
+                if (_httpVersion.Major == 1)
                 {
-                    if (_httpVersion.Major == 1)
+                    if (_httpVersion.Minor == 1)
                     {
-                        if (_httpVersion.Minor == 1)
-                        {
-                            _httpProtocolVersion = "HTTP/1.1";
-                        }
-                        else if (_httpVersion.Minor == 0)
-                        {
-                            _httpProtocolVersion = "HTTP/1.0";
-                        }
+                        return "HTTP/1.1";
                     }
-                    else
+                    else if (_httpVersion.Minor == 0)
                     {
-                        _httpProtocolVersion = "HTTP/" + _httpVersion.ToString(2);
+                        return "HTTP/1.0";
                     }
                 }
-                return _httpProtocolVersion;
-            }
-            set
-            {
-                // TODO: Set _httpVersion?
-                _httpProtocolVersion = value;
+
+                return "HTTP/" + _httpVersion.ToString(2);
             }
         }
 
@@ -432,7 +337,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        internal SocketAddress RemoteEndPoint
+        private SocketAddress RemoteEndPoint
         {
             get
             {
@@ -445,7 +350,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        internal SocketAddress LocalEndPoint
+        private SocketAddress LocalEndPoint
         {
             get
             {
@@ -457,85 +362,30 @@ namespace Microsoft.AspNet.Server.WebListener
                 return _localEndPoint;
             }
         }
-
+#if NET45
         public IPAddress RemoteIpAddress
         {
-            get
-            {
-                if (_remoteIpAddress == null)
-                {
-                    _remoteIpAddress = RemoteEndPoint.GetIPAddress();
-                }
-                return _remoteIpAddress;
-            }
-            set
-            {
-                _remoteIpAddress = value;
-            }
+            get { return RemoteEndPoint.GetIPAddress(); }
         }
 
         public IPAddress LocalIpAddress
         {
-            get
-            {
-                if (_localIpAddress == null)
-                {
-                    _localIpAddress = LocalEndPoint.GetIPAddress();
-                }
-                return _localIpAddress;
-            }
-            set
-            {
-                _localIpAddress = value;
-            }
+            get { return LocalEndPoint.GetIPAddress(); }
         }
-
+#endif
         public int RemotePort
         {
-            get
-            {
-                if (!_remotePort.HasValue)
-                {
-                    _remotePort = RemoteEndPoint.GetPort();
-                }
-                return _remotePort.Value;
-            }
-            set
-            {
-                _remotePort = value;
-            }
+            get { return RemoteEndPoint.GetPort(); }
         }
 
         public int LocalPort
         {
-            get
-            {
-                if (!_localPort.HasValue)
-                {
-                    _localPort = LocalEndPoint.GetPort();
-                }
-                return _localPort.Value;
-            }
-            set
-            {
-                _localPort = value;
-            }
+            get { return LocalEndPoint.GetPort(); }
         }
 
         public string Scheme
         {
-            get
-            {
-                if (_scheme == null)
-                {
-                    _scheme = IsSecureConnection ? Constants.HttpsScheme : Constants.HttpScheme;
-                }
-                return _scheme;
-            }
-            set
-            {
-                _scheme = value;
-            }
+            get { return IsSecureConnection ? Constants.HttpsScheme : Constants.HttpScheme; }
         }
         /*
         internal Uri RequestUri
@@ -594,21 +444,21 @@ namespace Microsoft.AspNet.Server.WebListener
 #endif
         }
 
+#if NET45
         // Populates the client certificate.  The result may be null if there is no client cert.
         // TODO: Does it make sense for this to be invoked multiple times (e.g. renegotiate)? Client and server code appear to
         // enable this, but it's unclear what Http.Sys would do.
-        async Task IHttpTransportLayerSecurity.LoadAsync()
+        public async Task<X509Certificate> GetClientCertificateAsync()
         {
             if (SslStatus == SslStatus.Insecure)
             {
                 // Non-SSL
-                return;
+                return null;
             }
             // TODO: Verbose log
-#if NET45
             if (_clientCert != null)
             {
-                return;
+                return _clientCert;
             }
 
             ClientCertLoader certLoader = new ClientCertLoader(RequestContext);
@@ -630,10 +480,9 @@ namespace Microsoft.AspNet.Server.WebListener
                 }
                 throw;
             }
-#else
-            throw new NotImplementedException();
-#endif
+            return _clientCert;
         }
+#endif
 
         // Use this to save the blob from dispose if this object was never used (never given to a user) and is about to be
         // disposed.

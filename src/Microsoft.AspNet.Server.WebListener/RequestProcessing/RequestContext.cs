@@ -8,15 +8,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Contracts;
-using System.Globalization;
-using System.IO;
 using System.Runtime.InteropServices;
-using System.Security.Authentication.ExtendedProtection;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.FeatureModel;
-using Microsoft.AspNet.HttpFeature;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
@@ -27,7 +21,6 @@ namespace Microsoft.AspNet.Server.WebListener
     {
         private static readonly string[] ZeroContentLength = new[] { "0" };
 
-        private FeatureCollection _features;
         private OwinWebListener _server;
         private Request _request;
         private Response _response;
@@ -44,16 +37,7 @@ namespace Microsoft.AspNet.Server.WebListener
             _request = new Request(this, _memoryBlob);
             _response = new Response(this);
             _cts = new CancellationTokenSource();
-
-            _features = new FeatureCollection();
-            PopulateFeatures();
-
             _request.ReleasePins();
-        }
-
-        internal IFeatureCollection Features
-        {
-            get { return _features; }
         }
 
         internal Request Request
@@ -99,31 +83,6 @@ namespace Microsoft.AspNet.Server.WebListener
             {
                 return Request.RequestId;
             }
-        }
-
-        private void PopulateFeatures()
-        {
-            _features.Add(typeof(IHttpRequestInformation), Request);
-            _features.Add(typeof(IHttpConnection), Request);
-            if (Request.IsSecureConnection)
-            {
-                // TODO: Should this feature be conditional? Should we add this for HTTP requests?
-                _features.Add(typeof(IHttpTransportLayerSecurity), Request);
-            }
-            _features.Add(typeof(IHttpResponseInformation), Response);
-            _features.Add(typeof(IHttpSendFile), Response);
-
-            // TODO: 
-            // _environment.CallCancelled = _cts.Token;
-            // _environment.User = _request.User;
-            // Opaque/WebSockets
-            // Channel binding
-
-            /*
-            // Server
-            _environment.Listener = _server;
-            _environment.ConnectionId = _request.ConnectionId;            
-             */
         }
         /*
         public bool TryGetOpaqueUpgrade(ref Action<IDictionary<string, object>, OpaqueFunc> value)
@@ -265,7 +224,7 @@ namespace Microsoft.AspNet.Server.WebListener
 
             Request.SwitchToOpaqueMode();
             Response.SwitchToOpaqueMode();
-            opaqueEnv[Constants.OpaqueStreamKey] = new OpaqueStream(Request.NativeStream, Response.NativeStream);
+            opaqueEnv[Constants.OpaqueStreamKey] = new OpaqueStream(Request.Body, Response.Body);
 
             return opaqueEnv;
         }

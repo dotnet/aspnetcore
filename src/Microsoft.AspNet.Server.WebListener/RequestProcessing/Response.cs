@@ -8,23 +8,19 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.HttpFeature;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
-    internal sealed unsafe class Response : IHttpResponseInformation, IHttpSendFile, IDisposable
+    internal sealed unsafe class Response : IDisposable
     {
         private ResponseState _responseState;
         private IDictionary<string, string[]> _headers;
         private string _reasonPhrase;
         private ResponseStream _nativeStream;
-        private Stream _responseStream;
         private long _contentLength;
         private BoundaryType _boundaryType;
         private UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE _nativeResponse;
@@ -79,17 +75,31 @@ namespace Microsoft.AspNet.Server.WebListener
                 {
                     throw new ArgumentOutOfRangeException("value", value, string.Format(Resources.Exception_InvalidStatusCode, value));
                 }
+                CheckResponseStarted();
                 _nativeResponse.StatusCode = (ushort)value;
+            }
+        }
+
+        private void CheckResponseStarted()
+        {
+            if (_responseState >= ResponseState.SentHeaders)
+            {
+                throw new InvalidOperationException("Headers already sent.");
             }
         }
 
         public string ReasonPhrase
         {
             get { return _reasonPhrase; }
-            set { _reasonPhrase = value; }
+            set
+            {
+                // TODO: Validate user input for illegal chars, length limit, etc.?
+                CheckResponseStarted();
+                _reasonPhrase = value;
+            }
         }
 
-        internal ResponseStream NativeStream
+        internal ResponseStream Body
         {
             get
             {
@@ -99,25 +109,8 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        public Stream Body
-        {
-            get
-            {
-                if (_responseStream == null)
-                {
-                    _responseStream = NativeStream;
-                }
-                return _responseStream;
-            }
-            set
-            {
-                _responseStream = value;
-            }
-        }
-
         internal string GetReasonPhrase(int statusCode)
         {
-            // TODO: Validate user input for illegal chars, length limit, etc.?
             string reasonPhrase = ReasonPhrase;
             if (string.IsNullOrWhiteSpace(reasonPhrase))
             {

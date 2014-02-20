@@ -89,6 +89,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 uint statusCode;
                 unsafe
                 {
+                    // TODO: Don't add MoreData flag if content-length == 0?
                     flags |= UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
                     statusCode = _requestContext.Response.SendHeaders(null, null, flags, false);
                 }
@@ -120,6 +121,7 @@ namespace Microsoft.AspNet.Server.WebListener
             // TODO: Real cancellation
             cancellationToken.ThrowIfCancellationRequested();
 
+            // TODO: Don't add MoreData flag if content-length == 0?
             flags |= UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
             ResponseStreamAsyncResult asyncResult = new ResponseStreamAsyncResult(this, null, null, null, 0, 0, _requestContext.Response.BoundaryType == BoundaryType.Chunked, false);
 
