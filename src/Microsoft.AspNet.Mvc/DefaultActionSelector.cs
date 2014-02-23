@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Mvc
 
         protected virtual ActionDescriptor SelectBestCandidate(RequestContext context, List<ActionDescriptor> candidates)
         {
-            var valueProviders = _valueProviderFactory.Select(vpf => vpf.CreateValueProvider(context)).ToArray();
+            var valueProviders = _valueProviderFactory.Select(vpf => vpf.GetValueProvider(context)).ToArray();
 
             var applicableCandiates = new List<ActionDescriptorCandidate>();
             foreach (var action in candidates)

@@ -61,6 +61,114 @@ namespace Microsoft.AspNet.Mvc.ModelBinding {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The argument &apos;{0}&apos; is null or empty..
+        /// </summary>
+        internal static string ArgumentNullOrEmpty {
+            get {
+                return ResourceManager.GetString("ArgumentNullOrEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The property {0}.{1} could not be found..
+        /// </summary>
+        internal static string Common_PropertyNotFound {
+            get {
+                return ResourceManager.GetString("Common_PropertyNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The key is invalid JQuery syntax because it is missing a closing bracket..
+        /// </summary>
+        internal static string JQuerySyntaxMissingClosingBracket {
+            get {
+                return ResourceManager.GetString("JQuerySyntaxMissingClosingBracket", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The value &apos;{0}&apos; is not valid for {1}..
+        /// </summary>
+        internal static string ModelBinderConfig_ValueInvalid {
+            get {
+                return ResourceManager.GetString("ModelBinderConfig_ValueInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A value is required..
+        /// </summary>
+        internal static string ModelBinderConfig_ValueRequired {
+            get {
+                return ResourceManager.GetString("ModelBinderConfig_ValueRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The binding context has a null Model, but this binder requires a non-null model of type &apos;{0}&apos;..
+        /// </summary>
+        internal static string ModelBinderUtil_ModelCannotBeNull {
+            get {
+                return ResourceManager.GetString("ModelBinderUtil_ModelCannotBeNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The binding context has a Model of type &apos;{0}&apos;, but this binder can only operate on models of type &apos;{1}&apos;..
+        /// </summary>
+        internal static string ModelBinderUtil_ModelInstanceIsWrong {
+            get {
+                return ResourceManager.GetString("ModelBinderUtil_ModelInstanceIsWrong", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The binding context cannot have a null ModelMetadata..
+        /// </summary>
+        internal static string ModelBinderUtil_ModelMetadataCannotBeNull {
+            get {
+                return ResourceManager.GetString("ModelBinderUtil_ModelMetadataCannotBeNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The binding context has a ModelType of &apos;{0}&apos;, but this binder can only operate on models of type &apos;{1}&apos;..
+        /// </summary>
+        internal static string ModelBinderUtil_ModelTypeIsWrong {
+            get {
+                return ResourceManager.GetString("ModelBinderUtil_ModelTypeIsWrong", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The ModelMetadata property must be set before accessing this property..
+        /// </summary>
+        internal static string ModelBindingContext_ModelMetadataMustBeSet {
+            get {
+                return ResourceManager.GetString("ModelBindingContext_ModelMetadataMustBeSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The parameter conversion from type &apos;{0}&apos; to type &apos;{1}&apos; failed. See the inner exception for more information..
+        /// </summary>
+        internal static string ValueProviderResult_ConversionThrew {
+            get {
+                return ResourceManager.GetString("ValueProviderResult_ConversionThrew", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The parameter conversion from type &apos;{0}&apos; to type &apos;{1}&apos; failed because no type converter can convert between these types..
+        /// </summary>
+        internal static string ValueProviderResult_NoConverterExists {
+            get {
+                return ResourceManager.GetString("ValueProviderResult_NoConverterExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The model item passed into the ViewData is of type &apos;{0}&apos;, but this ViewData instance requires a model item of type &apos;{1}&apos;..
         /// </summary>
         internal static string ViewData_WrongTModelType {
@@ -70,7 +178,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The model item passed into the ViewData is null, but this ViewData instance requires a non-null model item of type &apos;{0}&apos;..
+        ///   Looks up a localized string similar to The model item passed is null, but this ViewData instance requires a non-null model item of type &apos;{0}&apos;..
         /// </summary>
         internal static string ViewDataDictionary_ModelCannotBeNull {
             get {

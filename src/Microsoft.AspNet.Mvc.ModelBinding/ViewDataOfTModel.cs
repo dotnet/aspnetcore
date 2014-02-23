@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         protected override void SetModel(object value)
         {
             // IsCompatibleObject verifies if the value is either an instance of TModel or if value happens to be null that TModel is nullable type.
-            bool castWillSucceed = value.IsCompatibleObject<TModel>();
+            bool castWillSucceed = typeof(TModel).IsCompatibleWith(value);
 
             if (castWillSucceed)
             {
