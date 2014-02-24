@@ -129,6 +129,9 @@
   <data name="TemplateRoute_CannotHaveOptionalParameterInMultiSegment" xml:space="preserve">
     <value>A path segment that contains more than one section, such as a literal section or a parameter, cannot contain an optional parameter.</value>
   </data>
+  <data name="TemplateRoute_CatchAllCannotBeOptional" xml:space="preserve">
+    <value>A catch-all parameter cannot be marked optional.</value>
+  </data>
   <data name="TemplateRoute_CatchAllMustBeLast" xml:space="preserve">
     <value>A catch-all parameter can only appear as the last segment of the route template.</value>
   </data>

@@ -1,8 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 using Xunit.Extensions;
 
@@ -382,6 +381,15 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             Assert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("{foorb?}-bar-{z}"),
                 "A path segment that contains more than one section, such as a literal section or a parameter, cannot contain an optional parameter." + Environment.NewLine +
+                "Parameter name: routeTemplate");
+        }
+
+        [Fact]
+        public void InvalidTemplate_CatchAllMarkedOptional()
+        {
+            Assert.Throws<ArgumentException>(
+                () => TemplateParser.Parse("{a}/{*b?}"),
+                "A catch-all parameter cannot be marked optional." + Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
         

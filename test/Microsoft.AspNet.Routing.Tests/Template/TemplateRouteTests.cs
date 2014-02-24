@@ -722,6 +722,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
             // Assert
             Assert.NotNull(match);
+            Assert.Equal(2, match.Values.Count);
+            Assert.Equal("Home", match.Values["controller"]);
             Assert.Equal("Index", match.Values["action"]);
         }
 
@@ -737,6 +739,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
             // Assert
             Assert.NotNull(match);
+            Assert.Equal(1, match.Values.Count);
+            Assert.Equal("Home", match.Values["controller"]);
             Assert.False(match.Values.ContainsKey("action"));
         }
 
@@ -752,6 +756,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
             // Assert
             Assert.NotNull(match);
+            Assert.Equal(2, match.Values.Count);
+            Assert.Equal("Home", match.Values["controller"]);
             Assert.Equal("Index", match.Values["action"]);
             Assert.False(match.Values.ContainsKey("id"));
         }

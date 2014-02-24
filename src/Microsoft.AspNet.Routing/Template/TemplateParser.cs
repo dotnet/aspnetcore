@@ -178,6 +178,12 @@ namespace Microsoft.AspNet.Routing.Template
             var isCatchAll = rawName.StartsWith("*", StringComparison.Ordinal);
             var isOptional = rawName.EndsWith("?", StringComparison.Ordinal);
 
+            if (isCatchAll && isOptional)
+            {
+                context.Error = Resources.TemplateRoute_CatchAllCannotBeOptional;
+                return false;
+            }
+
             rawName = isCatchAll ? rawName.Substring(1) : rawName;
             rawName = isOptional ? rawName.Substring(0, rawName.Length - 1) : rawName;
 

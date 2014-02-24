@@ -43,6 +43,14 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <summary>
+        /// A catch-all parameter cannot be marked optional.
+        /// </summary>
+        internal static string TemplateRoute_CatchAllCannotBeOptional
+        {
+            get { return GetString("TemplateRoute_CatchAllCannotBeOptional"); }
+        }
+
+        /// <summary>
         /// A catch-all parameter can only appear as the last segment of the route template.
         /// </summary>
         internal static string TemplateRoute_CatchAllMustBeLast
