@@ -5,33 +5,36 @@ var VERSION='0.2.1-dev'
 use namespace='System'
 use namespace='System.IO'
 use namespace='System.Collections.Generic'
+use namespace='System.Text.RegularExpressions'
 use import="BuildEnv"
-
-var repos='${new Dictionary<string,string> {
-/*    {"KRuntime", "git@github.com:aspnet/KRuntime.git"}, */ // Let's not build the sdk :)
-
-    {"HttpAbstractions", "git@github.com:aspnet/HttpAbstractions.git"},
-    {"DependencyInjection", "git@github.com:aspnet/DependencyInjection.git"},
-    {"FileSystem", "git@github.com:aspnet/FileSystem.git"},
-    {"Logging", "git@github.com:aspnet/Logging.git"},
-    {"Configuration", "git@github.com:aspnet/Configuration.git"},
-    {"DataProtection", "git@github.com:aspnet/DataProtection.git"},
-    {"Identity", "git@github.com:aspnet/Identity.git"},
-    {"StaticFiles", "git@github.com:aspnet/StaticFiles.git"},
-    {"System.Data.Common", "git@github.com:aspnet/System.Data.Common.git"},
-    {"Microsoft.Data.SQLite", "git@github.com:aspnet/Microsoft.Data.SQLite.git"},
-    {"Data", "git@github.com:aspnet/Data.git"},
-    {"Razor", "git@github.com:aspnet/Razor.git"},
-    {"Routing", "git@github.com:aspnet/Routing.git"},
-    {"Hosting", "git@github.com:aspnet/Hosting.git"},
-    {"Helios", "git@github.com:aspnet/Helios.git"},
-    {"WebFx", "git@github.com:aspnet/WebFx.git"},
-    {"WebListener", "git@github.com:aspnet/WebListener.git"},
-    {"Entropy", "git@github.com:aspnet/Entropy.git"},
-}}'
 
 default BASE_DIR='${Directory.GetCurrentDirectory()}'
 default TARGET_DIR='${Path.Combine(BASE_DIR, "artifacts", "build")}'
+
+var useHttps='${UseHttps(BASE_DIR)}'
+var gitHubUriPrefix='${useHttps ? "https://github.com/aspnet/" : "git@github.com:aspnet/"}'
+var repos='${new Dictionary<string,string> {
+/*    {"KRuntime",              gitHubUriPrefix + "KRuntime.git"}, */ // Let's not build the sdk :)
+
+    {"HttpAbstractions",      gitHubUriPrefix + "HttpAbstractions.git"},
+    {"DependencyInjection",   gitHubUriPrefix + "DependencyInjection.git"},
+    {"FileSystem",            gitHubUriPrefix + "FileSystem.git"},
+    {"Logging",               gitHubUriPrefix + "Logging.git"},
+    {"Configuration",         gitHubUriPrefix + "Configuration.git"},
+    {"DataProtection",        gitHubUriPrefix + "DataProtection.git"},
+    {"Identity",              gitHubUriPrefix + "Identity.git"},
+    {"StaticFiles",           gitHubUriPrefix + "StaticFiles.git"},
+    {"System.Data.Common",    gitHubUriPrefix + "System.Data.Common.git"},
+    {"Microsoft.Data.SQLite", gitHubUriPrefix + "Microsoft.Data.SQLite.git"},
+    {"Data",                  gitHubUriPrefix + "Data.git"},
+    {"Razor",                 gitHubUriPrefix + "Razor.git"},
+    {"Routing",               gitHubUriPrefix + "Routing.git"},
+    {"Hosting",               gitHubUriPrefix + "Hosting.git"},
+    {"Helios",                gitHubUriPrefix + "Helios.git"},
+    {"WebFx",                 gitHubUriPrefix + "WebFx.git"},
+    {"WebListener",           gitHubUriPrefix + "WebListener.git"},
+    {"Entropy",               gitHubUriPrefix + "Entropy.git"},
+}}'
 
 @{
     VERSION += "-" + BuildNumber;
@@ -145,3 +148,68 @@ macro name='GitConfig' gitOptionName='string' gitOptionValue='string' gitFolder=
 
 macro name='Exec' program='string' commandline='string' workingdir='string'
     exec
+
+functions
+    @{
+        bool UseHttps(string directory)
+        {
+            var filename = Path.Combine(directory, ".git", "config");
+            if (!File.Exists(filename))
+            {
+                Log.Warn(string.Format("Unable to find '{0}' file", filename));
+                return false;
+            }
+
+            var url = ReadOriginUrl(filename);
+            return IsHttpsUrl(url);
+        }
+
+        // Perform equivalent of `git config remote.origin.url` but directly
+        // read config file to get value.
+        string ReadOriginUrl(string filename)
+        {
+            // Subsection portion of configuration name is case-sensitive; rest
+            // of name is case-insensitive.
+            var beginOriginSection = new Regex(@"^\[(?i:remote) ""origin""\]\s*$");
+            var beginSection = new Regex(@"^\[");
+            var urlLine = new Regex(@"^\s+url = (\S+)\s*$", RegexOptions.IgnoreCase);
+
+            var inRemoteOriginSection = false;
+            foreach (var line in File.ReadAllLines(filename))
+            {
+                if (beginOriginSection.IsMatch(line))
+                {
+                    inRemoteOriginSection = true;
+                    continue;
+                }
+
+                if (inRemoteOriginSection)
+                {
+                    if (beginSection.IsMatch(line))
+                    {
+                        // Read through the section without finding URL line.
+                        break;
+                    }
+
+                    var match = urlLine.Match(line);
+                    if (match.Success && match.Groups.Count == 2 && match.Groups[1].Success)
+                    {
+                        return match.Groups[1].Value;
+                    }
+                }
+            }
+
+            Log.Warn(string.Format("Unable to parse '{0}' file", filename));
+            return null;
+        }
+
+        static bool IsHttpsUrl(string url)
+        {
+            if (string.IsNullOrEmpty(url))
+            {
+                return false;
+            }
+
+            return url.StartsWith("https://", System.StringComparison.OrdinalIgnoreCase);
+        }
+    }
