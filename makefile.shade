@@ -8,7 +8,8 @@ use namespace='System.Collections.Generic'
 use import="BuildEnv"
 
 var repos='${new Dictionary<string,string> {
-    {"KRuntime", "git@github.com:aspnet/KRuntime.git"},
+/*    {"KRuntime", "git@github.com:aspnet/KRuntime.git"}, */ // Let's not build the sdk :)
+
     {"HttpAbstractions", "git@github.com:aspnet/HttpAbstractions.git"},
     {"DependencyInjection", "git@github.com:aspnet/DependencyInjection.git"},
     {"FileSystem", "git@github.com:aspnet/FileSystem.git"},
@@ -17,15 +18,16 @@ var repos='${new Dictionary<string,string> {
     {"DataProtection", "git@github.com:aspnet/DataProtection.git"},
     {"Identity", "git@github.com:aspnet/Identity.git"},
     {"StaticFiles", "git@github.com:aspnet/StaticFiles.git"},
+    {"System.Data.Common", "git@github.com:aspnet/System.Data.Common.git"},
+    {"Microsoft.Data.SQLite", "git@github.com:aspnet/Microsoft.Data.SQLite.git"},
     {"Data", "git@github.com:aspnet/Data.git"},
     {"Razor", "git@github.com:aspnet/Razor.git"},
     {"Routing", "git@github.com:aspnet/Routing.git"},
-    {"WebFx", "git@github.com:aspnet/WebFx.git"},
     {"Hosting", "git@github.com:aspnet/Hosting.git"},
     {"Helios", "git@github.com:aspnet/Helios.git"},
+    {"WebFx", "git@github.com:aspnet/WebFx.git"},
     {"WebListener", "git@github.com:aspnet/WebListener.git"},
-    {"System.Data.Common", "git@github.com:aspnet/System.Data.Common.git"},
-    {"Microsoft.Data.SQLite", "git@github.com:aspnet/Microsoft.Data.SQLite.git"}
+    {"Entropy", "git@github.com:aspnet/Entropy.git"},
 }}'
 
 default BASE_DIR='${Directory.GetCurrentDirectory()}'
