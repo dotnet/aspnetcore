@@ -25,6 +25,8 @@ namespace Microsoft.AspNet.Hosting
 
             yield return DescribeService<IBuilderFactory, BuilderFactory>(configuration);
             yield return DescribeService<IHttpContextFactory, HttpContextFactory>(configuration);
+
+            yield return DescribeService<ITypeActivator, TypeActivator>(configuration);
         }
 
         public static IServiceDescriptor DescribeService<TService, TImplementation>(IConfiguration configuration,
