@@ -1,13 +1,17 @@
-﻿
+﻿using System;
+
 namespace Microsoft.AspNet.Mvc
 {
-    // This is a placeholder and is missing things that we'll need for real model binding
     public class ParameterBindingInfo
     {
-        public bool IsOptional { get; set; }
+        public ParameterBindingInfo(string prefix, Type parameterType)
+        {
+            Prefix = prefix;
+            ParameterType = parameterType;
+        }
 
-        public bool IsFromBody { get; set; }
+        public string Prefix { get; private set; }
 
-        public string Prefix { get; set; }
+        public Type ParameterType { get; private set; }
     }
 }

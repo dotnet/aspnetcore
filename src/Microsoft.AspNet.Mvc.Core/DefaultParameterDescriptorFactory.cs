@@ -1,5 +1,4 @@
-﻿
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -7,24 +6,29 @@ namespace Microsoft.AspNet.Mvc
     {
         public ParameterDescriptor GetDescriptor(ParameterInfo parameter)
         {
-            var bindingInfo = new ParameterBindingInfo()
-            {
-                IsOptional = parameter.IsOptional,
-                IsFromBody = IsFromBody(parameter),
-                Prefix = parameter.Name,
-            };
+            bool isFromBody = IsFromBody(parameter);
 
-            return new ParameterDescriptor()
+            return new ParameterDescriptor
             {
                 Name = parameter.Name,
-                Binding = bindingInfo,
+                IsOptional = parameter.IsOptional,
+                ParameterBindingInfo = isFromBody ? null : GetParameterBindingInfo(parameter),
+                BodyParameterInfo = isFromBody ? GetBodyParameterInfo(parameter) : null
             };
         }
-
         public virtual bool IsFromBody(ParameterInfo parameter)
         {
-            // Assume for now everything is read from value providers
-            return false;
+            return parameter.GetCustomAttribute<FromBodyAttribute>() != null;
+        }
+
+        private ParameterBindingInfo GetParameterBindingInfo(ParameterInfo parameter)
+        {
+            return new ParameterBindingInfo(parameter.Name, parameter.ParameterType);
+        }
+
+        private BodyParameterInfo GetBodyParameterInfo(ParameterInfo parameter)
+        {
+            return new BodyParameterInfo(parameter.ParameterType);
         }
     }
 }

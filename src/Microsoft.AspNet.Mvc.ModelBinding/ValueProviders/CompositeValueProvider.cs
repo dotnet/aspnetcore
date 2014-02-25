@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -14,8 +15,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
         }
 
-        public CompositeValueProvider(IList<IValueProvider> list)
-            : base(list)
+        public CompositeValueProvider(IEnumerable<IValueProvider> valueProviders)
+            : base(valueProviders.ToList())
         {
         }
 

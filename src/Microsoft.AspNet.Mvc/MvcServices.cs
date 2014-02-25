@@ -4,7 +4,6 @@ using Microsoft.AspNet.DependencyInjection.NestedProviders;
 using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Razor;
-using Microsoft.AspNet.Mvc.Razor.Compilation;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -28,8 +27,6 @@ namespace Microsoft.AspNet.Mvc
             Add<IActionResultHelper, ActionResultHelper>();
             Add<IActionResultFactory, ActionResultFactory>();
             Add<IParameterDescriptorFactory, DefaultParameterDescriptorFactory>();
-            Add<IValueProviderFactory, RouteValueValueProviderFactory>();
-            Add<IValueProviderFactory, QueryStringValueProviderFactory>();
             Add<IControllerAssemblyProvider, AppDomainControllerAssemblyProvider>();
             Add<IActionDiscoveryConventions, DefaultActionDiscoveryConventions>();
             AddInstance<IFileSystem>(new PhysicalFileSystem(appRoot));
@@ -48,11 +45,25 @@ namespace Microsoft.AspNet.Mvc
             Add<IVirtualPathViewFactory, VirtualPathViewFactory>();
             Add<IViewEngine, RazorViewEngine>();
 
+            Add<IModelMetadataProvider, DataAnnotationsModelMetadataProvider>();
+            Add<IActionBindingContextProvider, DefaultActionBindingContextProvider>();
+
             // This is temporary until DI has some magic for it
             Add<INestedProviderManager<ActionDescriptorProviderContext>, NestedProviderManager<ActionDescriptorProviderContext>>();
             Add<INestedProviderManager<ActionInvokerProviderContext>, NestedProviderManager<ActionInvokerProviderContext>>();
             Add<INestedProvider<ActionDescriptorProviderContext>, ReflectedActionDescriptorProvider>();
             Add<INestedProvider<ActionInvokerProviderContext>, ActionInvokerProvider>();
+
+            Add<IValueProviderFactory, RouteValueValueProviderFactory>();
+            Add<IValueProviderFactory, QueryStringValueProviderFactory>();
+
+            Add<IModelBinder, TypeConverterModelBinder>();
+            Add<IModelBinder, TypeMatchModelBinder>();
+            Add<IModelBinder, GenericModelBinder>();
+            Add<IModelBinder, MutableObjectModelBinder>();
+            Add<IModelBinder, ComplexModelDtoModelBinder>();
+
+            Add<IInputFormatter, JsonInputFormatter>();
         }
 
         private void Add<T, TU>() where TU : T

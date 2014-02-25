@@ -7,13 +7,16 @@ namespace Microsoft.AspNet.Mvc
         private readonly IActionResultFactory _actionResultFactory;
         private readonly IServiceProvider _serviceProvider;
         private readonly IControllerFactory _controllerFactory;
+        private readonly IActionBindingContextProvider _bindingProvider;
 
         public ActionInvokerProvider(IActionResultFactory actionResultFactory,
                                      IControllerFactory controllerFactory,
+                                     IActionBindingContextProvider bindingProvider,
                                      IServiceProvider serviceProvider)
         {
             _actionResultFactory = actionResultFactory;
             _controllerFactory = controllerFactory;
+            _bindingProvider = bindingProvider;
             _serviceProvider = serviceProvider;
         }
 
@@ -24,21 +27,20 @@ namespace Microsoft.AspNet.Mvc
 
         public void Invoke(ActionInvokerProviderContext context, Action callNext)
         {
-            var ad = context.ActionContext.ActionDescriptor as ReflectedActionDescriptor;
+            var actionDescriptor = context.ActionContext.ActionDescriptor as ReflectedActionDescriptor;
 
-            if (ad != null)
+            if (actionDescriptor != null)
             {
                 context.Result = new ReflectedActionInvoker(
-                    context.ActionContext,
-                    ad,
-                    _actionResultFactory,
-                    _controllerFactory,
-                    _serviceProvider);
+                                    context.ActionContext,
+                                    actionDescriptor,
+                                    _actionResultFactory,
+                                    _controllerFactory,
+                                    _bindingProvider,
+                                    _serviceProvider);
             }
 
             callNext();
         }
-
-
     }
 }

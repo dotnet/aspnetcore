@@ -3,21 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.DependencyInjection;
-using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace Microsoft.AspNet.Mvc
 {
     public class DefaultActionSelector : IActionSelector
     {
         private readonly INestedProviderManager<ActionDescriptorProviderContext> _actionDescriptorProvider;
-        private readonly IEnumerable<IValueProviderFactory> _valueProviderFactory;
+        private readonly IActionBindingContextProvider _bindingProvider;
 
-        public DefaultActionSelector(
-            INestedProviderManager<ActionDescriptorProviderContext> actionDescriptorProvider, 
-            IEnumerable<IValueProviderFactory> valueProviderFactories)
+        public DefaultActionSelector(INestedProviderManager<ActionDescriptorProviderContext> actionDescriptorProvider, 
+                                     IActionBindingContextProvider bindingProvider)
         {
             _actionDescriptorProvider = actionDescriptorProvider;
-            _valueProviderFactory = valueProviderFactories;
+            _bindingProvider = bindingProvider;
         }
 
         public async Task<ActionDescriptor> SelectAsync(RequestContext context)
@@ -61,9 +59,6 @@ namespace Microsoft.AspNet.Mvc
 
         protected virtual async Task<ActionDescriptor> SelectBestCandidate(RequestContext context, List<ActionDescriptor> candidates)
         {
-            var valueProviders = await Task.WhenAll(_valueProviderFactory.Select(vpf => vpf.GetValueProviderAsync(context)));
-            valueProviders = valueProviders.Where(vp => vp != null).ToArray();
-
             var applicableCandiates = new List<ActionDescriptorCandidate>();
             foreach (var action in candidates)
             {
@@ -72,18 +67,20 @@ namespace Microsoft.AspNet.Mvc
                 {
                     Action = action,
                 };
+                var actionContext = new ActionContext(context.HttpContext, context.RouteValues, action);
+                var actionBindingContext = await _bindingProvider.GetActionBindingContextAsync(actionContext);
 
-                foreach (var parameter in action.Parameters.Where(p => !p.Binding.IsFromBody))
+                foreach (var parameter in action.Parameters.Where(p => p.ParameterBindingInfo != null))
                 {
-                    if (valueProviders.Any(vp => vp.ContainsPrefix(parameter.Binding.Prefix)))
+                    if (actionBindingContext.ValueProvider.ContainsPrefix(parameter.ParameterBindingInfo.Prefix))
                     {
                         candidate.FoundParameters++;
-                        if (parameter.Binding.IsOptional)
+                        if (parameter.IsOptional)
                         {
                             candidate.FoundOptionalParameters++;
                         }
                     }
-                    else if (!parameter.Binding.IsOptional)
+                    else if (!parameter.IsOptional)
                     {
                         isApplicable = false;
                         break;

@@ -10,6 +10,22 @@ namespace MvcSample
             return View("MyView", User());
         }
 
+        /// <summary>
+        /// Action that exercises query\form based model binding. 
+        /// </summary>
+        public IActionResult SaveUser(User user)
+        {
+            return View("MyView", user);
+        }
+
+        /// <summary>
+        /// Action that exercises input formatter
+        /// </summary>
+        public IActionResult Post([FromBody]User user)
+        {
+            return View("MyView", user);
+        }
+
         public IActionResult Something()
         {
             return new ContentResult

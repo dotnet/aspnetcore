@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -13,21 +16,24 @@ namespace Microsoft.AspNet.Mvc
         private readonly IActionResultFactory _actionResultFactory;
         private readonly IServiceProvider _serviceProvider;
         private readonly IControllerFactory _controllerFactory;
+        private readonly IActionBindingContextProvider _bindingProvider;
 
         public ReflectedActionInvoker(ActionContext actionContext,
                                       ReflectedActionDescriptor descriptor,
                                       IActionResultFactory actionResultFactory,
                                       IControllerFactory controllerFactory,
+                                      IActionBindingContextProvider bindingContextProvider,
                                       IServiceProvider serviceProvider)
         {
             _actionContext = actionContext;
             _descriptor = descriptor;
             _actionResultFactory = actionResultFactory;
             _controllerFactory = controllerFactory;
+            _bindingProvider = bindingContextProvider;
             _serviceProvider = serviceProvider;
         }
 
-        public Task InvokeActionAsync()
+        public async Task InvokeActionAsync()
         {
             IActionResult actionResult = null;
 
@@ -39,7 +45,8 @@ namespace Microsoft.AspNet.Mvc
             }
             else
             {
-                Initialize(controller);
+                var modelState = new ModelStateDictionary();
+                InitializeController(controller, modelState);
 
                 var method = _descriptor.MethodInfo;
 
@@ -49,17 +56,19 @@ namespace Microsoft.AspNet.Mvc
                 }
                 else
                 {
-                    object actionReturnValue = method.Invoke(controller, null);
+                    var parameterValues = await GetParameterValues(modelState);
+
+                    object actionReturnValue = method.Invoke(controller, GetArgumentValues(parameterValues));
 
                     actionResult = _actionResultFactory.CreateActionResult(method.ReturnType, actionReturnValue, _actionContext);
                 }
             }
 
             // TODO: This will probably move out once we got filters
-            return actionResult.ExecuteResultAsync(_actionContext);
+            await actionResult.ExecuteResultAsync(_actionContext);
         }
 
-        private void Initialize(object controller)
+        private void InitializeController(object controller, ModelStateDictionary modelState)
         {
             var controllerType = controller.GetType();
 
@@ -71,6 +80,10 @@ namespace Microsoft.AspNet.Mvc
                     {
                         prop.SetValue(controller, _actionContext.HttpContext);
                     }
+                }
+                else if (prop.Name == "ModelState" && prop.PropertyType == typeof(ModelStateDictionary))
+                {
+                    prop.SetValue(controller, modelState);
                 }
             }
 
@@ -85,6 +98,58 @@ namespace Microsoft.AspNet.Mvc
                              .Select(p => _serviceProvider.GetService(p.ParameterType)).ToArray();
 
             method.Invoke(controller, args);
+        }
+
+        private async Task<IDictionary<string, object>> GetParameterValues(ModelStateDictionary modelState)
+        {
+            var actionBindingContext = await _bindingProvider.GetActionBindingContextAsync(_actionContext);
+            var parameters = _descriptor.Parameters;
+
+            var parameterValues = new Dictionary<string, object>(parameters.Count, StringComparer.Ordinal);
+            for (int i = 0; i < parameters.Count; i++)
+            {
+                var parameter = parameters[i];
+                if (parameter.BodyParameterInfo != null)
+                {
+                    var inputFormatterContext = actionBindingContext.CreateInputFormatterContext(
+                                                        modelState,
+                                                        parameter);
+                    await actionBindingContext.InputFormatter.ReadAsync(inputFormatterContext);
+                    parameterValues[parameter.Name] = inputFormatterContext.Model;
+                }
+                else
+                {
+                    var modelBindingContext = actionBindingContext.CreateModelBindingContext(
+                                                        modelState,
+                                                        parameter);
+                    actionBindingContext.ModelBinder.BindModel(modelBindingContext);
+                    parameterValues[parameter.Name] = modelBindingContext.Model;
+                }
+
+            }
+
+            return parameterValues;
+        }
+
+        private object[] GetArgumentValues(IDictionary<string, object> parameterValues)
+        {
+            var parameters = _descriptor.MethodInfo.GetParameters();
+            var arguments = new object[parameters.Length];
+
+            for (int i = 0; i < arguments.Length; i++)
+            {
+                object value;
+                if (parameterValues.TryGetValue(parameters[i].Name, out value))
+                {
+                    arguments[i] = value;
+                }
+                else
+                {
+                    arguments[i] = parameters[i].DefaultValue;
+                }
+            }
+
+            return arguments;
         }
     }
 }
