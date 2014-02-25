@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Routing.Template
     {
         private readonly IDictionary<string, object> _defaults;
         private readonly IRouteEndpoint _endpoint;
-        private readonly ParsedTemplate _parsedRoute;
+        private readonly Template _parsedTemplate;
         private readonly string _routeTemplate;
 
         public TemplateRoute(IRouteEndpoint endpoint, string routeTemplate)
@@ -25,11 +25,11 @@ namespace Microsoft.AspNet.Routing.Template
             }
 
             _endpoint = endpoint;
-            _routeTemplate = routeTemplate == null ? String.Empty : routeTemplate;
+            _routeTemplate = routeTemplate ?? String.Empty;
             _defaults = defaults ?? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
             // The parser will throw for invalid routes.
-            _parsedRoute = TemplateParser.Parse(RouteTemplate);
+            _parsedTemplate = TemplateParser.Parse(RouteTemplate);
         }
 
         public IDictionary<string, object> Defaults
@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Routing.Template
                 requestPath = requestPath.Substring(1);
             }
 
-            IDictionary<string, object> values = _parsedRoute.Match(requestPath, _defaults);
+            IDictionary<string, object> values = _parsedTemplate.Match(requestPath, _defaults);
             if (values == null)
             {
                 // If we got back a null value set, that means the URI did not match

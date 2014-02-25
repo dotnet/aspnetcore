@@ -2,31 +2,28 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.Contracts;
-using System.Linq;
 
 namespace Microsoft.AspNet.Routing.Template
 {
-    [DebuggerDisplay("{DebuggerToString()}")]
-    public class ParsedTemplate
+    public class TemplateMatcher
     {
         private const string SeparatorString = "/";
         private const char SeparatorChar = '/';
 
         private static readonly char[] Delimiters = new char[] { SeparatorChar };
 
-        public ParsedTemplate(List<TemplateSegment> segments)
+        public TemplateMatcher(Template template)
         {
-            if (segments == null)
+            if (template == null)
             {
-                throw new ArgumentNullException("segments");
+                throw new ArgumentNullException("template");
             }
 
-            Segments = segments;
+            Template = template;
         }
 
-        public List<TemplateSegment> Segments { get; private set; }
+        public Template Template { get; private set; }
 
         public IDictionary<string, object> Match(string requestPath, IDictionary<string, object> defaults)
         {
@@ -41,7 +38,7 @@ namespace Microsoft.AspNet.Routing.Template
 
             for (int i = 0; i < requestSegments.Length; i++)
             {
-                var routeSegment = Segments.Count > i ? Segments[i] : null;
+                var routeSegment = Template.Segments.Count > i ? Template.Segments[i] : null;
                 var requestSegment = requestSegments[i];
 
                 if (routeSegment == null)
@@ -64,7 +61,7 @@ namespace Microsoft.AspNet.Routing.Template
                             return null;
                         }
                     }
-                    else 
+                    else
                     {
                         Contract.Assert(part.IsParameter);
 
@@ -118,11 +115,11 @@ namespace Microsoft.AspNet.Routing.Template
                 }
             }
 
-            for (int i = requestSegments.Length; i < Segments.Count; i++)
+            for (int i = requestSegments.Length; i < Template.Segments.Count; i++)
             {
                 // We've matched the request path so far, but still have remaining route segments. These need
                 // to be all single-part parameter segments with default values or else they won't match.
-                var routeSegment = Segments[i];
+                var routeSegment = Template.Segments[i];
                 if (routeSegment.Parts.Count > 1)
                 {
                     // If it has more than one part it must contain literals, so it can't match.
@@ -297,9 +294,5 @@ namespace Microsoft.AspNet.Routing.Template
             return (lastIndex == 0) || routeSegment.Parts[0].IsParameter;
         }
 
-        private string DebuggerToString()
-        {
-            return string.Join(SeparatorString, Segments.Select(s => s.DebuggerToString()));
-        }
     }
 }

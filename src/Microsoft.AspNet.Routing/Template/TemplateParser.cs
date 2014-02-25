@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Routing.Template
         private const char EqualsSign = '=';
         private const char QuestionMark = '?';
         
-        public static ParsedTemplate Parse(string routeTemplate)
+        public static Template Parse(string routeTemplate)
         {
             if (routeTemplate == null)
             {
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Routing.Template
 
             if (IsAllValid(context, segments))
             {
-                return new ParsedTemplate(segments);
+                return new Template(segments);
             }
             else
             {

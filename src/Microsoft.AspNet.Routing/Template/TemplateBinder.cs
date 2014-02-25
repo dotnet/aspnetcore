@@ -1,0 +1,580 @@
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
+
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.Contracts;
+using System.Globalization;
+using System.Text;
+using System.Text.RegularExpressions;
+
+namespace Microsoft.AspNet.Routing.Template
+{
+    public class TemplateBinder
+    {
+        public TemplateBinder(Template template)
+        {
+            if (template == null)
+            {
+                throw new ArgumentNullException("template");
+            }
+
+            Template = template;
+        }
+
+        public Template Template { get; private set; }
+
+        public BoundRouteTemplate Bind(IDictionary<string, object> defaults, IDictionary<string, object> ambientValues, IDictionary<string, object> values)
+        {
+            if (values == null)
+            {
+                throw new ArgumentNullException("values");
+            }
+
+            var context = GetAcceptedValues(defaults, ambientValues, values);
+            if (context == null)
+            {
+                // We couldn't get values for all the required parameters
+                return null;
+            }
+
+            return BindValues(context);
+        }
+
+        // Step 1: Get the list of values we're going to try to use to match and generate this URI
+        private TemplateBindingContext GetAcceptedValues(IDictionary<string, object> defaults, IDictionary<string, object> ambientValues, IDictionary<string, object> values)
+        {
+            Contract.Assert(values != null);
+
+            var context = new TemplateBindingContext(defaults, values);
+
+            // Find out which entries in the URI are valid for the URI we want to generate.
+            // If the URI had ordered parameters a="1", b="2", c="3" and the new values
+            // specified that b="9", then we need to invalidate everything after it. The new
+            // values should then be a="1", b="9", c=<no value>.
+            for (var i = 0; i < Template.Parameters.Count; i++)
+            {
+                var parameter = Template.Parameters[i];
+
+                // If it's a parameter subsegment, examine the current value to see if it matches the new value
+                var parameterName = parameter.Name;
+
+                object newParameterValue;
+                var hasNewParameterValue = values.TryGetValue(parameterName, out newParameterValue);
+                if (hasNewParameterValue)
+                {
+                    context.Use(parameterName);
+                }
+
+                object currentParameterValue = null;
+                var hasCurrentParameterValue = ambientValues != null && ambientValues.TryGetValue(parameterName, out currentParameterValue);
+
+                if (hasNewParameterValue && hasCurrentParameterValue)
+                {
+                    if (!RoutePartsEqual(currentParameterValue, newParameterValue))
+                    {
+                        // Stop copying current values when we find one that doesn't match
+                        break;
+                    }
+                }
+
+                // If the parameter is a match, add it to the list of values we will use for URI generation
+                if (hasNewParameterValue)
+                {
+                    if (IsRoutePartNonEmpty(newParameterValue))
+                    {
+                        context.Accept(parameterName, newParameterValue);
+                    }
+                }
+                else
+                {
+                    if (hasCurrentParameterValue)
+                    {
+                        context.Accept(parameterName, currentParameterValue);
+                    }
+                }
+            };
+
+            // Add all remaining new values to the list of values we will use for URI generation
+            foreach (var kvp in values)
+            {
+                if (IsRoutePartNonEmpty(kvp.Value))
+                {
+                    context.Accept(kvp.Key, kvp.Value);
+                }
+            }
+
+            // Add all current values that aren't in the URI at all
+            if (ambientValues != null)
+            {
+                foreach (var kvp in ambientValues)
+                {
+                    var parameter = GetParameter(kvp.Key);
+                    if (parameter == null)
+                    {
+                        context.Accept(kvp.Key, kvp.Value);
+                    }
+                }
+            }
+
+            // Accept all remaining default values if they match a required parameter
+            for (int i = 0; i < Template.Parameters.Count; i++)
+            {
+                var parameter = Template.Parameters[i];
+                if (parameter.IsOptional || parameter.IsCatchAll)
+                {
+                    continue;
+                }
+
+                if (context.NeedsValue(parameter.Name))
+                {
+                    // Add the default value only if there isn't already a new value for it and
+                    // only if it actually has a default value, which we determine based on whether
+                    // the parameter value is required.
+                    context.AcceptDefault(parameter.Name);
+                }
+            }
+
+            // Validate that all required parameters have a value.
+            for (var i = 0; i < Template.Parameters.Count; i++)
+            {
+                var parameter = Template.Parameters[i];
+                if (parameter.IsOptional || parameter.IsCatchAll)
+                {
+                    continue;
+                }
+
+                if (!context.AcceptedValues.ContainsKey(parameter.Name))
+                {
+                    // We don't have a value for this parameter, so we can't generate a url.
+                    return null;
+                }
+            }
+
+            // Any default values that don't appear as parameters are treated like filters. Any new values
+            // provided must match these defaults.
+            if (context.Filters != null)
+            {
+                foreach (var filter in context.Filters)
+                {
+                    var parameter = GetParameter(filter.Key);
+                    if (parameter != null)
+                    {
+                        continue;
+                    }
+
+                    object value;
+                    if (values.TryGetValue(filter.Key, out value))
+                    {
+                        if (RoutePartsEqual(value, filter.Value))
+                        {
+                            context.Use(filter.Key);
+                        }
+                        else
+                        {
+                            // If there is a non-parameterized value in the route and there is a
+                            // new value for it and it doesn't match, this route won't match.
+                            return null;
+                        }
+                    }
+                }
+            }
+
+            return context;
+        }
+
+        // Step 2: If the route is a match generate the appropriate URI
+        private BoundRouteTemplate BindValues(TemplateBindingContext bindingContext)
+        {
+            var context = new UriBuildingContext();
+
+            for (var i = 0; i < Template.Segments.Count; i++)
+            {
+                Contract.Assert(context.BufferState == SegmentState.Beginning);
+                Contract.Assert(context.UriState == SegmentState.Beginning);
+
+                var segment = Template.Segments[i];
+
+                for (var j = 0; j < segment.Parts.Count; j++)
+                {
+                    var part = segment.Parts[j];
+
+                    if (part.IsLiteral)
+                    {
+                        if (!context.Accept(part.Text))
+                        {
+                            return null;
+                        }
+                    }
+                    else if (part.IsParameter)
+                    {
+                        // If it's a parameter, get its value
+                        object value;
+                        var hasValue = bindingContext.AcceptedValues.TryGetValue(part.Name, out value);
+                        if (hasValue)
+                        {
+                            bindingContext.Use(part.Name);
+                        }
+
+                        var converted = Convert.ToString(value, CultureInfo.InvariantCulture);
+                        if (bindingContext.AcceptedDefaultValues.Contains(part.Name))
+                        {
+                            // If the accepted value is the same as the default value buffer it since
+                            // we won't necessarily add it to the URI we generate.
+                            if (!context.Buffer(converted))
+                            {
+                                return null;
+                            }
+                        }
+                        else
+                        {
+                            if (!context.Accept(converted))
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                }
+
+                context.EndSegment();
+            }
+
+            // Encode the URI before we append the query string, otherwise we would double encode the query string
+            var encoded = new StringBuilder();
+            encoded.Append(UriEncode(context.Build()));
+
+            // Generate the query string
+            var firstParam = true;
+            foreach (var kvp in bindingContext.UnusedValues)
+            {
+                var converted = Convert.ToString(kvp.Value, CultureInfo.InvariantCulture);
+                if (String.IsNullOrEmpty(converted))
+                {
+                    continue;
+                }
+
+                encoded.Append(firstParam ? '?' : '&');
+                firstParam = false;
+
+                encoded.Append(Uri.EscapeDataString(kvp.Key));
+                encoded.Append('=');
+                encoded.Append(Uri.EscapeDataString(converted));
+            }
+
+            return new BoundRouteTemplate()
+            {
+                Path = encoded.ToString(),
+            };
+        }
+
+        private static string UriEncode(string str)
+        {
+            string escape = Uri.EscapeUriString(str);
+            return Regex.Replace(escape, "([#;?:@&=+$,])", EscapeReservedCharacters);
+        }
+
+        private static string EscapeReservedCharacters(Match m)
+        {
+            return "%" + Convert.ToUInt16(m.Value[0]).ToString("x2", CultureInfo.InvariantCulture);
+        }
+
+        private TemplatePart GetParameter(string name)
+        {
+            for (int i = 0; i < Template.Parameters.Count; i++)
+            {
+                var parameter = Template.Parameters[i];
+                if (string.Equals(parameter.Name, name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return parameter;
+                }
+            }
+
+            return null;
+        }
+
+        private static bool RoutePartsEqual(object a, object b)
+        {
+            string sa = a as string;
+            string sb = b as string;
+
+            if (sa != null && sb != null)
+            {
+                // For strings do a case-insensitive comparison
+                return string.Equals(sa, sb, StringComparison.OrdinalIgnoreCase);
+            }
+            else
+            {
+                if (a != null && b != null)
+                {
+                    // Explicitly call .Equals() in case it is overridden in the type
+                    return a.Equals(b);
+                }
+                else
+                {
+                    // At least one of them is null. Return true if they both are
+                    return a == b;
+                }
+            }
+        }
+
+        private static bool IsRoutePartNonEmpty(object routePart)
+        {
+            var routePartString = routePart as string;
+            if (routePartString == null)
+            {
+                return routePart != null;
+            }
+            else
+            {
+                return routePartString.Length > 0;
+            }
+        }
+
+        [DebuggerDisplay("{DebuggerToString(),nq}")]
+        private class TemplateBindingContext
+        {
+            private readonly IDictionary<string, object> _defaults;
+
+            private readonly Dictionary<string, object> _acceptedValues;
+            private readonly HashSet<string> _acceptedDefaultValues; 
+            private readonly Dictionary<string, object> _unusedValues;
+            private readonly Dictionary<string, object> _filters;
+
+            public TemplateBindingContext(IDictionary<string, object> defaults, IDictionary<string, object> values)
+            {
+                if (values == null)
+                {
+                    throw new ArgumentNullException("values");
+                }
+
+                _defaults = defaults;
+
+                _acceptedValues = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                _acceptedDefaultValues = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                _unusedValues = new Dictionary<string, object>(values, StringComparer.OrdinalIgnoreCase);
+
+                if (_defaults != null)
+                {
+                    _filters = new Dictionary<string, object>(defaults, StringComparer.OrdinalIgnoreCase);
+                }
+            }
+
+            public Dictionary<string, object> AcceptedValues
+            {
+                get { return _acceptedValues; }
+            }
+
+            /// <remarks>
+            /// These are values that are equivalent to the default. These aren't written to the url unless
+            /// necessary.
+            /// </remarks>>
+            public HashSet<string> AcceptedDefaultValues
+            {
+                get { return _acceptedDefaultValues; }
+            }
+
+            public Dictionary<string, object> UnusedValues
+            {
+                get { return _unusedValues; }
+            }
+
+            public Dictionary<string, object> Filters
+            {
+                get { return _filters; }
+            }
+
+            public void Accept(string key, object value)
+            {
+                if (!_acceptedValues.ContainsKey(key))
+                {
+                    _acceptedValues.Add(key, value);
+
+                    object defaultValue;
+                    if (_defaults != null && _defaults.TryGetValue(key, out defaultValue))
+                    {
+                        if (RoutePartsEqual(value, defaultValue))
+                        {
+                            _acceptedDefaultValues.Add(key);
+                        }
+                    }
+                }
+            }
+
+            public void AcceptDefault(string key)
+            {
+                Contract.Assert(!_acceptedValues.ContainsKey(key));
+
+                object value;
+                if (_defaults != null && _defaults.TryGetValue(key, out value))
+                {
+                    _filters.Remove(key);
+                    _acceptedValues.Add(key, value);
+
+                    _acceptedDefaultValues.Add(key);
+                }
+            }
+
+            public bool NeedsValue(string key)
+            {
+                return !_acceptedValues.ContainsKey(key);
+            }
+
+            public void Use(string key)
+            {
+                _unusedValues.Remove(key);
+            }
+
+            private string DebuggerToString()
+            {
+                return string.Format(
+                    "{{Accepted: '{0}' Filters: '{1}'}}",
+                    string.Join(", ", _acceptedValues.Keys),
+                    string.Join(", ", _filters.Keys));
+            }
+        }
+
+        [DebuggerDisplay("{DebuggerToString(),nq}")]
+        private class UriBuildingContext
+        {
+            // Holds the 'accepted' parts of the uri.
+            private readonly StringBuilder _uri;
+
+            // Holds the 'optional' parts of the uri. We need a secondary buffer to handle cases where an optional
+            // segment is in the middle of the uri. We don't know whether or not we need to write it out - if it's
+            // followed by other optional segments than we will just throw it away.
+            private readonly StringBuilder _buffer;
+
+            private bool _hasEmptySegment;
+
+            public UriBuildingContext()
+            {
+                _uri = new StringBuilder();
+                _buffer = new StringBuilder();
+
+                BufferState = SegmentState.Beginning;
+                UriState = SegmentState.Beginning;
+
+            }
+
+            public SegmentState BufferState { get; private set; }
+
+            public SegmentState UriState { get; private set; }
+
+            public bool Accept(string value)
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    if (UriState == SegmentState.Inside || BufferState == SegmentState.Inside)
+                    {
+                        // We can't write an 'empty' part inside a segment
+                        return false;
+                    }
+                    else
+                    {
+                        _hasEmptySegment = true;
+                        return true;
+                    }
+                }
+                else if (_hasEmptySegment)
+                {
+                    // We're trying to write text after an empty segment - this is not allowed.
+                    return false;
+                }
+
+                _uri.Append(_buffer);
+                _buffer.Clear();
+
+                if (UriState == SegmentState.Beginning && BufferState == SegmentState.Beginning)
+                {
+                    if (_uri.Length != 0)
+                    {
+                        _uri.Append("/");
+                    }
+                }
+
+                BufferState = SegmentState.Inside;
+                UriState = SegmentState.Inside;
+
+                _uri.Append(value);
+                return true;
+            }
+
+            public bool Buffer(string value)
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    if (BufferState == SegmentState.Inside)
+                    {
+                        // We can't write an 'empty' part inside a segment
+                        return false;
+                    }
+                    else
+                    {
+                        _hasEmptySegment = true;
+                        return true;
+                    }
+                }
+                else if (_hasEmptySegment)
+                {
+                    // We're trying to write text after an empty segment - this is not allowed.
+                    return false;
+                }
+
+                if (UriState == SegmentState.Inside)
+                {
+                    // We've already written part of this segment so there's no point in buffering, we need to
+                    // write out the rest or give up.
+                    var result = Accept(value);
+
+                    // We've already checked the conditions that could result in a rejected part, so this should
+                    // always be true.
+                    Contract.Assert(result);
+
+                    return result;
+                }
+
+                if (UriState == SegmentState.Beginning && BufferState == SegmentState.Beginning)
+                {
+                    if (_uri.Length != 0 || _buffer.Length != 0)
+                    {
+                        _buffer.Append("/");
+                    }
+
+                    BufferState = SegmentState.Inside;
+                }
+
+                _buffer.Append(value);
+                return true;
+            }
+
+            internal void EndSegment()
+            {
+                BufferState = SegmentState.Beginning;
+                UriState = SegmentState.Beginning;
+            }
+
+            internal string Build()
+            {
+                // We can ignore any currently buffered segments - they are are guaranteed to be 'defaults'.
+                return _uri.ToString();
+            }
+
+            private string DebuggerToString()
+            {
+                return string.Format("{{Accepted: '{0}' Buffered: '{1}'}}", _uri.ToString(), _buffer.ToString());
+            }
+        }
+
+        // Segments are treated as all-or-none. We should never output a partial segment.
+        // If we add any subsegment of this segment to the generated URI, we have to add
+        // the complete match. For example, if the subsegment is "{p1}-{p2}.xml" and we
+        // used a value for {p1}, we have to output the entire segment up to the next "/".
+        // Otherwise we could end up with the partial segment "v1" instead of the entire
+        // segment "v1-v2.xml".
+        private enum SegmentState
+        {
+            Beginning,
+            Inside,
+        }
+    }
+}

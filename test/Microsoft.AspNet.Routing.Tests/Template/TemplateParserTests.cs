@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "cool";
 
-            var expected = new ParsedTemplate(new List<TemplateSegment>());
+            var expected = new Template(new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateLiteral("cool"));
 
@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var actual = TemplateParser.Parse(template);
 
             // Assert
-            Assert.Equal<ParsedTemplate>(expected, actual, new TemplateParsedRouteEqualityComparer());
+            Assert.Equal<Template>(expected, actual, new TemplateEqualityComparer());
         }
 
         [Fact]
@@ -32,15 +32,16 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "{p}";
 
-            var expected = new ParsedTemplate(new List<TemplateSegment>());
+            var expected = new Template(new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p", false, false));
+            expected.Parameters.Add(expected.Segments[0].Parts[0]);
 
             // Act
             var actual = TemplateParser.Parse(template);
 
             // Assert
-            Assert.Equal<ParsedTemplate>(expected, actual, new TemplateParsedRouteEqualityComparer());
+            Assert.Equal<Template>(expected, actual, new TemplateEqualityComparer());
         }
 
         [Fact]
@@ -49,15 +50,16 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "{p?}";
 
-            var expected = new ParsedTemplate(new List<TemplateSegment>());
+            var expected = new Template(new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p", false, true));
+            expected.Parameters.Add(expected.Segments[0].Parts[0]);
 
             // Act
             var actual = TemplateParser.Parse(template);
 
             // Assert
-            Assert.Equal<ParsedTemplate>(expected, actual, new TemplateParsedRouteEqualityComparer());
+            Assert.Equal<Template>(expected, actual, new TemplateEqualityComparer());
         }
 
         [Fact]
@@ -66,7 +68,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "cool/awesome/super";
 
-            var expected = new ParsedTemplate(new List<TemplateSegment>());
+            var expected = new Template(new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateLiteral("cool"));
             expected.Segments.Add(new TemplateSegment());
@@ -78,7 +80,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var actual = TemplateParser.Parse(template);
 
             // Assert
-            Assert.Equal<ParsedTemplate>(expected, actual, new TemplateParsedRouteEqualityComparer());
+            Assert.Equal<Template>(expected, actual, new TemplateEqualityComparer());
         }
 
         [Fact]
@@ -87,19 +89,25 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "{p1}/{p2}/{*p3}";
 
-            var expected = new ParsedTemplate(new List<TemplateSegment>());
+            var expected = new Template(new List<TemplateSegment>());
+
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1", false, false));
+            expected.Parameters.Add(expected.Segments[0].Parts[0]);
+
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[1].Parts.Add(TemplatePart.CreateParameter("p2", false, false));
+            expected.Parameters.Add(expected.Segments[1].Parts[0]);
+
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[2].Parts.Add(TemplatePart.CreateParameter("p3", true, false));
+            expected.Parameters.Add(expected.Segments[2].Parts[0]);
 
             // Act
             var actual = TemplateParser.Parse(template);
 
             // Assert
-            Assert.Equal<ParsedTemplate>(expected, actual, new TemplateParsedRouteEqualityComparer());
+            Assert.Equal<Template>(expected, actual, new TemplateEqualityComparer());
         }
 
         [Fact]
@@ -108,16 +116,17 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "cool-{p1}";
 
-            var expected = new ParsedTemplate(new List<TemplateSegment>());
+            var expected = new Template(new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateLiteral("cool-"));
             expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1", false, false));
+            expected.Parameters.Add(expected.Segments[0].Parts[1]);
 
             // Act
             var actual = TemplateParser.Parse(template);
 
             // Assert
-            Assert.Equal<ParsedTemplate>(expected, actual, new TemplateParsedRouteEqualityComparer());
+            Assert.Equal<Template>(expected, actual, new TemplateEqualityComparer());
         }
 
         [Fact]
@@ -126,16 +135,17 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "{p1}-cool";
 
-            var expected = new ParsedTemplate(new List<TemplateSegment>());
+            var expected = new Template(new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1", false, false));
+            expected.Parameters.Add(expected.Segments[0].Parts[0]);
             expected.Segments[0].Parts.Add(TemplatePart.CreateLiteral("cool-"));
 
             // Act
             var actual = TemplateParser.Parse(template);
 
             // Assert
-            Assert.Equal<ParsedTemplate>(expected, actual, new TemplateParsedRouteEqualityComparer());
+            Assert.Equal<Template>(expected, actual, new TemplateEqualityComparer());
         }
 
         [Fact]
@@ -144,17 +154,19 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "{p1}-cool-{p2}";
 
-            var expected = new ParsedTemplate(new List<TemplateSegment>());
+            var expected = new Template(new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1", false, false));
+            expected.Parameters.Add(expected.Segments[0].Parts[0]);
             expected.Segments[0].Parts.Add(TemplatePart.CreateLiteral("cool-"));
             expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p2", false, false));
+            expected.Parameters.Add(expected.Segments[0].Parts[2]);
 
             // Act
             var actual = TemplateParser.Parse(template);
 
             // Assert
-            Assert.Equal<ParsedTemplate>(expected, actual, new TemplateParsedRouteEqualityComparer());
+            Assert.Equal<Template>(expected, actual, new TemplateEqualityComparer());
         }
 
         [Fact]
@@ -163,17 +175,18 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "cool-{p1}-awesome";
 
-            var expected = new ParsedTemplate(new List<TemplateSegment>());
+            var expected = new Template(new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateLiteral("cool-"));
             expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1", false, false));
+            expected.Parameters.Add(expected.Segments[0].Parts[1]);
             expected.Segments[0].Parts.Add(TemplatePart.CreateLiteral("-awesome"));
 
             // Act
             var actual = TemplateParser.Parse(template);
 
             // Assert
-            Assert.Equal<ParsedTemplate>(expected, actual, new TemplateParsedRouteEqualityComparer());
+            Assert.Equal<Template>(expected, actual, new TemplateEqualityComparer());
         }
 
         [Fact]
@@ -393,9 +406,9 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                 "Parameter name: routeTemplate");
         }
         
-        private class TemplateParsedRouteEqualityComparer : IEqualityComparer<ParsedTemplate>
+        private class TemplateEqualityComparer : IEqualityComparer<Template>
         {
-            public bool Equals(ParsedTemplate x, ParsedTemplate y)
+            public bool Equals(Template x, Template y)
             {
                 if (x == null && y == null)
                 {
@@ -421,18 +434,23 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
                         for (int j = 0; j < x.Segments[i].Parts.Count; j++)
                         {
-                            var xPart = x.Segments[i].Parts[j];
-                            var yPart = y.Segments[i].Parts[j];
-
-                            if (xPart.IsLiteral != yPart.IsLiteral ||
-                                xPart.IsParameter != yPart.IsParameter ||
-                                xPart.IsCatchAll != yPart.IsCatchAll ||
-                                xPart.IsOptional != yPart.IsOptional ||
-                                !String.Equals(xPart.Name, yPart.Name, StringComparison.Ordinal) ||
-                                !String.Equals(xPart.Name, yPart.Name, StringComparison.Ordinal))
+                            if (!Equals(x.Segments[i].Parts[j], y.Segments[i].Parts[j]))
                             {
                                 return false;
                             }
+                        }
+                    }
+
+                    if (x.Parameters.Count != y.Parameters.Count)
+                    {
+                        return false;
+                    }
+
+                    for (int i = 0; i < x.Parameters.Count; i++)
+                    {
+                        if (!Equals(x.Parameters[i], y.Parameters[i]))
+                        {
+                            return false;
                         }
                     }
 
@@ -440,7 +458,23 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                 }
             }
 
-            public int GetHashCode(ParsedTemplate obj)
+            private bool Equals(TemplatePart x, TemplatePart y)
+            {
+                if (x.IsLiteral != y.IsLiteral ||
+                    x.IsParameter != y.IsParameter ||
+                    x.IsCatchAll != y.IsCatchAll ||
+                    x.IsOptional != y.IsOptional ||
+                    !String.Equals(x.Name, y.Name, StringComparison.Ordinal) ||
+                    !String.Equals(x.Name, y.Name, StringComparison.Ordinal))
+                {
+                    return false;
+                }
+
+
+                return true;
+            }
+
+            public int GetHashCode(Template obj)
             {
                 throw new NotImplementedException();
             }
