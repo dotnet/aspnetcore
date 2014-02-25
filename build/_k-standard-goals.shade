@@ -60,6 +60,8 @@ default Configuration='Release'
 #nuget-install target='install' description='Copy NuGet packages to local repo'
   nuget-local-publish sourcePackagesDir='${BUILD_DIR}'
 
+#make-roslyn-fast
+  ngen-roslyn
 
 #watch
   @{
