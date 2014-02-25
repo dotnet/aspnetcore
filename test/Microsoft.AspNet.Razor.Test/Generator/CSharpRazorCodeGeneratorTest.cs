@@ -91,10 +91,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 Directory.CreateDirectory("./tests");
             }
 
-            RunTest(testType, onResults: (results) =>
-            {
-                File.WriteAllText(String.Format("./tests/{0}.cs", testType), results.GeneratedCode);
-            });
+            RunTest(testType);
         }
 
         [Fact]

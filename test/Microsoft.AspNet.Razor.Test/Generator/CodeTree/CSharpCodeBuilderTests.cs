@@ -12,12 +12,12 @@ namespace Microsoft.AspNet.Razor.Test.Generator.CodeTree
         [Fact]
         public void CodeTreeWithUsings()
         {
-            var syntaxTreeNode = Mock.Of<SyntaxTreeNode>();
+            var syntaxTreeNode = new Mock<Span>(new SpanBuilder());
             var language = new CSharpRazorCodeLanguage();
             RazorEngineHost host = new RazorEngineHost(language);
             var context = CodeGeneratorContext.Create(host, "TestClass", "TestNamespace", "Foo.cs", shouldGenerateLinePragmas: false);
-            context.CodeTreeBuilder.AddUsingChunk("FakeNamespace1", syntaxTreeNode);
-            context.CodeTreeBuilder.AddUsingChunk("FakeNamespace2.SubNamespace", syntaxTreeNode);
+            context.CodeTreeBuilder.AddUsingChunk("FakeNamespace1", syntaxTreeNode.Object);
+            context.CodeTreeBuilder.AddUsingChunk("FakeNamespace2.SubNamespace", syntaxTreeNode.Object);
             CodeBuilder codeBuilder = language.CreateBuilder(context);
 
             // Act

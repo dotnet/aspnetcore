@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 
 namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 {
@@ -14,14 +16,32 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
         protected override void Visit(UsingChunk chunk)
         {
-            ImportedUsings.Add(chunk.Namespace);
+            string documentContent = ((Span)chunk.Association).Content.Trim();
+            bool mapSemicolon = false;
 
-            using (Writer.BuildLineMapping(chunk.Start, chunk.Association.Length, Context.SourceFile))
+            if (documentContent.LastOrDefault() == ';')
             {
-                Writer.WriteUsing(chunk.Namespace, endLine: false);
+                mapSemicolon = true;
             }
 
-            Writer.WriteLine(";");
+            ImportedUsings.Add(chunk.Namespace);
+
+            // Depending on if the user has a semicolon in their @using statement we have to conditionally decide
+            // to include the semicolon in the line mapping.
+            using (Writer.BuildLineMapping(chunk.Start, documentContent.Length, Context.SourceFile))
+            {
+                Writer.WriteUsing(chunk.Namespace, endLine: false);
+
+                if (mapSemicolon)
+                {
+                    Writer.Write(";");
+                }
+            }
+
+            if (!mapSemicolon)
+            {
+                Writer.WriteLine(";");
+            }
         }
     }
 }
