@@ -615,6 +615,7 @@ functions
         <Reference Include=""{0}"">
         <SpecificVersion>False</SpecificVersion>
         <HintPath>..\..\{1}</HintPath>
+        <Private>true</Private>
         </Reference>", AssemblyName.GetAssemblyName(dllPath).FullName, dllPath.Substring(dllPath.IndexOf("packages")));
                     }
                 }
