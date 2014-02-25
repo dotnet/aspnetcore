@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.HttpFeature;
@@ -18,6 +19,7 @@ namespace Microsoft.AspNet.PipelineCore
         private FeatureReference<IHttpConnection> _connection = FeatureReference<IHttpConnection>.Default;
         private FeatureReference<IHttpTransportLayerSecurity> _transportLayerSecurity = FeatureReference<IHttpTransportLayerSecurity>.Default;
         private FeatureReference<ICanHasQuery> _canHasQuery = FeatureReference<ICanHasQuery>.Default;
+        private FeatureReference<ICanHasForm> _canHasForm = FeatureReference<ICanHasForm>.Default;
         private FeatureReference<ICanHasRequestCookies> _canHasCookies = FeatureReference<ICanHasRequestCookies>.Default;
 
         public DefaultHttpRequest(DefaultHttpContext context, IFeatureCollection features)
@@ -44,6 +46,11 @@ namespace Microsoft.AspNet.PipelineCore
         private ICanHasQuery CanHasQuery
         {
             get { return _canHasQuery.Fetch(_features) ?? _canHasQuery.Update(_features, new DefaultCanHasQuery(_features)); }
+        }
+
+        private ICanHasForm CanHasForm
+        {
+            get { return _canHasForm.Fetch(_features) ?? _canHasForm.Update(_features, new DefaultCanHasForm(_features)); }
         }
 
         private ICanHasRequestCookies CanHasRequestCookies
@@ -110,6 +117,11 @@ namespace Microsoft.AspNet.PipelineCore
         public override IReadableStringCollection Query
         {
             get { return CanHasQuery.Query; }
+        }
+
+        public override Task<IReadableStringCollection> GetFormAsync()
+        {
+            return CanHasForm.GetFormAsync();
         }
 
         public override string Protocol

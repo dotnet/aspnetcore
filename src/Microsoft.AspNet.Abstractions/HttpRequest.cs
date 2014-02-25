@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Abstractions
 {
@@ -57,6 +58,12 @@ namespace Microsoft.AspNet.Abstractions
         /// </summary>
         /// <returns>The query value collection parsed from owin.RequestQueryString.</returns>
         public abstract IReadableStringCollection Query { get; }
+
+        /// <summary>
+        /// Gets the query value collection form collection.
+        /// </summary>
+        /// <returns>The form collection parsed from the request body.</returns>
+        public abstract Task<IReadableStringCollection> GetFormAsync();
 
         /// <summary>
         /// Gets or set the owin.RequestProtocol.
