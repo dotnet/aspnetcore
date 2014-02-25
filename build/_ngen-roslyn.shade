@@ -15,7 +15,7 @@ var tempRoslynDir='bin\_roslyn\all'
 exec program='${gacutil}' commandline='/u ${p}' each='var p in roslynPackages'
 
 nuget-install package='${p}' outputDir='${tempRoslynPackagesDir}' extra='-ExcludeVersion' each='var p in roslynPackages'
-copy sourceDir='${tempRoslynPackagesDir}\${p}\lib\net45' include='*.dll' outputDir='${tempRoslynDir}' each='var p in roslynPackages'
+copy sourceDir='${tempRoslynPackagesDir}\${p}\lib\net45' include='*.dll' outputDir='${tempRoslynDir}' each='var p in roslynPackages' overwrite='${true}'
 
 exec program='${ngen}' commandline='install ${tempRoslynDir}\${p}.dll' each='var p in roslynPackages'
 exec program='${gacutil}' commandline='/i ${tempRoslynDir}\${p}.dll' each='var p in roslynPackages'
