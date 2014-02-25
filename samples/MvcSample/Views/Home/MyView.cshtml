@@ -3,6 +3,7 @@
 @{
     Layout = "/Views/Shared/_Layout.cshtml";
     ViewBag.Title = "Home Page";
+    string nullValue = null;
 }
 
 <div class="jumbotron">
@@ -11,7 +12,8 @@
     <p><a href="http://asp.net" class="btn btn-primary btn-large">Learn more &raquo;</a></p>
 </div>
 <div class="row">
-    <h3>Hello @Model.Name!</h3>
+    <h3 title="@Model.Name" class="@nullValue">Hello @Model.Name!</h3>
+    
     <div class="col-md-4">
         <h2>Getting started</h2>
         <p>
