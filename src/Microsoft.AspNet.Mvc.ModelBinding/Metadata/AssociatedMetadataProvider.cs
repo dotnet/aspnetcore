@@ -56,17 +56,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return CreateMetadataFromPrototype(prototype, modelAccessor);
         }
 
-        public ModelMetadata GetMetadataForParameter(ParameterInfo parameter)
-        {
-            if (parameter == null)
-            {
-                throw Error.ArgumentNull("parameter");
-            }
-
-            TModelMetadata prototype = GetTypeInformation(parameter.ParameterType, parameter.GetCustomAttributes()).Prototype;
-            return CreateMetadataFromPrototype(prototype, modelAccessor: null);
-        }
-
         // Override for creating the prototype metadata (without the accessor)
         protected abstract TModelMetadata CreateMetadataPrototype(IEnumerable<Attribute> attributes,
                                                                   Type containerType,

@@ -165,7 +165,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return new[] { rawValue };
         }
 
-        internal static void CreateOrReplaceCollection<TElement>(ModelBindingContext bindingContext,
+        internal static void CreateOrReplaceCollection(ModelBindingContext bindingContext,
                                                                  IEnumerable<TElement> incomingElements,
                                                                  Func<ICollection<TElement>> creator)
         {
