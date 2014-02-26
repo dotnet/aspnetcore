@@ -14,9 +14,11 @@ namespace TestOutput
             Write(
 #line 1 "Inherits.cshtml"
  foo()
+
 #line default
 #line hidden
             );
+
             WriteLiteral("\r\n\r\n");
         }
     }

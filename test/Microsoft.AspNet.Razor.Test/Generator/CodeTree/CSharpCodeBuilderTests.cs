@@ -27,11 +27,13 @@ namespace Microsoft.AspNet.Razor.Test.Generator.CodeTree
 {
 #line 1 """"
 using FakeNamespace1
+
 #line default
 #line hidden
     ;
 #line 1 """"
 using FakeNamespace2.SubNamespace
+
 #line default
 #line hidden
     ;

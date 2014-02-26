@@ -20,17 +20,18 @@ namespace TestOutput
 #line 1 "EmptyImplicitExpressionInCode.cshtml"
   
     
+
 #line default
 #line hidden
 
-            __o = 
-#line 2 "EmptyImplicitExpressionInCode.cshtml"
-	 
+#line 1 "This is here only for document formatting."
+__o = ;
+
 #line default
 #line hidden
-            ;
 #line 2 "EmptyImplicitExpressionInCode.cshtml"
 	 
+
 #line default
 #line hidden
 

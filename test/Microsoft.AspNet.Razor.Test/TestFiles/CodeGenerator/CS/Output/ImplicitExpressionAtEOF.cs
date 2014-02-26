@@ -17,12 +17,11 @@ namespace TestOutput
 
         public override void Execute()
         {
-            __o = 
-#line 3 "ImplicitExpressionAtEOF.cshtml"
- 
+#line 1 "This is here only for document formatting."
+__o = ;
+
 #line default
 #line hidden
-            ;
         }
     }
 }

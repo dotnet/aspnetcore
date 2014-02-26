@@ -20,11 +20,13 @@ namespace TestOutput
 #line 1 "HiddenSpansInCode.cshtml"
   
     
+
 #line default
 #line hidden
 
 #line 2 "HiddenSpansInCode.cshtml"
      @Da
+
 #line default
 #line hidden
 

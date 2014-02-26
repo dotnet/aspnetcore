@@ -19,28 +19,29 @@
 #line 1 "C:\This\Path\Is\Just\For\Line\Pragmas.cshtml"
   
     string hello = "Hello, World";
+
 #line default
 #line hidden
 
-            __o = 
-#line 11 "C:\This\Path\Is\Just\For\Line\Pragmas.cshtml"
-            hello
+#line 1 "This is here only for document formatting."
+      __o = hello;
+
 #line default
 #line hidden
-            ;
 #line 13 "C:\This\Path\Is\Just\For\Line\Pragmas.cshtml"
-             foreach(char c in hello) {
+            foreach(char c in hello) {
+
 #line default
 #line hidden
 
-            __o = 
-#line 13 "C:\This\Path\Is\Just\For\Line\Pragmas.cshtml"
-                                        c
+#line 1 "This is here only for document formatting."
+                                  __o = c;
+
 #line default
 #line hidden
-            ;
 #line 13 "C:\This\Path\Is\Just\For\Line\Pragmas.cshtml"
                                          }
+
 #line default
 #line hidden
 

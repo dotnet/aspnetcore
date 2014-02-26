@@ -19,17 +19,18 @@ namespace TestOutput
         {
 #line 1 "UnfinishedExpressionInCode.cshtml"
   
+
 #line default
 #line hidden
 
-            __o = 
-#line 2 "UnfinishedExpressionInCode.cshtml"
- DateTime.
+#line 1 "This is here only for document formatting."
+__o = DateTime.;
+
 #line default
 #line hidden
-            ;
 #line 2 "UnfinishedExpressionInCode.cshtml"
 		  
+
 #line default
 #line hidden
 

@@ -8,6 +8,7 @@ namespace TestOutput
 public static Template 
 #line 17 "DesignTime.cshtml"
 Foo() {
+
 #line default
 #line hidden
         return new Template((__razor_helper_writer) => {
@@ -15,12 +16,14 @@ Foo() {
                
     if(true) {
         
+
 #line default
 #line hidden
 
 #line 19 "DesignTime.cshtml"
                   
     }
+
 #line default
 #line hidden
 
@@ -28,6 +31,7 @@ Foo() {
         );
 #line 21 "DesignTime.cshtml"
 }
+
 #line default
 #line hidden
 
@@ -44,55 +48,53 @@ Foo() {
         public override void Execute()
         {
 #line 2 "DesignTime.cshtml"
-             for(int i = 1; i <= 10; i++) {
+            for(int i = 1; i <= 10; i++) {
     
+
 #line default
 #line hidden
 
-            __o = 
-#line 3 "DesignTime.cshtml"
-                      i
+#line 1 "This is here only for document formatting."
+                __o = i;
+
 #line default
 #line hidden
-            ;
 #line 3 "DesignTime.cshtml"
                            
             }
+
 #line default
 #line hidden
 
-            __o = 
-#line 8 "DesignTime.cshtml"
-  Foo(Bar.Baz)
+#line 1 "This is here only for document formatting."
+__o = Foo(Bar.Baz);
+
 #line default
 #line hidden
-            ;
-            __o = 
-#line 9 "DesignTime.cshtml"
- Foo(
+#line 1 "This is here only for document formatting."
+__o = Foo(item => new Template((__razor_template_writer) => {
+#line 1 "This is here only for document formatting."
+        __o = baz;
+
 #line default
 #line hidden
-            item => new Template((__razor_template_writer) => {
-                __o = 
-#line 9 "DesignTime.cshtml"
-              baz
-#line default
-#line hidden
-                ;
-            }
-            )
+}
+)
 #line 9 "DesignTime.cshtml"
                          )
+
 #line default
 #line hidden
-            ;
+;
+
+#line default
+#line hidden
             DefineSection("Footer", () => {
-                __o = 
-#line 14 "DesignTime.cshtml"
-     bar
+#line 1 "This is here only for document formatting."
+__o = bar;
+
 #line default
 #line hidden
-                ;
             }
             );
         }

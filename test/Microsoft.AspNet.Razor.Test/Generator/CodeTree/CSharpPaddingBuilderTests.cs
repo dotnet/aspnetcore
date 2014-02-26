@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             var paddingBuilder = new CSharpPaddingBuilder(host);
 
             // Act
-            int padding = paddingBuilder.CalculatePadding(span);
+            int padding = paddingBuilder.CalculatePadding(span, 0);
 
             // Assert
             Assert.Equal(0, padding);
@@ -39,10 +39,10 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             var paddingBuilder = new CSharpPaddingBuilder(host);
 
             // Act
-            int padding = paddingBuilder.CalculatePadding(span);
+            int padding = paddingBuilder.CalculatePadding(span, 1);
 
             // Assert
-            Assert.Equal(6, padding);
+            Assert.Equal(5, padding);
         }
 
         [Theory]
@@ -57,10 +57,10 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             var paddingBuilder = new CSharpPaddingBuilder(host);
 
             // Act
-            int padding = paddingBuilder.CalculatePadding(span);
+            int padding = paddingBuilder.CalculatePadding(span, 1);
 
             // Assert
-            Assert.Equal(5, padding);
+            Assert.Equal(4, padding);
         }
 
         // 4 padding should result in 4 spaces. Where in the previous test (5 spaces) should result in 1 tab.

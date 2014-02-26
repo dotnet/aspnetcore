@@ -18,17 +18,20 @@ namespace TestOutput
         public override void Execute()
         {
 #line 3 "OpenedIf.cshtml"
- if (true) { 
+if (true) { 
+
 #line default
 #line hidden
 
 #line 4 "OpenedIf.cshtml"
        
+
 #line default
 #line hidden
 
 #line 5 "OpenedIf.cshtml"
        
+
 #line default
 #line hidden
 

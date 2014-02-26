@@ -18,15 +18,17 @@ namespace TestOutput
         public override void Execute()
         {
 #line 1 "SimpleUnspacedIf.cshtml"
- if (true)
+if (true)
 {
 	
+
 #line default
 #line hidden
 
 #line 3 "SimpleUnspacedIf.cshtml"
 			   
 }
+
 #line default
 #line hidden
 

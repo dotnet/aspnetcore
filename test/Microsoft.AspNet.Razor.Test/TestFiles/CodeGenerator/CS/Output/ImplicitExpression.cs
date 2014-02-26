@@ -13,6 +13,7 @@ namespace TestOutput
         {
 #line 1 "ImplicitExpression.cshtml"
  for(int i = 1; i <= 10; i++) {
+
 #line default
 #line hidden
 
@@ -20,12 +21,15 @@ namespace TestOutput
             Write(
 #line 2 "ImplicitExpression.cshtml"
                       i
+
 #line default
 #line hidden
             );
+
             WriteLiteral("</p>\r\n");
 #line 3 "ImplicitExpression.cshtml"
 }
+
 #line default
 #line hidden
 

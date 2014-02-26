@@ -23,6 +23,7 @@ namespace TestOutput
 int i =10;
 int j =20;
 }
+
 #line default
 #line hidden
 

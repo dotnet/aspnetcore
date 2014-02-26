@@ -15,6 +15,7 @@ namespace TestOutput
   
     var ch = true;
     var cls = "bar";
+
 #line default
 #line hidden
 
@@ -23,6 +24,7 @@ namespace TestOutput
             Tuple.Create(Tuple.Create("", 82), Tuple.Create<System.Object, System.Int32>(
 #line 5 "ConditionalAttributes.cshtml"
                cls
+
 #line default
 #line hidden
             , 82), false));
@@ -31,6 +33,7 @@ namespace TestOutput
             Tuple.Create(Tuple.Create(" ", 109), Tuple.Create<System.Object, System.Int32>(
 #line 6 "ConditionalAttributes.cshtml"
                    cls
+
 #line default
 #line hidden
             , 110), false));
@@ -39,6 +42,7 @@ namespace TestOutput
             Tuple.Create(Tuple.Create("", 134), Tuple.Create<System.Object, System.Int32>(
 #line 7 "ConditionalAttributes.cshtml"
                cls
+
 #line default
 #line hidden
             , 134), false), Tuple.Create(Tuple.Create(" ", 138), Tuple.Create("foo", 139), true));
@@ -47,6 +51,7 @@ namespace TestOutput
             Tuple.Create(Tuple.Create("", 184), Tuple.Create<System.Object, System.Int32>(
 #line 8 "ConditionalAttributes.cshtml"
                                      ch
+
 #line default
 #line hidden
             , 184), false));
@@ -55,6 +60,7 @@ namespace TestOutput
             Tuple.Create(Tuple.Create(" ", 232), Tuple.Create<System.Object, System.Int32>(
 #line 9 "ConditionalAttributes.cshtml"
                                          ch
+
 #line default
 #line hidden
             , 233), false));
@@ -63,17 +69,21 @@ namespace TestOutput
             Tuple.Create(Tuple.Create("", 256), Tuple.Create<System.Object, System.Int32>(new Template((__razor_attribute_value_writer) => {
 #line 10 "ConditionalAttributes.cshtml"
                if(cls != null) { 
+
 #line default
 #line hidden
 
                 WriteTo(__razor_attribute_value_writer, 
 #line 10 "ConditionalAttributes.cshtml"
                                   cls
+
 #line default
 #line hidden
                 );
+
 #line 10 "ConditionalAttributes.cshtml"
                                       }
+
 #line default
 #line hidden
 
@@ -86,6 +96,7 @@ namespace TestOutput
             Tuple.Create(Tuple.Create("", 328), Tuple.Create<System.Object, System.Int32>(
 #line 12 "ConditionalAttributes.cshtml"
                   Url.Content("~/Scripts/jquery-1.6.2.min.js")
+
 #line default
 #line hidden
             , 328), false));
@@ -94,12 +105,14 @@ namespace TestOutput
             Tuple.Create(Tuple.Create("", 426), Tuple.Create<System.Object, System.Int32>(
 #line 13 "ConditionalAttributes.cshtml"
                   Url.Content("~/Scripts/modernizr-2.0.6-development-only.js")
+
 #line default
 #line hidden
             , 426), false));
             WriteLiteral(" type=\"text/javascript\"></script>\r\n    <script src=\"http://ajax.aspnetcdn.com/aja" +
 "x/jquery.ui/1.8.16/jquery-ui.min.js\" type=\"text/javascript\"></script>\r\n");
 #line 15 "ConditionalAttributes.cshtml"
+
 #line default
 #line hidden
 

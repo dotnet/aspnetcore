@@ -10,6 +10,7 @@ namespace TestOutput
             #pragma warning disable 219
 #line 3 "Inherits.cshtml"
           foo.bar<baz<biz>>.boz bar __inheritsHelper = null;
+
 #line default
 #line hidden
             #pragma warning restore 219
@@ -21,12 +22,11 @@ namespace TestOutput
 
         public override void Execute()
         {
-            __o = 
-#line 1 "Inherits.cshtml"
- foo()
+#line 1 "This is here only for document formatting."
+__o = foo();
+
 #line default
 #line hidden
-            ;
         }
     }
 }

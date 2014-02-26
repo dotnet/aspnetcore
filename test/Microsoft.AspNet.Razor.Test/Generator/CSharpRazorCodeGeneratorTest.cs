@@ -86,11 +86,6 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         [InlineData("ResolveUrl")]
         public void CSharpCodeGeneratorCorrectlyGeneratesRunTimeCode(string testType)
         {
-            if (!Directory.Exists("./tests"))
-            {
-                Directory.CreateDirectory("./tests");
-            }
-
             RunTest(testType);
         }
 
@@ -103,8 +98,8 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                     tabTest: TabTest.Tabs,
                     expectedDesignTimePragmas: new List<LineMapping>()
                     {
-                        BuildLineMapping(1, 0,449, 20, 1, 15),
-                        BuildLineMapping(27, 2, 12, 538, 27, 6, 3)
+                        BuildLineMapping(1, 0, 1, 448, 20, 0, 15),
+                        BuildLineMapping(27, 2, 12, 539, 28, 6, 3)
                     });
         }
 
@@ -115,12 +110,12 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 expectedDesignTimePragmas: new List<LineMapping>()
                 {
                     BuildLineMapping(81, 3, 441, 20, 2, 6),
-                    BuildLineMapping(122, 4, 551, 26, 39, 22),
-                    BuildLineMapping(173, 5, 687, 32, 49, 58),
-                    BuildLineMapping(238, 11, 811, 40, 2, 24),
-                    BuildLineMapping(310, 12, 966, 46, 45, 3),
-                    BuildLineMapping(323, 14, 1070, 52, 2, 1),
-                    BuildLineMapping(328, 14, 1142, 56, 7, 1),
+                    BuildLineMapping(122, 4, 39, 552, 27, 38, 22),
+                    BuildLineMapping(173, 5, 49, 689, 34, 48, 58),
+                    BuildLineMapping(238, 11, 815, 43, 2, 24),
+                    BuildLineMapping(310, 12, 973, 49, 45, 3),
+                    BuildLineMapping(323, 14, 2, 1070, 54, 6, 1),
+                    BuildLineMapping(328, 14, 1113, 56, 7, 1),
 
             });
         }
@@ -143,10 +138,10 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             RunTest("Imports", "Imports.DesignTime", designTimeMode: true, tabTest: TabTest.NoTabs, expectedDesignTimePragmas: new List<LineMapping>()
             {
                 BuildLineMapping(1, 0, 1, 51, 3, 0, 15),
-                BuildLineMapping(19, 1, 1, 130, 8, 0, 32),
-                BuildLineMapping(54, 2, 1, 226, 13, 0, 12),
-                BuildLineMapping(99, 4, 702, 35, 29, 21),
-                BuildLineMapping(161, 5, 850, 41, 35, 20),
+                BuildLineMapping(19, 1, 1, 132, 9, 0, 32),
+                BuildLineMapping(54, 2, 1, 230, 15, 0, 12),
+                BuildLineMapping(99, 4, 716, 37, 29, 21),
+                BuildLineMapping(161, 5, 860, 42, 35, 20),
             });
         }
 
@@ -159,9 +154,9 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                     tabTest: TabTest.NoTabs,
                     expectedDesignTimePragmas: new List<LineMapping>()
             {
-                BuildLineMapping(12, 0, 168, 8, 12, 4),
-                BuildLineMapping(33, 4, 246, 13, 12, 104),
-                BuildLineMapping(167, 11, 744, 34, 25, 11)
+                BuildLineMapping(12, 0, 12, 156, 8, 0, 4),
+                BuildLineMapping(33, 4, 12, 224, 14, 0, 104),
+                BuildLineMapping(167, 11, 724, 35, 25, 11)
             });
         }
 
@@ -174,9 +169,9 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                     tabTest: TabTest.Tabs,
                     expectedDesignTimePragmas: new List<LineMapping>()
             {
-                BuildLineMapping(12, 0, 12, 159, 8, 3, 4),
-                BuildLineMapping(33, 4, 12, 228, 13, 3, 104),
-                BuildLineMapping(167, 11, 25, 708, 34, 7, 11)
+                BuildLineMapping(12, 0, 12, 156, 8, 0, 4),
+                BuildLineMapping(33, 4, 12, 224, 14, 0, 104),
+                BuildLineMapping(167, 11, 25, 712, 35, 13, 11)
             });
         }
 
@@ -189,7 +184,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                     tabTest: TabTest.Tabs,
                     expectedDesignTimePragmas: new List<LineMapping>()
             {
-                BuildLineMapping(16, 2, 12, 176, 8, 6, 55)
+                BuildLineMapping(16, 2, 12, 170, 8, 0, 55)
             });
         }
 
@@ -199,7 +194,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             RunTest("HiddenSpansInCode", designTimeMode: true, tabTest: TabTest.NoTabs, expectedDesignTimePragmas: new List<LineMapping>
             {
                 BuildLineMapping(2, 0, 453, 20, 2, 6),
-                BuildLineMapping(9, 1, 533, 26, 5, 5)
+                BuildLineMapping(9, 1, 535, 27, 5, 5)
             });
         }
 
@@ -224,7 +219,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             RunTest("Inherits", baselineName: "Inherits.Designtime", designTimeMode: true, tabTest: TabTest.NoTabs, expectedDesignTimePragmas: new List<LineMapping>()
             {
                 BuildLineMapping(20, 2, 286, 11, 10, 25),
-                BuildLineMapping(1, 0, 591, 25, 1, 5)
+                BuildLineMapping(1, 0, 1, 605, 25, 6, 5)
             });
         }
 
@@ -234,8 +229,8 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             RunTest("UnfinishedExpressionInCode", tabTest: TabTest.NoTabs, designTimeMode: true, expectedDesignTimePragmas: new List<LineMapping>()
             {
                 BuildLineMapping(2, 0, 480, 20, 2, 2),
-                BuildLineMapping(5, 1, 579, 26, 1, 9),
-                BuildLineMapping(14, 1, 689, 31, 10, 2)
+                BuildLineMapping(5, 1, 1, 575, 26, 6, 9),
+                BuildLineMapping(14, 1, 673, 31, 10, 2)
             });
         }
 
@@ -248,8 +243,8 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                     designTimeMode: true, expectedDesignTimePragmas: new List<LineMapping>()
             {
                 BuildLineMapping(2, 0, 480, 20, 2, 2),
-                BuildLineMapping(5, 1, 579, 26, 1, 9),
-                BuildLineMapping(14, 1, 10, 683, 31, 4, 2)
+                BuildLineMapping(5, 1, 1, 575, 26, 6, 9),
+                BuildLineMapping(14, 1, 10, 667, 31, 4, 2)
             });
         }
 
@@ -262,17 +257,17 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 expectedDesignTimePragmas: new List<LineMapping>()
             {
                 BuildLineMapping(222, 16, 8, 174, 9, 0, 7),
-                BuildLineMapping(229, 16, 315, 14, 15, 26),
-                BuildLineMapping(265, 18, 422, 21, 18, 9),
-                BuildLineMapping(274, 20, 515, 29, 0, 1),
-                BuildLineMapping(20, 1, 873, 46, 13, 36),
-                BuildLineMapping(74, 2, 1013, 53, 22, 1),
-                BuildLineMapping(79, 2, 1116, 58, 27, 15),
-                BuildLineMapping(113, 7, 1215, 65, 2, 12),
-                BuildLineMapping(129, 8, 1323, 71, 1, 4),
-                BuildLineMapping(142, 8, 1490, 77, 14, 3),
-                BuildLineMapping(153, 8, 1627, 84, 25, 1),
-                BuildLineMapping(204, 13, 1778, 91, 5, 3)
+                BuildLineMapping(229, 16, 317, 15, 15, 26),
+                BuildLineMapping(265, 18, 426, 23, 18, 9),
+                BuildLineMapping(274, 20, 521, 32, 0, 1),
+                BuildLineMapping(20, 1, 13, 880, 50, 12, 36),
+                BuildLineMapping(74, 2, 1027, 57, 22, 1),
+                BuildLineMapping(79, 2, 1118, 62, 27, 15),
+                BuildLineMapping(113, 7, 2, 1228, 69, 6, 12),
+                BuildLineMapping(129, 8, 1, 1334, 74, 6, 4),
+                BuildLineMapping(142, 8, 1459, 76, 14, 3),
+                BuildLineMapping(153, 8, 1556, 83, 25, 1),
+                BuildLineMapping(204, 13, 5, 1729, 93, 6, 3)
             });
         }
 
@@ -282,7 +277,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         {
             RunTest("ImplicitExpressionAtEOF", designTimeMode: true, expectedDesignTimePragmas: new List<LineMapping>()
             {
-                BuildLineMapping(19, 2, 490, 21, 1, 0)
+                BuildLineMapping(19, 2, 1, 487, 20, 6, 0)
             });
         }
 
@@ -291,7 +286,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         {
             RunTest("ExplicitExpressionAtEOF", designTimeMode: true, expectedDesignTimePragmas: new List<LineMapping>()
             {
-                BuildLineMapping(20, 2, 491, 21, 2, 0)
+                BuildLineMapping(20, 2, 2, 487, 20, 6, 0)
             });
         }
 
@@ -309,7 +304,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         {
             RunTest("EmptyImplicitExpression", designTimeMode: true, expectedDesignTimePragmas: new List<LineMapping>()
             {
-                BuildLineMapping(19, 2, 490, 21, 1, 0)
+                BuildLineMapping(19, 2, 1, 487, 20, 6, 0)
             });
         }
 
@@ -319,8 +314,8 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             RunTest("EmptyImplicitExpressionInCode", tabTest: TabTest.NoTabs, designTimeMode: true, expectedDesignTimePragmas: new List<LineMapping>()
             {
                 BuildLineMapping(2, 0, 489, 20, 2, 6),
-                BuildLineMapping(9, 1, 601, 27, 5, 0),
-                BuildLineMapping(9, 1, 700, 32, 5, 2)
+                BuildLineMapping(9, 1, 5, 590, 27, 6, 0),
+                BuildLineMapping(9, 1, 677, 32, 5, 2)
             });
         }
 
@@ -333,8 +328,8 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                     designTimeMode: true, expectedDesignTimePragmas: new List<LineMapping>()
             {
                 BuildLineMapping(2, 0, 489, 20, 2, 6),
-                BuildLineMapping(9, 1, 5, 598, 27, 2, 0),
-                BuildLineMapping(9, 1, 5, 694, 32, 2, 2)
+                BuildLineMapping(9, 1, 5, 590, 27, 6, 0),
+                BuildLineMapping(9, 1, 5, 674, 32, 2, 2)
             });
         }
 
@@ -343,7 +338,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         {
             RunTest("EmptyExplicitExpression", designTimeMode: true, expectedDesignTimePragmas: new List<LineMapping>()
             {
-                BuildLineMapping(20, 2, 491, 21, 2, 0)
+                BuildLineMapping(20, 2, 2, 487, 20, 6, 0)
             });
         }
 
@@ -417,10 +412,10 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             },
             expectedDesignTimePragmas: new List<LineMapping>()
             {
-                BuildLineMapping(17, 2, 425, 20, 1, 14),
-                BuildLineMapping(38, 3, 7, 497 + tabOffsetForMapping, 25, tabOffsetForMapping, 2),
+                BuildLineMapping(17, 2, 1, 424, 20, 0, 14),
+                BuildLineMapping(38, 3, 7, 498 + tabOffsetForMapping, 26, tabOffsetForMapping, 2),
                 // Multiply the tab offset absolute index by 2 to account for the first mapping
-                BuildLineMapping(47, 4, 7, 557 + tabOffsetForMapping * 2, 30, tabOffsetForMapping, 0)
+                BuildLineMapping(47, 4, 7, 560 + tabOffsetForMapping * 2, 32, tabOffsetForMapping, 0)
             });
         }
 

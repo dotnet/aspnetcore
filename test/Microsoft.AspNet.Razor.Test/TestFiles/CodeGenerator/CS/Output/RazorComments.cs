@@ -15,12 +15,14 @@ namespace TestOutput
 #line 4 "RazorComments.cshtml"
   
     
+
 #line default
 #line hidden
 
 #line 5 "RazorComments.cshtml"
                                        
     Exception foo = 
+
 #line default
 #line hidden
 
@@ -29,12 +31,14 @@ namespace TestOutput
     if(foo != null) {
         throw foo;
     }
+
 #line default
 #line hidden
 
             WriteLiteral("\r\n\r\n");
 #line 12 "RazorComments.cshtml"
    var bar = "@* bar *@"; 
+
 #line default
 #line hidden
 
@@ -42,20 +46,25 @@ namespace TestOutput
             Write(
 #line 13 "RazorComments.cshtml"
                                              bar
+
 #line default
 #line hidden
             );
+
             WriteLiteral("</p>\r\n\r\n");
             Write(
 #line 15 "RazorComments.cshtml"
   a
+
 #line default
 #line hidden
 #line 15 "RazorComments.cshtml"
        b
+
 #line default
 #line hidden
             );
+
             WriteLiteral("\r\n");
         }
     }

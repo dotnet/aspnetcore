@@ -6,16 +6,18 @@ namespace TestOutput
     {
         private static object @__o;
 #line 1 "FunctionsBlock.cshtml"
-            
+
+
 
 #line default
 #line hidden
 #line 5 "FunctionsBlock.cshtml"
-            
+
     Random _rand = new Random();
     private int RandomInt() {
         return _rand.Next();
     }
+
 #line default
 #line hidden
         private void @__RazorDesignTimeHelpers__()
@@ -30,12 +32,11 @@ namespace TestOutput
 
         public override void Execute()
         {
-            __o = 
-#line 12 "FunctionsBlock.cshtml"
-                         RandomInt()
+#line 1 "This is here only for document formatting."
+                   __o = RandomInt();
+
 #line default
 #line hidden
-            ;
         }
     }
 }

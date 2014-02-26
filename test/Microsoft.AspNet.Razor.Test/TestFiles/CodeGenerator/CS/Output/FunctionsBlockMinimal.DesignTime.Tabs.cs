@@ -6,10 +6,11 @@ namespace TestOutput
     {
         private static object @__o;
 #line 3 "FunctionsBlockMinimal.cshtml"
-			   
+
 string foo(string input) {
 	return input + "!";
 }
+
 #line default
 #line hidden
         private void @__RazorDesignTimeHelpers__()
