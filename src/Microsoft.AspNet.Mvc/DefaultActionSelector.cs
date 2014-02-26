@@ -2,18 +2,21 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace Microsoft.AspNet.Mvc
 {
     public class DefaultActionSelector : IActionSelector
     {
-        private readonly IEnumerable<IActionDescriptorProvider> _actionDescriptorProviders;
+        private readonly INestedProviderManager<ActionDescriptorProviderContext> _actionDescriptorProvider;
         private readonly IEnumerable<IValueProviderFactory> _valueProviderFactory;
 
-        public DefaultActionSelector(IEnumerable<IActionDescriptorProvider> actionDescriptorProviders, IEnumerable<IValueProviderFactory> valueProviderFactories)
+        public DefaultActionSelector(
+            INestedProviderManager<ActionDescriptorProviderContext> actionDescriptorProvider, 
+            IEnumerable<IValueProviderFactory> valueProviderFactories)
         {
-            _actionDescriptorProviders = actionDescriptorProviders;
+            _actionDescriptorProvider = actionDescriptorProvider;
             _valueProviderFactory = valueProviderFactories;
         }
 
@@ -24,7 +27,10 @@ namespace Microsoft.AspNet.Mvc
                 throw new ArgumentNullException("context");
             }
 
-            var allDescriptors = _actionDescriptorProviders.SelectMany(d => d.GetDescriptors());
+            var actionDescriptorProviderContext = new ActionDescriptorProviderContext();
+            _actionDescriptorProvider.Invoke(actionDescriptorProviderContext);
+
+            var allDescriptors = actionDescriptorProviderContext.Results;
 
             var matching = allDescriptors.Where(ad => Match(ad, context)).ToList();
             if (matching.Count == 0)

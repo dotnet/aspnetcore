@@ -17,21 +17,28 @@ namespace Microsoft.AspNet.Mvc
             _serviceProvider = serviceProvider;
         }
 
-        public IActionInvoker GetInvoker(ActionContext actionContext)
+        public int Order
         {
-            var ad = actionContext.ActionDescriptor as TypeMethodBasedActionDescriptor;
+            get { return 0; }
+        }
+
+        public void Invoke(ActionInvokerProviderContext context, Action callNext)
+        {
+            var ad = context.ActionContext.ActionDescriptor as TypeMethodBasedActionDescriptor;
 
             if (ad != null)
             {
-                return new TypeMethodBasedActionInvoker(
-                    actionContext,
+                context.ActionInvoker = new TypeMethodBasedActionInvoker(
+                    context.ActionContext,
                     ad,
                     _actionResultFactory,
                     _controllerFactory,
                     _serviceProvider);
             }
 
-            return null;
+            callNext();
         }
+
+
     }
 }

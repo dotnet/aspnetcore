@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -20,6 +21,17 @@ namespace Microsoft.AspNet.Mvc
             _conventions = conventions;
             _controllerDescriptorFactory = controllerDescriptorFactory;
             _parameterDescriptorFactory = parameterDescriptorFactory;
+        }
+
+        public int Order
+        {
+            get { return 0; }
+        }
+
+        public void Invoke(ActionDescriptorProviderContext context, Action callNext)
+        {
+            context.ActionDescriptors.AddRange(GetDescriptors());
+            callNext();
         }
 
         public IEnumerable<ActionDescriptor> GetDescriptors()
@@ -83,27 +95,6 @@ namespace Microsoft.AspNet.Mvc
             ad.Parameters = methodInfo.GetParameters().Select(p => _parameterDescriptorFactory.GetDescriptor(p)).ToList();
 
             return ad;
-        }
-
-        private static void ApplyRest(TypeMethodBasedActionDescriptor descriptor, IEnumerable<string> httpMethods)
-        {
-
-            descriptor.RouteConstraints.Add(new RouteDataActionConstraint("action", RouteKeyHandling.DenyKey));
-        }
-
-        private static void ApplyRpc(TypeMethodBasedActionDescriptor descriptor, ActionInfo convention)
-        {
-
-            var methods = convention.HttpMethods;
-
-            // rest action require specific methods, but RPC actions do not.
-            if (methods != null)
-            {
-                descriptor.MethodConstraints = new List<HttpMethodConstraint>
-                {
-                    new HttpMethodConstraint(methods)
-                };
-            }
         }
     }
 }

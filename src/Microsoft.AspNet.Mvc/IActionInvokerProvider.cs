@@ -1,7 +1,8 @@
-﻿namespace Microsoft.AspNet.Mvc
+﻿using Microsoft.AspNet.DependencyInjection;
+
+namespace Microsoft.AspNet.Mvc
 {
-    public interface IActionInvokerProvider
+    public interface IActionInvokerProvider : INestedProvider<ActionInvokerProviderContext>
     {
-        IActionInvoker GetInvoker(ActionContext actionContext);
     }
 }

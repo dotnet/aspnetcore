@@ -1,23 +1,21 @@
-﻿namespace Microsoft.AspNet.Mvc
+﻿using Microsoft.AspNet.DependencyInjection;
+
+namespace Microsoft.AspNet.Mvc
 {
     public class ActionInvokerFactory : IActionInvokerFactory
     {
-        private readonly IActionResultFactory _actionResultFactory;
-        private readonly IActionInvokerProvider _actionInvokerProvider;
-        private readonly IActionDescriptorProvider _routeContextProvider;
+        private readonly INestedProviderManager<ActionInvokerProviderContext> _actionInvokerProvider;
 
-        public ActionInvokerFactory(IActionResultFactory actionResultFactory,
-                                    IActionDescriptorProvider actionDescriptorProvider, 
-                                    IActionInvokerProvider actionInvokerProvider)
+        public ActionInvokerFactory(INestedProviderManager<ActionInvokerProviderContext> actionInvokerProvider)
         {
-            _actionResultFactory = actionResultFactory;
-            _routeContextProvider = actionDescriptorProvider;
             _actionInvokerProvider = actionInvokerProvider;
         }
 
         public IActionInvoker CreateInvoker(ActionContext actionContext)
         {
-            return _actionInvokerProvider.GetInvoker(actionContext);
+            var context = new ActionInvokerProviderContext(actionContext);
+            _actionInvokerProvider.Invoke(context);
+            return context.ActionInvoker;
         }
     }
 }
