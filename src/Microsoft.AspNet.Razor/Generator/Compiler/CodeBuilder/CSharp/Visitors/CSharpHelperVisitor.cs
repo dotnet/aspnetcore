@@ -20,9 +20,13 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
             string accessibility = "public " + (Context.Host.StaticHelpers ? "static" : String.Empty);
 
+            // We want to write the method signature at 0 indentation so if helper's are formatted they format correctly.
+            int currentIndentation = Writer.CurrentIndent;
+            Writer.ResetIndent();
             Writer.Write(accessibility).Write(" ").Write(Context.Host.GeneratedClassContext.TemplateTypeName).Write(" ");
+            Writer.SetIndent(currentIndentation);
 
-            using (CSharpLineMappingWriter mappingWriter = Writer.BuildLineMapping(chunk.Signature.Location, chunk.Signature.Value.Length, Context.SourceFile))
+            using (Writer.BuildLineMapping(chunk.Signature.Location, chunk.Signature.Value.Length, Context.SourceFile))
             {
                 Writer.Write(chunk.Signature);
             }
