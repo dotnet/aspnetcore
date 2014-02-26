@@ -132,10 +132,5 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             return base.IsComplexType;
         }
-
-        protected virtual bool ComputeIsFromBody()
-        {
-            return base.IsFromBody;
-        }
     }
 }

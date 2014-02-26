@@ -73,7 +73,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Protects against stack overflow for deeply nested model binding
             // RuntimeHelpers.EnsureSufficientExecutionStack();
 
-            bool requiresBodyBinder = bindingContext.ModelMetadata.IsFromBody;
             foreach (IModelBinder binder in Binders)
             {
                 if (binder.BindModel(bindingContext))

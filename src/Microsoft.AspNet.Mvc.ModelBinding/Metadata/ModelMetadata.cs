@@ -54,11 +54,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         public virtual string Description { get; set; }
 
-        /// <summary>
-        /// Determines if the model needs to be consumed from the body.
-        /// </summary>
-        public virtual bool IsFromBody { get; set; }
-
         public virtual bool IsComplexType
         {
             get { return !ModelType.HasStringConverter(); }
