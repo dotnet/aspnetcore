@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Globalization;
+﻿using System.Globalization;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -8,24 +8,28 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     {
         private static readonly object _cacheKey = new object();
 
-        public IValueProvider GetValueProvider(RequestContext requestContext)
+        public Task<IValueProvider> GetValueProviderAsync(RequestContext requestContext)
         {
             if (requestContext == null)
             {
                 throw Error.ArgumentNull("requestContext");
             }
 
-            // Process the query string once-per request. 
-            IDictionary<object, object> storage = requestContext.HttpContext.Items;
+            // Process the query collection once-per request. 
+            var storage = requestContext.HttpContext.Items;
             object value;
+            IValueProvider provider;
             if (!storage.TryGetValue(_cacheKey, out value))
             {
-                var provider = new QueryStringValueProvider(requestContext.HttpContext, CultureInfo.InvariantCulture);
+                var queryCollection = requestContext.HttpContext.Request.Query;
+                provider = new ReadableStringCollectionValueProvider(queryCollection, CultureInfo.InvariantCulture);
                 storage[_cacheKey] = provider;
-                return provider;
             }
-
-            return (QueryStringValueProvider)value;
+            else
+            {
+                provider = (ReadableStringCollectionValueProvider)value;
+            }
+            return Task.FromResult(provider);
         }
     }
 }

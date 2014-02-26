@@ -1,11 +1,14 @@
 ﻿
+using System.Threading.Tasks;
+
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class RouteValueValueProviderFactory : IValueProviderFactory
     {
-        public IValueProvider GetValueProvider(RequestContext requestContext)
+        public Task<IValueProvider> GetValueProviderAsync(RequestContext requestContext)
         {
-            return new DictionaryBasedValueProvider(requestContext.RouteValues);
+            var valueProvider = new DictionaryBasedValueProvider(requestContext.RouteValues);
+            return Task.FromResult<IValueProvider>(valueProvider);
         }
     }
 }

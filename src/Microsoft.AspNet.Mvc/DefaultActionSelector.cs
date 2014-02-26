@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace Microsoft.AspNet.Mvc
@@ -16,7 +17,7 @@ namespace Microsoft.AspNet.Mvc
             _valueProviderFactory = valueProviderFactories;
         }
 
-        public ActionDescriptor Select(RequestContext context)
+        public async Task<ActionDescriptor> SelectAsync(RequestContext context)
         {
             if (context == null)
             {
@@ -36,7 +37,7 @@ namespace Microsoft.AspNet.Mvc
             }
             else
             {
-                return SelectBestCandidate(context, matching);
+                return await SelectBestCandidate(context, matching);
             }
         }
 
@@ -52,9 +53,10 @@ namespace Microsoft.AspNet.Mvc
                    (descriptor.DynamicConstraints == null || descriptor.DynamicConstraints.All(c => c.Accept(context)));
         }
 
-        protected virtual ActionDescriptor SelectBestCandidate(RequestContext context, List<ActionDescriptor> candidates)
+        protected virtual async Task<ActionDescriptor> SelectBestCandidate(RequestContext context, List<ActionDescriptor> candidates)
         {
-            var valueProviders = _valueProviderFactory.Select(vpf => vpf.GetValueProvider(context)).ToArray();
+            var valueProviders = await Task.WhenAll(_valueProviderFactory.Select(vpf => vpf.GetValueProviderAsync(context)));
+            valueProviders = valueProviders.Where(vp => vp != null).ToArray();
 
             var applicableCandiates = new List<ActionDescriptorCandidate>();
             foreach (var action in candidates)

@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             var routeValues = context.GetFeature<IRouteValues>();
             var requestContext = new RequestContext(context, routeValues.Values);
 
-            var actionDescriptor = ActionSelector.Select(requestContext);
+            var actionDescriptor = await ActionSelector.SelectAsync(requestContext);
 
             if (actionDescriptor == null)
             {

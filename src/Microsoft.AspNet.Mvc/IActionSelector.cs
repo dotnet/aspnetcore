@@ -1,8 +1,10 @@
-﻿namespace Microsoft.AspNet.Mvc
+﻿using System.Threading.Tasks;
+
+namespace Microsoft.AspNet.Mvc
 {
     public interface IActionSelector
     {
-        ActionDescriptor Select(RequestContext context);
+        Task<ActionDescriptor> SelectAsync(RequestContext context);
 
         bool Match(ActionDescriptor descriptor, RequestContext context);
     }

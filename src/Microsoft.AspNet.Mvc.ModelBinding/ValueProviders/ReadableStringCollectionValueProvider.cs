@@ -6,7 +6,7 @@ using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
-    public class NameValuePairsValueProvider : IEnumerableValueProvider
+    public class ReadableStringCollectionValueProvider : IEnumerableValueProvider
     {
         private readonly CultureInfo _culture;
         private PrefixContainer _prefixContainer;
@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </summary>
         /// <param name="values">The key value pairs to wrap.</param>
         /// <param name="culture">The culture to return with ValueProviderResult instances.</param>
-        public NameValuePairsValueProvider(IReadableStringCollection values, CultureInfo culture)
+        public ReadableStringCollectionValueProvider(IReadableStringCollection values, CultureInfo culture)
         {
             if (values == null)
             {

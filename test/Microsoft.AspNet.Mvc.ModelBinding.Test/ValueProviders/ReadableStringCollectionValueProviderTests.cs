@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 {
-    public class NameValuePairsValueProviderTest
+    public class ReadableStringCollectionValueProviderTest
     {
         private static readonly IReadableStringCollection _backingStore = new ReadableStringCollection(
             new Dictionary<string, string[]>
@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             // Act & assert
             ExceptionAssert.ThrowsArgumentNull(
-                () => new NameValuePairsValueProvider(values: null, culture: CultureInfo.InvariantCulture),
+                () => new ReadableStringCollectionValueProvider(values: null, culture: CultureInfo.InvariantCulture),
                 "values");
         }
 
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public void ContainsPrefix_GuardClauses()
         {
             // Arrange
-            var valueProvider = new NameValuePairsValueProvider(_backingStore, null);
+            var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, null);
 
             // Act & assert
             ExceptionAssert.ThrowsArgumentNull(
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             // Arrange
             var backingStore = new ReadableStringCollection(new Dictionary<string, string[]>());
-            var valueProvider = new NameValuePairsValueProvider(backingStore, null);
+            var valueProvider = new ReadableStringCollectionValueProvider(backingStore, null);
 
             // Act
             bool result = valueProvider.ContainsPrefix("");
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public void ContainsPrefix_WithNonEmptyCollection_ReturnsTrueForEmptyPrefix()
         {
             // Arrange
-            var valueProvider = new NameValuePairsValueProvider(_backingStore, null);
+            var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, null);
 
             // Act
             bool result = valueProvider.ContainsPrefix("");
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public void ContainsPrefix_WithNonEmptyCollection_ReturnsTrueForKnownPrefixes()
         {
             // Arrange
-            var valueProvider = new NameValuePairsValueProvider(_backingStore, null);
+            var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, null);
 
             // Act & Assert
             Assert.True(valueProvider.ContainsPrefix("foo"));
@@ -82,7 +82,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public void ContainsPrefix_WithNonEmptyCollection_ReturnsFalseForUnknownPrefix()
         {
             // Arrange
-            var valueProvider = new NameValuePairsValueProvider(_backingStore, null);
+            var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, null);
 
             // Act
             bool result = valueProvider.ContainsPrefix("biff");
@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public void GetKeysFromPrefix_GuardClauses()
         {
             // Arrange
-            var valueProvider = new NameValuePairsValueProvider(_backingStore, null);
+            var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, null);
 
             // Act & assert
             ExceptionAssert.ThrowsArgumentNull(
@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public void GetKeysFromPrefix_EmptyPrefix_ReturnsAllPrefixes()
         {
             // Arrange
-            var valueProvider = new NameValuePairsValueProvider(_backingStore, null);
+            var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, null);
 
             // Act
             IDictionary<string, string> result = valueProvider.GetKeysFromPrefix("");
@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public void GetKeysFromPrefix_UnknownPrefix_ReturnsEmptyDictionary()
         {
             // Arrange
-            var valueProvider = new NameValuePairsValueProvider(_backingStore, null);
+            var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, null);
 
             // Act
             IDictionary<string, string> result = valueProvider.GetKeysFromPrefix("abc");
@@ -135,7 +135,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public void GetKeysFromPrefix_KnownPrefix_ReturnsMatchingItems()
         {
             // Arrange
-            var valueProvider = new NameValuePairsValueProvider(_backingStore, null);
+            var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, null);
 
             // Act
             IDictionary<string, string> result = valueProvider.GetKeysFromPrefix("bar");
@@ -150,7 +150,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public void GetValue_GuardClauses()
         {
             // Arrange
-            var valueProvider = new NameValuePairsValueProvider(_backingStore, null);
+            var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, null);
 
             // Act & assert
             ExceptionAssert.ThrowsArgumentNull(
@@ -163,7 +163,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             // Arrange
             var culture = CultureInfo.GetCultureInfo("fr-FR");
-            var valueProvider = new NameValuePairsValueProvider(_backingStore, culture);
+            var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, culture);
 
             // Act
             ValueProviderResult vpResult = valueProvider.GetValue("bar.baz");
@@ -180,7 +180,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             // Arrange
             var culture = CultureInfo.GetCultureInfo("fr-FR");
-            var valueProvider = new NameValuePairsValueProvider(_backingStore, culture);
+            var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, culture);
 
             // Act
             ValueProviderResult vpResult = valueProvider.GetValue("foo");
@@ -201,7 +201,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         //{
         //    // Arrange
         //    var culture = CultureInfo.GetCultureInfo("fr-FR");
-        //    var valueProvider = new NameValuePairsValueProvider(_backingStore, culture);
+        //    var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, culture);
 
         //    // Act
         //    ValueProviderResult vpResult = valueProvider.GetValue(key);
@@ -223,7 +223,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                     { "key", new string[] { null, null, "value" } }
                 });
             var culture = CultureInfo.GetCultureInfo("fr-FR");
-            var valueProvider = new NameValuePairsValueProvider(backingStore, culture);
+            var valueProvider = new ReadableStringCollectionValueProvider(backingStore, culture);
 
             // Act
             ValueProviderResult vpResult = valueProvider.GetValue("key");
@@ -237,7 +237,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public void GetValue_ReturnsNullIfKeyNotFound()
         {
             // Arrange
-            var valueProvider = new NameValuePairsValueProvider(_backingStore, null);
+            var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, null);
 
             // Act
             ValueProviderResult vpResult = valueProvider.GetValue("bar");
