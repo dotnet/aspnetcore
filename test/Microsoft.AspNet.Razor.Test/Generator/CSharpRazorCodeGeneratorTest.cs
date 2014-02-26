@@ -261,18 +261,18 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 tabTest: TabTest.NoTabs,
                 expectedDesignTimePragmas: new List<LineMapping>()
             {
-                BuildLineMapping(222, 16, 8, 182, 9, 0, 7),
-                BuildLineMapping(229, 16, 323, 14, 15, 26),
-                BuildLineMapping(265, 18, 430, 21, 18, 9),
-                BuildLineMapping(274, 20, 523, 29, 0, 1),
-                BuildLineMapping(20, 1, 881, 46, 13, 36),
-                BuildLineMapping(74, 2, 1021, 53, 22, 1),
-                BuildLineMapping(79, 2, 1124, 58, 27, 15),
-                BuildLineMapping(113, 7, 1223, 65, 2, 12),
-                BuildLineMapping(129, 8, 1331, 71, 1, 4),
-                BuildLineMapping(142, 8, 1498, 77, 14, 3),
-                BuildLineMapping(153, 8, 1635, 84, 25, 1),
-                BuildLineMapping(204, 13, 1786, 91, 5, 3)
+                BuildLineMapping(222, 16, 8, 174, 9, 0, 7),
+                BuildLineMapping(229, 16, 315, 14, 15, 26),
+                BuildLineMapping(265, 18, 422, 21, 18, 9),
+                BuildLineMapping(274, 20, 515, 29, 0, 1),
+                BuildLineMapping(20, 1, 873, 46, 13, 36),
+                BuildLineMapping(74, 2, 1013, 53, 22, 1),
+                BuildLineMapping(79, 2, 1116, 58, 27, 15),
+                BuildLineMapping(113, 7, 1215, 65, 2, 12),
+                BuildLineMapping(129, 8, 1323, 71, 1, 4),
+                BuildLineMapping(142, 8, 1490, 77, 14, 3),
+                BuildLineMapping(153, 8, 1627, 84, 25, 1),
+                BuildLineMapping(204, 13, 1778, 91, 5, 3)
             });
         }
 

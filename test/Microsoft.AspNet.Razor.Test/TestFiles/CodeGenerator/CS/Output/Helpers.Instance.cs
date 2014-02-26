@@ -4,7 +4,7 @@ namespace TestOutput
 
     public class Helpers
     {
-        public  Template 
+public  Template 
 #line 1 "Helpers.cshtml"
 Bold(string s) {
 #line default
@@ -35,7 +35,7 @@ Bold(string s) {
 #line default
 #line hidden
 
-        public  Template 
+public  Template 
 #line 6 "Helpers.cshtml"
 Italic(string s) {
 #line default

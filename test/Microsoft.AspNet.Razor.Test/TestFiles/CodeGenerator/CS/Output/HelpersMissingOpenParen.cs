@@ -4,7 +4,7 @@ namespace TestOutput
 
     public class HelpersMissingOpenParen
     {
-        public static Template 
+public static Template 
 #line 1 "HelpersMissingOpenParen.cshtml"
 Bold(string s) {
 #line default
@@ -35,7 +35,7 @@ Bold(string s) {
 #line default
 #line hidden
 
-        public static Template 
+public static Template 
 #line 6 "HelpersMissingOpenParen.cshtml"
 Italic
 #line default

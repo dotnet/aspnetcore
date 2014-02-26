@@ -4,7 +4,7 @@ namespace TestOutput
 
     public class HelpersMissingCloseParen
     {
-        public static Template 
+public static Template 
 #line 1 "HelpersMissingCloseParen.cshtml"
 Bold(string s) {
 #line default
@@ -35,7 +35,7 @@ Bold(string s) {
 #line default
 #line hidden
 
-        public static Template 
+public static Template 
 #line 6 "HelpersMissingCloseParen.cshtml"
 Italic(string s
 @Bold("Hello")

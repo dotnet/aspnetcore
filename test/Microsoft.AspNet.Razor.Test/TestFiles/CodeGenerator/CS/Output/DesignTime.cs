@@ -5,7 +5,7 @@ namespace TestOutput
     public class DesignTime
     {
         private static object @__o;
-        public static Template 
+public static Template 
 #line 17 "DesignTime.cshtml"
 Foo() {
 #line default

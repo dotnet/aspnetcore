@@ -4,7 +4,7 @@ namespace TestOutput
 
     public class InlineBlocks
     {
-        public static Template 
+public static Template 
 #line 1 "InlineBlocks.cshtml"
 Link(string link) {
 #line default

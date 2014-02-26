@@ -4,7 +4,7 @@ namespace TestOutput
 
     public class NestedHelpers
     {
-        public static Template 
+public static Template 
 #line 1 "NestedHelpers.cshtml"
 Italic(string s) {
 #line default
@@ -41,7 +41,7 @@ Italic(string s) {
 #line default
 #line hidden
 
-        public static Template 
+public static Template 
 #line 3 "NestedHelpers.cshtml"
 Bold(string s) {
 #line default
