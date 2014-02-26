@@ -22,11 +22,12 @@
   var projectDirectory = Path.GetDirectoryName(templateProjectItem.ContainingProject.FullName);
   var ttDirectory = Path.Combine(projectDirectory, "Properties");
   var projectName = Path.GetFileName(projectDirectory.TrimEnd('/'));
+  var namedParameterMatcher = new Regex(@"\{([a-z]\w+)\}", RegexOptions.IgnoreCase);
+  var numberParameterMatcher = new Regex(@"\{(\d+)\}");
   
   foreach (var resxFile in Directory.EnumerateFiles(projectDirectory, "*.resx", SearchOption.AllDirectories))
   {
     var fileName = Path.GetFileNameWithoutExtension(resxFile);
-    var parameterMatcher = new Regex(@"\{([a-z]\w+)\}");
     var resourceStrings = new List<ResourceData>();
 
     using (var resxReader = new ResXResourceReader(resxFile))
@@ -38,20 +39,29 @@
             var node = (ResXDataNode)entry.Value;
             var value = (string)node.GetValue((System.ComponentModel.Design.ITypeResolutionService)null);
             
-            var arguments 
-                = parameterMatcher
-                    .Matches(value)
-                    .Cast<Match>()
-                    .Select(m => m.Groups[1].Value)
-                    .Distinct()
-                    .ToList();
+            bool usingNamedArgs = true;
+            var match = namedParameterMatcher.Matches(value);
+            if (match.Count == 0)
+            {
+                usingNamedArgs = false;
+                match = numberParameterMatcher.Matches(value);
+            }
 
+            var arguments = match.Cast<Match>()
+                                 .Select(m => m.Groups[1].Value)
+                                 .Distinct();
+            if (!usingNamedArgs)
+            {
+                arguments = arguments.OrderBy(Convert.ToInt32);
+            }
+                                 
             resourceStrings.Add(
                 new ResourceData 
                     {
                         Name = node.Name,
                         Value = value,
-                        Arguments = arguments
+                        Arguments = arguments.ToList(),
+                        UsingNamedArgs = usingNamedArgs
                     });
         }
     }
@@ -94,8 +104,10 @@ namespace {0}
         else
         {
             GenerationEnvironment.AppendFormat(
-@"            return string.Format(CultureInfo.CurrentCulture, GetString(""{0}"", {2}), {1});", 
-                resourceString.Name, resourceString.FormatArguments, resourceString.ArgumentNames);
+@"            return string.Format(CultureInfo.CurrentCulture, GetString(""{0}""{1}), {2});", 
+                resourceString.Name, 
+                resourceString.UsingNamedArgs ? ", " + resourceString.FormatArguments : null, 
+                resourceString.ArgumentNames);
         }
 
         GenerationEnvironment.AppendLine().Append(
@@ -103,15 +115,18 @@ namespace {0}
     }
 
     GenerationEnvironment.Append(@"
-        private static string GetString(string name, params string[] argumentNames)
+        private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
 
             System.Diagnostics.Debug.Assert(value != null);
-
-            for (var i = 0; i < argumentNames.Length; i++)
+    
+            if (formatterNames != null)
             {
-                value = value.Replace(""{"" + argumentNames[i] + ""}"", ""{"" + i + ""}"");
+                for (var i = 0; i < formatterNames.Length; i++)
+                {
+                    value = value.Replace(""{"" + formatterNames[i] + ""}"", ""{"" + i + ""}"");
+                }
             }
 
             return value;
@@ -136,20 +151,27 @@ private class ResourceData
     public string Name { get; set; }
     public string Value { get; set; }
     public List<string> Arguments { get; set; }
+    
+    public bool UsingNamedArgs { get; set; }
 
     public string FormatArguments
-    {
-        get { return string.Join(", ", Arguments); }
-    }
-
-    public string ArgumentNames
     {
         get { return string.Join(", ", Arguments.Select(a => "\"" + a + "\"")); }
     }
 
+    public string ArgumentNames
+    {
+        get { return string.Join(", ", Arguments.Select(GetArgName)); }
+    }
+
     public string Parameters
     {
-        get { return "(" + string.Join(", ", Arguments.Select(a => "object " + a)) + ")"; }
+        get { return "(" + string.Join(", ", Arguments.Select(a => "object " + GetArgName(a))) + ")"; }
+    }
+    
+    public string GetArgName(string name)
+    {
+        return UsingNamedArgs ? name : 'p' + name;
     }
 }
 
