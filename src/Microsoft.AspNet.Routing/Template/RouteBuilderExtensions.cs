@@ -15,5 +15,10 @@ namespace Microsoft.AspNet.Routing.Template
         {
             builder.Routes.Add(new TemplateRoute(builder.Endpoint, template, defaults));
         }
+
+        public static void AddTemplateRoute(this IRouteBuilder builder, string template, object defaults)
+        {
+            builder.Routes.Add(new TemplateRoute(builder.Endpoint, template, new RouteValueDictionary(defaults)));
+        }
     }
 }

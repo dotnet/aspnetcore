@@ -28,7 +28,7 @@ namespace RoutingSample
 
             var rb1 = new RouteBuilder(endpoint1, routes);
             rb1.AddPrefixRoute("api/store");
-            rb1.AddTemplateRoute("api/checkout/{*extra}");
+            rb1.AddTemplateRoute("api/{controller}/{*extra}", new { controller = "Store" });
 
             var rb2 = new RouteBuilder(endpoint2, routes);
             rb2.AddPrefixRoute("hello/world");
