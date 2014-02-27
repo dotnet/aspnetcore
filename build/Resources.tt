@@ -83,35 +83,12 @@ namespace {0}
     foreach (var resourceString in resourceStrings)
     {
         GenerationEnvironment.AppendLine();
-        GenerationEnvironment.AppendFormat(@"        /// <summary>").AppendLine();
-    foreach (var line in resourceString.Value.Split(new[] { Environment.NewLine }, StringSplitOptions.None))
-    {
-      GenerationEnvironment.AppendFormat("        /// {0}", line.Replace("<", "&lt;").Replace(">", "&gt;"))
-                           .AppendLine();
-    }
-
-        GenerationEnvironment.AppendFormat(
-@"        /// </summary>
-        internal static string {0}{1}
-        {{
-", resourceString.Name, resourceString.Arguments.Count > 0 ? resourceString.Parameters : string.Empty);
-
-        if (resourceString.Arguments.Count == 0)
-        {
-            GenerationEnvironment.AppendFormat(
-@"            get {{ return GetString(""{0}""); }}", resourceString.Name);
-        }
-        else
-        {
-            GenerationEnvironment.AppendFormat(
-@"            return string.Format(CultureInfo.CurrentCulture, GetString(""{0}""{1}), {2});", 
-                resourceString.Name, 
-                resourceString.UsingNamedArgs ? ", " + resourceString.FormatArguments : null, 
-                resourceString.ArgumentNames);
-        }
-
-        GenerationEnvironment.AppendLine().Append(
-@"        }").AppendLine();
+        RenderHeader(GenerationEnvironment, resourceString);
+        RenderProperty(GenerationEnvironment, resourceString);
+        
+        GenerationEnvironment.AppendLine();
+        RenderHeader(GenerationEnvironment, resourceString);
+        RenderFormatMethod(GenerationEnvironment, resourceString);
     }
 
     GenerationEnvironment.Append(@"
@@ -145,6 +122,49 @@ namespace {0}
 }
 #>
 <#+
+private static void RenderHeader(StringBuilder builder, ResourceData resourceString)
+{
+    builder.Append("        /// <summary>")
+           .AppendLine();
+    foreach (var line in resourceString.Value.Split(new[] { Environment.NewLine }, StringSplitOptions.None))
+    {
+        builder.AppendFormat("        /// {0}", line.Replace("<", "&lt;").Replace(">", "&gt;"))
+               .AppendLine();
+    }
+    builder.Append("        /// </summary>")
+           .AppendLine();
+}
+
+private static void RenderProperty(StringBuilder builder, ResourceData resourceString)
+{
+    builder.AppendFormat("        internal static string {0}", resourceString.Name)
+           .AppendLine()
+           .AppendLine("        {")
+           .AppendFormat(@"            get {{ return GetString(""{0}""); }}", resourceString.Name)
+           .AppendLine()
+           .AppendLine("        }");
+}
+
+private static void RenderFormatMethod(StringBuilder builder, ResourceData resourceString)
+{
+    builder.AppendFormat("        internal static string Format{0}({1})", resourceString.Name, resourceString.Parameters)
+           .AppendLine()
+           .AppendLine("        {");
+    if(resourceString.Arguments.Count > 0)
+    {
+        builder.AppendFormat(@"            return string.Format(CultureInfo.CurrentCulture, GetString(""{0}""{1}), {2});", 
+                    resourceString.Name, 
+                    resourceString.UsingNamedArgs ? ", " + resourceString.FormatArguments : null, 
+                    resourceString.ArgumentNames);
+    }
+    else
+    {
+        builder.AppendFormat(@"            return GetString(""{0}"");", resourceString.Name);
+    }
+    builder.AppendLine()
+           .AppendLine("        }");
+}
+
 
 private class ResourceData
 {
@@ -166,7 +186,7 @@ private class ResourceData
 
     public string Parameters
     {
-        get { return "(" + string.Join(", ", Arguments.Select(a => "object " + GetArgName(a))) + ")"; }
+        get { return string.Join(", ", Arguments.Select(a => "object " + GetArgName(a))); }
     }
     
     public string GetArgName(string name)
@@ -174,5 +194,4 @@ private class ResourceData
         return UsingNamedArgs ? name : 'p' + name;
     }
 }
-
 #>
