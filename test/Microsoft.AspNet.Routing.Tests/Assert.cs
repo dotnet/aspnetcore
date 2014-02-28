@@ -1,7 +1,8 @@
 ﻿using System;
 
-namespace Microsoft.AspNet.Routing.Template.Tests
+namespace Microsoft.AspNet.Routing
 {
+    // Placeholder until we get our 'real' rich support for these asserts.
     public class Assert : Xunit.Assert
     {
         public static T Throws<T>(Assert.ThrowsDelegate action, string message) where T : Exception
