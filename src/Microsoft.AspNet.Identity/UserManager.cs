@@ -2,8 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Microsoft.AspNet.DependencyInjection;
 #if NET45
 using System.Security.Claims;
+#else
+using System.Security.ClaimsK;
 #endif
 using System.Text;
 using System.Threading.Tasks;
@@ -28,6 +31,22 @@ namespace Microsoft.AspNet.Identity
         private IPasswordHasher _passwordHasher;
         private IIdentityValidator<string> _passwordValidator;
         private IIdentityValidator<TUser> _userValidator;
+
+        /// <summary>
+        /// Constructor which takes a service provider to find the default interfaces to hook up
+        /// </summary>
+        /// <param name="serviceProvider"></param>
+        public UserManager(IServiceProvider serviceProvider)
+        {
+            if (serviceProvider == null)
+            {
+                throw new ArgumentNullException("serviceProvider");
+            }
+            Store = serviceProvider.GetService<IUserStore<TUser, TKey>>();
+            ClaimsIdentityFactory = serviceProvider.GetService<IClaimsIdentityFactory<TUser, TKey>>();
+            PasswordHasher = serviceProvider.GetService<IPasswordHasher>();
+            // TODO: validator interfaces, and maybe each optional store as well?  Email and SMS services?
+        }
 
         /// <summary>
         ///     Constructor
@@ -324,7 +343,6 @@ namespace Microsoft.AspNet.Identity
             GC.SuppressFinalize(this);
         }
 
-#if NET45
         /// <summary>
         ///     Creates a ClaimsIdentity representing the user
         /// </summary>
@@ -340,7 +358,6 @@ namespace Microsoft.AspNet.Identity
             }
             return ClaimsIdentityFactory.Create(this, user, authenticationType);
         }
-#endif
 
         /// <summary>
         ///     Create a user with no password
@@ -816,7 +833,6 @@ namespace Microsoft.AspNet.Identity
             return await loginStore.GetLogins(user).ConfigureAwait(false);
         }
 
-#if NET45
         // IUserClaimStore methods
         private IUserClaimStore<TUser, TKey> GetClaimStore()
         {
@@ -889,7 +905,6 @@ namespace Microsoft.AspNet.Identity
             }
             return await claimStore.GetClaims(user).ConfigureAwait(false);
         }
-#endif
 
         private IUserRoleStore<TUser, TKey> GetUserRoleStore()
         {

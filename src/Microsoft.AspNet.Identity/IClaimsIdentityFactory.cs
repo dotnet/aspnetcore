@@ -1,6 +1,8 @@
 using System;
 #if NET45
 using System.Security.Claims;
+#else
+using System.Security.ClaimsK;
 #endif
 using System.Threading.Tasks;
 
@@ -15,7 +17,6 @@ namespace Microsoft.AspNet.Identity
         where TUser : class, IUser<TKey>
         where TKey : IEquatable<TKey>
     {
-#if NET45
         /// <summary>
         ///     Create a ClaimsIdentity from an user using a UserManager
         /// </summary>
@@ -24,6 +25,5 @@ namespace Microsoft.AspNet.Identity
         /// <param name="authenticationType"></param>
         /// <returns></returns>
         Task<ClaimsIdentity> Create(UserManager<TUser, TKey> manager, TUser user, string authenticationType);
-#endif
     }
 }
