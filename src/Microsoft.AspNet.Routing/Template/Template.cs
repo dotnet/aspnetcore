@@ -12,9 +12,6 @@ namespace Microsoft.AspNet.Routing.Template
     {
         private const string SeparatorString = "/";
 
-        private readonly TemplateMatcher _matcher;
-        private readonly TemplateBinder _binder;
-
         public Template(List<TemplateSegment> segments)
         {
             if (segments == null)
@@ -37,19 +34,11 @@ namespace Microsoft.AspNet.Routing.Template
                     }
                 }
             }
-
-            _matcher = new TemplateMatcher(this);
-            _binder = new TemplateBinder(this);
         }
 
         public List<TemplatePart> Parameters { get; private set; }
 
         public List<TemplateSegment> Segments { get; private set; }
-
-        public IDictionary<string, object> Match(string requestPath, IDictionary<string, object> defaults)
-        {
-            return _matcher.Match(requestPath, defaults);
-        }
 
         private string DebuggerToString()
         {

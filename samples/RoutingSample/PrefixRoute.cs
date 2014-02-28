@@ -50,5 +50,10 @@ namespace RoutingSample
 
             return null;
         }
+
+        public RouteBindResult Bind(RouteBindContext context)
+        {
+            return null;
+        }
     }
 }

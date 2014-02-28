@@ -97,6 +97,10 @@ namespace Microsoft.AspNet.Routing.Template
                                 {
                                     values.Add(part.Name, defaultValue);
                                 }
+                                else if (part.IsOptional)
+                                {
+                                    // This is optional (with no default value) - there's nothing to capture here, so just move on.
+                                }
                                 else
                                 {
                                     // There's no default for this parameter

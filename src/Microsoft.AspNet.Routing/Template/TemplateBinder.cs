@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Routing.Template
 
         public Template Template { get; private set; }
 
-        public BoundRouteTemplate Bind(IDictionary<string, object> defaults, IDictionary<string, object> ambientValues, IDictionary<string, object> values)
+        public string Bind(IDictionary<string, object> defaults, IDictionary<string, object> ambientValues, IDictionary<string, object> values)
         {
             if (values == null)
             {
@@ -184,7 +184,7 @@ namespace Microsoft.AspNet.Routing.Template
         }
 
         // Step 2: If the route is a match generate the appropriate URI
-        private BoundRouteTemplate BindValues(TemplateBindingContext bindingContext)
+        private string BindValues(TemplateBindingContext bindingContext)
         {
             var context = new UriBuildingContext();
 
@@ -261,10 +261,7 @@ namespace Microsoft.AspNet.Routing.Template
                 encoded.Append(Uri.EscapeDataString(converted));
             }
 
-            return new BoundRouteTemplate()
-            {
-                Path = encoded.ToString(),
-            };
+            return encoded.ToString();
         }
 
         private static string UriEncode(string str)

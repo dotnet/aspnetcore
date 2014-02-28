@@ -734,6 +734,37 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
 
         [Fact]
+        public void MatchDoesNotSetOptionalParameter_EmptyString()
+        {
+            // Arrange
+            var route = CreateMatcher("{controller?}");
+            var url = "";
+
+            // Act
+            var match = route.Match(url, null);
+
+            // Assert
+            Assert.NotNull(match);
+            Assert.Equal(0, match.Values.Count);
+            Assert.False(match.ContainsKey("controller"));
+        }
+
+        [Fact]
+        public void Match_EmptyRouteWith_EmptyString()
+        {
+            // Arrange
+            var route = CreateMatcher("");
+            var url = "";
+
+            // Act
+            var match = route.Match(url, null);
+
+            // Assert
+            Assert.NotNull(match);
+            Assert.Equal(0, match.Values.Count);
+        }
+
+        [Fact]
         public void MatchMultipleOptionalParameters()
         {
             // Arrange

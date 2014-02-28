@@ -139,7 +139,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             else
             {
                 Assert.NotNull(boundTemplate);
-                Assert.Equal(expected, boundTemplate.Path);
+                Assert.Equal(expected, boundTemplate);
             }
         }
 
@@ -989,7 +989,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
                 // We want to chop off the query string and compare that using an unordered comparison
                 var expectedParts = new PathAndQuery(expected);
-                var actualParts = new PathAndQuery(boundTemplate.Path);
+                var actualParts = new PathAndQuery(boundTemplate);
 
                 Assert.Equal(expectedParts.Path, actualParts.Path);
 

@@ -2,10 +2,13 @@
 
 namespace Microsoft.AspNet.Routing
 {
-    public interface IRoute
+    public class RouteBindResult
     {
-        RouteMatch Match(RouteContext context);
+        public RouteBindResult(string url)
+        {
+            Url = url;
+        }
 
-        RouteBindResult Bind(RouteBindContext context);
+        public string Url { get; private set; }
     }
 }

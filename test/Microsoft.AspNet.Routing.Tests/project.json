@@ -7,6 +7,7 @@
   "configurations": {
     "net45": {
         "dependencies": {
+          "Moq": "4.2.1402.2112",
           "Owin": "1.0",
           "xunit": "1.9.2",
           "xunit.extensions": "1.9.2"

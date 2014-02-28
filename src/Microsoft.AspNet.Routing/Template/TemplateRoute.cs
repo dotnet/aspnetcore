@@ -11,6 +11,8 @@ namespace Microsoft.AspNet.Routing.Template
         private readonly IRouteEndpoint _endpoint;
         private readonly Template _parsedTemplate;
         private readonly string _routeTemplate;
+        private readonly TemplateMatcher _matcher;
+        private readonly TemplateBinder _binder;
 
         public TemplateRoute(IRouteEndpoint endpoint, string routeTemplate)
             : this(endpoint, routeTemplate, null)
@@ -25,11 +27,14 @@ namespace Microsoft.AspNet.Routing.Template
             }
 
             _endpoint = endpoint;
-            _routeTemplate = routeTemplate ?? String.Empty;
+            _routeTemplate = routeTemplate ?? string.Empty;
             _defaults = defaults ?? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
             // The parser will throw for invalid routes.
             _parsedTemplate = TemplateParser.Parse(RouteTemplate);
+
+            _matcher = new TemplateMatcher(_parsedTemplate);
+            _binder = new TemplateBinder(_parsedTemplate);
         }
 
         public IDictionary<string, object> Defaults
@@ -55,12 +60,12 @@ namespace Microsoft.AspNet.Routing.Template
             }
 
             var requestPath = context.RequestPath;
-            if (!String.IsNullOrEmpty(requestPath) && requestPath[0] == '/')
+            if (!string.IsNullOrEmpty(requestPath) && requestPath[0] == '/')
             {
                 requestPath = requestPath.Substring(1);
             }
 
-            IDictionary<string, object> values = _parsedTemplate.Match(requestPath, _defaults);
+            var values = _matcher.Match(requestPath, _defaults);
             if (values == null)
             {
                 // If we got back a null value set, that means the URI did not match
@@ -70,6 +75,12 @@ namespace Microsoft.AspNet.Routing.Template
             {
                 return new RouteMatch(_endpoint, values);
             }
+        }
+
+        public RouteBindResult Bind(RouteBindContext context)
+        {
+            var path = _binder.Bind(_defaults, context.AmbientValues, context.Values);
+            return path == null ? null : new RouteBindResult(path);
         }
     }
 }
