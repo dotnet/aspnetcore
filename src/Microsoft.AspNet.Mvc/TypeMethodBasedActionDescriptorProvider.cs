@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc
 
         public void Invoke(ActionDescriptorProviderContext context, Action callNext)
         {
-            context.ActionDescriptors.AddRange(GetDescriptors());
+            context.Results.AddRange(GetDescriptors());
             callNext();
         }
 

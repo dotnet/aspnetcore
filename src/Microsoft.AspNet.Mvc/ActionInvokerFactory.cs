@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc
         {
             var context = new ActionInvokerProviderContext(actionContext);
             _actionInvokerProvider.Invoke(context);
-            return context.ActionInvoker;
+            return context.Result;
         }
     }
 }

@@ -16,6 +16,6 @@ namespace Microsoft.AspNet.Mvc
 
         public ActionContext ActionContext { get; private set; }
 
-        public IActionInvoker ActionInvoker { get; set; }
+        public IActionInvoker Result { get; set; }
     }
 }

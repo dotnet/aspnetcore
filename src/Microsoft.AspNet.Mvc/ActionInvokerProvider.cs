@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc
 
             if (ad != null)
             {
-                context.ActionInvoker = new TypeMethodBasedActionInvoker(
+                context.Result = new TypeMethodBasedActionInvoker(
                     context.ActionContext,
                     ad,
                     _actionResultFactory,
