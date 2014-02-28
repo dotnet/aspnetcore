@@ -14,28 +14,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     {
         private readonly ConcurrentDictionary<Type, TypeInformation> _typeInfoCache = new ConcurrentDictionary<Type, TypeInformation>();
 
-        public IEnumerable<ModelMetadata> GetMetadataForProperties(object container, Type containerType)
+        public IEnumerable<ModelMetadata> GetMetadataForProperties(object container, [NotNull] Type containerType)
         {
-            if (containerType == null)
-            {
-                throw Error.ArgumentNull("containerType");
-            }
-
             return GetMetadataForPropertiesCore(container, containerType);
         }
 
-        public ModelMetadata GetMetadataForProperty(Func<object> modelAccessor, Type containerType, string propertyName)
+        public ModelMetadata GetMetadataForProperty(Func<object> modelAccessor, [NotNull] Type containerType, [NotNull] string propertyName)
         {
-            if (containerType == null)
-            {
-                throw Error.ArgumentNull("containerType");
-            }
-            if (String.IsNullOrEmpty(propertyName))
+            if (string.IsNullOrEmpty(propertyName))
             {
                 throw Error.ArgumentNullOrEmpty("propertyName");
             }
 
-            TypeInformation typeInfo = GetTypeInformation(containerType);
+            var typeInfo = GetTypeInformation(containerType);
             PropertyInformation propertyInfo;
             if (!typeInfo.Properties.TryGetValue(propertyName, out propertyInfo))
             {
@@ -45,13 +36,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return CreateMetadataFromPrototype(propertyInfo.Prototype, modelAccessor);
         }
 
-        public ModelMetadata GetMetadataForType(Func<object> modelAccessor, Type modelType)
+        public ModelMetadata GetMetadataForType(Func<object> modelAccessor, [NotNull] Type modelType)
         {
-            if (modelType == null)
-            {
-                throw Error.ArgumentNull("modelType");
-            }
-
             TModelMetadata prototype = GetTypeInformation(modelType).Prototype;
             return CreateMetadataFromPrototype(prototype, modelAccessor);
         }
@@ -68,10 +54,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private IEnumerable<ModelMetadata> GetMetadataForPropertiesCore(object container, Type containerType)
         {
-            TypeInformation typeInfo = GetTypeInformation(containerType);
-            foreach (KeyValuePair<string, PropertyInformation> kvp in typeInfo.Properties)
+            var typeInfo = GetTypeInformation(containerType);
+            foreach (var kvp in typeInfo.Properties)
             {
-                PropertyInformation propertyInfo = kvp.Value;
+                var propertyInfo = kvp.Value;
                 Func<object> modelAccessor = null;
                 if (container != null)
                 {
@@ -96,24 +82,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private TypeInformation CreateTypeInformation(Type type, IEnumerable<Attribute> associatedAttributes)
         {
-            TypeInfo typeInfo = type.GetTypeInfo();
-            IEnumerable<Attribute> attributes = typeInfo.GetCustomAttributes();
+            var typeInfo = type.GetTypeInfo();
+            var attributes = typeInfo.GetCustomAttributes();
             if (associatedAttributes != null)
             {
                 attributes = attributes.Concat(associatedAttributes);
             }
-            TypeInformation info = new TypeInformation
+            var info = new TypeInformation
             {
                 Prototype = CreateMetadataPrototype(attributes, containerType: null, modelType: type, propertyName: null)
             };
-            // TODO: Determine if we need this. TypeDescriptor does not exist in CoreCLR.
-            //ICustomTypeDescriptor typeDescriptor = TypeDescriptorHelper.Get(type);
-            //info.TypeDescriptor = typeDescriptor;
 
-            Dictionary<string, PropertyInformation> properties = new Dictionary<string, PropertyInformation>();
-
-            // TODO: Figure out if there's a better way to identify public non-static properties
-            foreach (PropertyInfo property in type.GetRuntimeProperties().Where(p => p.GetMethod.IsPublic && !p.GetMethod.IsStatic))
+            var properties = new Dictionary<string, PropertyInformation>();
+            foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
                 // Avoid re-generating a property descriptor if one has already been generated for the property name
                 if (!properties.ContainsKey(property.Name))
@@ -128,21 +109,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private PropertyInformation CreatePropertyInformation(Type containerType, PropertyInfo property)
         {
-            PropertyInformation info = new PropertyInformation();
+            var info = new PropertyInformation();
             info.ValueAccessor = CreatePropertyValueAccessor(property);
-            info.Prototype = CreateMetadataPrototype(property.GetCustomAttributes().Cast<Attribute>(), containerType, property.PropertyType, property.Name);
+            info.Prototype = CreateMetadataPrototype(property.GetCustomAttributes(), 
+                                                     containerType, 
+                                                     property.PropertyType, 
+                                                     property.Name);
             return info;
         }
 
         private static Func<object, object> CreatePropertyValueAccessor(PropertyInfo property)
         {
-            Type declaringType = property.DeclaringType;
-            TypeInfo declaringTypeInfo = declaringType.GetTypeInfo();
+            var declaringType = property.DeclaringType;
+            var declaringTypeInfo = declaringType.GetTypeInfo();
             if (declaringTypeInfo.IsVisible)
             {
                 if (property.CanRead)
                 {
-                    MethodInfo getMethodInfo = property.GetMethod;
+                    var getMethodInfo = property.GetMethod;
                     if (getMethodInfo != null)
                     {
                         return CreateDynamicValueAccessor(getMethodInfo, declaringType, property.Name);
@@ -161,10 +145,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             Contract.Assert(getMethodInfo != null && getMethodInfo.IsPublic && !getMethodInfo.IsStatic);
 
-            TypeInfo declaringTypeInfo = declaringType.GetTypeInfo();
-            Type propertyType = getMethodInfo.ReturnType;
-            DynamicMethod dynamicMethod = new DynamicMethod("Get" + propertyName + "From" + declaringType.Name, typeof(object), new Type[] { typeof(object) });
-            ILGenerator ilg = dynamicMethod.GetILGenerator();
+            var declaringTypeInfo = declaringType.GetTypeInfo();
+            var propertyType = getMethodInfo.ReturnType;
+            var dynamicMethod = new DynamicMethod("Get" + propertyName + "From" + declaringType.Name, 
+                                                  typeof(object), 
+                                                  new [] { typeof(object) });
+            var ilg = dynamicMethod.GetILGenerator();
 
             // Load the container onto the stack, convert from object => declaring type for the property
             ilg.Emit(OpCodes.Ldarg_0);

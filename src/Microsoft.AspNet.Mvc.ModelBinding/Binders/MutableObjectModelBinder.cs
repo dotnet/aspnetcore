@@ -21,13 +21,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             EnsureModel(bindingContext);
-            IEnumerable<ModelMetadata> propertyMetadatas = GetMetadataForProperties(bindingContext);
-            ComplexModelDto dto = CreateAndPopulateDto(bindingContext, propertyMetadatas);
+            var propertyMetadatas = GetMetadataForProperties(bindingContext);
+            var dto = CreateAndPopulateDto(bindingContext, propertyMetadatas);
 
             // post-processing, e.g. property setters and hooking up validation
             ProcessDto(bindingContext, dto);
-            // TODO: Validation
-            // bindingContext.ValidationNode.ValidateAllProperties = true; // complex models require full validation
+            // complex models require full validation
+            bindingContext.ValidationNode.ValidateAllProperties = true;
             return true;
         }
 
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private static bool CanBindType(Type modelType)
         {
             // Simple types cannot use this binder
-            bool isComplexType = !modelType.HasStringConverter();
+            var isComplexType = !modelType.HasStringConverter();
             if (!isComplexType)
             {
                 return false;
@@ -87,8 +87,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private ComplexModelDto CreateAndPopulateDto(ModelBindingContext bindingContext, IEnumerable<ModelMetadata> propertyMetadatas)
         {
             // create a DTO and call into the DTO binder
-            ComplexModelDto originalDto = new ComplexModelDto(bindingContext.ModelMetadata, propertyMetadatas);
-            ModelBindingContext dtoBindingContext = new ModelBindingContext(bindingContext)
+            var originalDto = new ComplexModelDto(bindingContext.ModelMetadata, propertyMetadatas);
+            var dtoBindingContext = new ModelBindingContext(bindingContext)
             {
                 ModelMetadata = bindingContext.MetadataProvider.GetMetadataForType(() => originalDto, typeof(ComplexModelDto)),
                 ModelName = bindingContext.ModelName
@@ -105,24 +105,26 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return Activator.CreateInstance(bindingContext.ModelType);
         }
 
-        //// Called when the property setter null check failed, allows us to add our own error message to ModelState.
-        //internal static EventHandler<ModelValidatedEventArgs> CreateNullCheckFailedHandler(ModelMetadata modelMetadata, object incomingValue)
-        //{
-        //    return (sender, e) =>
-        //    {
-        //        ModelValidationNode validationNode = (ModelValidationNode)sender;
-        //        ModelStateDictionary modelState = e.ActionContext.ModelState;
+        // Called when the property setter null check failed, allows us to add our own error message to ModelState.
+        internal static EventHandler<ModelValidatedEventArgs> CreateNullCheckFailedHandler(ModelMetadata modelMetadata, object incomingValue)
+        {
+            return (sender, e) =>
+            {
+                var validationNode = (ModelValidationNode)sender;
+                var modelState = e.ValidationContext.ModelState;
 
-        //        if (modelState.IsValidField(validationNode.ModelStateKey))
-        //        {
-        //            string errorMessage = ModelBinderConfig.ValueRequiredErrorMessageProvider(e.ActionContext, modelMetadata, incomingValue);
-        //            if (errorMessage != null)
-        //            {
-        //                modelState.AddModelError(validationNode.ModelStateKey, errorMessage);
-        //            }
-        //        }
-        //    };
-        //}
+                if (modelState.IsValidField(validationNode.ModelStateKey))
+                {
+                    // TODO: Revive ModelBinderConfig
+                    // string errorMessage =  ModelBinderConfig.ValueRequiredErrorMessageProvider(e.ValidationContext, modelMetadata, incomingValue);
+                    var errorMessage = e.ValidationContext.ModelMetadata.PropertyName + " is required";
+                    if (errorMessage != null)
+                    {
+                        modelState.AddModelError(validationNode.ModelStateKey, errorMessage);
+                    }
+                }
+            };
+        }
 
         protected virtual void EnsureModel(ModelBindingContext bindingContext)
         {
@@ -134,12 +136,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         protected virtual IEnumerable<ModelMetadata> GetMetadataForProperties(ModelBindingContext bindingContext)
         {
-            // TODO: Revive required properties. This has a dependency on HttpBindingAttribute and DataAnnotations 
             // keep a set of the required properties so that we can cross-reference bound properties later
-            HashSet<string> requiredProperties = new HashSet<string>();
-            // Dictionary<string, ModelValidator> requiredValidators;
-            HashSet<string> skipProperties = new HashSet<string>();
-            // GetRequiredPropertiesCollection(bindingContext, out requiredProperties, out skipProperties);
+            HashSet<string> requiredProperties;
+            Dictionary<string, IModelValidator> requiredValidators;
+            HashSet<string> skipProperties;
+            GetRequiredPropertiesCollection(bindingContext, out requiredProperties, out requiredValidators, out skipProperties);
 
             return from propertyMetadata in bindingContext.ModelMetadata.Properties
                    let propertyName = propertyMetadata.PropertyName
@@ -150,102 +151,84 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private static object GetPropertyDefaultValue(PropertyInfo propertyInfo)
         {
-            DefaultValueAttribute attr = propertyInfo.GetCustomAttribute<DefaultValueAttribute>();
+            var attr = propertyInfo.GetCustomAttribute<DefaultValueAttribute>();
             return (attr != null) ? attr.Value : null;
         }
 
-        //internal static void GetRequiredPropertiesCollection(ModelBindingContext bindingContext, out HashSet<string> requiredProperties, out HashSet<string> skipProperties)
-        //{
-        //    requiredProperties = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        //    // requiredValidators = new Dictionary<string, ModelValidator>(StringComparer.OrdinalIgnoreCase);
-        //    skipProperties = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        internal static void GetRequiredPropertiesCollection(ModelBindingContext bindingContext,
+                                                            out HashSet<string> requiredProperties,
+                                                            out Dictionary<string, IModelValidator> requiredValidators,
+                                                            out HashSet<string> skipProperties)
+        {
+            requiredProperties = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            requiredValidators = new Dictionary<string, IModelValidator>(StringComparer.OrdinalIgnoreCase);
+            skipProperties = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        //    // Use attributes on the property before attributes on the type.
-        //    Type modelType = bindingContext.ModelType;
-        //    ICustomTypeDescriptor modelDescriptor = new AssociatedMetadataTypeTypeDescriptionProvider(modelType)
-        //                                                        .GetTypeDescriptor(modelType);
+            // TODO: HttpBindingBehaviorAttribute
+            var modelTypeInfo = bindingContext.ModelType.GetTypeInfo();
+            foreach (var propertyMetadata in bindingContext.ModelMetadata.Properties)
+            {
+                var propertyName = propertyMetadata.PropertyName;
+                var requiredValidator = bindingContext.GetValidators(propertyMetadata)
+                                                      .FirstOrDefault(v => v.IsRequired);
+                // TODO: Revive HttpBindingBehaviorAttribute
 
-        //    PropertyDescriptorCollection propertyDescriptors = modelDescriptor.GetProperties();
-
-        //    // TODO: Revive HttpBindingBehavior
-        //    // HttpBindingBehaviorAttribute typeAttr = modelDescriptor.GetAttributes().OfType<HttpBindingBehaviorAttribute>().SingleOrDefault();
-
-        //    foreach (PropertyDescriptor propertyDescriptor in propertyDescriptors)
-        //    {
-        //        string propertyName = propertyDescriptor.Name;
-        //        ModelMetadata propertyMetadata = bindingContext.PropertyMetadata[propertyName];
-        //        // ModelValidator requiredValidator = context.GetValidators(propertyMetadata).Where(v => v.IsRequired).FirstOrDefault();
-        //        // requiredValidators[propertyName] = requiredValidator;
-
-        //        HttpBindingBehaviorAttribute propAttr = propertyDescriptor.Attributes.OfType<HttpBindingBehaviorAttribute>().SingleOrDefault();
-        //        HttpBindingBehaviorAttribute workingAttr = propAttr ?? typeAttr;
-        //        if (workingAttr != null)
-        //        {
-        //            switch (workingAttr.Behavior)
-        //            {
-        //                case HttpBindingBehavior.Required:
-        //                    requiredProperties.Add(propertyName);
-        //                    break;
-
-        //                case HttpBindingBehavior.Never:
-        //                    skipProperties.Add(propertyName);
-        //                    break;
-        //            }
-        //        }
-        //        else if (requiredValidator != null)
-        //        {
-        //            requiredProperties.Add(propertyName);
-        //        }
-        //    }
-        //}
+                if (requiredValidator != null)
+                {
+                    requiredValidators[propertyName] = requiredValidator;
+                    requiredProperties.Add(propertyName);
+                }
+            }
+        }
 
         internal void ProcessDto(ModelBindingContext bindingContext, ComplexModelDto dto)
         {
-            // TODO: Uncomment this once we revive validation
+            HashSet<string> requiredProperties;
+            Dictionary<string, IModelValidator> requiredValidators;
+            HashSet<string> skipProperties;
+            GetRequiredPropertiesCollection(bindingContext, out requiredProperties, out requiredValidators, out skipProperties);
 
-            //HashSet<string> requiredProperties;
-            //// Dictionary<string, ModelValidator> requiredValidators;
-            //HashSet<string> skipProperties;
-            //GetRequiredPropertiesCollection(context, bindingContext, out requiredProperties, out requiredValidators, out skipProperties);
+            // Eliminate provided properties from requiredProperties; leaving just *missing* required properties.
+            requiredProperties.ExceptWith(dto.Results.Select(r => r.Key.PropertyName));
 
-            //// Eliminate provided properties from requiredProperties; leaving just *missing* required properties.
-            //requiredProperties.ExceptWith(dto.Results.Select(r => r.Key.PropertyName));
+            foreach (var missingRequiredProperty in requiredProperties)
+            {
+                var addedError = false;
+                var modelStateKey = ModelBindingHelper.CreatePropertyModelName(
+                    bindingContext.ValidationNode.ModelStateKey, missingRequiredProperty);
 
-            //foreach (string missingRequiredProperty in requiredProperties)
-            //{
-            //    string modelStateKey = ModelBindingHelper.CreatePropertyModelName(
-            //        bindingContext.ValidationNode.ModelStateKey, missingRequiredProperty);
+                // Update Model as SetProperty() would: Place null value where validator will check for non-null. This
+                // ensures a failure result from a required validator (if any) even for a non-nullable property.
+                // (Otherwise, propertyMetadata.Model is likely already null.)
+                var propertyMetadata = bindingContext.PropertyMetadata[missingRequiredProperty];
+                propertyMetadata.Model = null;
 
-            //    // Update Model as SetProperty() would: Place null value where validator will check for non-null. This
-            //    // ensures a failure result from a required validator (if any) even for a non-nullable property.
-            //    // (Otherwise, propertyMetadata.Model is likely already null.)
-            //    ModelMetadata propertyMetadata = bindingContext.PropertyMetadata[missingRequiredProperty];
-            //    propertyMetadata.Model = null;
+                // Execute validator (if any) to get custom error message.
+                IModelValidator validator;
+                if (requiredValidators.TryGetValue(missingRequiredProperty, out validator))
+                {
+                    addedError = RunValidator(validator, bindingContext, propertyMetadata, modelStateKey);
+                }
 
-            //    // Execute validator (if any) to get custom error message.
-            //    ModelValidator validator = requiredValidators[missingRequiredProperty];
-            //    bool addedError = RunValidator(validator, bindingContext, propertyMetadata, modelStateKey);
-
-            //    // Fall back to default message if HttpBindingBehaviorAttribute required this property or validator
-            //    // (oddly) succeeded.
-            //    if (!addedError)
-            //    {
-            //        bindingContext.ModelState.AddModelError(modelStateKey,
-            //            Error.Format(SRResources.MissingRequiredMember, missingRequiredProperty));
-            //    }
-            //}
+                // Fall back to default message if HttpBindingBehaviorAttribute required this property or validator
+                // (oddly) succeeded.
+                if (!addedError)
+                {
+                    bindingContext.ModelState.AddModelError(
+                        modelStateKey,
+                        Resources.FormatMissingRequiredMember(missingRequiredProperty));
+                }
+            }
 
             // for each property that was bound, call the setter, recording exceptions as necessary
             foreach (var entry in dto.Results)
             {
-                ModelMetadata propertyMetadata = entry.Key;
-
-                ComplexModelDtoResult dtoResult = entry.Value;
+                var propertyMetadata = entry.Key;
+                var dtoResult = entry.Value;
                 if (dtoResult != null)
                 {
                     SetProperty(bindingContext, propertyMetadata, dtoResult);
-                    // TODO: Validation
-                    // bindingContext.ValidationNode.ChildNodes.Add(dtoResult.ValidationNode);
+                    bindingContext.ValidationNode.ChildNodes.Add(dtoResult.ValidationNode);
                 }
             }
         }
@@ -253,14 +236,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We're recording this exception so that we can act on it later.")]
         protected virtual void SetProperty(ModelBindingContext bindingContext,
                                            ModelMetadata propertyMetadata,
-                                           ComplexModelDtoResult dtoResult
-                                           /*, ModelValidator requiredValidator*/)
+                                           ComplexModelDtoResult dtoResult)
         {
-            // TODO: This used TypeDescriptor which is no longer available. Lookups performed using System.ComponentModel were 
-            // cached. To maintain parity, we'll need to cache property lookups.
-            PropertyInfo property = bindingContext.ModelType
-                                                  .GetRuntimeProperties()
-                                                  .FirstOrDefault(p => p.Name.Equals(propertyMetadata.PropertyName, StringComparison.OrdinalIgnoreCase));
+            var property = bindingContext.ModelType
+                                         .GetProperty(propertyMetadata.PropertyName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
 
             if (property == null || !property.CanWrite)
             {
@@ -268,21 +247,28 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return;
             }
 
-            object value = dtoResult.Model ?? GetPropertyDefaultValue(property);
+            var value = dtoResult.Model ?? GetPropertyDefaultValue(property);
             propertyMetadata.Model = value;
 
 
-            //// 'Required' validators need to run first so that we can provide useful error messages if
-            //// the property setters throw, e.g. if we're setting entity keys to null. See comments in
-            //// DefaultModelBinder.SetProperty() for more information.
-            //if (value == null)
-            //{
-            //    string modelStateKey = dtoResult.ValidationNode.ModelStateKey;
-            //    if (bindingContext.ModelState.IsValidField(modelStateKey))
-            //    {
-            //        RunValidator(requiredValidator, bindingContext, propertyMetadata, modelStateKey);
-            //    }
-            //}
+            // 'Required' validators need to run first so that we can provide useful error messages if
+            // the property setters throw, e.g. if we're setting entity keys to null. 
+            if (value == null)
+            {
+                var modelStateKey = dtoResult.ValidationNode.ModelStateKey;
+                if (bindingContext.ModelState.IsValidField(modelStateKey))
+                {
+                    var requiredValidator = bindingContext.GetValidators(propertyMetadata).FirstOrDefault(v => v.IsRequired);
+                    if (requiredValidator != null)
+                    {
+                        var validationContext = bindingContext.CreateValidationContext(propertyMetadata);
+                        foreach (var validationResult in requiredValidator.Validate(validationContext))
+                        {
+                            bindingContext.ModelState.AddModelError(modelStateKey, validationResult.Message);
+                        }
+                    }
+                }
+            }
 
             if (value != null || property.PropertyType.AllowsNullValue())
             {
@@ -293,39 +279,39 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 catch (Exception ex)
                 {
                     // don't display a duplicate error message if a binding error has already occurred for this field
-                    //string modelStateKey = dtoResult.ValidationNode.ModelStateKey;
-                    //if (bindingContext.ModelState.IsValidField(modelStateKey))
-                    //{
-                    bindingContext.ModelState.AddModelError(bindingContext.ModelName, ex);
-                    //}
+                    var modelStateKey = dtoResult.ValidationNode.ModelStateKey;
+                    if (bindingContext.ModelState.IsValidField(modelStateKey))
+                    {
+                        bindingContext.ModelState.AddModelError(bindingContext.ModelName, ex);
+                    }
                 }
             }
             else
             {
                 // trying to set a non-nullable value type to null, need to make sure there's a message
-                //string modelStateKey = dtoResult.ValidationNode.ModelStateKey;
-                //if (bindingContext.ModelState.IsValidField(modelStateKey))
-                //{
-                //    dtoResult.ValidationNode.Validated += CreateNullCheckFailedHandler(propertyMetadata, value);
-                //}
+                var modelStateKey = dtoResult.ValidationNode.ModelStateKey;
+                if (bindingContext.ModelState.IsValidField(modelStateKey))
+                {
+                    dtoResult.ValidationNode.Validated += CreateNullCheckFailedHandler(propertyMetadata, value);
+                }
             }
         }
 
-        //// Returns true if validator execution adds a model error.
-        //private static bool RunValidator(ModelValidator validator, ModelBindingContext bindingContext,
-        //    ModelMetadata propertyMetadata, string modelStateKey)
-        //{
-        //    bool addedError = false;
-        //    if (validator != null)
-        //    {
-        //        foreach (ModelValidationResult validationResult in validator.Validate(propertyMetadata, bindingContext.Model))
-        //        {
-        //            bindingContext.ModelState.AddModelError(modelStateKey, validationResult.Message);
-        //            addedError = true;
-        //        }
-        //    }
+        // Returns true if validator execution adds a model error.
+        private static bool RunValidator(IModelValidator validator,
+                                         ModelBindingContext bindingContext,
+                                         ModelMetadata propertyMetadata,
+                                         string modelStateKey)
+        {
+            var validationContext = bindingContext.CreateValidationContext(propertyMetadata);
 
-        //    return addedError;
-        //}
+            var addedError = false;
+            foreach (var validationResult in validator.Validate(validationContext))
+            {
+                bindingContext.ModelState.AddModelError(modelStateKey, validationResult.Message);
+                addedError = true;
+            }
+            return addedError;
+        }
     }
 }

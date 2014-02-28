@@ -148,7 +148,6 @@ namespace Microsoft.AspNet.Mvc
                     actionBindingContext.ModelBinder.BindModel(modelBindingContext);
                     parameterValues[parameter.Name] = modelBindingContext.Model;
                 }
-
             }
 
             return parameterValues;

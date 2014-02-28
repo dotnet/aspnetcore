@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -29,14 +28,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         public virtual bool BindModel(ModelBindingContext bindingContext)
         {
-            ModelBindingContext newBindingContext = CreateNewBindingContext(bindingContext, bindingContext.ModelName);
+            var newBindingContext = CreateNewBindingContext(bindingContext, 
+                                                            bindingContext.ModelName, 
+                                                            reuseValidationNode: true);
 
             bool boundSuccessfully = TryBind(newBindingContext);
-            if (!boundSuccessfully && !String.IsNullOrEmpty(bindingContext.ModelName)
+            if (!boundSuccessfully && !string.IsNullOrEmpty(bindingContext.ModelName)
                 && bindingContext.FallbackToEmptyPrefix)
             {
                 // fallback to empty prefix?
-                newBindingContext = CreateNewBindingContext(bindingContext, modelName: String.Empty);
+                newBindingContext = CreateNewBindingContext(bindingContext, 
+                                                            modelName: string.Empty,
+                                                            reuseValidationNode: false);
                 boundSuccessfully = TryBind(newBindingContext);
             }
 
@@ -49,31 +52,28 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // If we fell back to an empty prefix above and are dealing with simple types,
             // propagate the non-blank model name through for user clarity in validation errors.
             // Complex types will reveal their individual properties as model names and do not require this.
-            // TODO: Validation
-            //if (!newBindingContext.ModelMetadata.IsComplexType && String.IsNullOrEmpty(newBindingContext.ModelName))
-            //{
-            //    newBindingContext.ValidationNode = new Validation.ModelValidationNode(newBindingContext.ModelMetadata, bindingContext.ModelName);
-            //}
+            if (!newBindingContext.ModelMetadata.IsComplexType && String.IsNullOrEmpty(newBindingContext.ModelName))
+            {
+                newBindingContext.ValidationNode = new ModelValidationNode(newBindingContext.ModelMetadata, bindingContext.ModelName);
+            }
 
-            //newBindingContext.ValidationNode.Validate(context, null /* parentNode */);
+            var validationContext = new ModelValidationContext(bindingContext.ModelMetadata,
+                                                               bindingContext.ModelState,
+                                                               bindingContext.MetadataProvider,
+                                                               bindingContext.ValidatorProviders);
+
+            newBindingContext.ValidationNode.Validate(validationContext, parentNode: null);
             bindingContext.Model = newBindingContext.Model;
             return true;
         }
 
-        private bool TryBind(ModelBindingContext bindingContext)
+        private bool TryBind([NotNull] ModelBindingContext bindingContext)
         {
-            // TODO: The body of this method existed as HttpActionContextExtensions.Bind. We might have to refactor it into
-            // something that is shared.
-            if (bindingContext == null)
-            {
-                throw Error.ArgumentNull("bindingContext");
-            }
-
             // TODO: RuntimeHelpers.EnsureSufficientExecutionStack does not exist in the CoreCLR.
             // Protects against stack overflow for deeply nested model binding
             // RuntimeHelpers.EnsureSufficientExecutionStack();
 
-            foreach (IModelBinder binder in Binders)
+            foreach (var binder in Binders)
             {
                 if (binder.BindModel(bindingContext))
                 {
@@ -85,7 +85,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return false;
         }
 
-        private static ModelBindingContext CreateNewBindingContext(ModelBindingContext oldBindingContext, string modelName)
+        private static ModelBindingContext CreateNewBindingContext(ModelBindingContext oldBindingContext, 
+                                                                   string modelName,
+                                                                   bool reuseValidationNode)
         {
             var newBindingContext = new ModelBindingContext
             {
@@ -93,17 +95,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 ModelName = modelName,
                 ModelState = oldBindingContext.ModelState,
                 ValueProvider = oldBindingContext.ValueProvider,
+                ValidatorProviders = oldBindingContext.ValidatorProviders,
                 MetadataProvider = oldBindingContext.MetadataProvider,
                 ModelBinder = oldBindingContext.ModelBinder,
                 HttpContext = oldBindingContext.HttpContext               
             };
 
-            // TODO: Validation
-            //// validation is expensive to create, so copy it over if we can
-            //if (Object.ReferenceEquals(modelName, oldBindingContext.ModelName))
-            //{
-            //    newBindingContext.ValidationNode = oldBindingContext.ValidationNode;
-            //}
+            // validation is expensive to create, so copy it over if we can
+            if (reuseValidationNode)
+            {
+                newBindingContext.ValidationNode = oldBindingContext.ValidationNode;
+            }
 
             return newBindingContext;
         }

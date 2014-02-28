@@ -2,9 +2,9 @@
 using System.Reflection;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding.Test
+namespace Microsoft.AspNet.Mvc
 {
-    public static class ExceptionAssert
+    internal static class ExceptionAssert
     {
         /// <summary>
         /// Verifies that an exception of the given type (or optionally a derived type) is thrown.

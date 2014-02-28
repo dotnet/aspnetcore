@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using Moq;
 using Xunit;
 
@@ -20,12 +21,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binder = new CollectionModelBinder<int>();
 
             // Act
-            List<int> boundCollection = binder.BindComplexCollectionFromIndexes(bindingContext, new[] { "foo", "bar", "baz" });
+            var boundCollection = binder.BindComplexCollectionFromIndexes(bindingContext, new[] { "foo", "bar", "baz" });
 
             // Assert
             Assert.Equal(new[] { 42, 0, 200 }, boundCollection.ToArray());
-            // TODO: Validation
-            // Assert.Equal(new[] { "someName[foo]", "someName[baz]" }, bindingContext.ValidationNode.ChildNodes.Select(o => o.ModelStateKey).ToArray());
+            Assert.Equal(new[] { "someName[foo]", "someName[baz]" }, bindingContext.ValidationNode.ChildNodes.Select(o => o.ModelStateKey).ToArray());
         }
 
         [Fact]
@@ -42,12 +42,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binder = new CollectionModelBinder<int>();
 
             // Act
-            List<int> boundCollection = binder.BindComplexCollectionFromIndexes(bindingContext, indexNames: null);
+            var boundCollection = binder.BindComplexCollectionFromIndexes(bindingContext, indexNames: null);
 
             // Assert
             Assert.Equal(new[] { 42, 100 }, boundCollection.ToArray());
-            // TODO: Validation
-            // Assert.Equal(new[] { "someName[0]", "someName[1]" }, bindingContext.ValidationNode.ChildNodes.Select(o => o.ModelStateKey).ToArray());
+            Assert.Equal(new[] { "someName[0]", "someName[1]" }, bindingContext.ValidationNode.ChildNodes.Select(o => o.ModelStateKey).ToArray());
         }
 
         [Fact]
@@ -97,7 +96,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binder = new CollectionModelBinder<int>();
 
             // Act
-            List<int> boundCollection = binder.BindSimpleCollection(bindingContext: null, rawValue: new object[0], culture: null);
+            var boundCollection = binder.BindSimpleCollection(bindingContext: null, rawValue: new object[0], culture: null);
 
             // Assert
             Assert.NotNull(boundCollection);
@@ -111,7 +110,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binder = new CollectionModelBinder<int>();
 
             // Act
-            List<int> boundCollection = binder.BindSimpleCollection(bindingContext: null, rawValue: null, culture: null);
+            var boundCollection = binder.BindSimpleCollection(bindingContext: null, rawValue: null, culture: null);
 
             // Assert
             Assert.Null(boundCollection);
@@ -124,25 +123,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var culture = CultureInfo.GetCultureInfo("fr-FR");
             var bindingContext = GetModelBindingContext(new SimpleHttpValueProvider());
 
-            // TODO: Validation
-            // ModelValidationNode childValidationNode = null;
+            ModelValidationNode childValidationNode = null;
             Mock.Get<IModelBinder>(bindingContext.ModelBinder)
                 .Setup(o => o.BindModel(It.IsAny<ModelBindingContext>()))
                 .Returns((ModelBindingContext mbc) =>
                 {
                     Assert.Equal("someName", mbc.ModelName);
-                    // childValidationNode = mbc.ValidationNode;
+                    childValidationNode = mbc.ValidationNode;
                     mbc.Model = 42;
                     return true;
                 });
             var modelBinder = new CollectionModelBinder<int>();
 
             // Act
-            List<int> boundCollection = modelBinder.BindSimpleCollection(bindingContext, new int[1], culture);
+            var boundCollection = modelBinder.BindSimpleCollection(bindingContext, new int[1], culture);
 
             // Assert
             Assert.Equal(new[] { 42 }, boundCollection.ToArray());
-            // Assert.Equal(new[] { childValidationNode }, bindingContext.ValidationNode.ChildNodes.ToArray());
+            Assert.Equal(new[] { childValidationNode }, bindingContext.ValidationNode.ChildNodes.ToArray());
         }
 
         private static ModelBindingContext GetModelBindingContext(IValueProvider valueProvider)

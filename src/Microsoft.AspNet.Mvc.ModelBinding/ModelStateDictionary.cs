@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -12,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
         }
 
-        public ModelStateDictionary([NotNull]ModelStateDictionary dictionary)
+        public ModelStateDictionary([NotNull] ModelStateDictionary dictionary)
         {
             foreach (var entry in dictionary)
             {
@@ -35,7 +36,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             GetModelStateForKey(key).Errors.Add(errorMessage);
         }
 
-        private ModelState GetModelStateForKey([NotNull]string key)
+        public bool IsValidField([NotNull] string key)
+        {
+            // if the key is not found in the dictionary, we just say that it's valid (since there are no errors)
+            foreach (var entry in DictionaryHelper.FindKeysWithPrefix(this, key))
+            {
+                if (entry.Value.Errors.Count != 0)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private ModelState GetModelStateForKey([NotNull] string key)
         {
             ModelState modelState;
             if (!TryGetValue(key, out modelState))

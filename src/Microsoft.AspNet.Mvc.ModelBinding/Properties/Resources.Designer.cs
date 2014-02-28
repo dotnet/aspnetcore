@@ -59,6 +59,38 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
+        /// Property '{0}' on type '{1}' is invalid. Value-typed properties marked as [Required] must also be marked with [DataMember(IsRequired=true)] to be recognized as required. Consider attributing the declaring type with [DataContract] and the property with [DataMember(IsRequired=true)].
+        /// </summary>
+        internal static string MissingDataMemberIsRequired
+        {
+            get { return GetString("MissingDataMemberIsRequired"); }
+        }
+
+        /// <summary>
+        /// Property '{0}' on type '{1}' is invalid. Value-typed properties marked as [Required] must also be marked with [DataMember(IsRequired=true)] to be recognized as required. Consider attributing the declaring type with [DataContract] and the property with [DataMember(IsRequired=true)].
+        /// </summary>
+        internal static string FormatMissingDataMemberIsRequired(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("MissingDataMemberIsRequired"), p0, p1);
+        }
+
+        /// <summary>
+        /// The '{0}' property is required.
+        /// </summary>
+        internal static string MissingRequiredMember
+        {
+            get { return GetString("MissingRequiredMember"); }
+        }
+
+        /// <summary>
+        /// The '{0}' property is required.
+        /// </summary>
+        internal static string FormatMissingRequiredMember(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("MissingRequiredMember"), p0);
+        }
+
+        /// <summary>
         /// The value '{0}' is not valid for {1}.
         /// </summary>
         internal static string ModelBinderConfig_ValueInvalid
@@ -168,6 +200,70 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         internal static string FormatModelBindingContext_ModelMetadataMustBeSet()
         {
             return GetString("ModelBindingContext_ModelMetadataMustBeSet");
+        }
+
+        /// <summary>
+        /// The model object inside the metadata claimed to be compatible with '{0}', but was actually '{1}'.
+        /// </summary>
+        internal static string ValidatableObjectAdapter_IncompatibleType
+        {
+            get { return GetString("ValidatableObjectAdapter_IncompatibleType"); }
+        }
+
+        /// <summary>
+        /// The model object inside the metadata claimed to be compatible with '{0}', but was actually '{1}'.
+        /// </summary>
+        internal static string FormatValidatableObjectAdapter_IncompatibleType(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ValidatableObjectAdapter_IncompatibleType"), p0, p1);
+        }
+
+        /// <summary>
+        /// Field '{0}' on type '{1}' is attributed with one or more validation attributes. Validation attributes on fields are not supported. Consider using a public property for validation instead.
+        /// </summary>
+        internal static string ValidationAttributeOnField
+        {
+            get { return GetString("ValidationAttributeOnField"); }
+        }
+
+        /// <summary>
+        /// Field '{0}' on type '{1}' is attributed with one or more validation attributes. Validation attributes on fields are not supported. Consider using a public property for validation instead.
+        /// </summary>
+        internal static string FormatValidationAttributeOnField(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ValidationAttributeOnField"), p0, p1);
+        }
+
+        /// <summary>
+        /// Non-public property '{0}' on type '{1}' is attributed with one or more validation attributes. Validation attributes on non-public properties are not supported. Consider using a public property for validation instead.
+        /// </summary>
+        internal static string ValidationAttributeOnNonPublicProperty
+        {
+            get { return GetString("ValidationAttributeOnNonPublicProperty"); }
+        }
+
+        /// <summary>
+        /// Non-public property '{0}' on type '{1}' is attributed with one or more validation attributes. Validation attributes on non-public properties are not supported. Consider using a public property for validation instead.
+        /// </summary>
+        internal static string FormatValidationAttributeOnNonPublicProperty(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ValidationAttributeOnNonPublicProperty"), p0, p1);
+        }
+
+        /// <summary>
+        /// A value is required but was not present in the request.
+        /// </summary>
+        internal static string Validation_ValueNotFound
+        {
+            get { return GetString("Validation_ValueNotFound"); }
+        }
+
+        /// <summary>
+        /// A value is required but was not present in the request.
+        /// </summary>
+        internal static string FormatValidation_ValueNotFound()
+        {
+            return GetString("Validation_ValueNotFound");
         }
 
         /// <summary>

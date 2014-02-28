@@ -3,9 +3,9 @@ using System.Globalization;
 using System.Threading;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding.Test
+namespace Microsoft.AspNet.Mvc
 {
-    public class CultureReplacer : IDisposable
+    internal class CultureReplacer : IDisposable
     {
         private const string _defaultCultureName = "en-GB";
         private const string _defaultUICultureName = "en-US";

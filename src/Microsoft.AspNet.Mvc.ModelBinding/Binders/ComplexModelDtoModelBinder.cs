@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
                     if (bindingContext.ModelBinder.BindModel(propertyBindingContext))
                     {
-                        dto.Results[propertyMetadata] = new ComplexModelDtoResult(propertyBindingContext.Model/*, propertyBindingContext.ValidationNode*/);
+                        dto.Results[propertyMetadata] = new ComplexModelDtoResult(propertyBindingContext.Model, propertyBindingContext.ValidationNode);
                     }
                 }
 

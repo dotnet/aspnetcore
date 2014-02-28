@@ -29,6 +29,7 @@ namespace Microsoft.AspNet.Mvc.Internal
                 ModelMetadata = modelMetadata,
                 ModelBinder = actionBindingContext.ModelBinder,
                 ValueProvider = actionBindingContext.ValueProvider,
+                ValidatorProviders = actionBindingContext.ValidatorProviders,
                 MetadataProvider = metadataProvider,
                 HttpContext = actionBindingContext.ActionContext.HttpContext,
                 FallbackToEmptyPrefix = true

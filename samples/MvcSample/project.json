@@ -1,40 +1,42 @@
 {
-  "version" : "0.1-alpha-*",
+  "version": "0.1-alpha-*",
   "dependencies": {
     "Microsoft.AspNet.Abstractions": "0.1-alpha-*",
     "Microsoft.AspNet.ConfigurationModel": "0.1-alpha-*",
-    "Microsoft.AspNet.DependencyInjection" : "0.1-alpha-*",
-    "Microsoft.AspNet.Routing" : "0.1-alpha-*",
-    "Microsoft.AspNet.Mvc.ModelBinding" : "",
-    "Microsoft.AspNet.Mvc.Core" : "",
-    "Microsoft.AspNet.Mvc" : "",
+    "Microsoft.AspNet.DependencyInjection": "0.1-alpha-*",
+    "Microsoft.AspNet.Routing": "0.1-alpha-*",
+    "Microsoft.AspNet.Mvc.ModelBinding": "",
+    "Microsoft.AspNet.Mvc.Core": "",
+    "Microsoft.AspNet.Mvc": "",
     "Microsoft.AspNet.Mvc.Razor": "",
-    "Microsoft.AspNet.Mvc.Rendering" : ""
+    "Microsoft.AspNet.Mvc.Rendering": ""
   },
   "configurations": {
     "net45": {
       "dependencies": {
-          "Autofac": "3.3.0",
-          "Owin": "1.0",
-          "Microsoft.AspNet.DependencyInjection.Autofac": "0.1-alpha-*",
-          "Microsoft.Owin": "2.1.0",
-          "Microsoft.Owin.Diagnostics": "2.1.0",
-          "Microsoft.Owin.Hosting": "2.1.0",
-          "Microsoft.Owin.Host.HttpListener": "2.1.0",
-          "Microsoft.AspNet.AppBuilderSupport": "0.1-alpha-*"
-       }
+        "Autofac": "3.3.0",
+        "Owin": "1.0",
+        "Microsoft.AspNet.DependencyInjection.Autofac": "0.1-alpha-*",
+        "Microsoft.Owin": "2.1.0",
+        "Microsoft.Owin.Diagnostics": "2.1.0",
+        "Microsoft.Owin.Hosting": "2.1.0",
+        "Microsoft.Owin.Host.HttpListener": "2.1.0",
+        "Microsoft.AspNet.AppBuilderSupport": "0.1-alpha-*",
+        "System.ComponentModel.DataAnnotations": ""
+      }
     },
-    "k10" : { 
-        "dependencies": {
-            "System.ComponentModel": "4.0.0.0",
-            "System.Console": "4.0.0.0",
-            "System.Diagnostics.Debug": "4.0.10.0",
-            "System.Diagnostics.Tools": "4.0.0.0",
-            "System.Dynamic.Runtime": "4.0.0.0",
-            "System.Runtime": "4.0.20.0",
-            "System.Runtime.InteropServices": "4.0.10.0",
-            "System.Threading.Tasks": "4.0.0.0"
-        }
+    "k10": {
+      "dependencies": {
+        "System.ComponentModel": "4.0.0.0",
+        "System.Console": "4.0.0.0",
+        "System.Diagnostics.Debug": "4.0.10.0",
+        "System.Diagnostics.Tools": "4.0.0.0",
+        "System.Dynamic.Runtime": "4.0.0.0",
+        "System.Runtime": "4.0.20.0",
+        "System.Runtime.InteropServices": "4.0.10.0",
+        "System.Threading.Tasks": "4.0.0.0",
+        "Microsoft.ComponentModel.DataAnnotations": "0.1-alpha-*"
+      }
     }
   }
 }

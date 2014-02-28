@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNet.Mvc.ModelBinding.Internal;
+﻿using System.Linq;
+using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -17,17 +18,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             object model = valueProviderResult.RawValue;
             ModelBindingHelper.ReplaceEmptyStringWithNull(bindingContext.ModelMetadata, ref model);
             bindingContext.Model = model;
-            if (bindingContext.ModelMetadata.IsComplexType)
-            {
-                // TODO: Validation
-                //IBodyModelValidator validator = services.GetBodyModelValidator();
-                //ModelMetadataProvider metadataProvider = services.GetModelMetadataProvider();
-                //if (validator != null && metadataProvider != null)
-                //{
-                //    validator.Validate(model, bindingContext.ModelType, metadataProvider, context, bindingContext.ModelName);
-                //}
-            }
-
+            
+            // TODO: Determine if we need IBodyValidator here.
             return true;
         }
 

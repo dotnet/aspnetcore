@@ -37,8 +37,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 object untypedModel = propertyBindingContext.Model;
                 model = ModelBindingHelper.CastOrDefault<TModel>(untypedModel);
-                // TODO: Revive once we get validation
-                // parentBindingContext.ValidationNode.ChildNodes.Add(propertyBindingContext.ValidationNode);
+                parentBindingContext.ValidationNode.ChildNodes.Add(propertyBindingContext.ValidationNode);
                 return true;
             }
 

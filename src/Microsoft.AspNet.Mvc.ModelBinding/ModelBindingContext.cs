@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Microsoft.AspNet.Abstractions;
-using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -9,6 +10,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     {
         private string _modelName;
         private ModelStateDictionary _modelState;
+        private Dictionary<string, ModelMetadata> _propertyMetadata;
+        private ModelValidationNode _validationNode;
 
         public ModelBindingContext()
         {
@@ -24,6 +27,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 ValueProvider = bindingContext.ValueProvider;
                 MetadataProvider = bindingContext.MetadataProvider;
                 ModelBinder = bindingContext.ModelBinder;
+                ValidatorProviders = bindingContext.ValidatorProviders;
                 HttpContext = bindingContext.HttpContext;
             }
         }
@@ -100,6 +104,38 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             get;
             set;
+        }
+
+        public IEnumerable<IModelValidatorProvider> ValidatorProviders
+        {
+            get;
+            set;
+        }
+
+        public IDictionary<string, ModelMetadata> PropertyMetadata
+        {
+            get
+            {
+                if (_propertyMetadata == null)
+                {
+                    _propertyMetadata = ModelMetadata.Properties.ToDictionary(m => m.PropertyName, StringComparer.OrdinalIgnoreCase);
+                }
+
+                return _propertyMetadata;
+            }
+        }
+
+        public ModelValidationNode ValidationNode
+        {
+            get
+            {
+                if (_validationNode == null)
+                {
+                    _validationNode = new ModelValidationNode(ModelMetadata, ModelName);
+                }
+                return _validationNode;
+            }
+            set { _validationNode = value; }
         }
 
         private void EnsureModelMetadata()

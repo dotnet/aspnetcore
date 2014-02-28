@@ -4,36 +4,34 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 {
     public class ComplexModelDtoResultTest
     {
-        // TODO: Validation
-        ////[Fact]
-        ////public void Constructor_ThrowsIfValidationNodeIsNull()
-        ////{
-        ////    // Act & assert
-        ////    ExceptionAssert.ThrowsArgumentNull(
-        ////        () => new ComplexModelDtoResult("some string"),
-        ////        "validationNode");
-        ////}
+        [Fact]
+        public void Constructor_ThrowsIfValidationNodeIsNull()
+        {
+            // Act & assert
+            ExceptionAssert.ThrowsArgumentNull(
+                () => new ComplexModelDtoResult("some string", validationNode: null),
+                "validationNode");
+        }
 
-        // TODO: Validation
-        //[Fact]
-        //public void Constructor_SetsProperties()
-        //{
-        //    // Arrange
-        //    ModelValidationNode validationNode = GetValidationNode();
+        [Fact]
+        public void Constructor_SetsProperties()
+        {
+            // Arrange
+            var validationNode = GetValidationNode();
 
-        //    // Act
-        //    ComplexModelDtoResult result = new ComplexModelDtoResult("some string", validationNode);
+            // Act
+            var result = new ComplexModelDtoResult("some string", validationNode);
 
-        //    // Assert
-        //    Assert.Equal("some string", result.Model);
-        //    Assert.Equal(validationNode, result.ValidationNode);
-        //}
+            // Assert
+            Assert.Equal("some string", result.Model);
+            Assert.Equal(validationNode, result.ValidationNode);
+        }
 
-        //private static ModelValidationNode GetValidationNode()
-        //{
-        //    EmptyModelMetadataProvider provider = new EmptyModelMetadataProvider();
-        //    ModelMetadata metadata = provider.GetMetadataForType(null, typeof(object));
-        //    return new ModelValidationNode(metadata, "someKey");
-        //}
+        private static ModelValidationNode GetValidationNode()
+        {
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(null, typeof(object));
+            return new ModelValidationNode(metadata, "someKey");
     }
+}
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
 {
     internal class EfficientTypePropertyKey<T1, T2> : Tuple<T1, T2>
     {

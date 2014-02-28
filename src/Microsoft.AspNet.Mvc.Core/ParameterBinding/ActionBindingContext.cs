@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNet.Mvc.ModelBinding;
+﻿using System.Collections.Generic;
+using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -8,13 +9,15 @@ namespace Microsoft.AspNet.Mvc
                                     IModelMetadataProvider metadataProvider,
                                     IModelBinder modelBinder,
                                     IValueProvider valueProvider,
-                                    IInputFormatter inputFormatter)
+                                    IInputFormatter inputFormatter,
+                                    IEnumerable<IModelValidatorProvider> validatorProviders)
         {
             ActionContext = context;
             MetadataProvider = metadataProvider;
             ModelBinder = modelBinder;
             ValueProvider = valueProvider;
             InputFormatter = inputFormatter;
+            ValidatorProviders = validatorProviders;
         }
 
         public ActionContext ActionContext { get; private set; }
@@ -26,5 +29,7 @@ namespace Microsoft.AspNet.Mvc
         public IValueProvider ValueProvider { get; private set; }
 
         public IInputFormatter InputFormatter { get; private set; }
+
+        public IEnumerable<IModelValidatorProvider> ValidatorProviders { get; private set; }
     }
 }

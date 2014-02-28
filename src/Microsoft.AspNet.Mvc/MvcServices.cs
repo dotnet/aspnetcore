@@ -61,10 +61,13 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Transient<IModelBinder, MutableObjectModelBinder>();
             yield return describe.Transient<IModelBinder, ComplexModelDtoModelBinder>();
 
+            yield return describe.Transient<IInputFormatter, JsonInputFormatter>();
+
             yield return describe.Transient<INestedProviderManager<FilterProviderContext>, NestedProviderManager<FilterProviderContext>>();
             yield return describe.Transient<INestedProvider<FilterProviderContext>, DefaultFilterProvider>();
 
-            yield return describe.Transient<IInputFormatter, JsonInputFormatter>();
+            yield return describe.Singleton<IModelValidatorProvider, DataAnnotationsModelValidatorProvider>();
+            yield return describe.Singleton<IModelValidatorProvider, DataMemberModelValidatorProvider>();
         }
     }
 }

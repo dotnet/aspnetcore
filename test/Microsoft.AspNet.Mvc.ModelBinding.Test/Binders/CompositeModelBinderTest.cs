@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using Moq;
 using Xunit;
 
@@ -12,22 +13,22 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public void BindModel_SuccessfulBind_RunsValidationAndReturnsModel()
         {
             // Arrange
-            bool validationCalled = false;
+            var validationCalled = false;
 
-            ModelBindingContext bindingContext = new ModelBindingContext
+            var bindingContext = new ModelBindingContext
             {
                 FallbackToEmptyPrefix = true,
                 ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(int)),
                 ModelName = "someName",
-                //ModelState = executionContext.Controller.ViewData.ModelState,
-                //PropertyFilter = _ => true,
+                ModelState = new ModelStateDictionary(),
                 ValueProvider = new SimpleValueProvider
                 {
                     { "someName", "dummyValue" }
-                }
+                },
+                ValidatorProviders = Enumerable.Empty<IModelValidatorProvider>()
             };
 
-            Mock<IModelBinder> mockIntBinder = new Mock<IModelBinder>();
+            var mockIntBinder = new Mock<IModelBinder>();
             mockIntBinder
                 .Setup(o => o.BindModel(It.IsAny<ModelBindingContext>()))
                 .Returns(
@@ -38,22 +39,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                         Assert.Same(bindingContext.ValueProvider, context.ValueProvider);
 
                         context.Model = 42;
-                        // TODO: Validation
-                        // mbc.ValidationNode.Validating += delegate { validationCalled = true; };
+                        bindingContext.ValidationNode.Validating += delegate { validationCalled = true; };
                         return true;
                     });
 
-            //binderProviders.RegisterBinderForType(typeof(int), mockIntBinder.Object, false /* suppressPrefixCheck */);
-            IModelBinder shimBinder = new CompositeModelBinder(mockIntBinder.Object);
+            var shimBinder = new CompositeModelBinder(mockIntBinder.Object);
 
             // Act
-            bool isBound = shimBinder.BindModel(bindingContext);
+            var isBound = shimBinder.BindModel(bindingContext);
 
             // Assert
             Assert.True(isBound);
             Assert.Equal(42, bindingContext.Model);
-            // TODO: Validation
-            // Assert.True(validationCalled);
+            
+            Assert.True(validationCalled);
             Assert.True(bindingContext.ModelState.IsValid);
         }
 
@@ -61,23 +60,23 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public void BindModel_SuccessfulBind_ComplexTypeFallback_RunsValidationAndReturnsModel()
         {
             // Arrange
-            bool validationCalled = false;
-            List<int> expectedModel = new List<int> { 1, 2, 3, 4, 5 };
+            var validationCalled = false;
+            var expectedModel = new List<int> { 1, 2, 3, 4, 5 };
 
-            ModelBindingContext bindingContext = new ModelBindingContext
+            var bindingContext = new ModelBindingContext
             {
                 FallbackToEmptyPrefix = true,
                 ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(List<int>)),
                 ModelName = "someName",
-                //ModelState = executionContext.Controller.ViewData.ModelState,
-                //PropertyFilter = _ => true,
+                ModelState = new ModelStateDictionary(),
                 ValueProvider = new SimpleValueProvider
                 {
                     { "someOtherName", "dummyValue" }
-                }
+                },
+                ValidatorProviders = Enumerable.Empty<IModelValidatorProvider>()
             };
 
-            Mock<IModelBinder> mockIntBinder = new Mock<IModelBinder>();
+            var mockIntBinder = new Mock<IModelBinder>();
             mockIntBinder
                 .Setup(o => o.BindModel(It.IsAny<ModelBindingContext>()))
                 .Returns(
@@ -93,12 +92,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                         Assert.Same(bindingContext.ValueProvider, mbc.ValueProvider);
 
                         mbc.Model = expectedModel;
-                        // TODO: Validation
-                        // mbc.ValidationNode.Validating += delegate { validationCalled = true; };
+                        mbc.ValidationNode.Validating += delegate { validationCalled = true; };
                         return true;
                     });
 
-            //binderProviders.RegisterBinderForType(typeof(List<int>), mockIntBinder.Object, false /* suppressPrefixCheck */);
             IModelBinder shimBinder = new CompositeModelBinder(mockIntBinder.Object);
 
             // Act
@@ -107,36 +104,34 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             // Assert
             Assert.True(isBound);
             Assert.Equal(expectedModel, bindingContext.Model);
-            // TODO: Validation
-            // Assert.True(validationCalled);
-            // Assert.True(bindingContext.ModelState.IsValid);
+            Assert.True(validationCalled);
+            Assert.True(bindingContext.ModelState.IsValid);
         }
 
         [Fact]
         public void BindModel_UnsuccessfulBind_BinderFails_ReturnsNull()
         {
             // Arrange
-            Mock<IModelBinder> mockListBinder = new Mock<IModelBinder>();
+            var mockListBinder = new Mock<IModelBinder>();
             mockListBinder.Setup(o => o.BindModel(It.IsAny<ModelBindingContext>()))
                           .Returns(false)
                           .Verifiable();
 
-            IModelBinder shimBinder = (IModelBinder)mockListBinder.Object;
+            var shimBinder = (IModelBinder)mockListBinder.Object;
 
-            ModelBindingContext bindingContext = new ModelBindingContext
+            var bindingContext = new ModelBindingContext
             {
                 FallbackToEmptyPrefix = false,
                 ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(List<int>)),
             };
 
             // Act
-            bool isBound = shimBinder.BindModel(bindingContext);
+            var isBound = shimBinder.BindModel(bindingContext);
 
             // Assert
             Assert.False(isBound);
             Assert.Null(bindingContext.Model);
-            // TODO: Validation
-            // Assert.True(bindingContext.ModelState.IsValid);
+            Assert.True(bindingContext.ModelState.IsValid);
             mockListBinder.Verify();
         }
 
@@ -145,17 +140,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             // Arrange
             var innerBinder = Mock.Of<IModelBinder>();
-            CompositeModelBinder shimBinder = new CompositeModelBinder(innerBinder);
+            var shimBinder = new CompositeModelBinder(innerBinder);
 
-            ModelBindingContext bindingContext = new ModelBindingContext
+            var bindingContext = new ModelBindingContext
             {
                 FallbackToEmptyPrefix = true,
                 ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(int)),
-                //ModelState = executionContext.Controller.ViewData.ModelState
+                ModelState = new ModelStateDictionary()
             };
 
             // Act
-            bool isBound = shimBinder.BindModel(bindingContext);
+            var isBound = shimBinder.BindModel(bindingContext);
 
             // Assert
             Assert.False(isBound);

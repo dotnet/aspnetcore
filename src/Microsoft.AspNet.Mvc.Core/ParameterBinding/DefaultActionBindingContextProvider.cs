@@ -10,17 +10,20 @@ namespace Microsoft.AspNet.Mvc
         private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly IEnumerable<IModelBinder> _modelBinders;
         private readonly IEnumerable<IValueProviderFactory> _valueProviderFactories;
-        private readonly IEnumerable<IInputFormatter> _bodyReaders;
+        private readonly IEnumerable<IInputFormatter> _inputFormatters;
+        private readonly IEnumerable<IModelValidatorProvider> _validatorProviders;
 
         public DefaultActionBindingContextProvider(IModelMetadataProvider modelMetadataProvider,
                                                    IEnumerable<IModelBinder> modelBinders,
                                                    IEnumerable<IValueProviderFactory> valueProviderFactories,
-                                                   IEnumerable<IInputFormatter> bodyReaders)
+                                                   IEnumerable<IInputFormatter> inputFormatters,
+                                                   IEnumerable<IModelValidatorProvider> validatorProviders)
         {
             _modelMetadataProvider = modelMetadataProvider;
             _modelBinders = modelBinders.OrderBy(binder => binder.GetType() == typeof(ComplexModelDtoModelBinder) ? 1 : 0);
             _valueProviderFactories = valueProviderFactories;
-            _bodyReaders = bodyReaders;
+            _inputFormatters = inputFormatters;
+            _validatorProviders = validatorProviders;
         }
 
         public async Task<ActionBindingContext> GetActionBindingContextAsync(ActionContext actionContext)
@@ -35,7 +38,8 @@ namespace Microsoft.AspNet.Mvc
                 _modelMetadataProvider,
                 new CompositeModelBinder(_modelBinders),
                 new CompositeValueProvider(valueProviders),
-                new CompositeInputFormatter(_bodyReaders)
+                new CompositeInputFormatter(_inputFormatters),
+                _validatorProviders
             );
         }
     }

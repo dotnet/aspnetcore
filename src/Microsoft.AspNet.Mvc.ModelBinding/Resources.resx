@@ -126,6 +126,12 @@
   <data name="JQuerySyntaxMissingClosingBracket" xml:space="preserve">
     <value>The key is invalid JQuery syntax because it is missing a closing bracket.</value>
   </data>
+  <data name="MissingDataMemberIsRequired" xml:space="preserve">
+    <value>Property '{0}' on type '{1}' is invalid. Value-typed properties marked as [Required] must also be marked with [DataMember(IsRequired=true)] to be recognized as required. Consider attributing the declaring type with [DataContract] and the property with [DataMember(IsRequired=true)].</value>
+  </data>
+  <data name="MissingRequiredMember" xml:space="preserve">
+    <value>The '{0}' property is required.</value>
+  </data>
   <data name="ModelBinderConfig_ValueInvalid" xml:space="preserve">
     <value>The value '{0}' is not valid for {1}.</value>
   </data>
@@ -146,6 +152,18 @@
   </data>
   <data name="ModelBindingContext_ModelMetadataMustBeSet" xml:space="preserve">
     <value>The ModelMetadata property must be set before accessing this property.</value>
+  </data>
+  <data name="ValidatableObjectAdapter_IncompatibleType" xml:space="preserve">
+    <value>The model object inside the metadata claimed to be compatible with '{0}', but was actually '{1}'.</value>
+  </data>
+  <data name="ValidationAttributeOnField" xml:space="preserve">
+    <value>Field '{0}' on type '{1}' is attributed with one or more validation attributes. Validation attributes on fields are not supported. Consider using a public property for validation instead.</value>
+  </data>
+  <data name="ValidationAttributeOnNonPublicProperty" xml:space="preserve">
+    <value>Non-public property '{0}' on type '{1}' is attributed with one or more validation attributes. Validation attributes on non-public properties are not supported. Consider using a public property for validation instead.</value>
+  </data>
+  <data name="Validation_ValueNotFound" xml:space="preserve">
+    <value>A value is required but was not present in the request.</value>
   </data>
   <data name="ValueProviderResult_ConversionThrew" xml:space="preserve">
     <value>The parameter conversion from type '{0}' to type '{1}' failed. See the inner exception for more information.</value>

@@ -2,12 +2,17 @@
   "version": "0.1-alpha-*",
   "dependencies": {
     "Common": "",
-    "Microsoft.AspNet.DependencyInjection" : "0.1-alpha-*",
+    "Microsoft.AspNet.DependencyInjection": "0.1-alpha-*",
     "Microsoft.AspNet.Abstractions": "0.1-alpha-*",
     "Newtonsoft.Json": "5.0.8"
   },
   "configurations": {
-    "net45": {},
+    "net45": {
+      "dependencies": {
+        "System.ComponentModel.DataAnnotations": "",
+        "System.Runtime.Serialization": ""
+      }
+    },
     "k10": {
       "dependencies": {
         "System.Collections": "4.0.0.0",
@@ -22,12 +27,15 @@
         "System.Reflection": "4.0.10.0",
         "System.Reflection.Emit.ILGeneration": "4.0.0.0",
         "System.Reflection.Emit.Lightweight": "4.0.0.0",
+        "System.Reflection.Compatibility": "4.0.0.0",
         "System.Reflection.Extensions": "4.0.0.0",
         "System.Reflection.Primitives": "4.0.0.0",
         "System.Resources.ResourceManager": "4.0.0.0",
         "System.Runtime": "4.0.20.0",
         "System.Runtime.Extensions": "4.0.10.0",
-        "System.Threading.Tasks": "4.0.0.0"
+        "System.Threading.Tasks": "4.0.0.0",
+        "System.Runtime.Serialization.Primitives": "4.0.0.0",
+        "Microsoft.ComponentModel.DataAnnotations": "0.1-alpha-*"
       }
     }
   }

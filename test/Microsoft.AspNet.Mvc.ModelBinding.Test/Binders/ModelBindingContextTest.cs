@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public void CopyConstructor()
         {
             // Arrange
-            ModelBindingContext originalBindingContext = new ModelBindingContext
+            var originalBindingContext = new ModelBindingContext
             {
                 ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(object)),
                 ModelName = "theName",
@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             };
 
             // Act
-            ModelBindingContext newBindingContext = new ModelBindingContext(originalBindingContext);
+            var newBindingContext = new ModelBindingContext(originalBindingContext);
 
             // Assert
             Assert.Null(newBindingContext.ModelMetadata);
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public void ModelProperty_ThrowsIfModelMetadataDoesNotExist()
         {
             // Arrange
-            ModelBindingContext bindingContext = new ModelBindingContext();
+            var bindingContext = new ModelBindingContext();
 
             // Act & assert
             ExceptionAssert.Throws<InvalidOperationException>(
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public void ModelAndModelTypeAreFedFromModelMetadata()
         {
             // Act
-            ModelBindingContext bindingContext = new ModelBindingContext
+            var bindingContext = new ModelBindingContext
             {
                 ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(() => 42, typeof(int))
             };
@@ -53,38 +53,23 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Equal(typeof(int), bindingContext.ModelType);
         }
 
-        // TODO: Validation
-        //[Fact]
-        //public void ValidationNodeProperty()
-        //{
-        //    // Act
-        //    ModelBindingContext bindingContext = new ModelBindingContext
-        //    {
-        //        ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(() => 42, typeof(int))
-        //    };
+        [Fact]
+        public void ValidationNodeProperty_DefaultValues()
+        {
+            // Act
+            var bindingContext = new ModelBindingContext
+            {
+                ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(() => 42, typeof(int)),
+                ModelName = "theInt"
+            };
 
-        //    // Act & assert
-        //    MemberHelper.TestPropertyWithDefaultInstance(bindingContext, "ValidationNode", new ModelValidationNode(bindingContext.ModelMetadata, "someName"));
-        //}
+            // Act
+            var validationNode = bindingContext.ValidationNode;
 
-        // TODO: Validation
-        //[Fact]
-        //public void ValidationNodeProperty_DefaultValues()
-        //{
-        //    // Act
-        //    ModelBindingContext bindingContext = new ModelBindingContext
-        //    {
-        //        ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(() => 42, typeof(int)),
-        //        ModelName = "theInt"
-        //    };
-
-        //    // Act
-        //    ModelValidationNode validationNode = bindingContext.ValidationNode;
-
-        //    // Assert
-        //    Assert.NotNull(validationNode);
-        //    Assert.Equal(bindingContext.ModelMetadata, validationNode.ModelMetadata);
-        //    Assert.Equal(bindingContext.ModelName, validationNode.ModelStateKey);
-        //}
+            // Assert
+            Assert.NotNull(validationNode);
+            Assert.Equal(bindingContext.ModelMetadata, validationNode.ModelMetadata);
+            Assert.Equal(bindingContext.ModelName, validationNode.ModelStateKey);
+        }
     }
 }
