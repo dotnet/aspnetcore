@@ -60,6 +60,9 @@ default Configuration='Release'
 #nuget-install target='install' description='Copy NuGet packages to local repo'
   nuget-local-publish sourcePackagesDir='${BUILD_DIR}'
 
+#xunit-test target='test' if='Directory.Exists("test")'
+  k-test each='var projectFile in Files.Include("test/**/project.json")'
+
 #make-roslyn-fast
   ngen-roslyn
 

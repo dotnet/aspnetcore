@@ -1,0 +1,33 @@
+use namespace='System.Web.Script.Serialization'
+use assembly="System.Web.Extensions, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35"
+
+@{/*
+
+k-test
+    Run unit tests in your project.
+
+projectFile='' 
+    Required. Path to the test project.json to execute
+
+*/}
+
+var projectFolder='${Path.GetDirectoryName(projectFile)}'
+
+k command='test' workingdir='${projectFolder}' if='HasTestCommand(projectFile)'
+
+functions
+    @{
+        bool HasTestCommand(string projectFile)
+        {
+            var serializer = new JavaScriptSerializer();
+            var projectText = File.ReadAllText(projectFile);
+            var project = (Dictionary<string, object>)serializer.DeserializeObject(projectText);
+                       
+            object commandsObject;
+            if (!project.TryGetValue("commands", out commandsObject))
+                return false;
+            var commands = (Dictionary<string, object>)commandsObject;
+                
+            return commands.Keys.Contains("test");
+        }
+    }
