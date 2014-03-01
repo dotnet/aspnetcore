@@ -6,6 +6,7 @@ use namespace="System.Reflection"
 use namespace="System.Text"
 use namespace="System.Web.Script.Serialization"
 use namespace="System.Xml.Linq"
+use import="Files"
 
 use assembly="System.Web.Extensions, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35"
 
@@ -30,6 +31,7 @@ default skipNet45='${false}'
 
 @{
     ProjectGenerator.Logger = Log;
+    ProjectGenerator.Files = Files;
 
     var templates = new Dictionary<string, string> {
         { "net45", net45 },
@@ -50,6 +52,8 @@ functions
         class ProjectGenerator
         {
             public static Sake.Engine.Logging.ILog Logger { get; set; }
+
+            public static _Files Files { get; set; }
 
             static void Log(string message, params object[] args)
             {
@@ -155,6 +159,7 @@ functions
                         GetProjectGuidFromFileOrCreateNew(k10Project);
 
                     configs["path"] = Path.GetDirectoryName(path.Substring(solutionPath.Length).TrimStart(Path.DirectorySeparatorChar));
+                    configs["jsonPath"] = path;
 
                     dict[projectName] = configs;
                 }
@@ -259,6 +264,9 @@ functions
                 var projectReferences = dependencies.Where(r => projectMapping.ContainsKey(r.Key))
                                                     .Select(r => r.Key)
                                                     .ToList();
+
+
+                var sharedFiles = GetSharedFiles(projectReferences, projectMapping);
 
                 var sharedDefines = Get<IEnumerable<object>>(compilationOptions, "define") ?? new object[0];
                 
@@ -367,7 +375,7 @@ functions
                                        .Replace("{Name}", projectName)
                                        .Replace("{Defines}", String.Join(";", defines))
                                        .Replace("{ExtraProperties}", extraProperties)
-                                       .Replace("{Files}", String.Join(Environment.NewLine, csFiles, resxFiles, contentFiles))
+                                       .Replace("{Files}", String.Join(Environment.NewLine, csFiles, resxFiles, contentFiles, sharedFiles))
                                        .Replace("{ProjectReferences}", BuildProjectReferences(projectReferences, targetFramework, projectMapping))
                                        .Replace("{References}", BuildReferences(allPackageReferences, gacReferences, packagesDir, targetFramework, GetCandidates(targetFramework)));
 
@@ -512,6 +520,69 @@ functions
             private static string GetProjectFileName(string projectName, string config)
             {
                 return projectName + "." + config + ".csproj";
+            }
+
+            private static string GetSharedFiles(IList<string> projectReferences, IDictionary<string, object> projectMapping)
+            {
+                if (projectReferences.Count == 0)
+                {
+                    return "";
+                }
+
+                var sb = new StringBuilder();
+
+                foreach (var reference in projectReferences)
+                {
+                    var info = GetObject(projectMapping, reference);
+
+                    if (info == null)
+                    {
+                        Warn("No project reference found for {0}", reference);
+                        continue;
+                    }
+
+                    var serializer = new JavaScriptSerializer();
+
+                    var jsonPath = (string)info["jsonPath"];
+                    var jsonText = File.ReadAllText(jsonPath);
+                    var path = (string)info["path"];
+
+                    var d = serializer.DeserializeObject(jsonText) as IDictionary<string, object>;
+
+                    // TODO: Support default compilers shared thing
+                    var sharedFilesPattern = Get<string>(d, "shared");
+
+                    if (String.IsNullOrEmpty(sharedFilesPattern))
+                    {
+                        continue;
+                    }
+
+                    var pattern = Path.Combine(Path.GetDirectoryName(jsonPath), sharedFilesPattern);
+                    var files = Files.Include(pattern).ToList();
+
+                    if (files.Count > 0)
+                    {
+                        Log("Found shared files in {0}", jsonPath);
+                        
+                        
+                        foreach (var sharedFilePath in files)
+                        {
+                            string fullPath = sharedFilePath;
+                            string relativePath = sharedFilePath.Substring(path.Length).TrimStart(Path.DirectorySeparatorChar);
+
+                            if(relativePath.StartsWith("obj" + Path.DirectorySeparatorChar))
+                            {
+                                continue;
+                            }
+
+                            sb.AppendFormat(@"<Compile Include=""..\..\{0}"">
+                              <Link>{1}</Link>
+                            </Compile>", fullPath, relativePath);
+                        }
+                    }
+                }
+
+                return sb.ToString();
             }
 
             private static string BuildProjectReferences(IList<string> projectReferences, string config, IDictionary<string, object> projectMapping)
