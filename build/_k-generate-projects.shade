@@ -31,7 +31,7 @@ default skipNet45='${false}'
 
 @{
     ProjectGenerator.Logger = Log;
-    ProjectGenerator.Files = Files;
+    ProjectGenerator.FilesAccessor = ()=> Files;
 
     var templates = new Dictionary<string, string> {
         { "net45", net45 },
@@ -53,7 +53,9 @@ functions
         {
             public static Sake.Engine.Logging.ILog Logger { get; set; }
 
-            public static _Files Files { get; set; }
+            public static _Files Files { get { return FilesAccessor(); } }
+
+            public static Func<_Files> FilesAccessor { get; set;}
 
             static void Log(string message, params object[] args)
             {
