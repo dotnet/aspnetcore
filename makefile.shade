@@ -136,6 +136,15 @@ var repos='${new Dictionary<string,string> {
             Exec("build.cmd", "install", repo.Key);
         }
     }
+    
+#run-snapshot-manager
+    @{
+        Exec(@".nuget\nuget.exe", @"restore -out packages tools\TCDependencyManager\packages.config", "");
+        var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+        var msbuildPath = Path.Combine(programFiles, "MSBuild", "12.0", "Bin", "MsBuild.exe");
+        Exec(msbuildPath, "TCDependencyManager.csproj", @"tools\TCDependencyManager");
+        Exec(@"tools\TCDependencyManager\bin\Debug\TCDependencyManager.exe", "", "");
+    }
 
 macro name='GitPull' gitUri='string' gitBranch='string' gitFolder='string'
     git-pull
