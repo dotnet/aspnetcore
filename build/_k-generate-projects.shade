@@ -622,7 +622,7 @@ functions
             {
                 if (config == "net45")
                 {
-                    return new[] { "net45", "net40", "net35", "net20" };
+                    return new[] { "net45", "net40", "net35", "35", "net20" };
                 }
                 // If it's k10 then look for netcore45 as well
                 return new[] { config, "netcore45" };
