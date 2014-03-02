@@ -9,11 +9,17 @@ namespace MvcSample
     public class Program
     {
         const string baseUrl = "http://localhost:9001/";
+        private readonly IServiceProvider _serviceProvider;
 
-        public static void Main()
+        public Program(IServiceProvider serviceProvider)
+        {
+            _serviceProvider = serviceProvider;
+        }
+
+        public void Main()
         {
 #if NET45
-            using (WebApp.Start<Startup>(new StartOptions(baseUrl)))
+            using (WebApp.Start(baseUrl, app => new Startup(_serviceProvider).Configuration(app)))
             {
                 Console.WriteLine("Listening at {0}", baseUrl);
                 Process.Start(baseUrl);

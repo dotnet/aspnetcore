@@ -8,10 +8,21 @@
     "Microsoft.AspNet.Mvc" : "",
     "Microsoft.AspNet.Mvc.ModelBinding" : "",
     "Microsoft.AspNet.Mvc.Rendering" : "",
-    "Microsoft.AspNet.Mvc.Razor.Host" : ""
+    "Microsoft.AspNet.Mvc.Razor.Host" : "",
+    "Microsoft.CodeAnalysis" : "0.6.31123.2",
+    "Microsoft.CodeAnalysis.CSharp" : "0.6.31123.2",
+    "System.Reflection.Metadata.Ecma335": "0.6.31123.2",
+    "System.Collections.Immutable" : "1.1.15.0"
   },
   "configurations": {
-    "net45": {},
+    "net45" : {
+        "dependencies": {
+            "System.Xml.Linq": "",
+            "System.Xml": "",
+            "System.Runtime" : "",
+            "System.Collections" : ""
+        }
+    },
     "k10" : {}
   }
 }

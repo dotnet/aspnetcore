@@ -16,6 +16,13 @@ namespace MvcSample
 {
     public class Startup
     {
+        private IServiceProvider _serviceProvider;
+
+        public Startup(IServiceProvider serviceProvider)
+        {
+            _serviceProvider = serviceProvider;
+        }
+
         public void Configuration(IAppBuilder app)
         {
             app.UseErrorPage();
@@ -28,7 +35,7 @@ namespace MvcSample
         {
             string appRoot = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
 
-            var mvcServices = new MvcServices(appRoot);
+            var mvcServices = new MvcServices(appRoot, _serviceProvider);
 
             var router = builder.UseRouter();
 

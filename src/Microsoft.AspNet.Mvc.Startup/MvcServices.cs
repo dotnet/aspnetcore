@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNet.DependencyInjection;
+﻿using System;
+using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.DependencyInjection.NestedProviders;
 using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Razor;
+using Microsoft.AspNet.Mvc.Razor.Compilation;
 
 namespace Microsoft.AspNet.Mvc.Startup
 {
@@ -11,6 +13,11 @@ namespace Microsoft.AspNet.Mvc.Startup
         public ServiceProvider Services { get; private set; }
 
         public MvcServices(string appRoot)
+            : this(appRoot, null)
+        {
+        }
+
+        public MvcServices(string appRoot, IServiceProvider hostServiceProvider)
         {
             Services = new ServiceProvider();
 
@@ -29,7 +36,16 @@ namespace Microsoft.AspNet.Mvc.Startup
             AddInstance<IMvcRazorHost>(new MvcRazorHost(typeof(RazorView).FullName));
 
 #if NET45
-            Add<ICompilationService, CscBasedCompilationService>();
+            // TODO: Container chaining to flow services from the host to this container
+            if (hostServiceProvider == null)
+            {
+                Add<ICompilationService, CscBasedCompilationService>();
+            }
+            else
+            {
+                // TODO: Make this work like normal when we get container chaining
+                AddInstance<ICompilationService>(new RoslynCompilationService(hostServiceProvider));
+            }
 #endif
             Add<IRazorCompilationService, RazorCompilationService>();
             Add<IVirtualPathViewFactory, VirtualPathViewFactory>();
