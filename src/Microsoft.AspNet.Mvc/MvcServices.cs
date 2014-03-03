@@ -65,6 +65,9 @@ namespace Microsoft.AspNet.Mvc
             yield return DescribeService<IModelBinder, MutableObjectModelBinder>(configuration);
             yield return DescribeService<IModelBinder, ComplexModelDtoModelBinder>(configuration);
 
+            yield return DescribeService<INestedProviderManager<FilterProviderContext>, NestedProviderManager<FilterProviderContext>>(configuration);
+            yield return DescribeService<INestedProvider<FilterProviderContext>, DefaultFilterProvider>(configuration);
+
             yield return DescribeService<IInputFormatter, JsonInputFormatter>(configuration);
         }
 
@@ -90,6 +93,7 @@ namespace Microsoft.AspNet.Mvc
         {
             var serviceTypeName = serviceType.FullName;
             var implementationTypeName = configuration.Get(serviceTypeName);
+
             if (!String.IsNullOrEmpty(implementationTypeName))
             {
                 try

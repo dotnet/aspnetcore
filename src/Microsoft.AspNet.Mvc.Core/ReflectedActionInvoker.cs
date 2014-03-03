@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace Microsoft.AspNet.Mvc
@@ -17,12 +18,14 @@ namespace Microsoft.AspNet.Mvc
         private readonly IServiceProvider _serviceProvider;
         private readonly IControllerFactory _controllerFactory;
         private readonly IActionBindingContextProvider _bindingProvider;
+        private readonly INestedProviderManager<FilterProviderContext> _filterProvider;
 
         public ReflectedActionInvoker(ActionContext actionContext,
                                       ReflectedActionDescriptor descriptor,
                                       IActionResultFactory actionResultFactory,
                                       IControllerFactory controllerFactory,
                                       IActionBindingContextProvider bindingContextProvider,
+                                      INestedProviderManager<FilterProviderContext> filterProvider,
                                       IServiceProvider serviceProvider)
         {
             _actionContext = actionContext;
@@ -30,6 +33,8 @@ namespace Microsoft.AspNet.Mvc
             _actionResultFactory = actionResultFactory;
             _controllerFactory = controllerFactory;
             _bindingProvider = bindingContextProvider;
+            _filterProvider = filterProvider;
+
             _serviceProvider = serviceProvider;
         }
 
@@ -56,7 +61,11 @@ namespace Microsoft.AspNet.Mvc
                 {
                     var parameterValues = await GetParameterValues(modelState);
 
+                    var context = new FilterProviderContext(_descriptor);
+                    _filterProvider.Invoke(context);                   
+
                     object actionReturnValue = method.Invoke(controller, GetArgumentValues(parameterValues));
+
 
                     actionResult = _actionResultFactory.CreateActionResult(method.ReturnType, actionReturnValue, _actionContext);
                 }
