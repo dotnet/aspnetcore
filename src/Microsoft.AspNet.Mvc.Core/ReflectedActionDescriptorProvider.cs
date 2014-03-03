@@ -43,8 +43,8 @@ namespace Microsoft.AspNet.Mvc
 
             foreach (var cd in controllerDescriptors)
             {
-                var controllerAttributes = cd.ControllerTypeInfo.GetCustomAttributes(inherit: true).ToArray();
-                var filtersFromController = GetOrderedFilterAttributes(controllerAttributes);
+                var controllerFilters = GetOrderedFilterAttributes(cd.ControllerTypeInfo);
+
 
                 bool allowAnonymous = IsAnonymous(controllerAttributes);
 
@@ -59,24 +59,24 @@ namespace Microsoft.AspNet.Mvc
 
                     foreach (var actionInfo in actionInfos)
                     {
-                        yield return BuildDescriptor(cd, methodInfo, actionInfo, filtersFromController, allowAnonymous);
+                        yield return BuildDescriptor(cd, methodInfo, actionInfo, controllerFilters);
                     }
                 }
             }
         }
 
-        private bool IsAnonymous(object[] attributes)
+        private IFilter[] GetOrderedFilterAttributes(MemberInfo memberInfo)
         {
-            return attributes.OfType<AllowAnonymousAttribute>().Any();
-        }
-
-        private IFilter[] GetOrderedFilterAttributes(object[] attributes)
-        {
+            var attributes = memberInfo.GetCustomAttributes(inherit: true);
             var filters = attributes.OfType<IFilter>().OrderByDescending(filter => filter.Order);
 
             return filters.ToArray();
         }
 
+        private ReflectedActionDescriptor BuildDescriptor(ControllerDescriptor controllerDescriptor,
+                                                          MethodInfo methodInfo,
+                                                          ActionInfo actionInfo,
+                                                          IFilter[] controllerFilters)
         private ReflectedActionDescriptor BuildDescriptor(ControllerDescriptor controllerDescriptor,
                                                           MethodInfo methodInfo,
                                                           ActionInfo actionInfo,
@@ -115,10 +115,10 @@ namespace Microsoft.AspNet.Mvc
 
             ad.Parameters = methodInfo.GetParameters().Select(p => _parameterDescriptorFactory.GetDescriptor(p)).ToList();
 
-            var attributes = methodInfo.GetCustomAttributes(inherit: true).ToArray();
-
             // TODO: add ordering support such that action filters are ahead of controller filters if they have the same order
-            var filtersFromAction = GetOrderedFilterAttributes(attributes);
+            var actionFilters = GetOrderedFilterAttributes(methodInfo);
+
+            ad.Filters = MergeSorted(actionFilters, controllerFilters);
 
             ad.Filters = MergeSorted(filtersFromAction, controllerFilters);
 
@@ -127,29 +127,29 @@ namespace Microsoft.AspNet.Mvc
             return ad;
         }
 
-        private List<IFilter> MergeSorted(IFilter[] filtersFromAction, IFilter[] filtersFromController)
+        internal List<IFilter> MergeSorted(IFilter[] actionFilters, IFilter[] controllerFilters)
         {
             var list = new List<IFilter>();
 
-            var count = filtersFromAction.Length + filtersFromController.Length;
+            var count = actionFilters.Length + controllerFilters.Length;
 
             for (int i = 0, j = 0; i + j < count; )
             {
-                if (i >= filtersFromAction.Length)
+                if (i >= actionFilters.Length)
                 {
-                    list.Add(filtersFromController[j++]);
+                    list.Add(controllerFilters[j++]);
                 }
-                else if (j >= filtersFromController.Length)
+                else if (j >= controllerFilters.Length)
                 {
-                    list.Add(filtersFromAction[i++]);
+                    list.Add(actionFilters[i++]);
                 }
-                else if (filtersFromAction[i].Order >= filtersFromController[j].Order)
+                else if (actionFilters[i].Order >= controllerFilters[j].Order)
                 {
-                    list.Add(filtersFromAction[i++]);
+                    list.Add(actionFilters[i++]);
                 }
                 else
                 {
-                    list.Add(filtersFromController[j++]);
+                    list.Add(controllerFilters[j++]);
                 }
             }
 
