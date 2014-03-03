@@ -72,17 +72,22 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
 
             if (bindingContext.ModelType != requiredType)
             {
-                throw Error.Argument("bindingContext", Resources.ModelBinderUtil_ModelTypeIsWrong, bindingContext.ModelType, requiredType);
+                var message = Resources.FormatModelBinderUtil_ModelTypeIsWrong(bindingContext.ModelType, requiredType);
+                throw Error.Argument("bindingContext", message);
             }
 
             if (!allowNullModel && bindingContext.Model == null)
             {
-                throw Error.Argument("bindingContext", Resources.ModelBinderUtil_ModelCannotBeNull, requiredType);
+                var message = Resources.FormatModelBinderUtil_ModelCannotBeNull(requiredType);
+                throw Error.Argument("bindingContext", message);
             }
 
             if (bindingContext.Model != null && !bindingContext.ModelType.GetTypeInfo().IsAssignableFrom(requiredType.GetTypeInfo()))
             {
-                throw Error.Argument("bindingContext", Resources.ModelBinderUtil_ModelInstanceIsWrong, bindingContext.Model.GetType(), requiredType);
+                var message = Resources.FormatModelBinderUtil_ModelInstanceIsWrong(
+                    bindingContext.Model.GetType(), 
+                    requiredType);
+                throw Error.Argument("bindingContext", message);
             }
         }
     }

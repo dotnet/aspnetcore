@@ -96,7 +96,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 return Convert.ToString(value);
             }
-            throw Error.InvalidOperation(Resources.ValueProviderResult_NoConverterExists, value.GetType(), destinationType);
+            string message = Resources.FormatValueProviderResult_NoConverterExists(value.GetType(), destinationType);
+            throw new InvalidOperationException(message);
 
             // TODO: Revive once we get TypeConverters
             //TypeConverter converter = TypeDescriptor.GetConverter(destinationType);

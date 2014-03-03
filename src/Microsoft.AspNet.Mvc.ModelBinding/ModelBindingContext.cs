@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             if (ModelMetadata == null)
             {
-                throw Error.InvalidOperation(Resources.ModelBindingContext_ModelMetadataMustBeSet);
+                throw new InvalidOperationException(Resources.ModelBindingContext_ModelMetadataMustBeSet);
             }
         }
     }

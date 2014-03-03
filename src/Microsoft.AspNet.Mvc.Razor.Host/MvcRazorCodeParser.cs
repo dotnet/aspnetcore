@@ -36,7 +36,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             if (_modelStatementFound && _endInheritsLocation.HasValue)
             {
-                Context.OnError(_endInheritsLocation.Value, Resources.MvcRazorCodeParser_CannotHaveModelAndInheritsKeyword(ModelKeyword));
+                Context.OnError(_endInheritsLocation.Value, 
+                                Resources.FormatMvcRazorCodeParser_CannotHaveModelAndInheritsKeyword(ModelKeyword));
             }
         }
 
@@ -48,12 +49,13 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             SourceLocation endModelLocation = CurrentLocation;
 
-            BaseTypeDirective(Resources.MvcRazorCodeParser_ModelKeywordMustBeFollowedByTypeName(ModelKeyword),
+            BaseTypeDirective(Resources.FormatMvcRazorCodeParser_ModelKeywordMustBeFollowedByTypeName(ModelKeyword),
                               CreateModelCodeGenerator);
 
             if (_modelStatementFound)
             {
-                Context.OnError(endModelLocation, Resources.MvcRazorCodeParser_OnlyOneModelStatementIsAllowed(ModelKeyword));
+                Context.OnError(endModelLocation, 
+                                Resources.FormatMvcRazorCodeParser_OnlyOneModelStatementIsAllowed(ModelKeyword));
             }
 
             _modelStatementFound = true;

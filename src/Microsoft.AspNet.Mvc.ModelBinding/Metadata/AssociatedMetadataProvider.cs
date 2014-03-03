@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             PropertyInformation propertyInfo;
             if (!typeInfo.Properties.TryGetValue(propertyName, out propertyInfo))
             {
-                throw Error.Argument("propertyName", Resources.Common_PropertyNotFound, containerType, propertyName);
+                throw Error.Argument("propertyName", Resources.FormatCommon_PropertyNotFound(containerType, propertyName));
             }
 
             return CreateMetadataFromPrototype(propertyInfo.Prototype, modelAccessor);
