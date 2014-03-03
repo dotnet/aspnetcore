@@ -43,6 +43,8 @@ namespace Microsoft.AspNet.Mvc
 
             foreach (var cd in controllerDescriptors)
             {
+                var controllerFilters = GetOrderedFilterAttributes(cd.ControllerTypeInfo);
+
                 foreach (var methodInfo in cd.ControllerTypeInfo.DeclaredMethods)
                 {
                     var actionInfos = _conventions.GetActions(methodInfo);
@@ -54,13 +56,24 @@ namespace Microsoft.AspNet.Mvc
 
                     foreach (var actionInfo in actionInfos)
                     {
-                        yield return BuildDescriptor(cd, methodInfo, actionInfo);
+                        yield return BuildDescriptor(cd, methodInfo, actionInfo, controllerFilters);
                     }
                 }
             }
         }
 
-        private ReflectedActionDescriptor BuildDescriptor(ControllerDescriptor controllerDescriptor, MethodInfo methodInfo, ActionInfo actionInfo)
+        private IFilter[] GetOrderedFilterAttributes(MemberInfo memberInfo)
+        {
+            var attributes = memberInfo.GetCustomAttributes(inherit: true);
+            var filters = attributes.OfType<IFilter>().OrderByDescending(filter => filter.Order);
+
+            return filters.ToArray();
+        }
+
+        private ReflectedActionDescriptor BuildDescriptor(ControllerDescriptor controllerDescriptor,
+                                                          MethodInfo methodInfo,
+                                                          ActionInfo actionInfo,
+                                                          IFilter[] controllerFilters)
         {
             var ad = new ReflectedActionDescriptor
             {
@@ -85,7 +98,7 @@ namespace Microsoft.AspNet.Mvc
 
             if (actionInfo.RequireActionNameMatch)
             {
-                ad.RouteConstraints.Add(new RouteDataActionConstraint("action", actionInfo.ActionName));   
+                ad.RouteConstraints.Add(new RouteDataActionConstraint("action", actionInfo.ActionName));
             }
             else
             {
@@ -94,7 +107,41 @@ namespace Microsoft.AspNet.Mvc
 
             ad.Parameters = methodInfo.GetParameters().Select(p => _parameterDescriptorFactory.GetDescriptor(p)).ToList();
 
+            // TODO: add ordering support such that action filters are ahead of controller filters if they have the same order
+            var actionFilters = GetOrderedFilterAttributes(methodInfo);
+
+            ad.Filters = MergeSorted(actionFilters, controllerFilters);
+
             return ad;
+        }
+
+        internal List<IFilter> MergeSorted(IFilter[] actionFilters, IFilter[] controllerFilters)
+        {
+            var list = new List<IFilter>();
+
+            var count = actionFilters.Length + controllerFilters.Length;
+
+            for (int i = 0, j = 0; i + j < count; )
+            {
+                if (i >= actionFilters.Length)
+                {
+                    list.Add(controllerFilters[j++]);
+                }
+                else if (j >= controllerFilters.Length)
+                {
+                    list.Add(actionFilters[i++]);
+                }
+                else if (actionFilters[i].Order >= controllerFilters[j].Order)
+                {
+                    list.Add(actionFilters[i++]);
+                }
+                else
+                {
+                    list.Add(controllerFilters[j++]);
+                }
+            }
+
+            return list;
         }
     }
 }
