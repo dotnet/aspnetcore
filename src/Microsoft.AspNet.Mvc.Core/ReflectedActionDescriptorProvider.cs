@@ -5,14 +5,14 @@ using System.Reflection;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class TypeMethodBasedActionDescriptorProvider : IActionDescriptorProvider
+    public class ReflectedActionDescriptorProvider : IActionDescriptorProvider
     {
         private readonly IControllerAssemblyProvider _controllerAssemblyProvider;
         private readonly IActionDiscoveryConventions _conventions;
         private readonly IControllerDescriptorFactory _controllerDescriptorFactory;
         private readonly IParameterDescriptorFactory _parameterDescriptorFactory;
 
-        public TypeMethodBasedActionDescriptorProvider(IControllerAssemblyProvider controllerAssemblyProvider,
+        public ReflectedActionDescriptorProvider(IControllerAssemblyProvider controllerAssemblyProvider,
                                                        IActionDiscoveryConventions conventions,
                                                        IControllerDescriptorFactory controllerDescriptorFactory,
                                                        IParameterDescriptorFactory parameterDescriptorFactory)
@@ -60,9 +60,9 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        private TypeMethodBasedActionDescriptor BuildDescriptor(ControllerDescriptor controllerDescriptor, MethodInfo methodInfo, ActionInfo actionInfo)
+        private ReflectedActionDescriptor BuildDescriptor(ControllerDescriptor controllerDescriptor, MethodInfo methodInfo, ActionInfo actionInfo)
         {
-            var ad = new TypeMethodBasedActionDescriptor
+            var ad = new ReflectedActionDescriptor
             {
                 RouteConstraints = new List<RouteDataActionConstraint>
                 {

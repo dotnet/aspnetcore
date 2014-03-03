@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc
 
         public object CreateController(HttpContext context, ActionDescriptor actionDescriptor)
         {
-            var typedAd = actionDescriptor as TypeMethodBasedActionDescriptor;
+            var typedAd = actionDescriptor as ReflectedActionDescriptor;
 
             if (typedAd == null)
             {

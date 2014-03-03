@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Mvc
             // This is temporary until DI has some magic for it
             Add<INestedProviderManager<ActionDescriptorProviderContext>, NestedProviderManager<ActionDescriptorProviderContext>>();
             Add<INestedProviderManager<ActionInvokerProviderContext>, NestedProviderManager<ActionInvokerProviderContext>>();
-            Add<INestedProvider<ActionDescriptorProviderContext>, TypeMethodBasedActionDescriptorProvider>();
+            Add<INestedProvider<ActionDescriptorProviderContext>, ReflectedActionDescriptorProvider>();
             Add<INestedProvider<ActionInvokerProviderContext>, ActionInvokerProvider>();
         }
 

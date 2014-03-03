@@ -24,11 +24,11 @@ namespace Microsoft.AspNet.Mvc
 
         public void Invoke(ActionInvokerProviderContext context, Action callNext)
         {
-            var ad = context.ActionContext.ActionDescriptor as TypeMethodBasedActionDescriptor;
+            var ad = context.ActionContext.ActionDescriptor as ReflectedActionDescriptor;
 
             if (ad != null)
             {
-                context.Result = new TypeMethodBasedActionInvoker(
+                context.Result = new ReflectedActionInvoker(
                     context.ActionContext,
                     ad,
                     _actionResultFactory,
