@@ -116,9 +116,6 @@ namespace {0}
 
     File.WriteAllText(outputPath, GenerationEnvironment.ToString());
     GenerationEnvironment.Length = 0;
-
-    var resxProjectItem = dte.Solution.FindProjectItem(resxFile);
-    resxProjectItem.ProjectItems.AddFromFile(outputPath);
 }
 #>
 <#+
