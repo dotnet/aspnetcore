@@ -3,7 +3,7 @@ using Microsoft.AspNet.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class ActionInvokerProvider : IActionInvokerProvider
+    public class ReflectedActionInvokerProvider : IActionInvokerProvider
     {
         private readonly IActionResultFactory _actionResultFactory;
         private readonly IServiceProvider _serviceProvider;
@@ -11,12 +11,11 @@ namespace Microsoft.AspNet.Mvc
         private readonly IActionBindingContextProvider _bindingProvider;
         private readonly INestedProviderManager<FilterProviderContext> _filterProvider;
 
-
-        public ActionInvokerProvider(IActionResultFactory actionResultFactory,
-                                     IControllerFactory controllerFactory,
+        public ReflectedActionInvokerProvider(IActionResultFactory actionResultFactory,
+                                              IControllerFactory controllerFactory,
                                      IActionBindingContextProvider bindingProvider,
-                                     INestedProviderManager<FilterProviderContext> filterProvider,
-                                     IServiceProvider serviceProvider)
+                                              INestedProviderManager<FilterProviderContext> filterProvider,
+                                              IServiceProvider serviceProvider)
         {
             _actionResultFactory = actionResultFactory;
             _controllerFactory = controllerFactory;
