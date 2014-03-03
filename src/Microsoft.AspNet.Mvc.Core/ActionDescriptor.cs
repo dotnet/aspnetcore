@@ -19,5 +19,7 @@ namespace Microsoft.AspNet.Mvc
         public List<ParameterDescriptor> Parameters { get; set; }
 
         public List<IFilter> Filters { get; set; }
+
+        public bool AllowAnonymous { get; set; }
     }
 }
