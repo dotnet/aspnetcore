@@ -6,7 +6,7 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.Razor.Compilation;
 
-namespace Microsoft.AspNet.Mvc.Startup
+namespace Microsoft.AspNet.Mvc
 {
     public class MvcServices
     {

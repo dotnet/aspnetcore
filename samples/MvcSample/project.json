@@ -4,8 +4,8 @@
     "Microsoft.AspNet.Abstractions": "0.1-alpha-*",
     "Microsoft.AspNet.DependencyInjection" : "0.1-alpha-*",
     "Microsoft.AspNet.Routing" : "0.1-alpha-*",
-    "Microsoft.AspNet.Mvc" : "",
-    "Microsoft.AspNet.Mvc.Startup" : ""
+    "Microsoft.AspNet.Mvc.Core" : "",
+    "Microsoft.AspNet.Mvc" : ""
   },
   "configurations": {
     "net45": {

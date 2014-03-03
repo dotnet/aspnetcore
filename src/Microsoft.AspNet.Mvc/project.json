@@ -1,12 +1,16 @@
 {
   "version" : "0.1-alpha-*",
   "dependencies": {
-    "Newtonsoft.Json": "5.0.8",
+    "Microsoft.AspNet.Abstractions" : "0.1-alpha-*",
     "Microsoft.AspNet.DependencyInjection" : "0.1-alpha-*",
-    "Microsoft.AspNet.Abstractions": "0.1-alpha-*",
-    "Microsoft.AspNet.Routing": "0.1-alpha-*",
-    "Microsoft.AspNet.Mvc.ModelBinding": "",
-    "Microsoft.AspNet.Mvc.Rendering": ""
+    "Microsoft.AspNet.FileSystems" : "0.1-alpha-*",
+    "Microsoft.AspNet.Razor" : "0.1-alpha-*",
+    "Microsoft.AspNet.Routing" : "0.1-alpha-*",
+    "Microsoft.AspNet.Mvc.Core": "",
+    "Microsoft.AspNet.Mvc.Razor": "",
+    "Microsoft.AspNet.Mvc.ModelBinding" : "",
+    "Microsoft.AspNet.Mvc.Rendering" : "",
+    "Microsoft.AspNet.Mvc.Razor.Host": ""
   },
   "configurations": {
     "net45": { },

@@ -5,7 +5,7 @@
     "Microsoft.AspNet.Abstractions": "0.1-alpha-*",
     "Microsoft.AspNet.DependencyInjection": "0.1-alpha-*",
     "Microsoft.AspNet.Razor": "0.1-alpha-*",
-    "Microsoft.AspNet.Mvc" : "",
+    "Microsoft.AspNet.Mvc.Core" : "",
     "Microsoft.AspNet.Mvc.ModelBinding" : "",
     "Microsoft.AspNet.Mvc.Rendering" : "",
     "Microsoft.AspNet.Mvc.Razor.Host" : "",

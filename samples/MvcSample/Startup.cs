@@ -9,7 +9,6 @@ using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing.Owin;
 using Microsoft.AspNet.Routing.Template;
-using Microsoft.AspNet.Mvc.Startup;
 using Owin;
 
 namespace MvcSample
