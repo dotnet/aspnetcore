@@ -17,5 +17,7 @@ namespace Microsoft.AspNet.Mvc
         public List<IActionConstraint> DynamicConstraints { get; set; }
 
         public List<ParameterDescriptor> Parameters { get; set; }
+
+        public List<IFilter> Filters { get; set; }
     }
 }
