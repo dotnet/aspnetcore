@@ -1,0 +1,14 @@
+{
+  "version": "0.1-alpha-*",
+  "dependencies": {
+    "Microsoft.AspNet.Identity" : "0.1-alpha-*",
+    "Microsoft.AspNet.DependencyInjection" : "0.1-alpha-*"
+  },
+  "configurations": {
+    "net45": {
+      "dependencies": {
+        "xunit": "1.9.2"
+      }
+    }
+  }
+}

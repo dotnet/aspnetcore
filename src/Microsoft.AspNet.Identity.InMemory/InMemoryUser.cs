@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 #if NET45
 using System.Security.Claims;
 #else
 using System.Security.ClaimsK;
 #endif
-using System.Threading.Tasks;
-using Microsoft.AspNet.Identity;
 
 namespace Microsoft.AspNet.Identity.InMemory
 {
@@ -17,12 +14,16 @@ namespace Microsoft.AspNet.Identity.InMemory
         private readonly IList<UserLoginInfo> _logins;
         private readonly IList<string> _roles;
 
-        public InMemoryUser(string name)
+        public InMemoryUser()
         {
             Id = Guid.NewGuid().ToString();
             _logins = new List<UserLoginInfo>();
             _claims = new List<Claim>();
             _roles = new List<string>();
+        }
+
+        public InMemoryUser(string name) : this()
+        {
             UserName = name;
         }
 
