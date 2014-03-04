@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+#if NET45
 using System.Net.Mail;
+#endif
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -96,6 +98,7 @@ namespace Microsoft.AspNet.Identity
                 errors.Add(String.Format(CultureInfo.CurrentCulture, Resources.PropertyTooShort, "Email"));
                 return;
             }
+#if NET45
             try
             {
                 var m = new MailAddress(email);
@@ -105,6 +108,7 @@ namespace Microsoft.AspNet.Identity
                 errors.Add(String.Format(CultureInfo.CurrentCulture, Resources.InvalidEmail, email));
                 return;
             }
+#endif
             var owner = await Manager.FindByEmail(email);
             if (owner != null && !EqualityComparer<TKey>.Default.Equals(owner.Id, user.Id))
             {
