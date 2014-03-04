@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.AspNet.Identity;
 
 namespace Microsoft.AspNet.Identity.InMemory
 {

@@ -1,9 +1,5 @@
 using System;
-#if NET45
 using System.Security.Claims;
-#else
-using System.Security.ClaimsK;
-#endif
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Identity

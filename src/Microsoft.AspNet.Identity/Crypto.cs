@@ -6,12 +6,5 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNet.Identity
 {
-    public class Foo
-    {
-        public Foo()
-        {
-            System.Security.Cryptography.Rfc2898DeriveBytes foo = null;
-        }
-    }
 }
 #endif

@@ -1,10 +1,6 @@
 using System;
 using System.Collections.Generic;
-#if NET45
 using System.Security.Claims;
-#else
-using System.Security.ClaimsK;
-#endif
 
 namespace Microsoft.AspNet.Identity.InMemory
 {
