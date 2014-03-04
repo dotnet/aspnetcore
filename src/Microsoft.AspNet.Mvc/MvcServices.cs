@@ -37,15 +37,12 @@ namespace Microsoft.AspNet.Mvc
 
 #if NET45
             // TODO: Container chaining to flow services from the host to this container
-            if (hostServiceProvider == null)
-            {
-                Add<ICompilationService, CscBasedCompilationService>();
-            }
-            else
-            {
-                // TODO: Make this work like normal when we get container chaining
-                AddInstance<ICompilationService>(new RoslynCompilationService(hostServiceProvider));
-            }
+
+            Add<ICompilationService, CscBasedCompilationService>();
+
+            // TODO: Make this work like normal when we get container chaining
+            // TODO: Update this when we have the new host services
+            // AddInstance<ICompilationService>(new RoslynCompilationService(hostServiceProvider));
 #endif
             Add<IRazorCompilationService, RazorCompilationService>();
             Add<IVirtualPathViewFactory, VirtualPathViewFactory>();
