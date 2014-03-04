@@ -78,9 +78,9 @@ namespace Microsoft.AspNet.Server.WebListener
         private List<Prefix> _uriPrefixes = new List<Prefix>();
 
         private PumpLimits _pumpLimits;
-        private int _currentOutstandingAccepts;
-        private int _currentOutstandingRequests;
-        private Action _offloadListenForNextRequest;
+        private int _acceptorCounts;
+        private Action<object> _processRequest;
+        private readonly AwaitableThrottle _requestProcessingThrottle;
 
         // The native request queue
         private long? _requestQueueLength;
@@ -102,9 +102,10 @@ namespace Microsoft.AspNet.Server.WebListener
             _authManager = new AuthenticationManager(this);
             _connectionCancellationTokens = new ConcurrentDictionary<ulong, ConnectionCancellation>();
 
-            _offloadListenForNextRequest = new Action(ListenForNextRequestAsync);
+            _processRequest = new Action<object>(ProcessRequestAsync);
 
             _pumpLimits = new PumpLimits(DefaultMaxAccepts, DefaultMaxRequests);
+            _requestProcessingThrottle = new AwaitableThrottle(DefaultMaxRequests);
         }
 
         internal enum State
@@ -189,16 +190,6 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        private bool CanAcceptMoreRequests
-        {
-            get
-            {
-                PumpLimits limits = _pumpLimits;
-                return (_currentOutstandingAccepts < limits.MaxOutstandingAccepts
-                    && _currentOutstandingRequests < limits.MaxOutstandingRequests - _currentOutstandingAccepts);
-            }
-        }
-
         /// <summary>
         /// These are merged as one operation because they should be swapped out atomically.
         /// This controls how many requests the server attempts to process concurrently.
@@ -209,8 +200,20 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             _pumpLimits = new PumpLimits(maxAccepts, maxRequests);
 
-            // Kick the pump in case we went from zero to non-zero limits.
-            OffloadListenForNextRequestAsync();
+            if (_state == State.Started)
+            {
+                ActivateRequestProcessingLimits();
+            }
+        }
+
+        private void ActivateRequestProcessingLimits()
+        {
+            _requestProcessingThrottle.MaxConcurrent = _pumpLimits.MaxOutstandingRequests;
+
+            for (int i = _acceptorCounts; i < _pumpLimits.MaxOutstandingAccepts; i++)
+            {
+                ProcessRequestsWorker();
+            }
         }
 
         /// <summary>
@@ -454,7 +457,7 @@ namespace Microsoft.AspNet.Server.WebListener
 
                     SetRequestQueueLimit();
 
-                    OffloadListenForNextRequestAsync();
+                    ActivateRequestProcessingLimits();
                 }
                 catch (Exception exception)
                 {
@@ -468,50 +471,45 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        // Make sure the next request is processed on another thread as to not recursively
-        // block the request we just received.
-        private void OffloadListenForNextRequestAsync()
-        {
-            if (IsListening && CanAcceptMoreRequests)
-            {
-                Task offloadTask = Task.Run(_offloadListenForNextRequest);
-            }
-        }
-
         // The message pump.
         // When we start listening for the next request on one thread, we may need to be sure that the
         // completion continues on another thread as to not block the current request processing.
         // The awaits will manage stack depth for us.
-        private async void ListenForNextRequestAsync()
+        private async void ProcessRequestsWorker()
         {
-            while (IsListening && CanAcceptMoreRequests)
+            int workerIndex = Interlocked.Increment(ref _acceptorCounts);
+            while (IsListening && workerIndex <= _pumpLimits.MaxOutstandingAccepts)
             {
+                await _requestProcessingThrottle;
+
                 // Receive a request
                 RequestContext requestContext;
-                Interlocked.Increment(ref _currentOutstandingAccepts);
                 try
                 {
                     requestContext = await GetContextAsync().SupressContext();
-                    Interlocked.Decrement(ref _currentOutstandingAccepts);
                 }
                 catch (Exception exception)
                 {
                     LogHelper.LogException(_logger, "ListenForNextRequestAsync", exception);
-                    // Assume the server has stopped.
-                    Interlocked.Decrement(ref _currentOutstandingAccepts);
                     Contract.Assert(!IsListening);
                     return;
                 }
-
-                Interlocked.Increment(ref _currentOutstandingRequests);
-                OffloadListenForNextRequestAsync();
-                await ProcessRequestAsync(requestContext).SupressContext();
-                Interlocked.Decrement(ref _currentOutstandingRequests);
+                try
+                {
+                    Task.Factory.StartNew(_processRequest, requestContext);
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.LogException(_logger, "ProcessRequestAsync", ex);
+                    _requestProcessingThrottle.Release();
+                }
             }
+            Interlocked.Decrement(ref _acceptorCounts);
         }
 
-        private async Task ProcessRequestAsync(RequestContext requestContext)
+        private async void ProcessRequestAsync(object requestContextObj)
         {
+            var requestContext = requestContextObj as RequestContext;
             try
             {
                 try
@@ -542,6 +540,10 @@ namespace Microsoft.AspNet.Server.WebListener
                 LogHelper.LogException(_logger, "ProcessRequestAsync", ex);
                 requestContext.Abort();
                 requestContext.Dispose();
+            }
+            finally
+            {
+                _requestProcessingThrottle.Release();
             }
         }
 

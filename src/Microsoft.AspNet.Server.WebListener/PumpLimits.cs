@@ -16,7 +16,7 @@
 
 namespace Microsoft.AspNet.Server.WebListener
 {
-    internal class PumpLimits
+    internal struct PumpLimits
     {
         internal PumpLimits(int maxAccepts, int maxRequests)
         {
@@ -24,8 +24,7 @@ namespace Microsoft.AspNet.Server.WebListener
             MaxOutstandingRequests = maxRequests;
         }
 
-        internal int MaxOutstandingAccepts { get; private set; }
-
-        internal int MaxOutstandingRequests { get; private set; }
+        internal readonly int MaxOutstandingAccepts;
+        internal readonly int MaxOutstandingRequests;
     }
 }
