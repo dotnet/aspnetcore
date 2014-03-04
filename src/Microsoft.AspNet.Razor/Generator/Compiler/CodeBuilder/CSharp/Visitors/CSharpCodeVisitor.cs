@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNet.Razor.Text;
 
 namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 {
@@ -115,53 +116,25 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         protected override void Visit(ExpressionBlockChunk chunk)
         {
             // TODO: Handle instrumentation
-            // TODO: Refactor
 
-            if (!Context.Host.DesignTimeMode && Context.ExpressionRenderingMode == ExpressionRenderingMode.InjectCode)
+            if (Context.Host.DesignTimeMode)
             {
-                Visit((ChunkBlock)chunk);
+                RenderDesignTimeExpressionBlockChunk(chunk);
             }
             else
             {
-                if (Context.Host.DesignTimeMode)
-                {
-                    Writer.WriteStartAssignment("__o");
-                }
-                else if (Context.ExpressionRenderingMode == ExpressionRenderingMode.WriteToOutput)
-                {
-                    if (!String.IsNullOrEmpty(Context.TargetWriterName))
-                    {
-                        Writer.WriteStartMethodInvocation(Context.Host.GeneratedClassContext.WriteToMethodName)
-                               .Write(Context.TargetWriterName)
-                               .WriteParameterSeparator();
-                    }
-                    else
-                    {
-                        Writer.WriteStartMethodInvocation(Context.Host.GeneratedClassContext.WriteMethodName);
-                    }
-                }
-
-                Visit((ChunkBlock)chunk);
-
-                if (Context.Host.DesignTimeMode)
-                {
-                    Writer.WriteLine(";");
-                }
-                else if (Context.ExpressionRenderingMode == ExpressionRenderingMode.WriteToOutput)
-                {
-                    Writer.WriteEndMethodInvocation();
-                }
+                RenderRuntimeExpressionBlockChunk(chunk);
             }
         }
 
         protected override void Visit(ExpressionChunk chunk)
         {
-            CreateCodeMapping(chunk.Code, chunk);
+            CreateExpressionCodeMapping(chunk.Code, chunk);
         }
 
         protected override void Visit(StatementChunk chunk)
         {
-            CreateCodeMapping(chunk.Code, chunk);
+            CreateStatementCodeMapping(chunk.Code, chunk);
             Writer.WriteLine();
         }
 
@@ -308,15 +281,100 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             Writer.WriteEndMethodInvocation();
         }
 
-        public void CreateCodeMapping(string code, Chunk chunk)
+        public void RenderDesignTimeExpressionBlockChunk(ExpressionBlockChunk chunk)
+        {
+            // TODO: Handle instrumentation
+
+            int currentIndent = Writer.CurrentIndent;
+            string designTimeAssignment = "__o = ";
+
+            // The first child should never be null, it should always be a transition span, that's what
+            // defines an expression block chunk.
+            var firstChild = (ExpressionChunk)chunk.Children.FirstOrDefault();
+
+            Writer.ResetIndent()
+                  .WriteLineNumberDirective(1, "This is here only for document formatting.")
+                // We build the padding with an offset of the design time assignment statement.
+                  .Write(_paddingBuilder.BuildExpressionPadding((Span)firstChild.Association, designTimeAssignment.Length))
+                  .Write(designTimeAssignment);
+
+            // We map the first line of code but do not write the line pragmas associated with it.
+            CreateRawCodeMapping(firstChild.Code, firstChild.Association.Start);
+
+            // This is a temporary block that is indentical to the current one with the exception of its children.
+            var subBlock = new ChunkBlock
+            {
+                Start = chunk.Start,
+                Association = chunk.Association,
+                Children = chunk.Children.Skip(1).ToList()
+            };
+
+            // Render all children (except for the first one)
+            Visit(subBlock);
+
+            Writer.WriteLine(";")
+                  .WriteLine()
+                  .WriteLineDefaultDirective()
+                  .WriteLineHiddenDirective()
+                  .SetIndent(currentIndent);
+        }
+
+        public void RenderRuntimeExpressionBlockChunk(ExpressionBlockChunk chunk)
+        {
+            // TODO: Handle instrumentation
+
+            if (Context.ExpressionRenderingMode == ExpressionRenderingMode.InjectCode)
+            {
+                Visit((ChunkBlock)chunk);
+            }
+            else if (Context.ExpressionRenderingMode == ExpressionRenderingMode.WriteToOutput)
+            {
+                if (!String.IsNullOrEmpty(Context.TargetWriterName))
+                {
+                    Writer.WriteStartMethodInvocation(Context.Host.GeneratedClassContext.WriteToMethodName)
+                            .Write(Context.TargetWriterName)
+                            .WriteParameterSeparator();
+                }
+                else
+                {
+                    Writer.WriteStartMethodInvocation(Context.Host.GeneratedClassContext.WriteMethodName);
+                }
+
+                Visit((ChunkBlock)chunk);
+
+                Writer.WriteEndMethodInvocation()
+                      .WriteLine();
+            }
+        }
+
+        public void CreateExpressionCodeMapping(string code, Chunk chunk)
+        {
+            CreateCodeMapping(_paddingBuilder.BuildExpressionPadding((Span)chunk.Association), code, chunk);
+        }
+
+        public void CreateStatementCodeMapping(string code, Chunk chunk)
+        {
+            CreateCodeMapping(_paddingBuilder.BuildStatementPadding((Span)chunk.Association), code, chunk);
+        }
+
+        public void CreateCodeMapping(string padding, string code, Chunk chunk)
         {
             using (CSharpLineMappingWriter mappingWriter = Writer.BuildLineMapping(chunk.Start, code.Length, Context.SourceFile))
             {
-                Writer.Write(_paddingBuilder.BuildExpressionPadding((Span)chunk.Association));
+                Writer.Write(padding);
 
                 mappingWriter.MarkLineMappingStart();
                 Writer.Write(code);
                 mappingWriter.MarkLineMappingEnd();
+            }
+        }
+
+        // Raw CodeMapping's do not write out line pragmas, they just map code.
+        public void CreateRawCodeMapping(string code, SourceLocation documentLocation)
+        {
+            using (new CSharpLineMappingWriter(Writer, documentLocation, code.Length))
+            {
+                Writer.Write(code);
             }
         }
     }

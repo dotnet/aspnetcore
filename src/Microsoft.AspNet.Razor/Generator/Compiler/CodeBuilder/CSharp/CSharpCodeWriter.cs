@@ -25,6 +25,11 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             return (CSharpCodeWriter)base.Indent(size);
         }
 
+        public CSharpCodeWriter ResetIndent()
+        {
+            return (CSharpCodeWriter)base.ResetIndent();
+        }
+        
         public CSharpCodeWriter SetIndent(int size)
         {
             return (CSharpCodeWriter)base.SetIndent(size);

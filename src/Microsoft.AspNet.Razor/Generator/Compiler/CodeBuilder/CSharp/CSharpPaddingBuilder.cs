@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 throw new ArgumentNullException("target");
             }
 
-            int padding = CalculatePadding(target);
+            int padding = CalculatePadding(target, 0);
 
             // We treat statement padding specially so for brace positioning, so that in the following example:
             //   @if (foo > 0)
@@ -44,21 +44,38 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             return generatedCode;
         }
 
-        public string BuildExpressionPadding(Span target)
+        public string BuildExpressionPadding(Span target, int generatedStart = 0)
         {
-            int padding = CalculatePadding(target);
+            int padding = CalculatePadding(target, generatedStart);
 
             return BuildPaddingInternal(padding);
         }
 
-        internal int CalculatePadding(Span target)
+        internal int CalculatePadding(Span target, int generatedStart)
         {
             if (target == null)
             {
                 throw new ArgumentNullException("target");
             }
 
-            return CollectSpacesAndTabs(target, _host.TabSize);
+            int padding;
+
+            padding = CollectSpacesAndTabs(target, _host.TabSize) - generatedStart;
+
+            // if we add generated text that is longer than the padding we wanted to insert we have no recourse and we have to skip padding
+            // example:
+            // Razor code at column zero: @somecode()
+            // Generated code will be:
+            // In design time: __o = somecode();
+            // In Run time: Write(somecode());
+            //
+            // In both cases the padding would have been 1 space to remote the space the @ symbol takes, which will be smaller than the 6 chars the hidden generated code takes.
+            if (padding < 0)
+            {
+                padding = 0;
+            }
+
+            return padding;
         }
 
         private string BuildPaddingInternal(int padding)

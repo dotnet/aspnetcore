@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         {
             if (!String.IsNullOrEmpty(chunk.Code))
             {
-                _csharpCodeVisitor.CreateCodeMapping(chunk.Code, chunk);
+                _csharpCodeVisitor.CreateCodeMapping(String.Empty, chunk.Code, chunk);
             }
         }
     }
