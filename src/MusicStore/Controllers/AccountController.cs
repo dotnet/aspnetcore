@@ -2,11 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-#if NET45
 using System.Security.Claims;
-#else
-using System.Security.ClaimsK;
-#endif
 using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Identity;
