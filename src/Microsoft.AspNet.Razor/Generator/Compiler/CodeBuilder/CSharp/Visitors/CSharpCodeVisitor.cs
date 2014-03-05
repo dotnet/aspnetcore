@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
             using (Writer.BuildLambda(endLine: false, parameterNames: TemplateBlockCodeGenerator.TemplateWriterName))
             {
-                Visit((ChunkBlock)chunk);
+                Accept(chunk.Children);
             }
 
             Context.TargetWriterName = currentTargetWriterName;
@@ -182,7 +182,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
                 using (Writer.BuildLambda(endLine: false, parameterNames: ValueWriterName))
                 {
-                    Visit((ChunkBlock)chunk);
+                    Accept(chunk.Children);
                 }
 
                 Writer.WriteEndMethodInvocation(false)
@@ -217,7 +217,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 ExpressionRenderingMode currentRenderingMode = Context.ExpressionRenderingMode;
                 Context.ExpressionRenderingMode = ExpressionRenderingMode.InjectCode;
 
-                Visit((ChunkBlock)chunk);
+                Accept(chunk.Children);
 
                 Context.ExpressionRenderingMode = currentRenderingMode;
 
@@ -262,7 +262,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                    .WriteParameterSeparator()
                    .WriteLocationTaggedString(chunk.Suffix);
 
-            Visit((ChunkBlock)chunk);
+            Accept(chunk.Children);
 
             Writer.WriteEndMethodInvocation();
         }
@@ -275,7 +275,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
             using (Writer.BuildLambda(false))
             {
-                Visit((ChunkBlock)chunk);
+                Accept(chunk.Children);
             }
 
             Writer.WriteEndMethodInvocation();
@@ -285,38 +285,35 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         {
             // TODO: Handle instrumentation
 
-            int currentIndent = Writer.CurrentIndent;
-            string designTimeAssignment = "__o = ";
-
-            // The first child should never be null, it should always be a transition span, that's what
-            // defines an expression block chunk.
             var firstChild = (ExpressionChunk)chunk.Children.FirstOrDefault();
 
-            Writer.ResetIndent()
-                  .WriteLineNumberDirective(1, "This is here only for document formatting.")
-                // We build the padding with an offset of the design time assignment statement.
-                  .Write(_paddingBuilder.BuildExpressionPadding((Span)firstChild.Association, designTimeAssignment.Length))
-                  .Write(designTimeAssignment);
-
-            // We map the first line of code but do not write the line pragmas associated with it.
-            CreateRawCodeMapping(firstChild.Code, firstChild.Association.Start);
-
-            // This is a temporary block that is indentical to the current one with the exception of its children.
-            var subBlock = new ChunkBlock
+            if (firstChild != null)
             {
-                Start = chunk.Start,
-                Association = chunk.Association,
-                Children = chunk.Children.Skip(1).ToList()
-            };
+                int currentIndent = Writer.CurrentIndent;
+                string designTimeAssignment = "__o = ";
+                Writer.ResetIndent();
 
-            // Render all children (except for the first one)
-            Visit(subBlock);
+                // This is only here to enable accurate formatting by the C# editor.
+                Writer.WriteLineNumberDirective(1, "------------------------------------------");
 
-            Writer.WriteLine(";")
-                  .WriteLine()
-                  .WriteLineDefaultDirective()
-                  .WriteLineHiddenDirective()
-                  .SetIndent(currentIndent);
+                // We build the padding with an offset of the design time assignment statement.
+                Writer.Write(_paddingBuilder.BuildExpressionPadding((Span)firstChild.Association, designTimeAssignment.Length))
+                      .Write(designTimeAssignment);
+
+                // We map the first line of code but do not write the line pragmas associated with it.
+                CreateRawCodeMapping(firstChild.Code, firstChild.Association.Start);
+
+                // Render all but the first child.
+                // The reason why we render the other children differently is because when formatting the C# code
+                // the formatter expects the start line to have the assignment statement on it.
+                Accept(chunk.Children.Skip(1).ToList());
+
+                Writer.WriteLine(";")
+                      .WriteLine()
+                      .WriteLineDefaultDirective()
+                      .WriteLineHiddenDirective()
+                      .SetIndent(currentIndent);
+            }
         }
 
         public void RenderRuntimeExpressionBlockChunk(ExpressionBlockChunk chunk)
@@ -325,7 +322,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
             if (Context.ExpressionRenderingMode == ExpressionRenderingMode.InjectCode)
             {
-                Visit((ChunkBlock)chunk);
+                Accept(chunk.Children);
             }
             else if (Context.ExpressionRenderingMode == ExpressionRenderingMode.WriteToOutput)
             {
@@ -340,7 +337,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                     Writer.WriteStartMethodInvocation(Context.Host.GeneratedClassContext.WriteMethodName);
                 }
 
-                Visit((ChunkBlock)chunk);
+                Accept(chunk.Children);
 
                 Writer.WriteEndMethodInvocation()
                       .WriteLine();

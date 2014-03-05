@@ -34,12 +34,12 @@ using System
 
         public override void Execute()
         {
-#line 1 "This is here only for document formatting."
+#line 1 "------------------------------------------"
                        __o = typeof(Path).FullName;
 
 #line default
 #line hidden
-#line 1 "This is here only for document formatting."
+#line 1 "------------------------------------------"
                              __o = typeof(Foo).FullName;
 
 #line default

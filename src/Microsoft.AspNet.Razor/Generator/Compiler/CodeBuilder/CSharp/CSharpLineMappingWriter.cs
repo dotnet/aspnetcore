@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             _writePragmas = true;
 
             // TODO: Should this just be '\n'?
-            if (_writer.LastWrite.Last() != '\n')
+            if (!_writer.LastWrite.EndsWith("\n"))
             {
                 _writer.WriteLine();
             }
@@ -73,13 +73,13 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             {
                 // Need to add an additional line at the end IF there wasn't one already written.
                 // This is needed to work with the C# editor's handling of #line ...
-                bool writeExtraLine = _writer.ToString().Last() != '\n';
+                bool endsWithNewline = _writer.ToString().EndsWith("\n");
 
                 // Always write at least 1 empty line to potentially separate code from pragmas.
                 _writer.WriteLine();
 
                 // Check if the previous empty line wasn't enough to separate code from pragmas.
-                if (writeExtraLine)
+                if (!endsWithNewline)
                 {
                     _writer.WriteLine();
                 }

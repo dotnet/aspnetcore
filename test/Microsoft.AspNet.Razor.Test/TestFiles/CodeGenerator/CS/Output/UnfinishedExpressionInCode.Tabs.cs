@@ -23,7 +23,7 @@ namespace TestOutput
 #line default
 #line hidden
 
-#line 1 "This is here only for document formatting."
+#line 1 "------------------------------------------"
 __o = DateTime.;
 
 #line default

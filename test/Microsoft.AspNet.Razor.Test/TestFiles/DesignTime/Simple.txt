@@ -23,7 +23,7 @@
 #line default
 #line hidden
 
-#line 1 "This is here only for document formatting."
+#line 1 "------------------------------------------"
       __o = hello;
 
 #line default
@@ -34,7 +34,7 @@
 #line default
 #line hidden
 
-#line 1 "This is here only for document formatting."
+#line 1 "------------------------------------------"
                                   __o = c;
 
 #line default

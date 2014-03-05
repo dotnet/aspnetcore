@@ -32,7 +32,7 @@ namespace TestOutput
 
         public override void Execute()
         {
-#line 1 "This is here only for document formatting."
+#line 1 "------------------------------------------"
                    __o = RandomInt();
 
 #line default

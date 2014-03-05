@@ -46,12 +46,12 @@ namespace TestOutput
 #line default
 #line hidden
 
-#line 1 "This is here only for document formatting."
+#line 1 "------------------------------------------"
                                        __o = bar;
 
 #line default
 #line hidden
-#line 1 "This is here only for document formatting."
+#line 1 "------------------------------------------"
 __o = a
 #line 15 "RazorComments.cshtml"
        b

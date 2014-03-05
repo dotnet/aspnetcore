@@ -54,7 +54,7 @@ Foo() {
 #line default
 #line hidden
 
-#line 1 "This is here only for document formatting."
+#line 1 "------------------------------------------"
                 __o = i;
 
 #line default
@@ -66,14 +66,14 @@ Foo() {
 #line default
 #line hidden
 
-#line 1 "This is here only for document formatting."
+#line 1 "------------------------------------------"
 __o = Foo(Bar.Baz);
 
 #line default
 #line hidden
-#line 1 "This is here only for document formatting."
+#line 1 "------------------------------------------"
 __o = Foo(item => new Template((__razor_template_writer) => {
-#line 1 "This is here only for document formatting."
+#line 1 "------------------------------------------"
         __o = baz;
 
 #line default
@@ -90,7 +90,7 @@ __o = Foo(item => new Template((__razor_template_writer) => {
 #line default
 #line hidden
             DefineSection("Footer", () => {
-#line 1 "This is here only for document formatting."
+#line 1 "------------------------------------------"
 __o = bar;
 
 #line default

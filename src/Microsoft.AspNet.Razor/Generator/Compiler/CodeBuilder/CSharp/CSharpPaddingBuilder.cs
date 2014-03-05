@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 throw new ArgumentNullException("target");
             }
 
-            int padding = CalculatePadding(target, 0);
+            int padding = CalculatePadding(target, generatedStart: 0);
 
             // We treat statement padding specially so for brace positioning, so that in the following example:
             //   @if (foo > 0)
@@ -44,7 +44,12 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             return generatedCode;
         }
 
-        public string BuildExpressionPadding(Span target, int generatedStart = 0)
+        public string BuildExpressionPadding(Span target)
+        {
+            return BuildExpressionPadding(target, generatedStart: 0);
+        }
+
+        public string BuildExpressionPadding(Span target, int generatedStart)
         {
             int padding = CalculatePadding(target, generatedStart);
 
@@ -69,7 +74,8 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             // In design time: __o = somecode();
             // In Run time: Write(somecode());
             //
-            // In both cases the padding would have been 1 space to remote the space the @ symbol takes, which will be smaller than the 6 chars the hidden generated code takes.
+            // In both cases the padding would have been 1 space to remote the space the @ symbol takes, which will be smaller than the 6 
+            // chars the hidden generated code takes.
             if (padding < 0)
             {
                 padding = 0;

@@ -23,7 +23,6 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
         }
         protected override void Visit(ChunkBlock chunk)
         {
-            Accept(chunk.Children);
         }
         protected override void Visit(DynamicCodeAttributeChunk chunk)
         {
