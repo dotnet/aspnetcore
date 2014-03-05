@@ -25,9 +25,9 @@ namespace MvcSample
 
     public class PassThroughAttribute : AuthorizationFilterAttribute
     {
-        public async override Task Invoke(AuthorizationFilterContext context, Func<AuthorizationFilterContext, Task> next)
+        public async override Task Invoke(AuthorizationFilterContext context, Func<Task> next)
         {
-            await next(context);
+            await next();
         }
     }
 }

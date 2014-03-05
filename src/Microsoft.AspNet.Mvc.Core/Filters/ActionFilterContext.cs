@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -14,6 +15,8 @@ namespace Microsoft.AspNet.Mvc
 
         public virtual ActionContext ActionContext { get; private set; }
 
-        public virtual IActionResult Result { get; set; }
+        public virtual Type MethodReturnType { get; private set; }
+
+        public virtual object Result { get; set; }
     }
 }

@@ -7,6 +7,8 @@ using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.DependencyInjection.NestedProviders;
+using Microsoft.AspNet.Mvc.Filters;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -41,6 +43,8 @@ namespace Microsoft.AspNet.Mvc
         public async Task InvokeActionAsync()
         {
             IActionResult actionResult;
+            var context = new FilterProviderContext(_descriptor);
+            _filterProvider.Invoke(context);
 
             var modelState = new ModelStateDictionary();
             object controller = _controllerFactory.CreateController(_actionContext, modelState);
@@ -61,18 +65,53 @@ namespace Microsoft.AspNet.Mvc
                 {
                     var parameterValues = await GetParameterValues(modelState);
 
-                    var context = new FilterProviderContext(_descriptor);
-                    _filterProvider.Invoke(context);                   
+                    var authZFilters = context.AuthorizationFilters;
+                    var authZEndPoint = new AuthorizationFilterEndPoint();
+                    authZFilters.Add(authZEndPoint);
+                    var authZContext = new AuthorizationFilterContext(_actionContext);
+                    var authZPipeline = new FilterPipelineBuilder<AuthorizationFilterContext>(authZFilters, authZContext);
 
-                    object actionReturnValue = method.Invoke(controller, GetArgumentValues(parameterValues));
+                    await authZPipeline.InvokeAsync();
 
+                    
+                    if (authZContext.ActionResult == null &&
+                        !authZContext.HasFailed &&
+                        authZEndPoint.EndPointCalled)
+                    {
+                        var actionFilters = context.ActionFilters;
+                        var actionFilterContext = new ActionFilterContext(_actionContext,
+                            new Dictionary<string, object>());
 
-                    actionResult = _actionResultFactory.CreateActionResult(method.ReturnType, actionReturnValue, _actionContext);
+                        // TODO: This is extremely temporary and is going to get soon replaced with the action executer
+                        var actionEndPoint = new ReflectedActionFilterEndPoint(async (inArray) => method.Invoke(controller, inArray),
+                                                                                _actionResultFactory);
+
+                        actionFilters.Add(actionEndPoint);
+
+                        var actionFilterPipeline = new FilterPipelineBuilder<ActionFilterContext>(actionFilters,
+                            actionFilterContext);
+
+                        await actionFilterPipeline.InvokeAsync();
+
+                        object actionReturnValue = method.Invoke(controller, null);
+                        actionResult = _actionResultFactory.CreateActionResult(method.ReturnType, actionReturnValue, _actionContext);
+                    }
+                    else
+                    {
+                        actionResult = authZContext.ActionResult ?? new HttpStatusCodeResult(401);
+                    }
                 }
             }
 
-            // TODO: This will probably move out once we got filters
+            var actionResultFilters = context.ActionResultFilters;
             await actionResult.ExecuteResultAsync(_actionContext);
+            var actionResultFilterContext = new ActionResultFilterContext(_actionContext, actionResult);
+            var actionResultFilterEndPoint = new ActionResultFilterEndPoint();
+            actionResultFilters.Add(actionResultFilterEndPoint);
+
+            var actionResultPipeline = new FilterPipelineBuilder<ActionResultFilterContext>(actionResultFilters, actionResultFilterContext);
+
+            await actionResultPipeline.InvokeAsync();
         }
 
         private async Task<IDictionary<string, object>> GetParameterValues(ModelStateDictionary modelState)

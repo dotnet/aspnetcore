@@ -2,9 +2,10 @@
 {
     public class ActionResultFilterContext
     {
-        public ActionResultFilterContext(ActionContext actionContext)
+        public ActionResultFilterContext(ActionContext actionContext, IActionResult initialResult)
         {
             ActionContext = actionContext;
+            Result = initialResult;
         }
 
         public ActionContext ActionContext { get; private set; }

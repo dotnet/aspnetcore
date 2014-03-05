@@ -5,6 +5,6 @@ namespace Microsoft.AspNet.Mvc.Filters
 {
     public interface IFilter<T>
     {
-        Task Invoke(T context, Func<T, Task> next);
+        Task Invoke(T context, Func<Task> next);
     }
 }
