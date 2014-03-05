@@ -1,5 +1,5 @@
 ﻿//------------------------------------------------------------------------------
-// <copyright file="HttpListener.cs" company="Microsoft">
+// <copyright file="AwaitableThrottle.cs" company="Microsoft">
 //     Copyright (c) Microsoft Corporation.  All rights reserved.
 // </copyright>
 //------------------------------------------------------------------------------
@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Server.WebListener
     /// <summary>
     /// Awaitable object that acts like a semaphore. The object would wait if more than maxConcurrent number of clients waits on it
     /// </summary>
-    public class AwaitableThrottle
+    internal class AwaitableThrottle
     {
         private static readonly TaskAwaiter<bool> CompletedAwaiter = Task.FromResult(true).GetAwaiter();
 

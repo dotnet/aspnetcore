@@ -500,6 +500,8 @@ namespace Microsoft.AspNet.Server.WebListener
                 }
                 catch (Exception ex)
                 {
+                    // Request processing failed to be queued in threadpool
+                    // Log the error message, release throttle and move on
                     LogHelper.LogException(_logger, "ProcessRequestAsync", ex);
                     _requestProcessingThrottle.Release();
                 }
