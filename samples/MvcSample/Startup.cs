@@ -40,12 +40,12 @@ namespace MvcSample
 
             var endpoint = ActivatorUtilities.CreateInstance<RouteEndpoint>(mvcServices.Services);
 
-            router.Add(new TemplateRoute(
+            router.Routes.Add(new TemplateRoute(
                 endpoint,
                 "{controller}",
                 new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase) { { "controller", "Home" } }));
 
-            router.Add(new TemplateRoute(
+            router.Routes.Add(new TemplateRoute(
                 endpoint,
                 "{controller}/{action}",
                 new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase) { { "controller", "Home" }, { "action", "Index" } }));
