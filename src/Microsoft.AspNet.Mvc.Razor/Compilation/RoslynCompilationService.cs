@@ -48,7 +48,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 
             if (!result.Success)
             {
-                var messages = result.Diagnostics.Where(IsError).Select(d => GetCompilationMessage(d));
+                var formatter = new DiagnosticFormatter();
+
+                var messages = result.Diagnostics.Where(IsError).Select(d => GetCompilationMessage(formatter, d));
 
                 return Task.FromResult(CompilationResult.Failed(content, messages));
             }
@@ -61,13 +63,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             return Task.FromResult(CompilationResult.Successful(String.Empty, type));
         }
 
-        private CompilationMessage GetCompilationMessage(Diagnostic diagnostic)
+        private CompilationMessage GetCompilationMessage(DiagnosticFormatter formatter, Diagnostic diagnostic)
         {
-#if NET45
-            var formatter = DiagnosticFormatter.Instance;
-#else
-            var formatter = new DiagnosticFormatter();
-#endif
             return new CompilationMessage(formatter.Format(diagnostic));
         }
 
