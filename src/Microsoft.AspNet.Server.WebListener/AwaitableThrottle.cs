@@ -1,10 +1,4 @@
-﻿//------------------------------------------------------------------------------
-// <copyright file="AwaitableThrottle.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-//------------------------------------------------------------------------------
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
