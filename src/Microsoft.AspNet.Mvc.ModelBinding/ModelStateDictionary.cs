@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -13,13 +12,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
         }
 
-        public ModelStateDictionary(ModelStateDictionary dictionary)
+        public ModelStateDictionary([NotNull]ModelStateDictionary dictionary)
         {
-            if (dictionary == null)
-            {
-                throw Error.ArgumentNull("dictionary");
-            }
-
             foreach (var entry in dictionary)
             {
                 _innerDictionary.Add(entry.Key, entry.Value);
@@ -41,13 +35,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             GetModelStateForKey(key).Errors.Add(errorMessage);
         }
 
-        private ModelState GetModelStateForKey(string key)
+        private ModelState GetModelStateForKey([NotNull]string key)
         {
-            if (key == null)
-            {
-                throw Error.ArgumentNull("key");
-            }
-
             ModelState modelState;
             if (!TryGetValue(key, out modelState))
             {

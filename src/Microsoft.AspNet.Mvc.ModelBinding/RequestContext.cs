@@ -6,18 +6,9 @@ namespace Microsoft.AspNet.Mvc
 {
     public class RequestContext
     {
-        public RequestContext(HttpContext context, IDictionary<string, object> routeValues)
+        public RequestContext([NotNull]HttpContext context,
+                              [NotNull]IDictionary<string, object> routeValues)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException("context");
-            }
-
-            if (routeValues == null)
-            {
-                throw new ArgumentNullException("routeValues");
-            }
-
             HttpContext = context;
             RouteValues = routeValues;
         }

@@ -1,6 +1,7 @@
 {
   "version" : "0.1-alpha-*",
   "dependencies": {
+    "Common": "",
     "Microsoft.AspNet.DependencyInjection" : "0.1-alpha-*",
     "Microsoft.AspNet.Abstractions": "0.1-alpha-*",
     "Newtonsoft.Json": "5.0.8"

@@ -1,16 +1,10 @@
-﻿using System;
-
+﻿
 namespace Microsoft.AspNet.Mvc
 {
     public class ActionInvokerProviderContext
     {
-        public ActionInvokerProviderContext(ActionContext actionContext)
+        public ActionInvokerProviderContext([NotNull]ActionContext actionContext)
         {
-            if (actionContext == null)
-            {
-                throw new ArgumentNullException("actionContext");
-            }
-
             ActionContext = actionContext;
         }
 

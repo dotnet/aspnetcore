@@ -3,6 +3,7 @@
   "dependencies": {
     "Microsoft.AspNet.Abstractions": "0.1-alpha-*",
     "Microsoft.AspNet.DependencyInjection": "0.1-alpha-*",
+    "Common": "",
     "Microsoft.AspNet.Mvc.ModelBinding": ""
   },
   "configurations": {
