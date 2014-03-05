@@ -15,6 +15,9 @@ namespace Microsoft.Net.WebSockets
         private readonly string _subProtocl;
         private WebSocketState _state;
 
+        private WebSocketCloseStatus? _closeStatus;
+        private string _closeStatusDescription;
+
         private byte[] _receiveBuffer;
         private int _receiveOffset;
         private int _receiveCount;
@@ -32,12 +35,12 @@ namespace Microsoft.Net.WebSockets
 
         public override WebSocketCloseStatus? CloseStatus
         {
-            get { throw new NotImplementedException(); }
+            get { return _closeStatus; }
         }
 
         public override string CloseStatusDescription
         {
-            get { throw new NotImplementedException(); }
+            get { return _closeStatusDescription; }
         }
 
         public override WebSocketState State
@@ -94,8 +97,30 @@ namespace Microsoft.Net.WebSockets
             }
 
             WebSocketReceiveResult result;
-            // TODO: Close frame
+
             // TODO: Ping or Pong frames
+
+            if (_frameInProgress.OpCode == Constants.OpCodes.CloseFrame)
+            {
+                // TOOD: This assumes the close message fits in the buffer.
+                // TODO: Assert at least two bytes remaining for the close status code.
+                await EnsureDataAvailableOrReadAsync((int)_frameBytesRemaining, CancellationToken.None);
+
+                _closeStatus = (WebSocketCloseStatus)((_receiveBuffer[_receiveOffset] << 8) | _receiveBuffer[_receiveOffset + 1]);
+                _closeStatusDescription = Encoding.UTF8.GetString(_receiveBuffer, _receiveOffset + 2, _receiveCount - 2) ?? string.Empty;
+                result = new WebSocketReceiveResult(0, WebSocketMessageType.Close, true, (WebSocketCloseStatus)_closeStatus, _closeStatusDescription);
+
+                if (State == WebSocketState.Open)
+                {
+                    _state = WebSocketState.CloseReceived;
+                }
+                else if (State == WebSocketState.CloseSent)
+                {
+                    _state = WebSocketState.Closed;
+                    _stream.Dispose();
+                }
+                return result;
+            }
 
             // Make sure there's at least some data in the buffer
             if (_frameBytesRemaining > 0)
@@ -163,9 +188,41 @@ namespace Microsoft.Net.WebSockets
             }
         }
 
-        public override Task CloseAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken)
+        public async override Task CloseAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            // TODO: Validate arguments
+            // TODO: Check state
+            // TODO: Check concurrent writes
+            // TODO: Check ping/pong state
+
+            if (State >= WebSocketState.Closed)
+            {
+                throw new InvalidOperationException("Already closed.");
+            }
+
+            if (State == WebSocketState.Open || State == WebSocketState.CloseReceived)
+            {
+                // Send a close message.
+                await CloseOutputAsync(closeStatus, statusDescription, cancellationToken);
+            }
+
+            if (State == WebSocketState.CloseSent)
+            {
+                // Do a receiving drain
+                byte[] data = new byte[1024];
+                WebSocketReceiveResult result;
+                do
+                {
+                    result = await ReceiveAsync(new ArraySegment<byte>(data), cancellationToken);
+                }
+                while (result.MessageType != WebSocketMessageType.Close);
+
+                _closeStatus = result.CloseStatus;
+                _closeStatusDescription = result.CloseStatusDescription;
+            }
+
+            _state = WebSocketState.Closed;
+            _stream.Dispose();
         }
 
         public override async Task CloseOutputAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken)
@@ -174,14 +231,32 @@ namespace Microsoft.Net.WebSockets
             // TODO: Check state
             // TODO: Check concurrent writes
             // TODO: Check ping/pong state
-            _state = WebSocketState.CloseSent;
+
+            if (State == WebSocketState.CloseSent || State >= WebSocketState.Closed)
+            {
+                throw new InvalidOperationException("Already closed.");
+            }
+
+            if (State == WebSocketState.Open)
+            {
+                _state = WebSocketState.CloseSent;
+            }
+            else if (State == WebSocketState.CloseReceived)
+            {
+                _state = WebSocketState.Closed;
+            }
+
+            byte[] descriptionBytes = Encoding.UTF8.GetBytes(statusDescription ?? string.Empty);
+            byte[] fullData = new byte[descriptionBytes.Length + 2];
+            fullData[0] = (byte)((int)closeStatus >> 8);
+            fullData[1] = (byte)closeStatus;
+            Array.Copy(descriptionBytes, 0, fullData, 2, descriptionBytes.Length);
 
             // TODO: Masking
-            byte[] buffer = Encoding.UTF8.GetBytes(statusDescription);
-            FrameHeader frameHeader = new FrameHeader(true, Constants.OpCodes.CloseFrame, true, 0, buffer.Length);
+            FrameHeader frameHeader = new FrameHeader(true, Constants.OpCodes.CloseFrame, true, 0, fullData.Length);
             ArraySegment<byte> segment = frameHeader.Buffer;
             await _stream.WriteAsync(segment.Array, segment.Offset, segment.Count, cancellationToken);
-            await _stream.WriteAsync(buffer, 0, buffer.Length, cancellationToken);
+            await _stream.WriteAsync(fullData, 0, fullData.Length, cancellationToken);
         }
 
         public override void Abort()

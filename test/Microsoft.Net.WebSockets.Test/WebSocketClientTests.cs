@@ -280,5 +280,193 @@ namespace Microsoft.Net.WebSockets.Test
                 clientSocket.Dispose();
             }
         }
+
+        [Fact]
+        public async Task SendClose_Success()
+        {
+            using (HttpListener listener = new HttpListener())
+            {
+                listener.Prefixes.Add(ServerAddress);
+                listener.Start();
+                Task<HttpListenerContext> serverAccept = listener.GetContextAsync();
+
+                WebSocketClient client = new WebSocketClient();
+                Task<WebSocket> clientConnect = client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None);
+
+                HttpListenerContext serverContext = await serverAccept;
+                Assert.True(serverContext.Request.IsWebSocketRequest);
+                HttpListenerWebSocketContext serverWebSocketContext = await serverContext.AcceptWebSocketAsync(null);
+
+                WebSocket clientSocket = await clientConnect;
+
+                string closeDescription = "Test Closed";
+                await clientSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, closeDescription, CancellationToken.None);
+
+                byte[] serverBuffer = new byte[1024];
+                WebSocketReceiveResult result = await serverWebSocketContext.WebSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
+                Assert.True(result.EndOfMessage);
+                Assert.Equal(0, result.Count);
+                Assert.Equal(WebSocketMessageType.Close, result.MessageType);
+                Assert.Equal(WebSocketCloseStatus.NormalClosure, result.CloseStatus);
+                Assert.Equal(closeDescription, result.CloseStatusDescription);
+
+                Assert.Equal(WebSocketState.CloseSent, clientSocket.State);
+
+                clientSocket.Dispose();
+            }
+        }
+
+        [Fact]
+        public async Task ReceiveClose_Success()
+        {
+            using (HttpListener listener = new HttpListener())
+            {
+                listener.Prefixes.Add(ServerAddress);
+                listener.Start();
+                Task<HttpListenerContext> serverAccept = listener.GetContextAsync();
+
+                WebSocketClient client = new WebSocketClient();
+                Task<WebSocket> clientConnect = client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None);
+
+                HttpListenerContext serverContext = await serverAccept;
+                Assert.True(serverContext.Request.IsWebSocketRequest);
+                HttpListenerWebSocketContext serverWebSocketContext = await serverContext.AcceptWebSocketAsync(null);
+
+                WebSocket clientSocket = await clientConnect;
+
+                string closeDescription = "Test Closed";
+                await serverWebSocketContext.WebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, closeDescription, CancellationToken.None);
+
+                byte[] serverBuffer = new byte[1024];
+                WebSocketReceiveResult result = await clientSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
+                Assert.True(result.EndOfMessage);
+                Assert.Equal(0, result.Count);
+                Assert.Equal(WebSocketMessageType.Close, result.MessageType);
+                Assert.Equal(WebSocketCloseStatus.NormalClosure, result.CloseStatus);
+                Assert.Equal(closeDescription, result.CloseStatusDescription);
+
+                Assert.Equal(WebSocketState.CloseReceived, clientSocket.State);
+
+                clientSocket.Dispose();
+            }
+        }
+
+        [Fact]
+        public async Task CloseFromOpen_Success()
+        {
+            using (HttpListener listener = new HttpListener())
+            {
+                listener.Prefixes.Add(ServerAddress);
+                listener.Start();
+                Task<HttpListenerContext> serverAccept = listener.GetContextAsync();
+
+                WebSocketClient client = new WebSocketClient();
+                Task<WebSocket> clientConnect = client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None);
+
+                HttpListenerContext serverContext = await serverAccept;
+                Assert.True(serverContext.Request.IsWebSocketRequest);
+                HttpListenerWebSocketContext serverWebSocketContext = await serverContext.AcceptWebSocketAsync(null);
+
+                WebSocket clientSocket = await clientConnect;
+
+                string closeDescription = "Test Closed";
+                Task closeTask = clientSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, closeDescription, CancellationToken.None);
+
+                byte[] serverBuffer = new byte[1024];
+                WebSocketReceiveResult result = await serverWebSocketContext.WebSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
+                Assert.True(result.EndOfMessage);
+                Assert.Equal(0, result.Count);
+                Assert.Equal(WebSocketMessageType.Close, result.MessageType);
+                Assert.Equal(WebSocketCloseStatus.NormalClosure, result.CloseStatus);
+                Assert.Equal(closeDescription, result.CloseStatusDescription);
+
+                await serverWebSocketContext.WebSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+
+                await closeTask;
+
+                Assert.Equal(WebSocketState.Closed, clientSocket.State);
+
+                clientSocket.Dispose();
+            }
+        }
+
+        [Fact]
+        public async Task CloseFromCloseSent_Success()
+        {
+            using (HttpListener listener = new HttpListener())
+            {
+                listener.Prefixes.Add(ServerAddress);
+                listener.Start();
+                Task<HttpListenerContext> serverAccept = listener.GetContextAsync();
+
+                WebSocketClient client = new WebSocketClient();
+                Task<WebSocket> clientConnect = client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None);
+
+                HttpListenerContext serverContext = await serverAccept;
+                Assert.True(serverContext.Request.IsWebSocketRequest);
+                HttpListenerWebSocketContext serverWebSocketContext = await serverContext.AcceptWebSocketAsync(null);
+
+                WebSocket clientSocket = await clientConnect;
+
+                string closeDescription = "Test Closed";
+                await clientSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, closeDescription, CancellationToken.None);
+                Assert.Equal(WebSocketState.CloseSent, clientSocket.State);
+
+                byte[] serverBuffer = new byte[1024];
+                WebSocketReceiveResult result = await serverWebSocketContext.WebSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
+                Assert.True(result.EndOfMessage);
+                Assert.Equal(0, result.Count);
+                Assert.Equal(WebSocketMessageType.Close, result.MessageType);
+                Assert.Equal(WebSocketCloseStatus.NormalClosure, result.CloseStatus);
+                Assert.Equal(closeDescription, result.CloseStatusDescription);
+
+                await serverWebSocketContext.WebSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+
+                await clientSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, closeDescription, CancellationToken.None);
+
+                Assert.Equal(WebSocketState.Closed, clientSocket.State);
+
+                clientSocket.Dispose();
+            }
+        }
+
+        [Fact]
+        public async Task CloseFromCloseReceived_Success()
+        {
+            using (HttpListener listener = new HttpListener())
+            {
+                listener.Prefixes.Add(ServerAddress);
+                listener.Start();
+                Task<HttpListenerContext> serverAccept = listener.GetContextAsync();
+
+                WebSocketClient client = new WebSocketClient();
+                Task<WebSocket> clientConnect = client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None);
+
+                HttpListenerContext serverContext = await serverAccept;
+                Assert.True(serverContext.Request.IsWebSocketRequest);
+                HttpListenerWebSocketContext serverWebSocketContext = await serverContext.AcceptWebSocketAsync(null);
+
+                WebSocket clientSocket = await clientConnect;
+
+                string closeDescription = "Test Closed";
+                await serverWebSocketContext.WebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, closeDescription, CancellationToken.None);
+
+                byte[] serverBuffer = new byte[1024];
+                WebSocketReceiveResult result = await clientSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
+                Assert.True(result.EndOfMessage);
+                Assert.Equal(0, result.Count);
+                Assert.Equal(WebSocketMessageType.Close, result.MessageType);
+                Assert.Equal(WebSocketCloseStatus.NormalClosure, result.CloseStatus);
+                Assert.Equal(closeDescription, result.CloseStatusDescription);
+
+                Assert.Equal(WebSocketState.CloseReceived, clientSocket.State);
+
+                await clientSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+
+                Assert.Equal(WebSocketState.Closed, clientSocket.State);
+
+                clientSocket.Dispose();
+            }
+        }
     }
 }
