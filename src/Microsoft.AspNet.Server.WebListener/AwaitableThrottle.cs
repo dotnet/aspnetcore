@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNet.Server.WebListener
 {
     /// <summary>
-    /// Awaitable object that acts like a semaphore. The object would wait if more than maxConcurrent number of clients waits on it
+    /// AwaitableThrottle is an awaitable object that acts like a semaphore. The object would wait if more than maxConcurrent number of clients waits on it.
     /// </summary>
     internal class AwaitableThrottle
     {
@@ -23,10 +23,7 @@ namespace Microsoft.AspNet.Server.WebListener
 
         private int _count;
 
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="maxConcurrent">maximum number of clients that can wait on this object at the same time</param>
+        // <param name="maxConcurrent">Maximum number of clients that can wait on this object at the same time.</param>
         public AwaitableThrottle(int maxConcurrent)
         {
             _thislock = new object();
@@ -34,9 +31,6 @@ namespace Microsoft.AspNet.Server.WebListener
             _maxConcurrent = maxConcurrent;
         }
 
-        /// <summary>
-        /// Maximum amount of clients who can await on this throttle
-        /// </summary>
         public int MaxConcurrent
         {
             get
@@ -50,9 +44,6 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        /// <summary>
-        /// Called by framework
-        /// </summary>
         public TaskAwaiter<bool> GetAwaiter()
         {
             TaskCompletionSource<bool> awaiter;
@@ -72,9 +63,6 @@ namespace Microsoft.AspNet.Server.WebListener
             return awaiter.Task.GetAwaiter();
         }
 
-        /// <summary>
-        /// Release throttle
-        /// </summary>
         public void Release()
         {
             TaskCompletionSource<bool> completion = null;
