@@ -1,7 +1,7 @@
-var roslynPackages='${new[] { "Microsoft.CodeAnalysis.CSharp",
-                              "Microsoft.CodeAnalysis",
-                              "System.Collections.Immutable",
-                              "System.Reflection.Metadata.Ecma335" }}'
+var roslynAssemblies='${new[] { "Microsoft.CodeAnalysis.CSharp",
+                                "Microsoft.CodeAnalysis",
+                                "System.Collections.Immutable",
+                                "System.Reflection.Metadata.Ecma335" }}'
 
 var programFilesX86='${Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)}'
 var gacutil='${Path.Combine(programFilesX86, "Microsoft SDKs", "Windows", "v8.1A", "bin", "NETFX 4.5.1 Tools", "gacutil.exe")}'
@@ -12,12 +12,21 @@ var ngen='${Path.Combine(windir, "Microsoft.NET", "Framework", "v4.0.30319", "ng
 var tempRoslynPackagesDir='bin\_roslyn'
 var tempRoslynDir='bin\_roslyn\all'
 
-exec program='${gacutil}' commandline='/u ${p}' each='var p in roslynPackages'
+exec program='${gacutil}' commandline='/u ${p}' each='var p in roslynAssemblies'
 
-nuget-install package='${p}' outputDir='${tempRoslynPackagesDir}' extra='-ExcludeVersion' each='var p in roslynPackages'
-copy sourceDir='${tempRoslynPackagesDir}\${p}\lib\net45' include='*.dll' outputDir='${tempRoslynDir}' each='var p in roslynPackages' overwrite='${true}'
+nuget-install package='Microsoft.CodeAnalysis.CSharp' outputDir='${tempRoslynPackagesDir}' extra='-pre -ExcludeVersion'
 
-exec program='${ngen}' commandline='install ${tempRoslynDir}\${p}.dll' each='var p in roslynPackages'
-exec program='${gacutil}' commandline='/i ${tempRoslynDir}\${p}.dll' each='var p in roslynPackages'
+@{
+    var binaries = Files.Include(Path.Combine(tempRoslynPackagesDir, "**", "*net45*", "*.dll"));
+    Directory.CreateDirectory(tempRoslynDir);
+    
+    foreach(var file in binaries)
+    {
+        File.Copy(file, Path.Combine(tempRoslynDir, Path.GetFileName(file)), true);
+    }
+}
+
+exec program='${ngen}' commandline='install ${tempRoslynDir}\${p}.dll' each='var p in roslynAssemblies'
+exec program='${gacutil}' commandline='/i ${tempRoslynDir}\${p}.dll' each='var p in roslynAssemblies'
 
 directory delete='${tempRoslynPackagesDir}'
