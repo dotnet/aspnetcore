@@ -14,7 +14,7 @@ var tempRoslynDir='bin\_roslyn\all'
 
 exec program='${gacutil}' commandline='/u ${p}' each='var p in roslynAssemblies'
 
-nuget-install package='Microsoft.CodeAnalysis.CSharp' outputDir='${tempRoslynPackagesDir}' extra='-pre -ExcludeVersion'
+nuget-install package='Microsoft.CodeAnalysis.CSharp' outputDir='${tempRoslynPackagesDir}' extra='-pre -ExcludeVersion -nocache'
 
 @{
     var binaries = Files.Include(Path.Combine(tempRoslynPackagesDir, "**", "*net45*", "*.dll"));
