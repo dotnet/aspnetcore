@@ -5,6 +5,7 @@
 //------------------------------------------------------------------------------
 
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
@@ -39,7 +40,13 @@ namespace Microsoft.AspNet.Server.WebListener
             }
             set
             {
-                // Note: non-thread safe
+                Contract.Assert(_maxConcurrent >= 0,
+                    "Behavior of this class is undefined for negative value");
+                // Note:
+                // 1. This setter is non-thread safe. We assumed it doesnt need to be for simplicity sake.
+                // 2. Behavior of this class is not well defined if a negative value is passed in. If it 
+                //    is awaited before any Release() is called, the subsequent Relese() would eagerly
+                //    unblock awaiting thread instead of waiting for _count to reach the negative value specified.
                 _maxConcurrent = value;
             }
         }
