@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Collections.Generic;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.DependencyInjection;
