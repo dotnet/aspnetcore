@@ -1,7 +1,10 @@
 ﻿using System;
-#if NET45
 using System.Diagnostics;
+using Microsoft.Net.Runtime;
+
+#if NET45
 using Microsoft.Owin.Hosting;
+
 #endif
 
 namespace MvcSample
@@ -10,16 +13,19 @@ namespace MvcSample
     {
         const string baseUrl = "http://localhost:9001/";
         private readonly IServiceProvider _serviceProvider;
+        private readonly IApplicationEnvironment _env;
 
-        public Program(IServiceProvider serviceProvider)
+        public Program(IServiceProvider serviceProvider,
+                       IApplicationEnvironment env)
         {
             _serviceProvider = serviceProvider;
+            _env = env;
         }
 
         public void Main()
         {
 #if NET45
-            using (WebApp.Start(baseUrl, app => new Startup(_serviceProvider).Configuration(app)))
+            using (WebApp.Start(baseUrl, app => new Startup(_serviceProvider, _env).Configuration(app)))
             {
                 Console.WriteLine("Listening at {0}", baseUrl);
                 Process.Start(baseUrl);

@@ -1,6 +1,7 @@
 ﻿using System.Runtime.Versioning;
+using Microsoft.Net.Runtime.Services;
 
-namespace Microsoft.Net.Runtime.Services
+namespace Microsoft.Net.Runtime
 {
     [AssemblyNeutral]
     public interface IApplicationEnvironment

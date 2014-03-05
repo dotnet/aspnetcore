@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Net.Runtime;
 using Microsoft.Net.Runtime.Services;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation

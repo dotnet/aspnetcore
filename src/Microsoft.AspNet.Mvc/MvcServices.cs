@@ -1,79 +1,129 @@
 ﻿using System;
+using System.Collections.Generic;
+using Microsoft.AspNet.ConfigurationModel;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.DependencyInjection.NestedProviders;
 using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Razor;
+using Microsoft.Net.Runtime;
 
 namespace Microsoft.AspNet.Mvc
 {
     public class MvcServices
     {
-        public ServiceProvider Services { get; private set; }
-
-        public MvcServices(string appRoot)
-            : this(appRoot, null)
+        public static IEnumerable<IServiceDescriptor> GetDefaultServices(IConfiguration configuration,
+                                                                         IApplicationEnvironment env)
         {
-        }
+            yield return DescribeService<IControllerFactory, DefaultControllerFactory>(configuration);
+            yield return DescribeService<IControllerDescriptorFactory, DefaultControllerDescriptorFactory>(configuration);
+            yield return DescribeService<IActionSelector, DefaultActionSelector>(configuration);
+            yield return DescribeService<IActionInvokerFactory, ActionInvokerFactory>(configuration);
+            yield return DescribeService<IActionResultHelper, ActionResultHelper>(configuration);
+            yield return DescribeService<IActionResultFactory, ActionResultFactory>(configuration);
+            yield return DescribeService<IParameterDescriptorFactory, DefaultParameterDescriptorFactory>(configuration);
+            yield return DescribeService<IValueProviderFactory, RouteValueValueProviderFactory>(configuration);
+            yield return DescribeService<IValueProviderFactory, QueryStringValueProviderFactory>(configuration);
+            yield return DescribeService<IControllerAssemblyProvider, AppDomainControllerAssemblyProvider>(configuration);
+            yield return DescribeService<IActionDiscoveryConventions, DefaultActionDiscoveryConventions>(configuration);
+            yield return DescribeService<IFileSystem>(new PhysicalFileSystem(env.ApplicationBasePath));
 
-        public MvcServices(string appRoot, IServiceProvider hostServiceProvider)
-        {
-            Services = new ServiceProvider();
-
-            Add<IControllerFactory, DefaultControllerFactory>();
-            Add<IControllerDescriptorFactory, DefaultControllerDescriptorFactory>();
-            Add<IActionSelector, DefaultActionSelector>();
-            Add<IActionInvokerFactory, ActionInvokerFactory>();
-            Add<IActionResultHelper, ActionResultHelper>();
-            Add<IActionResultFactory, ActionResultFactory>();
-            Add<IParameterDescriptorFactory, DefaultParameterDescriptorFactory>();
-            Add<IControllerAssemblyProvider, AppDomainControllerAssemblyProvider>();
-            Add<IActionDiscoveryConventions, DefaultActionDiscoveryConventions>();
-            AddInstance<IFileSystem>(new PhysicalFileSystem(appRoot));
-            AddInstance<IMvcRazorHost>(new MvcRazorHost(typeof(RazorView).FullName));
+            yield return DescribeService<IMvcRazorHost>(new MvcRazorHost(typeof(RazorView).FullName));
 
 #if NET45
             // TODO: Container chaining to flow services from the host to this container
 
-            Add<ICompilationService, CscBasedCompilationService>();
+            yield return DescribeService<ICompilationService, CscBasedCompilationService>(configuration);
 
             // TODO: Make this work like normal when we get container chaining
             // TODO: Update this when we have the new host services
             // AddInstance<ICompilationService>(new RoslynCompilationService(hostServiceProvider));
 #endif
-            Add<IRazorCompilationService, RazorCompilationService>();
-            Add<IVirtualPathViewFactory, VirtualPathViewFactory>();
-            Add<IViewEngine, RazorViewEngine>();
-
-            Add<IModelMetadataProvider, DataAnnotationsModelMetadataProvider>();
-            Add<IActionBindingContextProvider, DefaultActionBindingContextProvider>();
+            yield return DescribeService<IRazorCompilationService, RazorCompilationService>(configuration);
+            yield return DescribeService<IVirtualPathViewFactory, VirtualPathViewFactory>(configuration);
+            yield return DescribeService<IViewEngine, RazorViewEngine>(configuration);
 
             // This is temporary until DI has some magic for it
-            Add<INestedProviderManager<ActionDescriptorProviderContext>, NestedProviderManager<ActionDescriptorProviderContext>>();
-            Add<INestedProviderManager<ActionInvokerProviderContext>, NestedProviderManager<ActionInvokerProviderContext>>();
-            Add<INestedProvider<ActionDescriptorProviderContext>, ReflectedActionDescriptorProvider>();
-            Add<INestedProvider<ActionInvokerProviderContext>, ActionInvokerProvider>();
+            yield return DescribeService<INestedProviderManager<ActionDescriptorProviderContext>,
+                                         NestedProviderManager<ActionDescriptorProviderContext>>(configuration);
+            yield return DescribeService<INestedProviderManager<ActionInvokerProviderContext>,
+                                         NestedProviderManager<ActionInvokerProviderContext>>(configuration);
+            yield return DescribeService<INestedProvider<ActionDescriptorProviderContext>,
+                                         ReflectedActionDescriptorProvider>(configuration);
+            yield return DescribeService<INestedProvider<ActionInvokerProviderContext>,
+                                         ActionInvokerProvider>(configuration);
 
-            Add<IValueProviderFactory, RouteValueValueProviderFactory>();
-            Add<IValueProviderFactory, QueryStringValueProviderFactory>();
+            yield return DescribeService<IModelMetadataProvider, DataAnnotationsModelMetadataProvider>(configuration);
+            yield return DescribeService<IActionBindingContextProvider, DefaultActionBindingContextProvider>(configuration);
 
-            Add<IModelBinder, TypeConverterModelBinder>();
-            Add<IModelBinder, TypeMatchModelBinder>();
-            Add<IModelBinder, GenericModelBinder>();
-            Add<IModelBinder, MutableObjectModelBinder>();
-            Add<IModelBinder, ComplexModelDtoModelBinder>();
+            yield return DescribeService<IValueProviderFactory, RouteValueValueProviderFactory>(configuration);
+            yield return DescribeService<IValueProviderFactory, QueryStringValueProviderFactory>(configuration);
 
-            Add<IInputFormatter, JsonInputFormatter>();
+            yield return DescribeService<IModelBinder, TypeConverterModelBinder>(configuration);
+            yield return DescribeService<IModelBinder, TypeMatchModelBinder>(configuration);
+            yield return DescribeService<IModelBinder, GenericModelBinder>(configuration);
+            yield return DescribeService<IModelBinder, MutableObjectModelBinder>(configuration);
+            yield return DescribeService<IModelBinder, ComplexModelDtoModelBinder>(configuration);
+
+            yield return DescribeService<IInputFormatter, JsonInputFormatter>(configuration);
         }
 
-        private void Add<T, TU>() where TU : T
+        public static IServiceDescriptor DescribeService<TService, TImplementation>(
+            IConfiguration configuration,
+            LifecycleKind lifecycle = LifecycleKind.Transient)
         {
-            Services.Add<T, TU>();
+            return DescribeService(typeof(TService), typeof(TImplementation), configuration, lifecycle);
         }
 
-        private void AddInstance<T>(object instance)
+        public static IServiceDescriptor DescribeService<TService>(
+            TService implementation,
+            LifecycleKind lifecycle = LifecycleKind.Transient)
         {
-            Services.AddInstance<T>(instance);
+            return new ServiceTypeDescriptor(typeof(TService), implementation, lifecycle);
+        }
+
+        public static IServiceDescriptor DescribeService(
+            Type serviceType,
+            Type implementationType,
+            IConfiguration configuration,
+            LifecycleKind lifecycle)
+        {
+            var serviceTypeName = serviceType.FullName;
+            var implementationTypeName = configuration.Get(serviceTypeName);
+            if (!String.IsNullOrEmpty(implementationTypeName))
+            {
+                try
+                {
+                    implementationType = Type.GetType(implementationTypeName);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(string.Format("TODO: unable to locate implementation {0} for service {1}", implementationTypeName, serviceTypeName), ex);
+                }
+            }
+            return new ServiceTypeDescriptor(serviceType, implementationType, lifecycle);
+        }
+
+        public class ServiceTypeDescriptor : IServiceDescriptor
+        {
+            public ServiceTypeDescriptor(Type serviceType, Type implementationType, LifecycleKind lifecycle)
+            {
+                ServiceType = serviceType;
+                ImplementationType = implementationType;
+                Lifecycle = lifecycle;
+            }
+
+            public ServiceTypeDescriptor(Type serviceType, object implementation, LifecycleKind lifecycle)
+            {
+                ServiceType = serviceType;
+                ImplementationInstance = implementation;
+                Lifecycle = lifecycle;
+            }
+
+            public LifecycleKind Lifecycle { get; private set; }
+            public Type ServiceType { get; private set; }
+            public Type ImplementationType { get; private set; }
+            public object ImplementationInstance { get; private set; }
         }
     }
 }

@@ -1,25 +1,28 @@
-﻿
-#if NET45
+﻿#if NET45
 using System;
 using System.Collections.Generic;
-using System.IO;
 using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.ConfigurationModel;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing.Owin;
 using Microsoft.AspNet.Routing.Template;
+using Microsoft.Net.Runtime;
 using Owin;
 
 namespace MvcSample
 {
     public class Startup
     {
-        private IServiceProvider _serviceProvider;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly IApplicationEnvironment _env;
 
-        public Startup(IServiceProvider serviceProvider)
+        public Startup(IServiceProvider serviceProvider,
+                       IApplicationEnvironment env)
         {
             _serviceProvider = serviceProvider;
+            _env = env;
         }
 
         public void Configuration(IAppBuilder app)
@@ -32,13 +35,13 @@ namespace MvcSample
 
         private void ConfigureMvc(IBuilder builder)
         {
-            string appRoot = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
-
-            var mvcServices = new MvcServices(appRoot, _serviceProvider);
+            var configuration = new Configuration();
+            var services = MvcServices.GetDefaultServices(configuration, _env);
+            var serviceProvider = new ServiceProvider().Add(services);
 
             var router = builder.UseRouter();
 
-            var endpoint = ActivatorUtilities.CreateInstance<RouteEndpoint>(mvcServices.Services);
+            var endpoint = ActivatorUtilities.CreateInstance<RouteEndpoint>(serviceProvider);
 
             router.Routes.Add(new TemplateRoute(
                 endpoint,
@@ -49,7 +52,6 @@ namespace MvcSample
                 endpoint,
                 "{controller}/{action}",
                 new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase) { { "controller", "Home" }, { "action", "Index" } }));
-            
         }
     }
 }
