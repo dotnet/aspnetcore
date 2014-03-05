@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Configuration;
+using Microsoft.AspNet.ConfigurationModel;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Hosting.Builder;
 using Microsoft.AspNet.Hosting.Startup;
@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Hosting
     {
         public static IEnumerable<IServiceDescriptor> GetDefaultServices()
         {
-            return GetDefaultServices(new EmptyConfiguration());
+            return GetDefaultServices(new Configuration());
         }
 
         public static IEnumerable<IServiceDescriptor> GetDefaultServices(IConfiguration configuration)
@@ -55,14 +55,6 @@ namespace Microsoft.AspNet.Hosting
                 }
             }
             return new ServiceTypeDescriptor(serviceType, implementationType, lifecycle);
-        }
-
-        public class EmptyConfiguration : IConfiguration
-        {
-            public string Get(string key)
-            {
-                return null;
-            }
         }
 
         public class ServiceTypeDescriptor : IServiceDescriptor
