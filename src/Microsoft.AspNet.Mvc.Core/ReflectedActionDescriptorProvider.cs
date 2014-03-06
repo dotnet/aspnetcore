@@ -48,9 +48,6 @@ namespace Microsoft.AspNet.Mvc
 
                 bool allowAnonymous = IsAnonymous(controllerAttributes);
 
-
-                bool allowAnonymous = IsAnonymous(controllerAttributes);
-
                 foreach (var methodInfo in cd.ControllerTypeInfo.DeclaredMethods)
                 {
                     var actionInfos = _conventions.GetActions(methodInfo);

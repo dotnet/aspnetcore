@@ -36,6 +36,8 @@ namespace MvcSample
             var services = MvcServices.GetDefaultServices(configuration, _env);
             var serviceProvider = new ServiceProvider().Add(services);
 
+            serviceProvider.AddInstance<PassThroughAttribute>(new PassThroughAttribute());
+            
             var routes = new RouteCollection()
             {
                 DefaultHandler = new MvcApplication(serviceProvider),

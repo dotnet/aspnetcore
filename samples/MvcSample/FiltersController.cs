@@ -1,14 +1,13 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc;
+﻿using Microsoft.AspNet.Mvc;
+using MvcSample.Filters;
 using MvcSample.Models;
 
 namespace MvcSample
 {
     // Expected order in descriptor - object -> int -> string
     // TODO: Add a real filter here
-    [ServiceFilter(typeof(object), Order = 1)]
-    [ServiceFilter(typeof(string))]
+    [ServiceFilter(typeof(PassThroughAttribute), Order = 1)]
+    [ServiceFilter(typeof(PassThroughAttribute))]
     [PassThrough(Order = 0)]
     [PassThrough(Order = 2)]
     public class FiltersController : Controller
@@ -16,18 +15,13 @@ namespace MvcSample
         private readonly User _user = new User() { Name = "User Name", Address = "Home Address" };
 
         // TODO: Add a real filter here
-        [ServiceFilter(typeof(int))]
-        public IActionResult Index()
+        [ServiceFilter(typeof(PassThroughAttribute))]
+        [AgeEnhancer]
+        public IActionResult Index(int age)
         {
+            _user.Age = age;
+
             return View("MyView", _user);
         }
-    }
-
-    public class PassThroughAttribute : AuthorizationFilterAttribute
-    {
-        public async override Task Invoke(AuthorizationFilterContext context, Func<Task> next)
-        {
-            await next();
-        }
-    }
+    }   
 }

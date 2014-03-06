@@ -66,21 +66,40 @@ namespace Microsoft.AspNet.Mvc
                     var parameterValues = await GetParameterValues(modelState);
 
                     var authZFilters = context.AuthorizationFilters;
-                    var authZEndPoint = new AuthorizationFilterEndPoint();
-                    authZFilters.Add(authZEndPoint);
-                    var authZContext = new AuthorizationFilterContext(_actionContext);
-                    var authZPipeline = new FilterPipelineBuilder<AuthorizationFilterContext>(authZFilters, authZContext);
 
-                    await authZPipeline.InvokeAsync();
-
-                    
-                    if (authZContext.ActionResult == null &&
-                        !authZContext.HasFailed &&
-                        authZEndPoint.EndPointCalled)
+                    bool authZPassed;
+                    if (authZFilters != null && authZFilters.Count > 0)
                     {
-                        var actionFilters = context.ActionFilters;
+                        var authZEndPoint = new AuthorizationFilterEndPoint();
+                        authZFilters.Add(authZEndPoint);
+                        var authZContext = new AuthorizationFilterContext(_actionContext);
+                        var authZPipeline = new FilterPipelineBuilder<AuthorizationFilterContext>(authZFilters,
+                            authZContext);
+
+                        await authZPipeline.InvokeAsync();
+
+                        if (authZContext.ActionResult == null &&
+                            !authZContext.HasFailed &&
+                            authZEndPoint.EndPointCalled)
+                        {
+                            actionResult = null;
+                        }
+                        else
+                        {
+                            actionResult = authZContext.ActionResult ?? new HttpStatusCodeResult(401);                            
+                        }
+                    }
+                    else
+                    {
+                        actionResult = null;
+                    }
+
+                    if (actionResult == null)
+                    {
+                        var actionFilters = context.ActionFilters ?? new List<IActionFilter>();
                         var actionFilterContext = new ActionFilterContext(_actionContext,
-                            new Dictionary<string, object>());
+                                                                          parameterValues,
+                                                                          method.ReturnType);
 
                         // TODO: This is extremely temporary and is going to get soon replaced with the action executer
                         var actionEndPoint = new ReflectedActionFilterEndPoint(async (inArray) => method.Invoke(controller, inArray),
@@ -93,18 +112,12 @@ namespace Microsoft.AspNet.Mvc
 
                         await actionFilterPipeline.InvokeAsync();
 
-                        object actionReturnValue = method.Invoke(controller, null);
-                        actionResult = _actionResultFactory.CreateActionResult(method.ReturnType, actionReturnValue, _actionContext);
-                    }
-                    else
-                    {
-                        actionResult = authZContext.ActionResult ?? new HttpStatusCodeResult(401);
+                        actionResult = (IActionResult)actionFilterContext.Result;
                     }
                 }
             }
 
-            var actionResultFilters = context.ActionResultFilters;
-            await actionResult.ExecuteResultAsync(_actionContext);
+            var actionResultFilters = context.ActionResultFilters ?? new List<IActionResultFilter>();
             var actionResultFilterContext = new ActionResultFilterContext(_actionContext, actionResult);
             var actionResultFilterEndPoint = new ActionResultFilterEndPoint();
             actionResultFilters.Add(actionResultFilterEndPoint);

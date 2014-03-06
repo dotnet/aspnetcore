@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Mvc
             yield return DescribeService<INestedProvider<ActionDescriptorProviderContext>,
                                          ReflectedActionDescriptorProvider>(configuration);
             yield return DescribeService<INestedProvider<ActionInvokerProviderContext>,
-                                         ActionInvokerProvider>(configuration);
+                                         ReflectedActionInvokerProvider>(configuration);
 
             yield return DescribeService<IModelMetadataProvider, DataAnnotationsModelMetadataProvider>(configuration);
             yield return DescribeService<IActionBindingContextProvider, DefaultActionBindingContextProvider>(configuration);
