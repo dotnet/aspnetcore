@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
             // Assert
             Assert.True(context.IsBound);
-            Assert.Equal("Home", context.Path);
+            Assert.Equal("Home", context.BoundPath);
         }
 
         [Fact]
@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
             // Assert
             Assert.False(context.IsBound);
-            Assert.Null(context.Path);
+            Assert.Null(context.BoundPath);
         }
 
         [Fact]
@@ -147,7 +147,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
             // Assert
             Assert.False(context.IsBound);
-            Assert.Null(context.Path);
+            Assert.Null(context.BoundPath);
         }
 
         [Fact]
@@ -162,7 +162,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
             // Assert
             Assert.True(context.IsBound);
-            Assert.Equal("Home/Index", context.Path);
+            Assert.Equal("Home/Index", context.BoundPath);
         }
 
         private static BindPathContext CreateRouteBindContext(object values)
@@ -186,26 +186,26 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
         private static TemplateRoute CreateRoute(string template, bool accept = true)
         {
-            return new TemplateRoute(CreateEndpoint(accept), template);
+            return new TemplateRoute(CreateTarget(accept), template);
         }
 
         private static TemplateRoute CreateRoute(string template, object defaults, bool accept = true)
         {
-            return new TemplateRoute(CreateEndpoint(accept), template, new RouteValueDictionary(defaults));
+            return new TemplateRoute(CreateTarget(accept), template, new RouteValueDictionary(defaults));
         }
 
-        private static IRouter CreateEndpoint(bool accept = true)
+        private static IRouter CreateTarget(bool accept = true)
         {
-            var endpoint = new Mock<IRouter>(MockBehavior.Strict);
-            endpoint
+            var target = new Mock<IRouter>(MockBehavior.Strict);
+            target
                 .Setup(e => e.BindPath(It.IsAny<BindPathContext>()))
                 .Callback<BindPathContext>(c => c.IsBound = accept);
 
-            endpoint
+            target
                 .Setup(e => e.RouteAsync(It.IsAny<RouteContext>()))
                 .Callback<RouteContext>(async (c) => c.IsHandled = accept);
 
-            return endpoint.Object;
+            return target.Object;
         }
     }
 }

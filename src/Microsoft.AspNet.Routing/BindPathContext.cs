@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Routing
 
         public bool IsBound { get; set; }
 
-        public string Path { get; set; }
+        public string BoundPath { get; set; }
 
         public IDictionary<string, object> Values { get; private set; } 
     }

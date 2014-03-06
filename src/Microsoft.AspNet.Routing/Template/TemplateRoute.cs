@@ -10,25 +10,25 @@ namespace Microsoft.AspNet.Routing.Template
     public class TemplateRoute : IRouter
     {
         private readonly IDictionary<string, object> _defaults;
-        private readonly IRouter _next;
+        private readonly IRouter _target;
         private readonly Template _parsedTemplate;
         private readonly string _routeTemplate;
         private readonly TemplateMatcher _matcher;
         private readonly TemplateBinder _binder;
 
-        public TemplateRoute(IRouter next, string routeTemplate)
-            : this(next, routeTemplate, null)
+        public TemplateRoute(IRouter target, string routeTemplate)
+            : this(target, routeTemplate, null)
         {
         }
 
-        public TemplateRoute(IRouter next, string routeTemplate, IDictionary<string, object> defaults)
+        public TemplateRoute(IRouter target, string routeTemplate, IDictionary<string, object> defaults)
         {
-            if (next == null)
+            if (target == null)
             {
-                throw new ArgumentNullException("next");
+                throw new ArgumentNullException("target");
             }
 
-            _next = next;
+            _target = target;
             _routeTemplate = routeTemplate ?? string.Empty;
             _defaults = defaults ?? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Routing.Template
             }
             else
             {
-                await _next.RouteAsync(new RouteContext(context.HttpContext){ Values = values });
+                await _target.RouteAsync(new RouteContext(context.HttpContext){ Values = values });
             }
         }
 
@@ -83,11 +83,13 @@ namespace Microsoft.AspNet.Routing.Template
             {
                 return;
             }
-            
-            _next.BindPath(context);
-            if (context.IsBound && context.Path == null)
+
+            context.BoundPath = path;
+            _target.BindPath(context);
+
+            if (!context.IsBound)
             {
-                context.Path = path;
+                context.BoundPath = null;
             }
         }
     }

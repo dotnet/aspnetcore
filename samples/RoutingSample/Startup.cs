@@ -3,8 +3,6 @@
 #if NET45
 
 using Microsoft.AspNet.Abstractions;
-using Microsoft.AspNet.Routing;
-using Microsoft.AspNet.Routing.Owin;
 using Microsoft.AspNet.Routing.Template;
 using Owin;
 
@@ -28,7 +26,7 @@ namespace RoutingSample
 
             routes.DefaultHandler = endpoint1;
             routes.AddPrefixRoute("api/store");
-            routes.AddTemplateRoute("api/{controller}/{*extra}", new { controller = "Store" });
+            routes.MapRoute("api/{controller}/{*extra}", new { controller = "Store" });
 
             routes.AddPrefixRoute("hello/world", endpoint2);
             routes.AddPrefixRoute("", endpoint2);

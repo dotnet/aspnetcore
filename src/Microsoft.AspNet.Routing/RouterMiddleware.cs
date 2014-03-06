@@ -1,10 +1,9 @@
 ﻿﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
-using System.Net;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Routing;
 
-namespace Microsoft.AspNet.Routing.Owin
+namespace Microsoft.AspNet.Abstractions
 {
     public class RouterMiddleware
     {

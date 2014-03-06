@@ -8,12 +8,12 @@ namespace RoutingSample
 {
     internal class PrefixRoute : IRouter
     {
-        private readonly IRouter _next;
+        private readonly IRouter _target;
         private readonly string _prefix;
 
-        public PrefixRoute(IRouter next, string prefix)
+        public PrefixRoute(IRouter target, string prefix)
         {
-            _next = next;
+            _target = target;
 
             if (prefix == null)
             {
@@ -46,7 +46,7 @@ namespace RoutingSample
                     }
                 }
 
-                await _next.RouteAsync(context);
+                await _target.RouteAsync(context);
             }
         }
 
