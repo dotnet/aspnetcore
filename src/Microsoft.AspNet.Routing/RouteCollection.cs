@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.Routing
 {
@@ -41,18 +40,20 @@ namespace Microsoft.AspNet.Routing
             }
         }
 
-        public virtual void BindPath(BindPathContext context)
+        public virtual string BindPath(BindPathContext context)
         {
             for (var i = 0; i < Count; i++)
             {
                 var route = this[i];
 
-                route.BindPath(context);
-                if (context.IsBound)
+                var path = route.BindPath(context);
+                if (path != null)
                 {
-                    return;
+                    return path;
                 }
             }
+
+            return null;
         }
     }
 }

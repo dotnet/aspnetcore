@@ -113,11 +113,11 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var context = CreateRouteBindContext(new {controller = "Home"});
 
             // Act
-            route.BindPath(context);
+            var path = route.BindPath(context);
 
             // Assert
             Assert.True(context.IsBound);
-            Assert.Equal("Home", context.BoundPath);
+            Assert.Equal("Home", path);
         }
 
         [Fact]
@@ -128,11 +128,11 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var context = CreateRouteBindContext(new { controller = "Home" });
 
             // Act
-            route.BindPath(context);
+            var path = route.BindPath(context);
 
             // Assert
             Assert.False(context.IsBound);
-            Assert.Null(context.BoundPath);
+            Assert.Null(path);
         }
 
         [Fact]
@@ -143,11 +143,11 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var context = CreateRouteBindContext(new { controller = "Home" });
 
             // Act
-            route.BindPath(context);
+            var path = route.BindPath(context);
 
             // Assert
             Assert.False(context.IsBound);
-            Assert.Null(context.BoundPath);
+            Assert.Null(path);
         }
 
         [Fact]
@@ -158,11 +158,11 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var context = CreateRouteBindContext(new { action = "Index"}, new { controller = "Home" });
 
             // Act
-            route.BindPath(context);
+            var path = route.BindPath(context);
 
             // Assert
             Assert.True(context.IsBound);
-            Assert.Equal("Home/Index", context.BoundPath);
+            Assert.Equal("Home/Index", path);
         }
 
         private static BindPathContext CreateRouteBindContext(object values)

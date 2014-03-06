@@ -50,9 +50,9 @@ namespace RoutingSample
             }
         }
 
-        public void BindPath(BindPathContext context)
+        public string BindPath(BindPathContext context)
         {
-            // Do nothing
+            return null;
         }
     }
 }

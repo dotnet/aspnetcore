@@ -8,6 +8,6 @@ namespace Microsoft.AspNet.Routing
     {
         Task RouteAsync(RouteContext context);
 
-        void BindPath(BindPathContext context);
+        string BindPath(BindPathContext context);
     }
 }

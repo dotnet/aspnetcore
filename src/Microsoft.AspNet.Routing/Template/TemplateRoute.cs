@@ -75,28 +75,29 @@ namespace Microsoft.AspNet.Routing.Template
             }
         }
 
-        public void BindPath(BindPathContext context)
+        public string BindPath(BindPathContext context)
         {
-            // Validate that the target can accept these values.
-            _target.BindPath(context);
-            if (!context.IsBound)
+            // Validate that the target can accept these values - if the target generates a value
+            // then that can short circuit.
+            var path = _target.BindPath(context);
+            if (path != null)
             {
-                return;
+                return path;
+            }
+            else if (!context.IsBound)
+            {
+                return null;
             }
 
             // This could be optimized more heavily - right now we try to do the full url
             // generation after validating, but we could do it in two phases.
-            var path = _binder.Bind(_defaults, context.AmbientValues, context.Values);
+            path = _binder.Bind(_defaults, context.AmbientValues, context.Values);
             if (path == null)
             {
                 context.IsBound = false;
-                return;
             }
-            else
-            {
-                Debug.Assert(context.IsBound);
-                context.BoundPath = path;
-            }
+
+            return path;
         }
     }
 }

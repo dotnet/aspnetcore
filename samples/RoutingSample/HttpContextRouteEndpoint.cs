@@ -21,10 +21,11 @@ namespace RoutingSample
             context.IsHandled = true;
         }
 
-        public void BindPath(BindPathContext context)
+        public string BindPath(BindPathContext context)
         {
-            // We can generate a url for anything that the parent route deems OK.
+            // We don't really care what the values look like.
             context.IsBound = true;
+            return null;
         }
     }
 }
