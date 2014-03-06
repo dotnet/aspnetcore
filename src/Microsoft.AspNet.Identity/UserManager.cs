@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Identity
             }
             Store = store;
             UserValidator = new UserValidator<TUser, TKey>(this);
-            //PasswordHasher = new PasswordHasher();
+            PasswordHasher = new PasswordHasher();
             //ClaimsIdentityFactory = new ClaimsIdentityFactory<TUser, TKey>();
         }
 

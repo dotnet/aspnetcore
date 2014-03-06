@@ -1,10 +1,6 @@
 using System;
 using System.Linq;
-#if NET45
 using System.Security.Claims;
-#else
-using System.Security.ClaimsK;
-#endif
 using System.Threading.Tasks;
 using Xunit;
 
@@ -53,21 +49,21 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             Assert.Equal(providerKey, logins.First().ProviderKey);
         }
 
-        //[Fact]
-        //public async Task CreateUserLoginAndAddPasswordTest()
-        //{
-        //    var manager = CreateManager();
-        //    var login = new UserLoginInfo("Provider", "key");
-        //    var user = new InMemoryUser("CreateUserLoginAddPasswordTest");
-        //    UnitTestHelper.IsSuccess(await manager.Create(user));
-        //    UnitTestHelper.IsSuccess(await manager.AddLogin(user.Id, login));
-        //    UnitTestHelper.IsSuccess(await manager.AddPassword(user.Id, "password"));
-        //    var logins = await manager.GetLogins(user.Id);
-        //    Assert.NotNull(logins);
-        //    Assert.Equal(1, logins.Count());
-        //    Assert.Equal(user, await manager.Find(login));
-        //    Assert.Equal(user, await manager.Find(user.UserName, "password"));
-        //}
+        [Fact]
+        public async Task CreateUserLoginAndAddPasswordTest()
+        {
+            var manager = CreateManager();
+            var login = new UserLoginInfo("Provider", "key");
+            var user = new InMemoryUser("CreateUserLoginAddPasswordTest");
+            UnitTestHelper.IsSuccess(await manager.Create(user));
+            UnitTestHelper.IsSuccess(await manager.AddLogin(user.Id, login));
+            UnitTestHelper.IsSuccess(await manager.AddPassword(user.Id, "password"));
+            var logins = await manager.GetLogins(user.Id);
+            Assert.NotNull(logins);
+            Assert.Equal(1, logins.Count());
+            Assert.Equal(user, await manager.Find(login));
+            Assert.Equal(user, await manager.Find(user.UserName, "password"));
+        }
 
         [Fact]
         public async Task CreateUserAddRemoveLoginTest()
@@ -94,36 +90,36 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             Assert.NotEqual(stamp, user.SecurityStamp);
         }
 
-        //[Fact]
-        //public async Task RemovePasswordTest()
-        //{
-        //    var manager = CreateManager();
-        //    var user = new InMemoryUser("RemovePasswordTest");
-        //    const string password = "password";
-        //    UnitTestHelper.IsSuccess(await manager.Create(user, password));
-        //    var stamp = user.SecurityStamp;
-        //    UnitTestHelper.IsSuccess(await manager.RemovePassword(user.Id));
-        //    var u = await manager.FindByName(user.UserName);
-        //    Assert.NotNull(u);
-        //    Assert.Null(u.PasswordHash);
-        //    Assert.NotEqual(stamp, user.SecurityStamp);
-        //}
+        [Fact]
+        public async Task RemovePasswordTest()
+        {
+            var manager = CreateManager();
+            var user = new InMemoryUser("RemovePasswordTest");
+            const string password = "password";
+            UnitTestHelper.IsSuccess(await manager.Create(user, password));
+            var stamp = user.SecurityStamp;
+            UnitTestHelper.IsSuccess(await manager.RemovePassword(user.Id));
+            var u = await manager.FindByName(user.UserName);
+            Assert.NotNull(u);
+            Assert.Null(u.PasswordHash);
+            Assert.NotEqual(stamp, user.SecurityStamp);
+        }
 
-        //[Fact]
-        //public async Task ChangePasswordTest()
-        //{
-        //    var manager = CreateManager();
-        //    var user = new InMemoryUser("ChangePasswordTest");
-        //    const string password = "password";
-        //    const string newPassword = "newpassword";
-        //    UnitTestHelper.IsSuccess(await manager.Create(user, password));
-        //    var stamp = user.SecurityStamp;
-        //    Assert.NotNull(stamp);
-        //    UnitTestHelper.IsSuccess(await manager.ChangePassword(user.Id, password, newPassword));
-        //    Assert.Null(await manager.Find(user.UserName, password));
-        //    Assert.Equal(user, await manager.Find(user.UserName, newPassword));
-        //    Assert.NotEqual(stamp, user.SecurityStamp);
-        //}
+        [Fact]
+        public async Task ChangePasswordTest()
+        {
+            var manager = CreateManager();
+            var user = new InMemoryUser("ChangePasswordTest");
+            const string password = "password";
+            const string newPassword = "newpassword";
+            UnitTestHelper.IsSuccess(await manager.Create(user, password));
+            var stamp = user.SecurityStamp;
+            Assert.NotNull(stamp);
+            UnitTestHelper.IsSuccess(await manager.ChangePassword(user.Id, password, newPassword));
+            Assert.Null(await manager.Find(user.UserName, password));
+            Assert.Equal(user, await manager.Find(user.UserName, newPassword));
+            Assert.NotEqual(stamp, user.SecurityStamp);
+        }
 
         [Fact]
         public async Task AddRemoveUserClaimTest()
@@ -149,26 +145,15 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             Assert.Equal(0, userClaims.Count);
         }
 
-        //[Fact]
-        //public async Task ChangePasswordFallsIfPasswordTooShortTest()
-        //{
-        //    var manager = CreateManager();
-        //    var user = new InMemoryUser("user");
-        //    const string password = "password";
-        //    UnitTestHelper.IsSuccess(await manager.Create(user, password));
-        //    var result = await manager.ChangePassword(user.Id, password, "n");
-        //    UnitTestHelper.IsFailure(result, "Passwords must be at least 6 characters.");
-        //}
-
-        //[Fact]
-        //public async Task ChangePasswordFallsIfPasswordWrongTest()
-        //{
-        //    var manager = CreateManager();
-        //    var user = new InMemoryUser("user");
-        //    UnitTestHelper.IsSuccess(await manager.Create(user, "password"));
-        //    var result = await manager.ChangePassword(user.Id, "bogus", "newpassword");
-        //    UnitTestHelper.IsFailure(result, "Incorrect password.");
-        //}
+        [Fact]
+        public async Task ChangePasswordFallsIfPasswordWrongTest()
+        {
+            var manager = CreateManager();
+            var user = new InMemoryUser("user");
+            UnitTestHelper.IsSuccess(await manager.Create(user, "password"));
+            var result = await manager.ChangePassword(user.Id, "bogus", "newpassword");
+            UnitTestHelper.IsFailure(result, "Incorrect password.");
+        }
 
         [Fact]
         public async Task AddDupeUserFailsTest()
@@ -193,17 +178,17 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             Assert.NotEqual(stamp, user.SecurityStamp);
         }
 
-        //[Fact]
-        //public async Task AddDupeLoginFailsTest()
-        //{
-        //    var manager = CreateManager();
-        //    var user = new InMemoryUser("DupeLogin");
-        //    var login = new UserLoginInfo("provder", "key");
-        //    UnitTestHelper.IsSuccess(await manager.Create(user));
-        //    UnitTestHelper.IsSuccess(await manager.AddLogin(user.Id, login));
-        //    var result = await manager.AddLogin(user.Id, login);
-        //    UnitTestHelper.IsFailure(result, "A user with that external login already exists.");
-        //}
+        [Fact]
+        public async Task AddDupeLoginFailsTest()
+        {
+            var manager = CreateManager();
+            var user = new InMemoryUser("DupeLogin");
+            var login = new UserLoginInfo("provder", "key");
+            UnitTestHelper.IsSuccess(await manager.Create(user));
+            UnitTestHelper.IsSuccess(await manager.AddLogin(user.Id, login));
+            var result = await manager.AddLogin(user.Id, login);
+            UnitTestHelper.IsFailure(result, "A user with that external login already exists.");
+        }
 
         // Lockout tests
 
@@ -533,7 +518,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
                 new InMemoryUser("1"), new InMemoryUser("2"), new InMemoryUser("3"),
                 new InMemoryUser("4")
             };
-            foreach (InMemoryUser u in users)
+            foreach (var u in users)
             {
                 UnitTestHelper.IsSuccess(await manager.Create(u));
                 UnitTestHelper.IsSuccess(await manager.AddToRole(u.Id, role.Name));
