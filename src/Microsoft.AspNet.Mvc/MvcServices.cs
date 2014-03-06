@@ -16,119 +16,62 @@ namespace Microsoft.AspNet.Mvc
         public static IEnumerable<IServiceDescriptor> GetDefaultServices(IConfiguration configuration,
                                                                          IApplicationEnvironment env)
         {
-            yield return DescribeService<IControllerFactory, DefaultControllerFactory>(configuration);
-            yield return DescribeService<IControllerDescriptorFactory, DefaultControllerDescriptorFactory>(configuration);
-            yield return DescribeService<IActionSelector, DefaultActionSelector>(configuration);
-            yield return DescribeService<IActionInvokerFactory, ActionInvokerFactory>(configuration);
-            yield return DescribeService<IActionResultHelper, ActionResultHelper>(configuration);
-            yield return DescribeService<IActionResultFactory, ActionResultFactory>(configuration);
-            yield return DescribeService<IParameterDescriptorFactory, DefaultParameterDescriptorFactory>(configuration);
-            yield return DescribeService<IValueProviderFactory, RouteValueValueProviderFactory>(configuration);
-            yield return DescribeService<IValueProviderFactory, QueryStringValueProviderFactory>(configuration);
-            yield return DescribeService<IControllerAssemblyProvider, AppDomainControllerAssemblyProvider>(configuration);
-            yield return DescribeService<IActionDiscoveryConventions, DefaultActionDiscoveryConventions>(configuration);
-            yield return DescribeService<IFileSystem>(new PhysicalFileSystem(env.ApplicationBasePath));
+            var describe = new ServiceDescriber(configuration);
 
-            yield return DescribeService<IMvcRazorHost>(new MvcRazorHost(typeof(RazorView).FullName));
+            yield return describe.Transient<IControllerFactory, DefaultControllerFactory>();
+            yield return describe.Transient<IControllerDescriptorFactory, DefaultControllerDescriptorFactory>();
+            yield return describe.Transient<IActionSelector, DefaultActionSelector>();
+            yield return describe.Transient<IActionInvokerFactory, ActionInvokerFactory>();
+            yield return describe.Transient<IActionResultHelper, ActionResultHelper>();
+            yield return describe.Transient<IActionResultFactory, ActionResultFactory>();
+            yield return describe.Transient<IParameterDescriptorFactory, DefaultParameterDescriptorFactory>();
+            yield return describe.Transient<IValueProviderFactory, RouteValueValueProviderFactory>();
+            yield return describe.Transient<IValueProviderFactory, QueryStringValueProviderFactory>();
+            yield return describe.Transient<IControllerAssemblyProvider, AppDomainControllerAssemblyProvider>();
+            yield return describe.Transient<IActionDiscoveryConventions, DefaultActionDiscoveryConventions>();
+            yield return describe.Instance<IFileSystem>(new PhysicalFileSystem(env.ApplicationBasePath));
+
+            yield return describe.Instance<IMvcRazorHost>(new MvcRazorHost(typeof(RazorView).FullName));
 
 #if NET45
             // TODO: Container chaining to flow services from the host to this container
 
-            yield return DescribeService<ICompilationService, CscBasedCompilationService>(configuration);
+            yield return describe.Transient<ICompilationService, CscBasedCompilationService>();
 
             // TODO: Make this work like normal when we get container chaining
             // TODO: Update this when we have the new host services
-            // AddInstance<ICompilationService>(new RoslynCompilationService(hostServiceProvider));
+            // yield return describe.Instance<ICompilationService>(new RoslynCompilationService(hostServiceProvider));
 #endif
-            yield return DescribeService<IRazorCompilationService, RazorCompilationService>(configuration);
-            yield return DescribeService<IVirtualPathViewFactory, VirtualPathViewFactory>(configuration);
-            yield return DescribeService<IViewEngine, RazorViewEngine>(configuration);
+            yield return describe.Transient<IRazorCompilationService, RazorCompilationService>();
+            yield return describe.Transient<IVirtualPathViewFactory, VirtualPathViewFactory>();
+            yield return describe.Transient<IViewEngine, RazorViewEngine>();
 
             // This is temporary until DI has some magic for it
-            yield return DescribeService<INestedProviderManager<ActionDescriptorProviderContext>,
-                                         NestedProviderManager<ActionDescriptorProviderContext>>(configuration);
-            yield return DescribeService<INestedProviderManager<ActionInvokerProviderContext>,
-                                         NestedProviderManager<ActionInvokerProviderContext>>(configuration);
-            yield return DescribeService<INestedProvider<ActionDescriptorProviderContext>,
-                                         ReflectedActionDescriptorProvider>(configuration);
-            yield return DescribeService<INestedProvider<ActionInvokerProviderContext>,
-                                         ReflectedActionInvokerProvider>(configuration);
+            yield return describe.Transient<INestedProviderManager<ActionDescriptorProviderContext>,
+                                            NestedProviderManager<ActionDescriptorProviderContext>>();
+            yield return describe.Transient<INestedProviderManager<ActionInvokerProviderContext>,
+                                            NestedProviderManager<ActionInvokerProviderContext>>();
+            yield return describe.Transient<INestedProvider<ActionDescriptorProviderContext>,
+                                            ReflectedActionDescriptorProvider>();
+            yield return describe.Transient<INestedProvider<ActionInvokerProviderContext>,
+                                            ReflectedActionInvokerProvider>();
 
-            yield return DescribeService<IModelMetadataProvider, DataAnnotationsModelMetadataProvider>(configuration);
-            yield return DescribeService<IActionBindingContextProvider, DefaultActionBindingContextProvider>(configuration);
+            yield return describe.Transient<IModelMetadataProvider, DataAnnotationsModelMetadataProvider>();
+            yield return describe.Transient<IActionBindingContextProvider, DefaultActionBindingContextProvider>();
 
-            yield return DescribeService<IValueProviderFactory, RouteValueValueProviderFactory>(configuration);
-            yield return DescribeService<IValueProviderFactory, QueryStringValueProviderFactory>(configuration);
+            yield return describe.Transient<IValueProviderFactory, RouteValueValueProviderFactory>();
+            yield return describe.Transient<IValueProviderFactory, QueryStringValueProviderFactory>();
 
-            yield return DescribeService<IModelBinder, TypeConverterModelBinder>(configuration);
-            yield return DescribeService<IModelBinder, TypeMatchModelBinder>(configuration);
-            yield return DescribeService<IModelBinder, GenericModelBinder>(configuration);
-            yield return DescribeService<IModelBinder, MutableObjectModelBinder>(configuration);
-            yield return DescribeService<IModelBinder, ComplexModelDtoModelBinder>(configuration);
+            yield return describe.Transient<IModelBinder, TypeConverterModelBinder>();
+            yield return describe.Transient<IModelBinder, TypeMatchModelBinder>();
+            yield return describe.Transient<IModelBinder, GenericModelBinder>();
+            yield return describe.Transient<IModelBinder, MutableObjectModelBinder>();
+            yield return describe.Transient<IModelBinder, ComplexModelDtoModelBinder>();
 
-            yield return DescribeService<INestedProviderManager<FilterProviderContext>, NestedProviderManager<FilterProviderContext>>(configuration);
-            yield return DescribeService<INestedProvider<FilterProviderContext>, DefaultFilterProvider>(configuration);
+            yield return describe.Transient<INestedProviderManager<FilterProviderContext>, NestedProviderManager<FilterProviderContext>>();
+            yield return describe.Transient<INestedProvider<FilterProviderContext>, DefaultFilterProvider>();
 
-            yield return DescribeService<IInputFormatter, JsonInputFormatter>(configuration);
-        }
-
-        public static IServiceDescriptor DescribeService<TService, TImplementation>(
-            IConfiguration configuration,
-            LifecycleKind lifecycle = LifecycleKind.Transient)
-        {
-            return DescribeService(typeof(TService), typeof(TImplementation), configuration, lifecycle);
-        }
-
-        public static IServiceDescriptor DescribeService<TService>(
-            TService implementation,
-            LifecycleKind lifecycle = LifecycleKind.Transient)
-        {
-            return new ServiceTypeDescriptor(typeof(TService), implementation, lifecycle);
-        }
-
-        public static IServiceDescriptor DescribeService(
-            Type serviceType,
-            Type implementationType,
-            IConfiguration configuration,
-            LifecycleKind lifecycle)
-        {
-            var serviceTypeName = serviceType.FullName;
-            var implementationTypeName = configuration.Get(serviceTypeName);
-
-            if (!String.IsNullOrEmpty(implementationTypeName))
-            {
-                try
-                {
-                    implementationType = Type.GetType(implementationTypeName);
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception(string.Format("TODO: unable to locate implementation {0} for service {1}", implementationTypeName, serviceTypeName), ex);
-                }
-            }
-            return new ServiceTypeDescriptor(serviceType, implementationType, lifecycle);
-        }
-
-        public class ServiceTypeDescriptor : IServiceDescriptor
-        {
-            public ServiceTypeDescriptor(Type serviceType, Type implementationType, LifecycleKind lifecycle)
-            {
-                ServiceType = serviceType;
-                ImplementationType = implementationType;
-                Lifecycle = lifecycle;
-            }
-
-            public ServiceTypeDescriptor(Type serviceType, object implementation, LifecycleKind lifecycle)
-            {
-                ServiceType = serviceType;
-                ImplementationInstance = implementation;
-                Lifecycle = lifecycle;
-            }
-
-            public LifecycleKind Lifecycle { get; private set; }
-            public Type ServiceType { get; private set; }
-            public Type ImplementationType { get; private set; }
-            public object ImplementationInstance { get; private set; }
+            yield return describe.Transient<IInputFormatter, JsonInputFormatter>();
         }
     }
 }
