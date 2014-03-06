@@ -49,6 +49,7 @@ namespace MvcSample
                 new { controller = "Home" });
 
             builder.UseRouter(routes);
+
         }
     }
 }

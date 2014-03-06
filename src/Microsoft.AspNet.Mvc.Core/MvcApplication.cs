@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Mvc
                 return;
             }
 
-            var actionContext = new ActionContext(context.HttpContext, context.Values, actionDescriptor);
+            var actionContext = new ActionContext(context.HttpContext, context.Router, context.Values, actionDescriptor);
             var invoker = ActionInvokerFactory.CreateInvoker(actionContext);
             if (invoker == null)
             {

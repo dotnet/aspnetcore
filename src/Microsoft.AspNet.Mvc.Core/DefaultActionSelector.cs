@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Mvc
                 {
                     Action = action,
                 };
-                var actionContext = new ActionContext(context.HttpContext, context.RouteValues, action);
+                var actionContext = new ActionContext(context.HttpContext, null, context.RouteValues, action);
                 var actionBindingContext = await _bindingProvider.GetActionBindingContextAsync(actionContext);
 
                 foreach (var parameter in action.Parameters.Where(p => p.ParameterBindingInfo != null))

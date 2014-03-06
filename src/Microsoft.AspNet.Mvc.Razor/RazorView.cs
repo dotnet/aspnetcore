@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.DependencyInjection;
-using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -17,10 +16,14 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         protected TextWriter Output { get; set; }
 
+        public IRenderUrl Url { get; set; }
+
         private string BodyContent { get; set; }
 
         public virtual async Task RenderAsync(ViewContext context, TextWriter writer)
         {
+            Url = context.RenderUrl;
+
             var contentBuilder = new StringBuilder(1024);
             using (var bodyWriter = new StringWriter(contentBuilder))
             {

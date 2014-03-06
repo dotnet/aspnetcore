@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 string locationsText = String.Join(Environment.NewLine, result.SearchedLocations);
                 const string message = @"The view &apos;{0}&apos; was not found. The following locations were searched:{1}.";
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, message, viewName, locationsText));
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, message, viewName, locationsText));
             }
 
             return result.View;

@@ -4,6 +4,7 @@ using System.Reflection;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Routing;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -58,6 +59,15 @@ namespace Microsoft.AspNet.Mvc
                 {
                     prop.SetValue(controller, modelState);
                 }
+                else if (prop.Name == "Url" && prop.PropertyType == typeof(IRenderUrl))
+                {
+                    var generator = new DefaultRenderUrl(
+                        actionContext.HttpContext,
+                        actionContext.Router,
+                        actionContext.RouteValues);
+
+                    prop.SetValue(controller, generator);
+                }
             }
 
             var method = controllerType.GetRuntimeMethods().FirstOrDefault(m => m.Name.Equals("Initialize", StringComparison.OrdinalIgnoreCase));
@@ -72,6 +82,5 @@ namespace Microsoft.AspNet.Mvc
 
             method.Invoke(controller, args);
         }
-
     }
 }

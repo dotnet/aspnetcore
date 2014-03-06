@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -16,6 +15,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         public ViewData<TModel> ViewData { get; set; }
 
         public HtmlHelper<TModel> Html { get; set; }
+
+        public IRenderUrl RenderUrl { get; set; }
 
         public override Task RenderAsync(ViewContext context, TextWriter writer)
         {
