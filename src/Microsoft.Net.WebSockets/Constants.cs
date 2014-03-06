@@ -19,7 +19,7 @@ namespace Microsoft.Net.WebSockets
             public const int TextFrame = 0x1;
             public const int BinaryFrame = 0x2;
             public const int CloseFrame = 0x8;
-            public const int PingFrame = 0x8;
+            public const int PingFrame = 0x9;
             public const int PongFrame = 0xA;            
         }
     }

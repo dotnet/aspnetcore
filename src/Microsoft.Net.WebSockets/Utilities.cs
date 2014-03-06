@@ -22,6 +22,11 @@ namespace Microsoft.Net.WebSockets
         // Un/Masks the data in place
         public static void Mask(int mask, ArraySegment<byte> data)
         {
+            if (mask == 0)
+            {
+                return;
+            }
+
             byte[] maskBytes = new byte[]
             {
                 (byte)(mask >> 24),
