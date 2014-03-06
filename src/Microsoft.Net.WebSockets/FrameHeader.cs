@@ -41,11 +41,11 @@ namespace Microsoft.Net.WebSockets
             Fin = final;
             OpCode = opCode;
             Masked = masked;
+            DataLength = dataLength;
             if (masked)
             {
                 MaskKey = maskKey;
             }
-            DataLength = dataLength;
         }
 
         public bool Fin
@@ -109,7 +109,7 @@ namespace Microsoft.Net.WebSockets
                 }
                 int offset = ExtendedLengthFieldSize + 2;
                 return (_header[offset] << 24) + (_header[offset + 1] << 16)
-                    + (_header[offset + 2] << 8) + _header[offset + 4];
+                    + (_header[offset + 2] << 8) + _header[offset + 3];
             }
             private set
             {

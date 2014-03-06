@@ -9,10 +9,15 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Net.WebSockets
 {
-    public class ClientWebSocket : WebSocket
+    // https://tools.ietf.org/html/rfc6455
+    public class CommonWebSocket : WebSocket
     {
+        private readonly static Random Random = new Random();
+
         private readonly Stream _stream;
         private readonly string _subProtocl;
+        private readonly bool _maskOutput;
+        private readonly bool _useZeroMask;
         private WebSocketState _state;
 
         private WebSocketCloseStatus? _closeStatus;
@@ -25,12 +30,14 @@ namespace Microsoft.Net.WebSockets
         private FrameHeader _frameInProgress;
         private long _frameBytesRemaining = 0;
 
-        public ClientWebSocket(Stream stream, string subProtocol, int receiveBufferSize)
+        public CommonWebSocket(Stream stream, string subProtocol, int receiveBufferSize)
         {
             _stream = stream;
             _subProtocl = subProtocol;
             _state = WebSocketState.Open;
             _receiveBuffer = new byte[receiveBufferSize];
+            _maskOutput = true; // TODO: make optional for client. Add option to block unmasking from server.
+            _useZeroMask = false; // TODO: make optional
         }
 
         public override WebSocketCloseStatus? CloseStatus
@@ -53,6 +60,28 @@ namespace Microsoft.Net.WebSockets
             get { return _subProtocl; }
         }
 
+        // https://tools.ietf.org/html/rfc6455#section-5.3
+        // The masking key is a 32-bit value chosen at random by the client.
+        // When preparing a masked frame, the client MUST pick a fresh masking
+        // key from the set of allowed 32-bit values.  The masking key needs to
+        // be unpredictable; thus, the masking key MUST be derived from a strong
+        // source of entropy, and the masking key for a given frame MUST NOT
+        // make it simple for a server/proxy to predict the masking key for a
+        // subsequent frame.  The unpredictability of the masking key is
+        // essential to prevent authors of malicious applications from selecting
+        // the bytes that appear on the wire.  RFC 4086 [RFC4086] discusses what
+        // entails a suitable source of entropy for security-sensitive
+        // applications.
+        private int GetNextMask()
+        {
+            if (_useZeroMask)
+            {
+                return 0;
+            }
+            // TODO: Doesn't include negative numbers so it's only 31 bits, not 32.
+            return Random.Next();
+        }
+
         public override async Task SendAsync(ArraySegment<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken)
         {
             // TODO: Validate arguments
@@ -60,10 +89,20 @@ namespace Microsoft.Net.WebSockets
             // TODO: Check concurrent writes
             // TODO: Check ping/pong state
             // TODO: Masking
-            FrameHeader frameHeader = new FrameHeader(endOfMessage, GetOpCode(messageType), true, 0, buffer.Count);
+            // TODO: Block close frame?
+            int mask = GetNextMask();
+            FrameHeader frameHeader = new FrameHeader(endOfMessage, GetOpCode(messageType), _maskOutput, mask, buffer.Count);
             ArraySegment<byte> segment = frameHeader.Buffer;
-            await _stream.WriteAsync(segment.Array, segment.Offset, segment.Count, cancellationToken);
-            await _stream.WriteAsync(buffer.Array, buffer.Offset, buffer.Count, cancellationToken);
+            if (_maskOutput && mask != 0)
+            {
+                byte[] maskedFrame = Utilities.MergeAndMask(mask, segment, buffer);
+                await _stream.WriteAsync(maskedFrame, 0, maskedFrame.Length, cancellationToken);
+            }
+            else
+            {
+                await _stream.WriteAsync(segment.Array, segment.Offset, segment.Count, cancellationToken);
+                await _stream.WriteAsync(buffer.Array, buffer.Offset, buffer.Count, cancellationToken);
+            }
         }
 
         private int GetOpCode(WebSocketMessageType messageType)
@@ -105,7 +144,8 @@ namespace Microsoft.Net.WebSockets
                 // TOOD: This assumes the close message fits in the buffer.
                 // TODO: Assert at least two bytes remaining for the close status code.
                 await EnsureDataAvailableOrReadAsync((int)_frameBytesRemaining, CancellationToken.None);
-
+                // TODO: Unmask (server only)
+                // TODO: Throw if the client detects an incoming masked frame.
                 _closeStatus = (WebSocketCloseStatus)((_receiveBuffer[_receiveOffset] << 8) | _receiveBuffer[_receiveOffset + 1]);
                 _closeStatusDescription = Encoding.UTF8.GetString(_receiveBuffer, _receiveOffset + 2, _receiveCount - 2) ?? string.Empty;
                 result = new WebSocketReceiveResult(0, WebSocketMessageType.Close, true, (WebSocketCloseStatus)_closeStatus, _closeStatusDescription);
@@ -132,6 +172,7 @@ namespace Microsoft.Net.WebSockets
             int bytesToRead = (int)Math.Min((long)buffer.Count, _frameBytesRemaining);
             if (_receiveCount > 0)
             {
+                // TODO: Unmask
                 int bytesToCopy = Math.Min(bytesToRead, _receiveCount);
                 Array.Copy(_receiveBuffer, _receiveOffset, buffer.Array, buffer.Offset, bytesToCopy);
                 if (bytesToCopy == _frameBytesRemaining)
