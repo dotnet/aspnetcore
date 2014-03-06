@@ -56,23 +56,19 @@ namespace Microsoft.AspNet.Identity
             {
                 errors.Add(Resources.PasswordRequireNonLetterOrDigit);
             }
-            if (RequireDigit && item.All(c => !IsDigit(c)))
+            if (RequireDigit && !item.Any(IsDigit))
             {
                 errors.Add(Resources.PasswordRequireDigit);
             }
-            if (RequireLowercase && item.All(c => !IsLower(c)))
+            if (RequireLowercase && !item.Any(IsLower))
             {
                 errors.Add(Resources.PasswordRequireLower);
             }
-            if (RequireUppercase && item.All(c => !IsUpper(c)))
+            if (RequireUppercase && !item.Any(IsUpper))
             {
                 errors.Add(Resources.PasswordRequireUpper);
             }
-            if (errors.Count == 0)
-            {
-                return Task.FromResult(IdentityResult.Success);
-            }
-            return Task.FromResult(IdentityResult.Failed(String.Join(" ", errors)));
+            return Task.FromResult(errors.Count == 0 ? IdentityResult.Success : IdentityResult.Failed(String.Join(" ", errors)));
         }
 
         /// <summary>

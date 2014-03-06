@@ -256,18 +256,17 @@ namespace Microsoft.AspNet.Identity.InMemory
             return Task.FromResult(0);
         }
 
-            private class LoginComparer : IEqualityComparer<UserLoginInfo>
+        private class LoginComparer : IEqualityComparer<UserLoginInfo>
+        {
+            public bool Equals(UserLoginInfo x, UserLoginInfo y)
             {
-                public bool Equals(UserLoginInfo x, UserLoginInfo y)
-                {
-                    return x.LoginProvider == y.LoginProvider && x.ProviderKey == y.ProviderKey;
-                }
-
-                public int GetHashCode(UserLoginInfo obj)
-                {
-                    return (obj.ProviderKey + "--" + obj.LoginProvider).GetHashCode();
-                }
+                return x.LoginProvider == y.LoginProvider && x.ProviderKey == y.ProviderKey;
             }
 
+            public int GetHashCode(UserLoginInfo obj)
+            {
+                return (obj.ProviderKey + "--" + obj.LoginProvider).GetHashCode();
+            }
+        }
     }
 }
