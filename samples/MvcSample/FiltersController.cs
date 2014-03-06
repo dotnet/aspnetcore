@@ -4,8 +4,6 @@ using MvcSample.Models;
 
 namespace MvcSample
 {
-    // Expected order in descriptor - object -> int -> string
-    // TODO: Add a real filter here
     [ServiceFilter(typeof(PassThroughAttribute), Order = 1)]
     [ServiceFilter(typeof(PassThroughAttribute))]
     [PassThrough(Order = 0)]
