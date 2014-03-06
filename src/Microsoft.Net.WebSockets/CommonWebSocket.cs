@@ -26,12 +26,15 @@ namespace Microsoft.Net.WebSockets
         private WebSocketCloseStatus? _closeStatus;
         private string _closeStatusDescription;
 
+        private bool _outgoingMessageInProgress;
+
         private byte[] _receiveBuffer;
         private int _receiveOffset;
         private int _receiveCount;
 
         private FrameHeader _frameInProgress;
         private long _frameBytesRemaining = 0;
+        private int? _firstDataOpCode;
 
         public CommonWebSocket(Stream stream, string subProtocol, int receiveBufferSize, bool maskOutput, bool useZeroMask, bool unmaskInput)
         {
@@ -111,7 +114,7 @@ namespace Microsoft.Net.WebSockets
             try
             {
                 int mask = GetNextMask();
-                FrameHeader frameHeader = new FrameHeader(endOfMessage, GetOpCode(messageType), _maskOutput, mask, buffer.Count);
+                FrameHeader frameHeader = new FrameHeader(endOfMessage, _outgoingMessageInProgress ? Constants.OpCodes.ContinuationFrame : GetOpCode(messageType), _maskOutput, mask, buffer.Count);
                 ArraySegment<byte> segment = frameHeader.Buffer;
                 if (_maskOutput && mask != 0)
                 {
@@ -123,6 +126,7 @@ namespace Microsoft.Net.WebSockets
                     await _stream.WriteAsync(segment.Array, segment.Offset, segment.Count, cancellationToken);
                     await _stream.WriteAsync(buffer.Array, buffer.Offset, buffer.Count, cancellationToken);
                 }
+                _outgoingMessageInProgress = !endOfMessage;
             }
             finally
             {
@@ -182,9 +186,32 @@ namespace Microsoft.Net.WebSockets
                 }
             }
 
+            // Handle fragmentation, remember the first frame type
+            int opCode = 0;
+            if (_frameInProgress.OpCode == Constants.OpCodes.BinaryFrame
+                || _frameInProgress.OpCode == Constants.OpCodes.TextFrame
+                || _frameInProgress.OpCode == Constants.OpCodes.CloseFrame)
+            {
+                opCode = _frameInProgress.OpCode;
+                _firstDataOpCode = opCode;
+            }
+            else if (_frameInProgress.OpCode == Constants.OpCodes.ContinuationFrame)
+            {
+                if (!_firstDataOpCode.HasValue)
+                {
+                    throw new InvalidOperationException("A continuation can't be the first frame");
+                }
+                opCode = _firstDataOpCode.Value;
+            }
+
+            if (_frameInProgress.Fin)
+            {
+                _firstDataOpCode = null;
+            }
+
             WebSocketReceiveResult result;
 
-            if (_frameInProgress.OpCode == Constants.OpCodes.CloseFrame)
+            if (opCode == Constants.OpCodes.CloseFrame)
             {
                 // The close message should be less than 125 bytes and fit in the buffer.
                 await EnsureDataAvailableOrReadAsync((int)_frameBytesRemaining, CancellationToken.None);
@@ -223,7 +250,7 @@ namespace Microsoft.Net.WebSockets
             if (_frameBytesRemaining == 0)
             {
                 // End of an empty frame?
-                result = new WebSocketReceiveResult(0, GetMessageType(_frameInProgress.OpCode), true);
+                result = new WebSocketReceiveResult(0, GetMessageType(opCode), _frameInProgress.Fin);
                 _frameInProgress = null;
                 return result;
             }
@@ -241,12 +268,12 @@ namespace Microsoft.Net.WebSockets
             }
             if (bytesToCopy == _frameBytesRemaining)
             {
-                result = new WebSocketReceiveResult(bytesToCopy, GetMessageType(_frameInProgress.OpCode), _frameInProgress.Fin);
+                result = new WebSocketReceiveResult(bytesToCopy, GetMessageType(opCode), _frameInProgress.Fin);
                 _frameInProgress = null;
             }
             else
             {
-                result = new WebSocketReceiveResult(bytesToCopy, GetMessageType(_frameInProgress.OpCode), false);
+                result = new WebSocketReceiveResult(bytesToCopy, GetMessageType(opCode), false);
             }
             _frameBytesRemaining -= bytesToCopy;
             _receiveCount -= bytesToCopy;

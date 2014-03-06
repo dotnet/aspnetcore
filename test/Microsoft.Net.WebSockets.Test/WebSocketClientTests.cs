@@ -146,6 +146,57 @@ namespace Microsoft.Net.WebSockets.Test
         }
 
         [Fact]
+        public async Task SendFragmentedData_Success()
+        {
+            using (HttpListener listener = new HttpListener())
+            {
+                listener.Prefixes.Add(ServerAddress);
+                listener.Start();
+                Task<HttpListenerContext> serverAccept = listener.GetContextAsync();
+
+                WebSocketClient client = new WebSocketClient();
+                Task<WebSocket> clientConnect = client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None);
+
+                HttpListenerContext serverContext = await serverAccept;
+                Assert.True(serverContext.Request.IsWebSocketRequest);
+                HttpListenerWebSocketContext serverWebSocketContext = await serverContext.AcceptWebSocketAsync(null);
+                WebSocket serverSocket = serverWebSocketContext.WebSocket;
+
+                WebSocket clientSocket = await clientConnect;
+
+                byte[] orriginalData = Encoding.UTF8.GetBytes("Hello World");
+                await clientSocket.SendAsync(new ArraySegment<byte>(orriginalData, 0, 2), WebSocketMessageType.Binary, false, CancellationToken.None);
+                await clientSocket.SendAsync(new ArraySegment<byte>(orriginalData, 2, 2), WebSocketMessageType.Binary, false, CancellationToken.None);
+                await clientSocket.SendAsync(new ArraySegment<byte>(orriginalData, 4, 7), WebSocketMessageType.Binary, true, CancellationToken.None);
+
+                byte[] serverBuffer = new byte[orriginalData.Length];
+                WebSocketReceiveResult result = await serverSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
+                Assert.False(result.EndOfMessage);
+                Assert.Equal(2, result.Count);
+                int totalReceived = result.Count;
+                Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
+
+                result = await serverSocket.ReceiveAsync(
+                    new ArraySegment<byte>(serverBuffer, totalReceived, serverBuffer.Length - totalReceived), CancellationToken.None);
+                Assert.False(result.EndOfMessage);
+                Assert.Equal(2, result.Count);
+                totalReceived += result.Count;
+                Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
+
+                result = await serverSocket.ReceiveAsync(
+                    new ArraySegment<byte>(serverBuffer, totalReceived, serverBuffer.Length - totalReceived), CancellationToken.None);
+                Assert.True(result.EndOfMessage);
+                Assert.Equal(7, result.Count);
+                totalReceived += result.Count;
+                Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
+
+                Assert.Equal(orriginalData, serverBuffer);
+
+                clientSocket.Dispose();
+            }
+        }
+
+        [Fact]
         public async Task ReceiveShortData_Success()
         {
             using (HttpListener listener = new HttpListener())
@@ -276,6 +327,57 @@ namespace Microsoft.Net.WebSockets.Test
                 Assert.Equal(orriginalData.Length, result.Count);
                 Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
                 Assert.Equal(orriginalData, clientBuffer);
+
+                clientSocket.Dispose();
+            }
+        }
+
+        [Fact]
+        public async Task ReceiveFragmentedData_Success()
+        {
+            using (HttpListener listener = new HttpListener())
+            {
+                listener.Prefixes.Add(ServerAddress);
+                listener.Start();
+                Task<HttpListenerContext> serverAccept = listener.GetContextAsync();
+
+                WebSocketClient client = new WebSocketClient();
+                Task<WebSocket> clientConnect = client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None);
+
+                HttpListenerContext serverContext = await serverAccept;
+                Assert.True(serverContext.Request.IsWebSocketRequest);
+                HttpListenerWebSocketContext serverWebSocketContext = await serverContext.AcceptWebSocketAsync(null);
+                WebSocket serverSocket = serverWebSocketContext.WebSocket;
+
+                WebSocket clientSocket = await clientConnect;
+
+                byte[] orriginalData = Encoding.UTF8.GetBytes("Hello World");
+                await serverSocket.SendAsync(new ArraySegment<byte>(orriginalData, 0, 2), WebSocketMessageType.Binary, false, CancellationToken.None);
+                await serverSocket.SendAsync(new ArraySegment<byte>(orriginalData, 2, 2), WebSocketMessageType.Binary, false, CancellationToken.None);
+                await serverSocket.SendAsync(new ArraySegment<byte>(orriginalData, 4, 7), WebSocketMessageType.Binary, true, CancellationToken.None);
+
+                byte[] serverBuffer = new byte[orriginalData.Length];
+                WebSocketReceiveResult result = await clientSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
+                Assert.False(result.EndOfMessage);
+                Assert.Equal(2, result.Count);
+                int totalReceived = result.Count;
+                Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
+
+                result = await clientSocket.ReceiveAsync(
+                    new ArraySegment<byte>(serverBuffer, totalReceived, serverBuffer.Length - totalReceived), CancellationToken.None);
+                Assert.False(result.EndOfMessage);
+                Assert.Equal(2, result.Count);
+                totalReceived += result.Count;
+                Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
+
+                result = await clientSocket.ReceiveAsync(
+                    new ArraySegment<byte>(serverBuffer, totalReceived, serverBuffer.Length - totalReceived), CancellationToken.None);
+                Assert.True(result.EndOfMessage);
+                Assert.Equal(7, result.Count);
+                totalReceived += result.Count;
+                Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
+
+                Assert.Equal(orriginalData, serverBuffer);
 
                 clientSocket.Dispose();
             }

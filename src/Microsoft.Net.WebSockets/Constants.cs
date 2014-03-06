@@ -16,6 +16,7 @@ namespace Microsoft.Net.WebSockets
 
         public static class OpCodes
         {
+            public const int ContinuationFrame = 0x0;
             public const int TextFrame = 0x1;
             public const int BinaryFrame = 0x2;
             public const int CloseFrame = 0x8;
