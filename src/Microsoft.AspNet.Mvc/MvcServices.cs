@@ -4,6 +4,7 @@ using Microsoft.AspNet.ConfigurationModel;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.DependencyInjection.NestedProviders;
 using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.Net.Runtime;

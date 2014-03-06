@@ -67,14 +67,13 @@ namespace Microsoft.AspNet.Mvc
 
                     var authZFilters = context.AuthorizationFilters;
 
-                    bool authZPassed;
                     if (authZFilters != null && authZFilters.Count > 0)
                     {
                         var authZEndPoint = new AuthorizationFilterEndPoint();
                         authZFilters.Add(authZEndPoint);
+
                         var authZContext = new AuthorizationFilterContext(_actionContext);
-                        var authZPipeline = new FilterPipelineBuilder<AuthorizationFilterContext>(authZFilters,
-                            authZContext);
+                        var authZPipeline = new FilterPipelineBuilder<AuthorizationFilterContext>(authZFilters, authZContext);
 
                         await authZPipeline.InvokeAsync();
 
@@ -86,7 +85,8 @@ namespace Microsoft.AspNet.Mvc
                         }
                         else
                         {
-                            actionResult = authZContext.ActionResult ?? new HttpStatusCodeResult(401);                            
+                            // User cleaned out the result but we failed or short circuited the end point.
+                            actionResult = authZContext.ActionResult ?? new HttpStatusCodeResult(401);
                         }
                     }
                     else
@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.Mvc
 
                         await actionFilterPipeline.InvokeAsync();
 
-                        actionResult = (IActionResult)actionFilterContext.Result;
+                        actionResult = actionFilterContext.Result;
                     }
                 }
             }

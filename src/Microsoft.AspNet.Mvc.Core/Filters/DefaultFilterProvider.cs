@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.DependencyInjection;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.Filters
 {
     public class DefaultFilterProvider : INestedProvider<FilterProviderContext>
     {

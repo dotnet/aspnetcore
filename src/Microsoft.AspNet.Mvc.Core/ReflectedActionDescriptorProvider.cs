@@ -127,6 +127,7 @@ namespace Microsoft.AspNet.Mvc
             return ad;
         }
 
+        // Merge filters, filters with the same order are prioritzed by origin action executes ahead of controller.
         private List<IFilter> MergeSorted(IFilter[] filtersFromAction, IFilter[] filtersFromController)
         {
             var list = new List<IFilter>();

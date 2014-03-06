@@ -2,6 +2,8 @@
 
 namespace Microsoft.AspNet.Mvc
 {
+    // TODO: For now we have not implemented the ExceptionFilter pipeline, leaving this in until we decide if we are going
+    // down this path or implementing an ExceptionFilterAttribute being all three filter types with a higher scope.
     public class ExceptionFilterContext
     {
         public ExceptionFilterContext(ActionContext actionContext, Exception exception)
