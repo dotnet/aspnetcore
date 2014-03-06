@@ -17,6 +17,7 @@ namespace MvcSample
         // TODO: Add a real filter here
         [ServiceFilter(typeof(PassThroughAttribute))]
         [AgeEnhancer]
+        [InspectResultPage]
         public IActionResult Index(int age)
         {
             _user.Age = age;
