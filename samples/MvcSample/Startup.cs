@@ -5,7 +5,6 @@ using Microsoft.AspNet.ConfigurationModel;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
-using Microsoft.AspNet.Routing.Template;
 using Microsoft.Net.Runtime;
 using Owin;
 

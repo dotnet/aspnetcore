@@ -45,10 +45,11 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        public void BindPath(BindPathContext context)
+        public string BindPath(BindPathContext context)
         {
             // For now just allow any values to target this application.
             context.IsBound = true;
+            return null;
         }
 
         public async Task RouteAsync(RouteContext context)
