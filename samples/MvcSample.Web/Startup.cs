@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.ConfigurationModel;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.Routing;
-using Microsoft.AspNet.Routing.Owin;
+using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Template;
 using Microsoft.Net.Runtime;
 
@@ -25,14 +23,20 @@ namespace MvcSample.Web
             var configuration = new Configuration();
             var serviceProvider = new ServiceProvider().Add(MvcServices.GetDefaultServices(configuration, _env));
 
-            var router = app.UseRouter();
+            var routes = new RouteCollection()
+            {
+                DefaultHandler = new MvcApplication(serviceProvider),
+            };
 
-            var endpoint = ActivatorUtilities.CreateInstance<RouteEndpoint>(serviceProvider);
-
-            router.Routes.Add(new TemplateRoute(
-                endpoint,
+            routes.MapRoute(
                 "{controller}/{action}",
-                new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase) { { "controller", "Home" }, { "action", "Index" } }));
+                new { controller = "Home", action = "Index" });
+
+            routes.MapRoute(
+                "{controller}",
+                new { controller = "Home" });
+
+            app.UseRouter(routes);
         }
     }
 }

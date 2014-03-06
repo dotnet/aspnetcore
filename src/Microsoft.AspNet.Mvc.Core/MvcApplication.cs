@@ -1,13 +1,12 @@
 ﻿
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Routing;
 
-namespace Microsoft.AspNet.Mvc.Routing
+namespace Microsoft.AspNet.Mvc
 {
-    public class RouteEndpoint : IRouteEndpoint
+    public class MvcApplication : IRouter
     {
         private readonly IServiceProvider _services;
         private IActionInvokerFactory _actionInvokerFactory;
@@ -15,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
         // Using service provider here to prevent ordering issues with configuration...
         // IE: creating routes before configuring services, vice-versa.
-        public RouteEndpoint(IServiceProvider services)
+        public MvcApplication(IServiceProvider services)
         {
             _services = services;
         }
@@ -46,20 +45,24 @@ namespace Microsoft.AspNet.Mvc.Routing
             }
         }
 
-        public async Task<bool> Send(HttpContext context)
+        public void BindPath(BindPathContext context)
         {
-            var routeValues = context.GetFeature<IRouteValues>();
-            var requestContext = new RequestContext(context, routeValues.Values);
+            // For now just allow any values to target this application.
+            context.IsBound = true;
+        }
+
+        public async Task RouteAsync(RouteContext context)
+        {
+            var requestContext = new RequestContext(context.HttpContext, context.Values);
 
             var actionDescriptor = await ActionSelector.SelectAsync(requestContext);
-
             if (actionDescriptor == null)
             {
-                return false;
+                return;
             }
 
-            var invoker = ActionInvokerFactory.CreateInvoker(new ActionContext(context, routeValues.Values, actionDescriptor));
-
+            var actionContext = new ActionContext(context.HttpContext, context.Values, actionDescriptor);
+            var invoker = ActionInvokerFactory.CreateInvoker(actionContext);
             if (invoker == null)
             {
                 var ex = new InvalidOperationException("Could not instantiate invoker for the actionDescriptor");
@@ -72,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             await invoker.InvokeActionAsync();
 
-            return true;
+            context.IsHandled = true;
         }
     }
 }
