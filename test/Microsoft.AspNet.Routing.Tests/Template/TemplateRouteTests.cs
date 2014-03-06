@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
 
         [Fact]
-        public async void Match_RejectedByHanlder()
+        public async void Match_RejectedByHandler()
         {
             // Arrange
             var route = CreateRoute("{controller}", accept: false);

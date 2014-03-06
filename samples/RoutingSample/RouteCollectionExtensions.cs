@@ -11,7 +11,7 @@ namespace RoutingSample
         {
             if (routes.DefaultHandler == null)
             {
-                throw new InvalidOperationException("DefaultHandler must be set.");
+                throw new ArgumentException("DefaultHandler must be set.");
             }
 
             return AddPrefixRoute(routes, prefix, routes.DefaultHandler);

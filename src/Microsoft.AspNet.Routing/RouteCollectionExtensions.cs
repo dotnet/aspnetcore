@@ -2,8 +2,9 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNet.Routing.Template;
 
-namespace Microsoft.AspNet.Routing.Template
+namespace Microsoft.AspNet.Routing
 {
     public static class RouteCollectionExtensions
     {
@@ -23,7 +24,7 @@ namespace Microsoft.AspNet.Routing.Template
         {
             if (routes.DefaultHandler == null)
             {
-                throw new InvalidOperationException("DefaultHandler must be set.");
+                throw new ArgumentException("DefaultHandler must be set.");
             }
 
             routes.Add(new TemplateRoute(routes.DefaultHandler, template, defaults));

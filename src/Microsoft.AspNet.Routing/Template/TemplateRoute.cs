@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
 
@@ -76,20 +77,25 @@ namespace Microsoft.AspNet.Routing.Template
 
         public void BindPath(BindPathContext context)
         {
-            // This could be optimized more heavily - right now we try to do the full url
-            // generation before validating, but we could do it in two phases.
-            var path = _binder.Bind(_defaults, context.AmbientValues, context.Values);
-            if (path == null)
+            // Validate that the target can accept these values.
+            _target.BindPath(context);
+            if (!context.IsBound)
             {
                 return;
             }
 
-            context.BoundPath = path;
-            _target.BindPath(context);
-
-            if (!context.IsBound)
+            // This could be optimized more heavily - right now we try to do the full url
+            // generation after validating, but we could do it in two phases.
+            var path = _binder.Bind(_defaults, context.AmbientValues, context.Values);
+            if (path == null)
             {
-                context.BoundPath = null;
+                context.IsBound = false;
+                return;
+            }
+            else
+            {
+                Debug.Assert(context.IsBound);
+                context.BoundPath = path;
             }
         }
     }

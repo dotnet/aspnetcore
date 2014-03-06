@@ -3,7 +3,7 @@
 #if NET45
 
 using Microsoft.AspNet.Abstractions;
-using Microsoft.AspNet.Routing.Template;
+using Microsoft.AspNet.Routing;
 using Owin;
 
 namespace RoutingSample
