@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNet.Abstractions;
+﻿
+using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace Microsoft.AspNet.Mvc
 {
     public interface IControllerFactory
     {
-        object CreateController(HttpContext context, ActionDescriptor actionDescriptor);
+        object CreateController(ActionContext actionContext, ModelStateDictionary modelState);
 
         void ReleaseController(object controller);
     }

@@ -35,9 +35,10 @@ namespace Microsoft.AspNet.Mvc
 
         public async Task InvokeActionAsync()
         {
-            IActionResult actionResult = null;
+            IActionResult actionResult;
 
-            object controller = _controllerFactory.CreateController(_actionContext.HttpContext, _descriptor);
+            var modelState = new ModelStateDictionary();
+            object controller = _controllerFactory.CreateController(_actionContext, modelState);
 
             if (controller == null)
             {
@@ -45,9 +46,6 @@ namespace Microsoft.AspNet.Mvc
             }
             else
             {
-                var modelState = new ModelStateDictionary();
-                InitializeController(controller, modelState);
-
                 var method = _descriptor.MethodInfo;
 
                 if (method == null)
@@ -66,38 +64,6 @@ namespace Microsoft.AspNet.Mvc
 
             // TODO: This will probably move out once we got filters
             await actionResult.ExecuteResultAsync(_actionContext);
-        }
-
-        private void InitializeController(object controller, ModelStateDictionary modelState)
-        {
-            var controllerType = controller.GetType();
-
-            foreach (var prop in controllerType.GetRuntimeProperties())
-            {
-                if (prop.Name == "Context")
-                {
-                    if (prop.PropertyType == typeof(HttpContext))
-                    {
-                        prop.SetValue(controller, _actionContext.HttpContext);
-                    }
-                }
-                else if (prop.Name == "ModelState" && prop.PropertyType == typeof(ModelStateDictionary))
-                {
-                    prop.SetValue(controller, modelState);
-                }
-            }
-
-            var method = controllerType.GetRuntimeMethods().FirstOrDefault(m => m.Name.Equals("Initialize", StringComparison.OrdinalIgnoreCase));
-
-            if (method == null)
-            {
-                return;
-            }
-
-            var args = method.GetParameters()
-                             .Select(p => _serviceProvider.GetService(p.ParameterType)).ToArray();
-
-            method.Invoke(controller, args);
         }
 
         private async Task<IDictionary<string, object>> GetParameterValues(ModelStateDictionary modelState)
