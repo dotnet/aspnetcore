@@ -49,7 +49,7 @@ namespace Microsoft.Net.WebSockets.Client
             Stream stream = response.GetResponseStream();
             // Console.WriteLine(stream.CanWrite + " " + stream.CanRead);
 
-            return new CommonWebSocket(stream, null, ReceiveBufferSize);
+            return CommonWebSocket.CreateClientWebSocket(stream, null, ReceiveBufferSize, useZeroMask: false);
         }
     }
 }
