@@ -5,7 +5,7 @@
     "Microsoft.AspNet.ConfigurationModel": "0.1-alpha-*",
     "Microsoft.AspNet.DependencyInjection" : "0.1-alpha-*",
     "Microsoft.AspNet.Routing" : "0.1-alpha-*",
-	"Microsoft.AspNet.Mvc.ModelBinding" : "",
+    "Microsoft.AspNet.Mvc.ModelBinding" : "",
     "Microsoft.AspNet.Mvc.Core" : "",
     "Microsoft.AspNet.Mvc" : "",
     "Microsoft.AspNet.Mvc.Razor": ""
