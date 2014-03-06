@@ -1,18 +1,19 @@
 ﻿﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Routing;
 
 namespace RoutingSample
 {
-    internal class PrefixRoute : IRoute
+    internal class PrefixRoute : IRouter
     {
-        private readonly IRouteEndpoint _endpoint;
+        private readonly IRouter _next;
         private readonly string _prefix;
 
-        public PrefixRoute(IRouteEndpoint endpoint, string prefix)
+        public PrefixRoute(IRouter next, string prefix)
         {
-            _endpoint = endpoint;
+            _next = next;
 
             if (prefix == null)
             {
@@ -32,28 +33,26 @@ namespace RoutingSample
             _prefix = prefix;
         }
 
-        public RouteMatch Match(RouteContext context)
+        public async Task RouteAsync(RouteContext context)
         {
             if (context.RequestPath.StartsWith(_prefix, StringComparison.OrdinalIgnoreCase))
             {
                 if (context.RequestPath.Length > _prefix.Length)
                 {
-                    char next = context.RequestPath[_prefix.Length];
-                    if (next != '/' && next != '#' && next != '?')
+                    var lastCharacter = context.RequestPath[_prefix.Length];
+                    if (lastCharacter != '/' && lastCharacter != '#' && lastCharacter != '?')
                     {
-                        return null;
+                        return;
                     }
                 }
 
-                return new RouteMatch(_endpoint);
+                await _next.RouteAsync(context);
             }
-
-            return null;
         }
 
-        public RouteBindResult Bind(RouteBindContext context)
+        public void BindPath(BindPathContext context)
         {
-            return null;
+            // Do nothing
         }
     }
 }

@@ -439,7 +439,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetUrlWithEmptyStringForMiddleParameterShouldUseDefaultValue()
         {
-            // DevDiv Bugs 172084: UrlRouting: Route.GetUrl generates the wrong route of new values has a different controller and route has an action parameter with default
+            // DevDiv Bugs 172084: UrlRouting: Route.BindPath generates the wrong route of new values has a different controller and route has an action parameter with default
             var ambientValues = new RouteValueDictionary();
             ambientValues.Add("Controller", "Test");
             ambientValues.Add("Action", "Fallback");

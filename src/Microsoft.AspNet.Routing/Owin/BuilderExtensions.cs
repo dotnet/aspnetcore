@@ -6,14 +6,15 @@ namespace Microsoft.AspNet.Routing.Owin
 {
     public static class BuilderExtensions
     {
-        public static IRouteEngine UseRouter(this IBuilder builder)
+        public static IRouteCollection UseRouter(this IBuilder builder)
         {
-            var routes = new DefaultRouteCollection();
-            var engine = new DefaultRouteEngine(routes);
+            return UseRouter(builder, new RouteCollection());
+        }
 
-            builder.Use((next) => new RouterMiddleware(next, engine).Invoke);
-
-            return engine;
+        public static IRouteCollection UseRouter(this IBuilder builder, IRouteCollection routes)
+        {
+            builder.Use((next) => new RouterMiddleware(next, routes).Invoke);
+            return routes;
         }
     }
 }

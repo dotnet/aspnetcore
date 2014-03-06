@@ -1,19 +1,11 @@
-﻿﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 namespace Microsoft.AspNet.Routing
 {
-    public interface IRouteCollection
+    public interface IRouteCollection : IRouter
     {
-        IRoute this[int index]
-        {
-            get;
-        }
+        IRouter DefaultHandler { get; set; }
 
-        int Count
-        {
-            get;
-        }
-
-        void Add(IRoute route);
+        void Add(IRouter router);
     }
 }

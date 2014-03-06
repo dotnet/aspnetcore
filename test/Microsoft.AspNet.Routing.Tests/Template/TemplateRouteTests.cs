@@ -13,66 +13,81 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
         // PathString in HttpAbstractions guarantees a leading slash - so no value in testing other cases.
         [Fact]
-        public void Match_Success_LeadingSlash()
+        public async void Match_Success_LeadingSlash()
         {
             // Arrange
             var route = CreateRoute("{controller}/{action}");
             var context = CreateRouteContext("/Home/Index");
 
             // Act
-            var match = route.Match(context);
+            await route.RouteAsync(context);
 
             // Assert
-            Assert.NotNull(match);
-            Assert.Equal(2, match.Values.Count);
-            Assert.Equal("Home", match.Values["controller"]);
-            Assert.Equal("Index", match.Values["action"]);
+            Assert.True(context.IsHandled);
+            Assert.Equal(2, context.Values.Count);
+            Assert.Equal("Home", context.Values["controller"]);
+            Assert.Equal("Index", context.Values["action"]);
         }
 
         [Fact]
-        public void Match_Success_RootUrl()
+        public async void Match_Success_RootUrl()
         {
             // Arrange
             var route = CreateRoute("");
             var context = CreateRouteContext("/");
 
             // Act
-            var match = route.Match(context);
+            await route.RouteAsync(context);
 
             // Assert
-            Assert.NotNull(match);
-            Assert.Equal(0, match.Values.Count);
+            Assert.True(context.IsHandled);
+            Assert.Equal(0, context.Values.Count);
         }
 
         [Fact]
-        public void Match_Success_Defaults()
+        public async void Match_Success_Defaults()
         {
             // Arrange
             var route = CreateRoute("{controller}/{action}", new { action = "Index" });
             var context = CreateRouteContext("/Home");
 
             // Act
-            var match = route.Match(context);
+            await route.RouteAsync(context);
 
             // Assert
-            Assert.NotNull(match);
-            Assert.Equal(2, match.Values.Count);
-            Assert.Equal("Home", match.Values["controller"]);
-            Assert.Equal("Index", match.Values["action"]);
+            Assert.True(context.IsHandled);
+            Assert.Equal(2, context.Values.Count);
+            Assert.Equal("Home", context.Values["controller"]);
+            Assert.Equal("Index", context.Values["action"]);
         }
 
         [Fact]
-        public void Match_Fails()
+        public async void Match_Fails()
         {
             // Arrange
             var route = CreateRoute("{controller}/{action}");
             var context = CreateRouteContext("/Home");
 
             // Act
-            var match = route.Match(context);
+            await route.RouteAsync(context);
 
             // Assert
-            Assert.Null(match);
+            Assert.False(context.IsHandled);
+        }
+
+        [Fact]
+        public async void Match_RejectedByHanlder()
+        {
+            // Arrange
+            var route = CreateRoute("{controller}", accept: false);
+            var context = CreateRouteContext("/Home");
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.False(context.IsHandled);
+            Assert.Null(context.Values);
         }
 
         private static RouteContext CreateRouteContext(string requestPath)
@@ -98,11 +113,11 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var context = CreateRouteBindContext(new {controller = "Home"});
 
             // Act
-            var bind = route.Bind(context);
+            route.BindPath(context);
 
             // Assert
-            Assert.NotNull(bind);
-            Assert.Equal("Home", bind.Url);
+            Assert.True(context.IsBound);
+            Assert.Equal("Home", context.Path);
         }
 
         [Fact]
@@ -113,10 +128,26 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var context = CreateRouteBindContext(new { controller = "Home" });
 
             // Act
-            var bind = route.Bind(context);
+            route.BindPath(context);
 
             // Assert
-            Assert.Null(bind);
+            Assert.False(context.IsBound);
+            Assert.Null(context.Path);
+        }
+
+        [Fact]
+        public void Bind_RejectedByHandler()
+        {
+            // Arrange
+            var route = CreateRoute("{controller}", accept: false);
+            var context = CreateRouteBindContext(new { controller = "Home" });
+
+            // Act
+            route.BindPath(context);
+
+            // Assert
+            Assert.False(context.IsBound);
+            Assert.Null(context.Path);
         }
 
         [Fact]
@@ -127,46 +158,54 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var context = CreateRouteBindContext(new { action = "Index"}, new { controller = "Home" });
 
             // Act
-            var bind = route.Bind(context);
+            route.BindPath(context);
 
             // Assert
-            Assert.NotNull(bind);
-            Assert.Equal("Home/Index", bind.Url);
+            Assert.True(context.IsBound);
+            Assert.Equal("Home/Index", context.Path);
         }
 
-        private static RouteBindContext CreateRouteBindContext(object values)
+        private static BindPathContext CreateRouteBindContext(object values)
         {
             return CreateRouteBindContext(new RouteValueDictionary(values), null);
         }
 
-        private static RouteBindContext CreateRouteBindContext(object values, object ambientValues)
+        private static BindPathContext CreateRouteBindContext(object values, object ambientValues)
         {
             return CreateRouteBindContext(new RouteValueDictionary(values), new RouteValueDictionary(ambientValues));
         }
 
-        private static RouteBindContext CreateRouteBindContext(IDictionary<string, object> values, IDictionary<string, object> ambientValues)
+        private static BindPathContext CreateRouteBindContext(IDictionary<string, object> values, IDictionary<string, object> ambientValues)
         {
             var context = new Mock<HttpContext>(MockBehavior.Strict);
-            context.Setup(c => c.GetFeature<IRouteValues>()).Returns(new RouteValues(ambientValues));
 
-            return new RouteBindContext(context.Object, values);
+            return new BindPathContext(context.Object, ambientValues, values);
         }
 
         #endregion
 
-        private static TemplateRoute CreateRoute(string template)
+        private static TemplateRoute CreateRoute(string template, bool accept = true)
         {
-            return new TemplateRoute(CreateEndpoint(), template);
+            return new TemplateRoute(CreateEndpoint(accept), template);
         }
 
-        private static TemplateRoute CreateRoute(string template, object defaults)
+        private static TemplateRoute CreateRoute(string template, object defaults, bool accept = true)
         {
-            return new TemplateRoute(CreateEndpoint(), template, new RouteValueDictionary(defaults));
+            return new TemplateRoute(CreateEndpoint(accept), template, new RouteValueDictionary(defaults));
         }
 
-        private static IRouteEndpoint CreateEndpoint()
+        private static IRouter CreateEndpoint(bool accept = true)
         {
-            return new Mock<IRouteEndpoint>(MockBehavior.Strict).Object;
+            var endpoint = new Mock<IRouter>(MockBehavior.Strict);
+            endpoint
+                .Setup(e => e.BindPath(It.IsAny<BindPathContext>()))
+                .Callback<BindPathContext>(c => c.IsBound = accept);
+
+            endpoint
+                .Setup(e => e.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>(async (c) => c.IsHandled = accept);
+
+            return endpoint.Object;
         }
     }
 }

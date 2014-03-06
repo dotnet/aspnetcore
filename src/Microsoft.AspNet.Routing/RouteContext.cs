@@ -1,28 +1,25 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.Routing
 {
     public class RouteContext
     {
-        public RouteContext(HttpContext context)
+        public RouteContext(HttpContext httpContext)
         {
-            Context = context;
+            HttpContext = httpContext;
 
-            RequestPath = context.Request.Path.Value;
+            RequestPath = httpContext.Request.Path.Value;
         }
 
-        public HttpContext Context
-        {
-            get;
-            private set;
-        }
+        public HttpContext HttpContext { get; private set; }
 
-        public string RequestPath
-        {
-            get;
-            private set;
-        }
+        public bool IsHandled { get; set; }
+
+        public string RequestPath { get; private set; }
+
+        public IDictionary<string, object> Values { get; set; }
     }
 }

@@ -1,17 +1,13 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
+using System.Threading.Tasks;
+
 namespace Microsoft.AspNet.Routing
 {
-    public interface IRouteBuilder
+    public interface IRouter
     {
-        IRouteEndpoint Endpoint
-        {
-            get;
-        }
+        Task RouteAsync(RouteContext context);
 
-        IRouteCollection Routes
-        {
-            get;
-        }
+        void BindPath(BindPathContext context);
     }
 }
