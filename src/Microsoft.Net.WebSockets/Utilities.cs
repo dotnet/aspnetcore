@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net.WebSockets;
 
 namespace Microsoft.Net.WebSockets
 {
@@ -15,12 +12,12 @@ namespace Microsoft.Net.WebSockets
             Array.Copy(header.Array, header.Offset, frame, 0, header.Count);
             Array.Copy(data.Array, data.Offset, frame, header.Count, data.Count);
 
-            Mask(mask, new ArraySegment<byte>(frame, header.Count, data.Count));
+            MaskInPlace(mask, new ArraySegment<byte>(frame, header.Count, data.Count));
             return frame;
         }
 
         // Un/Masks the data in place
-        public static void Mask(int mask, ArraySegment<byte> data)
+        public static void MaskInPlace(int mask, ArraySegment<byte> data)
         {
             if (mask == 0)
             {
@@ -40,6 +37,28 @@ namespace Microsoft.Net.WebSockets
             {
                 data.Array[i] = (byte)(data.Array[i] ^ maskBytes[maskOffset]);
                 maskOffset = (maskOffset + 1) % 4;
+            }
+        }
+
+        public static int GetOpCode(WebSocketMessageType messageType)
+        {
+            switch (messageType)
+            {
+                case WebSocketMessageType.Text: return Constants.OpCodes.TextFrame;
+                case WebSocketMessageType.Binary: return Constants.OpCodes.BinaryFrame;
+                case WebSocketMessageType.Close: return Constants.OpCodes.CloseFrame;
+                default: throw new NotImplementedException(messageType.ToString());
+            }
+        }
+
+        public static WebSocketMessageType GetMessageType(int opCode)
+        {
+            switch (opCode)
+            {
+                case Constants.OpCodes.TextFrame: return WebSocketMessageType.Text;
+                case Constants.OpCodes.BinaryFrame: return WebSocketMessageType.Binary;
+                case Constants.OpCodes.CloseFrame: return WebSocketMessageType.Close;
+                default: throw new NotImplementedException(opCode.ToString());
             }
         }
     }

@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.WebSockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -36,20 +33,59 @@ namespace Microsoft.Net.WebSockets.Client
             set;
         }
 
+        public bool UseZeroMask
+        {
+            get;
+            set;
+        }
+
+        public Action<HttpWebRequest> ConfigureRequest
+        {
+            get;
+            set;
+        }
+
+        public Action<HttpWebResponse> InspectResponse
+        {
+            get;
+            set;
+        }
+
         public async Task<WebSocket> ConnectAsync(Uri uri, CancellationToken cancellationToken)
         {
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
 
+            CancellationTokenRegistration cancellation = cancellationToken.Register(() => request.Abort());
+
             request.Headers[Constants.Headers.WebSocketVersion] = Constants.Headers.SupportedVersion;
             // TODO: Sub-protocols
 
-            WebResponse response = await request.GetResponseAsync();
+            if (ConfigureRequest != null)
+            {
+                ConfigureRequest(request);
+            }
+
+            HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
+
+            cancellation.Dispose();
+
+            if (InspectResponse != null)
+            {
+                InspectResponse(response);
+            }
+
             // TODO: Validate handshake
+            if (response.StatusCode != HttpStatusCode.SwitchingProtocols)
+            {
+                response.Dispose();
+                throw new InvalidOperationException("Incomplete handshake");
+            }
+
+            // TODO: Sub protocol
 
             Stream stream = response.GetResponseStream();
-            // Console.WriteLine(stream.CanWrite + " " + stream.CanRead);
 
-            return CommonWebSocket.CreateClientWebSocket(stream, null, ReceiveBufferSize, useZeroMask: false);
+            return CommonWebSocket.CreateClientWebSocket(stream, null, ReceiveBufferSize, useZeroMask: UseZeroMask);
         }
     }
 }
