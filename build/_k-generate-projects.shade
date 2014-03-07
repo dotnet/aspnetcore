@@ -625,7 +625,7 @@ functions
                     return new[] { "net45", "net40", "net35", "35", "net20" };
                 }
                 // If it's k10 then look for netcore45 as well
-                return new[] { config, "netcore45" };
+                return new[] { "contract", config, "netcore45" };
             }
 
             private static string BuildReferences(IDictionary<string, string> references, List<string> gacReferences, string packagesDir, string configName, string[] candidates)
