@@ -15,6 +15,12 @@
         "Microsoft.Owin.Hosting" : "2.1.0"
       }
     },
-    "k10": {}
+    "k10": {
+      "dependencies": {
+        "System.Diagnostics.Debug": "4.0.10.0",
+        "System.Runtime": "4.0.20.0",
+        "System.Threading.Tasks": "4.0.0.0"
+      }
+    }
   }
 }
