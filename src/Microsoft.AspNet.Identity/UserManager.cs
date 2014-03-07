@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Microsoft.AspNet.DependencyInjection;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.DependencyInjection;
 
 namespace Microsoft.AspNet.Identity
 {
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Identity
             PasswordHasher = serviceProvider.GetService<IPasswordHasher>();
             UserValidator = serviceProvider.GetService<IUserValidator<TUser>>();
             PasswordValidator = serviceProvider.GetService<IPasswordValidator>();
-            // TODO: validator interfaces, and maybe each optional store as well?  Email and SMS services?
+            // TODO: maybe each optional store as well?  Email and SMS services?
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Identity
             Store = store;
             UserValidator = new UserValidator<TUser, TKey>(this);
             PasswordHasher = new PasswordHasher();
-            //ClaimsIdentityFactory = new ClaimsIdentityFactory<TUser, TKey>();
+            //TODO: ClaimsIdentityFactory = new ClaimsIdentityFactory<TUser, TKey>();
         }
 
         /// <summary>
@@ -243,8 +243,7 @@ namespace Microsoft.AspNet.Identity
             get
             {
                 ThrowIfDisposed();
-                return false;
-                //return Store is IUserClaimStore<TUser, TKey>;
+                return Store is IUserClaimStore<TUser, TKey>;
             }
         }
 

@@ -12,11 +12,7 @@ namespace Microsoft.AspNet.Identity
         /// <returns></returns>
         public virtual string HashPassword(string password)
         {
-#if NET45
             return Crypto.HashPassword(password);
-#else
-            return password;
-#endif
         }
 
         /// <summary>
@@ -27,11 +23,7 @@ namespace Microsoft.AspNet.Identity
         /// <returns></returns>
         public virtual PasswordVerificationResult VerifyHashedPassword(string hashedPassword, string providedPassword)
         {
-#if NET45
             return Crypto.VerifyHashedPassword(hashedPassword, providedPassword) ? PasswordVerificationResult.Success : PasswordVerificationResult.Failed;
-#else
-            return hashedPassword == providedPassword  ? PasswordVerificationResult.Success : PasswordVerificationResult.Failed;
-#endif
         }
     }
 }
