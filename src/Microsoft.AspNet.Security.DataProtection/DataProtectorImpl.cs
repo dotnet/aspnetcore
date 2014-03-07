@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Security.Cryptography;
-using Microsoft.AspNet.Security.DataProtection.Resources;
 using Microsoft.AspNet.Security.DataProtection.Util;
 
 namespace Microsoft.AspNet.Security.DataProtection

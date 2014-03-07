@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Common_NullOrEmpty" xml:space="preserve">
+    <value>Argument cannot be null or empty.</value>
+  </data>
   <data name="DataProtectorFactory_MasterKeyTooShort" xml:space="preserve">
     <value>The master key is too short. It must be at least {0} bytes in length.</value>
   </data>

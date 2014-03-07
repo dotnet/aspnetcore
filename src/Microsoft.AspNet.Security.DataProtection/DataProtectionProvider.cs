@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Globalization;
 using System.Reflection;
-using Microsoft.AspNet.Security.DataProtection.Resources;
 using Microsoft.AspNet.Security.DataProtection.Util;
 
 namespace Microsoft.AspNet.Security.DataProtection

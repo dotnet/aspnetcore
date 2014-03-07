@@ -22,15 +22,15 @@ namespace Microsoft.AspNet.Security.DataProtection
         {
             if (String.IsNullOrEmpty(algorithmName))
             {
-                throw new ArgumentNullException("algorithmName");
+                throw new ArgumentException(Res.Common_NullOrEmpty, "algorithmName");
             }
             if (password == null || password.Length == 0)
             {
-                throw new ArgumentNullException("password");
+                throw new ArgumentException(Res.Common_NullOrEmpty, "password");
             }
             if (salt == null || salt.Length == 0)
             {
-                throw new ArgumentNullException("salt");
+                throw new ArgumentException(Res.Common_NullOrEmpty, "salt");
             }
             if (iterationCount <= 0)
             {

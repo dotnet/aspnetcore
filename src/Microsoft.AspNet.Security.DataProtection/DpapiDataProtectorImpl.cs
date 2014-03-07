@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using Microsoft.AspNet.Security.DataProtection.Resources;
 using Microsoft.AspNet.Security.DataProtection.Util;
 
 namespace Microsoft.AspNet.Security.DataProtection
