@@ -5,6 +5,6 @@ namespace Microsoft.AspNet.Mvc.Razor
 {
     public interface IRazorCompilationService
     {
-        Task<CompilationResult> Compile(string appRoot, IFileInfo fileInfo);
+        Task<CompilationResult> Compile(IFileInfo fileInfo);
     }
 }

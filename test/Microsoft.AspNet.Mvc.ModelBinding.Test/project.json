@@ -4,6 +4,7 @@
     "Microsoft.AspNet.Abstractions": "0.1-alpha-*",
     "Microsoft.AspNet.PipelineCore": "0.1-alpha-*",
     "Microsoft.AspNet.Mvc.ModelBinding" : "",
+    "TestCommon" : "",
     "Moq": "4.0.10827",
     "Xunit": "1.9.1",
     "Xunit.extensions": "1.9.1"

@@ -120,4 +120,10 @@
   <data name="ArgumentCannotBeNullOrEmpty" xml:space="preserve">
     <value>Value cannot be null or empty.</value>
   </data>
+  <data name="LayoutCannotBeLocated" xml:space="preserve">
+    <value>The layout view '{0}' could not be located.</value>
+  </data>
+  <data name="RenderBodyCannotBeCalled" xml:space="preserve">
+    <value>RenderBody can only be called from a layout page.</value>
+  </data>
 </root>

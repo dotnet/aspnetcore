@@ -34,34 +34,34 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             // TODO: We plan to change this on the next CR, so we don't have a strong depenedency directly on the specific
             // type of the action descriptor
-            ActionDescriptor actionDescriptor = actionContext.ActionDescriptor;
+            var actionDescriptor = actionContext.ActionDescriptor;
             
             if (actionDescriptor == null)
             {
                 return null;
             }
             
-            if (String.IsNullOrEmpty(viewName))
+            if (string.IsNullOrEmpty(viewName))
             {
                 viewName = actionDescriptor.Name;
             }
 
-            if (String.IsNullOrEmpty(viewName))
+            if (string.IsNullOrEmpty(viewName))
             {
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "viewName");
             }
 
-            bool nameRepresentsPath = IsSpecificPath(viewName);
+            var nameRepresentsPath = IsSpecificPath(viewName);
 
             if (nameRepresentsPath)
             {
-                IView view = await _virtualPathFactory.CreateInstance(viewName);
+                var view = await _virtualPathFactory.CreateInstance(viewName);
                 return view != null ? ViewEngineResult.Found(view) :
                                       ViewEngineResult.NotFound(new[] { viewName });
             }
             else
             {
-                string controllerName = actionDescriptor.Path;
+                var controllerName = actionDescriptor.Path;
                 var searchedLocations = new List<string>(_viewLocationFormats.Length);
                 for (int i = 0; i < _viewLocationFormats.Length; i++)
                 {

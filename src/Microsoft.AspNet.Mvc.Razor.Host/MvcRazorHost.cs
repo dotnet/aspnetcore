@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Text;
 using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser;
@@ -50,48 +49,19 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
-        public GeneratorResults GenerateCode(string rootRelativePath, Stream inputStream)
+        public GeneratorResults GenerateCode(string rootNamespace, string rootRelativePath, Stream inputStream)
         {
-            string className = Path.GetFileNameWithoutExtension(rootRelativePath);
-            if (rootRelativePath.StartsWith("~/", StringComparison.Ordinal))
-            {
-                rootRelativePath = rootRelativePath.Substring(2);
-            }
-            string classNamespace = GenerateNamespace(rootRelativePath);
-            
+            string className = ParserHelpers.SanitizeClassName(rootRelativePath);
             using (var reader = new StreamReader(inputStream))
             {
                 var engine = new RazorTemplateEngine(this);
-                return engine.GenerateCode(reader, className, classNamespace, rootRelativePath);
+                return engine.GenerateCode(reader, className, rootNamespace, rootRelativePath);
             }
         }
 
         public override ParserBase DecorateCodeParser(ParserBase incomingCodeParser)
         {
             return new MvcRazorCodeParser(_baseType);
-        }
-
-        private static string GenerateNamespace(string rootRelativePath)
-        {
-            var namespaceBuilder = new StringBuilder(rootRelativePath.Length);
-            rootRelativePath = Path.GetDirectoryName(rootRelativePath);
-            for (int i = 0; i < rootRelativePath.Length; i++)
-            {
-                char c = rootRelativePath[i];
-                if (c == Path.DirectorySeparatorChar)
-                {
-                    namespaceBuilder.Append('.');
-                }
-                else if (!Char.IsLetterOrDigit(c))
-                {
-                    namespaceBuilder.Append('_');
-                }
-                else
-                {
-                    namespaceBuilder.Append(c);
-                }
-            }
-            return namespaceBuilder.ToString();
         }
     }
 }

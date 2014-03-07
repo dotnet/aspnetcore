@@ -1,0 +1,10 @@
+{
+  "shared": "*.cs",
+  "dependencies": {
+    "Xunit": "1.9.1",
+    "Xunit.extensions": "1.9.1"
+  },
+  "configurations": {
+    "net45": { }
+  }
+}

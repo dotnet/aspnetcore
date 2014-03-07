@@ -26,6 +26,38 @@ namespace Microsoft.AspNet.Mvc.Razor
             return GetString("ArgumentCannotBeNullOrEmpty");
         }
 
+        /// <summary>
+        /// The layout view '{0}' could not be located.
+        /// </summary>
+        internal static string LayoutCannotBeLocated
+        {
+            get { return GetString("LayoutCannotBeLocated"); }
+        }
+
+        /// <summary>
+        /// The layout view '{0}' could not be located.
+        /// </summary>
+        internal static string FormatLayoutCannotBeLocated(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("LayoutCannotBeLocated"), p0);
+        }
+
+        /// <summary>
+        /// RenderBody can only be called from a layout page.
+        /// </summary>
+        internal static string RenderBodyCannotBeCalled
+        {
+            get { return GetString("RenderBodyCannotBeCalled"); }
+        }
+
+        /// <summary>
+        /// RenderBody can only be called from a layout page.
+        /// </summary>
+        internal static string FormatRenderBodyCannotBeCalled()
+        {
+            return GetString("RenderBodyCannotBeCalled");
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

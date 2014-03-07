@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -29,8 +28,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Execute();
             }
 
-            string bodyContent = contentBuilder.ToString();
-            if (!String.IsNullOrEmpty(Layout))
+            var bodyContent = contentBuilder.ToString();
+            if (!string.IsNullOrEmpty(Layout))
             {
                 await RenderLayoutAsync(context, writer, bodyContent);
             }
@@ -43,10 +42,11 @@ namespace Microsoft.AspNet.Mvc.Razor
         private async Task RenderLayoutAsync(ViewContext context, TextWriter writer, string bodyContent)
         {
             var virtualPathFactory = context.ServiceProvider.GetService<IVirtualPathViewFactory>();
-            RazorView layoutView = (RazorView)(await virtualPathFactory.CreateInstance(Layout));
+            var layoutView = (RazorView)(await virtualPathFactory.CreateInstance(Layout));
+
             if (layoutView == null)
             {
-                string message = String.Format(CultureInfo.CurrentCulture, "The layout view '{0}' could not be located.", Layout);
+                var message = Resources.FormatLayoutCannotBeLocated(Layout);
                 throw new InvalidOperationException(message);
             }
 
@@ -66,18 +66,9 @@ namespace Microsoft.AspNet.Mvc.Razor
             if (content != null)
             {
                 var htmlString = content as HtmlString;
-                if (htmlString != null)
-                {
-                    writer.Write(content.ToString());
-                }
-                else
-                {
-#if NET45
-                    WebUtility.HtmlEncode(content.ToString(), writer);
-#else
-                    writer.Write(WebUtility.HtmlEncode(content.ToString()));
-#endif
-                }
+                var contentToWrite = htmlString != null ? content.ToString() :
+                                                          WebUtility.HtmlEncode(content.ToString());
+                writer.Write(contentToWrite);
             }
         }
 
@@ -196,7 +187,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             if (BodyContent == null)
             {
-                throw new InvalidOperationException("RenderBody cannot be called at this point because you're not executing a layout");
+                throw new InvalidOperationException(Resources.RenderBodyCannotBeCalled);
             }
             return new HtmlString(BodyContent);
         }
