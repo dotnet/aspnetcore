@@ -346,7 +346,6 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetVirtualPathWithUnusedNullValueShouldGenerateUrlAndIgnoreNullValue()
         {
-            // DevDiv Bugs 194371: UrlRouting: Exception thrown when generating URL that has some null values
             RunTest(
                 "{controller}.mvc/{action}/{id}",
                 new RouteValueDictionary(new { action = "Index", id = "" }),
@@ -391,7 +390,6 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetUrlShouldIgnoreValuesAfterChangedParameter()
         {
-            // DevDiv Bugs 157535
             RunTest(
                 "{controller}/{action}/{id}",
                 new { action = "Index", id = (string)null },
@@ -403,7 +401,6 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetUrlWithNullForMiddleParameterIgnoresRemainingParameters()
         {
-            // DevDiv Bugs 170859: UrlRouting: Passing null or empty string for a parameter in the middle of a route generates the wrong Url
             RunTest(
                 "UrlGeneration1/{controller}.mvc/{action}/{category}/{year}/{occasion}/{SafeParam}",
                 new { year = 1995, occasion = "Christmas", action = "Play", SafeParam = "SafeParamValue" },
@@ -415,7 +412,6 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetUrlWithEmptyStringForMiddleParameterIgnoresRemainingParameters()
         {
-            // DevDiv Bugs 170859: UrlRouting: Passing null or empty string for a parameter in the middle of a route generates the wrong Url
             var ambientValues = new RouteValueDictionary();
             ambientValues.Add("controller", "UrlRouting");
             ambientValues.Add("action", "Play");
@@ -439,7 +435,6 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetUrlWithEmptyStringForMiddleParameterShouldUseDefaultValue()
         {
-            // DevDiv Bugs 172084: UrlRouting: Route.BindPath generates the wrong route of new values has a different controller and route has an action parameter with default
             var ambientValues = new RouteValueDictionary();
             ambientValues.Add("Controller", "Test");
             ambientValues.Add("Action", "Fallback");
@@ -450,11 +445,6 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var values = new RouteValueDictionary();
             values.Add("controller", "subtest");
             values.Add("param1", "b");
-            // The original bug for this included this value, but with the new support for
-            // creating query string values it changes the behavior such that the URL is
-            // not what was originally expected. To preserve the general behavior of this
-            // unit test the 'param2' value is no longer being added.
-            //values.Add("param2", "a");
 
             RunTest(
                 "{controller}.mvc/{action}/{param1}",
@@ -556,8 +546,6 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                 [Fact]
         public void GetUrlShouldValidateOnlyAcceptedParametersAndUserDefaultValuesForInvalidatedParameters()
         {
-            // DevDiv Bugs 172913: UrlRouting: Parameter validation should not run against current request values if a new value has been supplied at a previous position
-
             // Arrange
             var rd = CreateRouteData();
             rd.Values.Add("Controller", "UrlRouting");
@@ -592,8 +580,6 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                [Fact]
         public void GetUrlWithRouteThatHasExtensionWithSubsequentDefaultValueIncludesExtensionButNotDefaultValue()
         {
-            // DevDiv Bugs 156606
-
             // Arrange
             var rd = CreateRouteData();
             rd.Values.Add("controller", "Bank");
@@ -634,8 +620,6 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetUrlWithRouteThatHasDifferentControllerCaseShouldStillMatch()
         {
-            // DevDiv Bugs 159099
-
             // Arrange
             var rd = CreateRouteData();
             rd.Values.Add("controller", "Bar");
@@ -664,8 +648,6 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetUrlWithNoChangedValuesShouldProduceSameUrl()
         {
-            // DevDiv Bugs 159469
-
             // Arrange
             var rd = CreateRouteData();
             rd.Values.Add("controller", "Home");
@@ -691,8 +673,6 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetUrlAppliesConstraintsRulesToChooseRoute()
         {
-            // DevDiv Bugs 159678: MVC: URL generation chooses the wrong route for generating URLs when route validation is in place
-
             // Arrange
             var rd = CreateRouteData();
             rd.Values.Add("controller", "Home");
@@ -777,11 +757,6 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetVirtualPathUsesCurrentValuesNotInRouteToMatch()
         {
-            // DevDiv Bugs 177401: UrlRouting: Incorrect route picked on urlgeneration if using controller from ambient values and route does not have a url parameter for controller
-
-            // DevDiv Bugs 191162: UrlRouting: Route does not match when an ambient route value doesn't match a required default value in the target route
-            // Because of this bug the test was split into two separate verifications since the original test was verifying slightly incorrect behavior
-
             // Arrange
             HttpContext context = GetHttpContext("/app", null, null);
             TemplateRoute r1 = CreateRoute(
