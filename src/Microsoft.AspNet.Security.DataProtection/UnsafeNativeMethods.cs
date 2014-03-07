@@ -53,6 +53,19 @@ namespace Microsoft.AspNet.Security.DataProtection
             [In] BCryptEncryptFlags dwFlags);
 
         [DllImport(BCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
+        // http://msdn.microsoft.com/en-us/library/windows/desktop/dd433795(v=vs.85).aspx
+        internal static extern int BCryptDeriveKeyPBKDF2(
+            [In] BCryptAlgorithmHandle hPrf,
+            [In] byte* pbPassword,
+            [In] uint cbPassword,
+            [In] byte* pbSalt,
+            [In] uint cbSalt,
+            [In] ulong cIterations,
+            [In] byte* pbDerivedKey,
+            [In] uint cbDerivedKey,
+            [In] uint dwFlags);
+
+        [DllImport(BCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
         // http://msdn.microsoft.com/en-us/library/windows/desktop/aa375399(v=vs.85).aspx
         internal static extern int BCryptDestroyHash(
             [In] IntPtr hHash);
