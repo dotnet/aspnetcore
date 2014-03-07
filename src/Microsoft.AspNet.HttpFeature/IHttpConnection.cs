@@ -1,4 +1,6 @@
+#if NET45
 using System.Net;
+#endif
 
 namespace Microsoft.AspNet.HttpFeature
 {
