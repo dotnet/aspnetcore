@@ -56,7 +56,6 @@ namespace Microsoft.AspNet.Server.WebListener
         private IPrincipal _user;
 
         private bool _isDisposed = false;
-        private CancellationTokenRegistration _disconnectRegistration;
         
         internal unsafe Request(RequestContext httpContext, NativeRequestContext memoryBlob)
         {
@@ -511,7 +510,6 @@ namespace Microsoft.AspNet.Server.WebListener
                 memoryBlob.Dispose();
                 _nativeRequestContext = null;
             }
-            _disconnectRegistration.Dispose();
             if (_nativeStream != null)
             {
                 _nativeStream.Dispose();
@@ -532,18 +530,6 @@ namespace Microsoft.AspNet.Server.WebListener
             {
                 _nativeStream = new RequestStream(RequestContext);
             }
-        }
-
-        internal void RegisterForDisconnect(CancellationToken cancellationToken)
-        {
-            _disconnectRegistration = cancellationToken.Register(Cancel, this);
-        }
-
-        private static void Cancel(object obj)
-        {
-            Request request = (Request)obj;
-            // Cancels owin.CallCanceled
-            request.RequestContext.Abort();
         }
     }
 }

@@ -74,10 +74,11 @@ namespace Microsoft.AspNet.Server.WebListener
 
             OwinWebListener server = (OwinWebListener)serverConfig.AdvancedConfiguration;
 
-            var capabilities = new Dictionary<string, object>();
+            // TODO: var capabilities = new Dictionary<string, object>();
+            WebListenerWrapper wrapper = new WebListenerWrapper(server);
 
-            server.Start(app, serverConfig.Addresses, capabilities, _loggerFactory);
-            return server;
+            wrapper.Start(app, serverConfig.Addresses, _loggerFactory);
+            return wrapper;
         }
     }
 }

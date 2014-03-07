@@ -28,6 +28,8 @@ namespace Microsoft.AspNet.Server.WebListener
         private NativeRequestContext _memoryBlob;
         private OpaqueFunc _opaqueCallback;
         private bool _disposed;
+        private CancellationTokenRegistration? _disconnectRegistration;
+        private CancellationToken? _disconnectToken;
 
         internal RequestContext(OwinWebListener httpListener, NativeRequestContext memoryBlob)
         {
@@ -54,6 +56,28 @@ namespace Microsoft.AspNet.Server.WebListener
             {
                 return _response;
             }
+        }
+
+        internal CancellationToken DisconnectToken
+        {
+            get
+            {
+                if (!_disconnectToken.HasValue)
+                {
+                    _disconnectToken = _server.RegisterForDisconnectNotification(this);
+                    if (_disconnectToken.Value.CanBeCanceled)
+                    {
+                        _disconnectRegistration = _disconnectToken.Value.Register(Cancel, this);
+                    }
+                }
+                return _disconnectToken.Value;
+            }
+        }
+
+        private static void Cancel(object obj)
+        {
+            RequestContext context = (RequestContext)obj;
+            context.Abort();
         }
 
         internal OwinWebListener Server
@@ -113,6 +137,10 @@ namespace Microsoft.AspNet.Server.WebListener
             // TODO: Verbose log
             try
             {
+                if (_disconnectRegistration.HasValue)
+                {
+                    _disconnectRegistration.Value.Dispose();
+                }
                 _response.Dispose();
             }
             finally

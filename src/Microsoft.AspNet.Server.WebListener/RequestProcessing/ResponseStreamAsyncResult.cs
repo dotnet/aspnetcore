@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Server.WebListener
             _fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, bufferSize,
                     FileOptions.Asynchronous | FileOptions.SequentialScan); // Extremely expensive.
 #else
-            _fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, bufferSize, useAsync: true); // Extremely expensive.
+            _fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, bufferSize /*, useAsync: true*/); // Extremely expensive.
 #endif
 #if !NET45
             throw new NotImplementedException();
