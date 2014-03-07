@@ -14,12 +14,15 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
     {
         private readonly IMetadataReferenceProvider _provider;
         private readonly IApplicationEnvironment _environment;
+        private readonly IAssemblyLoaderEngine _loader;
 
         public RoslynCompilationService(IServiceProvider serviceProvider)
         {
             // TODO: Get these services via ctor injection when we get container chaining implemented
             _provider = (IMetadataReferenceProvider)serviceProvider.GetService(typeof(IMetadataReferenceProvider));
             _environment = (IApplicationEnvironment)serviceProvider.GetService(typeof(IApplicationEnvironment));
+            _loader = (IAssemblyLoaderEngine)serviceProvider.GetService(typeof(IAssemblyLoaderEngine));
+
         }
 
         public Task<CompilationResult> Compile(string content)
@@ -57,7 +60,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             }
 
             // TODO: Flow loader to this code so we're not using Load() directly
-            var type = Assembly.Load(ms.ToArray())
+            var type = _loader.LoadBytes(ms.ToArray(), null)
                                .GetExportedTypes()
                                .First();
 
