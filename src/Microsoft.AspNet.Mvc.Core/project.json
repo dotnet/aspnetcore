@@ -1,8 +1,8 @@
 {
-  "version" : "0.1-alpha-*",
+  "version": "0.1-alpha-*",
   "dependencies": {
     "Newtonsoft.Json": "5.0.8",
-    "Microsoft.AspNet.DependencyInjection" : "0.1-alpha-*",
+    "Microsoft.AspNet.DependencyInjection": "0.1-alpha-*",
     "Microsoft.AspNet.Abstractions": "0.1-alpha-*",
     "Microsoft.AspNet.Routing": "0.1-alpha-*",
     "Common": "",
@@ -10,7 +10,26 @@
     "Microsoft.AspNet.Mvc.Rendering": ""
   },
   "configurations": {
-    "net45": { },
-    "k10" : { }
+    "net45": {},
+    "k10": {
+      "dependencies": {
+        "System.Collections": "4.0.0.0",
+        "System.ComponentModel": "4.0.0.0",
+        "System.Diagnostics.Contracts": "4.0.0.0",
+        "System.Diagnostics.Debug": "4.0.10.0",
+        "System.Dynamic.Runtime": "4.0.0.0",
+        "System.Globalization": "4.0.10.0",
+        "System.IO": "4.0.0.0",
+        "System.Linq": "4.0.0.0",
+        "System.Reflection": "4.0.10.0",
+        "System.Reflection.Extensions": "4.0.0.0",
+        "System.Runtime": "4.0.20.0",
+        "System.Runtime.Extensions": "4.0.10.0",
+        "System.Runtime.Hosting": "3.9.0.0",
+        "System.Runtime.InteropServices": "4.0.10.0",
+        "System.Text.Encoding": "4.0.10.0",
+        "System.Threading.Tasks": "4.0.0.0"
+      }
+    }
   }
 }
