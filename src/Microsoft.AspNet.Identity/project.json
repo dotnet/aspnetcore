@@ -5,12 +5,7 @@
     "System.Security.Claims" : "0.1-alpha-*"
   },
   "configurations": {
-    "net45": {
-      "dependencies": {
-        "System.Runtime" : "",
-        "System.Collections" : ""
-      }
-    },
+    "net45": {},
     "k10": {}
   }
 }
