@@ -10,7 +10,7 @@ namespace MvcSample.Web.Filters
         {
             object age = null;
 
-            if (context.ActionParameters.TryGetValue("age", out age))
+            if (context.ActionArguments.TryGetValue("age", out age))
             {
                 if (age is int)
                 {
@@ -25,7 +25,7 @@ namespace MvcSample.Web.Filters
                         intAge = 29;
                     }
 
-                    context.ActionParameters["age"] = intAge;
+                    context.ActionArguments["age"] = intAge;
                 }
             }
 

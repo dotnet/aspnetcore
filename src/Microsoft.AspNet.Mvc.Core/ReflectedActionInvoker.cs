@@ -100,15 +100,11 @@ namespace Microsoft.AspNet.Mvc
                         var parameterValues = await GetParameterValues(modelState);
 
                         var actionFilterContext = new ActionFilterContext(_actionContext,
-                                                                          parameterValues,
-                                                                          method.ReturnType);
+                                                                          parameterValues);
 
-                        // TODO: This is extremely temporary and is going to get soon replaced with the action executer
-                        var actionEndPoint = new ReflectedActionFilterEndPoint(async (inArray) => method.Invoke(controller, inArray),
-                                                                                _actionResultFactory);
+                        var actionEndPoint = new ReflectedActionFilterEndPoint(_actionResultFactory, controller);
 
                         _actionFilters.Add(actionEndPoint);
-
                         var actionFilterPipeline = new FilterPipelineBuilder<ActionFilterContext>(_actionFilters,
                             actionFilterContext);
 

@@ -13,13 +13,13 @@ namespace MvcSample.Web.Filters
         {
             object originalUserName = null;
 
-            context.ActionParameters.TryGetValue("userName", out originalUserName);
+            context.ActionArguments.TryGetValue("userName", out originalUserName);
 
             var userName = originalUserName as string;
 
             if (string.IsNullOrWhiteSpace(userName))
             {
-                context.ActionParameters["userName"] = _userNames[(_index++)%3];
+                context.ActionArguments["userName"] = _userNames[(_index++)%3];
             }
 
             await next();

@@ -1,32 +1,40 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.Core;
 
 namespace Microsoft.AspNet.Mvc.Filters
 {
     // This one lives in the Filters namespace, and only intended to be consumed by folks that rewrite the action invoker.
     public class ReflectedActionFilterEndPoint : IActionFilter
     {
-        private readonly Func<object[], Task<object>> _coreMethodInvoker;
         private readonly IActionResultFactory _actionResultFactory;
+        private readonly object _controllerInstance;
 
-        public ReflectedActionFilterEndPoint(Func<object[], Task<object>> coreMethodInvoker,
-                                             IActionResultFactory actionResultFactory)
+        public ReflectedActionFilterEndPoint(IActionResultFactory actionResultFactory, object controllerInstance)
         {
-            _coreMethodInvoker = coreMethodInvoker;
             _actionResultFactory = actionResultFactory;
+            _controllerInstance = controllerInstance;
         }
 
         public async Task Invoke(ActionFilterContext context, Func<Task> next)
         {
-            // TODO: match the parameter names here.
-            var tempArray = context.ActionParameters.Values.ToArray(); // seriously broken for now, need to organize names to match.
+            var reflectedActionDescriptor = context.ActionContext.ActionDescriptor as ReflectedActionDescriptor;
+            if (reflectedActionDescriptor == null)
+            {
+                throw new ArgumentException(Resources.ReflectedActionFilterEndPoint_UnexpectedActionDescriptor);
+            }
 
-            var actionReturnValue = await _coreMethodInvoker(tempArray);
+            var actionMethodInfo = reflectedActionDescriptor.MethodInfo;
+            var actionReturnValue = await ReflectedActionExecutor.ExecuteAsync(
+                                                            actionMethodInfo,
+                                                            _controllerInstance,
+                                                            context.ActionArguments);
 
-            context.Result = _actionResultFactory.CreateActionResult(context.MethodReturnType, 
-                                                                     actionReturnValue,
-                                                                     context.ActionContext);
+            var underlyingReturnType = TypeHelper.GetTaskInnerTypeOrNull(actionMethodInfo.ReturnType) ?? actionMethodInfo.ReturnType;
+            context.Result = _actionResultFactory.CreateActionResult(
+                                                            underlyingReturnType,
+                                                            actionReturnValue,
+                                                            context.ActionContext);
         }
     }
 }

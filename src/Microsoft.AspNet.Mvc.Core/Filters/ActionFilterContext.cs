@@ -6,19 +6,15 @@ namespace Microsoft.AspNet.Mvc
     public class ActionFilterContext
     {
         public ActionFilterContext(ActionContext actionContext,
-                                   IDictionary<string, object> actionParameters,
-                                   Type methodReturnType)
+                                   IDictionary<string, object> actionArguments)
         {
             ActionContext = actionContext;
-            ActionParameters = actionParameters;
-            MethodReturnType = methodReturnType;
+            ActionArguments = actionArguments;
         }
 
-        public virtual IDictionary<string, object> ActionParameters { get; private set; }
+        public virtual IDictionary<string, object> ActionArguments { get; private set; }
 
         public virtual ActionContext ActionContext { get; private set; }
-
-        public virtual Type MethodReturnType { get; private set; }
 
         public virtual IActionResult Result { get; set; }
     }
