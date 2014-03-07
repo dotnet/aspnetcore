@@ -46,8 +46,6 @@ namespace Microsoft.AspNet.Mvc
                 var controllerAttributes = cd.ControllerTypeInfo.GetCustomAttributes(inherit: true).ToArray();
                 var filtersFromController = GetOrderedFilterAttributes(controllerAttributes);
 
-                bool allowAnonymous = IsAnonymous(controllerAttributes);
-
                 foreach (var methodInfo in cd.ControllerTypeInfo.DeclaredMethods)
                 {
                     var actionInfos = _conventions.GetActions(methodInfo);
@@ -59,15 +57,10 @@ namespace Microsoft.AspNet.Mvc
 
                     foreach (var actionInfo in actionInfos)
                     {
-                        yield return BuildDescriptor(cd, methodInfo, actionInfo, filtersFromController, allowAnonymous);
+                        yield return BuildDescriptor(cd, methodInfo, actionInfo, filtersFromController);
                     }
                 }
             }
-        }
-
-        private bool IsAnonymous(object[] attributes)
-        {
-            return attributes.OfType<AllowAnonymousAttribute>().Any();
         }
 
         private IFilter[] GetOrderedFilterAttributes(object[] attributes)
@@ -80,8 +73,7 @@ namespace Microsoft.AspNet.Mvc
         private ReflectedActionDescriptor BuildDescriptor(ControllerDescriptor controllerDescriptor,
                                                           MethodInfo methodInfo,
                                                           ActionInfo actionInfo,
-                                                          IFilter[] controllerFilters,
-                                                          bool allowAnonymous)
+                                                          IFilter[] controllerFilters)
         {
             var ad = new ReflectedActionDescriptor
             {
@@ -121,8 +113,6 @@ namespace Microsoft.AspNet.Mvc
             var filtersFromAction = GetOrderedFilterAttributes(attributes);
 
             ad.Filters = MergeSorted(filtersFromAction, controllerFilters);
-
-            ad.AllowAnonymous = allowAnonymous || IsAnonymous(attributes);
 
             return ad;
         }
