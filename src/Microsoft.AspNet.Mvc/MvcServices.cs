@@ -25,8 +25,6 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Transient<IActionResultHelper, ActionResultHelper>();
             yield return describe.Transient<IActionResultFactory, ActionResultFactory>();
             yield return describe.Transient<IParameterDescriptorFactory, DefaultParameterDescriptorFactory>();
-            yield return describe.Transient<IValueProviderFactory, RouteValueValueProviderFactory>();
-            yield return describe.Transient<IValueProviderFactory, QueryStringValueProviderFactory>();
             yield return describe.Transient<IControllerAssemblyProvider, AppDomainControllerAssemblyProvider>();
             yield return describe.Transient<IActionDiscoveryConventions, DefaultActionDiscoveryConventions>();
             yield return describe.Instance<IFileSystem>(new PhysicalFileSystem(env.ApplicationBasePath));
@@ -61,6 +59,7 @@ namespace Microsoft.AspNet.Mvc
 
             yield return describe.Transient<IValueProviderFactory, RouteValueValueProviderFactory>();
             yield return describe.Transient<IValueProviderFactory, QueryStringValueProviderFactory>();
+            yield return describe.Transient<IValueProviderFactory, FormValueProviderFactory>();
 
             yield return describe.Transient<IModelBinder, TypeConverterModelBinder>();
             yield return describe.Transient<IModelBinder, TypeMatchModelBinder>();
