@@ -71,26 +71,30 @@ namespace Microsoft.AspNet.Routing.Template
             }
             else
             {
-                await _target.RouteAsync(new RouteContext(context.HttpContext){ Values = values });
+                // Not currently doing anything to clean this up if it's not a match. Consider hardening this.
+                context.Values = values;
+
+                await _target.RouteAsync(context);
             }
         }
 
         public string BindPath(BindPathContext context)
         {
-            // Validate that the target can accept these values - if the target generates a value
-            // then that can short circuit.
+            // Validate that the target can accept these values.
             var path = _target.BindPath(context);
             if (path != null)
             {
+                // If the target generates a value then that can short circuit.
                 return path;
             }
             else if (!context.IsBound)
             {
+                // The target has rejected these values.
                 return null;
             }
 
             // This could be optimized more heavily - right now we try to do the full url
-            // generation after validating, but we could do it in two phases.
+            // generation after validating, but we could do it in two phases if the perf is better.
             path = _binder.Bind(_defaults, context.AmbientValues, context.Values);
             if (path == null)
             {
