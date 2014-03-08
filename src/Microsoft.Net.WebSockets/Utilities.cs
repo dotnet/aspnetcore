@@ -33,10 +33,11 @@ namespace Microsoft.Net.WebSockets
             };
             int maskOffset = 0;
 
-            for (int i = data.Offset; i < data.Offset + data.Count; i++)
+            int end = data.Offset + data.Count;
+            for (int i = data.Offset; i < end; i++)
             {
-                data.Array[i] = (byte)(data.Array[i] ^ maskBytes[maskOffset]);
-                maskOffset = (maskOffset + 1) % 4;
+                data.Array[i] ^= maskBytes[maskOffset];
+                maskOffset = (maskOffset + 1) & 0x3; // fast % 4;
             }
         }
 

@@ -154,15 +154,8 @@ namespace Microsoft.Net.WebSockets
             }
 
             // Handle fragmentation, remember the first frame type
-            int opCode = Constants.OpCodes.ContinuationFrame;
-            if (_frameInProgress.OpCode == Constants.OpCodes.BinaryFrame
-                || _frameInProgress.OpCode == Constants.OpCodes.TextFrame
-                || _frameInProgress.OpCode == Constants.OpCodes.CloseFrame)
-            {
-                opCode = _frameInProgress.OpCode;
-                _firstDataOpCode = opCode;
-            }
-            else if (_frameInProgress.OpCode == Constants.OpCodes.ContinuationFrame)
+            int opCode = _frameInProgress.OpCode;
+            if (opCode == Constants.OpCodes.ContinuationFrame)
             {
                 if (!_firstDataOpCode.HasValue)
                 {
@@ -170,39 +163,34 @@ namespace Microsoft.Net.WebSockets
                 }
                 opCode = _firstDataOpCode.Value;
             }
+            else
+            {
+                _firstDataOpCode = opCode;
+            }
 
             if (opCode == Constants.OpCodes.CloseFrame)
             {
                 return await ProcessCloseFrameAsync(cancellationToken);
             }
 
-            WebSocketReceiveResult result;
-
-            WebSocketMessageType messageType = Utilities.GetMessageType(opCode);
-            if (_frameBytesRemaining == 0)
-            {
-                // End of an empty frame?
-                result = new WebSocketReceiveResult(0, messageType, _frameInProgress.Fin);
-                if (_frameInProgress.Fin)
-                {
-                    _firstDataOpCode = null;
-                }
-                _frameInProgress = null;
-                return result;
-            }
-
             // Make sure there's at least some data in the buffer
-            await EnsureDataAvailableOrReadAsync(1, cancellationToken);
+            int bytesToBuffer = (int)Math.Min((long)_receiveBuffer.Length, _frameBytesRemaining);
+            await EnsureDataAvailableOrReadAsync(bytesToBuffer, cancellationToken);
+
             // Copy buffered data to the users buffer
             int bytesToRead = (int)Math.Min((long)buffer.Count, _frameBytesRemaining);
             int bytesToCopy = Math.Min(bytesToRead, _receiveBufferBytes);
             Array.Copy(_receiveBuffer, _receiveBufferOffset, buffer.Array, buffer.Offset, bytesToCopy);
+
             if (_unmaskInput)
             {
                 // TODO: mask alignment may be off between reads.
                 // _frameInProgress.Masked == _unmaskInput already verified
                 Utilities.MaskInPlace(_frameInProgress.MaskKey, new ArraySegment<byte>(buffer.Array, buffer.Offset, bytesToCopy));
             }
+
+            WebSocketReceiveResult result;
+            WebSocketMessageType messageType = Utilities.GetMessageType(opCode);
             if (bytesToCopy == _frameBytesRemaining)
             {
                 result = new WebSocketReceiveResult(bytesToCopy, messageType, _frameInProgress.Fin);
@@ -216,6 +204,7 @@ namespace Microsoft.Net.WebSockets
             {
                 result = new WebSocketReceiveResult(bytesToCopy, messageType, false);
             }
+
             _frameBytesRemaining -= bytesToCopy;
             _receiveBufferBytes -= bytesToCopy;
             _receiveBufferOffset += bytesToCopy;
@@ -370,7 +359,7 @@ namespace Microsoft.Net.WebSockets
             if (State == WebSocketState.CloseSent)
             {
                 // Do a receiving drain
-                byte[] data = new byte[1024];
+                byte[] data = new byte[_receiveBuffer.Length];
                 WebSocketReceiveResult result;
                 do
                 {

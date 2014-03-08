@@ -24,7 +24,7 @@ namespace Microsoft.Net.WebSockets.Client
 
         public WebSocketClient()
         {
-            ReceiveBufferSize = 1024;
+            ReceiveBufferSize = 1024 * 64;
         }
 
         public int ReceiveBufferSize

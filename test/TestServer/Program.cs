@@ -41,7 +41,7 @@ namespace TestServer
 
                 while (received.MessageType != WebSocketMessageType.Close)
                 {
-                    Console.WriteLine("Echo");
+                    // Console.WriteLine("Echo, " + received.Count + ", " + received.MessageType + ", " + received.EndOfMessage);
                     // Echo anything we receive
                     await webSocket.SendAsync(new ArraySegment<byte>(buffer, 0, received.Count), received.MessageType, received.EndOfMessage, CancellationToken.None);
 
