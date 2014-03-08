@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Mvc
                 var controllerAttributes = cd.ControllerTypeInfo.GetCustomAttributes(inherit: true).ToArray();
                 var globalAndControllerFilters =
                     controllerAttributes.OfType<IFilter>()
-                                        .Select(filter => new FilterDescriptor(filter, FilterOrigin.Controlller))
+                                        .Select(filter => new FilterDescriptor(filter, FilterOrigin.Controller))
                                         .Concat(_globalFilters)
                                         .OrderBy(d => d, FilterDescriptorComparer.Comparer)
                                         .ToArray();

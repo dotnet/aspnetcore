@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Mvc.Filters
 {
-    // This one lives in the FilterDescriptors namespace, and only intended to be consumed by folks that rewrite the action invoker.
+    // This one lives in the Filters namespace, and only intended to be consumed by folks that rewrite the action invoker.
     public class ReflectedActionFilterEndPoint : IActionFilter
     {
         private readonly Func<object[], Task<object>> _coreMethodInvoker;

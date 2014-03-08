@@ -4,7 +4,7 @@ namespace Microsoft.AspNet.Mvc
 {
     public class FilterDescriptorComparer : IComparer<FilterDescriptor>
     {
-        private static FilterDescriptorComparer _comparer = new FilterDescriptorComparer();
+        private static readonly FilterDescriptorComparer _comparer = new FilterDescriptorComparer();
 
         public static FilterDescriptorComparer Comparer { get { return _comparer; } }
 

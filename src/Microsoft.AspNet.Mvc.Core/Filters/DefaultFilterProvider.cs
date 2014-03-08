@@ -55,8 +55,7 @@ namespace Microsoft.AspNet.Mvc.Filters
             if (typeFilterSignature != null)
             {
                 // TODO: How do we pass extra parameters
-                var typeFilter =
-                    ServiceProvider.GetService<TypeActivator>().CreateInstance(typeFilterSignature.ImplementationType);
+                var typeFilter = ActivatorUtilities.CreateInstance(ServiceProvider, typeFilterSignature.ImplementationType);
 
                 AddFilters(context, typeFilter, true);
                 failIfNotFilter = false;
