@@ -1,12 +1,22 @@
 {
   "version": "0.1-alpha-*",
   "dependencies": {
-    "xunit": "1.9.2",
-	"Microsoft.AspNet.Hosting":"",
-	"Microsoft.AspNet.Abstractions":"0.1-alpha-*",
-	"Microsoft.AspNet.DependencyInjection":"0.1-alpha-*"
+    "Microsoft.AspNet.Hosting": "",
+    "Microsoft.AspNet.Abstractions":"0.1-alpha-*",
+    "Microsoft.AspNet.DependencyInjection":"0.1-alpha-*",
+    "Xunit.KRunner": "0.1-alpha-*",
+    "xunit.abstractions": "3.0.0-alpha-*",
+    "xunit2": "0.1-alpha-*",
+    "xunit2.assert": "0.1-alpha-*"
   },
   "configurations": {
-    "net45": {}
+    "net45": {
+        "dependencies": {
+            "System.Runtime" : ""
+        }
+    }
+  },
+  "commands": {
+    "test": "Xunit.KRunner"
   }
 }
