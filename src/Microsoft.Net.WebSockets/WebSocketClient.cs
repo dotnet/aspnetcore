@@ -24,7 +24,14 @@ namespace Microsoft.Net.WebSockets.Client
 
         public WebSocketClient()
         {
-            ReceiveBufferSize = 1024 * 64;
+            ReceiveBufferSize = 1024 * 16;
+            KeepAliveInterval = TimeSpan.FromMinutes(2);
+        }
+
+        public TimeSpan KeepAliveInterval
+        {
+            get;
+            set;
         }
 
         public int ReceiveBufferSize
@@ -85,7 +92,7 @@ namespace Microsoft.Net.WebSockets.Client
 
             Stream stream = response.GetResponseStream();
 
-            return CommonWebSocket.CreateClientWebSocket(stream, null, ReceiveBufferSize, useZeroMask: UseZeroMask);
+            return CommonWebSocket.CreateClientWebSocket(stream, null, KeepAliveInterval, ReceiveBufferSize, useZeroMask: UseZeroMask);
         }
     }
 }
