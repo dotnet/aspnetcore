@@ -171,11 +171,6 @@ namespace Microsoft.Net.WebSockets
                 opCode = _firstDataOpCode.Value;
             }
 
-            if (_frameInProgress.Fin)
-            {
-                _firstDataOpCode = null;
-            }
-
             if (opCode == Constants.OpCodes.CloseFrame)
             {
                 return await ProcessCloseFrameAsync(cancellationToken);
@@ -188,6 +183,10 @@ namespace Microsoft.Net.WebSockets
             {
                 // End of an empty frame?
                 result = new WebSocketReceiveResult(0, messageType, _frameInProgress.Fin);
+                if (_frameInProgress.Fin)
+                {
+                    _firstDataOpCode = null;
+                }
                 _frameInProgress = null;
                 return result;
             }
@@ -207,6 +206,10 @@ namespace Microsoft.Net.WebSockets
             if (bytesToCopy == _frameBytesRemaining)
             {
                 result = new WebSocketReceiveResult(bytesToCopy, messageType, _frameInProgress.Fin);
+                if (_frameInProgress.Fin)
+                {
+                    _firstDataOpCode = null;
+                }
                 _frameInProgress = null;
             }
             else
