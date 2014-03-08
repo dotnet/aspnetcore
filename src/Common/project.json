@@ -1,3 +1,6 @@
 {
-  "shared": "*.cs"
+  "shared": "*.cs",
+  "dependencies": {
+    "System.Runtime" : "4.0.20.0"
+  }
 }
