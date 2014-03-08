@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             var syntaxTrees = new[] { CSharpSyntaxTree.ParseText(content) };
             var targetFramework = _environment.TargetFramework;
 
-            var references = GetApplicationReferences().ToList();
+            var references = GetApplicationReferences();
 
             var assemblyName = Path.GetRandomFileName();
 
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                     {
                         var formatter = new DiagnosticFormatter();
 
-                        var messages = result.Diagnostics.Where(IsError).Select(d => GetCompilationMessage(formatter, d));
+                        var messages = result.Diagnostics.Where(IsError).Select(d => GetCompilationMessage(formatter, d)).ToList();
 
                         return Task.FromResult(CompilationResult.Failed(content, messages));
                     }
@@ -63,51 +63,76 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             }
         }
 
-        private IEnumerable<MetadataReference> GetApplicationReferences()
+        private List<MetadataReference> GetApplicationReferences()
         {
-            var assemblyNames = new[] {
-                _environment.ApplicationName,
-                typeof(RoslynCompilationService).GetTypeInfo().Assembly.GetName().Name
+            var references = new List<MetadataReference>();
+            var applicationExport = _exporter.GetDependencyExport(_environment.ApplicationName, _environment.TargetFramework);
+
+            // HACK: This is a hack, we need a way to get the application's dependencies.
+            // Today this is relying on dynamic compilation
+            ExtractReferences(applicationExport, references, expandCompilationReferences: true);
+
+            var assemblies = new[] {
+                "System.Linq",
+                "System.Dynamic",
+                "System.Dynamic.Runtime",
+                typeof(HtmlString).GetTypeInfo().Assembly.GetName().Name
             };
 
-            return assemblyNames.Select(a => _exporter.GetDependencyExport(a, _environment.TargetFramework))
-                                .SelectMany(e => e.MetadataReferences.SelectMany(ConvertMetadataReference));
+            foreach (var assemblyName in assemblies)
+            {
+                var export = _exporter.GetDependencyExport(assemblyName, _environment.TargetFramework);
+
+                if (export == null)
+                {
+                    continue;
+                }
+
+                ExtractReferences(export, references, expandCompilationReferences: false);
+            }
+
+            return references;
         }
 
-        private IEnumerable<MetadataReference> ConvertMetadataReference(IMetadataReference metadataReference)
+        private void ExtractReferences(IDependencyExport export, List<MetadataReference> references, bool expandCompilationReferences)
         {
-            var fileMetadataReference = metadataReference as IMetadataFileReference;
-
-            if (fileMetadataReference != null)
+            foreach (var metadataReference in export.MetadataReferences)
             {
-                string path = fileMetadataReference.Path;
+                var fileMetadataReference = metadataReference as IMetadataFileReference;
+
+                if (fileMetadataReference != null)
+                {
+                    string path = fileMetadataReference.Path;
 #if NET45
-                return new[] { new MetadataFileReference(path) };
+                    references.Add(new MetadataFileReference(path));
 #else
-                // TODO: What about access to the file system? We need to be able to 
-                // read files from anywhere on disk, not just under the web root
-                using (var stream = File.OpenRead(path))
-                {
-                    return new[] { new MetadataImageReference(stream) };
-                }
+                    // TODO: What about access to the file system? We need to be able to 
+                    // read files from anywhere on disk, not just under the web root
+                    using (var stream = File.OpenRead(path))
+                    {
+                        references.Add(new MetadataImageReference(stream));
+                    }
 #endif
-            }
-
-            var roslynReference = metadataReference as IRoslynMetadataReference;
-
-            if (roslynReference != null)
-            {
-                // REVIEW: We should really only compile against the app's closure
-                var compilatonReference = roslynReference.MetadataReference as CompilationReference;
-                if (compilatonReference != null)
-                {
-                    return new[] { compilatonReference }.Concat(compilatonReference.Compilation.References);
                 }
+                else
+                {
+                    var roslynReference = metadataReference as IRoslynMetadataReference;
 
-                return new[] { roslynReference.MetadataReference };
+                    if (roslynReference != null)
+                    {
+                        references.Add(roslynReference.MetadataReference);
+
+                        if (expandCompilationReferences)
+                        {
+                            var compilatonReference = roslynReference.MetadataReference as CompilationReference;
+                            if (compilatonReference != null)
+                            {
+                                references.AddRange(compilatonReference.Compilation.References);
+                            }
+                        }
+                    }
+                }
             }
-
-            throw new NotSupportedException();
         }
 
         private CompilationMessage GetCompilationMessage(DiagnosticFormatter formatter, Diagnostic diagnostic)
