@@ -1,11 +1,21 @@
 {
-  "version" : "0.1-alpha-*",
+  "version": "0.1-alpha-*",
   "dependencies": {
-    "Microsoft.AspNet.Identity" : "0.1-alpha-*",
-    "System.Security.Claims" : "0.1-alpha-*"
+    "Microsoft.AspNet.Identity": "0.1-alpha-*",
+    "System.Security.Claims": "0.1-alpha-*"
   },
   "configurations": {
     "net45": {},
-    "k10": {}
+    "k10": {
+      "dependencies": {
+        "System.Collections": "4.0.0.0",
+        "System.Linq": "4.0.0.0",
+        "System.Linq.Expressions": "4.0.0.0",
+        "System.Linq.Queryable": "4.0.0.0",
+        "System.Reflection": "4.0.10.0",
+        "System.Runtime": "4.0.20.0",
+        "System.Threading.Tasks": "4.0.0.0"
+      }
+    }
   }
 }

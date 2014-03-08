@@ -1,10 +1,14 @@
 {
-  "version" : "0.1-alpha-*",
+  "version": "0.1-alpha-*",
   "dependencies": {
-    "Microsoft.AspNet.Identity" : "0.1-alpha-*"
+    "Microsoft.AspNet.Identity": "0.1-alpha-*"
   },
   "configurations": {
     "net45": {},
-    "k10": {}
+    "k10": {
+      "dependencies": {
+        "System.Runtime": "4.0.20.0"
+      }
+    }
   }
 }
