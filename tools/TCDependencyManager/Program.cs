@@ -36,7 +36,7 @@ namespace TCDependencyManager
             Console.WriteLine("Creating dependency tree");
             MapRepoDependencies(projects);
 
-            Console.WriteLine("Ensuring depndencies are consistent on TeamCity");
+            Console.WriteLine("Ensuring dependencies are consistent on TeamCity");
             foreach (var repo in repos.Where(p => p.Dependencies.Any()))
             {
                 teamCity.EnsureDependencies(repo.Name, repo.Dependencies.Select(r => r.Name));

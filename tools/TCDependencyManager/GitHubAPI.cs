@@ -55,6 +55,7 @@ namespace TCDependencyManager
                                      ProjectName = p,
                                      Dependencies = ReadDependencies(repo, p)
                                  })
+                    .Where(p => p.Dependencies != null)
                     .ToList();
         }
 
@@ -70,6 +71,13 @@ namespace TCDependencyManager
                     var content = JsonConvert.DeserializeObject<JObject>(
                                     Encoding.UTF8.GetString(
                                         Convert.FromBase64String(result["content"].Value<string>())));
+                    
+                    // Ignore shared repos since they can have the same names
+                    if (content["shared"] != null)
+                    {
+                        return null;
+                    }
+
                     var dependencies = (JObject)content["dependencies"];
                     if (dependencies != null)
                     {
@@ -78,9 +86,11 @@ namespace TCDependencyManager
                                        .Select(prop => prop.Name)
                                        .ToList();
                     }
+                    return new List<string>(0);
                 }
             }
-            return new List<string>(0);
+            // Ignore directories that do not have a project.json
+            return null;
         }
 
         private HttpClient GetClient()

@@ -112,7 +112,5 @@ namespace TCDependencyManager
 
             return client;
         }
-
-
     }
 }
