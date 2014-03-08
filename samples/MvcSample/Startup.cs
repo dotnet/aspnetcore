@@ -12,14 +12,11 @@ namespace MvcSample
 {
     public class Startup
     {
-        private readonly IServiceProvider _serviceProvider;
-        private readonly IApplicationEnvironment _env;
+        private IServiceProvider _serviceProvider;
 
-        public Startup(IServiceProvider serviceProvider,
-                       IApplicationEnvironment env)
+        public Startup(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
-            _env = env;
         }
 
         public void Configuration(IAppBuilder app)
@@ -33,11 +30,11 @@ namespace MvcSample
         private void ConfigureMvc(IBuilder builder)
         {
             var configuration = new Configuration();
-            var services = MvcServices.GetDefaultServices(configuration, _env);
-            var serviceProvider = new ServiceProvider().Add(services);
+            var services = MvcServices.GetDefaultServices(configuration);
+            var serviceProvider = new ServiceProvider(_serviceProvider).Add(services);
 
             serviceProvider.AddInstance<PassThroughAttribute>(new PassThroughAttribute());
-            
+
             var routes = new RouteCollection()
             {
                 DefaultHandler = new MvcApplication(serviceProvider),

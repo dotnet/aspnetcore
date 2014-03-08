@@ -1,20 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.AspNet.ConfigurationModel;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.DependencyInjection.NestedProviders;
-using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Razor;
-using Microsoft.Net.Runtime;
+using Microsoft.AspNet.Mvc.Razor.Compilation;
 
 namespace Microsoft.AspNet.Mvc
 {
     public class MvcServices
     {
-        public static IEnumerable<IServiceDescriptor> GetDefaultServices(IConfiguration configuration,
-                                                                         IApplicationEnvironment env)
+        public static IEnumerable<IServiceDescriptor> GetDefaultServices(IConfiguration configuration)
         {
             var describe = new ServiceDescriber(configuration);
 
@@ -27,19 +24,11 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Transient<IParameterDescriptorFactory, DefaultParameterDescriptorFactory>();
             yield return describe.Transient<IControllerAssemblyProvider, AppDomainControllerAssemblyProvider>();
             yield return describe.Transient<IActionDiscoveryConventions, DefaultActionDiscoveryConventions>();
-            yield return describe.Instance<IFileSystem>(new PhysicalFileSystem(env.ApplicationBasePath));
 
             yield return describe.Instance<IMvcRazorHost>(new MvcRazorHost(typeof(RazorView).FullName));
 
-#if NET45
-            // TODO: Container chaining to flow services from the host to this container
+            yield return describe.Transient<ICompilationService, RoslynCompilationService>();
 
-            yield return describe.Transient<ICompilationService, CscBasedCompilationService>();
-
-            // TODO: Make this work like normal when we get container chaining
-            // TODO: Update this when we have the new host services
-            // yield return describe.Instance<ICompilationService>(new RoslynCompilationService(hostServiceProvider));
-#endif
             yield return describe.Transient<IRazorCompilationService, RazorCompilationService>();
             yield return describe.Transient<IVirtualPathViewFactory, VirtualPathViewFactory>();
             yield return describe.Transient<IViewEngine, RazorViewEngine>();

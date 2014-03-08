@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.Versioning;
 
-namespace Microsoft.Net.Runtime.Services
+namespace Microsoft.Net.Runtime
 {
     [AssemblyNeutral]
     public interface IMetadataReferenceProvider

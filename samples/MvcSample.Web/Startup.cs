@@ -10,17 +10,12 @@ namespace MvcSample.Web
 {
     public class Startup
     {
-        private readonly IApplicationEnvironment _env;
-
-        public Startup(IApplicationEnvironment env)
-        {
-            _env = env;
-        }
-
         public void Configuration(IBuilder app)
         {
             var configuration = new Configuration();
-            var serviceProvider = new ServiceProvider().Add(MvcServices.GetDefaultServices(configuration, _env));
+            var services = MvcServices.GetDefaultServices(configuration);
+            var serviceProvider =
+                DefaultServiceProvider.Create(app.ServiceProvider, services);
 
             var routes = new RouteCollection()
             {

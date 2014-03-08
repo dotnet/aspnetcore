@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using Microsoft.Net.Runtime.Services;
 
 namespace Microsoft.Net.Runtime
 {
