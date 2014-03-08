@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc.Filters
         private readonly IFilter<T>[] _filters;
         private readonly T _context;
 
-        // Filters are already ordered externally.
+        // FilterDescriptors are already ordered externally.
         public FilterPipelineBuilder(IEnumerable<IFilter<T>> filters, T context)
         {
             _filters = filters.ToArray();

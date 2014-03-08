@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNet.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.Filters
@@ -12,28 +11,23 @@ namespace Microsoft.AspNet.Mvc.Filters
             ServiceProvider = serviceProvider;
         }
 
-
         public virtual void Invoke(FilterProviderContext context, Action callNext)
         {
-            List<IFilter> filters = context.ActionDescriptor.Filters;
+            FilterDescriptor[] filterDescriptors;
 
-            if (filters == null)
+            if (context.ActionDescriptor.FilterDescriptors != null)
             {
-                filters = new List<IFilter>();
-            }
-            else
-            {
-                filters = filters.ToList(); // make a copy of the list, TODO: Make the actiondescriptor immutable
+                // make a copy of the list, TODO: Make the actiondescriptor immutable
+                filterDescriptors = context.ActionDescriptor.FilterDescriptors.ToArray();
 
-            }
+                //AddGlobalFilters_moveToAdPipeline(filters);
 
-            AddGlobalFilters(filters);
-
-            if (filters.Count > 0)
-            {
-                for (int i = 0; i < filters.Count; i++)
+                if (filterDescriptors.Length > 0)
                 {
-                    GetFilter(context, filters[i]);
+                    for (int i = 0; i < filterDescriptors.Length; i++)
+                    {
+                        GetFilter(context, filterDescriptors[i].Filter);
+                    }
                 }
             }
 
@@ -45,66 +39,30 @@ namespace Microsoft.AspNet.Mvc.Filters
 
         public virtual void GetFilter(FilterProviderContext context, IFilter filter)
         {
+            bool failIfNotFilter = true;
+
             var serviceFilterSignature = filter as IServiceFilter;
             if (serviceFilterSignature != null)
             {
+                // TODO: How do we pass extra parameters
                 var serviceFilter = ServiceProvider.GetService(serviceFilterSignature.ServiceType);
 
                 AddFilters(context, serviceFilter, true);
-
-                // if the filter implements more than the just IServiceFilter
-                AddFilters(context, filter, false);
+                failIfNotFilter = false;
             }
-            else
+
+            var typeFilterSignature = filter as ITypeFilter;
+            if (typeFilterSignature != null)
             {
-                AddFilters(context, filter, true);
-            }
-        }
+                // TODO: How do we pass extra parameters
+                var typeFilter =
+                    ServiceProvider.GetService<TypeActivator>().CreateInstance(typeFilterSignature.ImplementationType);
 
-        public virtual List<IFilter> AddGlobalFilters(List<IFilter> filters)
-        {
-            var globalFilters = ServiceProvider.GetService<IEnumerable<IFilter>>().AsArray();
-
-            if (globalFilters == null || globalFilters.Length == 0)
-            {
-                return filters;
+                AddFilters(context, typeFilter, true);
+                failIfNotFilter = false;
             }
 
-            return MergeSorted(filters, globalFilters);
-        }
-
-        private List<IFilter> MergeSorted(List<IFilter> filtersFromAction, IFilter[] globalFilters) 
-        {
-            if (globalFilters.Length == 0)
-            {
-                return filtersFromAction;
-            }
-
-            var list = new List<IFilter>();
-
-            var count = filtersFromAction.Count + globalFilters.Length;
-
-            for (int i = 0, j = 0; i + j < count; )
-            {
-                if (i >= filtersFromAction.Count)
-                {
-                    list.Add(globalFilters[j++]);
-                }
-                else if (j >= globalFilters.Length)
-                {
-                    list.Add(filtersFromAction[i++]);
-                }
-                else if (filtersFromAction[i].Order >= globalFilters[j].Order)
-                {
-                    list.Add(filtersFromAction[i++]);
-                }
-                else
-                {
-                    list.Add(globalFilters[j++]);
-                }
-            }
-
-            return list;
+            AddFilters(context, filter, failIfNotFilter);
         }
 
         protected IServiceProvider ServiceProvider { get; private set; }
@@ -169,7 +127,7 @@ namespace Microsoft.AspNet.Mvc.Filters
 
             if (shouldThrow)
             {
-                throw  new InvalidOperationException("Filter has to be IActionResultFilter, IActionFilter, IExceptionFilter or IAuthorizationFilter.");
+                throw new InvalidOperationException("Filter has to be IActionResultFilter, IActionFilter, IExceptionFilter or IAuthorizationFilter.");
             }
         }
     }

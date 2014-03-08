@@ -18,6 +18,6 @@ namespace Microsoft.AspNet.Mvc
 
         public List<ParameterDescriptor> Parameters { get; set; }
 
-        public List<IFilter> Filters { get; set; }
+        public List<FilterDescriptor> FilterDescriptors { get; set; }
     }
 }

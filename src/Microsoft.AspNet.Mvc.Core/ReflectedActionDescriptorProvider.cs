@@ -11,16 +11,21 @@ namespace Microsoft.AspNet.Mvc
         private readonly IActionDiscoveryConventions _conventions;
         private readonly IControllerDescriptorFactory _controllerDescriptorFactory;
         private readonly IParameterDescriptorFactory _parameterDescriptorFactory;
+        private readonly IEnumerable<FilterDescriptor> _globalFilters;
 
         public ReflectedActionDescriptorProvider(IControllerAssemblyProvider controllerAssemblyProvider,
                                                  IActionDiscoveryConventions conventions,
                                                  IControllerDescriptorFactory controllerDescriptorFactory,
-                                                 IParameterDescriptorFactory parameterDescriptorFactory)
+                                                 IParameterDescriptorFactory parameterDescriptorFactory,
+                                                 IEnumerable<IFilter> globalFilters)
         {
             _controllerAssemblyProvider = controllerAssemblyProvider;
             _conventions = conventions;
             _controllerDescriptorFactory = controllerDescriptorFactory;
             _parameterDescriptorFactory = parameterDescriptorFactory;
+            var filters = globalFilters ?? Enumerable.Empty<IFilter>();
+
+            _globalFilters = filters.Select(f => new FilterDescriptor(f, FilterOrigin.Global));
         }
 
         public int Order
@@ -44,7 +49,12 @@ namespace Microsoft.AspNet.Mvc
             foreach (var cd in controllerDescriptors)
             {
                 var controllerAttributes = cd.ControllerTypeInfo.GetCustomAttributes(inherit: true).ToArray();
-                var filtersFromController = GetOrderedFilterAttributes(controllerAttributes);
+                var globalAndControllerFilters =
+                    controllerAttributes.OfType<IFilter>()
+                                        .Select(filter => new FilterDescriptor(filter, FilterOrigin.Controlller))
+                                        .Concat(_globalFilters)
+                                        .OrderBy(d => d, FilterDescriptorComparer.Comparer)
+                                        .ToArray();
 
                 foreach (var methodInfo in cd.ControllerTypeInfo.DeclaredMethods)
                 {
@@ -57,23 +67,16 @@ namespace Microsoft.AspNet.Mvc
 
                     foreach (var actionInfo in actionInfos)
                     {
-                        yield return BuildDescriptor(cd, methodInfo, actionInfo, filtersFromController);
+                        yield return BuildDescriptor(cd, methodInfo, actionInfo, globalAndControllerFilters);
                     }
                 }
             }
         }
 
-        private IFilter[] GetOrderedFilterAttributes(object[] attributes)
-        {
-            var filters = attributes.OfType<IFilter>().OrderByDescending(filter => filter.Order);
-
-            return filters.ToArray();
-        }
-
         private ReflectedActionDescriptor BuildDescriptor(ControllerDescriptor controllerDescriptor,
                                                           MethodInfo methodInfo,
                                                           ActionInfo actionInfo,
-                                                          IFilter[] controllerFilters)
+                                                          FilterDescriptor[] globalAndControllerFilters)
         {
             var ad = new ReflectedActionDescriptor
             {
@@ -110,41 +113,13 @@ namespace Microsoft.AspNet.Mvc
             var attributes = methodInfo.GetCustomAttributes(inherit: true).ToArray();
 
             // TODO: add ordering support such that action filters are ahead of controller filters if they have the same order
-            var filtersFromAction = GetOrderedFilterAttributes(attributes);
+            var filtersFromAction = attributes.OfType<IFilter>().Select(filter => new FilterDescriptor(filter, FilterOrigin.Action));
 
-            ad.Filters = MergeSorted(filtersFromAction, controllerFilters);
+            ad.FilterDescriptors = filtersFromAction.Concat(globalAndControllerFilters)
+                                                    .OrderBy(d => d, FilterDescriptorComparer.Comparer)
+                                                    .ToList();
 
             return ad;
-        }
-
-        // Merge filters, filters with the same order are prioritzed by origin action executes ahead of controller.
-        private List<IFilter> MergeSorted(IFilter[] filtersFromAction, IFilter[] filtersFromController)
-        {
-            var list = new List<IFilter>();
-
-            var count = filtersFromAction.Length + filtersFromController.Length;
-
-            for (int i = 0, j = 0; i + j < count; )
-            {
-                if (i >= filtersFromAction.Length)
-                {
-                    list.Add(filtersFromController[j++]);
-                }
-                else if (j >= filtersFromController.Length)
-                {
-                    list.Add(filtersFromAction[i++]);
-                }
-                else if (filtersFromAction[i].Order >= filtersFromController[j].Order)
-                {
-                    list.Add(filtersFromAction[i++]);
-                }
-                else
-                {
-                    list.Add(filtersFromController[j++]);
-                }
-            }
-
-            return list;
         }
     }
 }
