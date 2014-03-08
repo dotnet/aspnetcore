@@ -79,11 +79,12 @@ namespace Microsoft.AspNet.StaticFiles
                     throw new ArgumentOutOfRangeException("length", length, string.Empty);
                 }
 
-                Stream fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 1024 * 64,
 #if NET45
+                Stream fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 1024 * 64,
                     FileOptions.Asynchronous | FileOptions.SequentialScan);
 #else
-                    useAsync: true);
+                // TODO: Bring back async when the contract gets it
+                Stream fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 1024 * 64);
 #endif
                 try
                 {
