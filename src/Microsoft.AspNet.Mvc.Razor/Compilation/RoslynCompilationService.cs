@@ -66,17 +66,26 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         private List<MetadataReference> GetApplicationReferences()
         {
             var references = new List<MetadataReference>();
-            var applicationExport = _exporter.GetDependencyExport(_environment.ApplicationName, _environment.TargetFramework);
 
-            // HACK: This is a hack, we need a way to get the application's dependencies.
-            // Today this is relying on dynamic compilation
-            ExtractReferences(applicationExport, references, expandCompilationReferences: true);
+            // TODO: We need a way to get the current application's dependencies
 
             var assemblies = new[] {
+                _environment.ApplicationName,
+#if NET45
+                "mscorlib",
+                "System",
+                "System.Core",
+                "Microsoft.CSharp",
+#else
                 "System.Linq",
+                "System.Collections",
                 "System.Dynamic",
                 "System.Dynamic.Runtime",
-                typeof(HtmlString).GetTypeInfo().Assembly.GetName().Name
+                "System.Collections.Generic",
+#endif
+                "Microsoft.AspNet.Mvc",
+                "Microsoft.AspNet.Mvc.Razor",
+                "Microsoft.AspNet.Mvc.Rendering",
             };
 
             foreach (var assemblyName in assemblies)
@@ -88,13 +97,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                     continue;
                 }
 
-                ExtractReferences(export, references, expandCompilationReferences: false);
+                ExtractReferences(export, references);
             }
 
             return references;
         }
 
-        private void ExtractReferences(IDependencyExport export, List<MetadataReference> references, bool expandCompilationReferences)
+        private void ExtractReferences(IDependencyExport export, List<MetadataReference> references)
         {
             foreach (var metadataReference in export.MetadataReferences)
             {
@@ -121,15 +130,6 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                     if (roslynReference != null)
                     {
                         references.Add(roslynReference.MetadataReference);
-
-                        if (expandCompilationReferences)
-                        {
-                            var compilatonReference = roslynReference.MetadataReference as CompilationReference;
-                            if (compilatonReference != null)
-                            {
-                                references.AddRange(compilatonReference.Compilation.References);
-                            }
-                        }
                     }
                 }
             }
