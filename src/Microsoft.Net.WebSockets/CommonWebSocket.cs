@@ -36,6 +36,7 @@ namespace Microsoft.Net.WebSockets
         private FrameHeader _frameInProgress;
         private long _frameBytesRemaining;
         private int? _firstDataOpCode;
+        private int _dataUnmaskOffset;
 
         public CommonWebSocket(Stream stream, string subProtocol, TimeSpan keepAliveInterval, int receiveBufferSize, bool maskOutput, bool useZeroMask, bool unmaskInput)
         {
@@ -242,9 +243,8 @@ namespace Microsoft.Net.WebSockets
 
             if (_unmaskInput)
             {
-                // TODO: mask alignment may be off between reads.
                 // _frameInProgress.Masked == _unmaskInput already verified
-                Utilities.MaskInPlace(_frameInProgress.MaskKey, new ArraySegment<byte>(buffer.Array, buffer.Offset, bytesToCopy));
+                Utilities.MaskInPlace(_frameInProgress.MaskKey, ref _dataUnmaskOffset, new ArraySegment<byte>(buffer.Array, buffer.Offset, bytesToCopy));
             }
 
             WebSocketReceiveResult result;
@@ -257,6 +257,7 @@ namespace Microsoft.Net.WebSockets
                     _firstDataOpCode = null;
                 }
                 _frameInProgress = null;
+                _dataUnmaskOffset = 0;
             }
             else
             {

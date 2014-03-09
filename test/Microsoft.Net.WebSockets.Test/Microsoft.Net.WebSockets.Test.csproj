@@ -45,6 +45,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DuplexTests.cs" />
+    <Compile Include="BufferStream.cs" />
+    <Compile Include="DuplexStream.cs" />
     <Compile Include="UtilitiesTests.cs" />
     <Compile Include="WebSocketClientTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

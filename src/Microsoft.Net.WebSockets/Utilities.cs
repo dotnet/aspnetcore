@@ -16,8 +16,13 @@ namespace Microsoft.Net.WebSockets
             return frame;
         }
 
-        // Un/Masks the data in place
         public static void MaskInPlace(int mask, ArraySegment<byte> data)
+        {
+            int maskOffset = 0;
+            MaskInPlace(mask, ref maskOffset, data);
+        }
+
+        public static void MaskInPlace(int mask, ref int maskOffset, ArraySegment<byte> data)
         {
             if (mask == 0)
             {
@@ -31,7 +36,6 @@ namespace Microsoft.Net.WebSockets
                 (byte)(mask >> 8),
                 (byte)mask,
             };
-            int maskOffset = 0;
 
             int end = data.Offset + data.Count;
             for (int i = data.Offset; i < end; i++)
