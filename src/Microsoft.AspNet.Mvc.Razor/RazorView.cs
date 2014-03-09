@@ -74,6 +74,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                 {
 #if NET45
                     WebUtility.HtmlEncode(content.ToString(), writer);
+#else
+                    writer.Write(WebUtility.HtmlEncode(content.ToString()));
 #endif
                 }
             }
