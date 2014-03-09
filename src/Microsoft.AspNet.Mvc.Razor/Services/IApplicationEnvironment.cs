@@ -1,4 +1,5 @@
-﻿using System.Runtime.Versioning;
+﻿using System;
+using System.Runtime.Versioning;
 
 namespace Microsoft.Net.Runtime
 {
@@ -10,4 +11,7 @@ namespace Microsoft.Net.Runtime
         string ApplicationBasePath { get; }
         FrameworkName TargetFramework { get; }
     }
+
+    [AssemblyNeutral]
+    public class AssemblyNeutralAttribute : Attribute { }
 }
