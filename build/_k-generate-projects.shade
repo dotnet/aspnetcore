@@ -237,8 +237,8 @@ functions
                 var sourceExcludePattern = Get<string>(d, "exclude") ?? "";
                 var objPath = Path.Combine(projectDir, "obj");
                 var objPattern = Directory.Exists(objPath) ? Path.Combine(objPath, "**", "*.*") : projectDir;
-                
-                var csFiles = String.Join(Environment.NewLine, Files.Include(Path.Combine(projectDir, sourcePattern))
+
+                var csFiles = String.Join(Environment.NewLine, Files.Include(sourcePattern.Split(Path.PathSeparator).Select(p => Path.Combine(projectDir, p)).ToArray())
                                                                     .Exclude(Path.Combine(projectDir, sourceExcludePattern))
                                                                     .Exclude(objPattern)
                                                                     .Select(p => resxDesignerFiles.Contains(p) 
