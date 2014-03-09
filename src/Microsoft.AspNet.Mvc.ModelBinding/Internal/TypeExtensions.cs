@@ -5,23 +5,23 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
 {
     public static class TypeExtensions
     {
-        public static bool IsCompatibleWith(this Type type, object value)
+        public static bool IsCompatibleWith([NotNull] this Type type, object value)
         {
             return (value == null && AllowsNullValue(type)) ||
-                   type.GetTypeInfo().IsAssignableFrom(value.GetType().GetTypeInfo());
+                (value != null && type.GetTypeInfo().IsAssignableFrom(value.GetType().GetTypeInfo()));
         }
 
-        public static bool IsNullableValueType(this Type type)
+        public static bool IsNullableValueType([NotNull] this Type type)
         {
             return Nullable.GetUnderlyingType(type) != null;
         }
 
-        public static bool AllowsNullValue(this Type type)
+        public static bool AllowsNullValue([NotNull] this Type type)
         {
             return (!type.GetTypeInfo().IsValueType || IsNullableValueType(type));
         }
 
-        public static bool HasStringConverter(this Type type)
+        public static bool HasStringConverter([NotNull] this Type type)
         {
             // TODO: This depends on TypeConverter which does not exist in the CoreCLR.
             // return TypeDescriptor.GetConverter(type).CanConvertFrom(typeof(string));
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
             return false;
         }
 
-        public static Type[] GetTypeArgumentsIfMatch(Type closedType, Type matchingOpenType)
+        public static Type[] GetTypeArgumentsIfMatch([NotNull] Type closedType, Type matchingOpenType)
         {
             TypeInfo closedTypeInfo = closedType.GetTypeInfo();
             if (!closedTypeInfo.IsGenericType)

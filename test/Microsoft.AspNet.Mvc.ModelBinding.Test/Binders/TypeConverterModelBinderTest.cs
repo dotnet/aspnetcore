@@ -26,28 +26,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             // Assert
             Assert.False(retVal);
-            Assert.Equal("The value 'not an integer' is not valid for Int32.", bindingContext.ModelState["theModelName"].Errors[0].ErrorMessage);
-        }
-
-        [Fact]
-        public void BindModel_Error_FormatExceptionsTurnedIntoStringsInModelState_ErrorNotAddedIfCallbackReturnsNull()
-        {
-            // Arrange
-            ModelBindingContext bindingContext = GetBindingContext(typeof(int));
-            bindingContext.ValueProvider = new SimpleHttpValueProvider
-            {
-                { "theModelName", "not an integer" }
-            };
-
-            TypeConverterModelBinder binder = new TypeConverterModelBinder();
-
-            // Act
-            bool retVal = binder.BindModel(bindingContext);
-
-            // Assert
-            Assert.False(retVal);
             Assert.Null(bindingContext.Model);
-            Assert.True(bindingContext.ModelState.IsValid);
+            Assert.False(bindingContext.ModelState.IsValid);
+            Assert.Equal("Input string was not in a correct format.", bindingContext.ModelState["theModelName"].Errors[0].ErrorMessage);
         }
 
         // TODO: TypeConverter
