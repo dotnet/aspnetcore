@@ -225,21 +225,26 @@ functions
                 const string contentTemplate = @"<Content Include=""{0}"" />";
 
                 // Build the list of resx files
-                var resxFileNames = FindFilesOfType(projectDir, "*.resx");
+                var resxFileNames = Files.Include(Path.Combine(projectDir, "**", "*.resx"));
                 var resxDesignerFiles = new HashSet<string>(resxFileNames.Select(f => Path.ChangeExtension(f, "Designer.cs")), 
                                                             StringComparer.OrdinalIgnoreCase);
                 
                 var resxFiles 
                     = String.Join(Environment.NewLine,
-                                  resxFileNames.Select(p => String.Format(resxTemplate, p, projectName, Path.GetFileNameWithoutExtension(p))));
+                                  resxFileNames.Select(p => String.Format(resxTemplate, Path.Combine("..", "..", p), projectName, Path.GetFileNameWithoutExtension(p))));
                 
-                // Build the list of cs files
-                var csFiles 
-                    = String.Join(Environment.NewLine,
-                        FindFilesOfType(projectDir, "*.cs")
-                            .Select(p => resxDesignerFiles.Contains(p) 
-                                            ? String.Format(resxDesignerTemplate, p, Path.GetFileNameWithoutExtension(p).Replace(".Designer", "")) 
-                                            : String.Format(csTemplate, p)));
+                var sourcePattern = Get<string>(d, "code") ?? @"**\*.cs";
+                var sourceExcludePattern = Get<string>(d, "exclude") ?? "";
+                var objPath = Path.Combine(projectDir, "obj");
+                var objPattern = Directory.Exists(objPath) ? Path.Combine(objPath, "**", "*.*") : projectDir;
+                
+                var csFiles = String.Join(Environment.NewLine, Files.Include(Path.Combine(projectDir, sourcePattern))
+                                                                    .Exclude(Path.Combine(projectDir, sourceExcludePattern))
+                                                                    .Exclude(objPattern)
+                                                                    .Select(p => resxDesignerFiles.Contains(p) 
+                                            ? String.Format(resxDesignerTemplate, Path.Combine("..", "..", p), Path.GetFileNameWithoutExtension(p).Replace(".Designer", "")) 
+                                            : String.Format(csTemplate, Path.Combine("..", "..", p))));
+                     
 
                 var contentFileExtensions = new [] {
                     "*.cshtml",
