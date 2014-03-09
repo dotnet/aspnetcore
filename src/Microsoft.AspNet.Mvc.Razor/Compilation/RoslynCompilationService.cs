@@ -79,7 +79,6 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 #else
                 "System.Linq",
                 "System.Collections",
-                "System.Dynamic",
                 "System.Dynamic.Runtime",
                 "System.Collections.Generic",
 #endif
@@ -87,6 +86,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                 "Microsoft.AspNet.Mvc.Razor",
                 "Microsoft.AspNet.Mvc.Rendering",
             };
+
+            var exports = new List<IDependencyExport>();
 
             foreach (var assemblyName in assemblies)
             {
@@ -97,42 +98,57 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                     continue;
                 }
 
-                ExtractReferences(export, references);
+                exports.Add(export);
             }
+
+            ExtractReferences(exports, references);
 
             return references;
         }
 
-        private void ExtractReferences(IDependencyExport export, List<MetadataReference> references)
+        private void ExtractReferences(List<IDependencyExport> exports, List<MetadataReference> references)
         {
-            foreach (var metadataReference in export.MetadataReferences)
+            var paths = new HashSet<string>();
+
+            foreach (var export in exports)
             {
-                var fileMetadataReference = metadataReference as IMetadataFileReference;
-
-                if (fileMetadataReference != null)
+                foreach (var metadataReference in export.MetadataReferences)
                 {
-                    string path = fileMetadataReference.Path;
-#if NET45
-                    references.Add(new MetadataFileReference(path));
-#else
-                    // TODO: What about access to the file system? We need to be able to 
-                    // read files from anywhere on disk, not just under the web root
-                    using (var stream = File.OpenRead(path))
+                    var fileMetadataReference = metadataReference as IMetadataFileReference;
+
+                    if (fileMetadataReference != null)
                     {
-                        references.Add(new MetadataImageReference(stream));
+                        string path = fileMetadataReference.Path;
+
+                        paths.Add(path);
                     }
-#endif
-                }
-                else
-                {
-                    var roslynReference = metadataReference as IRoslynMetadataReference;
-
-                    if (roslynReference != null)
+                    else
                     {
-                        references.Add(roslynReference.MetadataReference);
+                        var roslynReference = metadataReference as IRoslynMetadataReference;
+
+                        if (roslynReference != null)
+                        {
+                            references.Add(roslynReference.MetadataReference);
+                        }
                     }
                 }
             }
+
+            references.AddRange(paths.Select(CreateMetadataFileReference));
+        }
+
+        private MetadataReference CreateMetadataFileReference(string path)
+        {
+#if NET45
+            return new MetadataFileReference(path);
+#else
+            // TODO: What about access to the file system? We need to be able to 
+            // read files from anywhere on disk, not just under the web root
+            using (var stream = File.OpenRead(path))
+            {
+                return new MetadataImageReference(stream);
+            }
+#endif
         }
 
         private CompilationMessage GetCompilationMessage(DiagnosticFormatter formatter, Diagnostic diagnostic)
