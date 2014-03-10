@@ -1,18 +1,12 @@
-﻿using System;
-using Microsoft.AspNet.Mvc.ModelBinding;
+﻿using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.Mvc
 {
     public class HtmlHelper<TModel> : HtmlHelper
     {
-        public HtmlHelper(RequestContext requestContext, ViewData<TModel> viewData)
-            : base(requestContext, viewData)
+        public HtmlHelper([NotNull]HttpContext httpContext, ViewData<TModel> viewData)
+            : base(httpContext, viewData)
         {
-            if (requestContext == null)
-            {
-                throw new ArgumentNullException("requestContext");
-            }
-
             ViewData = viewData;
         }
 

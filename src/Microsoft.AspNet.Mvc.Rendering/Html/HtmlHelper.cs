@@ -1,14 +1,13 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
-using System.Reflection;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net;
+using System.Reflection;
 using System.Text;
-using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -21,23 +20,16 @@ namespace Microsoft.AspNet.Mvc
         public static readonly string ValidationSummaryCssClassName = "validation-summary-errors";
         public static readonly string ValidationSummaryValidCssClassName = "validation-summary-valid";
 
-        private static readonly object _html5InputsModeKey = new object();
-
-        public HtmlHelper(RequestContext requestContext, ViewData viewData)
+        public HtmlHelper([NotNull] HttpContext httpContext, ViewData viewData)
         {
-            if (requestContext == null)
-            {
-                throw new ArgumentNullException("requestContext");
-            }
-
-            RequestContext = requestContext;
+            HttpContext = httpContext;
             ViewData = viewData;
             // ClientValidationRuleFactory = (name, metadata) => ModelValidatorProviders.Providers.GetValidators(metadata ?? ModelMetadata.FromStringExpression(name, ViewData), ViewContext).SelectMany(v => v.GetClientValidationRules());
         }
 
         //internal Func<string, ModelMetadata, IEnumerable<ModelClientValidationRule>> ClientValidationRuleFactory { get; set; }
 
-        public RequestContext RequestContext { get; private set; }
+        public HttpContext HttpContext { get; private set; }
 
         public ViewData ViewData
         {
@@ -163,38 +155,6 @@ namespace Microsoft.AspNet.Mvc
 
             return TagBuilder.CreateSanitizedId(name);
         }
-
-        //public static string GenerateLink(RequestContext requestContext, RouteCollection routeCollection, string linkText, string routeName, string actionName, string controllerName, RouteValueDictionary routeValues, IDictionary<string, object> htmlAttributes)
-        //{
-        //    return GenerateLink(requestContext, routeCollection, linkText, routeName, actionName, controllerName, null /* protocol */, null /* hostName */, null /* fragment */, routeValues, htmlAttributes);
-        //}
-
-        //public static string GenerateLink(RequestContext requestContext, RouteCollection routeCollection, string linkText, string routeName, string actionName, string controllerName, string protocol, string hostName, string fragment, RouteValueDictionary routeValues, IDictionary<string, object> htmlAttributes)
-        //{
-        //    return GenerateLinkInternal(requestContext, routeCollection, linkText, routeName, actionName, controllerName, protocol, hostName, fragment, routeValues, htmlAttributes, true /* includeImplicitMvcValues */);
-        //}
-
-        //private static string GenerateLinkInternal(RequestContext requestContext, RouteCollection routeCollection, string linkText, string routeName, string actionName, string controllerName, string protocol, string hostName, string fragment, RouteValueDictionary routeValues, IDictionary<string, object> htmlAttributes, bool includeImplicitMvcValues)
-        //{
-        //    string url = UrlHelper.GenerateUrl(routeName, actionName, controllerName, protocol, hostName, fragment, routeValues, routeCollection, requestContext, includeImplicitMvcValues);
-        //    TagBuilder tagBuilder = new TagBuilder("a")
-        //    {
-        //        InnerHtml = (!String.IsNullOrEmpty(linkText)) ? HttpUtility.HtmlEncode(linkText) : String.Empty
-        //    };
-        //    tagBuilder.MergeAttributes(htmlAttributes);
-        //    tagBuilder.MergeAttribute("href", url);
-        //    return tagBuilder.ToString(TagRenderMode.Normal);
-        //}
-
-        //public static string GenerateRouteLink(RequestContext requestContext, RouteCollection routeCollection, string linkText, string routeName, RouteValueDictionary routeValues, IDictionary<string, object> htmlAttributes)
-        //{
-        //    return GenerateRouteLink(requestContext, routeCollection, linkText, routeName, null /* protocol */, null /* hostName */, null /* fragment */, routeValues, htmlAttributes);
-        //}
-
-        //public static string GenerateRouteLink(RequestContext requestContext, RouteCollection routeCollection, string linkText, string routeName, string protocol, string hostName, string fragment, RouteValueDictionary routeValues, IDictionary<string, object> htmlAttributes)
-        //{
-        //    return GenerateLinkInternal(requestContext, routeCollection, linkText, routeName, null /* actionName */, null /* controllerName */, protocol, hostName, fragment, routeValues, htmlAttributes, false /* includeImplicitMvcValues */);
-        //}
 
         public static string GetFormMethodString(FormMethod method)
         {

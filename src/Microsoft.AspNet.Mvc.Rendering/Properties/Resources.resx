@@ -117,40 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ArgumentNullOrEmpty" xml:space="preserve">
-    <value>The argument '{0}' is null or empty.</value>
+  <data name="ViewData_ModelCannotBeNull" xml:space="preserve">
+    <value>The model item passed is null, but this ViewData instance requires a non-null model item of type '{0}'.</value>
   </data>
-  <data name="Common_PropertyNotFound" xml:space="preserve">
-    <value>The property {0}.{1} could not be found.</value>
-  </data>
-  <data name="JQuerySyntaxMissingClosingBracket" xml:space="preserve">
-    <value>The key is invalid JQuery syntax because it is missing a closing bracket.</value>
-  </data>
-  <data name="ModelBinderConfig_ValueInvalid" xml:space="preserve">
-    <value>The value '{0}' is not valid for {1}.</value>
-  </data>
-  <data name="ModelBinderConfig_ValueRequired" xml:space="preserve">
-    <value>A value is required.</value>
-  </data>
-  <data name="ModelBinderUtil_ModelCannotBeNull" xml:space="preserve">
-    <value>The binding context has a null Model, but this binder requires a non-null model of type '{0}'.</value>
-  </data>
-  <data name="ModelBinderUtil_ModelInstanceIsWrong" xml:space="preserve">
-    <value>The binding context has a Model of type '{0}', but this binder can only operate on models of type '{1}'.</value>
-  </data>
-  <data name="ModelBinderUtil_ModelMetadataCannotBeNull" xml:space="preserve">
-    <value>The binding context cannot have a null ModelMetadata.</value>
-  </data>
-  <data name="ModelBinderUtil_ModelTypeIsWrong" xml:space="preserve">
-    <value>The binding context has a ModelType of '{0}', but this binder can only operate on models of type '{1}'.</value>
-  </data>
-  <data name="ModelBindingContext_ModelMetadataMustBeSet" xml:space="preserve">
-    <value>The ModelMetadata property must be set before accessing this property.</value>
-  </data>
-  <data name="ValueProviderResult_ConversionThrew" xml:space="preserve">
-    <value>The parameter conversion from type '{0}' to type '{1}' failed. See the inner exception for more information.</value>
-  </data>
-  <data name="ValueProviderResult_NoConverterExists" xml:space="preserve">
-    <value>The parameter conversion from type '{0}' to type '{1}' failed because no type converter can convert between these types.</value>
+  <data name="ViewData_WrongTModelType" xml:space="preserve">
+    <value>The model item passed into the ViewData is of type '{0}', but this ViewData instance requires a model item of type '{1}'.</value>
   </data>
 </root>

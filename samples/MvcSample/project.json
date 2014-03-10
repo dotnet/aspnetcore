@@ -8,7 +8,8 @@
     "Microsoft.AspNet.Mvc.ModelBinding" : "",
     "Microsoft.AspNet.Mvc.Core" : "",
     "Microsoft.AspNet.Mvc" : "",
-    "Microsoft.AspNet.Mvc.Razor": ""
+    "Microsoft.AspNet.Mvc.Razor": "",
+    "Microsoft.AspNet.Mvc.Rendering" : ""
   },
   "configurations": {
     "net45": {

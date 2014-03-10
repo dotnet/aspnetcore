@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Globalization;
 using Microsoft.AspNet.Mvc.ModelBinding.Internal;
+using Microsoft.AspNet.Mvc.Rendering;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNet.Mvc
 {
     public class ViewData<TModel> : ViewData
     {
@@ -36,7 +37,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 string message;
                 if (value == null)
                 {
-                    message = String.Format(CultureInfo.CurrentCulture, Resources.ViewDataDictionary_ModelCannotBeNull, typeof(TModel));
+                    message = String.Format(CultureInfo.CurrentCulture, Resources.ViewData_ModelCannotBeNull, typeof(TModel));
                 }
                 else
                 {

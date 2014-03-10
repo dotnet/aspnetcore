@@ -35,10 +35,7 @@ namespace Microsoft.AspNet.Mvc
                 context.HttpContext.Response.ContentType = "text/html";
                 using (var writer = new StreamWriter(context.HttpContext.Response.Body, Encoding.UTF8, 1024, leaveOpen: true))
                 {
-                    var viewContext = new ViewContext(context.HttpContext, context.RouteValues, ViewData)
-                    {
-                        ServiceProvider = _serviceProvider
-                    };
+                    var viewContext = new ViewContext(context.HttpContext, ViewData, _serviceProvider);
                     await view.RenderAsync(viewContext, writer);
                 }
             }

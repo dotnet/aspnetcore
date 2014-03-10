@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30110.0
+VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{DAAE4C74-D06F-4874-A166-33305D2643CE}"
 EndProject
@@ -58,6 +58,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Mvc.Razor.Test.net45", "test\Microsoft.AspNet.Mvc.Razor.Test\Microsoft.AspNet.Mvc.Razor.Test.net45.csproj", "{3EB2CFF9-6E67-4C03-9AC4-2DD169024938}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCommon.net45", "test\TestCommon\TestCommon.net45.csproj", "{75A07B53-C5EE-4995-A55B-27562C23BCCD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Mvc.Rendering.Test.net45", "test\Microsoft.AspNet.Mvc.Rendering.Test\Microsoft.AspNet.Mvc.Rendering.Test.net45.csproj", "{68FC3791-A9E4-4EDE-93A5-C7AC7DC0ED6E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -149,6 +151,10 @@ Global
 		{75A07B53-C5EE-4995-A55B-27562C23BCCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{75A07B53-C5EE-4995-A55B-27562C23BCCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{75A07B53-C5EE-4995-A55B-27562C23BCCD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68FC3791-A9E4-4EDE-93A5-C7AC7DC0ED6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68FC3791-A9E4-4EDE-93A5-C7AC7DC0ED6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68FC3791-A9E4-4EDE-93A5-C7AC7DC0ED6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68FC3791-A9E4-4EDE-93A5-C7AC7DC0ED6E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -179,5 +185,6 @@ Global
 		{537CC0EE-4B62-4789-9AE9-94BE28E0D25A} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
 		{3EB2CFF9-6E67-4C03-9AC4-2DD169024938} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
 		{75A07B53-C5EE-4995-A55B-27562C23BCCD} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
+		{68FC3791-A9E4-4EDE-93A5-C7AC7DC0ED6E} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
 	EndGlobalSection
 EndGlobal

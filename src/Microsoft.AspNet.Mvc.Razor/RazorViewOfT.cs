@@ -27,9 +27,9 @@ namespace Microsoft.AspNet.Mvc.Razor
             return base.RenderAsync(context, writer);
         }
 
-        private void InitHelpers(RequestContext context)
+        private void InitHelpers(ViewContext context)
         {
-            Html = new HtmlHelper<TModel>(context, ViewData);
+            Html = new HtmlHelper<TModel>(context.HttpContext, ViewData);
         }
     }
 }
