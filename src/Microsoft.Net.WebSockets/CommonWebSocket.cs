@@ -156,10 +156,9 @@ namespace Microsoft.Net.WebSockets
         private async void SendKeepAliveAsync()
         {
             // Check concurrent writes, pings & pongs, or closes
-            bool lockAquired = await _writeLock.WaitAsync(TimeSpan.FromMinutes(1)); // TODO: Wait up to KeepAliveInterval?
-            if (!lockAquired)
+            if (!_writeLock.Wait(0))
             {
-                // Pings aren't that important, discard them if we can't take the lock.
+                // Sending real data is better than a ping, discard it.
                 return;
             }
             try
