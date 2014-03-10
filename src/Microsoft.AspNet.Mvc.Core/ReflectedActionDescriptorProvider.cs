@@ -112,7 +112,6 @@ namespace Microsoft.AspNet.Mvc
 
             var attributes = methodInfo.GetCustomAttributes(inherit: true).ToArray();
 
-            // TODO: add ordering support such that action filters are ahead of controller filters if they have the same order
             var filtersFromAction = attributes.OfType<IFilter>().Select(filter => new FilterDescriptor(filter, FilterOrigin.Action));
 
             ad.FilterDescriptors = filtersFromAction.Concat(globalAndControllerFilters)
