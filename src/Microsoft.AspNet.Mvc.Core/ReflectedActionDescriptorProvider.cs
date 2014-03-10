@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Mvc
                     controllerAttributes.OfType<IFilter>()
                                         .Select(filter => new FilterDescriptor(filter, FilterOrigin.Controller))
                                         .Concat(_globalFilters)
-                                        .OrderBy(d => d, FilterDescriptorComparer.Comparer)
+                                        .OrderBy(d => d, FilterDescriptorOrderComparer.Comparer)
                                         .ToArray();
 
                 foreach (var methodInfo in cd.ControllerTypeInfo.DeclaredMethods)
@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.Mvc
             var filtersFromAction = attributes.OfType<IFilter>().Select(filter => new FilterDescriptor(filter, FilterOrigin.Action));
 
             ad.FilterDescriptors = filtersFromAction.Concat(globalAndControllerFilters)
-                                                    .OrderBy(d => d, FilterDescriptorComparer.Comparer)
+                                                    .OrderBy(d => d, FilterDescriptorOrderComparer.Comparer)
                                                     .ToList();
 
             return ad;

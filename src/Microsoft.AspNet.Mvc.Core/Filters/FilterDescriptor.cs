@@ -1,4 +1,6 @@
-﻿namespace Microsoft.AspNet.Mvc
+﻿using System;
+
+namespace Microsoft.AspNet.Mvc
 {
     public class FilterDescriptor
     {

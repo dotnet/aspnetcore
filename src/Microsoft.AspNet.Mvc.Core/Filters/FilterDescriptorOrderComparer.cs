@@ -2,11 +2,11 @@
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class FilterDescriptorComparer : IComparer<FilterDescriptor>
+    public class FilterDescriptorOrderComparer : IComparer<FilterDescriptor>
     {
-        private static readonly FilterDescriptorComparer _comparer = new FilterDescriptorComparer();
+        private static readonly FilterDescriptorOrderComparer _comparer = new FilterDescriptorOrderComparer();
 
-        public static FilterDescriptorComparer Comparer { get { return _comparer; } }
+        public static FilterDescriptorOrderComparer Comparer { get { return _comparer; } }
 
         public int Compare([NotNull]FilterDescriptor x, [NotNull]FilterDescriptor y)
         {
