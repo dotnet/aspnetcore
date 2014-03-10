@@ -50,7 +50,7 @@ namespace RoutingSample
             }
         }
 
-        public string BindPath(BindPathContext context)
+        public string GetVirtualPath(VirtualPathContext context)
         {
             return null;
         }

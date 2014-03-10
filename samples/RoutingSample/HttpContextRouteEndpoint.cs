@@ -21,7 +21,7 @@ namespace RoutingSample
             context.IsHandled = true;
         }
 
-        public string BindPath(BindPathContext context)
+        public string GetVirtualPath(VirtualPathContext context)
         {
             // We don't really care what the values look like.
             context.IsBound = true;

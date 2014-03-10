@@ -92,9 +92,9 @@ namespace Microsoft.AspNet.Routing.Tests
         {
             var target = new Mock<IRouter>(MockBehavior.Strict);
             target
-                .Setup(e => e.BindPath(It.IsAny<BindPathContext>()))
-                .Callback<BindPathContext>(c => c.IsBound = accept)
-                .Returns<BindPathContext>(null)
+                .Setup(e => e.GetVirtualPath(It.IsAny<VirtualPathContext>()))
+                .Callback<VirtualPathContext>(c => c.IsBound = accept)
+                .Returns<VirtualPathContext>(null)
                 .Verifiable();
 
             target

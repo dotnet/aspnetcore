@@ -5,9 +5,9 @@ using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.Routing
 {
-    public class BindPathContext
+    public class VirtualPathContext
     {
-        public BindPathContext(HttpContext context, IDictionary<string, object> ambientValues, IDictionary<string, object> values)
+        public VirtualPathContext(HttpContext context, IDictionary<string, object> ambientValues, IDictionary<string, object> values)
         {
             Context = context;
             AmbientValues = ambientValues;

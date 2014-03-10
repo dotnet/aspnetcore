@@ -78,10 +78,10 @@ namespace Microsoft.AspNet.Routing.Template
             }
         }
 
-        public string BindPath(BindPathContext context)
+        public string GetVirtualPath(VirtualPathContext context)
         {
             // Validate that the target can accept these values.
-            var path = _target.BindPath(context);
+            var path = _target.GetVirtualPath(context);
             if (path != null)
             {
                 // If the target generates a value then that can short circuit.

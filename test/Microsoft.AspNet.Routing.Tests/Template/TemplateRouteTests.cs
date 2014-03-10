@@ -106,14 +106,14 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         #region Route Binding
 
         [Fact]
-        public void Bind_Success()
+        public void GetVirtualPath_Success()
         {
             // Arrange
             var route = CreateRoute("{controller}");
-            var context = CreateRouteBindContext(new {controller = "Home"});
+            var context = CreateVirtualPathContext(new {controller = "Home"});
 
             // Act
-            var path = route.BindPath(context);
+            var path = route.GetVirtualPath(context);
 
             // Assert
             Assert.True(context.IsBound);
@@ -121,14 +121,14 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
 
         [Fact]
-        public void Bind_Fail()
+        public void GetVirtualPath_Fail()
         {
             // Arrange
             var route = CreateRoute("{controller}/{action}");
-            var context = CreateRouteBindContext(new { controller = "Home" });
+            var context = CreateVirtualPathContext(new { controller = "Home" });
 
             // Act
-            var path = route.BindPath(context);
+            var path = route.GetVirtualPath(context);
 
             // Assert
             Assert.False(context.IsBound);
@@ -136,14 +136,14 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
 
         [Fact]
-        public void Bind_RejectedByHandler()
+        public void GetVirtualPath_RejectedByHandler()
         {
             // Arrange
             var route = CreateRoute("{controller}", accept: false);
-            var context = CreateRouteBindContext(new { controller = "Home" });
+            var context = CreateVirtualPathContext(new { controller = "Home" });
 
             // Act
-            var path = route.BindPath(context);
+            var path = route.GetVirtualPath(context);
 
             // Assert
             Assert.False(context.IsBound);
@@ -151,35 +151,35 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
 
         [Fact]
-        public void Bind_Success_AmbientValues()
+        public void GetVirtualPath_Success_AmbientValues()
         {
             // Arrange
             var route = CreateRoute("{controller}/{action}");
-            var context = CreateRouteBindContext(new { action = "Index"}, new { controller = "Home" });
+            var context = CreateVirtualPathContext(new { action = "Index"}, new { controller = "Home" });
 
             // Act
-            var path = route.BindPath(context);
+            var path = route.GetVirtualPath(context);
 
             // Assert
             Assert.True(context.IsBound);
             Assert.Equal("Home/Index", path);
         }
 
-        private static BindPathContext CreateRouteBindContext(object values)
+        private static VirtualPathContext CreateVirtualPathContext(object values)
         {
-            return CreateRouteBindContext(new RouteValueDictionary(values), null);
+            return CreateVirtualPathContext(new RouteValueDictionary(values), null);
         }
 
-        private static BindPathContext CreateRouteBindContext(object values, object ambientValues)
+        private static VirtualPathContext CreateVirtualPathContext(object values, object ambientValues)
         {
-            return CreateRouteBindContext(new RouteValueDictionary(values), new RouteValueDictionary(ambientValues));
+            return CreateVirtualPathContext(new RouteValueDictionary(values), new RouteValueDictionary(ambientValues));
         }
 
-        private static BindPathContext CreateRouteBindContext(IDictionary<string, object> values, IDictionary<string, object> ambientValues)
+        private static VirtualPathContext CreateVirtualPathContext(IDictionary<string, object> values, IDictionary<string, object> ambientValues)
         {
             var context = new Mock<HttpContext>(MockBehavior.Strict);
 
-            return new BindPathContext(context.Object, ambientValues, values);
+            return new VirtualPathContext(context.Object, ambientValues, values);
         }
 
         #endregion
@@ -198,8 +198,9 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             var target = new Mock<IRouter>(MockBehavior.Strict);
             target
-                .Setup(e => e.BindPath(It.IsAny<BindPathContext>()))
-                .Callback<BindPathContext>(c => c.IsBound = accept);
+                .Setup(e => e.GetVirtualPath(It.IsAny<VirtualPathContext>()))
+                .Callback<VirtualPathContext>(c => c.IsBound = accept)
+                .Returns<VirtualPathContext>(rc => null);
 
             target
                 .Setup(e => e.RouteAsync(It.IsAny<RouteContext>()))

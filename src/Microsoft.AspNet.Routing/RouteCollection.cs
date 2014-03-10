@@ -40,13 +40,13 @@ namespace Microsoft.AspNet.Routing
             }
         }
 
-        public virtual string BindPath(BindPathContext context)
+        public virtual string GetVirtualPath(VirtualPathContext context)
         {
             for (var i = 0; i < Count; i++)
             {
                 var route = this[i];
 
-                var path = route.BindPath(context);
+                var path = route.GetVirtualPath(context);
                 if (path != null)
                 {
                     return path;
