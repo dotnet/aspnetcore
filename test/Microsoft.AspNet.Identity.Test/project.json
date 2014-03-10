@@ -2,13 +2,41 @@
   "version": "0.1-alpha-*",
   "dependencies": {
     "Microsoft.AspNet.Identity" : "0.1-alpha-*",
-    "Microsoft.AspNet.DependencyInjection" : "0.1-alpha-*"
+    "Microsoft.AspNet.DependencyInjection" : "0.1-alpha-*",
+    "Xunit.KRunner": "0.1-alpha-*",
+    "xunit.abstractions": "3.0.0-alpha-*",
+    "xunit2": "0.1-alpha-*",
+    "xunit2.assert": "0.1-alpha-*"
   },
   "configurations": {
     "net45": {
       "dependencies": {
-        "xunit": "1.9.2"
+        "Moq" : "4.2.1312.1622",
+        "System.Runtime": "",
+        "System.Collections": ""
+      }
+    },
+    "k10": {
+      "dependencies": {
+        "System.Collections": "4.0.0.0",
+        "System.Collections.Concurrent": "4.0.0.0",
+        "System.ComponentModel": "4.0.0.0",
+        "System.Console": "4.0.0.0",
+        "System.Diagnostics.Debug": "4.0.10.0",
+        "System.Globalization": "4.0.10.0",
+        "System.Linq": "4.0.0.0",
+        "System.Linq.Expressions": "4.0.0.0",
+        "System.Reflection": "4.0.10.0",
+        "System.Reflection.Extensions": "4.0.0.0",
+        "System.Resources.ResourceManager": "4.0.0.0",
+        "System.Runtime": "4.0.20.0",
+        "System.Runtime.Extensions": "4.0.10.0",
+        "System.Threading": "4.0.0.0",
+        "System.Threading.Tasks": "4.0.0.0"
       }
     }
+  },
+  "commands": {
+    "test": "Xunit.KRunner"
   }
 }

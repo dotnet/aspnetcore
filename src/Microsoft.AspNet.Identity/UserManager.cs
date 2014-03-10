@@ -36,11 +36,11 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("serviceProvider");
             }
-            Store = serviceProvider.GetService<IUserStore<TUser, TKey>>();
-            ClaimsIdentityFactory = serviceProvider.GetService<IClaimsIdentityFactory<TUser, TKey>>();
             PasswordHasher = serviceProvider.GetService<IPasswordHasher>();
-            UserValidator = serviceProvider.GetService<IUserValidator<TUser>>();
+            UserValidator = serviceProvider.GetService<IUserValidator<TUser, TKey>>();
             PasswordValidator = serviceProvider.GetService<IPasswordValidator>();
+            //TODO: Store = serviceProvider.GetService<IUserStore<TUser, TKey>>();
+            //TODO: ClaimsIdentityFactory = serviceProvider.GetService<IClaimsIdentityFactory<TUser, TKey>>();
             // TODO: maybe each optional store as well?  Email and SMS services?
         }
 
@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("store");
             }
             Store = store;
-            UserValidator = new UserValidator<TUser, TKey>(this);
+            UserValidator = new UserValidator<TUser, TKey>();
             PasswordHasher = new PasswordHasher();
             //TODO: ClaimsIdentityFactory = new ClaimsIdentityFactory<TUser, TKey>();
         }
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Identity
         /// <summary>
         ///     Used to validate users before persisting changes
         /// </summary>
-        public IUserValidator<TUser> UserValidator { get; set; }
+        public IUserValidator<TUser, TKey> UserValidator { get; set; }
 
         /// <summary>
         ///     Used to validate passwords before persisting changes
@@ -322,7 +322,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         private async Task<IdentityResult> ValidateUserInternal(TUser user) {
-            return (UserValidator == null) ? IdentityResult.Success : await UserValidator.Validate(user).ConfigureAwait(false);
+            return (UserValidator == null) ? IdentityResult.Success : await UserValidator.Validate(this, user).ConfigureAwait(false);
         }
 
         /// <summary>
