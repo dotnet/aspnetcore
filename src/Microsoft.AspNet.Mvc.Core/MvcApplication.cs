@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        public string BindPath(BindPathContext context)
+        public string GetVirtualPath(VirtualPathContext context)
         {
             // For now just allow any values to target this application.
             context.IsBound = true;
