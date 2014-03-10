@@ -27,7 +27,10 @@ namespace Microsoft.AspNet.Abstractions
 
         public async Task Invoke(HttpContext httpContext)
         {
-            var context = new RouteContext(httpContext);
+            var context = new RouteContext(httpContext)
+            {
+                Router = Route,
+            };
 
             await Route.RouteAsync(context);
             if (!context.IsHandled)

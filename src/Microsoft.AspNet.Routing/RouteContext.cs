@@ -20,6 +20,8 @@ namespace Microsoft.AspNet.Routing
 
         public string RequestPath { get; private set; }
 
+        public IRouter Router { get; set; }
+
         public IDictionary<string, object> Values { get; set; }
     }
 }
