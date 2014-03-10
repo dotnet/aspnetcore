@@ -36,6 +36,32 @@ namespace Microsoft.Net.WebSockets.Test
         }
 
         [Fact]
+        public async Task NegotiateSubProtocol_Success()
+        {
+            using (HttpListener listener = new HttpListener())
+            {
+                listener.Prefixes.Add(ServerAddress);
+                listener.Start();
+                Task<HttpListenerContext> serverAccept = listener.GetContextAsync();
+
+                WebSocketClient client = new WebSocketClient();
+                client.SubProtocols.Add("alpha");
+                client.SubProtocols.Add("bravo");
+                client.SubProtocols.Add("charlie");
+                Task<WebSocket> clientConnect = client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None);
+
+                HttpListenerContext serverContext = await serverAccept;
+                Assert.True(serverContext.Request.IsWebSocketRequest);
+                Assert.Equal("alpha, bravo, charlie", serverContext.Request.Headers["Sec-WebSocket-Protocol"]);
+                HttpListenerWebSocketContext serverWebSocketContext = await serverContext.AcceptWebSocketAsync("Bravo");
+
+                WebSocket clientSocket = await clientConnect;
+                Assert.Equal("Bravo", clientSocket.SubProtocol);
+                clientSocket.Dispose();
+            }
+        }
+
+        [Fact]
         public async Task SendShortData_Success()
         {
             using (HttpListener listener = new HttpListener())

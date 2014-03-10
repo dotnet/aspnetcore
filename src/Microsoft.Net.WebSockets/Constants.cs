@@ -10,7 +10,8 @@ namespace Microsoft.Net.WebSockets
     {
         public static class Headers
         {
-            public const string WebSocketVersion = "Sec-WebSocket-Version";
+            public const string SecWebSocketVersion = "Sec-WebSocket-Version";
+            public const string SecWebSocketProtocol = "Sec-WebSocket-Protocol";
             public const string SupportedVersion = "13";
         }
 

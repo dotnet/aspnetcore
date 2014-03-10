@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.WebSockets;
 using System.Threading;
@@ -26,6 +28,13 @@ namespace Microsoft.Net.WebSockets.Client
         {
             ReceiveBufferSize = 1024 * 16;
             KeepAliveInterval = TimeSpan.FromMinutes(2);
+            SubProtocols = new List<string>();
+        }
+
+        public IList<string> SubProtocols
+        {
+            get;
+            private set;
         }
 
         public TimeSpan KeepAliveInterval
@@ -64,8 +73,11 @@ namespace Microsoft.Net.WebSockets.Client
 
             CancellationTokenRegistration cancellation = cancellationToken.Register(() => request.Abort());
 
-            request.Headers[Constants.Headers.WebSocketVersion] = Constants.Headers.SupportedVersion;
-            // TODO: Sub-protocols
+            request.Headers[Constants.Headers.SecWebSocketVersion] = Constants.Headers.SupportedVersion;
+            if (SubProtocols.Count > 0)
+            {
+                request.Headers[Constants.Headers.SecWebSocketProtocol] = string.Join(", ", SubProtocols);
+            }
 
             if (ConfigureRequest != null)
             {
@@ -85,14 +97,19 @@ namespace Microsoft.Net.WebSockets.Client
             if (response.StatusCode != HttpStatusCode.SwitchingProtocols)
             {
                 response.Dispose();
-                throw new InvalidOperationException("Incomplete handshake");
+                throw new InvalidOperationException("Incomplete handshake, invalid status code: " + response.StatusCode);
             }
+            // TODO: Validate Sec-WebSocket-Key/Sec-WebSocket-Accept
 
-            // TODO: Sub protocol
+            string subProtocol = response.Headers[Constants.Headers.SecWebSocketProtocol];
+            if (!string.IsNullOrEmpty(subProtocol) && !SubProtocols.Contains(subProtocol, StringComparer.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("Incomplete handshake, the server specified an unknown sub-protocol: " + subProtocol);
+            }
 
             Stream stream = response.GetResponseStream();
 
-            return CommonWebSocket.CreateClientWebSocket(stream, null, KeepAliveInterval, ReceiveBufferSize, useZeroMask: UseZeroMask);
+            return CommonWebSocket.CreateClientWebSocket(stream, subProtocol, KeepAliveInterval, ReceiveBufferSize, useZeroMask: UseZeroMask);
         }
     }
 }
