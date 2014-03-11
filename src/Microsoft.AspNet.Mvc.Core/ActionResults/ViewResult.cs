@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Mvc
                 {
                     var viewContext = new ViewContext(context.HttpContext, ViewData, _serviceProvider)
                     {
-                        Url = new DefaultRenderUrl(context.HttpContext, context.Router, context.RouteValues),
+                        Url = new DefaultUrlHelper(context.HttpContext, context.Router, context.RouteValues),
                     };
                     await view.RenderAsync(viewContext, writer);
                 }

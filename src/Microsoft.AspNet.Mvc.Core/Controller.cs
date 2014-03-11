@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc
 
         public HttpContext Context { get; set; }
 
-        public IRenderUrl Url { get; set; }
+        public IUrlHelper Url { get; set; }
 
         public ViewData<object> ViewData { get; set; }
 

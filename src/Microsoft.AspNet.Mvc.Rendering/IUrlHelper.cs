@@ -1,7 +1,7 @@
 ﻿
 namespace Microsoft.AspNet.Mvc
 {
-    public interface IRenderUrl
+    public interface IUrlHelper
     {
         string Action(string action, string controller, object values);
 

@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         protected TextWriter Output { get; set; }
 
-        public IRenderUrl Url 
+        public IUrlHelper Url 
         {
             get { return Context == null ? null : Context.Url; }
         }

@@ -4,20 +4,20 @@ using Microsoft.AspNet.Routing;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class DefaultRenderUrl : IRenderUrl
+    public class DefaultUrlHelper : IUrlHelper
     {
         private readonly HttpContext _httpContext;
         private readonly IRouter _router;
         private readonly IDictionary<string, object> _ambientValues;
  
-        public DefaultRenderUrl(HttpContext httpContext, IRouter router, IDictionary<string, object> ambientValues)
+        public DefaultUrlHelper(HttpContext httpContext, IRouter router, IDictionary<string, object> ambientValues)
         {
             _httpContext = httpContext;
             _router = router;
             _ambientValues = ambientValues;
         }
 
-        public virtual string Action(string action, string controller, object values)
+        public string Action(string action, string controller, object values)
         {
             var valuesDictionary = new RouteValueDictionary(values);
 
@@ -34,12 +34,12 @@ namespace Microsoft.AspNet.Mvc
             return RouteCore(valuesDictionary);
         }
 
-        public virtual string Route(object values)
+        public string Route(object values)
         {
             return RouteCore(new RouteValueDictionary(values));
         }
 
-        protected virtual string RouteCore(IDictionary<string, object> values)
+        private string RouteCore(IDictionary<string, object> values)
         {
             var context = new VirtualPathContext(_httpContext, _ambientValues, values);
             var path = _router.GetVirtualPath(context);

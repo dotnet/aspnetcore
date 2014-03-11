@@ -67,7 +67,13 @@ namespace Microsoft.AspNet.Mvc
                 {
                     Action = action,
                 };
-                var actionContext = new ActionContext(context.HttpContext, null, context.RouteValues, action);
+
+                // Issues #60 & #65 filed to deal with the ugliness of passing null here.
+                var actionContext = new ActionContext(
+                    httpContext: context.HttpContext, 
+                    router: null, 
+                    routeValues: context.RouteValues, 
+                    actionDescriptor: action);
                 var actionBindingContext = await _bindingProvider.GetActionBindingContextAsync(actionContext);
 
                 foreach (var parameter in action.Parameters.Where(p => p.ParameterBindingInfo != null))

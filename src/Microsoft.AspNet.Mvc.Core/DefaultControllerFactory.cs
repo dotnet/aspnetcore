@@ -59,9 +59,9 @@ namespace Microsoft.AspNet.Mvc
                 {
                     prop.SetValue(controller, modelState);
                 }
-                else if (prop.Name == "Url" && prop.PropertyType == typeof(IRenderUrl))
+                else if (prop.Name == "Url" && prop.PropertyType == typeof(IUrlHelper))
                 {
-                    var generator = new DefaultRenderUrl(
+                    var generator = new DefaultUrlHelper(
                         actionContext.HttpContext,
                         actionContext.Router,
                         actionContext.RouteValues);
