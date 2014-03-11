@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal.Test
         public void IsCompatibleWithReturnsFalse_IfValueTypeIsNull(Type type)
         {
             // Act
-            bool result = TypeExtensions.IsCompatibleObject(type, value: null);
+            bool result = TypeExtensions.IsCompatibleWith(type, value: null);
 
             // Assert
             Assert.False(result);
@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal.Test
         public void IsCompatibleWithReturnsFalse_IfValueIsMismatched(Type type)
         {
             // Act
-            bool result = TypeExtensions.IsCompatibleObject(type, value: "Hello world");
+            bool result = TypeExtensions.IsCompatibleWith(type, value: "Hello world");
 
             // Assert
             Assert.False(result);
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal.Test
         public void IsCompatibleWithReturnsTrue_IfValueIsAssignable(Type type, object value)
         {
             // Act
-            bool result = TypeExtensions.IsCompatibleObject(type, value);
+            bool result = TypeExtensions.IsCompatibleWith(type, value);
 
             // Assert
             Assert.True(result);
