@@ -10,11 +10,13 @@ namespace Microsoft.AspNet.Mvc
 {
     public class DefaultControllerFactory : IControllerFactory
     {
+        private readonly ITypeActivator _activator;
         private readonly IServiceProvider _serviceProvider;
 
-        public DefaultControllerFactory(IServiceProvider serviceProvider)
+        public DefaultControllerFactory(IServiceProvider serviceProvider, ITypeActivator activator)
         {
             _serviceProvider = serviceProvider;
+            _activator = activator;
         }
 
         public object CreateController(ActionContext actionContext, ModelStateDictionary modelState)
@@ -27,7 +29,7 @@ namespace Microsoft.AspNet.Mvc
 
             try
             {
-                var controller = ActivatorUtilities.CreateInstance(_serviceProvider, actionDescriptor.ControllerDescriptor.ControllerTypeInfo.AsType());
+                var controller = _activator.CreateInstance(actionDescriptor.ControllerDescriptor.ControllerTypeInfo.AsType());
 
                 // TODO: How do we feed the controller with context (need DI improvements)
                 InitializeController(controller, actionContext, modelState);

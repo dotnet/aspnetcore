@@ -9,11 +9,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class GenericModelBinder : IModelBinder
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly ITypeActivator _activator;
 
-        public GenericModelBinder(IServiceProvider serviceProvider)
+        public GenericModelBinder(ITypeActivator activator)
         {
-            _serviceProvider = serviceProvider;
+            _activator = activator;
         }
 
         public bool BindModel(ModelBindingContext bindingContext)
@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Type binderType = ResolveBinderType(bindingContext.ModelType);
             if (binderType != null)
             {
-                var binder = ActivatorUtilities.CreateInstance<IModelBinder>(_serviceProvider);
+                var binder = _activator.CreateInstance<IModelBinder>();
                 return binder.BindModel(bindingContext);
             }
 
