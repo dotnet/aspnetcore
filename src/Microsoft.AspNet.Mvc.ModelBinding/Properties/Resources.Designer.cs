@@ -202,38 +202,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return string.Format(CultureInfo.CurrentCulture, GetString("ValueProviderResult_NoConverterExists"), p0, p1);
         }
 
-        /// <summary>
-        /// The model item passed is null, but this ViewData instance requires a non-null model item of type '{0}'.
-        /// </summary>
-        internal static string ViewDataDictionary_ModelCannotBeNull
-        {
-            get { return GetString("ViewDataDictionary_ModelCannotBeNull"); }
-        }
-
-        /// <summary>
-        /// The model item passed is null, but this ViewData instance requires a non-null model item of type '{0}'.
-        /// </summary>
-        internal static string FormatViewDataDictionary_ModelCannotBeNull(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ViewDataDictionary_ModelCannotBeNull"), p0);
-        }
-
-        /// <summary>
-        /// The model item passed into the ViewData is of type '{0}', but this ViewData instance requires a model item of type '{1}'.
-        /// </summary>
-        internal static string ViewData_WrongTModelType
-        {
-            get { return GetString("ViewData_WrongTModelType"); }
-        }
-
-        /// <summary>
-        /// The model item passed into the ViewData is of type '{0}', but this ViewData instance requires a model item of type '{1}'.
-        /// </summary>
-        internal static string FormatViewData_WrongTModelType(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ViewData_WrongTModelType"), p0, p1);
-        }
-
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
