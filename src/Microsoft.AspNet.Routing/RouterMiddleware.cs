@@ -7,13 +7,13 @@ namespace Microsoft.AspNet.Abstractions
 {
     public class RouterMiddleware
     {
-        public RouterMiddleware(RequestDelegate next, IRouter route)
+        public RouterMiddleware(RequestDelegate next, IRouter router)
         {
             Next = next;
-            Route = route;
+            Router = router;
         }
 
-        private IRouter Route
+        private IRouter Router
         {
             get;
             set;
@@ -29,10 +29,10 @@ namespace Microsoft.AspNet.Abstractions
         {
             var context = new RouteContext(httpContext)
             {
-                Router = Route,
+                Router = Router,
             };
 
-            await Route.RouteAsync(context);
+            await Router.RouteAsync(context);
             if (!context.IsHandled)
             {
                 await Next.Invoke(httpContext);
