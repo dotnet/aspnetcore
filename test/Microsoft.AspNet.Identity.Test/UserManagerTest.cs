@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Security.Claims;
 using Moq;
 using System;
 using System.Linq;
@@ -44,105 +46,100 @@ namespace Microsoft.AspNet.Identity.Test
         }
 
         [Fact]
-        public void UsersEmailMethodsFailWhenStoreNotImplementedTest()
+        public async Task UsersEmailMethodsFailWhenStoreNotImplementedTest()
         {
             var manager = new UserManager<TestUser, string>(new NoopUserStore());
             Assert.False(manager.SupportsUserEmail);
-            //Assert.Throws<NotSupportedException>(() => manager.FindByEmail(null));
-            //Assert.Throws<NotSupportedException>(() => manager.SetEmail(null, null));
-            //Assert.Throws<NotSupportedException>(() => manager.GetEmail(null));
-            //Assert.Throws<NotSupportedException>(() => manager.IsEmailConfirmed(null));
-            //Assert.Throws<NotSupportedException>(() => manager.ConfirmEmail(null, null));
+            await Assert.ThrowsAsync<NotSupportedException>(() => manager.FindByEmail(null));
+            await Assert.ThrowsAsync<NotSupportedException>(() => manager.SetEmail(null, null));
+            await Assert.ThrowsAsync<NotSupportedException>(() => manager.GetEmail(null));
+            await Assert.ThrowsAsync<NotSupportedException>(() => manager.IsEmailConfirmed(null));
+            await Assert.ThrowsAsync<NotSupportedException>(() => manager.ConfirmEmail(null, null));
         }
 
         [Fact]
-        public void UsersPhoneNumberMethodsFailWhenStoreNotImplementedTest()
+        public async Task UsersPhoneNumberMethodsFailWhenStoreNotImplementedTest()
         {
             var manager = new UserManager<TestUser, string>(new NoopUserStore());
             Assert.False(manager.SupportsUserPhoneNumber);
-            //Assert.Throws<NotSupportedException>(() => manager.SetPhoneNumber(null, null)));
-            //Assert.Throws<NotSupportedException>(() => manager.SetPhoneNumber(null, null));
-            //Assert.Throws<NotSupportedException>(() => manager.GetPhoneNumber(null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.SetPhoneNumber(null, null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.SetPhoneNumber(null, null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetPhoneNumber(null));
         }
 
-        //[Fact]
-        //public void TokenMethodsThrowWithNoTokenProviderTest()
-        //{
-        //    var manager = new UserManager<TestUser, string>(new NoopUserStore());
-        //    Assert.Throws<NotSupportedException>(
-        //        () => AsyncHelper.RunSync(() => manager.GenerateUserTokenAsync(null, null)));
-        //    Assert.Throws<NotSupportedException>(
-        //        () => AsyncHelper.RunSync(() => manager.VerifyUserTokenAsync(null, null, null)));
-        //}
+        [Fact]
+        public async Task TokenMethodsThrowWithNoTokenProviderTest()
+        {
+            var manager = new UserManager<TestUser, string>(new NoopUserStore());
+            await Assert.ThrowsAsync<NotSupportedException>(
+                async () => await manager.GenerateUserToken(null, null));
+            await Assert.ThrowsAsync<NotSupportedException>(
+                async () => await manager.VerifyUserToken(null, null, null));
+        }
 
         [Fact]
-        public void PasswordMethodsFailWhenStoreNotImplementedTest()
+        public async Task PasswordMethodsFailWhenStoreNotImplementedTest()
         {
             var manager = new UserManager<TestUser, string>(new NoopUserStore());
             Assert.False(manager.SupportsUserPassword);
-            //Assert.Throws<NotSupportedException>(() => AsyncHelper.RunSync(() => manager.CreateAsync(null, null)));
-            //Assert.Throws<NotSupportedException>(
-            //    () => AsyncHelper.RunSync(() => manager.ChangePasswordAsync(null, null, null)));
-            //Assert.Throws<NotSupportedException>(() => AsyncHelper.RunSync(() => manager.AddPasswordAsync(null, null)));
-            //Assert.Throws<NotSupportedException>(() => AsyncHelper.RunSync(() => manager.RemovePasswordAsync(null)));
-            //Assert.Throws<NotSupportedException>(() => AsyncHelper.RunSync(() => manager.CheckPasswordAsync(null, null)));
-            //Assert.Throws<NotSupportedException>(() => AsyncHelper.RunSync(() => manager.HasPasswordAsync(null)));
+            await Assert.ThrowsAsync<NotSupportedException>(() => manager.Create(null, null));
+            await Assert.ThrowsAsync<NotSupportedException>(() => manager.ChangePassword(null, null, null));
+            await Assert.ThrowsAsync<NotSupportedException>(() => manager.AddPassword(null, null));
+            await Assert.ThrowsAsync<NotSupportedException>(() => manager.RemovePassword(null));
+            await Assert.ThrowsAsync<NotSupportedException>(() => manager.CheckPassword(null, null));
+            await Assert.ThrowsAsync<NotSupportedException>(() => manager.HasPassword(null));
         }
 
         [Fact]
-        public void SecurityStampMethodsFailWhenStoreNotImplementedTest()
+        public async Task SecurityStampMethodsFailWhenStoreNotImplementedTest()
         {
             var manager = new UserManager<TestUser, string>(new NoopUserStore());
             Assert.False(manager.SupportsUserSecurityStamp);
-            //Assert.Throws<NotSupportedException>(
-            //    () => AsyncHelper.RunSync(() => manager.UpdateSecurityStampAsync("bogus")));
-            //Assert.Throws<NotSupportedException>(() => AsyncHelper.RunSync(() => manager.GetSecurityStampAsync("bogus")));
-            //Assert.Throws<NotSupportedException>(
-            //    () => AsyncHelper.RunSync(() => manager.VerifyChangePhoneNumberTokenAsync("bogus", "1", "111-111-1111")));
-            //Assert.Throws<NotSupportedException>(
-            //    () => AsyncHelper.RunSync(() => manager.GenerateChangePhoneNumberTokenAsync("bogus", "111-111-1111")));
+            await Assert.ThrowsAsync<NotSupportedException>(() => manager.UpdateSecurityStamp("bogus"));
+            await Assert.ThrowsAsync<NotSupportedException>(() => manager.GetSecurityStamp("bogus"));
+            await Assert.ThrowsAsync<NotSupportedException>(() => manager.VerifyChangePhoneNumberToken("bogus", "1", "111-111-1111"));
+            await Assert.ThrowsAsync<NotSupportedException>(() => manager.GenerateChangePhoneNumberToken("bogus", "111-111-1111"));
         }
 
         [Fact]
-        public void LoginMethodsFailWhenStoreNotImplementedTest()
+        public async Task LoginMethodsFailWhenStoreNotImplementedTest()
         {
             var manager = new UserManager<TestUser, string>(new NoopUserStore());
             Assert.False(manager.SupportsUserLogin);
-            //Assert.Throws<NotSupportedException>(() => AsyncHelper.RunSync(() => manager.AddLoginAsync("bogus", null)));
-            //Assert.Throws<NotSupportedException>(
-            //    () => AsyncHelper.RunSync(() => manager.RemoveLoginAsync("bogus", null)));
-            //Assert.Throws<NotSupportedException>(() => AsyncHelper.RunSync(() => manager.GetLoginsAsync("bogus")));
-            //Assert.Throws<NotSupportedException>(() => AsyncHelper.RunSync(() => manager.FindAsync(null)));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.AddLogin("bogus", null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.RemoveLogin("bogus", null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetLogins("bogus"));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.Find(null));
         }
 
         [Fact]
-        public void ClaimMethodsFailWhenStoreNotImplementedTest()
+        public async Task ClaimMethodsFailWhenStoreNotImplementedTest()
         {
             var manager = new UserManager<TestUser, string>(new NoopUserStore());
             Assert.False(manager.SupportsUserClaim);
-            //Assert.Throws<NotSupportedException>(() => manager.AddClaim("bogus", null));
-            //Assert.Throws<NotSupportedException>(() => manager.RemoveClaim("bogus", null));
-            //Assert.Throws<NotSupportedException>(() => manager.GetClaims("bogus"));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.AddClaim("bogus", null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.RemoveClaim("bogus", null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetClaims("bogus"));
         }
 
         [Fact]
-        public void TwoFactorStoreMethodsFailWhenStoreNotImplementedTest()
+        public async Task TwoFactorStoreMethodsFailWhenStoreNotImplementedTest()
         {
             var manager = new UserManager<TestUser, string>(new NoopUserStore());
             Assert.False(manager.SupportsUserTwoFactor);
-            //Assert.Throws<NotSupportedException>(() => manager.GetTwoFactorEnabled("bogus"));
-            //Assert.Throws<NotSupportedException>(() => manager.SetTwoFactorEnabled("bogus", true));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetTwoFactorEnabled("bogus"));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.SetTwoFactorEnabled("bogus", true));
         }
 
         [Fact]
-        public void RoleMethodsFailWhenStoreNotImplementedTest()
+        public async Task RoleMethodsFailWhenStoreNotImplementedTest()
         {
             var manager = new UserManager<TestUser, string>(new NoopUserStore());
             Assert.False(manager.SupportsUserRole);
-            //Assert.Throws<NotSupportedException>(() => manager.AddToRole("bogus", null).Wait());
-            //Assert.Throws<NotSupportedException>(async () => await manager.GetRoles("bogus"));
-            //Assert.Throws<NotSupportedException>(async () => await manager.RemoveFromRole("bogus", null));
-            //Assert.Throws<NotSupportedException>(async () => await manager.IsInRole("bogus", "bogus"));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.AddToRole("bogus", null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetRoles("bogus"));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.RemoveFromRole("bogus", null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.IsInRole("bogus", "bogus"));
         }
 
         [Fact]
@@ -154,24 +151,24 @@ namespace Microsoft.AspNet.Identity.Test
         }
 
         [Fact]
-        public void ManagerPublicNullCheckTest()
+        public async Task ManagerPublicNullCheckTest()
         {
             Assert.Throws<ArgumentNullException>(() => new UserManager<TestUser, string>((IUserStore<TestUser, string>)null));
-            var manager = new UserManager<TestUser, string>(new NoopUserStore());
+            var manager = new UserManager<TestUser, string>(new NotImplementedStore());
             Assert.Throws<ArgumentNullException>(() => manager.ClaimsIdentityFactory = null);
             Assert.Throws<ArgumentNullException>(() => manager.PasswordHasher = null);
-            //Assert.Throws<ArgumentNullException>(() => manager.CreateIdentity(null, "whatever"));
-            //Assert.Throws<ArgumentNullException>(() => manager.Create(null));
-            //Assert.Throws<ArgumentNullException>(() => manager.Create(null, null));
-            //Assert.Throws<ArgumentNullException>(() => manager.Create(new TestUser(), null));
-            //Assert.Throws<ArgumentNullException>(() => manager.Update(null));
-            //Assert.Throws<ArgumentNullException>(() => manager.Delete(null));
-            //Assert.Throws<ArgumentNullException>(() => manager.AddClaim("bogus", null));
-            //Assert.Throws<ArgumentNullException>(() => manager.FindByName(null));
-            //Assert.Throws<ArgumentNullException>(() => manager.Find(null, null));
-            //Assert.Throws<ArgumentNullException>(() => manager.AddLogin("bogus", null));
-            //Assert.Throws<ArgumentNullException>(() => manager.RemoveLogin("bogus", null));
-            //Assert.Throws<ArgumentNullException>(() => manager.FindByEmail(null));
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await manager.CreateIdentity(null, "whatever"));
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await manager.Create(null));
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await manager.Create(null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await manager.Create(new TestUser(), null));
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await manager.Update(null));
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await manager.Delete(null));
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await manager.AddClaim("bogus", null));
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await manager.FindByName(null));
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await manager.Find(null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await manager.AddLogin("bogus", null));
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await manager.RemoveLogin("bogus", null));
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await manager.FindByEmail(null));
             Assert.Throws<ArgumentNullException>(() => manager.RegisterTwoFactorProvider(null, null));
             Assert.Throws<ArgumentNullException>(() => manager.RegisterTwoFactorProvider("bogus", null));
         }
@@ -263,42 +260,42 @@ namespace Microsoft.AspNet.Identity.Test
         //        () => AsyncHelper.RunSync(() => manager.IsLockedOutAsync(null)), error);
         //}
 
-        //[Fact]
-        //public void MethodsThrowWhenDisposedTest()
-        //{
-        //    var manager = new UserManager<TestUser, string>(new NoopUserStore());
-        //    manager.Dispose();
-        //    Assert.Throws<ObjectDisposedException>(() => manager.AddClaim("bogus", null));
-        //    Assert.Throws<ObjectDisposedException>(() => manager.AddLogin("bogus", null));
-        //    Assert.Throws<ObjectDisposedException>(() => manager.AddPassword("bogus", null));
-        //    Assert.Throws<ObjectDisposedException>(() => manager.AddToRole("bogus", null));
-        //    Assert.Throws<ObjectDisposedException>(() => manager.ChangePassword("bogus", null, null));
-        //    Assert.Throws<ObjectDisposedException>(() => manager.GetClaims("bogus"));
-        //    Assert.Throws<ObjectDisposedException>(() => manager.GetLogins("bogus"));
-        //    Assert.Throws<ObjectDisposedException>(() => manager.GetRoles("bogus"));
-        //    Assert.Throws<ObjectDisposedException>(() => manager.IsInRole("bogus", null));
-        //    Assert.Throws<ObjectDisposedException>(() => manager.RemoveClaim("bogus", null));
-        //    Assert.Throws<ObjectDisposedException>(() => manager.RemoveLogin("bogus", null));
-        //    Assert.Throws<ObjectDisposedException>(() => manager.RemovePassword("bogus"));
-        //    Assert.Throws<ObjectDisposedException>(() => manager.RemoveFromRole("bogus", null));
-        //    Assert.Throws<ObjectDisposedException>(() => manager.RemoveClaim("bogus", null));
-        //    Assert.Throws<ObjectDisposedException>(() => manager.Find("bogus", null));
-        //    Assert.Throws<ObjectDisposedException>(() => manager.Find(null));
-        //    Assert.Throws<ObjectDisposedException>(() => manager.FindById(null));
-        //    Assert.Throws<ObjectDisposedException>(() => manager.FindByName(null));
-        //    Assert.Throws<ObjectDisposedException>(() => manager.Create(null));
-        //    Assert.Throws<ObjectDisposedException>(() => manager.Create(null, null));
-        //    Assert.Throws<ObjectDisposedException>(() => manager.CreateIdentity(null, null));
-        //    Assert.Throws<ObjectDisposedException>(() => manager.Update(null));
-        //    Assert.Throws<ObjectDisposedException>(() => manager.Delete(null));
-        //    Assert.Throws<ObjectDisposedException>(() => manager.UpdateSecurityStamp(null));
-        //    Assert.Throws<ObjectDisposedException>(() => manager.GetSecurityStamp(null));
-        //    Assert.Throws<ObjectDisposedException>(() => manager.GeneratePasswordResetToken(null));
-        //    Assert.Throws<ObjectDisposedException>(() => manager.ResetPassword(null, null, null));
-        //    Assert.Throws<ObjectDisposedException>(() => manager.GenerateEmailConfirmationToken(null));
-        //    Assert.Throws<ObjectDisposedException>(() => manager.IsEmailConfirmed(null));
-        //    Assert.Throws<ObjectDisposedException>(() => manager.ConfirmEmail(null, null));
-        //}
+        [Fact]
+        public async Task MethodsThrowWhenDisposedTest()
+        {
+            var manager = new UserManager<TestUser, string>(new NoopUserStore());
+            manager.Dispose();
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.AddClaim("bogus", null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.AddLogin("bogus", null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.AddPassword("bogus", null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.AddToRole("bogus", null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.ChangePassword("bogus", null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GetClaims("bogus"));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GetLogins("bogus"));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GetRoles("bogus"));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.IsInRole("bogus", null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemoveClaim("bogus", null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemoveLogin("bogus", null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemovePassword("bogus"));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemoveFromRole("bogus", null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemoveClaim("bogus", null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.Find("bogus", null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.Find(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindById(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByName(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.Create(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.Create(null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.CreateIdentity(null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.Update(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.Delete(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.UpdateSecurityStamp(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GetSecurityStamp(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GeneratePasswordResetToken(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.ResetPassword(null, null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GenerateEmailConfirmationToken(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.IsEmailConfirmed(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.ConfirmEmail(null, null));
+        }
 
         private class TestUser : IUser<string>
         {
@@ -335,6 +332,190 @@ namespace Microsoft.AspNet.Identity.Test
             public Task Delete(TestUser user)
             {
                 return Task.FromResult(0);
+            }
+
+            
+        }
+
+
+
+        private class NotImplementedStore : 
+            IUserPasswordStore<TestUser, string>, 
+            IUserClaimStore<TestUser, string>,
+            IUserLoginStore<TestUser, string>,
+            IUserEmailStore<TestUser, string>,
+            IUserPhoneNumberStore<TestUser, string>,
+            IUserLockoutStore<TestUser, string>,
+            IUserTwoFactorStore<TestUser, string>
+        {
+            public void Dispose()
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task Create(TestUser user)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task Update(TestUser user)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task Delete(TestUser user)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<TestUser> FindById(string userId)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<TestUser> FindByName(string userName)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SetPasswordHash(TestUser user, string passwordHash)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<string> GetPasswordHash(TestUser user)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<bool> HasPassword(TestUser user)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<IList<Claim>> GetClaims(TestUser user)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task AddClaim(TestUser user, Claim claim)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task RemoveClaim(TestUser user, Claim claim)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task AddLogin(TestUser user, UserLoginInfo login)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task RemoveLogin(TestUser user, UserLoginInfo login)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<IList<UserLoginInfo>> GetLogins(TestUser user)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<TestUser> Find(UserLoginInfo login)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SetEmail(TestUser user, string email)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<string> GetEmail(TestUser user)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<bool> GetEmailConfirmed(TestUser user)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SetEmailConfirmed(TestUser user, bool confirmed)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<TestUser> FindByEmail(string email)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SetPhoneNumber(TestUser user, string phoneNumber)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<string> GetPhoneNumber(TestUser user)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<bool> GetPhoneNumberConfirmed(TestUser user)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SetPhoneNumberConfirmed(TestUser user, bool confirmed)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<DateTimeOffset> GetLockoutEndDate(TestUser user)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SetLockoutEndDate(TestUser user, DateTimeOffset lockoutEnd)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<int> IncrementAccessFailedCount(TestUser user)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task ResetAccessFailedCount(TestUser user)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<int> GetAccessFailedCount(TestUser user)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<bool> GetLockoutEnabled(TestUser user)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SetLockoutEnabled(TestUser user, bool enabled)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SetTwoFactorEnabled(TestUser user, bool enabled)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<bool> GetTwoFactorEnabled(TestUser user)
+            {
+                throw new NotImplementedException();
             }
         }
     }

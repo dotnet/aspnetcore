@@ -376,6 +376,10 @@ namespace Microsoft.AspNet.Identity
         public virtual async Task<IdentityResult> Delete(TUser user)
         {
             ThrowIfDisposed();
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
             await Store.Delete(user).ConfigureAwait(false);
             return IdentityResult.Success;
         }
