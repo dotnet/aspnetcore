@@ -15,7 +15,6 @@ namespace Microsoft.AspNet.Server.WebListener
     public class WebListenerWrapper : IDisposable
     {
         private static readonly int DefaultMaxAccepts = 5 * Environment.ProcessorCount;
-        private static readonly int DefaultMaxRequests = Int32.MaxValue;
 
         private OwinWebListener _listener;
         private AppFunc _appFunc;
@@ -24,7 +23,6 @@ namespace Microsoft.AspNet.Server.WebListener
         private PumpLimits _pumpLimits;
         private int _acceptorCounts;
         private Action<object> _processRequest;
-        private readonly AwaitableThrottle _requestProcessingThrottle;
 
         // TODO: private IDictionary<string, object> _capabilities;
 
@@ -34,8 +32,7 @@ namespace Microsoft.AspNet.Server.WebListener
             _listener = listener;
 
             _processRequest = new Action<object>(ProcessRequestAsync);
-            _pumpLimits = new PumpLimits(DefaultMaxAccepts, DefaultMaxRequests);
-            _requestProcessingThrottle = new AwaitableThrottle(DefaultMaxRequests);
+            _pumpLimits = new PumpLimits(DefaultMaxAccepts);
         }
 
         internal void Start(AppFunc app, IList<IDictionary<string, object>> addresses,  LoggerFactoryFunc loggerFactory)
@@ -72,10 +69,9 @@ namespace Microsoft.AspNet.Server.WebListener
         /// This controls how many requests the server attempts to process concurrently.
         /// </summary>
         /// <param name="maxAccepts">The maximum number of pending accepts.</param>
-        /// <param name="maxRequests">The maximum number of outstanding requests.</param>
-        public void SetRequestProcessingLimits(int maxAccepts, int maxRequests)
+        public void SetRequestProcessingLimits(int maxAccepts)
         {
-            _pumpLimits = new PumpLimits(maxAccepts, maxRequests);
+            _pumpLimits = new PumpLimits(maxAccepts);
 
             if (_listener.IsListening)
             {
@@ -85,8 +81,6 @@ namespace Microsoft.AspNet.Server.WebListener
 
         private void ActivateRequestProcessingLimits()
         {
-            _requestProcessingThrottle.MaxConcurrent = _pumpLimits.MaxOutstandingRequests;
-
             for (int i = _acceptorCounts; i < _pumpLimits.MaxOutstandingAccepts; i++)
             {
                 ProcessRequestsWorker();
@@ -97,14 +91,11 @@ namespace Microsoft.AspNet.Server.WebListener
         /// Gets the request processing limits.
         /// </summary>
         /// <param name="maxAccepts">The maximum number of pending accepts.</param>
-        /// <param name="maxRequests">The maximum number of outstanding requests.</param>
         [SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", MessageId = "0#", Justification = "By design")]
-        [SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", MessageId = "1#", Justification = "By design")]
-        public void GetRequestProcessingLimits(out int maxAccepts, out int maxRequests)
+        public void GetRequestProcessingLimits(out int maxAccepts)
         {
             PumpLimits limits = _pumpLimits;
             maxAccepts = limits.MaxOutstandingAccepts;
-            maxRequests = limits.MaxOutstandingRequests;
         }
 
         // The message pump.
@@ -116,8 +107,6 @@ namespace Microsoft.AspNet.Server.WebListener
             int workerIndex = Interlocked.Increment(ref _acceptorCounts);
             while (_listener.IsListening && workerIndex <= _pumpLimits.MaxOutstandingAccepts)
             {
-                await _requestProcessingThrottle;
-
                 // Receive a request
                 RequestContext requestContext;
                 try
@@ -139,7 +128,6 @@ namespace Microsoft.AspNet.Server.WebListener
                     // Request processing failed to be queued in threadpool
                     // Log the error message, release throttle and move on
                     LogHelper.LogException(_logger, "ProcessRequestAsync", ex);
-                    _requestProcessingThrottle.Release();
                 }
             }
             Interlocked.Decrement(ref _acceptorCounts);
@@ -152,7 +140,6 @@ namespace Microsoft.AspNet.Server.WebListener
             {
                 try
                 {
-                    // TODO: Make disconnect registration lazy
                     FeatureContext featureContext = new FeatureContext(requestContext);
                     await _appFunc(featureContext.Features).SupressContext();
                     await requestContext.ProcessResponseAsync().SupressContext();
@@ -177,10 +164,6 @@ namespace Microsoft.AspNet.Server.WebListener
                 LogHelper.LogException(_logger, "ProcessRequestAsync", ex);
                 requestContext.Abort();
                 requestContext.Dispose();
-            }
-            finally
-            {
-                _requestProcessingThrottle.Release();
             }
         }
 

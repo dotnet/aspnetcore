@@ -18,13 +18,11 @@ namespace Microsoft.AspNet.Server.WebListener
 {
     internal struct PumpLimits
     {
-        internal PumpLimits(int maxAccepts, int maxRequests)
+        internal PumpLimits(int maxAccepts)
         {
             MaxOutstandingAccepts = maxAccepts;
-            MaxOutstandingRequests = maxRequests;
         }
 
         internal readonly int MaxOutstandingAccepts;
-        internal readonly int MaxOutstandingRequests;
     }
 }
