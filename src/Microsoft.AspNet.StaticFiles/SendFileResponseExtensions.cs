@@ -3,11 +3,10 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.StaticFiles;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.HttpFeature;
 
-namespace Microsoft.Owin
+namespace Microsoft.AspNet.StaticFiles
 {
     /// <summary>
     /// Provides extensions for HttpResponse exposing the SendFile extension.
