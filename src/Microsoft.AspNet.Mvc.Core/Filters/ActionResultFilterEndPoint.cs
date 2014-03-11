@@ -8,6 +8,12 @@ namespace Microsoft.AspNet.Mvc.Filters
     {
         public async Task Invoke(ActionResultFilterContext context, Func<Task> next)
         {
+            // result can get cleared at any point in the pipeline
+            if (context.Result == null)
+            {
+                context.Result = new EmptyResult();
+            }
+
             await context.Result.ExecuteResultAsync(context.ActionContext);
         }
     }

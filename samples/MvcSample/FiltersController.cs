@@ -8,6 +8,8 @@ namespace MvcSample
     [ServiceFilter(typeof(PassThroughAttribute))]
     [PassThrough(Order = 0)]
     [PassThrough(Order = 2)]
+    [InspectResultPage]
+    [UserNameProvider(Order = -1)]
     public class FiltersController : Controller
     {
         private readonly User _user = new User() { Name = "User Name", Address = "Home Address" };
@@ -15,9 +17,13 @@ namespace MvcSample
         // TODO: Add a real filter here
         [ServiceFilter(typeof(PassThroughAttribute))]
         [AgeEnhancer]
-        [InspectResultPage]
-        public IActionResult Index(int age)
+        public IActionResult Index(int age, string userName)
         {
+            if (!string.IsNullOrEmpty(userName))
+            {
+                _user.Name = userName;
+            }
+
             _user.Age = age;
 
             return View("MyView", _user);

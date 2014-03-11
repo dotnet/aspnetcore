@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc
             _parameterDescriptorFactory = parameterDescriptorFactory;
             var filters = globalFilters ?? Enumerable.Empty<IFilter>();
 
-            _globalFilters = filters.Select(f => new FilterDescriptor(f, FilterOrigin.Global));
+            _globalFilters = filters.Select(f => new FilterDescriptor(f, FilterScope.Global));
         }
 
         public int Order
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Mvc
                 var controllerAttributes = cd.ControllerTypeInfo.GetCustomAttributes(inherit: true).ToArray();
                 var globalAndControllerFilters =
                     controllerAttributes.OfType<IFilter>()
-                                        .Select(filter => new FilterDescriptor(filter, FilterOrigin.Controller))
+                                        .Select(filter => new FilterDescriptor(filter, FilterScope.Controller))
                                         .Concat(_globalFilters)
                                         .OrderBy(d => d, FilterDescriptorOrderComparer.Comparer)
                                         .ToArray();
@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.Mvc
 
             var attributes = methodInfo.GetCustomAttributes(inherit: true).ToArray();
 
-            var filtersFromAction = attributes.OfType<IFilter>().Select(filter => new FilterDescriptor(filter, FilterOrigin.Action));
+            var filtersFromAction = attributes.OfType<IFilter>().Select(filter => new FilterDescriptor(filter, FilterScope.Action));
 
             ad.FilterDescriptors = filtersFromAction.Concat(globalAndControllerFilters)
                                                     .OrderBy(d => d, FilterDescriptorOrderComparer.Comparer)

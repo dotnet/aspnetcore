@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Mvc
         {
             if (x.Filter.Order == y.Filter.Order)
             {
-                return x.Origin.CompareTo(y.Origin);
+                return x.Scope.CompareTo(y.Scope);
             }
             else
             {

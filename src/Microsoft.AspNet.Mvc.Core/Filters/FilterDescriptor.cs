@@ -4,13 +4,13 @@ namespace Microsoft.AspNet.Mvc
 {
     public class FilterDescriptor
     {
-        public FilterDescriptor([NotNull]IFilter filter, int origin)
+        public FilterDescriptor([NotNull]IFilter filter, int filterScope)
         {
             Filter = filter;
-            Origin = origin;
+            Scope = filterScope;
         }
 
         public IFilter Filter { get; private set; }
-        public int Origin { get; private set; }
+        public int Scope { get; private set; }
     }
 }
