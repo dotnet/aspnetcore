@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
+using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.HttpFeature;
 using Moq;
@@ -17,7 +19,7 @@ namespace Microsoft.AspNet.PipelineCore.Tests
         public void GetContentLength_ReturnsParsedHeader(long value)
         {
             // Arrange
-            var request = GetRequest(value.ToString(CultureInfo.InvariantCulture));
+            var request = GetRequestWithContentLength(value.ToString(CultureInfo.InvariantCulture));
 
             // Act and Assert
             Assert.Equal(value, request.ContentLength);
@@ -27,7 +29,7 @@ namespace Microsoft.AspNet.PipelineCore.Tests
         public void GetContentLength_ReturnsNullIfHeaderDoesNotExist()
         {
             // Arrange
-            var request = GetRequest(contentLength: null);
+            var request = GetRequestWithContentLength(contentLength: null);
 
             // Act and Assert
             Assert.Null(request.ContentLength);
@@ -41,30 +43,91 @@ namespace Microsoft.AspNet.PipelineCore.Tests
         public void GetContentLength_ReturnsNullIfHeaderCannotBeParsed(string contentLength)
         {
             // Arrange
-            var request = GetRequest(contentLength);
+            var request = GetRequestWithContentLength(contentLength);
 
             // Act and Assert
             Assert.Null(request.ContentLength);
         }
 
-        private static DefaultHttpRequest GetRequest(string contentLength = null)
+        [Fact]
+        public void Host_GetsHostFromHeaders()
         {
-            var features = new Mock<IFeatureCollection>();
-            var mockRequestInfo = new Mock<IHttpRequestInformation>();
-            var headers = new Dictionary<string, string[]>();
+            // Arrange
+            const string expected = "localhost:9001";
+
+            var headers = new Dictionary<string, string[]>(StringComparer.Ordinal)
+            {
+                { "Host", new string[]{ expected } },
+            };
+
+            var request = CreateRequest(headers);
+
+            // Act
+            var host = request.Host;
+
+            // Assert
+            Assert.Equal(expected, host.Value);
+        }
+
+        [Fact]
+        public void Host_DecodesPunyCode()
+        {
+            // Arrange
+            const string expected = "löcalhöst";
+
+            var headers = new Dictionary<string, string[]>(StringComparer.Ordinal)
+            {
+                { "Host", new string[]{ "xn--lcalhst-90ae" } },
+            };
+
+            var request = CreateRequest(headers);
+
+            // Act
+            var host = request.Host;
+
+            // Assert
+            Assert.Equal(expected, host.Value);
+        }
+
+        [Fact]
+        public void Host_EncodesPunyCode()
+        {
+            // Arrange
+            const string expected = "xn--lcalhst-90ae";
+
+            var headers = new Dictionary<string, string[]>(StringComparer.Ordinal);
+
+            var request = CreateRequest(headers);
+
+            // Act
+            request.Host = new HostString("löcalhöst");
+
+            // Assert
+            Assert.Equal(expected, headers["Host"][0]);
+        }
+
+        private static DefaultHttpRequest CreateRequest(IDictionary<string, string[]> headers)
+        {
+            var requestInfo = new Mock<IHttpRequestInformation>();
+            requestInfo.SetupGet(r => r.Headers).Returns(headers);
+
+            var features = new FeatureCollection();
+            features.Add(typeof(IHttpRequestInformation), requestInfo.Object);
+
+            var context = new DefaultHttpContext(features);
+            return new DefaultHttpRequest(context, features);
+        }
+
+ 		private static DefaultHttpRequest GetRequestWithContentLength(string contentLength = null)
+        {
+            var headers = new Dictionary<string, string[]>(StringComparer.Ordinal);
             if (contentLength != null)
             {
                 headers.Add("Content-Length", new[] { contentLength });
                 
             }
-            mockRequestInfo.SetupGet(r => r.Headers)
-                           .Returns(headers);
-            object requestInfo = mockRequestInfo.Object;
-            features.Setup(f => f.TryGetValue(typeof(IHttpRequestInformation), out requestInfo))
-                    .Returns(true);
-            var context = new DefaultHttpContext(features.Object);
-            var request = new DefaultHttpRequest(context, features.Object);
-            return request;
+
+ 		    return CreateRequest(headers);
         }
     }
 }

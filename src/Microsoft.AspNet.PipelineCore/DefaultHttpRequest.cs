@@ -117,14 +117,8 @@ namespace Microsoft.AspNet.PipelineCore
 
         public override HostString Host
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
+            get { return HostString.FromUriComponent(Headers["Host"]); }
+            set { Headers["Host"] = value.ToUriComponent(); }
         }
 
         public override IReadableStringCollection Query
