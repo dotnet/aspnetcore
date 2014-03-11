@@ -10,19 +10,22 @@ namespace Microsoft.AspNet.Mvc.Razor
 {
     public abstract class RazorView : IView
     {
-        public HttpContext Context { get; set; }
+        public ViewContext Context { get; set; }
 
         public string Layout { get; set; }
 
         protected TextWriter Output { get; set; }
 
-        public IRenderUrl Url { get; set; }
+        public IRenderUrl Url 
+        {
+            get { return Context == null ? null : Context.Url; }
+        }
 
         private string BodyContent { get; set; }
 
         public virtual async Task RenderAsync(ViewContext context, TextWriter writer)
         {
-            Url = context.RenderUrl;
+            Context = context;
 
             var contentBuilder = new StringBuilder(1024);
             using (var bodyWriter = new StringWriter(contentBuilder))

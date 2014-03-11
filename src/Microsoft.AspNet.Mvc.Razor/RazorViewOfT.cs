@@ -16,8 +16,6 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         public HtmlHelper<TModel> Html { get; set; }
 
-        public IRenderUrl RenderUrl { get; set; }
-
         public override Task RenderAsync(ViewContext context, TextWriter writer)
         {
             var viewData = context.ViewData as ViewData<TModel>;

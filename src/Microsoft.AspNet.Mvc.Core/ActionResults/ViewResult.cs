@@ -35,7 +35,10 @@ namespace Microsoft.AspNet.Mvc
                 context.HttpContext.Response.ContentType = "text/html";
                 using (var writer = new StreamWriter(context.HttpContext.Response.Body, Encoding.UTF8, 1024, leaveOpen: true))
                 {
-                    var viewContext = new ViewContext(context.HttpContext, ViewData, _serviceProvider);
+                    var viewContext = new ViewContext(context.HttpContext, ViewData, _serviceProvider)
+                    {
+                        Url = new DefaultRenderUrl(context.HttpContext, context.Router, context.RouteValues),
+                    };
                     await view.RenderAsync(viewContext, writer);
                 }
             }
@@ -48,7 +51,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 string locationsText = String.Join(Environment.NewLine, result.SearchedLocations);
                 const string message = @"The view &apos;{0}&apos; was not found. The following locations were searched:{1}.";
-                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, message, viewName, locationsText));
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, message, viewName, locationsText));
             }
 
             return result.View;

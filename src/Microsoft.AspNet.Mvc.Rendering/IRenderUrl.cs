@@ -1,6 +1,4 @@
 ﻿
-using System.Collections.Generic;
-
 namespace Microsoft.AspNet.Mvc
 {
     public interface IRenderUrl
