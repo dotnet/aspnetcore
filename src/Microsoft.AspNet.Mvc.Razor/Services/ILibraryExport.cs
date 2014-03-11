@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Microsoft.Net.Runtime
 {
     [AssemblyNeutral]
-    public interface IDependencyExport
+    public interface ILibraryExport
     {
         IList<IMetadataReference> MetadataReferences { get; }
         IList<ISourceReference> SourceReferences { get; }

@@ -12,17 +12,17 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
     public class RoslynCompilationService : ICompilationService
     {
-        private readonly IDependencyExporter _exporter;
+        private readonly ILibraryExportProvider _exportProvider;
         private readonly IApplicationEnvironment _environment;
         private readonly IAssemblyLoaderEngine _loader;
 
         public RoslynCompilationService(IApplicationEnvironment environment,
                                         IAssemblyLoaderEngine loaderEngine,
-                                        IDependencyExporter exporter)
+                                        ILibraryExportProvider exportProvider)
         {
             _environment = environment;
             _loader = loaderEngine;
-            _exporter = exporter;
+            _exportProvider = exportProvider;
         }
 
         public Task<CompilationResult> Compile(string content)
@@ -67,74 +67,28 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         {
             var references = new List<MetadataReference>();
 
-            // TODO: We need a way to get the current application's dependencies
+            var export = _exportProvider.GetLibraryExport(_environment.ApplicationName, _environment.TargetFramework);
 
-            var assemblies = new[] {
-                _environment.ApplicationName,
-#if NET45
-                "mscorlib",
-                "System",
-                "System.Core",
-                "Microsoft.CSharp",
-#else
-                "System.Linq",
-                "System.Collections",
-                "System.Dynamic.Runtime",
-                "System.Collections.Generic",
-#endif
-                "Microsoft.AspNet.Mvc",
-                "Microsoft.AspNet.Mvc.Razor",
-                "Microsoft.AspNet.Mvc.Rendering",
-            };
-
-            var exports = new List<IDependencyExport>();
-
-            foreach (var assemblyName in assemblies)
+            foreach (var metadataReference in export.MetadataReferences)
             {
-                var export = _exporter.GetDependencyExport(assemblyName, _environment.TargetFramework);
+                var fileMetadataReference = metadataReference as IMetadataFileReference;
 
-                if (export == null)
+                if (fileMetadataReference != null)
                 {
-                    continue;
+                    references.Add(CreateMetadataFileReference(fileMetadataReference.Path));
                 }
+                else
+                {
+                    var roslynReference = metadataReference as IRoslynMetadataReference;
 
-                exports.Add(export);
+                    if (roslynReference != null)
+                    {
+                        references.Add(roslynReference.MetadataReference);
+                    }
+                }
             }
-
-            ExtractReferences(exports, references);
 
             return references;
-        }
-
-        private void ExtractReferences(List<IDependencyExport> exports, List<MetadataReference> references)
-        {
-            var paths = new HashSet<string>();
-
-            foreach (var export in exports)
-            {
-                foreach (var metadataReference in export.MetadataReferences)
-                {
-                    var fileMetadataReference = metadataReference as IMetadataFileReference;
-
-                    if (fileMetadataReference != null)
-                    {
-                        string path = fileMetadataReference.Path;
-
-                        paths.Add(path);
-                    }
-                    else
-                    {
-                        var roslynReference = metadataReference as IRoslynMetadataReference;
-
-                        if (roslynReference != null)
-                        {
-                            references.Add(roslynReference.MetadataReference);
-                        }
-                    }
-                }
-            }
-
-            references.AddRange(paths.Select(CreateMetadataFileReference));
         }
 
         private MetadataReference CreateMetadataFileReference(string path)

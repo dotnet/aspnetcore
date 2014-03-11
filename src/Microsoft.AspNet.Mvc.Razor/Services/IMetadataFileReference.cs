@@ -1,4 +1,5 @@
-﻿namespace Microsoft.Net.Runtime
+﻿
+namespace Microsoft.Net.Runtime
 {
     [AssemblyNeutral]
     public interface IMetadataFileReference : IMetadataReference
