@@ -5,6 +5,7 @@
     "Microsoft.AspNet.PipelineCore": "0.1-alpha-*",
     "Microsoft.ComponentModel.DataAnnotations" : "4.0.10.0",
     "Microsoft.AspNet.Mvc.ModelBinding" : "",
+    "Newtonsoft.Json": "5.0.8",
     "TestCommon" : "",
     "Xunit.KRunner": "0.1-alpha-*",
     "xunit.abstractions": "2.0.0-aspnet-*",

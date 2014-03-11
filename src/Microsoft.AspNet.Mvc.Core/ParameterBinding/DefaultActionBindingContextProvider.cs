@@ -10,19 +10,19 @@ namespace Microsoft.AspNet.Mvc
         private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly IEnumerable<IModelBinder> _modelBinders;
         private readonly IEnumerable<IValueProviderFactory> _valueProviderFactories;
-        private readonly IEnumerable<IInputFormatter> _inputFormatters;
+        private readonly IInputFormatterProvider _inputFormatterProvider;
         private readonly IEnumerable<IModelValidatorProvider> _validatorProviders;
 
         public DefaultActionBindingContextProvider(IModelMetadataProvider modelMetadataProvider,
                                                    IEnumerable<IModelBinder> modelBinders,
                                                    IEnumerable<IValueProviderFactory> valueProviderFactories,
-                                                   IEnumerable<IInputFormatter> inputFormatters,
+                                                   IInputFormatterProvider inputFormatterProvider,
                                                    IEnumerable<IModelValidatorProvider> validatorProviders)
         {
             _modelMetadataProvider = modelMetadataProvider;
             _modelBinders = modelBinders.OrderBy(binder => binder.GetType() == typeof(ComplexModelDtoModelBinder) ? 1 : 0);
             _valueProviderFactories = valueProviderFactories;
-            _inputFormatters = inputFormatters;
+            _inputFormatterProvider = inputFormatterProvider;
             _validatorProviders = validatorProviders;
         }
 
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Mvc
                 _modelMetadataProvider,
                 new CompositeModelBinder(_modelBinders),
                 new CompositeValueProvider(valueProviders),
-                new CompositeInputFormatter(_inputFormatters),
+                _inputFormatterProvider,
                 _validatorProviders
             );
         }

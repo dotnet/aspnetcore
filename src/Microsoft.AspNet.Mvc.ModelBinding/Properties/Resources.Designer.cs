@@ -59,6 +59,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
+        /// No encoding found for media type formatter '{0}'. There must be at least one supported encoding registered in order for the media type formatter to read or write content.
+        /// </summary>
+        internal static string MediaTypeFormatterNoEncoding
+        {
+            get { return GetString("MediaTypeFormatterNoEncoding"); }
+        }
+
+        /// <summary>
+        /// No encoding found for media type formatter '{0}'. There must be at least one supported encoding registered in order for the media type formatter to read or write content.
+        /// </summary>
+        internal static string FormatMediaTypeFormatterNoEncoding(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("MediaTypeFormatterNoEncoding"), p0);
+        }
         /// Property '{0}' on type '{1}' is invalid. Value-typed properties marked as [Required] must also be marked with [DataMember(IsRequired=true)] to be recognized as required. Consider attributing the declaring type with [DataContract] and the property with [DataMember(IsRequired=true)].
         /// </summary>
         internal static string MissingDataMemberIsRequired

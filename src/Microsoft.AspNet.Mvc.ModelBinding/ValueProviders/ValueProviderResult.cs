@@ -45,54 +45,49 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return ConvertTo(type, culture: null);
         }
 
-        public virtual object ConvertTo(Type type, CultureInfo culture)
+        public virtual object ConvertTo([NotNull] Type type, CultureInfo culture)
         {
-            if (type == null)
-            {
-                throw Error.ArgumentNull("type");
-            }
-
-            TypeInfo typeInfo = type.GetTypeInfo();
-            object value = RawValue;
+            var value = RawValue;
             if (value == null)
             {
                 // treat null route parameters as though they were the default value for the type
-                return typeInfo.IsValueType ? Activator.CreateInstance(type) : null;
+                return type.GetTypeInfo().IsValueType ? Activator.CreateInstance(type) : 
+                                                        null;
             }
 
-            if (value.GetType().GetTypeInfo().IsAssignableFrom(typeInfo))
+            if (value.GetType().IsAssignableFrom(type))
             {
                 return value;
             }
 
-            CultureInfo cultureToUse = culture ?? Culture;
+            var cultureToUse = culture ?? Culture;
             return UnwrapPossibleArrayType(cultureToUse, value, type);
         }
 
-        private static object ConvertSimpleType(CultureInfo culture, object value, TypeInfo destinationType)
+        private static object ConvertSimpleType(CultureInfo culture, object value, Type destinationType)
         {
-            if (value == null || value.GetType().GetTypeInfo().IsAssignableFrom(destinationType))
+            if (value == null || value.GetType().IsAssignableFrom(destinationType))
             {
                 return value;
             }
 
             // if this is a user-input value but the user didn't type anything, return no value
-            string valueAsString = value as string;
+            var valueAsString = value as string;
 
-            if (valueAsString != null && String.IsNullOrWhiteSpace(valueAsString))
+            if (valueAsString != null && string.IsNullOrWhiteSpace(valueAsString))
             {
                 return null;
             }
 
-            if (destinationType == typeof(int).GetTypeInfo())
+            if (destinationType == typeof(int))
             {
                 return Convert.ToInt32(value);
             }
-            else if (destinationType == typeof(bool).GetTypeInfo())
+            else if (destinationType == typeof(bool))
             {
                 return Boolean.Parse(value.ToString());
             }
-            else if (destinationType == typeof(string).GetTypeInfo())
+            else if (destinationType == typeof(string))
             {
                 return Convert.ToString(value);
             }
@@ -139,25 +134,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private static object UnwrapPossibleArrayType(CultureInfo culture, object value, Type destinationType)
         {
             // array conversion results in four cases, as below
-            Array valueAsArray = value as Array;
+            var valueAsArray = value as Array;
             if (destinationType.IsArray)
             {
-                Type destinationElementType = destinationType.GetElementType();
-                TypeInfo destElementTypeInfo = destinationElementType.GetTypeInfo();
+                var destinationElementType = destinationType.GetElementType();
                 if (valueAsArray != null)
                 {
                     // case 1: both destination + source type are arrays, so convert each element
                     IList converted = Array.CreateInstance(destinationElementType, valueAsArray.Length);
-                    for (int i = 0; i < valueAsArray.Length; i++)
+                    for (var i = 0; i < valueAsArray.Length; i++)
                     {
-                        converted[i] = ConvertSimpleType(culture, valueAsArray.GetValue(i), destElementTypeInfo);
+                        converted[i] = ConvertSimpleType(culture, valueAsArray.GetValue(i), destinationElementType);
                     }
                     return converted;
                 }
                 else
                 {
                     // case 2: destination type is array but source is single element, so wrap element in array + convert
-                    object element = ConvertSimpleType(culture, value, destElementTypeInfo);
+                    var element = ConvertSimpleType(culture, value, destinationElementType);
                     IList converted = Array.CreateInstance(destinationElementType, 1);
                     converted[0] = element;
                     return converted;
@@ -169,7 +163,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 if (valueAsArray.Length > 0)
                 {
                     value = valueAsArray.GetValue(0);
-                    return ConvertSimpleType(culture, value, destinationType.GetTypeInfo());
+                    return ConvertSimpleType(culture, value, destinationType);
                 }
                 else
                 {
@@ -179,7 +173,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             // case 4: both destination + source type are single elements, so convert
-            return ConvertSimpleType(culture, value, destinationType.GetTypeInfo());
+            return ConvertSimpleType(culture, value, destinationType);
         }
     }
 }

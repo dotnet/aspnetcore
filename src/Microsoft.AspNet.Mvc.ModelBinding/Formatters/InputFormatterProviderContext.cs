@@ -1,14 +1,12 @@
-﻿using System;
-using System.Text;
-using Microsoft.AspNet.Abstractions;
+﻿using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
-    public class InputFormatterContext
+    public class InputFormatterProviderContext
     {
-        public InputFormatterContext([NotNull] HttpContext httpContext,
-                                     [NotNull] ModelMetadata metadata, 
-                                     [NotNull] ModelStateDictionary modelState)
+        public InputFormatterProviderContext([NotNull] HttpContext httpContext,
+                                             [NotNull] ModelMetadata metadata, 
+                                             [NotNull] ModelStateDictionary modelState)
         {
             HttpContext = httpContext;
             Metadata = metadata;
@@ -20,7 +18,5 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public ModelMetadata Metadata { get; private set; }
 
         public ModelStateDictionary ModelState { get; private set; }
-
-        public object Model { get; set; }
     }
 }

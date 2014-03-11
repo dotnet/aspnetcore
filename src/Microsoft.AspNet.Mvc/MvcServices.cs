@@ -60,6 +60,7 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Transient<IModelBinder, ComplexModelDtoModelBinder>();
 
             yield return describe.Transient<IInputFormatter, JsonInputFormatter>();
+            yield return describe.Transient<IInputFormatterProvider, TempInputFormatterProvider>();
 
             yield return describe.Transient<INestedProvider<FilterProviderContext>, DefaultFilterProvider>();
 

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Mvc.Filters;
-using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace Microsoft.AspNet.Mvc
@@ -129,24 +128,46 @@ namespace Microsoft.AspNet.Mvc
         {
             var actionBindingContext = await _bindingProvider.GetActionBindingContextAsync(_actionContext);
             var parameters = _descriptor.Parameters;
-
+            var metadataProvider = actionBindingContext.MetadataProvider;
             var parameterValues = new Dictionary<string, object>(parameters.Count, StringComparer.Ordinal);
-            for (int i = 0; i < parameters.Count; i++)
+
+            for (var i = 0; i < parameters.Count; i++)
             {
                 var parameter = parameters[i];
                 if (parameter.BodyParameterInfo != null)
                 {
-                    var inputFormatterContext = actionBindingContext.CreateInputFormatterContext(
-                                                        modelState,
-                                                        parameter);
-                    await actionBindingContext.InputFormatter.ReadAsync(inputFormatterContext);
-                    parameterValues[parameter.Name] = inputFormatterContext.Model;
+                    var parameterType = parameter.BodyParameterInfo.ParameterType;
+                    var modelMetadata = metadataProvider.GetMetadataForType(modelAccessor: null, modelType: parameterType);
+                    var providerContext = new InputFormatterProviderContext(actionBindingContext.ActionContext.HttpContext,
+                                                                            modelMetadata,
+                                                                            modelState);
+
+                    var inputFormatter = actionBindingContext.InputFormatterProvider.GetInputFormatter(providerContext);
+
+
+                    var formatterContext = new InputFormatterContext(actionBindingContext.ActionContext.HttpContext,
+                                                                     modelMetadata,
+                                                                     modelState);
+                    await inputFormatter.ReadAsync(formatterContext);
+                    parameterValues[parameter.Name] = formatterContext.Model;
                 }
                 else
                 {
-                    var modelBindingContext = actionBindingContext.CreateModelBindingContext(
-                                                        modelState,
-                                                        parameter);
+                    var parameterType = parameter.ParameterBindingInfo.ParameterType;
+                    var modelMetadata = metadataProvider.GetMetadataForType(modelAccessor: null, modelType: parameterType);
+
+                    var modelBindingContext = new ModelBindingContext
+                    {
+                        ModelName = parameter.Name,
+                        ModelState = modelState,
+                        ModelMetadata = modelMetadata,
+                        ModelBinder = actionBindingContext.ModelBinder,
+                        ValueProvider = actionBindingContext.ValueProvider,
+                        ValidatorProviders = actionBindingContext.ValidatorProviders,
+                        MetadataProvider = metadataProvider,
+                        HttpContext = actionBindingContext.ActionContext.HttpContext,
+                        FallbackToEmptyPrefix = true
+                    };
                     actionBindingContext.ModelBinder.BindModel(modelBindingContext);
                     parameterValues[parameter.Name] = modelBindingContext.Model;
                 }
