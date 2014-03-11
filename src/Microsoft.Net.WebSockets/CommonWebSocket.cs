@@ -533,11 +533,11 @@ namespace Microsoft.Net.WebSockets
             {
                 throw new ArgumentNullException("buffer");
             }
-            if (buffer.Offset < 0 || buffer.Offset >= buffer.Array.Length)
+            if (buffer.Offset < 0 || buffer.Offset > buffer.Array.Length)
             {
                 throw new ArgumentOutOfRangeException("buffer.Offset", buffer.Offset, string.Empty);
             }
-            if (buffer.Count <= 0 || buffer.Count > buffer.Array.Length - buffer.Offset)
+            if (buffer.Count < 0 || buffer.Count > buffer.Array.Length - buffer.Offset)
             {
                 throw new ArgumentOutOfRangeException("buffer.Count", buffer.Count, string.Empty);
             }

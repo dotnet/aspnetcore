@@ -62,6 +62,38 @@ namespace Microsoft.Net.WebSockets.Test
         }
 
         [Fact]
+        public async Task SendEmptyData_Success()
+        {
+            using (HttpListener listener = new HttpListener())
+            {
+                listener.Prefixes.Add(ServerAddress);
+                listener.Start();
+                Task<HttpListenerContext> serverAccept = listener.GetContextAsync();
+
+                WebSocketClient client = new WebSocketClient();
+                Task<WebSocket> clientConnect = client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None);
+
+                HttpListenerContext serverContext = await serverAccept;
+                Assert.True(serverContext.Request.IsWebSocketRequest);
+                HttpListenerWebSocketContext serverWebSocketContext = await serverContext.AcceptWebSocketAsync(null);
+
+                WebSocket clientSocket = await clientConnect;
+
+                byte[] orriginalData = new byte[0];
+                await clientSocket.SendAsync(new ArraySegment<byte>(orriginalData), WebSocketMessageType.Binary, true, CancellationToken.None);
+
+                byte[] serverBuffer = new byte[orriginalData.Length];
+                WebSocketReceiveResult result = await serverWebSocketContext.WebSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
+                Assert.True(result.EndOfMessage);
+                Assert.Equal(orriginalData.Length, result.Count);
+                Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
+                Assert.Equal(orriginalData, serverBuffer);
+
+                clientSocket.Dispose();
+            }
+        }
+
+        [Fact]
         public async Task SendShortData_Success()
         {
             using (HttpListener listener = new HttpListener())
@@ -215,6 +247,37 @@ namespace Microsoft.Net.WebSockets.Test
                 Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
 
                 Assert.Equal(orriginalData, serverBuffer);
+
+                clientSocket.Dispose();
+            }
+        }
+
+        [Fact]
+        public async Task ReceiveEmptyData_Success()
+        {
+            using (HttpListener listener = new HttpListener())
+            {
+                listener.Prefixes.Add(ServerAddress);
+                listener.Start();
+                Task<HttpListenerContext> serverAccept = listener.GetContextAsync();
+
+                WebSocketClient client = new WebSocketClient();
+                Task<WebSocket> clientConnect = client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None);
+
+                HttpListenerContext serverContext = await serverAccept;
+                Assert.True(serverContext.Request.IsWebSocketRequest);
+                HttpListenerWebSocketContext serverWebSocketContext = await serverContext.AcceptWebSocketAsync(null);
+
+                WebSocket clientSocket = await clientConnect;
+
+                byte[] orriginalData = Encoding.UTF8.GetBytes("Hello World");
+                await serverWebSocketContext.WebSocket.SendAsync(new ArraySegment<byte>(orriginalData), WebSocketMessageType.Binary, true, CancellationToken.None);
+
+                byte[] clientBuffer = new byte[0];
+                WebSocketReceiveResult result = await clientSocket.ReceiveAsync(new ArraySegment<byte>(clientBuffer), CancellationToken.None);
+                Assert.False(result.EndOfMessage);
+                Assert.Equal(0, result.Count);
+                Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
 
                 clientSocket.Dispose();
             }
