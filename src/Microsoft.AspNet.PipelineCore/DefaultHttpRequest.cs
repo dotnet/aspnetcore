@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Abstractions.Infrastructure;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.PipelineCore.Collections;
@@ -58,7 +60,6 @@ namespace Microsoft.AspNet.PipelineCore
             get { return _canHasCookies.Fetch(_features) ?? _canHasCookies.Update(_features, new DefaultCanHasRequestCookies(_features)); }
         }
 
-
         public override HttpContext HttpContext { get { return _context; } }
 
         public override PathString PathBase
@@ -77,6 +78,18 @@ namespace Microsoft.AspNet.PipelineCore
         {
             get { return new QueryString(HttpRequestInformation.QueryString); }
             set { HttpRequestInformation.QueryString = value.Value; }
+        }
+
+        public override long? ContentLength 
+        {
+            get
+            {
+                return ParsingHelpers.GetContentLength(Headers);
+            }
+            set
+            {
+                ParsingHelpers.SetContentLength(Headers, value);
+            }
         }
 
         public override Stream Body

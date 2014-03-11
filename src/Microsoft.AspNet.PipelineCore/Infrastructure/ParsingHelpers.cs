@@ -1,8 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Abstractions.Infrastructure;
 using Microsoft.AspNet.PipelineCore.Collections;
 
 namespace Microsoft.AspNet.PipelineCore.Infrastructure
@@ -804,8 +806,8 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
             var accumulator = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
             ParseDelimited(queryString, AmpersandAndSemicolon, AppendItemCallback, accumulator);
             return accumulator.ToDictionary(
-                    item => item.Key, 
-                    item => item.Value.ToArray(), 
+                    item => item.Key,
+                    item => item.Value.ToArray(),
                     StringComparer.OrdinalIgnoreCase);
         }
 
@@ -856,5 +858,31 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
         //    var localPort = request.Get<string>(OwinConstants.CommonKeys.LocalPort);
         //    return string.IsNullOrWhiteSpace(localPort) ? localIpAddress : (localIpAddress + ":" + localPort);
         //}
+
+        public static long? GetContentLength(IHeaderDictionary headers)
+        {
+            const NumberStyles styles = NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite;
+            long value;
+            string rawValue = headers.Get(Constants.Headers.ContentLength);
+            if (!string.IsNullOrWhiteSpace(rawValue) &&
+                long.TryParse(rawValue, styles, CultureInfo.InvariantCulture, out value))
+            {
+                return value;
+            }
+
+            return null;
+        }
+
+        public static void SetContentLength(IHeaderDictionary headers, long? value)
+        {
+            if (value.HasValue)
+            {
+                headers[Constants.Headers.ContentLength] = value.Value.ToString(CultureInfo.InvariantCulture);
+            }
+            else
+            {
+                headers.Remove(Constants.Headers.ContentLength);
+            }
+        }
     }
 }

@@ -51,26 +51,11 @@ namespace Microsoft.AspNet.PipelineCore
         {
             get
             {
-                long value;
-                string rawValue = Headers.Get(Constants.Headers.ContentLength);
-                if (!string.IsNullOrWhiteSpace(rawValue) && long.TryParse(rawValue, out value))
-                {
-                    return value;
-                }
-
-                return null;
+                return ParsingHelpers.GetContentLength(Headers);
             }
             set
             {
-                if (value.HasValue)
-                {
-                    HttpResponseInformation.Headers[Constants.Headers.ContentLength] =
-                        new[] { value.Value.ToString(CultureInfo.InvariantCulture) };
-                }
-                else
-                {
-                    HttpResponseInformation.Headers.Remove(Constants.Headers.ContentLength);
-                }
+                ParsingHelpers.SetContentLength(Headers, value);
             }
         }
 

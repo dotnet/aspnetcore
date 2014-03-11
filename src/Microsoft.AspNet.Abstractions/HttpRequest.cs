@@ -84,6 +84,11 @@ namespace Microsoft.AspNet.Abstractions
         public abstract IReadableStringCollection Cookies { get; }
 
         /// <summary>
+        /// Gets or sets the Content-Length header
+        /// </summary>
+        public abstract long? ContentLength { get; set; }
+
+        /// <summary>
         /// Gets or sets the Content-Type header.
         /// </summary>
         /// <returns>The Content-Type header.</returns>

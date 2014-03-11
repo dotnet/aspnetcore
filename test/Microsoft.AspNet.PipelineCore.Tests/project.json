@@ -16,6 +16,7 @@
       "Microsoft.Owin.Testing": "2.1.0",
       "Moq": "4.2.1312.1622",
       "xunit": "1.9.2",
+      "xunit.extensions": "1.9.2",
       "Microsoft.Net.Http": "2.2.13",
       "System.Net.Http": ""
       }
