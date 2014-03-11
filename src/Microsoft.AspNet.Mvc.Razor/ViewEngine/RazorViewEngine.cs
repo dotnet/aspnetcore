@@ -13,13 +13,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             "/Views/Shared/{0}.cshtml",
         };
 
-        private readonly IActionDescriptorProvider _actionDescriptorProvider;
         private readonly IVirtualPathViewFactory _virtualPathFactory;
 
-        public RazorViewEngine(IActionDescriptorProvider actionDescriptorProvider, 
-                               IVirtualPathViewFactory virtualPathFactory)
+        public RazorViewEngine(IVirtualPathViewFactory virtualPathFactory)
         {
-            _actionDescriptorProvider = actionDescriptorProvider;
             _virtualPathFactory = virtualPathFactory;
         }
 
