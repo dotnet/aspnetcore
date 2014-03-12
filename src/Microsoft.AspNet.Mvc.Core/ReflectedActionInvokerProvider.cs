@@ -41,8 +41,7 @@ namespace Microsoft.AspNet.Mvc
                                     _actionResultFactory,
                                     _controllerFactory,
                                     _bindingProvider,
-                                    _filterProvider,
-                                    _serviceProvider);
+                                    _filterProvider);
             }
 
             callNext();

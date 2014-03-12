@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Microsoft.AspNet.Mvc
+﻿namespace Microsoft.AspNet.Mvc
 {
     public class FilterDescriptor
     {
@@ -8,9 +6,19 @@ namespace Microsoft.AspNet.Mvc
         {
             Filter = filter;
             Scope = filterScope;
+
+            var orderedFilter = Filter as IOrderedFilter;
+
+            if (orderedFilter != null)
+            {
+                Order = orderedFilter.Order;
+            }
         }
 
         public IFilter Filter { get; private set; }
+
+        public int Order { get; private set; }
+
         public int Scope { get; private set; }
     }
 }

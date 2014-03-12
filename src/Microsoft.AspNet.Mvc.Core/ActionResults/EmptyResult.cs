@@ -13,6 +13,7 @@ namespace Microsoft.AspNet.Mvc
 
         public async Task ExecuteResultAsync(ActionContext context)
         {
+            context.HttpContext.Response.StatusCode = 204;
         }
     }
 }

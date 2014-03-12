@@ -10,13 +10,13 @@ namespace Microsoft.AspNet.Mvc
 
         public int Compare([NotNull]FilterDescriptor x, [NotNull]FilterDescriptor y)
         {
-            if (x.Filter.Order == y.Filter.Order)
+            if (x.Order == y.Order)
             {
                 return x.Scope.CompareTo(y.Scope);
             }
             else
             {
-                return x.Filter.Order.CompareTo(y.Filter.Order);
+                return x.Order.CompareTo(y.Order);
             }
         }
     }

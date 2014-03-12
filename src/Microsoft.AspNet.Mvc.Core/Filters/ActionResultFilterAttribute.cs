@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNet.Mvc
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
-    public abstract class ActionResultFilterAttribute : Attribute, IActionResultFilter, IFilter
+    public abstract class ActionResultFilterAttribute : Attribute, IActionResultFilter, IOrderedFilter
     {
         public abstract Task Invoke(ActionResultFilterContext context, Func<Task> next);
 

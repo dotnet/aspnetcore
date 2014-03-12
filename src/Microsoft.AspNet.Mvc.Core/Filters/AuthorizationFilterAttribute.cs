@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNet.Mvc
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
-    public abstract class AuthorizationFilterAttribute : Attribute, IFilter, IAuthorizationFilter
+    public abstract class AuthorizationFilterAttribute : Attribute, IAuthorizationFilter, IOrderedFilter
     {
         public abstract Task Invoke(AuthorizationFilterContext context, Func<Task> next);
 

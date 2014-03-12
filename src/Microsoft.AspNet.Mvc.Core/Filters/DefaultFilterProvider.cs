@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using Microsoft.AspNet.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.Filters
@@ -11,23 +12,23 @@ namespace Microsoft.AspNet.Mvc.Filters
             ServiceProvider = serviceProvider;
         }
 
+        public int Order
+        {
+            get { return 0; }
+        }
+
+        protected IServiceProvider ServiceProvider { get; private set; }
+
         public virtual void Invoke(FilterProviderContext context, Action callNext)
         {
-            FilterDescriptor[] filterDescriptors;
-
             if (context.ActionDescriptor.FilterDescriptors != null)
             {
                 // make a copy of the list, TODO: Make the actiondescriptor immutable
-                filterDescriptors = context.ActionDescriptor.FilterDescriptors.ToArray();
+                var filterDescriptors = context.ActionDescriptor.FilterDescriptors.ToArray();
 
-                //AddGlobalFilters_moveToAdPipeline(filters);
-
-                if (filterDescriptors.Length > 0)
+                for (int i = 0; i < filterDescriptors.Length; i++)
                 {
-                    for (int i = 0; i < filterDescriptors.Length; i++)
-                    {
-                        GetFilter(context, filterDescriptors[i].Filter);
-                    }
+                    ProvideFilter(context, filterDescriptors[i].Filter);
                 }
             }
 
@@ -37,96 +38,69 @@ namespace Microsoft.AspNet.Mvc.Filters
             }
         }
 
-        public virtual void GetFilter(FilterProviderContext context, IFilter filter)
+        public virtual void ProvideFilter(FilterProviderContext context, IFilter filter)
         {
-            bool failIfNotFilter = true;
-
             var serviceFilterSignature = filter as IServiceFilter;
             if (serviceFilterSignature != null)
             {
-                // TODO: How do we pass extra parameters
-                var serviceFilter = ServiceProvider.GetService(serviceFilterSignature.ServiceType);
+                var serviceFilter = ServiceProvider.GetService(serviceFilterSignature.ServiceType) as IFilter;
 
-                AddFilters(context, serviceFilter, true);
-                failIfNotFilter = false;
+                if (serviceFilter == null)
+                {
+                    throw new InvalidOperationException("Service filter must be of type IFilter");
+                }
+
+                ApplyFilterToContainer(serviceFilter, filter);
+                AddFilters(context, serviceFilter);
             }
-
-            var typeFilterSignature = filter as ITypeFilter;
-            if (typeFilterSignature != null)
+            else
             {
-                // TODO: How do we pass extra parameters
-                var typeFilter = ActivatorUtilities.CreateInstance(ServiceProvider, typeFilterSignature.ImplementationType);
+                var typeFilterSignature = filter as ITypeFilter;
+                if (typeFilterSignature != null)
+                {
+                    if (typeFilterSignature.ImplementationType == null)
+                    {
+                        throw new InvalidOperationException("Type filter must provide a type to instantiate");
+                    }
 
-                AddFilters(context, typeFilter, true);
-                failIfNotFilter = false;
+                    if (!typeof (IFilter).IsAssignableFrom(typeFilterSignature.ImplementationType))
+                    {
+                        throw new InvalidOperationException("Type filter must implement IFilter");
+                    }
+
+                    // TODO: Move activatorUtilities to come from the service provider.
+                    var typeFilter = ActivatorUtilities.CreateInstance(ServiceProvider, typeFilterSignature.ImplementationType) as IFilter;
+
+                    ApplyFilterToContainer(typeFilter, filter);
+                    AddFilters(context, typeFilter);
+                }
+                else
+                {
+                    AddFilters(context, filter);
+                }
             }
-
-            AddFilters(context, filter, failIfNotFilter);
         }
 
-        protected IServiceProvider ServiceProvider { get; private set; }
-
-        public int Order
+        private void AddFilters(FilterProviderContext context, IFilter filter)
         {
-            get { return 0; }
+            if (context.OrderedFilterList == null)
+            {
+                context.OrderedFilterList = new List<IFilter>();
+            }
+
+            context.OrderedFilterList.Add(filter);
         }
 
-        private void AddFilters(FilterProviderContext context, object filter, bool throwIfNotFilter)
+        private void ApplyFilterToContainer(object actualFilter, IFilter filterMetadata)
         {
-            bool shouldThrow = throwIfNotFilter;
+            Contract.Assert(actualFilter != null, "actualFilter should not be null");
+            Contract.Assert(filterMetadata != null, "filterMetadata should not be null");
 
-            var authFilter = filter as IAuthorizationFilter;
-            var actionFilter = filter as IActionFilter;
-            var actionResultFilter = filter as IActionResultFilter;
-            var exceptionFilter = filter as IExceptionFilter;
+            var container = actualFilter as IFilterContainer;
 
-            if (authFilter != null)
+            if (container != null)
             {
-                if (context.AuthorizationFilters == null)
-                {
-                    context.AuthorizationFilters = new List<IAuthorizationFilter>();
-                }
-
-                context.AuthorizationFilters.Add(authFilter);
-                shouldThrow = false;
-            }
-
-            if (actionFilter != null)
-            {
-                if (context.ActionFilters == null)
-                {
-                    context.ActionFilters = new List<IActionFilter>();
-                }
-
-                context.ActionFilters.Add(actionFilter);
-                shouldThrow = false;
-            }
-
-            if (actionResultFilter != null)
-            {
-                if (context.ActionResultFilters == null)
-                {
-                    context.ActionResultFilters = new List<IActionResultFilter>();
-                }
-
-                context.ActionResultFilters.Add(actionResultFilter);
-                shouldThrow = false;
-            }
-
-            if (exceptionFilter != null)
-            {
-                if (context.ExceptionFilters == null)
-                {
-                    context.ExceptionFilters = new List<IExceptionFilter>();
-                }
-
-                context.ExceptionFilters.Add(exceptionFilter);
-                shouldThrow = false;
-            }
-
-            if (shouldThrow)
-            {
-                throw new InvalidOperationException("Filter has to be IActionResultFilter, IActionFilter, IExceptionFilter or IAuthorizationFilter.");
+                container.FilterDefinition = filterMetadata;
             }
         }
     }
