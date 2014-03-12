@@ -3,7 +3,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Identity.Test
 {
-    public static class UnitTestHelper
+    public static class IdentityResultAssert
     {
         public static void IsSuccess(IdentityResult result)
         {

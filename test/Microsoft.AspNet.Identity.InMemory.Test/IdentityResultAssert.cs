@@ -1,11 +1,9 @@
-using System;
 using System.Linq;
-using Microsoft.AspNet.Identity;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.InMemory.Test
 {
-    public static class UnitTestHelper
+    public static class IdentityResultAssert
     {
         public static void IsSuccess(IdentityResult result)
         {

@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             var e = await Assert.ThrowsAsync<ArgumentException>(del);
             // Only check exception message on English build and OS, since some exception messages come from the OS
             // and will be in the native language.
-            // TODO: needed? if (UnitTestHelper.EnglishBuildAndOS)
+            // TODO: needed? if (IdentityResultAssert.EnglishBuildAndOS)
             //{
                 Assert.Equal(exceptionMessage, e.Message);
                 Assert.Equal(paramName, e.ParamName);;
