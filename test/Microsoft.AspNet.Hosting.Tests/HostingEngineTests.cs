@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Hosting.Tests
 {
-    public class HostingEngineTests : IServerManager, IServerFactory
+    public class HostingEngineTests : IServerFactory
     {
         private readonly IList<StartInstance> _startInstances = new List<StartInstance>();
 
@@ -29,14 +29,13 @@ namespace Microsoft.AspNet.Hosting.Tests
         public void HostingEngineCanBeStarted()
         {
             var services = new ServiceProvider()
-                .Add(HostingServices.GetDefaultServices()
-                    .Where(descriptor => descriptor.ServiceType != typeof(IServerManager)))
-                .AddInstance<IServerManager>(this);
+                .Add(HostingServices.GetDefaultServices());
 
             var engine = services.GetService<IHostingEngine>();
 
             var context = new HostingContext
             {
+                ServerFactory = this,
                 ApplicationName = "Microsoft.AspNet.Hosting.Tests.Fakes.FakeStartup, Microsoft.AspNet.Hosting.Tests"
             };
 
@@ -49,11 +48,6 @@ namespace Microsoft.AspNet.Hosting.Tests
             engineStart.Dispose();
 
             Assert.Equal(1, _startInstances[0].DisposeCalls);
-        }
-
-        public IServerFactory GetServer(string serverName)
-        {
-            return this;
         }
 
         public void Initialize(IBuilder builder)

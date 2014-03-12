@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Hosting
         public static IEnumerable<IServiceDescriptor> GetDefaultServices(IConfiguration configuration)
         {
             yield return DescribeService<IHostingEngine, HostingEngine>(configuration);
-            yield return DescribeService<IServerFactoryProvider, ServerFactoryProvider>(configuration);
+            yield return DescribeService<IServerManager, ServerManager>(configuration);
 
             yield return DescribeService<IStartupManager, StartupManager>(configuration);
             yield return DescribeService<IStartupLoaderProvider, StartupLoaderProvider>(configuration);
