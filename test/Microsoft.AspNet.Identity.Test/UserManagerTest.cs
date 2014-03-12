@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.NotNull(manager.UserValidator);
         }
 
-        // TODO: Mock fails in K (this works fine in net45)
+         //TODO: Mock fails in K (this works fine in net45)
         //[Fact]
         //public async Task CreateTest()
         //{
@@ -333,8 +333,6 @@ namespace Microsoft.AspNet.Identity.Test
             {
                 return Task.FromResult(0);
             }
-
-            
         }
 
 

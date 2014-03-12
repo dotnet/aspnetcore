@@ -19,18 +19,6 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         }
 
         [Fact]
-        public async Task FindByEmailTest()
-        {
-            var manager = CreateManager();
-            const string userName = "EmailTest";
-            const string email = "email@test.com";
-            var user = new InMemoryUser(userName) { Email = email };
-            UnitTestHelper.IsSuccess(await manager.Create(user));
-            var fetch = await manager.FindByEmail(email);
-            Assert.Equal(user, fetch);
-        }
-
-        [Fact]
         public async Task CreateUserNoPasswordTest()
         {
             var manager = CreateManager();
@@ -849,50 +837,50 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             Assert.Equal("Body", messageService.Message.Body);
         }
 
-        //[Fact]
-        //public async Task PhoneTokenFactorTest()
-        //{
-        //    var manager = CreateManager();
-        //    var messageService = new TestMessageService();
-        //    manager.SmsService = messageService;
-        //    const string factorId = "PhoneCode";
-        //    manager.RegisterTwoFactorProvider(factorId, new PhoneNumberTokenProvider<InMemoryUser>());
-        //    var user = new InMemoryUser("PhoneCodeTest") { PhoneNumber = "4251234567" };
-        //    UnitTestHelper.IsSuccess(await manager.Create(user));
-        //    var stamp = user.SecurityStamp;
-        //    Assert.NotNull(stamp);
-        //    var token = await manager.GenerateTwoFactorToken(user.Id, factorId);
-        //    Assert.NotNull(token);
-        //    Assert.Null(messageService.Message);
-        //    UnitTestHelper.IsSuccess(await manager.NotifyTwoFactorToken(user.Id, factorId, token));
-        //    Assert.NotNull(messageService.Message);
-        //    Assert.Equal(token, messageService.Message.Body);
-        //    Assert.True(await manager.VerifyTwoFactorToken(user.Id, factorId, token));
-        //}
+        [Fact]
+        public async Task PhoneTokenFactorTest()
+        {
+            var manager = CreateManager();
+            var messageService = new TestMessageService();
+            manager.SmsService = messageService;
+            const string factorId = "PhoneCode";
+            manager.RegisterTwoFactorProvider(factorId, new PhoneNumberTokenProvider<InMemoryUser>());
+            var user = new InMemoryUser("PhoneCodeTest") { PhoneNumber = "4251234567" };
+            UnitTestHelper.IsSuccess(await manager.Create(user));
+            var stamp = user.SecurityStamp;
+            Assert.NotNull(stamp);
+            var token = await manager.GenerateTwoFactorToken(user.Id, factorId);
+            Assert.NotNull(token);
+            Assert.Null(messageService.Message);
+            UnitTestHelper.IsSuccess(await manager.NotifyTwoFactorToken(user.Id, factorId, token));
+            Assert.NotNull(messageService.Message);
+            Assert.Equal(token, messageService.Message.Body);
+            Assert.True(await manager.VerifyTwoFactorToken(user.Id, factorId, token));
+        }
 
-        //[Fact]
-        //public async Task PhoneTokenFactorFormatTest()
-        //{
-        //    var manager = CreateManager();
-        //    var messageService = new TestMessageService();
-        //    manager.SmsService = messageService;
-        //    const string factorId = "PhoneCode";
-        //    manager.RegisterTwoFactorProvider(factorId, new PhoneNumberTokenProvider<InMemoryUser>
-        //    {
-        //        MessageFormat = "Your code is: {0}"
-        //    });
-        //    var user = new InMemoryUser("PhoneCodeTest") { PhoneNumber = "4251234567" };
-        //    UnitTestHelper.IsSuccess(await manager.Create(user));
-        //    var stamp = user.SecurityStamp;
-        //    Assert.NotNull(stamp);
-        //    var token = await manager.GenerateTwoFactorToken(user.Id, factorId);
-        //    Assert.NotNull(token);
-        //    Assert.Null(messageService.Message);
-        //    UnitTestHelper.IsSuccess(await manager.NotifyTwoFactorToken(user.Id, factorId, token));
-        //    Assert.NotNull(messageService.Message);
-        //    Assert.Equal("Your code is: " + token, messageService.Message.Body);
-        //    Assert.True(await manager.VerifyTwoFactorToken(user.Id, factorId, token));
-        //}
+        [Fact]
+        public async Task PhoneTokenFactorFormatTest()
+        {
+            var manager = CreateManager();
+            var messageService = new TestMessageService();
+            manager.SmsService = messageService;
+            const string factorId = "PhoneCode";
+            manager.RegisterTwoFactorProvider(factorId, new PhoneNumberTokenProvider<InMemoryUser>
+            {
+                MessageFormat = "Your code is: {0}"
+            });
+            var user = new InMemoryUser("PhoneCodeTest") { PhoneNumber = "4251234567" };
+            UnitTestHelper.IsSuccess(await manager.Create(user));
+            var stamp = user.SecurityStamp;
+            Assert.NotNull(stamp);
+            var token = await manager.GenerateTwoFactorToken(user.Id, factorId);
+            Assert.NotNull(token);
+            Assert.Null(messageService.Message);
+            UnitTestHelper.IsSuccess(await manager.NotifyTwoFactorToken(user.Id, factorId, token));
+            Assert.NotNull(messageService.Message);
+            Assert.Equal("Your code is: " + token, messageService.Message.Body);
+            Assert.True(await manager.VerifyTwoFactorToken(user.Id, factorId, token));
+        }
 
         [Fact]
         public async Task NoFactorProviderTest()
@@ -901,8 +889,9 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             var user = new InMemoryUser("PhoneCodeTest");
             UnitTestHelper.IsSuccess(await manager.Create(user));
             const string error = "No IUserTwoFactorProvider for 'bogus' is registered.";
-            await ExceptionHelper.ThrowsWithError<NotSupportedException>(() => manager.GenerateTwoFactorToken(user.Id, "bogus"), error);
-            await ExceptionHelper.ThrowsWithError<NotSupportedException>(
+            await Assert.ThrowsAsync<NotSupportedException>(() => manager.GenerateTwoFactorToken(user.Id, "bogus"));
+            Assert.ThrowsAsync()
+            ExceptionHelper.ThrowsWithError<NotSupportedException>(
                 () => manager.VerifyTwoFactorToken(user.Id, "bogus", "bogus"), error);
         }
 
@@ -917,82 +906,83 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             Assert.True(!factors.Any());
         }
 
-        //[Fact]
-        //public async Task GetValidTwoFactorTest()
-        //{
-        //    var manager = CreateManager();
-        //    manager.RegisterTwoFactorProvider("phone", new PhoneNumberTokenProvider<InMemoryUser>());
-        //    manager.RegisterTwoFactorProvider("email", new EmailTokenProvider<InMemoryUser>());
-        //    var user = new InMemoryUser("test");
-        //    UnitTestHelper.IsSuccess(await manager.Create(user));
-        //    var factors = await manager.GetValidTwoFactorProviders(user.Id);
-        //    Assert.NotNull(factors);
-        //    Assert.True(factors.Count() == 0);
-        //    UnitTestHelper.IsSuccess(await manager.SetPhoneNumber(user.Id, "111-111-1111"));
-        //    factors = await manager.GetValidTwoFactorProviders(user.Id);
-        //    Assert.NotNull(factors);
-        //    Assert.True(factors.Count() == 1);
-        //    Assert.Equal("phone", factors[0]);
-        //    UnitTestHelper.IsSuccess(await manager.SetEmail(user.Id, "test@test.com"));
-        //    factors = await manager.GetValidTwoFactorProviders(user.Id);
-        //    Assert.NotNull(factors);
-        //    Assert.True(factors.Count() == 2);
-        //    UnitTestHelper.IsSuccess(await manager.SetEmail(user.Id, null));
-        //    factors = await manager.GetValidTwoFactorProviders(user.Id);
-        //    Assert.NotNull(factors);
-        //    Assert.True(factors.Count() == 1);
-        //    Assert.Equal("phone", factors[0]);
-        //}
+        [Fact]
+        public async Task GetValidTwoFactorTest()
+        {
+            var manager = CreateManager();
+            manager.RegisterTwoFactorProvider("phone", new PhoneNumberTokenProvider<InMemoryUser>());
+            manager.RegisterTwoFactorProvider("email", new EmailTokenProvider<InMemoryUser>());
+            var user = new InMemoryUser("test");
+            UnitTestHelper.IsSuccess(await manager.Create(user));
+            var factors = await manager.GetValidTwoFactorProviders(user.Id);
+            Assert.NotNull(factors);
+            Assert.True(factors.Count() == 0);
+            UnitTestHelper.IsSuccess(await manager.SetPhoneNumber(user.Id, "111-111-1111"));
+            factors = await manager.GetValidTwoFactorProviders(user.Id);
+            Assert.NotNull(factors);
+            Assert.True(factors.Count() == 1);
+            Assert.Equal("phone", factors[0]);
+            UnitTestHelper.IsSuccess(await manager.SetEmail(user.Id, "test@test.com"));
+            factors = await manager.GetValidTwoFactorProviders(user.Id);
+            Assert.NotNull(factors);
+            Assert.True(factors.Count() == 2);
+            UnitTestHelper.IsSuccess(await manager.SetEmail(user.Id, null));
+            factors = await manager.GetValidTwoFactorProviders(user.Id);
+            Assert.NotNull(factors);
+            Assert.True(factors.Count() == 1);
+            Assert.Equal("phone", factors[0]);
+        }
 
-        //[Fact]
-        //public async Task PhoneFactorFailsAfterSecurityStampChangeTest()
-        //{
-        //    var manager = CreateManager();
-        //    var factorId = "PhoneCode";
-        //    manager.RegisterTwoFactorProvider(factorId, new PhoneNumberTokenProvider<InMemoryUser>());
-        //    var user = new InMemoryUser("PhoneCodeTest");
-        //    user.PhoneNumber = "4251234567";
-        //    UnitTestHelper.IsSuccess(await manager.Create(user));
-        //    var stamp = user.SecurityStamp;
-        //    Assert.NotNull(stamp);
-        //    var token = await manager.GenerateTwoFactorToken(user.Id, factorId);
-        //    Assert.NotNull(token);
-        //    UnitTestHelper.IsSuccess(await manager.UpdateSecurityStamp(user.Id));
-        //    Assert.False(await manager.VerifyTwoFactorToken(user.Id, factorId, token));
-        //}
+        [Fact]
+        public async Task PhoneFactorFailsAfterSecurityStampChangeTest()
+        {
+            var manager = CreateManager();
+            var factorId = "PhoneCode";
+            manager.RegisterTwoFactorProvider(factorId, new PhoneNumberTokenProvider<InMemoryUser>());
+            var user = new InMemoryUser("PhoneCodeTest");
+            user.PhoneNumber = "4251234567";
+            UnitTestHelper.IsSuccess(await manager.Create(user));
+            var stamp = user.SecurityStamp;
+            Assert.NotNull(stamp);
+            var token = await manager.GenerateTwoFactorToken(user.Id, factorId);
+            Assert.NotNull(token);
+            UnitTestHelper.IsSuccess(await manager.UpdateSecurityStamp(user.Id));
+            Assert.False(await manager.VerifyTwoFactorToken(user.Id, factorId, token));
+        }
 
-        //[Fact]
-        //public async Task WrongTokenProviderFailsTest()
-        //{
-        //    var manager = CreateManager();
-        //    var factorId = "PhoneCode";
-        //    manager.RegisterTwoFactorProvider(factorId, new PhoneNumberTokenProvider<InMemoryUser>());
-        //    manager.RegisterTwoFactorProvider("EmailCode", new EmailTokenProvider<InMemoryUser>());
-        //    var user = new InMemoryUser("PhoneCodeTest");
-        //    user.PhoneNumber = "4251234567";
-        //    UnitTestHelper.IsSuccess(await manager.Create(user));
-        //    var stamp = user.SecurityStamp;
-        //    Assert.NotNull(stamp);
-        //    var token = await manager.GenerateTwoFactorToken(user.Id, factorId);
-        //    Assert.NotNull(token);
-        //    Assert.False(await manager.VerifyTwoFactorToken(user.Id, "EmailCode", token));
-        //}
+        [Fact]
+        public async Task WrongTokenProviderFailsTest()
+        {
+            var manager = CreateManager();
+            var factorId = "PhoneCode";
+            manager.RegisterTwoFactorProvider(factorId, new PhoneNumberTokenProvider<InMemoryUser>());
+            manager.RegisterTwoFactorProvider("EmailCode", new EmailTokenProvider<InMemoryUser>());
+            var user = new InMemoryUser("PhoneCodeTest");
+            user.PhoneNumber = "4251234567";
+            UnitTestHelper.IsSuccess(await manager.Create(user));
+            var stamp = user.SecurityStamp;
+            Assert.NotNull(stamp);
+            var token = await manager.GenerateTwoFactorToken(user.Id, factorId);
+            Assert.NotNull(token);
+            Assert.False(await manager.VerifyTwoFactorToken(user.Id, "EmailCode", token));
+        }
 
-        //[Fact]
-        //public async Task WrongTokenFailsTest()
-        //{
-        //    var manager = CreateManager();
-        //    var factorId = "PhoneCode";
-        //    manager.RegisterTwoFactorProvider(factorId, new PhoneNumberTokenProvider<InMemoryUser>());
-        //    var user = new InMemoryUser("PhoneCodeTest");
-        //    user.PhoneNumber = "4251234567";
-        //    UnitTestHelper.IsSuccess(await manager.Create(user));
-        //    var stamp = user.SecurityStamp;
-        //    Assert.NotNull(stamp);
-        //    var token = await manager.GenerateTwoFactorToken(user.Id, factorId);
-        //    Assert.NotNull(token);
-        //    Assert.False(await manager.VerifyTwoFactorToken(user.Id, factorId, "abc"));
-        //}
+        [Fact]
+        public async Task WrongTokenFailsTest()
+        {
+            var manager = CreateManager();
+            var factorId = "PhoneCode";
+            manager.RegisterTwoFactorProvider(factorId, new PhoneNumberTokenProvider<InMemoryUser>());
+            var user = new InMemoryUser("PhoneCodeTest");
+            user.PhoneNumber = "4251234567";
+            UnitTestHelper.IsSuccess(await manager.Create(user));
+            var stamp = user.SecurityStamp;
+            Assert.NotNull(stamp);
+            var token = await manager.GenerateTwoFactorToken(user.Id, factorId);
+            Assert.NotNull(token);
+            Assert.False(await manager.VerifyTwoFactorToken(user.Id, factorId, "abc"));
+        }
+
 
         private static UserManager<InMemoryUser, string> CreateManager()
         {

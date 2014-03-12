@@ -14,7 +14,6 @@ namespace Microsoft.AspNet.Identity
     /// </summary>
     /// <typeparam name="TUser"></typeparam>
     /// <typeparam name="TKey"></typeparam>
-    /// <typeparam name="TManager"></typeparam>
     public class UserValidator<TUser, TKey> : IUserValidator<TUser, TKey>
         where TUser : class, IUser<TKey>
         where TKey : IEquatable<TKey>
@@ -59,12 +58,10 @@ namespace Microsoft.AspNet.Identity
             {
                 await ValidateEmail(manager, user, errors);
             }
-            if (errors.Count > 0)
-            {
-                return IdentityResult.Failed(errors.ToArray());
-            }
-            return IdentityResult.Success;
+            return errors.Count > 0 ? IdentityResult.Failed(errors.ToArray()) : IdentityResult.Success;
         }
+        
+        // TODO: Revisit extensibility for Validators
 
         /// <summary>
         ///     Returns true if the character is a digit between '0' and '9'
