@@ -4,13 +4,13 @@ using Microsoft.AspNet.Routing;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class DefaultUrlHelper : IUrlHelper
+    public class UrlHelper : IUrlHelper
     {
         private readonly HttpContext _httpContext;
         private readonly IRouter _router;
         private readonly IDictionary<string, object> _ambientValues;
- 
-        public DefaultUrlHelper(HttpContext httpContext, IRouter router, IDictionary<string, object> ambientValues)
+
+        public UrlHelper([NotNull] HttpContext httpContext, [NotNull] IRouter router, [NotNull] IDictionary<string, object> ambientValues)
         {
             _httpContext = httpContext;
             _router = router;

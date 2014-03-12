@@ -61,12 +61,12 @@ namespace Microsoft.AspNet.Mvc
                 }
                 else if (prop.Name == "Url" && prop.PropertyType == typeof(IUrlHelper))
                 {
-                    var generator = new DefaultUrlHelper(
+                    var urlHelper = new UrlHelper(
                         actionContext.HttpContext,
                         actionContext.Router,
                         actionContext.RouteValues);
 
-                    prop.SetValue(controller, generator);
+                    prop.SetValue(controller, urlHelper);
                 }
             }
 

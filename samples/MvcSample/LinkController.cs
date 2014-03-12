@@ -19,5 +19,15 @@ namespace MvcSample
         {
             return Url.Route(new { controller = "Home", action = "Details" });
         }
+
+        public string Link1()
+        {
+            return Url.Action("Index", "Home");
+        }
+
+        public string Link2()
+        {
+            return Url.Action("Link2");
+        }
     }
 }

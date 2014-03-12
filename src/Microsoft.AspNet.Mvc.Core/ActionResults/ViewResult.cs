@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Mvc
                 {
                     var viewContext = new ViewContext(context.HttpContext, ViewData, _serviceProvider)
                     {
-                        Url = new DefaultUrlHelper(context.HttpContext, context.Router, context.RouteValues),
+                        Url = new UrlHelper(context.HttpContext, context.Router, context.RouteValues),
                     };
                     await view.RenderAsync(viewContext, writer);
                 }
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Mvc
             ViewEngineResult result = await _viewEngine.FindView(actionContext, viewName);
             if (!result.Success)
             {
-                string locationsText = String.Join(Environment.NewLine, result.SearchedLocations);
+                string locationsText = string.Join(Environment.NewLine, result.SearchedLocations);
                 const string message = @"The view &apos;{0}&apos; was not found. The following locations were searched:{1}.";
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, message, viewName, locationsText));
             }
