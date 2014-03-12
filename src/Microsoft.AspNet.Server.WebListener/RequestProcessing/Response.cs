@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Server.WebListener
         private ResponseStream _nativeStream;
         private long _contentLength;
         private BoundaryType _boundaryType;
-        private UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE _nativeResponse;
+        private UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_V2 _nativeResponse;
         private IList<Tuple<Action<object>, object>> _onSendingHeadersActions;
 
         private RequestContext _requestContext;
@@ -32,12 +32,12 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             // TODO: Verbose log
             _requestContext = httpContext;
-            _nativeResponse = new UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE();
+            _nativeResponse = new UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_V2();
             _headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
             _boundaryType = BoundaryType.None;
-            _nativeResponse.StatusCode = (ushort)HttpStatusCode.OK;
-            _nativeResponse.Version.MajorVersion = 1;
-            _nativeResponse.Version.MinorVersion = 1;
+            _nativeResponse.Response_V1.StatusCode = (ushort)HttpStatusCode.OK;
+            _nativeResponse.Response_V1.Version.MajorVersion = 1;
+            _nativeResponse.Response_V1.Version.MinorVersion = 1;
             _responseState = ResponseState.Created;
             _onSendingHeadersActions = new List<Tuple<Action<object>, object>>();
         }
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Server.WebListener
 
         public int StatusCode
         {
-            get { return _nativeResponse.StatusCode; }
+            get { return _nativeResponse.Response_V1.StatusCode; }
             set
             {
                 if (value <= 100 || 999 < value)
@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.Server.WebListener
                     throw new ArgumentOutOfRangeException("value", value, string.Format(Resources.Exception_InvalidStatusCode, value));
                 }
                 CheckResponseStarted();
-                _nativeResponse.StatusCode = (ushort)value;
+                _nativeResponse.Response_V1.StatusCode = (ushort)value;
             }
         }
 
@@ -296,7 +296,7 @@ namespace Microsoft.AspNet.Server.WebListener
 
             // TODO: Verbose log headers
             _responseState = ResponseState.SentHeaders;
-            string reasonPhrase = GetReasonPhrase(_nativeResponse.StatusCode);
+            string reasonPhrase = GetReasonPhrase(_nativeResponse.Response_V1.StatusCode);
 
             /*
             if (m_BoundaryType==BoundaryType.Raw) {
@@ -305,23 +305,23 @@ namespace Microsoft.AspNet.Server.WebListener
             */
             uint statusCode;
             uint bytesSent;
-            List<GCHandle> pinnedHeaders = SerializeHeaders(ref _nativeResponse.Headers, isOpaqueUpgrade);
+            List<GCHandle> pinnedHeaders = SerializeHeaders();
             try
             {
                 if (pDataChunk != null)
                 {
-                    _nativeResponse.EntityChunkCount = 1;
-                    _nativeResponse.pEntityChunks = pDataChunk;
+                    _nativeResponse.Response_V1.EntityChunkCount = 1;
+                    _nativeResponse.Response_V1.pEntityChunks = pDataChunk;
                 }
                 else if (asyncResult != null && asyncResult.DataChunks != null)
                 {
-                    _nativeResponse.EntityChunkCount = asyncResult.DataChunkCount;
-                    _nativeResponse.pEntityChunks = asyncResult.DataChunks;
+                    _nativeResponse.Response_V1.EntityChunkCount = asyncResult.DataChunkCount;
+                    _nativeResponse.Response_V1.pEntityChunks = asyncResult.DataChunks;
                 }
                 else
                 {
-                    _nativeResponse.EntityChunkCount = 0;
-                    _nativeResponse.pEntityChunks = null;
+                    _nativeResponse.Response_V1.EntityChunkCount = 0;
+                    _nativeResponse.Response_V1.pEntityChunks = null;
                 }
 
                 if (reasonPhrase.Length > 0)
@@ -329,10 +329,10 @@ namespace Microsoft.AspNet.Server.WebListener
                     byte[] reasonPhraseBytes = new byte[HeaderEncoding.GetByteCount(reasonPhrase)];
                     fixed (byte* pReasonPhrase = reasonPhraseBytes)
                     {
-                        _nativeResponse.ReasonLength = (ushort)reasonPhraseBytes.Length;
+                        _nativeResponse.Response_V1.ReasonLength = (ushort)reasonPhraseBytes.Length;
                         HeaderEncoding.GetBytes(reasonPhrase, 0, reasonPhraseBytes.Length, reasonPhraseBytes, 0);
-                        _nativeResponse.pReason = (sbyte*)pReasonPhrase;
-                        fixed (UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE* pResponse = &_nativeResponse)
+                        _nativeResponse.Response_V1.pReason = (sbyte*)pReasonPhrase;
+                        fixed (UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_V2* pResponse = &_nativeResponse)
                         {
                             statusCode =
                                 UnsafeNclNativeMethods.HttpApi.HttpSendHttpResponse(
@@ -359,7 +359,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 }
                 else
                 {
-                    fixed (UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE* pResponse = &_nativeResponse)
+                    fixed (UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_V2* pResponse = &_nativeResponse)
                     {
                         statusCode =
                             UnsafeNclNativeMethods.HttpApi.HttpSendHttpResponse(
@@ -414,8 +414,8 @@ namespace Microsoft.AspNet.Server.WebListener
 
             // Check the response headers to determine the correct keep alive and boundary type.
             Version responseVersion = GetProtocolVersion();
-            _nativeResponse.Version.MajorVersion = (ushort)responseVersion.Major;
-            _nativeResponse.Version.MinorVersion = (ushort)responseVersion.Minor;
+            _nativeResponse.Response_V1.Version.MajorVersion = (ushort)responseVersion.Major;
+            _nativeResponse.Response_V1.Version.MinorVersion = (ushort)responseVersion.Minor;
             bool keepAlive = responseVersion >= Constants.V1_1;
             string connectionString = Headers.Get(HttpKnownHeaderNames.Connection);
             string keepAliveString = Headers.Get(HttpKnownHeaderNames.KeepAlive);
@@ -531,10 +531,10 @@ namespace Microsoft.AspNet.Server.WebListener
             return flags;
         }
 
-        private List<GCHandle> SerializeHeaders(ref UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_HEADERS headers,
-            bool isOpaqueUpgrade)
+        private List<GCHandle> SerializeHeaders()
         {
             UnsafeNclNativeMethods.HttpApi.HTTP_UNKNOWN_HEADER[] unknownHeaders = null;
+            UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_INFO[] knownHeaderInfo = null;
             List<GCHandle> pinnedHeaders;
             GCHandle gcHandle;
             /*
@@ -553,124 +553,78 @@ namespace Microsoft.AspNet.Server.WebListener
             byte[] bytes = null;
             pinnedHeaders = new List<GCHandle>();
 
-            //---------------------------------------------------
-            // DTS Issue: 609383:
-            // The Set-Cookie headers are being merged into one. 
-            // There are two issues here. 
-            // 1. When Set-Cookie headers are set through SetCookie method on the ListenerResponse,
-            // there is code in the SetCookie method and the methods it calls to flatten the Set-Cookie
-            // values. This blindly concatenates the cookies with a comma delimiter. There could be 
-            // a cookie value that contains comma, but we don't escape it with %XX value
-            //  
-            // As an alternative users can add the Set-Cookie header through the AddHeader method
-            // like ListenerResponse.Headers.Add("name", "value")
-            // That way they can add multiple headers - AND They can format the value like they want it.
-            //
-            // 2. Now that the header collection contains multiple Set-Cookie name, value pairs
-            // you would think the problem would go away. However here is an interesting thing.
-            // For NameValueCollection, when you add 
-            // "Set-Cookie", "value1"
-            // "Set-Cookie", "value2"
-            //  The NameValueCollection.Count == 1. Because there is only one key
-            //  NameValueCollection.Get("Set-Cookie") would conveniently take these two values
-            //  concatenate them with a comma like 
-            //  value1,value2. 
-            //  In order to get individual values, you need to use 
-            //  string[] values = NameValueCollection.GetValues("Set-Cookie");
-            //
-            //  -------------------------------------------------------------
-            //  So here is the proposed fix here.
-            //  We must first to loop through all the NameValueCollection keys
-            //  and if the name is a unknown header, we must compute the number of 
-            //  values it has. Then, we should allocate that many unknown header array 
-            //  elements.
-            //  
-            //  Note that a part of the fix here is to treat Set-Cookie as an unknown header
-            //
-            //
-            //-----------------------------------------------------------
             int numUnknownHeaders = 0;
+            int numKnownMultiHeaders = 0;
             foreach (KeyValuePair<string, string[]> headerPair in Headers)
             {
+                if (headerPair.Value.Length == 0)
+                {
+                    // TODO: Have the collection exclude empty headers.
+                    continue;
+                }
                 // See if this is an unknown header
                 lookup = UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_HEADER_ID.IndexOfKnownHeader(headerPair.Key);
-
-                // TODO: WWW-Authentiate header
-                // TODO: HTTP_RESPONSE_V2 has a HTTP_MULTIPLE_KNOWN_HEADERS option where you can supply multiple values.
-
-                // TODO: Consider any 'known' header that has multiple values as 'unknown'?
-                // Treat Set-Cookie as well as Connection header in opaque mode as unknown
-                if (lookup == (int)HttpSysResponseHeader.SetCookie ||
-                    (isOpaqueUpgrade && lookup == (int)HttpSysResponseHeader.Connection))
-                {
-                    lookup = -1;
-                }
 
                 if (lookup == -1)
                 {
                     numUnknownHeaders += headerPair.Value.Length;
                 }
+                else if (headerPair.Value.Length > 1)
+                {
+                    numKnownMultiHeaders++;
+                }
+                // else known single-value header.
             }
 
             try
             {
-                fixed (UnsafeNclNativeMethods.HttpApi.HTTP_KNOWN_HEADER* pKnownHeaders = &headers.KnownHeaders)
+                fixed (UnsafeNclNativeMethods.HttpApi.HTTP_KNOWN_HEADER* pKnownHeaders = &_nativeResponse.Response_V1.Headers.KnownHeaders)
                 {
                     foreach (KeyValuePair<string, string[]> headerPair in Headers)
                     {
-                        headerName = headerPair.Key;
-                        lookup = UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_HEADER_ID.IndexOfKnownHeader(headerName);
-                        if (lookup == (int)HttpSysResponseHeader.SetCookie ||
-                            (isOpaqueUpgrade && lookup == (int)HttpSysResponseHeader.Connection))
+                        if (headerPair.Value.Length == 0)
                         {
-                            lookup = -1;
+                            // TODO: Have the collection exclude empty headers.
+                            continue;
                         }
+                        headerName = headerPair.Key;
+                        string[] headerValues = headerPair.Value;
+                        lookup = UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_HEADER_ID.IndexOfKnownHeader(headerName);
 
                         if (lookup == -1)
                         {
                             if (unknownHeaders == null)
                             {
-                                //----------------------------------------
-                                // *** This following comment is no longer true ***
-                                // we waste some memory here (up to 32*41=1312 bytes) but we gain speed
-                                // unknownHeaders = new UnsafeNclNativeMethods.HttpApi.HTTP_UNKNOWN_HEADER[Headers.Count-index];
-                                //--------------------------------------------
                                 unknownHeaders = new UnsafeNclNativeMethods.HttpApi.HTTP_UNKNOWN_HEADER[numUnknownHeaders];
                                 gcHandle = GCHandle.Alloc(unknownHeaders, GCHandleType.Pinned);
                                 pinnedHeaders.Add(gcHandle);
-                                headers.pUnknownHeaders = (UnsafeNclNativeMethods.HttpApi.HTTP_UNKNOWN_HEADER*)gcHandle.AddrOfPinnedObject();
+                                _nativeResponse.Response_V1.Headers.pUnknownHeaders = (UnsafeNclNativeMethods.HttpApi.HTTP_UNKNOWN_HEADER*)gcHandle.AddrOfPinnedObject();
                             }
 
-                            //----------------------------------------
-                            // FOR UNKNOWN HEADERS
-                            // ALLOW MULTIPLE HEADERS to be added 
-                            //---------------------------------------
-                            string[] headerValues = headerPair.Value;
                             for (int headerValueIndex = 0; headerValueIndex < headerValues.Length; headerValueIndex++)
                             {
                                 // Add Name
                                 bytes = new byte[HeaderEncoding.GetByteCount(headerName)];
-                                unknownHeaders[headers.UnknownHeaderCount].NameLength = (ushort)bytes.Length;
+                                unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].NameLength = (ushort)bytes.Length;
                                 HeaderEncoding.GetBytes(headerName, 0, bytes.Length, bytes, 0);
                                 gcHandle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
                                 pinnedHeaders.Add(gcHandle);
-                                unknownHeaders[headers.UnknownHeaderCount].pName = (sbyte*)gcHandle.AddrOfPinnedObject();
+                                unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].pName = (sbyte*)gcHandle.AddrOfPinnedObject();
 
                                 // Add Value
                                 headerValue = headerValues[headerValueIndex];
                                 bytes = new byte[HeaderEncoding.GetByteCount(headerValue)];
-                                unknownHeaders[headers.UnknownHeaderCount].RawValueLength = (ushort)bytes.Length;
+                                unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].RawValueLength = (ushort)bytes.Length;
                                 HeaderEncoding.GetBytes(headerValue, 0, bytes.Length, bytes, 0);
                                 gcHandle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
                                 pinnedHeaders.Add(gcHandle);
-                                unknownHeaders[headers.UnknownHeaderCount].pRawValue = (sbyte*)gcHandle.AddrOfPinnedObject();
-                                headers.UnknownHeaderCount++;
+                                unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].pRawValue = (sbyte*)gcHandle.AddrOfPinnedObject();
+                                _nativeResponse.Response_V1.Headers.UnknownHeaderCount++;
                             }
                         }
-                        else
+                        else if (headerPair.Value.Length == 1)
                         {
-                            string[] headerValues = headerPair.Value;
-                            headerValue = headerValues.Length == 1 ? headerValues[0] : string.Join(", ", headerValues);
+                            headerValue = headerValues[0];
                             if (headerValue != null)
                             {
                                 bytes = new byte[HeaderEncoding.GetByteCount(headerValue)];
@@ -680,6 +634,49 @@ namespace Microsoft.AspNet.Server.WebListener
                                 pinnedHeaders.Add(gcHandle);
                                 pKnownHeaders[lookup].pRawValue = (sbyte*)gcHandle.AddrOfPinnedObject();
                             }
+                        }
+                        else
+                        {
+                            if (knownHeaderInfo == null)
+                            {
+                                knownHeaderInfo = new UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_INFO[numKnownMultiHeaders];
+                                gcHandle = GCHandle.Alloc(knownHeaderInfo, GCHandleType.Pinned);
+                                pinnedHeaders.Add(gcHandle);
+                                _nativeResponse.pResponseInfo = (UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_INFO*)gcHandle.AddrOfPinnedObject();
+                            }
+
+                            knownHeaderInfo[_nativeResponse.ResponseInfoCount].Type = UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_INFO_TYPE.HttpResponseInfoTypeMultipleKnownHeaders;
+                            knownHeaderInfo[_nativeResponse.ResponseInfoCount].Length = (uint)Marshal.SizeOf(typeof(UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS));
+
+                            UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS header = new UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS();
+
+                            header.HeaderId = (UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_HEADER_ID.Enum)lookup;
+                            header.Flags = UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_INFO_FLAGS.PreserveOrder; // TODO: The docs say this is for www-auth only.
+
+                            UnsafeNclNativeMethods.HttpApi.HTTP_KNOWN_HEADER[] nativeHeaderValues = new UnsafeNclNativeMethods.HttpApi.HTTP_KNOWN_HEADER[headerValues.Length];
+                            gcHandle = GCHandle.Alloc(nativeHeaderValues, GCHandleType.Pinned);
+                            pinnedHeaders.Add(gcHandle);
+                            header.KnownHeaders = (UnsafeNclNativeMethods.HttpApi.HTTP_KNOWN_HEADER*)gcHandle.AddrOfPinnedObject();
+
+                            for (int headerValueIndex = 0; headerValueIndex < headerValues.Length; headerValueIndex++)
+                            {
+                                // Add Value
+                                headerValue = headerValues[headerValueIndex];
+                                bytes = new byte[HeaderEncoding.GetByteCount(headerValue)];
+                                nativeHeaderValues[header.KnownHeaderCount].RawValueLength = (ushort)bytes.Length;
+                                HeaderEncoding.GetBytes(headerValue, 0, bytes.Length, bytes, 0);
+                                gcHandle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+                                pinnedHeaders.Add(gcHandle);
+                                nativeHeaderValues[header.KnownHeaderCount].pRawValue = (sbyte*)gcHandle.AddrOfPinnedObject();
+                                header.KnownHeaderCount++;
+                            }
+
+                            // This type is a struct, not an object, so pinning it causes a boxed copy to be created. We can't do that until after all the fields are set.
+                            gcHandle = GCHandle.Alloc(header, GCHandleType.Pinned);
+                            pinnedHeaders.Add(gcHandle);
+                            knownHeaderInfo[_nativeResponse.ResponseInfoCount].pInfo = (UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS*)gcHandle.AddrOfPinnedObject();
+
+                            _nativeResponse.ResponseInfoCount++;
                         }
                     }
                 }

@@ -767,26 +767,26 @@ namespace Microsoft.AspNet.Server.WebListener
 
         private unsafe void SendError(ulong requestId, HttpStatusCode httpStatusCode)
         {
-            UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE httpResponse = new UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE();
-            httpResponse.Version = new UnsafeNclNativeMethods.HttpApi.HTTP_VERSION();
-            httpResponse.Version.MajorVersion = (ushort)1;
-            httpResponse.Version.MinorVersion = (ushort)1;
-            httpResponse.StatusCode = (ushort)httpStatusCode;
+            UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_V2 httpResponse = new UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_V2();
+            httpResponse.Response_V1.Version = new UnsafeNclNativeMethods.HttpApi.HTTP_VERSION();
+            httpResponse.Response_V1.Version.MajorVersion = (ushort)1;
+            httpResponse.Response_V1.Version.MinorVersion = (ushort)1;
+            httpResponse.Response_V1.StatusCode = (ushort)httpStatusCode;
             string statusDescription = HttpReasonPhrase.Get(httpStatusCode);
             uint dataWritten = 0;
             uint statusCode;
             byte[] byteReason = HeaderEncoding.GetBytes(statusDescription);
             fixed (byte* pReason = byteReason)
             {
-                httpResponse.pReason = (sbyte*)pReason;
-                httpResponse.ReasonLength = (ushort)byteReason.Length;
+                httpResponse.Response_V1.pReason = (sbyte*)pReason;
+                httpResponse.Response_V1.ReasonLength = (ushort)byteReason.Length;
 
                 byte[] byteContentLength = new byte[] { (byte)'0' };
                 fixed (byte* pContentLength = byteContentLength)
                 {
-                    (&httpResponse.Headers.KnownHeaders)[(int)HttpSysResponseHeader.ContentLength].pRawValue = (sbyte*)pContentLength;
-                    (&httpResponse.Headers.KnownHeaders)[(int)HttpSysResponseHeader.ContentLength].RawValueLength = (ushort)byteContentLength.Length;
-                    httpResponse.Headers.UnknownHeaderCount = 0;
+                    (&httpResponse.Response_V1.Headers.KnownHeaders)[(int)HttpSysResponseHeader.ContentLength].pRawValue = (sbyte*)pContentLength;
+                    (&httpResponse.Response_V1.Headers.KnownHeaders)[(int)HttpSysResponseHeader.ContentLength].RawValueLength = (ushort)byteContentLength.Length;
+                    httpResponse.Response_V1.Headers.UnknownHeaderCount = 0;
 
                     statusCode =
                         UnsafeNclNativeMethods.HttpApi.HttpSendHttpResponse(

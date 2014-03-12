@@ -109,7 +109,7 @@ namespace Microsoft.AspNet.Server.WebListener
             internal static extern uint HttpReceiveHttpRequest(SafeHandle requestQueueHandle, ulong requestId, uint flags, HTTP_REQUEST* pRequestBuffer, uint requestBufferLength, uint* pBytesReturned, SafeNativeOverlapped pOverlapped);
 
             [DllImport(HTTPAPI, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
-            internal static extern uint HttpSendHttpResponse(SafeHandle requestQueueHandle, ulong requestId, uint flags, HTTP_RESPONSE* pHttpResponse, void* pCachePolicy, uint* pBytesSent, SafeLocalFree pRequestBuffer, uint requestBufferLength, SafeNativeOverlapped pOverlapped, IntPtr pLogData);
+            internal static extern uint HttpSendHttpResponse(SafeHandle requestQueueHandle, ulong requestId, uint flags, HTTP_RESPONSE_V2* pHttpResponse, void* pCachePolicy, uint* pBytesSent, SafeLocalFree pRequestBuffer, uint requestBufferLength, SafeNativeOverlapped pOverlapped, IntPtr pLogData);
 
             [DllImport(HTTPAPI, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
             internal static extern uint HttpSendResponseEntityBody(SafeHandle requestQueueHandle, ulong requestId, uint flags, ushort entityChunkCount, HTTP_DATA_CHUNK* pEntityChunks, uint* pBytesSent, SafeLocalFree pRequestBuffer, uint requestBufferLength, SafeNativeOverlapped pOverlapped, IntPtr pLogData);
@@ -495,7 +495,7 @@ namespace Microsoft.AspNet.Server.WebListener
             {
                 internal HTTP_RESPONSE_INFO_TYPE Type;
                 internal uint Length;
-                internal void* pInfo;
+                internal HTTP_MULTIPLE_KNOWN_HEADERS* pInfo;
             }
 
             [StructLayout(LayoutKind.Sequential)]
@@ -509,8 +509,29 @@ namespace Microsoft.AspNet.Server.WebListener
                 internal HTTP_RESPONSE_HEADERS Headers;
                 internal ushort EntityChunkCount;
                 internal HTTP_DATA_CHUNK* pEntityChunks;
+            }
+
+            [StructLayout(LayoutKind.Sequential)]
+            internal struct HTTP_RESPONSE_V2
+            {
+                internal HTTP_RESPONSE Response_V1;
                 internal ushort ResponseInfoCount;
                 internal HTTP_RESPONSE_INFO* pResponseInfo;
+            }
+
+            internal enum HTTP_RESPONSE_INFO_FLAGS : uint
+            {
+                None = 0,
+                PreserveOrder = 1,
+            }
+
+            [StructLayout(LayoutKind.Sequential)]
+            internal struct HTTP_MULTIPLE_KNOWN_HEADERS
+            {
+                internal HTTP_RESPONSE_HEADER_ID.Enum HeaderId;
+                internal HTTP_RESPONSE_INFO_FLAGS Flags;
+                internal ushort KnownHeaderCount;
+                internal HTTP_KNOWN_HEADER* KnownHeaders;
             }
 
             [StructLayout(LayoutKind.Sequential)]

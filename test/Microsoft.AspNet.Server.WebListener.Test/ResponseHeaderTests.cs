@@ -18,6 +18,7 @@ using Xunit;
 namespace Microsoft.AspNet.Server.WebListener.Test
 {
     using AppFunc = Func<object, Task>;
+    using System.Net;
 
     public class ResponseHeaderTests
     {
@@ -43,6 +44,54 @@ namespace Microsoft.AspNet.Server.WebListener.Test
         }
 
         [Fact]
+        public async Task ResponseHeaders_ServerSendsSingleValueKnownHeaders_Success()
+        {
+            using (Utilities.CreateHttpServer(env =>
+            {
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                var responseInfo = httpContext.GetFeature<IHttpResponseInformation>();
+                var responseHeaders = responseInfo.Headers;
+                responseHeaders["WWW-Authenticate"] = new string[] { "custom1" };
+                return Task.FromResult(0);
+            }))
+            {
+                // HttpClient would merge the headers no matter what
+                WebRequest request = WebRequest.Create(Address);
+                HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
+                Assert.Equal(4, response.Headers.Count);
+                Assert.Null(response.Headers["Transfer-Encoding"]);
+                Assert.Equal(0, response.ContentLength);
+                Assert.NotNull(response.Headers["Date"]);
+                Assert.Equal("Microsoft-HTTPAPI/2.0", response.Headers["Server"]);
+                Assert.Equal(new string[] { "custom1" }, response.Headers.GetValues("WWW-Authenticate"));
+            }
+        }
+
+        [Fact]
+        public async Task ResponseHeaders_ServerSendsMultiValueKnownHeaders_Success()
+        {
+            using (Utilities.CreateHttpServer(env =>
+            {
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                var responseInfo = httpContext.GetFeature<IHttpResponseInformation>();
+                var responseHeaders = responseInfo.Headers;
+                responseHeaders["WWW-Authenticate"] = new string[] { "custom1, and custom2", "custom3" };
+                return Task.FromResult(0);
+            }))
+            {
+                // HttpClient would merge the headers no matter what
+                WebRequest request = WebRequest.Create(Address);
+                HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
+                Assert.Equal(4, response.Headers.Count);
+                Assert.Null(response.Headers["Transfer-Encoding"]);
+                Assert.Equal(0, response.ContentLength);
+                Assert.NotNull(response.Headers["Date"]);
+                Assert.Equal("Microsoft-HTTPAPI/2.0", response.Headers["Server"]);
+                Assert.Equal(new string[] { "custom1, and custom2", "custom3" }, response.Headers.GetValues("WWW-Authenticate"));
+            }
+        }
+
+        [Fact]
         public async Task ResponseHeaders_ServerSendsCustomHeaders_Success()
         {
             using (Utilities.CreateHttpServer(env =>
@@ -54,15 +103,15 @@ namespace Microsoft.AspNet.Server.WebListener.Test
                 return Task.FromResult(0);
             }))
             {
-                HttpResponseMessage response = await SendRequestAsync(Address);
-                response.EnsureSuccessStatusCode();
-                Assert.Equal(3, response.Headers.Count());
-                Assert.False(response.Headers.TransferEncodingChunked.HasValue);
-                Assert.True(response.Headers.Date.HasValue);
-                Assert.Equal("Microsoft-HTTPAPI/2.0", response.Headers.Server.ToString());
+                // HttpClient would merge the headers no matter what
+                WebRequest request = WebRequest.Create(Address);
+                HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
+                Assert.Equal(4, response.Headers.Count);
+                Assert.Null(response.Headers["Transfer-Encoding"]);
+                Assert.Equal(0, response.ContentLength);
+                Assert.NotNull(response.Headers["Date"]);
+                Assert.Equal("Microsoft-HTTPAPI/2.0", response.Headers["Server"]);
                 Assert.Equal(new string[] { "custom1, and custom2", "custom3" }, response.Headers.GetValues("Custom-Header1"));
-                Assert.Equal(1, response.Content.Headers.Count());
-                Assert.Equal(0, response.Content.Headers.ContentLength);
             }
         }
 
