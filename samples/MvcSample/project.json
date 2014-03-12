@@ -14,7 +14,9 @@
   "configurations": {
     "net45": {
       "dependencies": {
+          "Autofac": "3.3.0",
           "Owin": "1.0",
+          "Microsoft.AspNet.DependencyInjection.Autofac": "0.1-alpha-*",
           "Microsoft.Owin": "2.1.0",
           "Microsoft.Owin.Diagnostics": "2.1.0",
           "Microsoft.Owin.Hosting": "2.1.0",

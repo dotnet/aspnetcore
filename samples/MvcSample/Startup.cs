@@ -1,8 +1,10 @@
 ﻿#if NET45
+using Autofac;
 using System;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.ConfigurationModel;
 using Microsoft.AspNet.DependencyInjection;
+using Microsoft.AspNet.DependencyInjection.Autofac;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
 using Microsoft.Net.Runtime;
@@ -29,11 +31,13 @@ namespace MvcSample
 
         private void ConfigureMvc(IBuilder builder)
         {
-            var configuration = new Configuration();
-            var services = MvcServices.GetDefaultServices(configuration);
-            var serviceProvider = new ServiceProvider(_serviceProvider).Add(services);
+            var containerBuilder = new ContainerBuilder();
+            var services = MvcServices.GetDefaultServices();
 
-            serviceProvider.AddInstance<PassThroughAttribute>(new PassThroughAttribute());
+            AutofacRegistration.Populate(containerBuilder, _serviceProvider, services);
+            containerBuilder.RegisterInstance<PassThroughAttribute>(new PassThroughAttribute());
+
+            var serviceProvider = containerBuilder.Build().Resolve<IServiceProvider>();
 
             var routes = new RouteCollection()
             {
