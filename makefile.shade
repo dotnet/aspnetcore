@@ -147,6 +147,30 @@ var repos='${new Dictionary<string,string> {
         Exec(@"tools\TCDependencyManager\bin\Debug\TCDependencyManager.exe", "", "");
     }
 
+#git-status decription='Show status of repos known by Universe'
+    @{
+        foreach(var repo in repos) 
+        {
+            GitStatus(repo.Key);
+        }
+    }
+
+#git-clean decription='REMOVE ALL CHANGES to the working directory'
+    @{
+        Console.WriteLine("This runs `git clean -xfd` in all non-Universe repos.");
+        Console.WriteLine("This should REMOVE ALL CHANGES to the working directory.");
+        Console.Write("***** Are you sure? ***** (Y or anything else)? ");
+        if (Console.ReadLine() != "Y")
+        {
+            throw new Exception("git-clean cancelled");
+        }
+        foreach(var repo in repos) 
+        {
+            GitClean(repo.Key);
+        }
+    }
+
+
 macro name='GitPull' gitUri='string' gitBranch='string' gitFolder='string'
     git-pull
 
@@ -155,6 +179,12 @@ macro name='GitClone' gitUri='string' gitBranch='string'
 
 macro name='GitConfig' gitOptionName='string' gitOptionValue='string' gitFolder='string'
     git-config
+
+macro name='GitStatus' gitFolder='string'
+    git gitCommand='status'
+
+macro name='GitClean' gitFolder='string'
+    git gitCommand='clean -xdf'
 
 macro name='Exec' program='string' commandline='string' workingdir='string'
     exec
