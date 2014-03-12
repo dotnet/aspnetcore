@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNet.Identity.InMemory
 {
     public class InMemoryUserStore<TUser> : 
-        IUserStore<TUser, string>, 
         IUserLoginStore<TUser, string>, 
         IUserRoleStore<TUser, string>,
         IUserClaimStore<TUser, string>, 
@@ -15,8 +14,8 @@ namespace Microsoft.AspNet.Identity.InMemory
         IUserSecurityStampStore<TUser, string>,
         IUserEmailStore<TUser, string>,
         IUserLockoutStore<TUser, string>,
-        IUserPhoneNumberStore<TUser, string>
-        where TUser : InMemoryUser
+        IUserPhoneNumberStore<TUser, string>,
+        IQueryableUserStore<TUser, string> where TUser : InMemoryUser
     {
         private readonly Dictionary<UserLoginInfo, TUser> _logins =
             new Dictionary<UserLoginInfo, TUser>(new LoginComparer());

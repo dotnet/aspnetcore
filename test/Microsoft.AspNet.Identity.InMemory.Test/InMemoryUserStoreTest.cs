@@ -19,18 +19,6 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         }
 
         [Fact]
-        public async Task CanFindByEmail()
-        {
-            var manager = CreateManager();
-            const string userName = "EmailTest";
-            const string email = "email@test.com";
-            var user = new InMemoryUser(userName) { Email = email };
-            IdentityResultAssert.IsSuccess(await manager.Create(user));
-            var fetch = await manager.FindByEmail(email);
-            Assert.Equal(user, fetch);
-        }
-
-        [Fact]
         public async Task CanCreateUserNoPassword()
         {
             var manager = CreateManager();
@@ -201,6 +189,80 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             var result = await manager.AddLogin(user.Id, login);
             IdentityResultAssert.IsFailure(result, "A user with that external login already exists.");
         }
+
+        // Email tests
+        [Fact]
+        public async Task CanFindByEmail()
+        {
+            var manager = CreateManager();
+            const string userName = "EmailTest";
+            const string email = "email@test.com";
+            var user = new InMemoryUser(userName) { Email = email };
+            IdentityResultAssert.IsSuccess(await manager.Create(user));
+            var fetch = await manager.FindByEmail(email);
+            Assert.Equal(user, fetch);
+        }
+
+        [Fact]
+        public async Task CanFindUsersViaUserQuerable()
+        {
+            var mgr = CreateManager();
+            var users = new[]
+            {
+                new InMemoryUser("user1"),
+                new InMemoryUser("user2"),
+                new InMemoryUser("user3")
+            };
+            foreach (InMemoryUser u in users)
+            {
+                IdentityResultAssert.IsSuccess(await mgr.Create(u));
+            }
+            var usersQ = mgr.Users;
+            Assert.Equal(3, usersQ.Count());
+            Assert.NotNull(usersQ.FirstOrDefault(u => u.UserName == "user1"));
+            Assert.NotNull(usersQ.FirstOrDefault(u => u.UserName == "user2"));
+            Assert.NotNull(usersQ.FirstOrDefault(u => u.UserName == "user3"));
+            Assert.Null(usersQ.FirstOrDefault(u => u.UserName == "bogus"));
+        }
+
+        [Fact]
+        public async Task ConfirmEmailFalseByDefaultTest()
+        {
+            var manager = CreateManager();
+            var user = new InMemoryUser("test");
+            IdentityResultAssert.IsSuccess(await manager.Create(user));
+            Assert.False(await manager.IsEmailConfirmed(user.Id));
+        }
+
+        // TODO: No token provider implementations yet
+        //[Fact]
+        //public async Task ConfirmEmailTest()
+        //{
+        //    var manager = CreateManager();
+        //    var user = new InMemoryUser("test");
+        //    Assert.False(user.EmailConfirmed);
+        //    IdentityResultAssert.IsSuccess(await manager.Create(user));
+        //    var token = await manager.GenerateEmailConfirmationToken(user.Id);
+        //    Assert.NotNull(token);
+        //    IdentityResultAssert.IsSuccess(await manager.ConfirmEmail(user.Id, token));
+        //    Assert.True(await manager.IsEmailConfirmed(user.Id));
+        //    IdentityResultAssert.IsSuccess(await manager.SetEmail(user.Id, null));
+        //    Assert.False(await manager.IsEmailConfirmed(user.Id));
+        //}
+
+        //[Fact]
+        //public async Task ConfirmTokenFailsAfterPasswordChangeTest()
+        //{
+        //    var manager = CreateManager();
+        //    var user = new InMemoryUser("test");
+        //    Assert.False(user.EmailConfirmed);
+        //    IdentityResultAssert.IsSuccess(await manager.Create(user, "password"));
+        //    var token = await manager.GenerateEmailConfirmationToken(user.Id);
+        //    Assert.NotNull(token);
+        //    IdentityResultAssert.IsSuccess(await manager.ChangePassword(user.Id, "password", "newpassword"));
+        //    IdentityResultAssert.IsFailure(await manager.ConfirmEmail(user.Id, token), "Invalid token.");
+        //    Assert.False(await manager.IsEmailConfirmed(user.Id));
+        //}
 
         // Lockout tests
 
