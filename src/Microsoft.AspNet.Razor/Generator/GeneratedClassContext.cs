@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Razor.Generator
     {
         public static readonly string DefaultWriteMethodName = "Write";
         public static readonly string DefaultWriteLiteralMethodName = "WriteLiteral";
-        public static readonly string DefaultExecuteMethodName = "Execute";
+        public static readonly string DefaultExecuteMethodName = "ExecuteAsync";
         public static readonly string DefaultLayoutPropertyName = "Layout";
         public static readonly string DefaultWriteAttributeMethodName = "WriteAttribute";
         public static readonly string DefaultWriteAttributeToMethodName = "WriteAttributeTo";

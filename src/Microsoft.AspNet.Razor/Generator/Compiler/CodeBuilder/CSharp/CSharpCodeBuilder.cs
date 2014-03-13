@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 {
@@ -43,7 +44,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                     new CSharpHelperVisitor(writer, Context).Accept(Tree.Chunks);
                     new CSharpTypeMemberVisitor(writer, Context).Accept(Tree.Chunks);
                     new CSharpDesignTimeHelpersVisitor(writer, Context).AcceptTree(Tree);
-                  
+
                     writer.WriteLineHiddenDirective();
                     using (writer.BuildConstructor(Context.ClassName))
                     {
@@ -53,7 +54,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                     // Add space inbetween constructor and method body
                     writer.WriteLine();
 
-                    using (writer.BuildMethodDeclaration("public override", "void", Host.GeneratedClassContext.ExecuteMethodName))
+                    using (writer.BuildMethodDeclaration("public override async", "Task", Host.GeneratedClassContext.ExecuteMethodName))
                     {
                         new CSharpCodeVisitor(writer, Context).Accept(Tree.Chunks);
                     }
@@ -77,6 +78,14 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             foreach (string import in defaultImports)
             {
                 writer.WriteUsing(import);
+            }
+
+            string taskNamespace = typeof(Task).Namespace;
+
+            // We need to add the task namespace but ONLY if it hasn't been added by the default imports or using imports yet.
+            if(!defaultImports.Contains(taskNamespace) && !usingVisitor.ImportedUsings.Contains(taskNamespace))
+            {
+                writer.WriteUsing(taskNamespace);
             }
         }
     }

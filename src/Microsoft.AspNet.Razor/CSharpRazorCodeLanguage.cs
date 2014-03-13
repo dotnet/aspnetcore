@@ -41,9 +41,9 @@ namespace Microsoft.AspNet.Razor
             return new CSharpRazorCodeGenerator(className, rootNamespaceName, sourceFileName, host);
         }
 
-        public override CodeBuilder CreateCodeBuilder(CodeGeneratorContext codeGeneratorContext)
+        public override CodeBuilder CreateCodeBuilder(CodeGeneratorContext context)
         {
-            return new CSharpCodeBuilder(codeGeneratorContext);
+            return new CSharpCodeBuilder(context);
         }
     }
 }
