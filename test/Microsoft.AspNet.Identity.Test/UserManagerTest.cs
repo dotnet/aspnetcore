@@ -176,7 +176,7 @@ namespace Microsoft.AspNet.Identity.Test
         //[Fact]
         //public void MethodsFailWithUnknownUserTest()
         //{
-        //    var db = IdentiyResultExtensions.CreateDefaultDb();
+        //    var db = IdentityResultExtensions.CreateDefaultDb();
         //    var manager = new UserManager<IdentityUser>(new UserStore<IdentityUser>(db));
         //    manager.UserTokenProvider = new NoOpTokenProvider();
         //    var error = "UserId not found.";
