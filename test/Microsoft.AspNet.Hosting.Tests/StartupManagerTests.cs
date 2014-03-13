@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Hosting
 
             var manager = services.GetService<IStartupManager>();
 
-            var startup = manager.LoadStartup("Microsoft.AspNet.Hosting.Tests.Fakes.FakeStartup, Microsoft.AspNet.Hosting.Tests");
+            var startup = manager.LoadStartup("Microsoft.AspNet.Hosting.Fakes.FakeStartup, Microsoft.AspNet.Hosting.Tests");
 
             Assert.IsType<StartupManager>(manager);
             Assert.NotNull(startup);
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Hosting
 
             var manager = services.GetService<IStartupManager>();
 
-            var startup = manager.LoadStartup("Microsoft.AspNet.Hosting.Tests.Fakes.FakeStartupWithServices, Microsoft.AspNet.Hosting.Tests");
+            var startup = manager.LoadStartup("Microsoft.AspNet.Hosting.Fakes.FakeStartupWithServices, Microsoft.AspNet.Hosting.Tests");
 
             startup.Invoke(null);
 

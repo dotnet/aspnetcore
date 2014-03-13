@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Hosting
             var context = new HostingContext
             {
                 ServerFactory = this,
-                ApplicationName = "Microsoft.AspNet.Hosting.Tests.Fakes.FakeStartup, Microsoft.AspNet.Hosting.Tests"
+                ApplicationName = "Microsoft.AspNet.Hosting.Fakes.FakeStartup, Microsoft.AspNet.Hosting.Tests"
             };
 
             var engineStart = engine.Start(context);

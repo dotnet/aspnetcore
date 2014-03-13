@@ -38,15 +38,20 @@ namespace Microsoft.AspNet.Hosting.Startup
             Type type = null;
             if (string.IsNullOrEmpty(typeName))
             {
-                var typeInfo = assembly.DefinedTypes.FirstOrDefault(aType => aType.Name.Equals("Startup"));
+                typeName = "Startup";
+            }
+
+            // Check the most likely places first
+            type = assembly.GetType(typeName) ?? assembly.GetType(assembly + "." + typeName);
+
+            if (type == null)
+            {
+                // Full scan
+                var typeInfo = assembly.DefinedTypes.FirstOrDefault(aType => aType.Name.Equals(typeName));
                 if (typeInfo != null)
                 {
                     type = typeInfo.AsType();
                 }
-            }
-            else
-            {
-                type = assembly.GetType(typeName);
             }
 
             if (type == null)

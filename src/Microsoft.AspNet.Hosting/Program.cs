@@ -48,10 +48,8 @@ namespace Microsoft.AspNet.Hosting
 
             using (engine.Start(context))
             {
-#if NET45
                 Console.WriteLine("Started");
                 Console.ReadLine();
-#endif
             }
         }
     }
