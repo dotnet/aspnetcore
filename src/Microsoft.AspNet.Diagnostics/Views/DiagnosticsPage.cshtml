@@ -1,0 +1,28 @@
+﻿@using System
+@using System.Globalization
+@{
+    Response.ContentType = "text/html";
+    string error = Request.Query.Get("error");
+    if (!string.IsNullOrWhiteSpace(error))
+    {
+        throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "User requested error '{0}'", error));
+    }
+}
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>@Resources.DiagnosticsPageHtml_Title</title>
+</head>
+<body>
+    <div class="main">
+        <h1>@Resources.DiagnosticsPageHtml_Title</h1>
+        <p>@Resources.DiagnosticsPageHtml_Information</p>
+    </div>
+    <div class="errors">
+        <h2>@Resources.DiagnosticsPageHtml_TestErrorSection</h2>
+        <p><a href="@Request.PathBase@Request.Path?error=@Resources.DiagnosticsPageHtml_TestErrorMessage">throw InvalidOperationException</a></p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,172 @@
+﻿body {
+    font-family: 'Segoe UI',Tahoma,Arial,Helvetica,sans-serif;
+    font-size: .813em;
+    line-height: 1.4em;
+    color: #222;
+}
+
+h1, h2, h3, h4, h5 {
+    /*font-family: 'Segoe UI',Tahoma,Arial,Helvetica,sans-serif;*/
+    font-weight: 100;
+}
+
+h1 {
+    color: #44525e;
+    margin: 15px 0 15px 0;
+}
+
+h2 {
+    margin: 10px 5px 0 0;
+}
+
+h3 {
+    color: #363636;
+    margin: 5px 5px 0 0;
+}
+
+code {
+    font-family: consolas, "Courier New", courier, monospace;
+}
+
+body .titleerror {
+    padding: 3px;
+}
+
+body .location {
+    margin: 3px 0 10px 30px;
+}
+
+#header {
+    font-size: 18px;
+    padding-left: 0px;
+    padding-right: 0px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    border-top: 1px #ddd solid;
+    border-bottom: 1px #ddd solid;
+    margin-bottom: 0px;
+}
+
+#header li {
+    display: inline;
+    margin: 5px;
+    padding: 5px;
+    color: #a0a0a0;
+}
+
+#header li:hover {
+    background: #A9E4F9;
+    color: #fff;
+}
+
+#header li.selected {
+    background: #44C5F2;
+    color: #fff;
+}
+
+#stackpage ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+    /*border-bottom: 1px #ddd solid;*/
+}
+
+#stackpage .stackerror {
+    padding: 5px;
+    border-bottom: 1px #ddd solid;
+}
+
+#stackpage .stackerror:hover {
+    background-color: #f0f0f0;
+}
+
+#stackpage .frame:hover {
+    background-color: #f0f0f0;
+    text-decoration: none;
+}
+
+#stackpage .frame {
+    padding: 2px;
+    margin: 0 0 0 30px;
+    border-bottom: 1px #ddd solid;
+}
+
+#stackpage .frame h3 {
+    padding: 5px;
+    margin: 0;
+}
+
+#stackpage .source {
+    padding: 0px;
+}
+
+#stackpage .source ol li {
+    font-family: consolas, "Courier New", courier, monospace;
+    white-space: pre;
+}
+
+#stackpage .source ol.highlight li {
+    /*color: #e22;*/
+    /*font-weight: bold;*/
+}
+
+#stackpage .source ol.highlight li span {
+    /*color: #000;*/
+}
+
+#stackpage .frame:hover .source ol.highlight li span {
+    color: #fff;
+    background: #B20000;
+}
+
+#stackpage .source ol.collapsable li {
+    color: #888;
+}
+
+#stackpage .source ol.collapsable li span {
+    color: #606060;
+}
+
+.page table {
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 0 0 20px;
+}
+
+.page th {
+    vertical-align: bottom;
+    padding: 10px 5px 5px 5px;
+    font-weight: 400;
+    color: #a0a0a0;
+    text-align: left;
+}
+
+.page td {
+    padding: 3px 10px;
+}
+
+.page th, .page td {
+    border-right: 1px #ddd solid;
+    border-bottom: 1px #ddd solid;
+    border-left: 1px transparent solid;
+    border-top: 1px transparent solid;
+    box-sizing: border-box;
+}
+
+.page th:last-child, .page td:last-child {
+    border-right: 1px transparent solid;
+}
+
+.page td.length {
+    text-align: right;
+}
+
+a {
+    color: #1ba1e2;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #13709e;
+    text-decoration: underline;
+}

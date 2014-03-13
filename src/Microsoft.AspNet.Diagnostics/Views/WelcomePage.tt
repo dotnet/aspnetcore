@@ -1,0 +1,50 @@
+﻿<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Web.Razor" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Web.Razor" #>
+<#@ import namespace="System.Web.Razor.Text" #>
+<#@ output extension=".cs" #>
+<#
+var host = new RazorEngineHost(new CSharpRazorCodeLanguage());
+host.DefaultBaseClass = "Microsoft.Owin.Diagnostics.Views.BaseView";
+var engine = new RazorTemplateEngine(host);
+var path = Host.ResolvePath("WelcomePage.cshtml");
+ 
+var code = engine.GenerateCode(
+    new System.IO.StreamReader(path),
+    "WelcomePage",
+    "Microsoft.Owin.Diagnostics.Views",
+    "WelcomePage.cshtml");
+
+var provider = new Microsoft.CSharp.CSharpCodeProvider();
+var writer = new System.IO.StringWriter();
+provider.GenerateCodeFromCompileUnit(code.GeneratedCode, writer, null);
+var source = writer.ToString();
+var startIndex = 0;
+while(startIndex < source.Length)
+{
+    var startMatch = @"Write(@""[[";
+    var startCode = @"WriteLiteral(@""";
+    var endMatch = @"]]"");";
+    var endCode = @""");";
+    startIndex = source.IndexOf(startMatch, startIndex);
+    if (startIndex == -1)
+    {
+        break;
+    } 
+    var endIndex = source.IndexOf(endMatch, startIndex);
+    if (endIndex == -1)
+    {
+        break;
+    }
+    var fileName = source.Substring(startIndex + startMatch.Length, endIndex - (startIndex + startMatch.Length));
+    var replacement = File.ReadAllText(Host.ResolvePath(fileName)).Replace("\"", "\"\"");
+    source = source.Substring(0, startIndex) + startCode + replacement + endCode + source.Substring(endIndex + endMatch.Length);
+    startIndex = startIndex + startCode.Length + replacement.Length + endCode.Length;
+  }
+#>
+<#=source#>

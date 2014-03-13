@@ -1,0 +1,212 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="DiagnosticsPageHtml_Information" xml:space="preserve">
+    <value>You are seeing this page because DiagnosticsPageMiddleware was added to your web application.</value>
+  </data>
+  <data name="DiagnosticsPageHtml_TestErrorMessage" xml:space="preserve">
+    <value>Test Error Message</value>
+  </data>
+  <data name="DiagnosticsPageHtml_TestErrorSection" xml:space="preserve">
+    <value>Test Error Page</value>
+  </data>
+  <data name="DiagnosticsPageHtml_Title" xml:space="preserve">
+    <value>Diagnostics Page</value>
+  </data>
+  <data name="ErrorPageHtml_CookiesButton" xml:space="preserve">
+    <value>Cookies</value>
+    <comment>as in http request cookies</comment>
+  </data>
+  <data name="ErrorPageHtml_EnableShowExceptions" xml:space="preserve">
+    <value>Enable development mode or ErrorPageOptions.ShowExceptionDetails for additional information.</value>
+  </data>
+  <data name="ErrorPageHtml_EnvironmentButton" xml:space="preserve">
+    <value>Environment</value>
+    <comment>as in OWIN environment dictionary</comment>
+  </data>
+  <data name="ErrorPageHtml_HeadersButton" xml:space="preserve">
+    <value>Headers</value>
+    <comment>as in http request headers</comment>
+  </data>
+  <data name="ErrorPageHtml_NoCookieData" xml:space="preserve">
+    <value>No cookie data.</value>
+  </data>
+  <data name="ErrorPageHtml_NoHeaderData" xml:space="preserve">
+    <value>No header data.</value>
+  </data>
+  <data name="ErrorPageHtml_NoQueryStringData" xml:space="preserve">
+    <value>No QueryString data.</value>
+  </data>
+  <data name="ErrorPageHtml_QueryButton" xml:space="preserve">
+    <value>Query</value>
+    <comment>as in a request url query string</comment>
+  </data>
+  <data name="ErrorPageHtml_StackButton" xml:space="preserve">
+    <value>Stack</value>
+    <comment>as in an exception's call stack</comment>
+  </data>
+  <data name="ErrorPageHtml_Title" xml:space="preserve">
+    <value>Internal Server Error</value>
+  </data>
+  <data name="ErrorPageHtml_UnhandledException" xml:space="preserve">
+    <value>An unhandled exception occurred while processing the request.</value>
+  </data>
+  <data name="ErrorPageHtml_UnknownLocation" xml:space="preserve">
+    <value>Unknown location</value>
+    <comment>when a stack source code location is not known</comment>
+  </data>
+  <data name="ErrorPageHtml_ValueColumn" xml:space="preserve">
+    <value>Value</value>
+    <comment>as in dictionary value</comment>
+  </data>
+  <data name="ErrorPageHtml_VariableColumn" xml:space="preserve">
+    <value>Variable</value>
+    <comment>as in dictionary key</comment>
+  </data>
+  <data name="Exception_PathMustStartWithSlash" xml:space="preserve">
+    <value>The path must start with a '/'.</value>
+  </data>
+  <data name="WelcomeHeader" xml:space="preserve">
+    <value>Welcome</value>
+  </data>
+  <data name="WelcomeLearnMicrosoftOwin" xml:space="preserve">
+    <value>Learn more about the Microsoft OWIN components</value>
+  </data>
+  <data name="WelcomeLearnOwin" xml:space="preserve">
+    <value>Learn more about OWIN</value>
+  </data>
+  <data name="WelcomePageImageText_Browser" xml:space="preserve">
+    <value>Browser</value>
+  </data>
+  <data name="WelcomePageImageText_LearnMore" xml:space="preserve">
+    <value>Learn More</value>
+  </data>
+  <data name="WelcomePageImageText_LightBulb" xml:space="preserve">
+    <value>Light Bulb</value>
+  </data>
+  <data name="WelcomePageImageText_Skyline" xml:space="preserve">
+    <value>Skyline</value>
+  </data>
+  <data name="WelcomeStarted" xml:space="preserve">
+    <value>Your OWIN application has been successfully started</value>
+  </data>
+  <data name="WelcomeTitle" xml:space="preserve">
+    <value>Your OWIN application has been successfully started.</value>
+  </data>
+</root>
