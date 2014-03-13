@@ -28,12 +28,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
             : this(source.MetadataProvider)
         {
             _modelMetadata = source.ModelMetadata;
-            
+
             foreach (var entry in source.ModelState)
             {
                 ModelState.Add(entry.Key, entry.Value);
             }
-            
+
             foreach (var entry in source)
             {
                 _data.Add(entry.Key, entry.Value);

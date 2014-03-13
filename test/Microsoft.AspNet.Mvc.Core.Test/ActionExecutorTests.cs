@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var result = await ReflectedActionExecutor.ExecuteAsync(
                                                         methodWithVoidReturnType.GetMethodInfo(),
                                                         null,
-                                                        null);
+                                                        (IDictionary<string, object>)null);
             Assert.Same(null, result);
         }
 

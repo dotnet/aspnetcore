@@ -21,6 +21,7 @@
         "System.Globalization": "4.0.10.0",
         "System.IO": "4.0.0.0",
         "System.Linq": "4.0.0.0",
+        "System.Linq.Expressions": "4.0.0.0",
         "System.Reflection": "4.0.10.0",
         "System.Reflection.Emit.ILGeneration": "4.0.0.0",
         "System.Reflection.Emit.Lightweight": "4.0.0.0",

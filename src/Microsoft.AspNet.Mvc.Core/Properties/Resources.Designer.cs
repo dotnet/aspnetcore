@@ -58,6 +58,150 @@ namespace Microsoft.AspNet.Mvc.Core
             return GetString("ReflectedActionFilterEndPoint_UnexpectedActionDescriptor");
         }
 
+        /// <summary>
+        /// The view component name '{0}' matched multiple types: {1}
+        /// </summary>
+        internal static string ViewComponent_AmbiguousTypeMatch
+        {
+            get { return GetString("ViewComponent_AmbiguousTypeMatch"); }
+        }
+
+        /// <summary>
+        /// The view component name '{0}' matched multiple types: {1}
+        /// </summary>
+        internal static string FormatViewComponent_AmbiguousTypeMatch(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_AmbiguousTypeMatch"), p0, p1);
+        }
+
+        /// <summary>
+        /// The async view component method '{0}' should be declared to return Task&lt;T&gt;.
+        /// </summary>
+        internal static string ViewComponent_AsyncMethod_ShouldReturnTask
+        {
+            get { return GetString("ViewComponent_AsyncMethod_ShouldReturnTask"); }
+        }
+
+        /// <summary>
+        /// The async view component method '{0}' should be declared to return Task&lt;T&gt;.
+        /// </summary>
+        internal static string FormatViewComponent_AsyncMethod_ShouldReturnTask(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_AsyncMethod_ShouldReturnTask"), p0);
+        }
+
+        /// <summary>
+        /// A view component must return a non-null value.
+        /// </summary>
+        internal static string ViewComponent_MustReturnValue
+        {
+            get { return GetString("ViewComponent_MustReturnValue"); }
+        }
+
+        /// <summary>
+        /// A view component must return a non-null value.
+        /// </summary>
+        internal static string FormatViewComponent_MustReturnValue()
+        {
+            return GetString("ViewComponent_MustReturnValue");
+        }
+
+        /// <summary>
+        /// The view component method '{0}' should be declared to return a value.
+        /// </summary>
+        internal static string ViewComponent_SyncMethod_ShouldReturnValue
+        {
+            get { return GetString("ViewComponent_SyncMethod_ShouldReturnValue"); }
+        }
+
+        /// <summary>
+        /// The view component method '{0}' should be declared to return a value.
+        /// </summary>
+        internal static string FormatViewComponent_SyncMethod_ShouldReturnValue(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_SyncMethod_ShouldReturnValue"), p0);
+        }
+
+        /// <summary>
+        /// A view component named '{0}' could not be found.
+        /// </summary>
+        internal static string ViewComponent_CannotFindComponent
+        {
+            get { return GetString("ViewComponent_CannotFindComponent"); }
+        }
+
+        /// <summary>
+        /// A view component named '{0}' could not be found.
+        /// </summary>
+        internal static string FormatViewComponent_CannotFindComponent(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_CannotFindComponent"), p0);
+        }
+
+        /// <summary>
+        /// An invoker could not be created for the view component '{0}'.
+        /// </summary>
+        internal static string ViewComponent_IViewComponentFactory_ReturnedNull
+        {
+            get { return GetString("ViewComponent_IViewComponentFactory_ReturnedNull"); }
+        }
+
+        /// <summary>
+        /// An invoker could not be created for the view component '{0}'.
+        /// </summary>
+        internal static string FormatViewComponent_IViewComponentFactory_ReturnedNull(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_IViewComponentFactory_ReturnedNull"), p0);
+        }
+
+        /// <summary>
+        /// Could not find an '{0}' method matching the parameters.
+        /// </summary>
+        internal static string ViewComponent_CannotFindMethod
+        {
+            get { return GetString("ViewComponent_CannotFindMethod"); }
+        }
+
+        /// <summary>
+        /// Could not find an '{0}' method matching the parameters.
+        /// </summary>
+        internal static string FormatViewComponent_CannotFindMethod(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_CannotFindMethod"), p0);
+        }
+
+        /// <summary>
+        /// Could not find an '{0}' or '{1}' method matching the parameters.
+        /// </summary>
+        internal static string ViewComponent_CannotFindMethod_WithFallback
+        {
+            get { return GetString("ViewComponent_CannotFindMethod_WithFallback"); }
+        }
+
+        /// <summary>
+        /// Could not find an '{0}' or '{1}' method matching the parameters.
+        /// </summary>
+        internal static string FormatViewComponent_CannotFindMethod_WithFallback(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_CannotFindMethod_WithFallback"), p0, p1);
+        }
+
+        /// <summary>
+        /// View components only support returning {0}, {1} or {2}.
+        /// </summary>
+        internal static string ViewComponent_InvalidReturnValue
+        {
+            get { return GetString("ViewComponent_InvalidReturnValue"); }
+        }
+
+        /// <summary>
+        /// View components only support returning {0}, {1} or {2}.
+        /// </summary>
+        internal static string FormatViewComponent_InvalidReturnValue(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_InvalidReturnValue"), p0, p1, p2);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

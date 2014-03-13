@@ -68,6 +68,11 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Transient<IModelValidatorProvider, DataAnnotationsModelValidatorProvider>();
             yield return describe.Transient<IModelValidatorProvider, DataMemberModelValidatorProvider>();
 
+            yield return describe.Transient<IViewComponentSelector, DefaultViewComponentSelector>();
+            yield return describe.Transient<IViewComponentInvokerFactory, DefaultViewComponentInvokerFactory>();
+            yield return describe.Transient<INestedProvider<ViewComponentInvokerProviderContext>, DefaultViewComponentInvokerProvider>();
+            yield return describe.Transient<IViewComponentResultHelper, DefaultViewComponentResultHelper>();
+
             yield return
                describe.Describe(
                    typeof(INestedProviderManager<>),

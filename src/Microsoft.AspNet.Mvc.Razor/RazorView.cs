@@ -10,6 +10,11 @@ namespace Microsoft.AspNet.Mvc.Razor
 {
     public abstract class RazorView : IView
     {
+        public IViewComponentHelper Component 
+        {
+            get { return Context == null ? null : Context.Component; }
+        }
+
         public ViewContext Context { get; set; }
 
         public string Layout { get; set; }

@@ -120,10 +120,37 @@
   <data name="ActionExecutor_WrappedTaskInstance" xml:space="preserve">
     <value>The method '{0}' on type '{1}' returned an instance of '{2}'. Make sure to call Unwrap on the returned value to avoid unobserved faulted Task.</value>
   </data>
-   <data name="ActionExecutor_UnexpectedTaskInstance" xml:space="preserve">
+  <data name="ActionExecutor_UnexpectedTaskInstance" xml:space="preserve">
     <value>The method '{0}' on type '{1}' returned a Task instance even though it is not an asynchronous method.</value>
   </data>
   <data name="ReflectedActionFilterEndPoint_UnexpectedActionDescriptor" xml:space="preserve">
     <value>The class ReflectedActionFilterEndPoint only supports ReflectedActionDescriptors.</value>
+  </data>
+  <data name="ViewComponent_AmbiguousTypeMatch" xml:space="preserve">
+    <value>The view component name '{0}' matched multiple types: {1}</value>
+  </data>
+  <data name="ViewComponent_AsyncMethod_ShouldReturnTask" xml:space="preserve">
+    <value>The async view component method '{0}' should be declared to return Task&lt;T&gt;.</value>
+  </data>
+  <data name="ViewComponent_MustReturnValue" xml:space="preserve">
+    <value>A view component must return a non-null value.</value>
+  </data>
+  <data name="ViewComponent_SyncMethod_ShouldReturnValue" xml:space="preserve">
+    <value>The view component method '{0}' should be declared to return a value.</value>
+  </data>
+  <data name="ViewComponent_CannotFindComponent" xml:space="preserve">
+    <value>A view component named '{0}' could not be found.</value>
+  </data>
+  <data name="ViewComponent_IViewComponentFactory_ReturnedNull" xml:space="preserve">
+    <value>An invoker could not be created for the view component '{0}'.</value>
+  </data>
+  <data name="ViewComponent_CannotFindMethod" xml:space="preserve">
+    <value>Could not find an '{0}' method matching the parameters.</value>
+  </data>
+  <data name="ViewComponent_CannotFindMethod_WithFallback" xml:space="preserve">
+    <value>Could not find an '{0}' or '{1}' method matching the parameters.</value>
+  </data>
+  <data name="ViewComponent_InvalidReturnValue" xml:space="preserve">
+    <value>View components only support returning {0}, {1} or {2}.</value>
   </data>
 </root>

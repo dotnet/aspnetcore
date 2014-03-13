@@ -59,6 +59,11 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
+        public Task<ViewEngineResult> FindComponentView(object actionContext, string viewName)
+        {
+            throw new NotImplementedException();
+        }
+
         private static bool IsSpecificPath(string name)
         {
             char c = name[0];

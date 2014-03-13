@@ -14,6 +14,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             ViewEngineContext = viewEngineContext;
         }
 
+        public IViewComponentHelper Component { get; set; }
+
         public HttpContext HttpContext { get; private set; }
 
         public IServiceProvider ServiceProvider { get; private set; }
