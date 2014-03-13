@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Hosting.Startup;
-using Microsoft.AspNet.Hosting.Tests.Fakes;
+using Microsoft.AspNet.Hosting.Fakes;
 using Xunit;
 
-namespace Microsoft.AspNet.Hosting.Tests
+namespace Microsoft.AspNet.Hosting
 {
     
     public class StartupManagerTests : IFakeStartupCallback

@@ -1,4 +1,4 @@
-namespace Microsoft.AspNet.Hosting.Tests.Fakes
+namespace Microsoft.AspNet.Hosting.Fakes
 {
     public interface IFakeStartupCallback
     {

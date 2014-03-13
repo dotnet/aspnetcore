@@ -1,7 +1,7 @@
-using Microsoft.AspNet.DependencyInjection;
 using System;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNet.DependencyInjection;
 
 namespace Microsoft.AspNet.Hosting.Server
 {
@@ -16,28 +16,14 @@ namespace Microsoft.AspNet.Hosting.Server
 
         public IServerFactory GetServerFactory(string serverFactoryIdentifier)
         {
-            if (string.IsNullOrWhiteSpace(serverFactoryIdentifier))
+            if (string.IsNullOrEmpty(serverFactoryIdentifier))
             {
-                throw new ArgumentNullException("serverFactoryIdentifier");
+                throw new ArgumentException(string.Empty, "serverFactoryIdentifier");
             }
 
-            string typeName;
-            string assemblyName;
-            var parts = serverFactoryIdentifier.Split(new[] { ',' }, 2);
-            if (parts.Length == 1)
-            {
-                typeName = null;
-                assemblyName = serverFactoryIdentifier;
-            }
-            else if (parts.Length == 2)
-            {
-                typeName = parts[0];
-                assemblyName = parts[1];
-            }
-            else
-            {
-                throw new ArgumentException("TODO: Unrecognized format", "serverFactoryIdentifier");
-            }
+            var nameParts = Utilities.SplitTypeName(serverFactoryIdentifier);
+            string typeName = nameParts.Item1;
+            string assemblyName = nameParts.Item2;
 
             var assembly = Assembly.Load(new AssemblyName(assemblyName));
             if (assembly == null)
@@ -47,12 +33,11 @@ namespace Microsoft.AspNet.Hosting.Server
 
             Type type = null;
             Type interfaceInfo;
-            if (string.IsNullOrWhiteSpace(typeName))
+            if (string.IsNullOrEmpty(typeName))
             {
                 foreach (var typeInfo in assembly.DefinedTypes)
                 {
-                    interfaceInfo = typeInfo.ImplementedInterfaces.FirstOrDefault(interf =>
-                        interf.FullName == typeof(IServerFactory).FullName);
+                    interfaceInfo = typeInfo.ImplementedInterfaces.FirstOrDefault(interf => interf.Equals(typeof(IServerFactory)));
                     if (interfaceInfo != null)
                     {
                         type = typeInfo.AsType();
@@ -66,15 +51,14 @@ namespace Microsoft.AspNet.Hosting.Server
             }
             else
             {
-                type = assembly.GetType(typeName) ?? assembly.GetType(assemblyName + "." + typeName);
+                type = assembly.GetType(typeName);
 
                 if (type == null)
                 {
                     throw new Exception(String.Format("TODO: type {0} failed to load message", typeName ?? "<null>"));
                 }
 
-                interfaceInfo = type.GetTypeInfo().ImplementedInterfaces.FirstOrDefault(interf =>
-                    interf.FullName == typeof(IServerFactory).FullName);
+                interfaceInfo = type.GetTypeInfo().ImplementedInterfaces.FirstOrDefault(interf => interf.Equals(typeof(IServerFactory)));
 
                 if (interfaceInfo == null)
                 {
@@ -82,8 +66,7 @@ namespace Microsoft.AspNet.Hosting.Server
                 }
             }
 
-            object instance = ActivatorUtilities.GetServiceOrCreateInstance(_services, type);
-            return (IServerFactory)instance;
+            return (IServerFactory)ActivatorUtilities.GetServiceOrCreateInstance(_services, type);
         }
     }
 }

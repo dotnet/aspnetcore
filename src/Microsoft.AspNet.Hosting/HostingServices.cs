@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using Microsoft.AspNet.ConfigurationModel;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Hosting.Builder;
-using Microsoft.AspNet.Hosting.Startup;
 using Microsoft.AspNet.Hosting.Server;
+using Microsoft.AspNet.Hosting.Startup;
 
 namespace Microsoft.AspNet.Hosting
 {

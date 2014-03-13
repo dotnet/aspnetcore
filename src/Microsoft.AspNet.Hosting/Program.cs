@@ -1,10 +1,8 @@
-﻿using Microsoft.AspNet.ConfigurationModel;
-using Microsoft.AspNet.ConfigurationModel.Sources;
-using Microsoft.AspNet.DependencyInjection;
-using Microsoft.AspNet.Hosting.Server;
-using Microsoft.Net.Runtime;
-using System;
+﻿using System;
 using System.IO;
+using Microsoft.AspNet.ConfigurationModel;
+using Microsoft.AspNet.DependencyInjection;
+using Microsoft.Net.Runtime;
 
 namespace Microsoft.AspNet.Hosting
 {

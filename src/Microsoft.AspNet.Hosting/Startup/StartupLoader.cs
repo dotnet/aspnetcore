@@ -25,23 +25,9 @@ namespace Microsoft.AspNet.Hosting.Startup
                 return _next.LoadStartup(applicationName, diagnosticMessages);
             }
 
-            string typeName;
-            string assemblyName;
-            var parts = applicationName.Split(new[] { ',' }, 2);
-            if (parts.Length == 1)
-            {
-                typeName = null;
-                assemblyName = applicationName;
-            }
-            else if (parts.Length == 2)
-            {
-                typeName = parts[0];
-                assemblyName = parts[1];
-            }
-            else
-            {
-                throw new Exception("TODO: Unrecognized format");
-            }
+            var nameParts = Utilities.SplitTypeName(applicationName);
+            string typeName = nameParts.Item1;
+            string assemblyName = nameParts.Item2;
 
             var assembly = Assembly.Load(new AssemblyName(assemblyName));
             if (assembly == null)
@@ -50,7 +36,7 @@ namespace Microsoft.AspNet.Hosting.Startup
             }
 
             Type type = null;
-            if (string.IsNullOrWhiteSpace(typeName))
+            if (string.IsNullOrEmpty(typeName))
             {
                 var typeInfo = assembly.DefinedTypes.FirstOrDefault(aType => aType.Name.Equals("Startup"));
                 if (typeInfo != null)

@@ -1,6 +1,6 @@
 using Microsoft.AspNet.Abstractions;
 
-namespace Microsoft.AspNet.Hosting.Tests.Fakes
+namespace Microsoft.AspNet.Hosting.Fakes
 {
     public class FakeStartupWithServices
     {

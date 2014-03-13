@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+VisualStudioVersion = 12.0.30203.2
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E0497F39-AFFB-4819-A116-E39E361915AB}"
 EndProject
@@ -12,6 +12,12 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Hosting.k10", "src\Microsoft.AspNet.Hosting\Microsoft.AspNet.Hosting.k10.csproj", "{DBB72F0F-755D-41CF-8FE2-F4B6AE214E91}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Hosting.Tests.net45", "test\Microsoft.AspNet.Hosting.Tests\Microsoft.AspNet.Hosting.Tests.net45.csproj", "{80588AF3-6B14-4D11-9DC4-1EF6453B54C9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{C30C98CD-3D69-4AE9-B680-0E0E6D8834C6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KWebStartup.net45", "samples\KWebStartup\KWebStartup.net45.csproj", "{E9B21845-E51A-4B8C-AF0B-0C4CE16550BF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KWebStartup.k10", "samples\KWebStartup\KWebStartup.k10.csproj", "{348007AA-AB91-48B2-98DB-57D068E2C1AE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,6 +37,14 @@ Global
 		{80588AF3-6B14-4D11-9DC4-1EF6453B54C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{80588AF3-6B14-4D11-9DC4-1EF6453B54C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{80588AF3-6B14-4D11-9DC4-1EF6453B54C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E9B21845-E51A-4B8C-AF0B-0C4CE16550BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E9B21845-E51A-4B8C-AF0B-0C4CE16550BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E9B21845-E51A-4B8C-AF0B-0C4CE16550BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E9B21845-E51A-4B8C-AF0B-0C4CE16550BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{348007AA-AB91-48B2-98DB-57D068E2C1AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{348007AA-AB91-48B2-98DB-57D068E2C1AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{348007AA-AB91-48B2-98DB-57D068E2C1AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{348007AA-AB91-48B2-98DB-57D068E2C1AE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -39,5 +53,7 @@ Global
 		{D546290B-E280-4D99-BA9C-0D364A0AFB54} = {E0497F39-AFFB-4819-A116-E39E361915AB}
 		{DBB72F0F-755D-41CF-8FE2-F4B6AE214E91} = {E0497F39-AFFB-4819-A116-E39E361915AB}
 		{80588AF3-6B14-4D11-9DC4-1EF6453B54C9} = {FEB39027-9158-4DE2-997F-7ADAEF8188D0}
+		{E9B21845-E51A-4B8C-AF0B-0C4CE16550BF} = {C30C98CD-3D69-4AE9-B680-0E0E6D8834C6}
+		{348007AA-AB91-48B2-98DB-57D068E2C1AE} = {C30C98CD-3D69-4AE9-B680-0E0E6D8834C6}
 	EndGlobalSection
 EndGlobal
