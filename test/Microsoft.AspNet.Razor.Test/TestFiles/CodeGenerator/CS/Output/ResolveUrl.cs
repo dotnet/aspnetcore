@@ -1,6 +1,7 @@
 namespace TestOutput
 {
     using System;
+    using System.Threading.Tasks;
 
     public class ResolveUrl
     {
@@ -9,7 +10,7 @@ namespace TestOutput
         {
         }
 
-        public override void Execute()
+        public override async Task ExecuteAsync()
         {
             WriteLiteral("<a");
             WriteAttribute("href", Tuple.Create(" href=\"", 2), Tuple.Create("\"", 14), Tuple.Create(Tuple.Create("", 9), Tuple.Create<System.Object, System.Int32>(Href("~/Foo"), 9), false));

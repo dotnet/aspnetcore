@@ -18,6 +18,7 @@ using System
 #line default
 #line hidden
     ;
+    using System.Threading.Tasks;
 
     public class Imports
     {
@@ -26,7 +27,7 @@ using System
         {
         }
 
-        public override void Execute()
+        public override async Task ExecuteAsync()
         {
             WriteLiteral("\r\n<p>Path\'s full type name is ");
             Write(

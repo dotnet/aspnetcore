@@ -1,6 +1,7 @@
 namespace TestOutput
 {
     using System;
+    using System.Threading.Tasks;
 
     public class Inherits : foo.bar<baz<biz>>.boz bar
     {
@@ -9,7 +10,7 @@ namespace TestOutput
         {
         }
 
-        public override void Execute()
+        public override async Task ExecuteAsync()
         {
             Write(
 #line 1 "Inherits.cshtml"

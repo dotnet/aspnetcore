@@ -1,6 +1,7 @@
 namespace TestOutput
 {
     using System;
+    using System.Threading.Tasks;
 
     public class FunctionsBlockMinimal
     {
@@ -23,7 +24,7 @@ string foo(string input) {
         {
         }
 
-        public override void Execute()
+        public override async Task ExecuteAsync()
         {
         }
     }

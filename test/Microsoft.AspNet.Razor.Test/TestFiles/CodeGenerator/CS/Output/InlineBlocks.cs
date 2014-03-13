@@ -1,6 +1,7 @@
 namespace TestOutput
 {
     using System;
+    using System.Threading.Tasks;
 
     public class InlineBlocks
     {
@@ -68,7 +69,7 @@ Link(string link) {
         {
         }
 
-        public override void Execute()
+        public override async Task ExecuteAsync()
         {
         }
     }

@@ -1,6 +1,7 @@
 namespace TestOutput
 {
     using System;
+    using System.Threading.Tasks;
 
     public class HelpersMissingOpenBrace
     {
@@ -53,7 +54,7 @@ Italic(string s)
         {
         }
 
-        public override void Execute()
+        public override async Task ExecuteAsync()
         {
             WriteLiteral("\r\n");
             Write(

@@ -1,6 +1,7 @@
 namespace TestOutput
 {
     using System;
+    using System.Threading.Tasks;
 
     public class RazorComments
     {
@@ -9,7 +10,7 @@ namespace TestOutput
         {
         }
 
-        public override void Execute()
+        public override async Task ExecuteAsync()
         {
             WriteLiteral("\r\n<p>This should  be shown</p>\r\n\r\n");
 #line 4 "RazorComments.cshtml"

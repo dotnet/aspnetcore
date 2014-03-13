@@ -1,6 +1,7 @@
 namespace TestOutput
 {
     using System;
+    using System.Threading.Tasks;
 
     public class Templates
     {
@@ -21,7 +22,7 @@ namespace TestOutput
         {
         }
 
-        public override void Execute()
+        public override async Task ExecuteAsync()
         {
             WriteLiteral("\r\n");
 #line 11 "Templates.cshtml"

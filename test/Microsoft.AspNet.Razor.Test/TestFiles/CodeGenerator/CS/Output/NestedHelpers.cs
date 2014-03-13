@@ -1,6 +1,7 @@
 namespace TestOutput
 {
     using System;
+    using System.Threading.Tasks;
 
     public class NestedHelpers
     {
@@ -91,7 +92,7 @@ Bold(string s) {
         {
         }
 
-        public override void Execute()
+        public override async Task ExecuteAsync()
         {
             WriteLiteral("\r\n");
             Write(

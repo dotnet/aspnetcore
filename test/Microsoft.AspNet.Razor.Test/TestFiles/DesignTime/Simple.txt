@@ -1,5 +1,6 @@
 ﻿namespace Razor
 {
+    using System.Threading.Tasks;
 
     public class __CompiledTemplate
     {
@@ -14,7 +15,7 @@
         {
         }
 
-        public override void Execute()
+        public override async Task ExecuteAsync()
         {
 #line 1 "C:\This\Path\Is\Just\For\Line\Pragmas.cshtml"
   

@@ -1,6 +1,7 @@
 namespace TestOutput
 {
     using System;
+    using System.Threading.Tasks;
 
     public class Helpers
     {
@@ -83,7 +84,7 @@ Italic(string s) {
         {
         }
 
-        public override void Execute()
+        public override async Task ExecuteAsync()
         {
             WriteLiteral("\r\n");
             WriteLiteral("\r\n");

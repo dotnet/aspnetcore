@@ -1,6 +1,7 @@
 namespace TestOutput
 {
     using System;
+    using System.Threading.Tasks;
 
     public class DesignTime
     {
@@ -45,7 +46,7 @@ Foo() {
         {
         }
 
-        public override void Execute()
+        public override async Task ExecuteAsync()
         {
 #line 2 "DesignTime.cshtml"
             for(int i = 1; i <= 10; i++) {

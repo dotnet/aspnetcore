@@ -1,6 +1,7 @@
 namespace TestOutput
 {
     using System;
+    using System.Threading.Tasks;
 
     public class SimpleUnspacedIf
     {
@@ -15,7 +16,7 @@ namespace TestOutput
         {
         }
 
-        public override void Execute()
+        public override async Task ExecuteAsync()
         {
 #line 1 "SimpleUnspacedIf.cshtml"
 if (true)

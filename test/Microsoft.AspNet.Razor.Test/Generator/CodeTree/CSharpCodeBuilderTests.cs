@@ -14,14 +14,14 @@ namespace Microsoft.AspNet.Razor.Test.Generator.CodeTree
         {
             var syntaxTreeNode = new Mock<Span>(new SpanBuilder());
             var language = new CSharpRazorCodeLanguage();
-            RazorEngineHost host = new RazorEngineHost(language);
+            var host = new RazorEngineHost(language);
             var context = CodeGeneratorContext.Create(host, "TestClass", "TestNamespace", "Foo.cs", shouldGenerateLinePragmas: false);
             context.CodeTreeBuilder.AddUsingChunk("FakeNamespace1", syntaxTreeNode.Object);
             context.CodeTreeBuilder.AddUsingChunk("FakeNamespace2.SubNamespace", syntaxTreeNode.Object);
-            CodeBuilder codeBuilder = language.CreateCodeBuilder(context);
+            var codeBuilder = language.CreateCodeBuilder(context);
 
             // Act
-            CodeBuilderResult result = codeBuilder.Build();
+            var result = codeBuilder.Build();
             // Assert
             Assert.Equal(@"namespace TestNamespace
 {
@@ -37,6 +37,7 @@ using FakeNamespace2.SubNamespace
 #line default
 #line hidden
     ;
+    using System.Threading.Tasks;
 
     public class TestClass
     {
@@ -45,7 +46,7 @@ using FakeNamespace2.SubNamespace
         {
         }
 
-        public override void Execute()
+        public override async Task ExecuteAsync()
         {
         }
     }

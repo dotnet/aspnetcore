@@ -1,6 +1,7 @@
 namespace TestOutput
 {
     using System;
+    using System.Threading.Tasks;
 
     public class Inherits : foo.bar<baz<biz>>.boz bar
     {
@@ -20,7 +21,7 @@ namespace TestOutput
         {
         }
 
-        public override void Execute()
+        public override async Task ExecuteAsync()
         {
 #line 1 "------------------------------------------"
 __o = foo();

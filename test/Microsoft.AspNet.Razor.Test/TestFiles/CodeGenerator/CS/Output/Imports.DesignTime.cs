@@ -18,6 +18,7 @@ using System
 #line default
 #line hidden
     ;
+    using System.Threading.Tasks;
 
     public class Imports
     {
@@ -32,7 +33,7 @@ using System
         {
         }
 
-        public override void Execute()
+        public override async Task ExecuteAsync()
         {
 #line 1 "------------------------------------------"
                        __o = typeof(Path).FullName;

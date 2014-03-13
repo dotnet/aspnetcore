@@ -1,6 +1,7 @@
 namespace TestOutput
 {
     using System;
+    using System.Threading.Tasks;
 
     public class ImplicitExpression
     {
@@ -9,7 +10,7 @@ namespace TestOutput
         {
         }
 
-        public override void Execute()
+        public override async Task ExecuteAsync()
         {
 #line 1 "ImplicitExpression.cshtml"
  for(int i = 1; i <= 10; i++) {
