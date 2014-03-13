@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿
+using System.Collections.Generic;
 using Microsoft.AspNet.ConfigurationModel;
 using Microsoft.AspNet.DependencyInjection;
-using Microsoft.AspNet.DependencyInjection.NestedProviders;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Razor;
@@ -38,11 +38,6 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Transient<IVirtualPathViewFactory, VirtualPathViewFactory>();
             yield return describe.Transient<IViewEngine, RazorViewEngine>();
 
-            // This is temporary until DI has some magic for it
-            yield return describe.Transient<INestedProviderManager<ActionDescriptorProviderContext>,
-                                            NestedProviderManager<ActionDescriptorProviderContext>>();
-            yield return describe.Transient<INestedProviderManager<ActionInvokerProviderContext>,
-                                            NestedProviderManager<ActionInvokerProviderContext>>();
             yield return describe.Transient<INestedProvider<ActionDescriptorProviderContext>,
                                             ReflectedActionDescriptorProvider>();
             yield return describe.Transient<INestedProvider<ActionInvokerProviderContext>,
@@ -63,7 +58,6 @@ namespace Microsoft.AspNet.Mvc
 
             yield return describe.Transient<IInputFormatter, JsonInputFormatter>();
 
-            yield return describe.Transient<INestedProviderManager<FilterProviderContext>, NestedProviderManager<FilterProviderContext>>();
             yield return describe.Transient<INestedProvider<FilterProviderContext>, DefaultFilterProvider>();
 
             yield return describe.Transient<IModelValidatorProvider, DataAnnotationsModelValidatorProvider>();

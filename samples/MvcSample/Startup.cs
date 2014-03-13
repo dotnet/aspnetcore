@@ -1,13 +1,13 @@
-﻿#if NET45
+﻿
+#if NET45
 using Autofac;
 using System;
 using Microsoft.AspNet.Abstractions;
-using Microsoft.AspNet.ConfigurationModel;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.DependencyInjection.Autofac;
+using Microsoft.AspNet.DependencyInjection.NestedProviders;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
-using Microsoft.Net.Runtime;
 using Owin;
 
 namespace MvcSample
@@ -36,6 +36,10 @@ namespace MvcSample
 
             AutofacRegistration.Populate(containerBuilder, _serviceProvider, services);
             containerBuilder.RegisterInstance<PassThroughAttribute>(new PassThroughAttribute());
+
+            // Temporary until we have support for open generics in our DI system.
+            containerBuilder.RegisterGeneric(typeof(NestedProviderManager<>)).As(typeof(INestedProviderManager<>));
+            containerBuilder.RegisterGeneric(typeof(NestedProviderManagerAsync<>)).As(typeof(INestedProviderManagerAsync<>));
 
             var serviceProvider = containerBuilder.Build().Resolve<IServiceProvider>();
 
