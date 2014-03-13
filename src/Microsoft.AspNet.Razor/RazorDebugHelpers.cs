@@ -3,8 +3,6 @@
 #if DEBUG
 
 using System;
-using System.CodeDom;
-using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -39,39 +37,7 @@ namespace Microsoft.AspNet.Razor
         {
             get { return _outputDebuggingEnabled; }
         }
-#if NET45
-        // No CodeDOM in CoreCLR
 
-        [SuppressMessage("Microsoft.Security", "CA2141:TransparentMethodsMustNotSatisfyLinkDemandsFxCopRule", Justification = "This is debug only")]
-        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "This is debug only")]
-        [SuppressMessage("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider", MessageId = "System.IO.StringWriter.#ctor", Justification = "This is debug only")]
-        internal static void WriteGeneratedCode(string sourceFile, CodeCompileUnit codeCompileUnit)
-        {
-            if (!OutputDebuggingEnabled)
-            {
-                return;
-            }
-
-            RunTask(() =>
-            {
-                string extension = Path.GetExtension(sourceFile);
-                RazorCodeLanguage language = RazorCodeLanguage.GetLanguageByExtension(extension);
-                CodeDomProvider provider = CodeDomProvider.CreateProvider(language.LanguageName);
-
-                using (var writer = new StringWriter())
-                {
-                    // Trim the html part of cshtml or vbhtml
-                    string outputExtension = extension.Substring(0, 3);
-                    string outputFileName = Normalize(sourceFile) + "_generated" + outputExtension;
-                    string outputPath = Path.Combine(Path.GetDirectoryName(sourceFile), outputFileName);
-
-                    // REVIEW: Do these options need to be tweaked?
-                    provider.GenerateCodeFromCompileUnit(codeCompileUnit, writer, new CodeGeneratorOptions());
-                    File.WriteAllText(outputPath, writer.ToString());
-                }
-            });
-        }
-#endif
         internal static void WriteDebugTree(string sourceFile, Block document, PartialParseResult result, TextChange change, RazorEditorParser parser, bool treeStructureChanged)
         {
             if (!OutputDebuggingEnabled)

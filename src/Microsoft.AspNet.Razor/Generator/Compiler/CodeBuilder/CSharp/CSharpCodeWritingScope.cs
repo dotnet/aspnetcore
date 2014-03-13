@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
             WriteStartScope();
         }
 
-        public event Action OnClose;
+        public Action OnClose;
 
         public void Dispose()
         {

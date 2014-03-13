@@ -51,45 +51,53 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             _generatedContentLength = _writer.ToString().Length - _generatedLocation.AbsoluteIndex;
         }
 
-        public void Dispose()
+        protected virtual void Dispose(bool disposing)
         {
-            // Verify that the generated length has not already been calculated
-            if (_generatedContentLength == 0)
+            if(disposing)
             {
-                _generatedContentLength = _writer.ToString().Length - _generatedLocation.AbsoluteIndex;
-            }
-
-            var generatedLocation = new MappingLocation(_generatedLocation, _generatedContentLength);
-            if (_documentMapping.ContentLength == -1)
-            {
-                _documentMapping.ContentLength = generatedLocation.ContentLength;
-            }
-
-            _writer.LineMappingManager.AddMapping(
-                documentLocation: _documentMapping,
-                generatedLocation: new MappingLocation(_generatedLocation, _generatedContentLength));
-
-            if (_writePragmas)
-            {
-                // Need to add an additional line at the end IF there wasn't one already written.
-                // This is needed to work with the C# editor's handling of #line ...
-                bool endsWithNewline = _writer.ToString().EndsWith("\n");
-
-                // Always write at least 1 empty line to potentially separate code from pragmas.
-                _writer.WriteLine();
-
-                // Check if the previous empty line wasn't enough to separate code from pragmas.
-                if (!endsWithNewline)
+                // Verify that the generated length has not already been calculated
+                if (_generatedContentLength == 0)
                 {
-                    _writer.WriteLine();
+                    _generatedContentLength = _writer.ToString().Length - _generatedLocation.AbsoluteIndex;
                 }
 
-                _writer.WriteLineDefaultDirective()
-                       .WriteLineHiddenDirective();
-            }
+                var generatedLocation = new MappingLocation(_generatedLocation, _generatedContentLength);
+                if (_documentMapping.ContentLength == -1)
+                {
+                    _documentMapping.ContentLength = generatedLocation.ContentLength;
+                }
 
-            // Reset indent back to when it was started
-            _writer.SetIndent(_startIndent);
+                _writer.LineMappingManager.AddMapping(
+                    documentLocation: _documentMapping,
+                    generatedLocation: new MappingLocation(_generatedLocation, _generatedContentLength));
+
+                if (_writePragmas)
+                {
+                    // Need to add an additional line at the end IF there wasn't one already written.
+                    // This is needed to work with the C# editor's handling of #line ...
+                    bool endsWithNewline = _writer.ToString().EndsWith("\n");
+
+                    // Always write at least 1 empty line to potentially separate code from pragmas.
+                    _writer.WriteLine();
+
+                    // Check if the previous empty line wasn't enough to separate code from pragmas.
+                    if (!endsWithNewline)
+                    {
+                        _writer.WriteLine();
+                    }
+
+                    _writer.WriteLineDefaultDirective()
+                           .WriteLineHiddenDirective();
+                }
+
+                // Reset indent back to when it was started
+                _writer.SetIndent(_startIndent);
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
         }
     }
 }

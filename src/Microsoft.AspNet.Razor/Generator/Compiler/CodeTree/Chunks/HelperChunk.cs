@@ -6,7 +6,6 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
     {
         public LocationTagged<string> Signature { get; set; }
         public LocationTagged<string> Footer { get; set; }
-        // TODO: Can these properties be taken out?
         public bool HeaderComplete { get; set; }
     }
 }

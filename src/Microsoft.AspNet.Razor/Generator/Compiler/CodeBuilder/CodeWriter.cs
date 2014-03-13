@@ -4,7 +4,7 @@ using Microsoft.AspNet.Razor.Text;
 
 namespace Microsoft.AspNet.Razor.Generator.Compiler
 {
-    public class CodeWriter
+    public class CodeWriter : IDisposable
     {
         protected StringWriter Writer;
 
@@ -120,6 +120,19 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
                 absoluteIndex: output.Length,
                 lineIndex: (unescapedOutput.Length - unescapedOutput.Replace(Environment.NewLine, String.Empty).Length) / Environment.NewLine.Length,
                 characterIndex: unescapedOutput.Length - (unescapedOutput.LastIndexOf(Environment.NewLine) + Environment.NewLine.Length));
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if(disposing)
+            {
+                Writer.Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
         }
     }
 }

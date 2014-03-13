@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator.CodeTree
             var context = CodeGeneratorContext.Create(host, "TestClass", "TestNamespace", "Foo.cs", shouldGenerateLinePragmas: false);
             context.CodeTreeBuilder.AddUsingChunk("FakeNamespace1", syntaxTreeNode.Object);
             context.CodeTreeBuilder.AddUsingChunk("FakeNamespace2.SubNamespace", syntaxTreeNode.Object);
-            CodeBuilder codeBuilder = language.CreateBuilder(context);
+            CodeBuilder codeBuilder = language.CreateCodeBuilder(context);
 
             // Act
             CodeBuilderResult result = codeBuilder.Build();

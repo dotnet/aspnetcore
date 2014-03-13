@@ -8,6 +8,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 {
     public class CSharpCodeVisitor : CodeVisitor<CSharpCodeWriter>
     {
+        private const string ItemParameterName = "item";
         private const string ValueWriterName = "__razor_attribute_value_writer";
         private const string TemplateWriterName = "__razor_template_writer";
 
@@ -32,13 +33,13 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
         protected override void Visit(TemplateChunk chunk)
         {
-            Writer.Write(TemplateBlockCodeGenerator.ItemParameterName).Write(" => ")
+            Writer.Write(ItemParameterName).Write(" => ")
                    .WriteStartNewObject(Context.Host.GeneratedClassContext.TemplateTypeName);
 
             string currentTargetWriterName = Context.TargetWriterName;
             Context.TargetWriterName = TemplateWriterName;
 
-            using (Writer.BuildLambda(endLine: false, parameterNames: TemplateBlockCodeGenerator.TemplateWriterName))
+            using (Writer.BuildLambda(endLine: false, parameterNames: TemplateWriterName))
             {
                 Accept(chunk.Children);
             }

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -104,7 +103,7 @@ namespace Microsoft.AspNet.Razor
         }
 
         /// <summary>
-        /// Parses the template specified by the TextBuffer, generates code for it, and returns the constructed CodeDOM tree
+        /// Parses the template specified by the TextBuffer, generates code for it, and returns the constructed code.
         /// </summary>
         /// <remarks>
         /// The cancel token provided can be used to cancel the parse.  However, please note
@@ -123,7 +122,7 @@ namespace Microsoft.AspNet.Razor
         /// <param name="className">The name of the generated class, overriding whatever is specified in the Host.  The default value (defined in the Host) can be used by providing null for this argument</param>
         /// <param name="rootNamespace">The namespace in which the generated class will reside, overriding whatever is specified in the Host.  The default value (defined in the Host) can be used by providing null for this argument</param>
         /// <param name="sourceFileName">The file name to use in line pragmas, usually the original Razor file, overriding whatever is specified in the Host.  The default value (defined in the Host) can be used by providing null for this argument</param>
-        /// <returns>The resulting parse tree AND generated Code DOM tree</returns>
+        /// <returns>The resulting parse tree AND generated code.</returns>
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Input object would be disposed if we dispose the wrapper.  We don't own the input so we don't want to dispose it")]
         public GeneratorResults GenerateCode(ITextBuffer input, string className, string rootNamespace, string sourceFileName, CancellationToken? cancelToken)
         {
@@ -166,39 +165,12 @@ namespace Microsoft.AspNet.Razor
             RazorCodeGenerator generator = CreateCodeGenerator(className, rootNamespace, sourceFileName);
             generator.DesignTimeMode = Host.DesignTimeMode;
             generator.Visit(results);
-#if NET45
-            // No CodeDOM in CoreCLR, this calls into CodeDOM dependent code.
 
-            // Post process code
-            Host.PostProcessGeneratedCode(generator.Context);
-#endif
-
-            // Extract design-time mappings
-            IDictionary<int, GeneratedCodeMapping> designTimeLineMappings = null;
-            if (Host.DesignTimeMode)
-            {
-#if NET45
-                // No CodeDOM in CoreCLR, this calls into CodeDOM dependent code.
-
-                designTimeLineMappings = generator.Context.CodeMappings;
-#endif
-            }
-
-            var builder = new CSharpCodeBuilder(generator.Context);
-            CodeBuilderResult builderResult = builder.Build();
+            var builder = Host.CodeLanguage.CreateCodeBuilder(generator.Context);
+            var builderResult = builder.Build();
 
             // Collect results and return
-            return new GeneratorResults(results, builderResult)
-            {
-#if NET45
-                // No CodeDOM in CoreCLR, this calls into CodeDOM dependent code.
-                // Also this code will be removed once we transition into the CodeTree
-
-                CCU = generator.Context.CompileUnit,
-                OLDDesignTimeLineMappings = designTimeLineMappings,
-#endif
-                CT = generator.Context.CodeTreeBuilder.CodeTree
-            };
+            return new GeneratorResults(results, builderResult);
         }
 
         protected internal virtual RazorCodeGenerator CreateCodeGenerator(string className, string rootNamespace, string sourceFileName)

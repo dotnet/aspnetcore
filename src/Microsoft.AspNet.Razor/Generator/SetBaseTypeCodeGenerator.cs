@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
-using System.CodeDom;
-using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 
 namespace Microsoft.AspNet.Razor.Generator
@@ -18,32 +16,6 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override void GenerateCode(Span target, CodeGeneratorContext context)
         {
-#if NET45
-            // No CodeDOM + This code will not be needed once we transition to the CodeTree
-
-            context.GeneratedClass.BaseTypes.Clear();
-            context.GeneratedClass.BaseTypes.Add(new CodeTypeReference(BaseType.Trim()));
-
-            if (context.Host.DesignTimeMode)
-            {
-                int generatedCodeStart = 0;
-                string code = context.BuildCodeString(cw =>
-                {
-                    generatedCodeStart = cw.WriteVariableDeclaration(target.Content, "__inheritsHelper", null);
-                    cw.WriteEndStatement();
-                });
-
-                int paddingCharCount;
-
-                CodeSnippetStatement stmt = new CodeSnippetStatement(
-                    CodeGeneratorPaddingHelper.Pad(context.Host, code, target, generatedCodeStart, out paddingCharCount))
-                {
-                    LinePragma = context.GenerateLinePragma(target, generatedCodeStart + paddingCharCount)
-                };
-                context.AddDesignTimeHelperStatement(stmt);
-            }
-#endif
-            // TODO: Make this generate the primary generator
             context.CodeTreeBuilder.AddSetBaseTypeChunk(BaseType, target);
         }
 

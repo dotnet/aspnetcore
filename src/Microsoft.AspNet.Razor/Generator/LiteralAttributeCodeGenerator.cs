@@ -29,84 +29,17 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override void GenerateCode(Span target, CodeGeneratorContext context)
         {
-            if (context.Host.DesignTimeMode)
-            {
-                return;
-            }
-
-            LiteralCodeAttributeChunk chunk = context.CodeTreeBuilder.StartChunkBlock<LiteralCodeAttributeChunk>(target);
+            var chunk = context.CodeTreeBuilder.StartChunkBlock<LiteralCodeAttributeChunk>(target);
             chunk.Prefix = Prefix;
             chunk.Value = Value;
 
             if (ValueGenerator != null)
             {
                 chunk.ValueLocation = ValueGenerator.Location;
-            }
 
-            ExpressionRenderingMode oldMode = context.ExpressionRenderingMode;
-#if NET45
-            // No CodeDOM + This code will not be needed once we transition to the CodeTree
-
-            context.BufferStatementFragment(context.BuildCodeString(cw =>
-            {
-                cw.WriteParameterSeparator();
-                cw.WriteStartMethodInvoke("Tuple.Create");
-                cw.WriteLocationTaggedString(Prefix);
-                cw.WriteParameterSeparator();
-#endif
-            if (ValueGenerator != null)
-                {
-#if NET45
-                    // No CodeDOM + This code will not be needed once we transition to the CodeTree
-                    cw.WriteStartMethodInvoke("Tuple.Create", "System.Object", "System.Int32");
-#endif
-                    context.ExpressionRenderingMode = ExpressionRenderingMode.InjectCode;
-                }
-#if NET45
-                // No CodeDOM + This code will not be needed once we transition to the CodeTree
-
-                else
-                {
-                    cw.WriteLocationTaggedString(Value);
-                    cw.WriteParameterSeparator();
-                    // literal: true - This attribute value is a literal value
-                    cw.WriteBooleanLiteral(true);
-                    cw.WriteEndMethodInvoke();
-                }
-            }));
-#endif
-            if (ValueGenerator != null)
-            {
                 ValueGenerator.Value.GenerateCode(target, context);
-#if NET45
-                // No CodeDOM + This code will not be needed once we transition to the CodeTree
 
-                context.FlushBufferedStatement();
-#endif
-                context.ExpressionRenderingMode = oldMode;
-#if NET45
-                // No CodeDOM + This code will not be needed once we transition to the CodeTree
-
-                context.AddStatement(context.BuildCodeString(cw =>
-                {
-#endif
                 chunk.ValueLocation = ValueGenerator.Location;
-#if NET45
-                    // No CodeDOM + This code will not be needed once we transition to the CodeTree
-
-                    cw.WriteParameterSeparator();
-                    cw.WriteSnippet(ValueGenerator.Location.AbsoluteIndex.ToString(CultureInfo.CurrentCulture));
-                    cw.WriteEndMethodInvoke();
-                    cw.WriteParameterSeparator();
-                    // literal: false - This attribute value is not a literal value, it is dynamically generated
-                    cw.WriteBooleanLiteral(false);
-                    cw.WriteEndMethodInvoke();
-                }));
-            }
-            else
-            {
-                context.FlushBufferedStatement();
-#endif
             }
 
             context.CodeTreeBuilder.EndChunkBlock();

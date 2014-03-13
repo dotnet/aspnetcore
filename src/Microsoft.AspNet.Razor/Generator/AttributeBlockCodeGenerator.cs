@@ -22,76 +22,18 @@ namespace Microsoft.AspNet.Razor.Generator
         public LocationTagged<string> Prefix { get; private set; }
         public LocationTagged<string> Suffix { get; private set; }
 
-        public void GenerateStartBlockCode(SyntaxTreeNode target, CodeTreeBuilder codeTreeBuilder, CodeGeneratorContext context)
+        public override void GenerateStartBlockCode(Block target, CodeGeneratorContext context)
         {
-            CodeAttributeChunk chunk = codeTreeBuilder.StartChunkBlock<CodeAttributeChunk>(target);
+            var chunk = context.CodeTreeBuilder.StartChunkBlock<CodeAttributeChunk>(target);
 
             chunk.Attribute = Name;
             chunk.Prefix = Prefix;
             chunk.Suffix = Suffix;
         }
 
-        public override void GenerateStartBlockCode(Block target, CodeGeneratorContext context)
-        {
-#if NET45
-            // No CodeDOM in CoreCLR.
-            // #if'd the entire section because once we transition over to the CodeTree we will not need all this code.
-
-            if (context.Host.DesignTimeMode)
-            {
-                return; // Don't generate anything!
-            }
-
-            context.FlushBufferedStatement();
-            context.AddStatement(context.BuildCodeString(cw =>
-            {
-                if (!String.IsNullOrEmpty(context.TargetWriterName))
-                {
-                    cw.WriteStartMethodInvoke(context.Host.GeneratedClassContext.WriteAttributeToMethodName);
-                    cw.WriteSnippet(context.TargetWriterName);
-                    cw.WriteParameterSeparator();
-                }
-                else
-                {
-                    cw.WriteStartMethodInvoke(context.Host.GeneratedClassContext.WriteAttributeMethodName);
-                }
-                cw.WriteStringLiteral(Name);
-                cw.WriteParameterSeparator();
-                cw.WriteLocationTaggedString(Prefix);
-                cw.WriteParameterSeparator();
-                cw.WriteLocationTaggedString(Suffix);
-            }));
-#endif
-
-            // TODO: Make this generate the primary generator
-            GenerateStartBlockCode(target, context.CodeTreeBuilder, context);
-        }
-
-        public void GenerateEndBlockCode(SyntaxTreeNode target, CodeTreeBuilder codeTreeBuilder, CodeGeneratorContext context)
-        {
-            codeTreeBuilder.EndChunkBlock();
-        }
-
         public override void GenerateEndBlockCode(Block target, CodeGeneratorContext context)
         {
-#if NET45
-            // No CodeDOM in CoreCLR (AddStatement and FlushBufferedStatement etc. utilize it).
-            // #if'd the entire section because once we transition over to the CodeTree we will not need all this code.
-
-            if (context.Host.DesignTimeMode)
-            {
-                return; // Don't generate anything!
-            }
-
-            context.FlushBufferedStatement();
-            context.AddStatement(context.BuildCodeString(cw =>
-            {
-                cw.WriteEndMethodInvoke();
-                cw.WriteEndStatement();
-            }));
-#endif
-            // TODO: Make this generate the primary generator
-            GenerateEndBlockCode(target, context.CodeTreeBuilder, context);
+            context.CodeTreeBuilder.EndChunkBlock();
         }
 
         public override string ToString()

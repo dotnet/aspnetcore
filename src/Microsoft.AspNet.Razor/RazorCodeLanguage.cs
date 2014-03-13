@@ -30,14 +30,6 @@ namespace Microsoft.AspNet.Razor
         /// The name of the language (for use in System.Web.Compilation.BuildProvider.GetDefaultCompilerTypeForLanguage)
         /// </summary>
         public abstract string LanguageName { get; }
-#if NET45
-        // No CodeDOM in CoreCLR
-
-        /// <summary>
-        /// The type of the CodeDOM provider for this language
-        /// </summary>
-        public abstract Type CodeDomProviderType { get; }
-#endif
 
         /// <summary>
         /// Gets the RazorCodeLanguage registered for the specified file extension
@@ -61,6 +53,6 @@ namespace Microsoft.AspNet.Razor
         /// </summary>
         public abstract RazorCodeGenerator CreateCodeGenerator(string className, string rootNamespaceName, string sourceFileName, RazorEngineHost host);
 
-        public abstract CodeBuilder CreateBuilder(CodeGeneratorContext codeGeneratorContext);
+        public abstract CodeBuilder CreateCodeBuilder(CodeGeneratorContext codeGeneratorContext);
     }
 }

@@ -1,11 +1,8 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
-using System.CodeDom;
-using System.Linq;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.Internal.Web.Utils;
 
 namespace Microsoft.AspNet.Razor.Generator
 {
@@ -54,11 +51,6 @@ namespace Microsoft.AspNet.Razor.Generator
             }
         }
 
-        internal virtual Func<CodeWriter> CodeWriterFactory
-        {
-            get { return null; }
-        }
-
         public override void VisitStartBlock(Block block)
         {
             block.CodeGenerator.GenerateStartBlockCode(block, Context);
@@ -74,37 +66,17 @@ namespace Microsoft.AspNet.Razor.Generator
             span.CodeGenerator.GenerateCode(span, Context);
         }
 
-        public override void OnComplete()
-        {
-#if NET45
-            // No CodeDOM + This code will not be needed once we transition to the CodeTree
-
-            Context.FlushBufferedStatement();
-#endif
-        }
-
         private void EnsureContextInitialized()
         {
             if (_context == null)
             {
-                _context = CodeGeneratorContext.Create(Host, CodeWriterFactory, ClassName, RootNamespaceName, SourceFileName, GenerateLinePragmas);
+                _context = CodeGeneratorContext.Create(Host, ClassName, RootNamespaceName, SourceFileName, GenerateLinePragmas);
                 Initialize(_context);
             }
         }
 
         protected virtual void Initialize(CodeGeneratorContext context)
         {
-#if NET45
-            context.Namespace.Imports.AddRange(Host.NamespaceImports.Select(s => new CodeNamespaceImport(s)).ToArray());
-
-            if (!String.IsNullOrEmpty(Host.DefaultBaseClass))
-            {
-                context.GeneratedClass.BaseTypes.Add(new CodeTypeReference(Host.DefaultBaseClass));
-            }
-
-            // Dev10 Bug 937438: Generate explicit Parameter-less constructor on Razor generated class
-            context.GeneratedClass.Members.Add(new CodeConstructor() { Attributes = MemberAttributes.Public });
-#endif
         }
     }
 }

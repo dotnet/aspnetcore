@@ -4,6 +4,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
     public class CSharpDesignTimeHelpersVisitor : CodeVisitor<CSharpCodeWriter>
     {
         internal const string InheritsHelper = "__inheritsHelper";
+        internal const string DesignTimeHelperMethodName = "__RazorDesignTimeHelpers__";
 
         public CSharpDesignTimeHelpersVisitor(CSharpCodeWriter writer, CodeGeneratorContext context)
             : base(writer, context) { }
@@ -12,7 +13,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         {
             if (Context.Host.DesignTimeMode)
             {
-                using (Writer.BuildMethodDeclaration("private", "void", "@" + CodeGeneratorContext.DesignTimeHelperMethodName))
+                using (Writer.BuildMethodDeclaration("private", "void", "@" + DesignTimeHelperMethodName))
                 {
                     using (Writer.BuildDisableWarningScope())
                     {

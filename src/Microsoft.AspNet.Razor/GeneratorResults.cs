@@ -1,6 +1,4 @@
-﻿using System.CodeDom;
-using System.Collections.Generic;
-using Microsoft.AspNet.Razor.Generator;
+﻿using System.Collections.Generic;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 
@@ -8,8 +6,8 @@ namespace Microsoft.AspNet.Razor
 {
     public class GeneratorResults : ParserResults
     {
-                public GeneratorResults(ParserResults parserResults,
-                                CodeBuilderResult codeBuilderResult)
+        public GeneratorResults(ParserResults parserResults,
+                        CodeBuilderResult codeBuilderResult)
             : this(parserResults.Document, parserResults.ParserErrors, codeBuilderResult)
         {
         }
@@ -33,13 +31,5 @@ namespace Microsoft.AspNet.Razor
 
         public string GeneratedCode { get; private set; }
         public IList<LineMapping> DesignTimeLineMappings { get; private set; }
-
-#if NET45
-        // No CodeDOM + This code will not be needed once we transition to the CodeTree
-
-        public CodeCompileUnit CCU { get; set; }
-        public IDictionary<int, GeneratedCodeMapping> OLDDesignTimeLineMappings { get; set; }
-#endif
-        internal CodeTree CT { get; set; }
     }
 }

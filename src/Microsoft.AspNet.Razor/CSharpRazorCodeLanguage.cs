@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
 using Microsoft.AspNet.Razor.Parser;
 #if NET45
-using Microsoft.CSharp;
+
 #endif
 
 namespace Microsoft.AspNet.Razor
@@ -25,17 +24,7 @@ namespace Microsoft.AspNet.Razor
         {
             get { return CSharpLanguageName; }
         }
-#if NET45
-        // No CodeDOM in CoreCLR
 
-        /// <summary>
-        /// Returns the type of the CodeDOM provider for this language
-        /// </summary>
-        public override Type CodeDomProviderType
-        {
-            get { return typeof(CSharpCodeProvider); }
-        }
-#endif
         /// <summary>
         /// Constructs a new instance of the code parser for this language
         /// </summary>
@@ -52,7 +41,7 @@ namespace Microsoft.AspNet.Razor
             return new CSharpRazorCodeGenerator(className, rootNamespaceName, sourceFileName, host);
         }
 
-        public override CodeBuilder CreateBuilder(CodeGeneratorContext codeGeneratorContext)
+        public override CodeBuilder CreateCodeBuilder(CodeGeneratorContext codeGeneratorContext)
         {
             return new CSharpCodeBuilder(codeGeneratorContext);
         }

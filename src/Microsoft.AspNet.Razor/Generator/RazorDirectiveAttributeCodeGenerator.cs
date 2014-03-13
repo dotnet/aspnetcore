@@ -1,11 +1,8 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
-using System.CodeDom;
-using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.Internal.Web.Utils;
 
 namespace Microsoft.AspNet.Razor.Generator
 {
@@ -25,28 +22,12 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public string Value { get; private set; }
 
-        public void GenerateCode(SyntaxTreeNode target, CodeTreeBuilder codeTreeBuilder, CodeGeneratorContext context)
+        public override void GenerateCode(Span target, CodeGeneratorContext context)
         {
             if (Name == SyntaxConstants.CSharp.SessionStateKeyword)
             {
-                codeTreeBuilder.AddSessionStateChunk(Value, target);
+                context.CodeTreeBuilder.AddSessionStateChunk(Value, target);
             }
-        }
-
-        public override void GenerateCode(Span target, CodeGeneratorContext context)
-        {
-#if NET45
-            // No CodeDOM + This code will not be needed once we transition to the CodeTree
-
-            var attributeType = new CodeTypeReference(typeof(RazorDirectiveAttribute));
-            var attributeDeclaration = new CodeAttributeDeclaration(
-                attributeType,
-                new CodeAttributeArgument(new CodePrimitiveExpression(Name)),
-                new CodeAttributeArgument(new CodePrimitiveExpression(Value)));
-            context.GeneratedClass.CustomAttributes.Add(attributeDeclaration);
-#endif
-            // TODO: Make this generate the primary generator
-            GenerateCode(target, context.CodeTreeBuilder, context);
         }
 
         public override string ToString()
