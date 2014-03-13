@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             _baseType = baseType;
             DefaultBaseClass = baseType + "<dynamic>";
             GeneratedClassContext = new GeneratedClassContext(
-                executeMethodName: "Execute",
+                executeMethodName: "ExecuteAsync",
                 writeMethodName: "Write",
                 writeLiteralMethodName: "WriteLiteral",
                 writeToMethodName: "WriteTo",

@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             using (var bodyWriter = new StringWriter(contentBuilder))
             {
                 Output = bodyWriter;
-                Execute();
+                await ExecuteAsync();
             }
 
             var bodyContent = contentBuilder.ToString();
@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             await layoutView.RenderAsync(context, writer);
         }
 
-        public abstract void Execute();
+        public abstract Task ExecuteAsync();
 
         public virtual void Write(object value)
         {
