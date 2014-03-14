@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Hosting.Startup
             if (type == null)
             {
                 // Full scan
-                var typeInfo = assembly.DefinedTypes.FirstOrDefault(aType => aType.Name.Equals(typeName));
+                var typeInfo = assembly.DefinedTypes.FirstOrDefault(aType => aType.Name.Equals(typeName, StringComparison.OrdinalIgnoreCase));
                 if (typeInfo != null)
                 {
                     type = typeInfo.AsType();
