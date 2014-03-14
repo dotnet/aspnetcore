@@ -1,6 +1,7 @@
 {
   "version": "0.1-alpha-*",
   "dependencies": {
+    "Helios": "0.1-alpha-*",
     "Microsoft.AspNet.Abstractions" : "0.1-alpha-*",
     "Microsoft.AspNet.AppBuilderSupport": "0.1-alpha-*",
     "Microsoft.AspNet.Routing" : ""

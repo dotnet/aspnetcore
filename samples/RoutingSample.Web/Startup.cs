@@ -1,24 +1,12 @@
-﻿﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
-
-#if NET45
-
-using Microsoft.AspNet.Abstractions;
+﻿﻿using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Routing;
-using Owin;
 
-namespace RoutingSample
+namespace RoutingSample.Web
 {
-    internal class Startup
+    public class Startup
     {
-        public void Configuration(IAppBuilder builder)
+        public void Configuration(IBuilder builder)
         {
-            builder.UseErrorPage();
-
-            builder.UseBuilder(ConfigureRoutes);
-        }
-
-        private void ConfigureRoutes(IBuilder builder)
-        {            
             var routes = builder.UseRouter();
 
             var endpoint1 = new HttpContextRouteEndpoint(async (context) => await context.Response.WriteAsync("match1"));
@@ -33,5 +21,3 @@ namespace RoutingSample
         }
     }
 }
-
-#endif

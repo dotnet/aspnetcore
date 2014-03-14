@@ -1,10 +1,8 @@
-﻿﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
-
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Routing;
 
-namespace RoutingSample
+namespace RoutingSample.Web
 {
     internal class PrefixRoute : IRouter
     {
