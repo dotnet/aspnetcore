@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Transient<IActionResultHelper, ActionResultHelper>();
             yield return describe.Transient<IActionResultFactory, ActionResultFactory>();
             yield return describe.Transient<IParameterDescriptorFactory, DefaultParameterDescriptorFactory>();
-            yield return describe.Transient<IControllerAssemblyProvider, AppDomainControllerAssemblyProvider>();
+            yield return describe.Transient<IControllerAssemblyProvider, DefaultControllerAssemblyProvider>();
             yield return describe.Transient<IActionDiscoveryConventions, DefaultActionDiscoveryConventions>();
 
             yield return describe.Instance<IMvcRazorHost>(new MvcRazorHost(typeof(RazorView).FullName));

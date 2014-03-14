@@ -12,17 +12,17 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
     public class RoslynCompilationService : ICompilationService
     {
-        private readonly ILibraryExportProvider _exportProvider;
+        private readonly ILibraryManager _libraryManager;
         private readonly IApplicationEnvironment _environment;
         private readonly IAssemblyLoaderEngine _loader;
 
         public RoslynCompilationService(IApplicationEnvironment environment,
                                         IAssemblyLoaderEngine loaderEngine,
-                                        ILibraryExportProvider exportProvider)
+                                        ILibraryManager libraryManager)
         {
             _environment = environment;
             _loader = loaderEngine;
-            _exportProvider = exportProvider;
+            _libraryManager = libraryManager;
         }
 
         public Task<CompilationResult> Compile(string content)
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         {
             var references = new List<MetadataReference>();
 
-            var export = _exportProvider.GetLibraryExport(_environment.ApplicationName, _environment.TargetFramework);
+            var export = _libraryManager.GetLibraryExport(_environment.ApplicationName);
 
             foreach (var metadataReference in export.MetadataReferences)
             {

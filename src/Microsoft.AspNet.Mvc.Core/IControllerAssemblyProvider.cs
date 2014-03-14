@@ -5,6 +5,6 @@ namespace Microsoft.AspNet.Mvc
 {
     public interface IControllerAssemblyProvider
     {
-        IEnumerable<Assembly> Assemblies { get; }
+        IEnumerable<Assembly> CandidateAssemblies { get; }
     }
 }

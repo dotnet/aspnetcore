@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc
 
         public IEnumerable<ActionDescriptor> GetDescriptors()
         {
-            var assemblies = _controllerAssemblyProvider.Assemblies;
+            var assemblies = _controllerAssemblyProvider.CandidateAssemblies;
             var types = assemblies.SelectMany(a => a.DefinedTypes);
             var controllers = types.Where(_conventions.IsController);
             var controllerDescriptors = controllers.Select(t => _controllerDescriptorFactory.CreateControllerDescriptor(t)).ToArray();
