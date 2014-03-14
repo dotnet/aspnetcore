@@ -27,8 +27,9 @@ namespace Microsoft.AspNet.Hosting
                 config.AddIniFile(HostingIniFile);
             }
 
-            var services = new ServiceProvider(_serviceProvider)
-                .Add(HostingServices.GetDefaultServices(config));
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.Add(HostingServices.GetDefaultServices(config));
+            var services = serviceCollection.FallbackServices;
 
             var appEnvironment = _serviceProvider.GetService<IApplicationEnvironment>();
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.AspNet.DependencyInjection;
+using Microsoft.AspNet.DependencyInjection.Fallback;
 
 namespace Microsoft.AspNet.Hosting
 {
@@ -7,9 +8,12 @@ namespace Microsoft.AspNet.Hosting
     {
         public static IDisposable Start()
         {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.Add(HostingServices.GetDefaultServices());
+
             var context = new HostingContext
             {
-                Services = new ServiceProvider().Add(HostingServices.GetDefaultServices())
+                Services = serviceCollection.BuildServiceProvider()
             };
 
             var engine = context.Services.GetService<IHostingEngine>();
@@ -17,6 +21,7 @@ namespace Microsoft.AspNet.Hosting
             {
                 throw new Exception("TODO: IHostingEngine service not available exception");
             }
+
             return engine.Start(context);
         }
     }

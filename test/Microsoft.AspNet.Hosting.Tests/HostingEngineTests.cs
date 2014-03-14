@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Hosting.Server;
+using Microsoft.AspNet.DependencyInjection.Fallback;
 using Xunit;
 
 namespace Microsoft.AspNet.Hosting
@@ -15,8 +16,9 @@ namespace Microsoft.AspNet.Hosting
         [Fact]
         public void HostingEngineCanBeResolvedWithDefaultServices()
         {
-            var services = new ServiceProvider()
-                .Add(HostingServices.GetDefaultServices());
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.Add(HostingServices.GetDefaultServices());
+            var services = serviceCollection.BuildServiceProvider();
 
             var engine = services.GetService<IHostingEngine>();
 
@@ -26,8 +28,9 @@ namespace Microsoft.AspNet.Hosting
         [Fact]
         public void HostingEngineCanBeStarted()
         {
-            var services = new ServiceProvider()
-                .Add(HostingServices.GetDefaultServices());
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.Add(HostingServices.GetDefaultServices());
+            var services = serviceCollection.BuildServiceProvider();
 
             var engine = services.GetService<IHostingEngine>();
 
