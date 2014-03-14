@@ -3,19 +3,10 @@
   "dependencies": {
     "Helios": "0.1-alpha-*",
     "Microsoft.AspNet.Abstractions" : "0.1-alpha-*",
-    "Microsoft.AspNet.AppBuilderSupport": "0.1-alpha-*",
     "Microsoft.AspNet.Routing" : ""
   },
   "configurations": {
-    "net45": {
-      "dependencies": {
-        "Owin": "1.0",
-        "Microsoft.Owin" : "2.1.0",
-        "Microsoft.Owin.Diagnostics" : "2.1.0",
-        "Microsoft.Owin.Host.HttpListener" : "2.1.0",
-        "Microsoft.Owin.Hosting" : "2.1.0"
-      }
-    },
+    "net45": { },
     "k10": {
       "dependencies": {
         "System.Diagnostics.Debug": "4.0.10.0",
