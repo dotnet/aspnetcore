@@ -1,21 +1,24 @@
-﻿
+﻿#if NET45
+using System;
+using Autofac;
 using Microsoft.AspNet.Abstractions;
-using Microsoft.AspNet.ConfigurationModel;
-using Microsoft.AspNet.DependencyInjection;
+using Microsoft.AspNet.DependencyInjection.Autofac;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
-using Microsoft.Net.Runtime;
 
 namespace MvcSample.Web
 {
     public class Startup
     {
-        public void Configuration(IBuilder app)
+        public void Configuration(IBuilder builder)
         {
-            var configuration = new Configuration();
-            var services = MvcServices.GetDefaultServices(configuration);
-            var serviceProvider =
-                DefaultServiceProvider.Create(app.ServiceProvider, services);
+            var containerBuilder = new ContainerBuilder();
+            var services = MvcServices.GetDefaultServices();
+
+            AutofacRegistration.Populate(containerBuilder, builder.ServiceProvider, services);
+            containerBuilder.RegisterInstance<PassThroughAttribute>(new PassThroughAttribute());
+
+            var serviceProvider = containerBuilder.Build().Resolve<IServiceProvider>();
 
             var routes = new RouteCollection()
             {
@@ -30,7 +33,8 @@ namespace MvcSample.Web
                 "{controller}",
                 new { controller = "Home" });
 
-            app.UseRouter(routes);
+            builder.UseRouter(routes);
         }
     }
 }
+#endif

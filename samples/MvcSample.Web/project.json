@@ -6,17 +6,31 @@
     "Microsoft.AspNet.ConfigurationModel" : "0.1-alpha-*",
     "Microsoft.AspNet.DependencyInjection" : "0.1-alpha-*",
     "Microsoft.AspNet.Routing" : "0.1-alpha-*",
-    "Microsoft.AspNet.Mvc.Core" : "",
-    "Microsoft.AspNet.Mvc" : "",
-    "Microsoft.AspNet.Mvc.Razor" : ""
+    "Microsoft.AspNet.Mvc.ModelBinding": "",
+    "Microsoft.AspNet.Mvc.Core": "",
+    "Microsoft.AspNet.Mvc": "",
+    "Microsoft.AspNet.Mvc.Razor": "",
+    "Microsoft.AspNet.Mvc.Rendering": ""
   },
   "configurations": {
-    "net45": { },
+    "net45": {
+      "dependencies": {
+        "Autofac": "3.3.0",
+        "Microsoft.AspNet.DependencyInjection.Autofac": "0.1-alpha-*",
+        "System.ComponentModel.DataAnnotations": ""
+      }
+    },
     "k10" : { 
         "dependencies": {
-            "System.Collections" : "4.0.0.0",
-            "System.Runtime" : "4.0.20.0",
-            "System.ComponentModel": "4.0.0.0"
+            "System.ComponentModel": "4.0.0.0",
+            "System.Console": "4.0.0.0",
+            "System.Diagnostics.Debug": "4.0.10.0",
+            "System.Diagnostics.Tools": "4.0.0.0",
+            "System.Dynamic.Runtime": "4.0.0.0",
+            "System.Runtime": "4.0.20.0",
+            "System.Runtime.InteropServices": "4.0.10.0",
+            "System.Threading.Tasks": "4.0.0.0",
+            "Microsoft.ComponentModel.DataAnnotations": "0.1-alpha-*"
         }
     }
   }
