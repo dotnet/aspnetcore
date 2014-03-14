@@ -16,9 +16,12 @@ namespace Microsoft.AspNet.Security.DataProtection
             // the ArraySegment<> ctor performs bounds checking
             var unused = new ArraySegment<byte>(buffer.Array, buffer.Offset, buffer.Count);
 
-            fixed (byte* pBuffer = &buffer.Array[buffer.Offset])
+            if (buffer.Count != 0)
             {
-                BCryptUtil.GenRandom(pBuffer, buffer.Count);
+                fixed (byte* pBuffer = &buffer.Array[buffer.Offset])
+                {
+                    BCryptUtil.GenRandom(pBuffer, buffer.Count);
+                }
             }
         }
     }
