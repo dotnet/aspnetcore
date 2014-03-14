@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc
                 new FilterProviderContext(_descriptor,
                                           _descriptor.
                                           FilterDescriptors.
-                                          Select(fd => new FilterProviderContext.FilterItem(fd)).ToList());
+                                          Select(fd => new FilterItem(fd)).ToList());
 
             _filterProvider.Invoke(filterProviderContext);
 
@@ -160,12 +160,12 @@ namespace Microsoft.AspNet.Mvc
 
         private void PreArrangeFiltersInPipeline(FilterProviderContext context)
         {
-            if (context.Items == null || context.Items.Count == 0)
+            if (context.Result == null || context.Result.Count == 0)
             {
                 return;
             }
 
-            foreach (var filter in context.Items)
+            foreach (var filter in context.Result)
             {
                 PlaceFilter(filter.Filter);
             }

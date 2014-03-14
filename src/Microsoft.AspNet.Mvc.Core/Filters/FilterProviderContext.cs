@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -8,31 +7,13 @@ namespace Microsoft.AspNet.Mvc
         public FilterProviderContext(ActionDescriptor actionDescriptor, List<FilterItem> items)
         {
             ActionDescriptor = actionDescriptor;
-            Items = items;
+            Result = items;
         }
 
         // Input
         public ActionDescriptor ActionDescriptor { get; set; }
 
         // Result
-        public List<FilterItem> Items { get; set; }
-
-        [DebuggerDisplay("FilterItem: {Filter}")]
-        public class FilterItem
-        {
-            public FilterItem([NotNull] FilterDescriptor descriptor)
-            {
-                Descriptor = descriptor;
-            }
-
-            public FilterItem([NotNull] FilterDescriptor descriptor, [NotNull] IFilter filter) : this(descriptor)
-            {
-                Filter = filter;
-            }
-
-            public FilterDescriptor Descriptor { get; set; }
-
-            public IFilter Filter { get; set; }
-        }
+        public List<FilterItem> Result { get; set; }
     }
 }

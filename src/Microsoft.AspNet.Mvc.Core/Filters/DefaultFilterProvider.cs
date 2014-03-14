@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.Filters
         {
             if (context.ActionDescriptor.FilterDescriptors != null)
             {
-                foreach (var item in context.Items)
+                foreach (var item in context.Result)
                 {
                     ProvideFilter(context, item);
                 }
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Mvc.Filters
             }
         }
 
-        public virtual void ProvideFilter(FilterProviderContext context, FilterProviderContext.FilterItem filterItem)
+        public virtual void ProvideFilter(FilterProviderContext context, FilterItem filterItem)
         {
             if (filterItem.Filter != null)
             {
