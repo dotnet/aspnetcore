@@ -167,7 +167,7 @@ namespace Microsoft.AspNet.Mvc
 
             foreach (var filter in context.Items)
             {
-                PlaceFilter(filter);
+                PlaceFilter(filter.Filter);
             }
         }
 

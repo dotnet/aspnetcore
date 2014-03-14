@@ -22,9 +22,6 @@ namespace Microsoft.AspNet.Mvc.Filters
         {
             if (context.ActionDescriptor.FilterDescriptors != null)
             {
-                // make a copy of the list, TODO: Make the actiondescriptor immutable
-                var filterDescriptors = context.ActionDescriptor.FilterDescriptors.ToArray();
-
                 foreach (var item in context.Items)
                 {
                     ProvideFilter(context, item);
@@ -39,14 +36,14 @@ namespace Microsoft.AspNet.Mvc.Filters
 
         public virtual void ProvideFilter(FilterProviderContext context, FilterProviderContext.FilterItem filterItem)
         {
-            var filter = filterItem.Filter;
-
-            if (filter != null)
+            if (filterItem.Filter != null)
             {
                 return;
             }
 
-            var serviceFilterSignature = filterItem.Descriptor.Filter as IServiceFilter;
+            var filter = filterItem.Descriptor.Filter;
+
+            var serviceFilterSignature = filter as IServiceFilter;
             if (serviceFilterSignature != null)
             {
                 var serviceFilter = ServiceProvider.GetService(serviceFilterSignature.ServiceType) as IFilter;
@@ -60,7 +57,7 @@ namespace Microsoft.AspNet.Mvc.Filters
             }
             else
             {
-                var typeFilterSignature = filterItem.Descriptor.Filter as ITypeFilter;
+                var typeFilterSignature = filter as ITypeFilter;
                 if (typeFilterSignature != null)
                 {
                     if (typeFilterSignature.ImplementationType == null)

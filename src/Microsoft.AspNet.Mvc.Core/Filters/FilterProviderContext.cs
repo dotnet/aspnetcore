@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -16,6 +17,7 @@ namespace Microsoft.AspNet.Mvc
         // Result
         public List<FilterItem> Items { get; set; }
 
+        [DebuggerDisplay("FilterItem: {Filter}")]
         public class FilterItem
         {
             public FilterItem([NotNull] FilterDescriptor descriptor)
