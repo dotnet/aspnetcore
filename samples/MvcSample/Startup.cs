@@ -37,6 +37,10 @@ namespace MvcSample
             AutofacRegistration.Populate(containerBuilder, _serviceProvider, services);
             containerBuilder.RegisterInstance<PassThroughAttribute>(new PassThroughAttribute());
 
+            // This is only needed in the selfhost sample - there's no need to port this to the web sample, since
+            // it's provided by default there.
+            containerBuilder.RegisterType<TypeActivator>().As<ITypeActivator>();
+
             // Temporary until we have support for open generics in our DI system.
             containerBuilder.RegisterGeneric(typeof(NestedProviderManager<>)).As(typeof(INestedProviderManager<>));
             containerBuilder.RegisterGeneric(typeof(NestedProviderManagerAsync<>)).As(typeof(INestedProviderManagerAsync<>));
