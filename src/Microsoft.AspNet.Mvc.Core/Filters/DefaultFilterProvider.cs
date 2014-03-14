@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using Microsoft.AspNet.DependencyInjection;
 
@@ -26,9 +25,9 @@ namespace Microsoft.AspNet.Mvc.Filters
                 // make a copy of the list, TODO: Make the actiondescriptor immutable
                 var filterDescriptors = context.ActionDescriptor.FilterDescriptors.ToArray();
 
-                for (int i = 0; i < filterDescriptors.Length; i++)
+                foreach (var item in context.Items)
                 {
-                    ProvideFilter(context, filterDescriptors[i].Filter);
+                    ProvideFilter(context, item);
                 }
             }
 
@@ -38,9 +37,16 @@ namespace Microsoft.AspNet.Mvc.Filters
             }
         }
 
-        public virtual void ProvideFilter(FilterProviderContext context, IFilter filter)
+        public virtual void ProvideFilter(FilterProviderContext context, FilterProviderContext.FilterItem filterItem)
         {
-            var serviceFilterSignature = filter as IServiceFilter;
+            var filter = filterItem.Filter;
+
+            if (filter != null)
+            {
+                return;
+            }
+
+            var serviceFilterSignature = filterItem.Descriptor.Filter as IServiceFilter;
             if (serviceFilterSignature != null)
             {
                 var serviceFilter = ServiceProvider.GetService(serviceFilterSignature.ServiceType) as IFilter;
@@ -50,12 +56,11 @@ namespace Microsoft.AspNet.Mvc.Filters
                     throw new InvalidOperationException("Service filter must be of type IFilter");
                 }
 
-                ApplyFilterToContainer(serviceFilter, filter);
-                AddFilters(context, serviceFilter);
+                filterItem.Filter = serviceFilter;
             }
             else
             {
-                var typeFilterSignature = filter as ITypeFilter;
+                var typeFilterSignature = filterItem.Descriptor.Filter as ITypeFilter;
                 if (typeFilterSignature != null)
                 {
                     if (typeFilterSignature.ImplementationType == null)
@@ -72,23 +77,13 @@ namespace Microsoft.AspNet.Mvc.Filters
                     var typeFilter = ActivatorUtilities.CreateInstance(ServiceProvider, typeFilterSignature.ImplementationType) as IFilter;
 
                     ApplyFilterToContainer(typeFilter, filter);
-                    AddFilters(context, typeFilter);
+                    filterItem.Filter = typeFilter;
                 }
                 else
                 {
-                    AddFilters(context, filter);
+                    filterItem.Filter = filter;
                 }
             }
-        }
-
-        private void AddFilters(FilterProviderContext context, IFilter filter)
-        {
-            if (context.OrderedFilterList == null)
-            {
-                context.OrderedFilterList = new List<IFilter>();
-            }
-
-            context.OrderedFilterList.Add(filter);
         }
 
         private void ApplyFilterToContainer(object actualFilter, IFilter filterMetadata)

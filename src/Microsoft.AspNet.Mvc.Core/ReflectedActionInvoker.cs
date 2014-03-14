@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Mvc.Filters;
@@ -39,9 +40,15 @@ namespace Microsoft.AspNet.Mvc
         public async Task InvokeActionAsync()
         {
             IActionResult actionResult;
-            var filterProviderContext = new FilterProviderContext(_descriptor);
+            var filterProviderContext =
+                new FilterProviderContext(_descriptor,
+                                          _descriptor.
+                                          FilterDescriptors.
+                                          Select(fd => new FilterProviderContext.FilterItem(fd)).ToList());
+
             _filterProvider.Invoke(filterProviderContext);
 
+            // TODO: arrange when needed.
             PreArrangeFiltersInPipeline(filterProviderContext);
 
             var modelState = new ModelStateDictionary();
@@ -61,8 +68,6 @@ namespace Microsoft.AspNet.Mvc
                 }
                 else
                 {
-                    var parameterValues = await GetParameterValues(modelState);
-
                     if (_authorizationFilters.Count > 0)
                     {
                         var authZEndPoint = new AuthorizationFilterEndPoint();
@@ -92,6 +97,8 @@ namespace Microsoft.AspNet.Mvc
 
                     if (actionResult == null)
                     {
+                        var parameterValues = await GetParameterValues(modelState);
+
                         var actionFilterContext = new ActionFilterContext(_actionContext,
                                                                           parameterValues,
                                                                           method.ReturnType);
@@ -153,12 +160,12 @@ namespace Microsoft.AspNet.Mvc
 
         private void PreArrangeFiltersInPipeline(FilterProviderContext context)
         {
-            if (context.OrderedFilterList == null || context.OrderedFilterList.Count == 0)
+            if (context.Items == null || context.Items.Count == 0)
             {
                 return;
             }
 
-            foreach (var filter in context.OrderedFilterList)
+            foreach (var filter in context.Items)
             {
                 PlaceFilter(filter);
             }
