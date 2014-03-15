@@ -2,6 +2,7 @@
 using System.IO;
 using Microsoft.AspNet.ConfigurationModel;
 using Microsoft.AspNet.DependencyInjection;
+using Microsoft.AspNet.DependencyInjection.Fallback;
 using Microsoft.Net.Runtime;
 
 namespace Microsoft.AspNet.Hosting
@@ -29,7 +30,8 @@ namespace Microsoft.AspNet.Hosting
 
             var serviceCollection = new ServiceCollection();
             serviceCollection.Add(HostingServices.GetDefaultServices(config));
-            var services = serviceCollection.FallbackServices;
+            var services = serviceCollection.BuildServiceProvider();
+            serviceCollection.FallbackServices = _serviceProvider;
 
             var appEnvironment = _serviceProvider.GetService<IApplicationEnvironment>();
 
