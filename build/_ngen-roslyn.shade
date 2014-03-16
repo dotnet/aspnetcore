@@ -1,7 +1,13 @@
+var oldRoslynAssemblies='${new[] { "Microsoft.CodeAnalysis.CSharp",
+                                   "Microsoft.CodeAnalysis",
+                                   "System.Collections.Immutable",
+                                   "System.Reflection.Metadata.Ecma335",
+                                   "System.Reflection.Metadata" }}'
+                                
 var roslynAssemblies='${new[] { "Microsoft.CodeAnalysis.CSharp",
                                 "Microsoft.CodeAnalysis",
                                 "System.Collections.Immutable",
-                                "System.Reflection.Metadata.Ecma335" }}'
+                                "System.Reflection.Metadata" }}'
 
 var programFilesX86='${Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)}'
 var gacutil='${Path.Combine(programFilesX86, "Microsoft SDKs", "Windows", "v8.1A", "bin", "NETFX 4.5.1 Tools", "gacutil.exe")}'
@@ -12,7 +18,7 @@ var ngen='${Path.Combine(windir, "Microsoft.NET", "Framework", "v4.0.30319", "ng
 var tempRoslynPackagesDir='bin\_roslyn'
 var tempRoslynDir='bin\_roslyn\all'
 
-exec program='${gacutil}' commandline='/u ${p}' each='var p in roslynAssemblies'
+exec program='${gacutil}' commandline='/u ${p}' each='var p in oldRoslynAssemblies'
 
 nuget-install package='Microsoft.CodeAnalysis.CSharp' outputDir='${tempRoslynPackagesDir}' extra='-pre -ExcludeVersion -nocache'
 
