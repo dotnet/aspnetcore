@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             var assemblyName = Path.GetRandomFileName();
 
             var compilation = CSharpCompilation.Create(assemblyName,
-                        new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+                        options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
                         syntaxTrees: syntaxTrees,
                         references: references);
 

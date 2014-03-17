@@ -10,10 +10,10 @@
     "Microsoft.AspNet.Mvc.ModelBinding" : "",
     "Microsoft.AspNet.Mvc.Rendering" : "",
     "Microsoft.AspNet.Mvc.Razor.Host" : "",
-    "Microsoft.CodeAnalysis.Common" : "0.6.4021001-beta",
-    "Microsoft.CodeAnalysis.CSharp" : "0.6.4021001-beta",
-    "System.Reflection.Metadata.Ecma335": "0.6.4021001-beta",
-    "Microsoft.Bcl.Immutable": "1.1.17-beta"
+    "Microsoft.CodeAnalysis.Common" : "0.7-beta-*",
+    "Microsoft.CodeAnalysis.CSharp" : "0.7-beta-*",
+    "System.Reflection.Metadata.Ecma335": "0.7-beta-*",
+    "Microsoft.Bcl.Immutable": "1.1.18-beta"
   },
   "configurations": {
     "net45": {
