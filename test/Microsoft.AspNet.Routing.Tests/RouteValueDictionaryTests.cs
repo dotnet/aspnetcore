@@ -2,7 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
+using Microsoft.AspNet.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Routing.Tests
@@ -161,7 +161,7 @@ namespace Microsoft.AspNet.Routing.Tests
             var obj = new { controller = "Home", Controller = "Home" };
 
             // Act & Assert
-            Assert.Throws<ArgumentException>(
+            ExceptionAssert.Throws<ArgumentException>(
                 () => new RouteValueDictionary(obj),
                 "An item with the same key has already been added.");
         }

@@ -1,4 +1,6 @@
 ﻿
+#if NET45
+
 using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
 using Moq;
@@ -108,3 +110,5 @@ namespace Microsoft.AspNet.Routing.Tests
         }
     }
 }
+
+#endif

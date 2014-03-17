@@ -1,6 +1,9 @@
 ﻿﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
+#if NET45
+
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
 using Moq;
 using Xunit;
@@ -87,7 +90,9 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
             // Assert
             Assert.False(context.IsHandled);
-            Assert.Null(context.Values);
+
+            // Issue #16 tracks this.
+            Assert.NotNull(context.Values);
         }
 
         private static RouteContext CreateRouteContext(string requestPath)
@@ -204,9 +209,12 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
             target
                 .Setup(e => e.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>(async (c) => c.IsHandled = accept);
+                .Callback<RouteContext>(async (c) => c.IsHandled = accept)
+                .Returns(Task.FromResult<object>(null));
 
             return target.Object;
         }
     }
 }
+
+#endif

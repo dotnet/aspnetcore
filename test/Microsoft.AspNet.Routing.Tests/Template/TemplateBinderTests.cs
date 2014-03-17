@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
-using Xunit.Extensions;
 
 namespace Microsoft.AspNet.Routing.Template.Tests
 {
@@ -118,7 +117,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
 
         [Theory]
-        [PropertyData("EmptyAndNullDefaultValues")]
+        [MemberData("EmptyAndNullDefaultValues")]
         public void Binding_WithEmptyAndNull_DefaultValues(
             string template,
             IDictionary<string, object> defaults,
