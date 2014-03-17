@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("store");
             }
             Store = store;
-            RoleValidator = new RoleValidator<TRole, TKey>(this);
+            RoleValidator = new RoleValidator<TRole, TKey>();
         }
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Identity
         /// <summary>
         ///     Used to validate roles before persisting changes
         /// </summary>
-        public IRoleValidator<TRole> RoleValidator { get; set; }
+        public IRoleValidator<TRole, TKey> RoleValidator { get; set; }
 
         /// <summary>
         ///     Returns an IQueryable of roles if the store is an IQueryableRoleStore
@@ -72,6 +72,18 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
+        ///     Returns true if the store is an IQueryableRoleStore
+        /// </summary>
+        public virtual bool SupportsQueryableRoles
+        {
+            get
+            {
+                ThrowIfDisposed();
+                return Store is IQueryableRoleStore<TRole, TKey>;
+            }
+        }
+
+        /// <summary>
         ///     Dispose this object
         /// </summary>
         public void Dispose()
@@ -82,7 +94,7 @@ namespace Microsoft.AspNet.Identity
 
         private async Task<IdentityResult> ValidateRoleInternal(TRole role)
         {
-            return (RoleValidator == null) ? IdentityResult.Success : await RoleValidator.Validate(role).ConfigureAwait(false);
+            return (RoleValidator == null) ? IdentityResult.Success : await RoleValidator.Validate(this, role).ConfigureAwait(false);
         }
 
         /// <summary>

@@ -271,7 +271,6 @@ namespace Microsoft.AspNet.Identity
             }
         }
 
-
         /// <summary>
         ///     Returns an IQueryable of users if the store is an IQueryableUserStore
         /// </summary>
@@ -1162,14 +1161,14 @@ namespace Microsoft.AspNet.Identity
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            if (await VerifyChangePhoneNumberToken(userId, token, phoneNumber).ConfigureAwait(false))
+            if (!await VerifyChangePhoneNumberToken(userId, token, phoneNumber).ConfigureAwait(false))
             {
-                await store.SetPhoneNumber(user, phoneNumber).ConfigureAwait(false);
-                await store.SetPhoneNumberConfirmed(user, true).ConfigureAwait(false);
-                await UpdateSecurityStampInternal(user).ConfigureAwait(false);
-                return await Update(user).ConfigureAwait(false);
+                return IdentityResult.Failed(Resources.InvalidToken);
             }
-            return IdentityResult.Failed(Resources.InvalidToken);
+            await store.SetPhoneNumber(user, phoneNumber).ConfigureAwait(false);
+            await store.SetPhoneNumberConfirmed(user, true).ConfigureAwait(false);
+            await UpdateSecurityStampInternal(user).ConfigureAwait(false);
+            return await Update(user).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -1520,12 +1519,12 @@ namespace Microsoft.AspNet.Identity
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            if (await store.GetLockoutEnabled(user).ConfigureAwait(false))
+            if (!await store.GetLockoutEnabled(user).ConfigureAwait(false))
             {
-                var lockoutTime = await store.GetLockoutEndDate(user).ConfigureAwait((false));
-                return lockoutTime >= DateTimeOffset.UtcNow;
+                return false;
             }
-            return false;
+            var lockoutTime = await store.GetLockoutEndDate(user).ConfigureAwait((false));
+            return lockoutTime >= DateTimeOffset.UtcNow;
         }
 
         /// <summary>
@@ -1627,13 +1626,14 @@ namespace Microsoft.AspNet.Identity
             }
             // If this puts the user over the threshold for lockout, lock them out and reset the access failed count
             var count = await store.IncrementAccessFailedCount(user).ConfigureAwait(false);
-            if (count >= MaxFailedAccessAttemptsBeforeLockout)
+            if (count < MaxFailedAccessAttemptsBeforeLockout)
             {
-                await
-                    store.SetLockoutEndDate(user, DateTimeOffset.UtcNow.Add(DefaultAccountLockoutTimeSpan))
-                        .ConfigureAwait(false);
-                await store.ResetAccessFailedCount(user).ConfigureAwait(false);
+                return await Update(user).ConfigureAwait(false);
             }
+            await
+                store.SetLockoutEndDate(user, DateTimeOffset.UtcNow.Add(DefaultAccountLockoutTimeSpan))
+                    .ConfigureAwait(false);
+            await store.ResetAccessFailedCount(user).ConfigureAwait(false);
             return await Update(user).ConfigureAwait(false);
         }
 

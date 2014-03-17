@@ -15,7 +15,9 @@ namespace Microsoft.AspNet.Identity.InMemory
         IUserEmailStore<TUser, string>,
         IUserLockoutStore<TUser, string>,
         IUserPhoneNumberStore<TUser, string>,
-        IQueryableUserStore<TUser, string> where TUser : InMemoryUser
+        IQueryableUserStore<TUser, string>,
+        IUserTwoFactorStore<TUser, string>
+        where TUser : InMemoryUser
     {
         private readonly Dictionary<UserLoginInfo, TUser> _logins =
             new Dictionary<UserLoginInfo, TUser>(new LoginComparer());
@@ -266,6 +268,17 @@ namespace Microsoft.AspNet.Identity.InMemory
             {
                 return (obj.ProviderKey + "--" + obj.LoginProvider).GetHashCode();
             }
+        }
+
+        public Task SetTwoFactorEnabled(TUser user, bool enabled)
+        {
+            user.TwoFactorEnabled = enabled;
+            return Task.FromResult(0);
+        }
+
+        public Task<bool> GetTwoFactorEnabled(TUser user)
+        {
+            return Task.FromResult(user.TwoFactorEnabled);
         }
     }
 }

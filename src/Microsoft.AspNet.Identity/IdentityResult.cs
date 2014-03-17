@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.AspNet.Identity
 {
@@ -23,9 +24,9 @@ namespace Microsoft.AspNet.Identity
         /// <param name="errors"></param>
         public IdentityResult(IEnumerable<string> errors)
         {
-            if (errors == null)
+            if (errors == null || !errors.Any())
             {
-                errors = new[] {"Resources.DefaultError"};
+                errors = new[] {Resources.DefaultError};
             }
             Succeeded = false;
             Errors = errors;

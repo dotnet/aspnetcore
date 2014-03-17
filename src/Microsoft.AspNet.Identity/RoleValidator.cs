@@ -10,38 +10,28 @@ namespace Microsoft.AspNet.Identity
     /// </summary>
     /// <typeparam name="TRole"></typeparam>
     /// <typeparam name="TKey"></typeparam>
-    public class RoleValidator<TRole, TKey> : IRoleValidator<TRole>
+    public class RoleValidator<TRole, TKey> : IRoleValidator<TRole, TKey>
         where TRole : class, IRole<TKey>
         where TKey : IEquatable<TKey>
     {
         /// <summary>
-        ///     Constructor
+        ///     Validates a role before saving
         /// </summary>
         /// <param name="manager"></param>
-        public RoleValidator(RoleManager<TRole, TKey> manager)
+        /// <param name="role"></param>
+        /// <returns></returns>
+        public virtual async Task<IdentityResult> Validate(RoleManager<TRole, TKey> manager, TRole role)
         {
             if (manager == null)
             {
                 throw new ArgumentNullException("manager");
             }
-            Manager = manager;
-        }
-
-        private RoleManager<TRole, TKey> Manager { get; set; }
-
-        /// <summary>
-        ///     Validates a role before saving
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        public virtual async Task<IdentityResult> Validate(TRole item)
-        {
-            if (item == null)
+            if (role == null)
             {
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException("role");
             }
             var errors = new List<string>();
-            await ValidateRoleName(item, errors);
+            await ValidateRoleName(manager, role, errors);
             if (errors.Count > 0)
             {
                 return IdentityResult.Failed(errors.ToArray());
@@ -49,7 +39,7 @@ namespace Microsoft.AspNet.Identity
             return IdentityResult.Success;
         }
 
-        private async Task ValidateRoleName(TRole role, List<string> errors)
+        private static async Task ValidateRoleName(RoleManager<TRole, TKey> manager, TRole role, ICollection<string> errors)
         {
             if (string.IsNullOrWhiteSpace(role.Name))
             {
@@ -57,7 +47,7 @@ namespace Microsoft.AspNet.Identity
             }
             else
             {
-                var owner = await Manager.FindByName(role.Name);
+                var owner = await manager.FindByName(role.Name);
                 if (owner != null && !EqualityComparer<TKey>.Default.Equals(owner.Id, role.Id))
                 {
                     errors.Add(String.Format(CultureInfo.CurrentCulture, Resources.DuplicateName, role.Name));

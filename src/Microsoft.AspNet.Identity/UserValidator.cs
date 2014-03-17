@@ -94,20 +94,20 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Returns true if the character is upper, lower, or a digit
+        ///     Returns true if the character is upper, lower, a digit, or a common email character [@_.]
         /// </summary>
         /// <param name="c"></param>
         /// <returns></returns>
         public virtual bool IsAlphaNumeric(char c)
         {
-            return IsUpper(c) || IsLower(c) || IsDigit(c) || c == '@' || c == '_';
+            return IsUpper(c) || IsLower(c) || IsDigit(c) || c == '@' || c == '_' || c == '.';
         }
 
         private async Task ValidateUserName(UserManager<TUser, TKey> manager, TUser user, ICollection<string> errors)
         {
             if (string.IsNullOrWhiteSpace(user.UserName))
             {
-                errors.Add(String.Format(CultureInfo.CurrentCulture, Resources.PropertyTooShort, "Name"));
+                errors.Add(String.Format(CultureInfo.CurrentCulture, Resources.PropertyTooShort, "UserName"));
             }
             else if (AllowOnlyAlphanumericUserNames && !user.UserName.All(IsAlphaNumeric))
             {
