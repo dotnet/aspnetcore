@@ -538,7 +538,7 @@ functions
 
                 var sb = new StringBuilder();
 
-                for(var i = 0; i < projectReferences.Count; i++)
+                for (var i = 0; i < projectReferences.Count; i++)
                 {
                     var reference = projectReferences[i];
                     var info = GetObject(projectMapping, reference);
