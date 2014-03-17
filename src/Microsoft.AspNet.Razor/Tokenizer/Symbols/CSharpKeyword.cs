@@ -4,6 +4,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
 {
     public enum CSharpKeyword
     {
+        Await,
         Abstract,
         Byte,
         Class,

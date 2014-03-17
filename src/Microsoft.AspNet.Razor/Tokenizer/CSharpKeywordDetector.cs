@@ -10,6 +10,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
     {
         private static readonly Dictionary<string, CSharpKeyword> _keywords = new Dictionary<string, CSharpKeyword>(StringComparer.Ordinal)
         {
+            { "await", CSharpKeyword.Await },
             { "abstract", CSharpKeyword.Abstract },
             { "byte", CSharpKeyword.Byte },
             { "class", CSharpKeyword.Class },

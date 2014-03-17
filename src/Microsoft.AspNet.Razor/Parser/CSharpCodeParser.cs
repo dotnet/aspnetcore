@@ -18,6 +18,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
         internal static ISet<string> DefaultKeywords = new HashSet<string>()
         {
+            "await",
             "if",
             "do",
             "try",
@@ -45,6 +46,7 @@ namespace Microsoft.AspNet.Razor.Parser
             Keywords = new HashSet<string>();
             SetUpKeywords();
             SetupDirectives();
+            SetUpExpressions();
         }
 
         protected internal ISet<string> Keywords { get; private set; }
@@ -308,13 +310,25 @@ namespace Microsoft.AspNet.Razor.Parser
 
         private void ImplicitExpression()
         {
+            ImplicitExpression(AcceptedCharacters.NonWhiteSpace);
+        }
+
+        // Async implicit expressions include the "await" keyword and therefore need to allow spaces to 
+        // separate the "await" and the following code.
+        private void AsyncImplicitExpression()
+        {
+            ImplicitExpression(AcceptedCharacters.AnyExceptNewline);
+        }
+
+        private void ImplicitExpression(AcceptedCharacters acceptedCharacters)
+        {
             Context.CurrentBlock.Type = BlockType.Expression;
             Context.CurrentBlock.CodeGenerator = new ExpressionCodeGenerator();
 
             using (PushSpanConfig(span =>
             {
                 span.EditHandler = new ImplicitExpressionEditHandler(Language.TokenizeString, Keywords, acceptTrailingDot: IsNested);
-                span.EditHandler.AcceptedCharacters = AcceptedCharacters.NonWhiteSpace;
+                span.EditHandler.AcceptedCharacters = acceptedCharacters;
                 span.CodeGenerator = new ExpressionCodeGenerator();
             }))
             {
@@ -325,14 +339,14 @@ namespace Microsoft.AspNet.Razor.Parser
                         AcceptAndMoveNext();
                     }
                 }
-                while (MethodCallOrArrayIndex());
+                while (MethodCallOrArrayIndex(acceptedCharacters));
 
                 PutCurrentBack();
                 Output(SpanKind.Code);
             }
         }
 
-        private bool MethodCallOrArrayIndex()
+        private bool MethodCallOrArrayIndex(AcceptedCharacters acceptedCharacters)
         {
             if (!EndOfFile)
             {
@@ -361,9 +375,11 @@ namespace Microsoft.AspNet.Razor.Parser
                     if (At(right))
                     {
                         AcceptAndMoveNext();
-                        Span.EditHandler.AcceptedCharacters = AcceptedCharacters.NonWhiteSpace;
+
+                        // At the ending brace, restore the initial accepted characters.
+                        Span.EditHandler.AcceptedCharacters = acceptedCharacters;
                     }
-                    return MethodCallOrArrayIndex();
+                    return MethodCallOrArrayIndex(acceptedCharacters);
                 }
                 if (CurrentSymbol.Type == CSharpSymbolType.Dot)
                 {
