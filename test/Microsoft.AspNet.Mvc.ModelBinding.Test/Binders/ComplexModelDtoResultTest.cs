@@ -5,15 +5,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
     public class ComplexModelDtoResultTest
     {
         [Fact]
-        public void Constructor_ThrowsIfValidationNodeIsNull()
-        {
-            // Act & assert
-            ExceptionAssert.ThrowsArgumentNull(
-                () => new ComplexModelDtoResult("some string", validationNode: null),
-                "validationNode");
-        }
-
-        [Fact]
         public void Constructor_SetsProperties()
         {
             // Arrange

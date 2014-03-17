@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Xunit;
-using Xunit.Extensions;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Internal.Test
 {
@@ -50,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal.Test
         }
 
         [Theory]
-        [PropertyData("TypesWithValues")]
+        [MemberData("TypesWithValues")]
         public void IsCompatibleWithReturnsTrue_IfValueIsAssignable(Type type, object value)
         {
             // Act

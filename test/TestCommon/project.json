@@ -1,10 +1,17 @@
 {
   "shared": "*.cs",
   "dependencies": {
-    "Xunit": "1.9.1",
-    "Xunit.extensions": "1.9.1"
+    "xunit.abstractions": "2.0.0-aspnet-*",
+    "xunit.assert": "2.0.0-aspnet-*",
+    "xunit.core": "2.0.0-aspnet-*",
+    "xunit.execution": "2.0.0-aspnet-*"
   },
   "configurations": {
-    "net45": { }
+    "net45": {
+      "dependencies": {
+        "Moq": "4.2.1312.1622",
+        "System.Reflection": ""
+      }
+    }
   }
 }

@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Reflection;
 using System.Threading;
+using Xunit.Sdk;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -9,7 +10,7 @@ namespace Microsoft.AspNet.Mvc
     /// Replaces the current culture and UI culture for the test.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
-    public class ReplaceCultureAttribute : Xunit.BeforeAfterTestAttribute
+    internal class ReplaceCultureAttribute : BeforeAfterTestAttribute
     {
         private const string _defaultCultureName = "en-GB";
         private const string _defaultUICultureName = "en-US";

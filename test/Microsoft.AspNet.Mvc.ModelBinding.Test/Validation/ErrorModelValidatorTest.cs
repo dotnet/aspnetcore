@@ -8,15 +8,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private readonly DataAnnotationsModelMetadataProvider _metadataProvider = new DataAnnotationsModelMetadataProvider();
 
         [Fact]
-        public void ConstructorGuards()
-        {
-            // Act and Assert
-            ExceptionAssert.ThrowsArgumentNull(
-                () => new ErrorModelValidator(errorMessage: null),
-                "errorMessage");
-        }
-
-        [Fact]
         public void ValidateThrowsException()
         {
             // Arrange

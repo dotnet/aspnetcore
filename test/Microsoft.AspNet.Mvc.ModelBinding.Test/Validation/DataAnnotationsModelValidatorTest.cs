@@ -4,7 +4,6 @@ using System.Linq;
 using Moq;
 using Moq.Protected;
 using Xunit;
-using Xunit.Extensions;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -58,7 +57,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Theory]
-        [PropertyData("ValidateSetsMemberNamePropertyDataSet")]
+        [MemberData("ValidateSetsMemberNamePropertyDataSet")]
         public void ValidateSetsMemberNamePropertyOfValidationContextForProperties(ModelMetadata metadata, string expectedMemberName)
         {
             // Arrange

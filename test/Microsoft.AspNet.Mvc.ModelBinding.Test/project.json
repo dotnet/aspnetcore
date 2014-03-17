@@ -5,14 +5,21 @@
     "Microsoft.AspNet.PipelineCore": "0.1-alpha-*",
     "Microsoft.AspNet.Mvc.ModelBinding" : "",
     "TestCommon" : "",
-    "Moq": "4.0.10827",
-    "Xunit": "1.9.1",
-    "Xunit.extensions": "1.9.1"
+    "Xunit.KRunner": "0.1-alpha-*",
+    "xunit.abstractions": "2.0.0-aspnet-*",
+    "xunit.assert": "2.0.0-aspnet-*",
+    "xunit.core": "2.0.0-aspnet-*",
+    "xunit.execution": "2.0.0-aspnet-*"
+  },
+  "commands": {
+    "test": "Xunit.KRunner"
   },
   "configurations": {
     "net45": { 
       dependencies: {
+        "Moq": "4.2.1312.1622",
         "System.ComponentModel.DataAnnotations": "",
+        "System.Reflection": "",
         "System.Runtime.Serialization": ""
       }
     },

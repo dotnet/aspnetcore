@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Moq;
 using Xunit;
-using Xunit.Extensions;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 {
