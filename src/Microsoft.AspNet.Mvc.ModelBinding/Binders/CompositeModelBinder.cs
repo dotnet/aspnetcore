@@ -57,10 +57,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 newBindingContext.ValidationNode = new ModelValidationNode(newBindingContext.ModelMetadata, bindingContext.ModelName);
             }
 
-            var validationContext = new ModelValidationContext(bindingContext.ModelMetadata,
-                                                               bindingContext.ModelState,
-                                                               bindingContext.MetadataProvider,
-                                                               bindingContext.ValidatorProviders);
+            var validationContext = new ModelValidationContext(bindingContext.MetadataProvider, 
+                                                               bindingContext.ValidatorProviders, 
+                                                               bindingContext.ModelState, 
+                                                               bindingContext.ModelMetadata, 
+                                                               containerMetadata: null);
 
             newBindingContext.ValidationNode.Validate(validationContext, parentNode: null);
             bindingContext.Model = newBindingContext.Model;

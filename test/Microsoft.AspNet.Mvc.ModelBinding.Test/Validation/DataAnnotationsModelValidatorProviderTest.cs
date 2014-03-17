@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var provider = new DataAnnotationsModelValidatorProvider();
             var model = new ObservableModel();
             var metadata = _metadataProvider.GetMetadataForProperty(() => model.TheProperty, typeof(ObservableModel), "TheProperty");
-            var context = new ModelValidationContext(metadata,  null, null, null);
+            var context = new ModelValidationContext(null, null, null, metadata, null);
 
             // Act
             var validators = provider.GetValidators(metadata).ToArray();

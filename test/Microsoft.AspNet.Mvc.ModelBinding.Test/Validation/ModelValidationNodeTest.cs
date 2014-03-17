@@ -275,10 +275,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 new DataMemberModelValidatorProvider()
             };
 
-            return new ModelValidationContext(metadata,
+            return new ModelValidationContext(new EmptyModelMetadataProvider(),
+                                              providers,
                                               new ModelStateDictionary(),
-                                              new EmptyModelMetadataProvider(),
-                                              providers);
+                                              metadata,
+                                              null);
         }
 
         private sealed class LoggingValidatableObject : IValidatableObject

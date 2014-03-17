@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 throw Error.Argument("propertyName", Resources.FormatCommon_PropertyNotFound(containerType, propertyName));
             }
 
-            return CreateMetadataFromPrototype(propertyInfo.Prototype, modelAccessor);
+            return CreatePropertyMetadata(modelAccessor, propertyInfo);
         }
 
         public ModelMetadata GetMetadataForType(Func<object> modelAccessor, [NotNull] Type modelType)
@@ -64,8 +64,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     Func<object, object> propertyGetter = propertyInfo.ValueAccessor;
                     modelAccessor = () => propertyGetter(container);
                 }
-                yield return CreateMetadataFromPrototype(propertyInfo.Prototype, modelAccessor);
+                yield return CreatePropertyMetadata(modelAccessor, propertyInfo);
             }
+        }
+
+        private TModelMetadata CreatePropertyMetadata(Func<object> modelAccessor, PropertyInformation propertyInfo)
+        {
+            var metadata = CreateMetadataFromPrototype(propertyInfo.Prototype, modelAccessor);
+            if (propertyInfo.IsReadOnly)
+            {
+                metadata.IsReadOnly = true;
+            }
+            return metadata;
         }
 
         private TypeInformation GetTypeInformation(Type type, IEnumerable<Attribute> associatedAttributes = null)
@@ -109,13 +119,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private PropertyInformation CreatePropertyInformation(Type containerType, PropertyInfo property)
         {
-            var info = new PropertyInformation();
-            info.ValueAccessor = CreatePropertyValueAccessor(property);
-            info.Prototype = CreateMetadataPrototype(property.GetCustomAttributes(), 
-                                                     containerType, 
-                                                     property.PropertyType, 
-                                                     property.Name);
-            return info;
+            return new PropertyInformation
+            {
+                ValueAccessor = CreatePropertyValueAccessor(property),
+                Prototype = CreateMetadataPrototype(property.GetCustomAttributes(),
+                                                    containerType,
+                                                    property.PropertyType,
+                                                    property.Name),
+                IsReadOnly = !property.CanWrite || property.SetMethod.IsPrivate
+            };
         }
 
         private static Func<object, object> CreatePropertyValueAccessor(PropertyInfo property)
@@ -196,6 +208,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             public Func<object, object> ValueAccessor { get; set; }
             public TModelMetadata Prototype { get; set; }
+            public bool IsReadOnly { get; set; }
         }
     }
 }

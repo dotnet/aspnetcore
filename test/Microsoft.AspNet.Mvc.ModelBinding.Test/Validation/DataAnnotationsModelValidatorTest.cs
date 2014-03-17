@@ -218,7 +218,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private static ModelValidationContext CreateValidationContext(ModelMetadata metadata)
         {
-            return new ModelValidationContext(metadata, null, null, null);
+            return new ModelValidationContext(null, null, null, metadata, null);
         }
 
         class DerivedRequiredAttribute : RequiredAttribute

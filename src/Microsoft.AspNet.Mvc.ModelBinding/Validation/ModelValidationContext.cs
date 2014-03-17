@@ -4,18 +4,30 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class ModelValidationContext
     {
-        public ModelValidationContext([NotNull] ModelMetadata metadata,
-                                      [NotNull] ModelStateDictionary modelState,
-                                      [NotNull] IModelMetadataProvider metadataProvider,
-                                      [NotNull] IEnumerable<IModelValidatorProvider> validatorProviders)
+        public ModelValidationContext([NotNull] ModelBindingContext bindingContext,
+                                      [NotNull] ModelMetadata metadata)
+            : this(bindingContext.MetadataProvider, 
+                   bindingContext.ValidatorProviders, 
+                   bindingContext.ModelState, 
+                   metadata, 
+                   bindingContext.ModelMetadata)
+        {
+        }
+
+        public ModelValidationContext([NotNull] IModelMetadataProvider metadataProvider, 
+                                      [NotNull] IEnumerable<IModelValidatorProvider> validatorProviders, 
+                                      [NotNull] ModelStateDictionary modelState, 
+                                      [NotNull] ModelMetadata metadata, 
+                                      ModelMetadata containerMetadata)
         {
             ModelMetadata = metadata;
             ModelState = modelState;
             MetadataProvider = metadataProvider;
             ValidatorProviders = validatorProviders;
+            ContainerMetadata = containerMetadata;
         }
 
-        public ModelValidationContext([NotNull] ModelValidationContext parentContext, 
+        public ModelValidationContext([NotNull] ModelValidationContext parentContext,
                                       [NotNull] ModelMetadata metadata)
         {
             ModelMetadata = metadata;
