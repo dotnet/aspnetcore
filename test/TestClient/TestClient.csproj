@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>TestClient</RootNamespace>
     <AssemblyName>TestClient</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -48,9 +49,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.Net.WebSockets\Microsoft.Net.WebSockets.csproj">
-      <Project>{6c1d09ca-f799-44ae-8ec8-9d19c76080c1}</Project>
-      <Name>Microsoft.Net.WebSockets</Name>
+    <ProjectReference Include="..\..\src\Microsoft.Net.WebSockets\Microsoft.Net.WebSockets.net45.csproj">
+      <Project>{b43d2069-9690-49b2-ba0c-9e8acc32cb83}</Project>
+      <Name>Microsoft.Net.WebSockets.net45</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

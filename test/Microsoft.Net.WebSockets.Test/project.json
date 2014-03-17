@@ -1,0 +1,20 @@
+{
+    "dependencies": {
+        "Microsoft.Net.WebSockets": "",
+        "Xunit.KRunner": "0.1-alpha-*",
+        "xunit.abstractions": "2.0.0-aspnet-*",
+        "xunit.assert": "2.0.0-aspnet-*",
+        "xunit.core": "2.0.0-aspnet-*",
+        "xunit.execution": "2.0.0-aspnet-*"
+    },
+    "configurations": {
+        "net45": {
+            "dependencies": {
+                "System.Runtime" : ""
+            }
+        }
+    },
+    "commands": {
+        "test": "Xunit.KRunner"
+    }
+}

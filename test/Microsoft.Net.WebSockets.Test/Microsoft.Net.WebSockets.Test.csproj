@@ -53,12 +53,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.Net.WebSockets\Microsoft.Net.WebSockets.csproj">
-      <Project>{6c1d09ca-f799-44ae-8ec8-9d19c76080c1}</Project>
-      <Name>Microsoft.Net.WebSockets</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
