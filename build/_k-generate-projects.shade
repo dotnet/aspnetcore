@@ -538,8 +538,9 @@ functions
 
                 var sb = new StringBuilder();
 
-                foreach (var reference in projectReferences)
+                for(var i = 0; i < projectReferences.Count; i++)
                 {
+                    var reference = projectReferences[i];
                     var info = GetObject(projectMapping, reference);
 
                     if (info == null)
@@ -587,6 +588,9 @@ functions
                             </Compile>", fullPath, relativePath);
                         }
                     }
+                    
+                    projectReferences.RemoveAt(i);
+                    i--;
                 }
 
                 return sb.ToString();
