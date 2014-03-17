@@ -5,6 +5,7 @@ using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Hosting.Builder;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Hosting.Startup;
+using Microsoft.AspNet.Security.DataProtection;
 
 namespace Microsoft.AspNet.Hosting
 {
@@ -27,6 +28,16 @@ namespace Microsoft.AspNet.Hosting
             yield return DescribeService<IHttpContextFactory, HttpContextFactory>(configuration);
 
             yield return DescribeService<ITypeActivator, TypeActivator>(configuration);
+
+            // The default IDataProtectionProvider is a singleton.
+            // Note: DPAPI isn't usable in IIS where the user profile hasn't been loaded, but loading DPAPI
+            // is deferred until the first call to Protect / Unprotect. It's up to an IIS-based host to
+            // replace this service as part of application initialization.
+            yield return new ServiceDescriptor {
+              ServiceType = typeof(IDataProtectionProvider),
+              Lifecycle = LifecycleKind.Singleton,
+              ImplementationInstance = DataProtectionProvider.CreateFromDpapi()
+            };
         }
 
         public static IServiceDescriptor DescribeService<TService, TImplementation>(IConfiguration configuration,
