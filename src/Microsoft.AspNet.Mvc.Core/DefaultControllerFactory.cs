@@ -4,6 +4,7 @@ using System.Reflection;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Mvc.Rendering;
 
 namespace Microsoft.AspNet.Mvc

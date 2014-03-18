@@ -10,6 +10,8 @@ namespace Microsoft.AspNet.Mvc.Razor
     {
         private static readonly string[] _viewLocationFormats =
         {
+            "/Areas/{2}/Views/{1}/{0}.cshtml",
+            "/Areas/{2}/Views/Shared/{0}.cshtml",
             "/Views/{1}/{0}.cshtml",
             "/Views/Shared/{0}.cshtml",
         };
@@ -30,8 +32,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             var actionContext = (ActionContext)context;
 
-            // TODO: We plan to change this on the next CR, so we don't have a strong depenedency directly on the specific
-            // type of the action descriptor
             var actionDescriptor = actionContext.ActionDescriptor;
             
             if (actionDescriptor == null)
@@ -59,11 +59,13 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
             else
             {
-                var controllerName = actionDescriptor.Path;
+                var controllerName = actionContext.RouteValues.GetValueOrDefault<string>("controller");
+                var areaName = actionContext.RouteValues.GetValueOrDefault<string>("area");
+
                 var searchedLocations = new List<string>(_viewLocationFormats.Length);
                 for (int i = 0; i < _viewLocationFormats.Length; i++)
                 {
-                    string path = String.Format(CultureInfo.InvariantCulture, _viewLocationFormats[i], viewName, controllerName);
+                    string path = String.Format(CultureInfo.InvariantCulture, _viewLocationFormats[i], viewName, controllerName, areaName);
                     IView view = await _virtualPathFactory.CreateInstance(path);
                     if (view != null)
                     {

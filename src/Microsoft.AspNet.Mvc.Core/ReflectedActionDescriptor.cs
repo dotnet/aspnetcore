@@ -7,18 +7,6 @@ namespace Microsoft.AspNet.Mvc
     [DebuggerDisplay("CA {Path}:{Name}(RC-{RouteConstraints.Count})")]
     public class ReflectedActionDescriptor : ActionDescriptor
     {
-        public override string Path
-        {
-            get
-            {
-                return ControllerDescriptor.Name;
-            }
-            set
-            {
-                throw new InvalidOperationException("Cannot override path");
-            }
-        }
-
         public string ControllerName
         {
             get

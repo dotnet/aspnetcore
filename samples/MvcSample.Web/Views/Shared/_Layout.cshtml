@@ -27,7 +27,10 @@
         @RenderBody()
         <hr />
         <address>
-            @Model.Address
+            @if (@Model != null)
+            {
+                @Model.Address
+            }
         </address>
         <footer>
             <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>

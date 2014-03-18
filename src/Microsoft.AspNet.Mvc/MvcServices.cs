@@ -41,6 +41,8 @@ namespace Microsoft.AspNet.Mvc
 
             yield return describe.Transient<INestedProvider<ActionDescriptorProviderContext>,
                                             ReflectedActionDescriptorProvider>();
+            yield return describe.Transient<INestedProvider<ActionDescriptorProviderContext>,
+                                ReflectedRouteConstraintsActionDescriptorProvider>();
             yield return describe.Transient<INestedProvider<ActionInvokerProviderContext>,
                                             ReflectedActionInvokerProvider>();
 

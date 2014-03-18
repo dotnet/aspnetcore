@@ -31,6 +31,9 @@ namespace MvcSample.Web
                 DefaultHandler = new MvcApplication(serviceProvider),
             };
 
+            // TODO: Add support for route constraints, so we can potentially constrain by existing routes
+            routes.MapRoute("{area}/{controller}/{action}");
+
             routes.MapRoute(
                 "{controller}/{action}",
                 new { controller = "Home", action = "Index" });

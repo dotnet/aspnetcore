@@ -7,6 +7,8 @@ namespace Microsoft.AspNet.Mvc
 {
     public class ReflectedActionDescriptorProvider : IActionDescriptorProvider
     {
+        public static readonly int DefaultOrder = 0;
+
         private readonly IControllerAssemblyProvider _controllerAssemblyProvider;
         private readonly IActionDiscoveryConventions _conventions;
         private readonly IControllerDescriptorFactory _controllerDescriptorFactory;
@@ -30,7 +32,7 @@ namespace Microsoft.AspNet.Mvc
 
         public int Order
         {
-            get { return 0; }
+            get { return DefaultOrder; }
         }
 
         public void Invoke(ActionDescriptorProviderContext context, Action callNext)
