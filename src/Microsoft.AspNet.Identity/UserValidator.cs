@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         // make sure email is not empty, valid, and unique
-        private async Task ValidateEmail(UserManager<TUser, TKey> manager, TUser user, List<string> errors)
+        private static async Task ValidateEmail(UserManager<TUser, TKey> manager, TUser user, List<string> errors)
         {
             var email = await manager.GetEmailStore().GetEmail(user).ConfigureAwait(false);
             if (string.IsNullOrWhiteSpace(email))

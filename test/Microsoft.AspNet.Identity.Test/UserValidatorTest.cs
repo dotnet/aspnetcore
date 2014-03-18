@@ -19,9 +19,9 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ArgumentNullException>("user", () => validator.Validate(manager, null));
         }
 
-        [Theory,
-        InlineData(null),
-        InlineData("")]
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
         public async Task ValidateFailsWithTooShortUserNames(string input)
         {
             // Setup
@@ -36,13 +36,12 @@ namespace Microsoft.AspNet.Identity.Test
             IdentityResultAssert.IsFailure(result, "UserName cannot be null or empty.");
         }
 
-        [Theory,
-        InlineData("test_email@foo.com", true),
-        InlineData("hao", true),
-        InlineData("test123", true),
-        InlineData("!noway", false),
-        InlineData("foo@boz#.com", false),
-        ]
+        [Theory]
+        [InlineData("test_email@foo.com", true)]
+        [InlineData("hao", true)]
+        [InlineData("test123", true)]
+        [InlineData("!noway", false)]
+        [InlineData("foo@boz#.com", false)]
         public async Task DefaultAlphaNumericOnlyUserNameValidation(string userName, bool expectSuccess)
         {
             // Setup
@@ -64,13 +63,12 @@ namespace Microsoft.AspNet.Identity.Test
             }
         }
 
-        [Theory,
-        InlineData("test_email@foo.com", true),
-        InlineData("hao", true),
-        InlineData("test123", true),
-        InlineData("!noway", true),
-        InlineData("foo@boz#.com", true),
-        ]
+        [Theory]
+        [InlineData("test_email@foo.com", true)]
+        [InlineData("hao", true)]
+        [InlineData("test123", true)]
+        [InlineData("!noway", true)]
+        [InlineData("foo@boz#.com", true)]
         public async Task CanAllowNonAlphaNumericUserName(string userName, bool expectSuccess)
         {
             // Setup
@@ -91,6 +89,5 @@ namespace Microsoft.AspNet.Identity.Test
                 IdentityResultAssert.IsFailure(result);
             }
         }
-
     }
 }

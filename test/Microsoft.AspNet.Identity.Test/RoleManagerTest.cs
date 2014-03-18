@@ -42,6 +42,20 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await manager.Update(null));
             await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await manager.Delete(null));
             await Assert.ThrowsAsync<ArgumentNullException>("roleName", async () => await manager.FindByName(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("roleName", async () => await manager.RoleExists(null));
+        }
+
+        [Fact]
+        public async Task RoleStoreMethodsThrowWhenDisposed()
+        {
+            var manager = new RoleManager<TestRole, string>(new NoopRoleStore());
+            manager.Dispose();
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindById(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByName(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RoleExists(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.Create(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.Update(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.Delete(null));
         }
 
         private class NotImplementedStore : IRoleStore<TestRole, string>

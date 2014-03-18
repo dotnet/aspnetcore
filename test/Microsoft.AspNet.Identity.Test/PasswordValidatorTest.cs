@@ -19,10 +19,10 @@ namespace Microsoft.AspNet.Identity.Test
         }
 
 
-        [Theory, 
-        InlineData(""), 
-        InlineData("abc"), 
-        InlineData("abcde")]
+        [Theory]
+        [InlineData("")]
+        [InlineData("abc")] 
+        [InlineData("abcde")]
         public async Task FailsIfTooShortTests(string input)
         {
             const string error = "Passwords must be at least 6 characters.";
@@ -30,27 +30,27 @@ namespace Microsoft.AspNet.Identity.Test
             IdentityResultAssert.IsFailure(await valid.Validate(input), error);
         }
 
-        [Theory, 
-        InlineData("abcdef"), 
-        InlineData("aaaaaaaaaaa")]
+        [Theory]
+        [InlineData("abcdef")]
+        [InlineData("aaaaaaaaaaa")]
         public async Task SuccessIfLongEnoughTests(string input) {
             var valid = new PasswordValidator {RequiredLength = 6};
             IdentityResultAssert.IsSuccess(await valid.Validate(input));
         }
 
-        [Theory, 
-        InlineData("a"), 
-        InlineData("aaaaaaaaaaa")]
+        [Theory]
+        [InlineData("a")] 
+        [InlineData("aaaaaaaaaaa")]
         public async Task FailsWithoutRequiredNonAlphanumericTests(string input)
         {
             var valid = new PasswordValidator { RequireNonLetterOrDigit = true };
             IdentityResultAssert.IsFailure(await valid.Validate(input), "Passwords must have at least one non letter or digit character.");
         }
 
-        [Theory, 
-        InlineData("@"), 
-        InlineData("abcd@e!ld!kajfd"), 
-        InlineData("!!!!!!")]
+        [Theory] 
+        [InlineData("@")]
+        [InlineData("abcd@e!ld!kajfd")]
+        [InlineData("!!!!!!")]
         public async Task SucceedsWithRequiredNonAlphanumericTests(string input)
         {
             var valid = new PasswordValidator { RequireNonLetterOrDigit = true };
@@ -68,13 +68,13 @@ namespace Microsoft.AspNet.Identity.Test
             Digit = 32,
         }
 
-        [Theory,
-        InlineData("abcde", Errors.Length | Errors.Alpha | Errors.Upper | Errors.Digit),
-        InlineData("a@B@cd", Errors.Digit),
-        InlineData("___", Errors.Length | Errors.Digit | Errors.Lower | Errors.Upper),
-        InlineData("a_b9de", Errors.Upper),
-        InlineData("abcd@e!ld!kaj9Fd", Errors.None),
-        InlineData("aB1@df", Errors.None)]
+        [Theory]
+        [InlineData("abcde", Errors.Length | Errors.Alpha | Errors.Upper | Errors.Digit)]
+        [InlineData("a@B@cd", Errors.Digit)]
+        [InlineData("___", Errors.Length | Errors.Digit | Errors.Lower | Errors.Upper)]
+        [InlineData("a_b9de", Errors.Upper)]
+        [InlineData("abcd@e!ld!kaj9Fd", Errors.None)]
+        [InlineData("aB1@df", Errors.None)]
         public async Task UberMixedRequiredTests(string input, Errors errorMask)
         {
             const string alphaError = "Passwords must have at least one non letter or digit character.";

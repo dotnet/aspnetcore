@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Identity.Test
         //}
 
         [Fact]
-        public void UsersQueryableFailWhenStoreNotImplementedTest()
+        public void UsersQueryableFailWhenStoreNotImplemented()
         {
             var manager = new UserManager<TestUser, string>(new NoopUserStore());
             Assert.False(manager.SupportsQueryableUsers);
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Identity.Test
         }
 
         [Fact]
-        public async Task UsersEmailMethodsFailWhenStoreNotImplementedTest()
+        public async Task UsersEmailMethodsFailWhenStoreNotImplemented()
         {
             var manager = new UserManager<TestUser, string>(new NoopUserStore());
             Assert.False(manager.SupportsUserEmail);
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Identity.Test
         }
 
         [Fact]
-        public async Task UsersPhoneNumberMethodsFailWhenStoreNotImplementedTest()
+        public async Task UsersPhoneNumberMethodsFailWhenStoreNotImplemented()
         {
             var manager = new UserManager<TestUser, string>(new NoopUserStore());
             Assert.False(manager.SupportsUserPhoneNumber);
@@ -69,7 +69,7 @@ namespace Microsoft.AspNet.Identity.Test
         }
 
         [Fact]
-        public async Task TokenMethodsThrowWithNoTokenProviderTest()
+        public async Task TokenMethodsThrowWithNoTokenProvider()
         {
             var manager = new UserManager<TestUser, string>(new NoopUserStore());
             await Assert.ThrowsAsync<NotSupportedException>(
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Identity.Test
         }
 
         [Fact]
-        public async Task PasswordMethodsFailWhenStoreNotImplementedTest()
+        public async Task PasswordMethodsFailWhenStoreNotImplemented()
         {
             var manager = new UserManager<TestUser, string>(new NoopUserStore());
             Assert.False(manager.SupportsUserPassword);
@@ -92,7 +92,7 @@ namespace Microsoft.AspNet.Identity.Test
         }
 
         [Fact]
-        public async Task SecurityStampMethodsFailWhenStoreNotImplementedTest()
+        public async Task SecurityStampMethodsFailWhenStoreNotImplemented()
         {
             var manager = new UserManager<TestUser, string>(new NoopUserStore());
             Assert.False(manager.SupportsUserSecurityStamp);
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Identity.Test
         }
 
         [Fact]
-        public async Task LoginMethodsFailWhenStoreNotImplementedTest()
+        public async Task LoginMethodsFailWhenStoreNotImplemented()
         {
             var manager = new UserManager<TestUser, string>(new NoopUserStore());
             Assert.False(manager.SupportsUserLogin);
@@ -114,7 +114,7 @@ namespace Microsoft.AspNet.Identity.Test
         }
 
         [Fact]
-        public async Task ClaimMethodsFailWhenStoreNotImplementedTest()
+        public async Task ClaimMethodsFailWhenStoreNotImplemented()
         {
             var manager = new UserManager<TestUser, string>(new NoopUserStore());
             Assert.False(manager.SupportsUserClaim);
@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.Identity.Test
         }
 
         [Fact]
-        public async Task TwoFactorStoreMethodsFailWhenStoreNotImplementedTest()
+        public async Task TwoFactorStoreMethodsFailWhenStoreNotImplemented()
         {
             var manager = new UserManager<TestUser, string>(new NoopUserStore());
             Assert.False(manager.SupportsUserTwoFactor);
@@ -133,7 +133,20 @@ namespace Microsoft.AspNet.Identity.Test
         }
 
         [Fact]
-        public async Task RoleMethodsFailWhenStoreNotImplementedTest()
+        public async Task LockoutStoreMethodsFailWhenStoreNotImplemented()
+        {
+            var manager = new UserManager<TestUser, string>(new NoopUserStore());
+            Assert.False(manager.SupportsUserLockout);
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetLockoutEnabled("bogus"));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.SetLockoutEnabled("bogus", true));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.AccessFailed("bogus"));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.IsLockedOut("bogus"));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.ResetAccessFailedCount("bogus"));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetAccessFailedCount("bogus"));
+        }
+
+        [Fact]
+        public async Task RoleMethodsFailWhenStoreNotImplemented()
         {
             var manager = new UserManager<TestUser, string>(new NoopUserStore());
             Assert.False(manager.SupportsUserRole);
@@ -278,6 +291,8 @@ namespace Microsoft.AspNet.Identity.Test
                 async () => await manager.AccessFailed(null), error);
             await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
                 async () => await manager.ResetAccessFailedCount(null), error);
+            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
+                async () => await manager.GetAccessFailedCount(null), error);
             await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
                 async () => await manager.GetLockoutEnabled(null), error);
             await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
