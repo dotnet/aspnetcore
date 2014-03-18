@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -89,6 +90,18 @@ namespace Microsoft.AspNet.PipelineCore
         {
             get { return CanHasResponseCookies.Cookies; }
         }
+
+        public override void OnSendingHeaders(Action<object> callback, object state)
+        {
+            HttpResponseInformation.OnSendingHeaders(callback, state);
+        }
+
+        public override void Redirect(string location)
+        {
+            HttpResponseInformation.StatusCode = 302;
+            Headers.Set(Constants.Headers.Location, location);
+        }
+
         public override Task WriteAsync(string data)
         {
             var bytes = Encoding.UTF8.GetBytes(data);

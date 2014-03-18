@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Abstractions
@@ -16,6 +17,11 @@ namespace Microsoft.AspNet.Abstractions
         public abstract string ContentType { get; set; }
 
         public abstract IResponseCookiesCollection Cookies { get; }
+
+        public abstract void OnSendingHeaders(Action<object> callback, object state);
+
+        public abstract void Redirect(string location);
+
         public abstract Task WriteAsync(string data);
     }
 }

@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.PipelineCore
 
         public override bool IsSecure
         {
-            get { throw new NotImplementedException(); }
+            get { return string.Equals("https", Scheme, StringComparison.OrdinalIgnoreCase); }
         }
 
         public override HostString Host
