@@ -3,6 +3,7 @@
   "dependencies": {
     "Microsoft.AspNet.Abstractions": "0.1-alpha-*",
     "Microsoft.AspNet.PipelineCore": "0.1-alpha-*",
+    "Microsoft.ComponentModel.DataAnnotations" : "4.0.10.0",
     "Microsoft.AspNet.Mvc.ModelBinding" : "",
     "TestCommon" : "",
     "Xunit.KRunner": "0.1-alpha-*",
@@ -25,7 +26,7 @@
     },
     "k10" : { 
       dependencies: {
-        "Microsoft.ComponentModel.DataAnnotations" : "0.1-alpha-*"
+        
       }
     }
   }

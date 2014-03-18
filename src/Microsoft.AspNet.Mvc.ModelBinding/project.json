@@ -4,6 +4,7 @@
     "Common": "",
     "Microsoft.AspNet.DependencyInjection": "0.1-alpha-*",
     "Microsoft.AspNet.Abstractions": "0.1-alpha-*",
+    "Microsoft.ComponentModel.DataAnnotations": "4.0.10.0",
     "Newtonsoft.Json": "5.0.8"
   },
   "configurations": {
@@ -35,8 +36,7 @@
         "System.Runtime.Extensions": "4.0.10.0",
         "System.Threading": "4.0.0.0",
         "System.Threading.Tasks": "4.0.0.0",
-        "System.Runtime.Serialization.Primitives": "4.0.0.0",
-        "Microsoft.ComponentModel.DataAnnotations": "0.1-alpha-*"
+        "System.Runtime.Serialization.Primitives": "4.0.0.0"
       }
     }
   }
