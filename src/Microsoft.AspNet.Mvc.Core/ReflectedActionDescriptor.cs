@@ -1,10 +1,9 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Reflection;
 
 namespace Microsoft.AspNet.Mvc
 {
-    [DebuggerDisplay("CA {Path}:{Name}(RC-{RouteConstraints.Count})")]
+    [DebuggerDisplay("CA {ControllerName}:{Name}(RC-{RouteConstraints.Count})")]
     public class ReflectedActionDescriptor : ActionDescriptor
     {
         public string ControllerName
