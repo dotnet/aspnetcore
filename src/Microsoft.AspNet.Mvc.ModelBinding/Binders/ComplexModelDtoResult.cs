@@ -1,4 +1,5 @@
-﻿
+﻿using Microsoft.AspNet.Mvc.ModelBinding.Internal;
+
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public sealed class ComplexModelDtoResult
