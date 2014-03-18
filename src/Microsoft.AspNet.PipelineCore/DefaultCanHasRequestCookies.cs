@@ -1,7 +1,9 @@
 ﻿using System;
 using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Abstractions.Infrastructure;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.HttpFeature;
+using Microsoft.AspNet.PipelineCore.Collections;
 using Microsoft.AspNet.PipelineCore.Infrastructure;
 
 namespace Microsoft.AspNet.PipelineCore
@@ -24,7 +26,7 @@ namespace Microsoft.AspNet.PipelineCore
             get
             {
                 var headers = _request.Fetch(_features).Headers;
-                string cookiesHeader = ParsingHelpers.GetHeader(headers, "Cookies") ?? "";
+                string cookiesHeader = ParsingHelpers.GetHeader(headers, Constants.Headers.Cookie) ?? "";
 
                 if (_cookiesCollection == null)
                 {

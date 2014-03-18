@@ -16,6 +16,7 @@ namespace Microsoft.AspNet.PipelineCore
         private readonly DefaultHttpContext _context;
         private readonly IFeatureCollection _features;
         private FeatureReference<IHttpResponseInformation> _response = FeatureReference<IHttpResponseInformation>.Default;
+        private FeatureReference<ICanHasResponseCookies> _canHasCookies = FeatureReference<ICanHasResponseCookies>.Default;
 
         public DefaultHttpResponse(DefaultHttpContext context, IFeatureCollection features)
         {
@@ -26,6 +27,11 @@ namespace Microsoft.AspNet.PipelineCore
         private IHttpResponseInformation HttpResponseInformation
         {
             get { return _response.Fetch(_features); }
+        }
+
+        private ICanHasResponseCookies CanHasResponseCookies
+        {
+            get { return _canHasCookies.Fetch(_features) ?? _canHasCookies.Update(_features, new DefaultCanHasResponseCookies(_features)); }
         }
 
         public override HttpContext HttpContext { get { return _context; } }
@@ -79,6 +85,10 @@ namespace Microsoft.AspNet.PipelineCore
             }
         }
 
+        public override IResponseCookiesCollection Cookies
+        {
+            get { return CanHasResponseCookies.Cookies; }
+        }
         public override Task WriteAsync(string data)
         {
             var bytes = Encoding.UTF8.GetBytes(data);

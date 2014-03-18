@@ -3,20 +3,19 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Abstractions.Infrastructure;
-using Microsoft.AspNet.Abstractions;
 
-namespace Microsoft.AspNet.PipelineCore.Collections
+namespace Microsoft.AspNet.Abstractions.Collections
 {
     /// <summary>
     /// A wrapper for the response Set-Cookie header
     /// </summary>
-    public class ResponseCookieCollection
+    public class ResponseCookiesCollection : IResponseCookiesCollection
     {
         /// <summary>
         /// Create a new wrapper
         /// </summary>
         /// <param name="headers"></param>
-        public ResponseCookieCollection(IHeaderDictionary headers)
+        public ResponseCookiesCollection(IHeaderDictionary headers)
         {
             if (headers == null)
             {

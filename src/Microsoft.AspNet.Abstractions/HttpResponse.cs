@@ -15,6 +15,7 @@ namespace Microsoft.AspNet.Abstractions
         public abstract long? ContentLength { get; set; }
         public abstract string ContentType { get; set; }
 
+        public abstract IResponseCookiesCollection Cookies { get; }
         public abstract Task WriteAsync(string data);
     }
 }

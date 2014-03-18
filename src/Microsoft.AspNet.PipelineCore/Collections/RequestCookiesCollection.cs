@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.PipelineCore.Infrastructure;
 
-namespace Microsoft.AspNet.PipelineCore
+namespace Microsoft.AspNet.PipelineCore.Collections
 {
     public class RequestCookiesCollection : IReadableStringCollection
     {

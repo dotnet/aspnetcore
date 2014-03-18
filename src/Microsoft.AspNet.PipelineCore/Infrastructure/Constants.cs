@@ -18,6 +18,7 @@ namespace Microsoft.AspNet.Abstractions.Infrastructure
             internal const string ETag = "ETag";
             internal const string Location = "Location";
             internal const string ContentLength = "Content-Length";
+            internal const string Cookie = "Cookie";
             internal const string SetCookie = "Set-Cookie";
             internal const string Expires = "Expires";
         }
