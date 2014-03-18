@@ -11,6 +11,10 @@ namespace Microsoft.AspNet.Abstractions
         
         public abstract IDictionary<object, object> Items { get; }
 
+        public abstract IServiceProvider ApplicationServices { get; set; }
+
+        public abstract IServiceProvider RequestServices { get; set; }
+
         public abstract void Dispose();
 
         public abstract object GetFeature(Type type);

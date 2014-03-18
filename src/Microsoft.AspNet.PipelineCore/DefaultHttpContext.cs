@@ -12,6 +12,7 @@ namespace Microsoft.AspNet.PipelineCore
         private readonly HttpResponse _response;
 
         private FeatureReference<ICanHasItems> _canHasItems;
+        private FeatureReference<ICanHasServiceProviders> _canHasServiceProviders;
         private IFeatureCollection _features;
 
         public DefaultHttpContext(IFeatureCollection features)
@@ -21,11 +22,17 @@ namespace Microsoft.AspNet.PipelineCore
             _response = new DefaultHttpResponse(this, features);
 
             _canHasItems = FeatureReference<ICanHasItems>.Default;
+            _canHasServiceProviders = FeatureReference<ICanHasServiceProviders>.Default;
         }
 
         ICanHasItems CanHasItems
         {
             get { return _canHasItems.Fetch(_features) ?? _canHasItems.Update(_features, new DefaultCanHasItems()); }
+        }
+
+        ICanHasServiceProviders CanHasServiceProviders
+        {
+            get { return _canHasServiceProviders.Fetch(_features) ?? _canHasServiceProviders.Update(_features, new DefaultCanHasServiceProviders()); }
         }
 
         public override HttpRequest Request { get { return _request; } }
@@ -35,6 +42,18 @@ namespace Microsoft.AspNet.PipelineCore
         public override IDictionary<object, object> Items
         {
             get { return CanHasItems.Items; }
+        }
+
+        public override IServiceProvider ApplicationServices
+        {
+            get { return CanHasServiceProviders.ApplicationServices; }
+            set { CanHasServiceProviders.ApplicationServices = value; }
+        }
+
+        public override IServiceProvider RequestServices
+        {
+            get { return CanHasServiceProviders.RequestServices; }
+            set { CanHasServiceProviders.RequestServices = value; }
         }
 
         public int Revision { get { return _features.Revision; } }
