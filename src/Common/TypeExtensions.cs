@@ -52,9 +52,7 @@ namespace Microsoft.AspNet.Mvc
         {
             return type.GetTypeInfo().ImplementedInterfaces.ToArray();
         }
-#endif
 
-#if NETFX_CORE || K10
         public static bool IsAssignableFrom([NotNull] this Type type, [NotNull] Type c)
         {
             return type.GetTypeInfo().IsAssignableFrom(c.GetTypeInfo());
@@ -63,29 +61,17 @@ namespace Microsoft.AspNet.Mvc
 
         public static bool IsGenericType([NotNull] this Type type)
         {
-#if NETFX_CORE || K10
             return type.GetTypeInfo().IsGenericType;
-#else
-            return type.IsGenericType;
-#endif
         }
 
         public static bool IsInterface([NotNull] this Type type)
         {
-#if NETFX_CORE || K10
             return type.GetTypeInfo().IsInterface;
-#else
-            return type.IsInterface;
-#endif
         }
 
         public static bool IsValueType([NotNull] this Type type)
         {
-#if NETFX_CORE || K10
             return type.GetTypeInfo().IsValueType;
-#else
-            return type.IsValueType;
-#endif
         }
 
         public static bool IsCompatibleWith([NotNull] this Type type, object value)
@@ -106,8 +92,6 @@ namespace Microsoft.AspNet.Mvc
 
         public static bool HasStringConverter([NotNull] this Type type)
         {
-            // TODO: This depends on TypeConverter which does not exist in the CoreCLR.
-            // return TypeDescriptor.GetConverter(type).CanConvertFrom(typeof(string));
             TypeInfo typeInfo = type.GetTypeInfo();
             if (typeInfo.IsPrimitive || type == typeof(string))
             {
@@ -118,6 +102,7 @@ namespace Microsoft.AspNet.Mvc
                 // Nullable<T> where T is a primitive type or has a type converter
                 return true;
             }
+
             return false;
         }
 
