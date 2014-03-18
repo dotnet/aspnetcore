@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.PipelineCore
     public class DefaultCanHasRequestCookies : ICanHasRequestCookies
     {
         private readonly IFeatureCollection _features;
-        private FeatureReference<IHttpRequestInformation> _request = FeatureReference<IHttpRequestInformation>.Default;
+        private readonly FeatureReference<IHttpRequestInformation> _request = FeatureReference<IHttpRequestInformation>.Default;
         private string _cookiesHeader;
         private RequestCookiesCollection _cookiesCollection;
         private static readonly string[] ZeroHeaders = new string[0];

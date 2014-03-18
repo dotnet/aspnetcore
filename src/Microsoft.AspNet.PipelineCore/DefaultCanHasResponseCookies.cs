@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.PipelineCore
     public class DefaultCanHasResponseCookies : ICanHasResponseCookies
     {
         private readonly IFeatureCollection _features;
-        private FeatureReference<IHttpResponseInformation> _request = FeatureReference<IHttpResponseInformation>.Default;
+        private readonly FeatureReference<IHttpResponseInformation> _request = FeatureReference<IHttpResponseInformation>.Default;
         private IResponseCookiesCollection _cookiesCollection;
 
         public DefaultCanHasResponseCookies(IFeatureCollection features)
@@ -21,9 +21,9 @@ namespace Microsoft.AspNet.PipelineCore
         {
             get
             {
-                var headers = _request.Fetch(_features).Headers;
                 if (_cookiesCollection == null)
                 {
+                    var headers = _request.Fetch(_features).Headers;
                     _cookiesCollection = new ResponseCookiesCollection(new HeaderDictionary(headers));
                 }
 

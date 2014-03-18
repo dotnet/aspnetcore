@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Abstractions
         {
             if (!string.IsNullOrEmpty(value) && value[0] != '?')
             {
-                throw new ArgumentException("The leading '?' must be included for a non-empty query.");
+                throw new ArgumentException("The leading '?' must be included for a non-empty query.", "value");
             }
             _value = value;
         }
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Abstractions
         /// </summary>
         public bool HasValue
         {
-            get { return !String.IsNullOrEmpty(_value); }
+            get { return !string.IsNullOrEmpty(_value); }
         }
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Abstractions
         public string ToUriComponent()
         {
             // Escape things properly so System.Uri doesn't mis-interpret the data.
-            return HasValue ? _value.Replace("#", "%23") : String.Empty;
+            return HasValue ? _value.Replace("#", "%23") : string.Empty;
         }
 
         /// <summary>
