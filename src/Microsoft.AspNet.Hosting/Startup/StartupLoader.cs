@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Hosting.Startup
             }
 
             // Check the most likely places first
-            type = assembly.GetType(typeName) ?? assembly.GetType(assembly + "." + typeName);
+            type = assembly.GetType(typeName) ?? assembly.GetType(assembly.GetName().Name + "." + typeName);
 
             if (type == null)
             {
