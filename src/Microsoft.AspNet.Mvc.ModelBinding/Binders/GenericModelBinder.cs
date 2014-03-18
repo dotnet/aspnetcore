@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Type binderType = ResolveBinderType(bindingContext.ModelType);
             if (binderType != null)
             {
-                var binder = _activator.CreateInstance<IModelBinder>();
+                var binder = (IModelBinder)_activator.CreateInstance(binderType);
                 return binder.BindModel(bindingContext);
             }
 
