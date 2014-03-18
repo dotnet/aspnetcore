@@ -803,6 +803,10 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
 
         internal static IDictionary<string, string[]> GetQuery(string queryString)
         {
+            if (!string.IsNullOrEmpty(queryString) && queryString[0] == '?')
+            {
+                queryString = queryString.Substring(1);
+            }
             var accumulator = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
             ParseDelimited(queryString, AmpersandAndSemicolon, AppendItemCallback, accumulator);
             return accumulator.ToDictionary(

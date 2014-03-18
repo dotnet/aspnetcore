@@ -15,27 +15,31 @@ namespace Microsoft.AspNet.Abstractions
         private readonly string _value;
 
         /// <summary>
-        /// Initalize the query string with a given value. This value must be in escaped and delimited format without 
+        /// Initialize the query string with a given value. This value must be in escaped and delimited format with
         /// a leading '?' character. 
         /// </summary>
         /// <param name="value">The query string to be assigned to the Value property.</param>
         public QueryString(string value)
         {
+            if (!string.IsNullOrEmpty(value) && value[0] != '?')
+            {
+                throw new ArgumentException("The leading '?' must be included for a non-empty query.");
+            }
             _value = value;
         }
 
         /// <summary>
-        /// Initialize a query string with a single given parameter name and value. The value is 
+        /// Initialize a query string with a single given parameter name and value.
         /// </summary>
-        /// <param name="name">The unencoded parameter name</param>
-        /// <param name="value">The unencoded parameter value</param>
+        /// <param name="name">The un-encoded parameter name</param>
+        /// <param name="value">The un-encoded parameter value</param>
         public QueryString(string name, string value)
         {
-            _value = Uri.EscapeDataString(name) + '=' + Uri.EscapeDataString(value);
+            _value = "?" + Uri.EscapeDataString(name) + '=' + Uri.EscapeDataString(value);
         }
 
         /// <summary>
-        /// The unescaped query string without the leading '?' character
+        /// The escaped query string with the leading '?' character
         /// </summary>
         public string Value
         {
@@ -47,12 +51,12 @@ namespace Microsoft.AspNet.Abstractions
         /// </summary>
         public bool HasValue
         {
-            get { return !String.IsNullOrWhiteSpace(_value); }
+            get { return !String.IsNullOrEmpty(_value); }
         }
 
         /// <summary>
         /// Provides the query string escaped in a way which is correct for combining into the URI representation. 
-        /// A leading '?' character will be prepended unless the Value is null or empty. Characters which are potentally
+        /// A leading '?' character will be included unless the Value is null or empty. Characters which are potentially
         /// dangerous are escaped.
         /// </summary>
         /// <returns>The query string value</returns>
@@ -63,7 +67,7 @@ namespace Microsoft.AspNet.Abstractions
 
         /// <summary>
         /// Provides the query string escaped in a way which is correct for combining into the URI representation. 
-        /// A leading '?' character will be prepended unless the Value is null or empty. Characters which are potentially
+        /// A leading '?' character will be included unless the Value is null or empty. Characters which are potentially
         /// dangerous are escaped.
         /// </summary>
         /// <returns>The query string value</returns>
@@ -71,7 +75,7 @@ namespace Microsoft.AspNet.Abstractions
         public string ToUriComponent()
         {
             // Escape things properly so System.Uri doesn't mis-interpret the data.
-            return HasValue ? "?" + _value.Replace("#", "%23") : String.Empty;
+            return HasValue ? _value.Replace("#", "%23") : String.Empty;
         }
 
         /// <summary>
@@ -87,11 +91,7 @@ namespace Microsoft.AspNet.Abstractions
             {
                 return new QueryString(string.Empty);
             }
-            if (uriComponent[0] != '?')
-            {
-                throw new ArgumentException(""/*Resources.Exception_QueryStringMustStartWithDelimiter*/, "uriComponent");
-            }
-            return new QueryString(uriComponent.Substring(1));
+            return new QueryString(uriComponent);
         }
 
         /// <summary>
@@ -105,7 +105,12 @@ namespace Microsoft.AspNet.Abstractions
             {
                 throw new ArgumentNullException("uri");
             }
-            return new QueryString(uri.GetComponents(UriComponents.Query, UriFormat.UriEscaped));
+            string queryValue = uri.GetComponents(UriComponents.Query, UriFormat.UriEscaped);
+            if (!string.IsNullOrEmpty(queryValue))
+            {
+                queryValue = "?" + queryValue;
+            }
+            return new QueryString(queryValue);
         }
 
         public bool Equals(QueryString other)
