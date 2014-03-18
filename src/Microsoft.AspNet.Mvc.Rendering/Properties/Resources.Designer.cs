@@ -11,6 +11,38 @@ namespace Microsoft.AspNet.Mvc.Rendering
             = new ResourceManager("Microsoft.AspNet.Mvc.Rendering.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// The argument '{0}' is null or empty.
+        /// </summary>
+        internal static string ArgumentNullOrEmpty
+        {
+            get { return GetString("ArgumentNullOrEmpty"); }
+        }
+
+        /// <summary>
+        /// The argument '{0}' is null or empty.
+        /// </summary>
+        internal static string FormatArgumentNullOrEmpty(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ArgumentNullOrEmpty"), p0);
+        }
+
+        /// <summary>
+        /// The partial view '{0}' was not found or no view engine supports the searched locations. The following locations were searched:{1}
+        /// </summary>
+        internal static string Common_PartialViewNotFound
+        {
+            get { return GetString("Common_PartialViewNotFound"); }
+        }
+
+        /// <summary>
+        /// The partial view '{0}' was not found or no view engine supports the searched locations. The following locations were searched:{1}
+        /// </summary>
+        internal static string FormatCommon_PartialViewNotFound(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Common_PartialViewNotFound"), p0, p1);
+        }
+
+        /// <summary>
         /// The model item passed is null, but this ViewData instance requires a non-null model item of type '{0}'.
         /// </summary>
         internal static string ViewData_ModelCannotBeNull

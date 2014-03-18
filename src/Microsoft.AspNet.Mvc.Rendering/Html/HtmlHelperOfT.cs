@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNet.Abstractions;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.Rendering
 {
     public class HtmlHelper<TModel> : HtmlHelper
     {

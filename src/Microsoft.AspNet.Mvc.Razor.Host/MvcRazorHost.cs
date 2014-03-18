@@ -14,7 +14,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             "System.Linq",
             "System.Collections.Generic",
             "Microsoft.AspNet.Mvc",
-            "Microsoft.AspNet.Mvc.Razor"
+            "Microsoft.AspNet.Mvc.Razor",
+            "Microsoft.AspNet.Mvc.Rendering"
         };
 
         // CodeGenerationContext.DefaultBaseClass is set to MyBaseType<dynamic>. 

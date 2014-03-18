@@ -1,24 +1,20 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
 using System.Text;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.Rendering
 {
     public class TagBuilder
     {
-        private string _idAttributeDotReplacement;
-
         private string _innerHtml;
 
         public TagBuilder(string tagName)
         {
-            if (String.IsNullOrEmpty(tagName))
+            if (string.IsNullOrEmpty(tagName))
             {
-                throw new ArgumentException("CommonResources.Argument_Cannot_Be_Null_Or_Empty", "tagName");
+                throw new ArgumentException(Resources.FormatArgumentNullOrEmpty("tagName"));
             }
 
             TagName = tagName;
@@ -29,7 +25,7 @@ namespace Microsoft.AspNet.Mvc
 
         public string InnerHtml
         {
-            get { return _innerHtml ?? String.Empty; }
+            get { return _innerHtml ?? string.Empty; }
             set { _innerHtml = value; }
         }
 
@@ -49,32 +45,22 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        public static string CreateSanitizedId(string originalId)
+        public static string CreateSanitizedId(string originalId, [NotNull] string invalidCharReplacement)
         {
-            return CreateSanitizedId(originalId, "." /*HtmlHelper.IdAttributeDotReplacement*/);
-        }
-
-        public static string CreateSanitizedId(string originalId, string invalidCharReplacement)
-        {
-            if (String.IsNullOrEmpty(originalId))
+            if (string.IsNullOrEmpty(originalId))
             {
-                return null;
+                return string.Empty;
             }
 
-            if (invalidCharReplacement == null)
-            {
-                throw new ArgumentNullException("invalidCharReplacement");
-            }
+            var firstChar = originalId[0];
 
-            char firstChar = originalId[0];
-
-            StringBuilder sb = new StringBuilder(originalId.Length);
+            var sb = new StringBuilder(originalId.Length);
             sb.Append(firstChar);
 
-            for (int i = 1; i < originalId.Length; i++)
+            for (var i = 1; i < originalId.Length; i++)
             {
-                char thisChar = originalId[i];
-                if (!Char.IsWhiteSpace(thisChar))
+                var thisChar = originalId[i];
+                if (!char.IsWhiteSpace(thisChar))
                 {
                     sb.Append(thisChar);
                 }
@@ -87,12 +73,12 @@ namespace Microsoft.AspNet.Mvc
             return sb.ToString();
         }
 
-        public void GenerateId(string name)
+        public void GenerateId(string name, [NotNull] string idAttributeDotReplacement)
         {
             if (!Attributes.ContainsKey("id"))
             {
-                string sanitizedId = name; // CreateSanitizedId(name, IdAttributeDotReplacement);
-                if (!String.IsNullOrEmpty(sanitizedId))
+                var sanitizedId = CreateSanitizedId(name, idAttributeDotReplacement);
+                if (!string.IsNullOrEmpty(sanitizedId))
                 {
                     Attributes["id"] = sanitizedId;
                 }
@@ -103,13 +89,13 @@ namespace Microsoft.AspNet.Mvc
         {
             foreach (var attribute in Attributes)
             {
-                string key = attribute.Key;
-                if (String.Equals(key, "id", StringComparison.Ordinal) && String.IsNullOrEmpty(attribute.Value))
+                var key = attribute.Key;
+                if (string.Equals(key, "id", StringComparison.Ordinal) && string.IsNullOrEmpty(attribute.Value))
                 {
                     continue;
                 }
-                //string value = HttpUtility.HtmlAttributeEncode(attribute.Value);
-                string value = WebUtility.HtmlEncode(attribute.Value);
+
+                var value = WebUtility.HtmlEncode(attribute.Value);
                 sb.Append(' ')
                     .Append(key)
                     .Append("=\"")
@@ -125,9 +111,9 @@ namespace Microsoft.AspNet.Mvc
 
         public void MergeAttribute(string key, string value, bool replaceExisting)
         {
-            if (String.IsNullOrEmpty(key))
+            if (string.IsNullOrEmpty(key))
             {
-                throw new ArgumentException("CommonResources.Argument_Cannot_Be_Null_Or_Empty", "key");
+                throw new ArgumentException(Resources.FormatArgumentNullOrEmpty("key"));
             }
 
             if (replaceExisting || !Attributes.ContainsKey(key))
@@ -147,8 +133,8 @@ namespace Microsoft.AspNet.Mvc
             {
                 foreach (var entry in attributes)
                 {
-                    string key = Convert.ToString(entry.Key, CultureInfo.InvariantCulture);
-                    string value = Convert.ToString(entry.Value, CultureInfo.InvariantCulture);
+                    var key = Convert.ToString(entry.Key, CultureInfo.InvariantCulture);
+                    var value = Convert.ToString(entry.Value, CultureInfo.InvariantCulture);
                     MergeAttribute(key, value, replaceExisting);
                 }
             }
@@ -159,7 +145,7 @@ namespace Microsoft.AspNet.Mvc
             InnerHtml = WebUtility.HtmlEncode(innerText);
         }
 
-        internal HtmlString ToHtmlString(TagRenderMode renderMode)
+        public HtmlString ToHtmlString(TagRenderMode renderMode)
         {
             return new HtmlString(ToString(renderMode));
         }
@@ -171,7 +157,7 @@ namespace Microsoft.AspNet.Mvc
 
         public string ToString(TagRenderMode renderMode)
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             switch (renderMode)
             {
                 case TagRenderMode.StartTag:
@@ -202,6 +188,7 @@ namespace Microsoft.AspNet.Mvc
                         .Append('>');
                     break;
             }
+
             return sb.ToString();
         }
     }

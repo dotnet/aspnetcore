@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Globalization;
 using Microsoft.AspNet.Mvc.ModelBinding.Internal;
-using Microsoft.AspNet.Mvc.Rendering;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.Rendering
 {
     public class ViewData<TModel> : ViewData
     {
@@ -25,7 +23,8 @@ namespace Microsoft.AspNet.Mvc
 
         protected override void SetModel(object value)
         {
-            // IsCompatibleObject verifies if the value is either an instance of TModel or if value happens to be null that TModel is nullable type.
+            // IsCompatibleObject verifies if the value is either an instance of TModel or (if value is null) that
+            // TModel is a nullable type.
             bool castWillSucceed = typeof(TModel).IsCompatibleWith(value);
 
             if (castWillSucceed)
@@ -37,11 +36,11 @@ namespace Microsoft.AspNet.Mvc
                 string message;
                 if (value == null)
                 {
-                    message = String.Format(CultureInfo.CurrentCulture, Resources.ViewData_ModelCannotBeNull, typeof(TModel));
+                    message = Resources.FormatViewData_ModelCannotBeNull(typeof(TModel));
                 }
                 else
                 {
-                    message = String.Format(CultureInfo.CurrentCulture, Resources.ViewData_WrongTModelType, value.GetType(), typeof(TModel));
+                    message = Resources.FormatViewData_WrongTModelType(value.GetType(), typeof(TModel));
                 }
                 throw new InvalidOperationException(message);
             }

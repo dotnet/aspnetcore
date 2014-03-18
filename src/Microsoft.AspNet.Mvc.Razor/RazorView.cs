@@ -3,8 +3,8 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.DependencyInjection;
+using Microsoft.AspNet.Mvc.Rendering;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -133,7 +133,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     // value might be a bool. If the value is the bool 'true' we want to write the attribute name instead
                     // of the string 'true'. If the value is the bool 'false' we don't want to write anything.
                     //
-                    // Otherwise the value is another object (perhaps an IHtmlString), and we'll ask it to format itself.
+                    // Otherwise the value is another object (perhaps an HtmlString), and we'll ask it to format itself.
                     string stringValue;
                     bool? boolValue = val.Value as bool?;
                     if (boolValue == true)

@@ -1,15 +1,12 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Net;
 using System.Reflection;
 using System.Text;
 using Microsoft.AspNet.Abstractions;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.Rendering
 {
     public class HtmlHelper
     {
@@ -24,10 +21,12 @@ namespace Microsoft.AspNet.Mvc
         {
             HttpContext = httpContext;
             ViewData = viewData;
-            // ClientValidationRuleFactory = (name, metadata) => ModelValidatorProviders.Providers.GetValidators(metadata ?? ModelMetadata.FromStringExpression(name, ViewData), ViewContext).SelectMany(v => v.GetClientValidationRules());
+
+            // Underscores are fine characters in id's.
+            IdAttributeDotReplacement = "_";
         }
 
-        //internal Func<string, ModelMetadata, IEnumerable<ModelClientValidationRule>> ClientValidationRuleFactory { get; set; }
+        public string IdAttributeDotReplacement { get; set; }
 
         public HttpContext HttpContext { get; private set; }
 
@@ -72,62 +71,20 @@ namespace Microsoft.AspNet.Mvc
             return result;
         }
 
-        //[SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "For consistency, all helpers are instance methods.")]
-        //public HtmlString AntiForgeryToken()
-        //{
-        //    return new HtmlString(AntiForgery.GetHtml().ToString());
-        //}
-
-        ///// <summary>
-        ///// Set this property to <see cref="Mvc.Html5DateRenderingMode.Rfc3339"/> to have templated helpers such as Html.EditorFor render date and time
-        ///// values as Rfc3339 compliant strings.
-        ///// </summary>
-        ///// <remarks>
-        ///// The scope of this setting is for the current view alone. Sub views and parent views
-        ///// will default to <see cref="Mvc.Html5DateRenderingMode.CurrentCulture"/> unless explicitly set otherwise.
-        ///// </remarks>
-        //[SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "The usage of the property is as an instance property of the helper.")]
-        //public Html5DateRenderingMode Html5DateRenderingMode
-        //{
-        //    get
-        //    {
-        //        object value;
-        //        if (ScopeStorage.CurrentScope.TryGetValue(_html5InputsModeKey, out value))
-        //        {
-        //            return (Html5DateRenderingMode)value;
-        //        }
-        //        return default(Html5DateRenderingMode);
-        //    }
-        //    set
-        //    {
-        //        ScopeStorage.CurrentScope[_html5InputsModeKey] = value;
-        //    }
-        //}
-
-        //[SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "For consistency, all helpers are instance methods.")]
-        //public string AttributeEncode(string value)
-        //{
-        //    return (!String.IsNullOrEmpty(value)) ? HttpUtility.HtmlAttributeEncode(value) : String.Empty;
-        //}
-
-        //public string AttributeEncode(object value)
-        //{
-        //    return AttributeEncode(Convert.ToString(value, CultureInfo.InvariantCulture));
-        //}
-
         [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "For consistency, all helpers are instance methods.")]
         public string Encode(string value)
         {
-            return (!String.IsNullOrEmpty(value)) ? WebUtility.HtmlEncode(value) : String.Empty;
+            return (!string.IsNullOrEmpty(value)) ? WebUtility.HtmlEncode(value) : string.Empty;
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "For consistency, all helpers are instance methods.")]
         public string Encode(object value)
         {
-            return value != null ? WebUtility.HtmlEncode(value.ToString()) : String.Empty;
+            return value != null ? WebUtility.HtmlEncode(value.ToString()) : string.Empty;
         }
 
-        internal static IView FindPartialView(ViewContext viewContext, string partialViewName, IViewEngine viewEngine)
+        internal static IView FindPartialView([NotNull] ViewContext viewContext, string partialViewName,
+            [NotNull] IViewEngine viewEngine)
         {
             ViewEngineResult result = viewEngine.FindView(viewContext, partialViewName).Result;
             if (result.View != null)
@@ -142,18 +99,13 @@ namespace Microsoft.AspNet.Mvc
                 locationsText.Append(location);
             }
 
-            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture,
-                                                              "MvcResources.Common_PartialViewNotFound", partialViewName, locationsText));
+            throw new InvalidOperationException(Resources.FormatCommon_PartialViewNotFound(partialViewName,
+                locationsText));
         }
 
-        public static string GenerateIdFromName(string name)
+        public string GenerateIdFromName([NotNull] string name)
         {
-            if (name == null)
-            {
-                throw new ArgumentNullException("name");
-            }
-
-            return TagBuilder.CreateSanitizedId(name);
+            return TagBuilder.CreateSanitizedId(name, IdAttributeDotReplacement);
         }
 
         public static string GetFormMethodString(FormMethod method)
@@ -188,57 +140,6 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        //internal object GetModelStateValue(string key, Type destinationType)
-        //{
-        //    ModelState modelState;
-        //    if (ViewData.ModelState.TryGetValue(key, out modelState))
-        //    {
-        //        if (modelState.Value != null)
-        //        {
-        //            return modelState.Value.ConvertTo(destinationType, null /* culture */);
-        //        }
-        //    }
-        //    return null;
-        //}
-
-        //public IDictionary<string, object> GetUnobtrusiveValidationAttributes(string name)
-        //{
-        //    return GetUnobtrusiveValidationAttributes(name, metadata: null);
-        //}
-
-        //// Only render attributes if unobtrusive client-side validation is enabled, and then only if we've
-        //// never rendered validation for a field with this name in this form. Also, if there's no form context,
-        //// then we can't render the attributes (we'd have no <form> to attach them to).
-        //public IDictionary<string, object> GetUnobtrusiveValidationAttributes(string name, ModelMetadata metadata)
-        //{
-        //    Dictionary<string, object> results = new Dictionary<string, object>();
-
-        //    // The ordering of these 3 checks (and the early exits) is for performance reasons.
-        //    if (!ViewContext.UnobtrusiveJavaScriptEnabled)
-        //    {
-        //        return results;
-        //    }
-
-        //    FormContext formContext = ViewContext.GetFormContextForClientValidation();
-        //    if (formContext == null)
-        //    {
-        //        return results;
-        //    }
-
-        //    string fullName = ViewData.TemplateInfo.GetFullHtmlFieldName(name);
-        //    if (formContext.RenderedField(fullName))
-        //    {
-        //        return results;
-        //    }
-
-        //    formContext.RenderedField(fullName, true);
-
-        //    IEnumerable<ModelClientValidationRule> clientRules = ClientValidationRuleFactory(name, metadata);
-        //    UnobtrusiveValidationAttributesGenerator.GetValidationAttributes(clientRules, results);
-
-        //    return results;
-        //}
-
         /// <summary>
         /// Wraps HTML markup in an IHtmlString, which will enable HTML markup to be
         /// rendered to the output without getting HTML encoded.
@@ -262,42 +163,5 @@ namespace Microsoft.AspNet.Mvc
         {
             return new HtmlString(value == null ? null : value.ToString());
         }
-
-        //internal virtual void RenderPartialInternal<TModel>(string partialViewName, ViewData viewData, TModel model, TextWriter writer, IViewEngine viewEngine)
-        //{
-        //    if (String.IsNullOrEmpty(partialViewName))
-        //    {
-        //        throw new ArgumentException("MvcResources.Common_NullOrEmpty", "partialViewName");
-        //    }
-
-        //    ViewData<TModel> newViewData = null;
-
-        //    if (model == null)
-        //    {
-        //        if (viewData == null)
-        //        {
-        //            newViewData = new ViewData<TModel>(ViewContext.ViewData);
-        //        }
-        //        else
-        //        {
-        //            newViewData = new ViewData<TModel>(viewData);
-        //        }
-        //    }
-        //    else
-        //    {
-        //        if (viewData == null)
-        //        {
-        //            newViewData = new ViewData(model);
-        //        }
-        //        else
-        //        {
-        //            newViewData = new ViewData(viewData) { Model = model };
-        //        }
-        //    }
-
-        //    ViewContext newViewContext = new ViewContext(ViewContext, ViewContext.View, newViewData, ViewContext.TempData, writer);
-        //    IView view = FindPartialView(newViewContext, partialViewName, viewEngine);
-        //    view.Render(newViewContext, writer);
-        //}
     }
 }

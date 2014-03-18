@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.Rendering;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {

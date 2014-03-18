@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Routing;
 
 namespace Microsoft.AspNet.Mvc
