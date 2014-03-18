@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNet.Abstractions;
-using Microsoft.AspNet.Abstractions.Collections;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.PipelineCore.Collections;

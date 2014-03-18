@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Abstractions.Infrastructure;
 
-namespace Microsoft.AspNet.Abstractions.Collections
+namespace Microsoft.AspNet.PipelineCore.Collections
 {
     /// <summary>
     /// A wrapper for the response Set-Cookie header
