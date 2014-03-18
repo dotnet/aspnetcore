@@ -84,9 +84,37 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         [InlineData("LayoutDirective")]
         [InlineData("ConditionalAttributes")]
         [InlineData("ResolveUrl")]
+        [InlineData("Await")]
         public void CSharpCodeGeneratorCorrectlyGeneratesRunTimeCode(string testType)
         {
             RunTest(testType);
+        }
+
+        [Fact]
+        public void CSharpCodeGeneratorCorrectlyGeneratesMappingsForAwait()
+        {
+            RunTest("Await",
+                    "Await.DesignTime",
+                    designTimeMode: true,
+                    tabTest: TabTest.Tabs,
+                    expectedDesignTimePragmas: new List<LineMapping>()
+                    {
+                        BuildLineMapping(12, 0, 12, 173, 9, 0, 76),
+                        BuildLineMapping(192, 9, 39, 637, 30, 15, 11),
+                        BuildLineMapping(247, 10, 38, 750, 35, 14, 11),
+                        BuildLineMapping(304, 11, 39, 832, 40, 12, 14),
+                        BuildLineMapping(371, 12, 46, 919, 46, 13, 1),
+                        BuildLineMapping(376, 12, 51, 1027, 52, 18, 11),
+                        BuildLineMapping(391, 12, 66, 1115, 57, 18, 1),
+                        BuildLineMapping(448, 13, 49, 1224, 63, 19, 5),
+                        BuildLineMapping(578, 18, 42, 1332, 68, 15, 15),
+                        BuildLineMapping(640, 19, 41, 1452, 73, 17, 22),
+                        BuildLineMapping(711, 20, 42, 1545, 78, 12, 39),
+                        BuildLineMapping(806, 21, 49, 1657, 84, 13, 1),
+                        BuildLineMapping(811, 21, 54, 1765, 90, 18, 27),
+                        BuildLineMapping(842, 21, 85, 1873, 95, 22, 1),
+                        BuildLineMapping(902, 22, 52, 1982, 101, 19, 19)
+                    });
         }
 
         [Fact]

@@ -115,6 +115,8 @@
     <Compile Include="RazorTemplateEngineTest.cs" />
     <Compile Include="StringTextBuffer.cs" />
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\CodeTree.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\Await.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\Await.DesignTime.cs" />
     <Compile Include="Text\BufferingTextReaderTest.cs" />
     <Compile Include="Text\LineTrackingStringBufferTest.cs" />
     <Compile Include="Text\LookaheadTextReaderTestBase.cs" />
@@ -317,6 +319,7 @@
   <ItemGroup>
     <None Include="packages.config" />
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\CodeTree.cshtml" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Source\Await.cshtml" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
