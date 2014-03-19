@@ -30,6 +30,13 @@ namespace Microsoft.AspNet.Hosting
 
             yield return describer.Transient<ITypeActivator, TypeActivator>();
 
+            yield return new ServiceDescriptor
+            {
+                ServiceType = typeof(IContextAccessor<>),
+                ImplementationType = typeof(ContextAccessor<>),
+                Lifecycle = LifecycleKind.Scoped
+            };
+
             // The default IDataProtectionProvider is a singleton.
             // Note: DPAPI isn't usable in IIS where the user profile hasn't been loaded, but loading DPAPI
             // is deferred until the first call to Protect / Unprotect. It's up to an IIS-based host to
