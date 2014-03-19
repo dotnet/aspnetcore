@@ -50,8 +50,7 @@ namespace Microsoft.AspNet.Mvc
 
             PreArrangeFiltersInPipeline(filterProviderContext);
 
-            var modelState = new ModelStateDictionary();
-            object controller = _controllerFactory.CreateController(_actionContext, modelState);
+            var controller = _controllerFactory.CreateController(_actionContext);
 
             if (controller == null)
             {
@@ -96,7 +95,7 @@ namespace Microsoft.AspNet.Mvc
 
                     if (actionResult == null)
                     {
-                        var parameterValues = await GetParameterValues(modelState);
+                        var parameterValues = await GetParameterValues(_actionContext.ModelState);
 
                         var actionFilterContext = new ActionFilterContext(_actionContext,
                                                                           filterMetaItems,

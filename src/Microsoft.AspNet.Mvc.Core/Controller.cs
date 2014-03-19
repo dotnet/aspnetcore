@@ -6,15 +6,30 @@ namespace Microsoft.AspNet.Mvc
 {
     public class Controller
     {
-        public void Initialize(IActionResultHelper actionResultHelper, IModelMetadataProvider metadataProvider)
+        public void Initialize(IActionResultHelper actionResultHelper)
         {
             Result = actionResultHelper;
-            ViewData = new ViewData<object>(metadataProvider);
         }
 
-        public IActionResultHelper Result { get; private set; }
+        public HttpContext Context
+        {
+            get
+            {
+                return ActionContext.HttpContext;
+            }
+        }
 
-        public HttpContext Context { get; set; }
+        public ModelStateDictionary ModelState
+        {
+            get
+            {
+                return ViewData.ModelState;
+            }
+        }
+
+        public ActionContext ActionContext { get; set; }
+
+        public IActionResultHelper Result { get; private set; }
 
         public IUrlHelper Url { get; set; }
 

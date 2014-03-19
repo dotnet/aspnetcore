@@ -15,7 +15,15 @@ namespace MvcSample.Web.RandomNameSpace
 
         public IActionResultHelper Result { get; private set; }
 
-        public HttpContext Context { get; set; }
+        public HttpContext Context
+        {
+            get
+            {
+                return ActionContext.HttpContext;
+            }
+        }
+
+        public ActionContext ActionContext { get; set; }
 
         public string Index()
         {

@@ -13,16 +13,32 @@ namespace Microsoft.AspNet.Mvc.Rendering
         private IModelMetadataProvider _metadataProvider;
 
         public ViewData([NotNull] IModelMetadataProvider metadataProvider)
+            : this(metadataProvider, new ModelStateDictionary())
         {
+        }
+
+        public ViewData([NotNull] IModelMetadataProvider metadataProvider, [NotNull] ModelStateDictionary modelState)
+        {
+            ModelState = modelState;
             _data = new Dictionary<object, dynamic>();
             _metadataProvider = metadataProvider;
         }
 
         public ViewData([NotNull] ViewData source)
+            : this(source.MetadataProvider)
         {
-            _data = source._data;
             _modelMetadata = source.ModelMetadata;
-            _metadataProvider = source.MetadataProvider;
+            
+            foreach (var entry in source.ModelState)
+            {
+                ModelState.Add(entry.Key, entry.Value);
+            }
+            
+            foreach (var entry in source)
+            {
+                _data.Add(entry.Key, entry.Value);
+            }
+
             SetModel(source.Model);
         }
 
@@ -32,19 +48,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
             set { SetModel(value); }
         }
 
+        public ModelStateDictionary ModelState { get; private set; }
+
         public dynamic this[string index]
         {
             get
             {
                 dynamic result;
-                if (_data.TryGetValue(index, out result))
-                {
-                    result = _data[index];
-                }
-                else
-                {
-                    result = null;
-                }
+
+                _data.TryGetValue(index, out result);
 
                 return result;
             }
@@ -72,6 +84,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
         protected IModelMetadataProvider MetadataProvider
         {
             get { return _metadataProvider; }
+        }
+        
+        public Dictionary<object, dynamic>.Enumerator GetEnumerator()
+        {
+            return _data.GetEnumerator();
         }
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)

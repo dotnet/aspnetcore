@@ -14,6 +14,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             _defaultModelMetadata = MetadataProvider.GetMetadataForType(null, typeof(TModel));
         }
+        
+        public ViewData([NotNull] IModelMetadataProvider metadataProvider, [NotNull] ModelStateDictionary modelState)
+            : base(metadataProvider, modelState)
+        {
+        }
 
         public ViewData(ViewData source)
             : base(source)

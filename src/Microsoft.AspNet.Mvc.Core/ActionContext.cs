@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Routing;
 
 namespace Microsoft.AspNet.Mvc
@@ -12,6 +13,7 @@ namespace Microsoft.AspNet.Mvc
             Router = router;
             RouteValues = routeValues;
             ActionDescriptor = actionDescriptor;
+            ModelState = new ModelStateDictionary();
         }
 
         public HttpContext HttpContext { get; private set; }
@@ -19,6 +21,8 @@ namespace Microsoft.AspNet.Mvc
         public IRouter Router { get; private set; }
 
         public IDictionary<string, object> RouteValues { get; private set; }
+
+        public ModelStateDictionary ModelState { get; private set; }
 
         public ActionDescriptor ActionDescriptor { get; private set; }
     }

@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc
             _activator = activator;
         }
 
-        public object CreateController(ActionContext actionContext, ModelStateDictionary modelState)
+        public object CreateController(ActionContext actionContext)
         {
             var actionDescriptor = actionContext.ActionDescriptor as ReflectedActionDescriptor;
             if (actionDescriptor == null)
@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc
                 var controller = _activator.CreateInstance(actionDescriptor.ControllerDescriptor.ControllerTypeInfo.AsType());
 
                 // TODO: How do we feed the controller with context (need DI improvements)
-                InitializeController(controller, actionContext, modelState);
+                InitializeController(controller, actionContext);
 
                 return controller;
             }
@@ -47,21 +47,21 @@ namespace Microsoft.AspNet.Mvc
         {
         }
 
-        private void InitializeController(object controller, ActionContext actionContext, ModelStateDictionary modelState)
+        private void InitializeController(object controller, ActionContext actionContext)
         {
             var controllerType = controller.GetType();
 
             foreach (var prop in controllerType.GetRuntimeProperties())
             {
-                if (prop.Name == "Context" && prop.PropertyType == typeof(HttpContext))
+                if(prop.Name == "ActionContext" && prop.PropertyType.GetTypeInfo().IsAssignableFrom(typeof(ActionContext).GetTypeInfo()))
                 {
-                    prop.SetValue(controller, actionContext.HttpContext);
+                    prop.SetValue(controller, actionContext);
                 }
-                else if (prop.Name == "ModelState" && prop.PropertyType == typeof(ModelStateDictionary))
+                else if (prop.Name == "ViewData" && prop.PropertyType.GetTypeInfo().IsAssignableFrom(typeof(ViewData<object>).GetTypeInfo()))
                 {
-                    prop.SetValue(controller, modelState);
+                    prop.SetValue(controller, new ViewData<object>(_serviceProvider.GetService<IModelMetadataProvider>(), actionContext.ModelState));
                 }
-                else if (prop.Name == "Url" && prop.PropertyType == typeof(IUrlHelper))
+                else if (prop.Name == "Url" && prop.PropertyType.GetTypeInfo().IsAssignableFrom(typeof(IUrlHelper).GetTypeInfo()))
                 {
                     var urlHelper = new UrlHelper(
                         actionContext.HttpContext,

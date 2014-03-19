@@ -1,11 +1,10 @@
 ﻿
-using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace Microsoft.AspNet.Mvc
 {
     public interface IControllerFactory
     {
-        object CreateController(ActionContext actionContext, ModelStateDictionary modelState);
+        object CreateController(ActionContext actionContext);
 
         void ReleaseController(object controller);
     }
