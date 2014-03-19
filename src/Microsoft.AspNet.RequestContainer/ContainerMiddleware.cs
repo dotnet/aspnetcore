@@ -43,12 +43,19 @@ namespace Microsoft.AspNet.RequestContainer
             _rootHttpContextAccessor.SetContextSource(AccessRootHttpContext, ExchangeRootHttpContext);
         }
 
+#if NET45
+#else
+#warning This MUST NOT be ThreadStatic in reality
+        [ThreadStatic]
+        HttpContext THIS_IS_BROKEN_AND_MUST_BE_CHANGED;
+#endif
+
         private HttpContext AccessRootHttpContext()
         {
 #if NET45
             return CallContext.LogicalGetData(LogicalDataKey) as HttpContext;
 #else
-            throw new NotImplementedException()
+            return THIS_IS_BROKEN_AND_MUST_BE_CHANGED;
 #endif
         }
 
@@ -59,7 +66,9 @@ namespace Microsoft.AspNet.RequestContainer
             CallContext.LogicalSetData(LogicalDataKey, httpContext);
             return prior;
 #else
-            throw new NotImplementedException()
+            var prior = THIS_IS_BROKEN_AND_MUST_BE_CHANGED;
+            THIS_IS_BROKEN_AND_MUST_BE_CHANGED = httpContext;
+            return prior;
 #endif
         }
 

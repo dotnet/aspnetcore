@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Abstractions;
@@ -14,32 +15,32 @@ namespace Microsoft.AspNet.RequestContainer
             // TODO: move this ext method someplace nice
             return builder.Use(next =>
             {
-                //TODO: this should be MethodInfo.CreateDelegate for coreclr
                 var typeActivator = builder.ServiceProvider.GetService<ITypeActivator>();
                 var instance = typeActivator.CreateInstance(middleware, new[] { next }.Concat(args).ToArray());
-                return (RequestDelegate)Delegate.CreateDelegate(typeof(RequestDelegate), instance, "Invoke");
+                var methodinfo = middleware.GetTypeInfo().GetDeclaredMethod("Invoke");
+                return (RequestDelegate)methodinfo.CreateDelegate(typeof(RequestDelegate), instance);
             });
         }
 
-        public static IBuilder UseContainer(this IBuilder app)
+        public static IBuilder UseContainer(this IBuilder builder)
         {
-            return app.UseMiddleware(typeof(ContainerMiddleware));
+            return builder.UseMiddleware(typeof(ContainerMiddleware));
         }
 
-        public static IBuilder UseContainer(this IBuilder app, IServiceProvider applicationServices)
+        public static IBuilder UseContainer(this IBuilder builder, IServiceProvider applicationServices)
         {
-            app.ServiceProvider = applicationServices;
+            builder.ServiceProvider = applicationServices;
 
-            return app.UseMiddleware(typeof(ContainerMiddleware));
+            return builder.UseMiddleware(typeof(ContainerMiddleware));
         }
 
-        public static IBuilder UseContainer(this IBuilder app, IEnumerable<IServiceDescriptor> applicationServices)
+        public static IBuilder UseContainer(this IBuilder builder, IEnumerable<IServiceDescriptor> applicationServices)
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.Add(applicationServices);
-            app.ServiceProvider = serviceCollection.BuildServiceProvider(app.ServiceProvider);
+            builder.ServiceProvider = serviceCollection.BuildServiceProvider(builder.ServiceProvider);
 
-            return app.UseMiddleware(typeof(ContainerMiddleware));
+            return builder.UseMiddleware(typeof(ContainerMiddleware));
         }
     }
 }
