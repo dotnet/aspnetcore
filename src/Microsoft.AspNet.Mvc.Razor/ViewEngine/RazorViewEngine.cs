@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 var searchedLocations = new List<string>(_viewLocationFormats.Length);
                 for (int i = 0; i < _viewLocationFormats.Length; i++)
                 {
-                    string path = String.Format(CultureInfo.InvariantCulture, _viewLocationFormats[i], viewName, controllerName, areaName);
+                    var path = String.Format(CultureInfo.InvariantCulture, _viewLocationFormats[i], viewName, controllerName, areaName);
                     IView view = await _virtualPathFactory.CreateInstance(path);
                     if (view != null)
                     {
