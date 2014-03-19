@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.ConfigurationModel;
 using Microsoft.Net.Runtime;
 
 namespace Microsoft.AspNet.Hosting.Server
@@ -8,6 +9,7 @@ namespace Microsoft.AspNet.Hosting.Server
     // TODO: [AssemblyNeutral]
     public interface IServerFactory
     {
-        IDisposable Start(Func<object, Task> application);
+        IServerInformation Initialize(IConfiguration configuraiton);
+        IDisposable Start(IServerInformation serverInformation, Func<object, Task> application);
     }
 }

@@ -37,6 +37,7 @@ namespace Microsoft.AspNet.Hosting
             var context = new HostingContext()
             {
                 Services = services,
+                Configuration = config,
                 ServerName = config.Get("server.name"), // TODO: Key names
                 ApplicationName = config.Get("app.name")  // TODO: Key names
                     ?? appEnvironment.ApplicationName,

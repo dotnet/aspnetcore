@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.ConfigurationModel;
 using Microsoft.AspNet.DependencyInjection;
-using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.DependencyInjection.Fallback;
+using Microsoft.AspNet.Hosting.Server;
 using Xunit;
 
 namespace Microsoft.AspNet.Hosting
@@ -56,7 +57,12 @@ namespace Microsoft.AspNet.Hosting
 
         }
 
-        public IDisposable Start(Func<object, Task> application)
+        public IServerInformation Initialize(IConfiguration configuraiton)
+        {
+            return null;
+        }
+
+        public IDisposable Start(IServerInformation serverInformation, Func<object, Task> application)
         {
             var startInstance = new StartInstance(application);
             _startInstances.Add(startInstance);

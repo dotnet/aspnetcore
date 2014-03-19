@@ -30,10 +30,11 @@ namespace Microsoft.AspNet.Hosting
         {
             EnsureBuilder(context);
             EnsureServerFactory(context);
+            InitalizeServerFactory(context);
             EnsureApplicationDelegate(context);
 
             var pipeline = new PipelineInstance(_httpContextFactory, context.ApplicationDelegate);
-            var server = context.ServerFactory.Start(pipeline.Invoke);
+            var server = context.ServerFactory.Start(context.Server, pipeline.Invoke);
            
             return new Disposable(() =>
             {
@@ -66,6 +67,19 @@ namespace Microsoft.AspNet.Hosting
             context.ServerFactory = _serverManager.GetServerFactory(context.ServerName);
         }
 
+        private void InitalizeServerFactory(HostingContext context)
+        {
+            if (context.Server == null)
+            {
+                context.Server = context.ServerFactory.Initialize(context.Configuration);
+            }
+
+            if (context.Builder.Server == null)
+            {
+                context.Builder.Server = context.Server;
+            }
+        }
+
         private void EnsureApplicationDelegate(HostingContext context)
         {
             if (context.ApplicationDelegate != null)
@@ -74,7 +88,6 @@ namespace Microsoft.AspNet.Hosting
             }
 
             EnsureApplicationStartup(context);
-            EnsureBuilder(context);
 
             context.ApplicationStartup.Invoke(context.Builder);
             context.ApplicationDelegate = context.Builder.Build();
