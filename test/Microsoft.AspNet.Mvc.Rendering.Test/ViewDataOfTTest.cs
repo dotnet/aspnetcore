@@ -1,7 +1,8 @@
 ﻿using System;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Rendering.Test
+namespace Microsoft.AspNet.Mvc.Rendering
 {
     public class ViewDataOfTTest
     {
@@ -9,7 +10,7 @@ namespace Microsoft.AspNet.Mvc.Rendering.Test
         public void SettingModelThrowsIfTheModelIsNull()
         {
             // Arrange
-            var viewDataOfT = new ViewData<int>();
+            var viewDataOfT = new ViewData<int>(new DataAnnotationsModelMetadataProvider());
             ViewData viewData = viewDataOfT;
 
             // Act and Assert
@@ -21,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.Rendering.Test
         public void SettingModelThrowsIfTheModelIsIncompatible()
         {
             // Arrange
-            var viewDataOfT = new ViewData<string>();
+            var viewDataOfT = new ViewData<string>(new DataAnnotationsModelMetadataProvider());
             ViewData viewData = viewDataOfT;
 
             // Act and Assert
@@ -34,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.Rendering.Test
         {
             // Arrange
             string value = "some value";
-            var viewDataOfT = new ViewData<object>();
+            var viewDataOfT = new ViewData<object>(new DataAnnotationsModelMetadataProvider());
             ViewData viewData = viewDataOfT;
 
             // Act

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
@@ -8,15 +9,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
     {
         private readonly Dictionary<object, dynamic> _data;
         private object _model;
+        private ModelMetadata _modelMetadata;
+        private IModelMetadataProvider _metadataProvider;
 
-        public ViewData()
+        public ViewData([NotNull] IModelMetadataProvider metadataProvider)
         {
             _data = new Dictionary<object, dynamic>();
+            _metadataProvider = metadataProvider;
         }
 
         public ViewData([NotNull] ViewData source)
         {
             _data = source._data;
+            _modelMetadata = source.ModelMetadata;
+            _metadataProvider = source.MetadataProvider;
             SetModel(source.Model);
         }
 
@@ -44,13 +50,34 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
             set
             {
-                _data[index] = (dynamic)value;
+                _data[index] = value;
             }
+        }
+
+        public virtual ModelMetadata ModelMetadata
+        {
+            get
+            {
+                return _modelMetadata;
+            }
+            set
+            {
+                _modelMetadata = value;
+            }
+        }
+
+        /// <summary>
+        /// Provider for subclasses that need it to override <see cref="ModelMetadata"/>.
+        /// </summary>
+        protected IModelMetadataProvider MetadataProvider
+        {
+            get { return _metadataProvider; }
         }
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
             result = _data[binder.Name];
+
             // We return true here because ViewDataDictionary returns null if the key is not
             // in the dictionary, so we simply pass on the returned value.
             return true;
@@ -58,7 +85,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         public override bool TrySetMember(SetMemberBinder binder, object value)
         {
-            // This cast should always succeed assuming TValue is dynamic.
+            // This cast should always succeed.
             dynamic v = value;
             _data[binder.Name] = v;
             return true;
@@ -84,7 +111,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
 
             object index = indexes[0];
-            // This cast should always succeed assuming TValue is dynamic.
+
+            // This cast should always succeed.
             this[(string)index] = value;
             return true;
         }
@@ -95,6 +123,16 @@ namespace Microsoft.AspNet.Mvc.Rendering
         protected virtual void SetModel(object value)
         {
             _model = value;
+            if (value == null)
+            {
+                // Unable to determine model metadata.
+                _modelMetadata = null;
+            }
+            else if (_modelMetadata == null || value.GetType() != ModelMetadata.ModelType)
+            {
+                // Reset or override model metadata based on new value type.
+                _modelMetadata = _metadataProvider.GetMetadataForType(() => value, value.GetType());
+            }
         }
     }
 }

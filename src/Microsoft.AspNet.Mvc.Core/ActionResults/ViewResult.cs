@@ -33,9 +33,10 @@ namespace Microsoft.AspNet.Mvc
                 context.HttpContext.Response.ContentType = "text/html";
                 using (var writer = new StreamWriter(context.HttpContext.Response.Body, Encoding.UTF8, 1024, leaveOpen: true))
                 {
-                    var viewContext = new ViewContext(_serviceProvider, context.HttpContext, context.RouteValues, ViewData)
+                    var viewContext = new ViewContext(_serviceProvider, context.HttpContext, context.RouteValues)
                     {
                         Url = new UrlHelper(context.HttpContext, context.Router, context.RouteValues),
+                        ViewData = ViewData,
                         Writer = writer,
                     };
 

@@ -7,12 +7,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
 {
     public class ViewContext
     {
-        public ViewContext(IServiceProvider serviceProvider, HttpContext httpContext, IDictionary<string, object> viewEngineContext, ViewData viewData)
+        public ViewContext(IServiceProvider serviceProvider, HttpContext httpContext, IDictionary<string, object> viewEngineContext)
         {
             ServiceProvider = serviceProvider;
             HttpContext = httpContext;
             ViewEngineContext = viewEngineContext;
-            ViewData = viewData;
         }
 
         public HttpContext HttpContext { get; private set; }
@@ -21,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         public IUrlHelper Url { get; set; }
 
-        public ViewData ViewData { get; private set; }
+        public ViewData ViewData { get; set; }
 
         public IDictionary<string, object> ViewEngineContext { get; private set; }
 

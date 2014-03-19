@@ -5,6 +5,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
 {
     public interface IView
     {
-        Task RenderAsync(ViewContext context, TextWriter writer);
+        Task RenderAsync([NotNull] ViewContext context, [NotNull] TextWriter writer);
     }
 }

@@ -11,7 +11,26 @@ namespace MvcSample.Web
         }
 
         /// <summary>
-        /// Action that exercises query\form based model binding. 
+        /// Action that shows metadata when model is <c>null</c>.
+        /// </summary>
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        /// <summary>
+        /// Action that shows metadata when model is non-<c>null</c>.
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult Edit()
+        {
+            ViewBag.Gift = "the banana";
+            ViewData.Model = new User { Name = "Name", Address = "Address in a State", Age = 37, };
+            return View("Create");
+        }
+
+        /// <summary>
+        /// Action that exercises query\form based model binding.
         /// </summary>
         public IActionResult SaveUser(User user)
         {
@@ -55,6 +74,9 @@ namespace MvcSample.Web
             return user;
         }
 
+        /// <summary>
+        /// Action that exercises default view names.
+        /// </summary>
         public IActionResult MyView()
         {
             return View(User());

@@ -3,6 +3,7 @@
   "dependencies": {
     "Microsoft.AspNet.Abstractions": "0.1-alpha-*",
     "Microsoft.AspNet.PipelineCore": "0.1-alpha-*",
+    "Microsoft.AspNet.Mvc.ModelBinding" : "",
     "Microsoft.AspNet.Mvc.Rendering" : "",
     "TestCommon" : "",
     "Xunit.KRunner": "0.1-alpha-*",

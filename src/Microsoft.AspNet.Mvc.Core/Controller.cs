@@ -1,14 +1,15 @@
 ﻿using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 
 namespace Microsoft.AspNet.Mvc
 {
     public class Controller
     {
-        public void Initialize(IActionResultHelper actionResultHelper)
+        public void Initialize(IActionResultHelper actionResultHelper, IModelMetadataProvider metadataProvider)
         {
             Result = actionResultHelper;
-            ViewData = new ViewData<object>();
+            ViewData = new ViewData<object>(metadataProvider);
         }
 
         public IActionResultHelper Result { get; private set; }
@@ -31,21 +32,24 @@ namespace Microsoft.AspNet.Mvc
 
         public IActionResult View(string view)
         {
-            return View(view, model: (object)null);
+            return View(view, model: null);
         }
 
-        public IActionResult View<TModel>(TModel model)
+        // TODO #110: May need <TModel> here and in the overload below.
+        public IActionResult View(object model)
         {
             return View(view: null, model: model);
         }
 
-        public IActionResult View<TModel>(string view, TModel model)
+        public IActionResult View(string view, object model)
         {
-            var viewDataDictionary = new ViewData<TModel>
+            // Do not override ViewData.Model unless passed a non-null value.
+            if (model != null)
             {
-                Model = model
-            };
-            return Result.View(view, viewDataDictionary);
+                ViewData.Model = model;
+            }
+
+            return Result.View(view, ViewData);
         }
     }
 }

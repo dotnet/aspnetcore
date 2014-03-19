@@ -1,0 +1,42 @@
+﻿@using MvcSample.Web.Models
+@model User
+@{
+    string nullValue = null;
+    ViewBag.Title = (Model == null) ? "Create Page" : "Edit Page";
+    if (ViewData["Gift"] == null)
+    {
+        ViewBag.Gift = "nothing";
+    }
+}
+
+<div class="row">
+    <h2 title="@ViewBag.Title" class="@nullValue">@ViewBag.Title</h2>
+    <h3 title="Thanks" class="@nullValue">Thanks for @ViewBag.Gift</h3>
+    @if (Model == null)
+    {
+        <h4 title ="Null Model" class="@nullValue">Howdy, your model is null.</h4>
+    }
+    else
+    {
+        <h4 title="@Model.Name" class="@nullValue">Hello @Model.Name! Happy @Model.Age birthday.</h4>
+    }
+
+    @{
+        var metadata = ViewData.ModelMetadata;
+        if (metadata != null)
+        {
+            var typeName = metadata.ModelType.Name;
+            var description = metadata.Description;
+            <p>@typeName has description '@description' and contains</p>
+            <ul>
+                @foreach (var property in metadata.Properties)
+                {
+                    var propertyName = property.PropertyName;
+                    var propertyTypeName = property.ModelType.Name;
+                    var propertyDescription = property.Description;
+                    <li>Property @propertyName has type @propertyTypeName and description '@propertyDescription'</li>
+                }
+            </ul>
+        }
+    }
+</div>

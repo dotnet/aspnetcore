@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private string BodyContent { get; set; }
 
-        public virtual async Task RenderAsync(ViewContext context, TextWriter writer)
+        public virtual async Task RenderAsync([NotNull] ViewContext context, [NotNull] TextWriter writer)
         {
             Context = context;
 
