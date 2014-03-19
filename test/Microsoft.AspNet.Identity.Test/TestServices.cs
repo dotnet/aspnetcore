@@ -11,8 +11,7 @@ namespace Microsoft.AspNet.Identity.Test
             where TUser : class,IUser<TKey>
             where TKey : IEquatable<TKey>
         {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.Add(TestServices.DefaultServices<TUser, TKey>());
+            var serviceCollection = new ServiceCollection { DefaultServices<TUser, TKey>() };
             return serviceCollection.BuildServiceProvider();
         }
 
@@ -25,6 +24,7 @@ namespace Microsoft.AspNet.Identity.Test
                 new ServiceDescriptor<IPasswordValidator, PasswordValidator>(),
                 new ServiceDescriptor<IUserValidator<TUser, TKey>, UserValidator<TUser, TKey>>(),
                 new ServiceDescriptor<IPasswordHasher, PasswordHasher>(),
+                new ServiceDescriptor<IClaimsIdentityFactory<TUser, TKey>, ClaimsIdentityFactory<TUser, TKey>>(),
             };
         }
 
@@ -51,31 +51,6 @@ namespace Microsoft.AspNet.Identity.Test
             {
                 get { return null; }
             }
-        }
-
-        public class ServiceInstanceDescriptor<TService> : IServiceDescriptor
-        {
-            public ServiceInstanceDescriptor(object instance)
-            {
-                ImplementationInstance = instance;
-            }
-
-            public LifecycleKind Lifecycle
-            {
-                get { return LifecycleKind.Singleton; }
-            }
-
-            public Type ServiceType
-            {
-                get { return typeof(TService); }
-            }
-
-            public Type ImplementationType
-            {
-                get { return null; }
-            }
-
-            public object ImplementationInstance { get; private set; }
         }
     }
 }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Runtime;
 using System.Security.Claims;
 using Microsoft.AspNet.Testing;
 using Moq;
@@ -37,6 +38,20 @@ namespace Microsoft.AspNet.Identity.Test
         //    Assert.True(result.Succeeded);
         //    store.VerifyAll();
         //}
+
+        [Fact]
+        public async Task CheckPasswordWithNullUserReturnsFalse()
+        {
+            var manager = new UserManager<TestUser, string>(new EmptyStore());
+            Assert.False(await manager.CheckPassword(null, "whatevs"));
+        }
+
+        [Fact]
+        public async Task FindWithUnknownUserAndPasswordReturnsNull()
+        {
+            var manager = new UserManager<TestUser, string>(new EmptyStore());
+            Assert.Null(await manager.Find("bogus", "whatevs"));
+        }
 
         [Fact]
         public void UsersQueryableFailWhenStoreNotImplemented()
@@ -310,6 +325,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var manager = new UserManager<TestUser, string>(new NoopUserStore());
             manager.Dispose();
+            Assert.Throws<ObjectDisposedException>(() => manager.ClaimsIdentityFactory);
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.AddClaim("bogus", null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.AddLogin("bogus", null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.AddPassword("bogus", null));

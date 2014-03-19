@@ -39,8 +39,8 @@ namespace Microsoft.AspNet.Identity
             PasswordHasher = serviceProvider.GetService<IPasswordHasher>();
             UserValidator = serviceProvider.GetService<IUserValidator<TUser, TKey>>();
             PasswordValidator = serviceProvider.GetService<IPasswordValidator>();
+            ClaimsIdentityFactory = serviceProvider.GetService<IClaimsIdentityFactory<TUser, TKey>>();
             //TODO: Store = serviceProvider.GetService<IUserStore<TUser, TKey>>();
-            //TODO: ClaimsIdentityFactory = serviceProvider.GetService<IClaimsIdentityFactory<TUser, TKey>>();
             // TODO: maybe each optional store as well?  Email and SMS services?
         }
 
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Identity
             Store = store;
             UserValidator = new UserValidator<TUser, TKey>();
             PasswordHasher = new PasswordHasher();
-            //TODO: ClaimsIdentityFactory = new ClaimsIdentityFactory<TUser, TKey>();
+            ClaimsIdentityFactory = new ClaimsIdentityFactory<TUser, TKey>();
         }
 
         /// <summary>
