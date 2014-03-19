@@ -19,66 +19,81 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.ConfigurationModel;
 using Microsoft.AspNet.Hosting.Server;
+using Microsoft.AspNet.Logging;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
     using AppFunc = Func<object, Task>;
-    using LoggerFactoryFunc = Func<string, Func<TraceEventType, int, object, Exception, Func<object, Exception, string>, bool>>;
 
     /// <summary>
-    /// Implements the Katana setup pattern for this server.
+    /// Implements the setup process for this server.
     /// </summary>
     public class ServerFactory : IServerFactory
     {
-        private LoggerFactoryFunc _loggerFactory;
+        private ILoggerFactory _loggerFactory;
 
-        public ServerFactory()
+        public ServerFactory(ILoggerFactory loggerFactory)
         {
-            // TODO: Get services from DI, like logger factory.
+            _loggerFactory = loggerFactory;
         }
 
         /// <summary>
-        /// Populates the server capabilities.
-        /// Also included is a configurable instance of the server.
+        /// Creates a configurable instance of the server.
         /// </summary>
         /// <param name="properties"></param>
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposed by caller")]
-        public IServerConfiguration CreateConfiguration()
+        public IServerInformation Initialize(IConfiguration config)
         {
-            ServerConfiguration serverConfig = new ServerConfiguration();
-            serverConfig.AdvancedConfiguration = new OwinWebListener();
-            return serverConfig;
+            OwinWebListener listener = new OwinWebListener();
+            ParseAddresses(config, listener);
+            return new WebListenerWrapper(listener, _loggerFactory);
         }
 
         /// <summary>
-        /// Creates a server and starts listening on the given addresses.
         /// </summary>
-        /// <param name="app">The application entry point.</param>
-        /// <param name="properties">The configuration.</param>
+        /// <param name="app">The per-request application entry point.</param>
+        /// <param name="server">The value returned </param>
         /// <returns>The server.  Invoke Dispose to shut down.</returns>
-        public IDisposable Start(IServerConfiguration serverConfig, AppFunc app)
+        public IDisposable Start(IServerInformation server, AppFunc app)
         {
-            if (serverConfig == null)
+            if (server == null)
             {
-                throw new ArgumentNullException("serverConfig");
+                throw new ArgumentNullException("server");
             }
             if (app == null)
             {
                 throw new ArgumentNullException("app");
             }
 
-            OwinWebListener server = (OwinWebListener)serverConfig.AdvancedConfiguration;
+            WebListenerWrapper wrapper = server as WebListenerWrapper;
+            if (wrapper == null)
+            {
+                throw new ArgumentException("server");
+            }
 
             // TODO: var capabilities = new Dictionary<string, object>();
-            WebListenerWrapper wrapper = new WebListenerWrapper(server);
 
-            wrapper.Start(app, serverConfig.Addresses, _loggerFactory);
+            wrapper.Start(app);
             return wrapper;
+        }
+
+        private void ParseAddresses(IConfiguration config, OwinWebListener listener)
+        {
+            // TODO: Key format?
+            string urls;
+            if (config != null && config.TryGet("server.urls", out urls) && !string.IsNullOrEmpty(urls))
+            {
+                foreach (var value in urls.Split(';'))
+                {
+                    listener.UriPrefixes.Add(Prefix.Create(value));
+                }
+            }
+            // TODO: look for just a port option?
         }
     }
 }

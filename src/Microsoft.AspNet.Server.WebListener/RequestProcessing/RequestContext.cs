@@ -11,10 +11,10 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Logging;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
-    using LoggerFunc = Func<TraceEventType, int, object, Exception, Func<object, Exception, string>, bool>;
     using OpaqueFunc = Func<IDictionary<string, object>, Task>;
 
     internal sealed class RequestContext : IDisposable
@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        internal LoggerFunc Logger
+        internal ILogger Logger
         {
             get { return Server.Logger; }
         }

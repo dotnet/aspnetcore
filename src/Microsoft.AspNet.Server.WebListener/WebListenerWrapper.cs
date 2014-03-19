@@ -2,23 +2,23 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
-using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Logging;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
     using AppFunc = Func<object, Task>;
-    using LoggerFactoryFunc = Func<string, Func<TraceEventType, int, object, Exception, Func<object, Exception, string>, bool>>;
-    using LoggerFunc = Func<TraceEventType, int, object, Exception, Func<object, Exception, string>, bool>;
-    using System.Threading;
 
-    public class WebListenerWrapper : IDisposable
+    public class WebListenerWrapper : IServerInformation, IDisposable
     {
         private static readonly int DefaultMaxAccepts = 5 * Environment.ProcessorCount;
 
-        private OwinWebListener _listener;
+        private readonly OwinWebListener _listener;
+        private readonly ILogger _logger;
+
         private AppFunc _appFunc;
-        private LoggerFunc _logger;
 
         private PumpLimits _pumpLimits;
         private int _acceptorCounts;
@@ -26,38 +26,42 @@ namespace Microsoft.AspNet.Server.WebListener
 
         // TODO: private IDictionary<string, object> _capabilities;
 
-        internal WebListenerWrapper(OwinWebListener listener)
+        internal WebListenerWrapper(OwinWebListener listener, ILoggerFactory loggerFactory)
         {
             Contract.Assert(listener != null);
             _listener = listener;
+            _logger = LogHelper.CreateLogger(loggerFactory, typeof(WebListenerWrapper));
 
             _processRequest = new Action<object>(ProcessRequestAsync);
             _pumpLimits = new PumpLimits(DefaultMaxAccepts);
         }
 
-        internal void Start(AppFunc app, IList<IDictionary<string, object>> addresses,  LoggerFactoryFunc loggerFactory)
+        public OwinWebListener Listener
+        {
+            get { return _listener; }
+        }
+
+        // Microsoft.AspNet.Server.WebListener
+        public string Name
+        {
+            get { return System.Reflection.IntrospectionExtensions.GetTypeInfo(GetType()).Assembly.GetName().Name; }
+        }
+
+        internal void Start(AppFunc app)
         {
             // Can't call Start twice
             Contract.Assert(_appFunc == null);
 
             Contract.Assert(app != null);
-            Contract.Assert(addresses != null);
 
             _appFunc = app;
-            _logger = LogHelper.CreateLogger(loggerFactory, typeof(WebListenerWrapper));
-            LogHelper.LogInfo(_logger, "Start");
 
-            foreach (var address in addresses)
+            if (_listener.UriPrefixes.Count == 0)
             {
-                // Build addresses from parts
-                var scheme = address.Get<string>("scheme") ?? Constants.HttpScheme;
-                var host = address.Get<string>("host") ?? "localhost";
-                var port = address.Get<string>("port") ?? "5000";
-                var path = address.Get<string>("path") ?? string.Empty;
-
-                Prefix prefix = Prefix.Create(scheme, host, port, path);
-                _listener.UriPrefixes.Add(prefix);
+                throw new InvalidOperationException("No address prefixes were defined.");
             }
+
+            LogHelper.LogInfo(_logger, "Start");
 
             _listener.Start();
 

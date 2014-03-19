@@ -9,7 +9,7 @@ using System.Globalization;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
-    internal class Prefix
+    public class Prefix
     {
         private Prefix(bool isHttps, string scheme, string host, string port, int portValue, string path)
         {
@@ -74,6 +74,51 @@ namespace Microsoft.AspNet.Server.WebListener
             }
 
             return new Prefix(isHttps, scheme, host, port, portValue, path);
+        }
+
+        public static Prefix Create(string prefix)
+        {
+            string scheme = null;
+            string host = null;
+            string port = null;
+            string path = null;
+            string whole = prefix ?? string.Empty;
+
+            int delimiterStart1 = whole.IndexOf("://", StringComparison.Ordinal);
+            if (delimiterStart1 < 0)
+            {
+                throw new FormatException("Invalid prefix, missing scheme separator: " + prefix);
+            }
+            int delimiterEnd1 = delimiterStart1 + "://".Length;
+
+            int delimiterStart3 = whole.IndexOf("/", delimiterEnd1, StringComparison.Ordinal);
+            if (delimiterStart3 < 0)
+            {
+                delimiterStart3 = whole.Length;
+            }
+            int delimiterStart2 = whole.LastIndexOf(":", delimiterStart3 - 1, delimiterStart3 - delimiterEnd1, StringComparison.Ordinal);
+            int delimiterEnd2 = delimiterStart2 + ":".Length;
+            if (delimiterStart2 < 0)
+            {
+                delimiterStart2 = delimiterStart3;
+                delimiterEnd2 = delimiterStart3;
+            }
+
+            scheme = whole.Substring(0, delimiterStart1);
+            string portString = whole.Substring(delimiterEnd2, delimiterStart3 - delimiterEnd2);
+            int ignored;
+            if (int.TryParse(portString, NumberStyles.Integer, CultureInfo.InvariantCulture, out ignored))
+            {
+                host = whole.Substring(delimiterEnd1, delimiterStart2 - delimiterEnd1);
+                port = portString;
+            }
+            else
+            {
+                host = whole.Substring(delimiterEnd1, delimiterStart3 - delimiterEnd1);
+            }
+            path = whole.Substring(delimiterStart3);
+
+            return Prefix.Create(scheme, host, port, path);
         }
 
         public bool IsHttps { get; private set; }

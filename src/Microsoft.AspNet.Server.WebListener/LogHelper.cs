@@ -7,12 +7,10 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using Microsoft.AspNet.Logging;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
-    using LoggerFactoryFunc = Func<string, Func<TraceEventType, int, object, Exception, Func<object, Exception, string>, bool>>;
-    using LoggerFunc = Func<TraceEventType, int, object, Exception, Func<object, Exception, string>, bool>;
-
     internal static class LogHelper
     {
         private static readonly Func<object, Exception, string> LogState =
@@ -21,17 +19,17 @@ namespace Microsoft.AspNet.Server.WebListener
         private static readonly Func<object, Exception, string> LogStateAndError =
             (state, error) => string.Format(CultureInfo.CurrentCulture, "{0}\r\n{1}", state, error);
 
-        internal static LoggerFunc CreateLogger(LoggerFactoryFunc factory, Type type)
+        internal static ILogger CreateLogger(ILoggerFactory factory, Type type)
         {
             if (factory == null)
             {
                 return null;
             }
 
-            return factory(type.FullName);
+            return factory.Create(type.FullName);
         }
 
-        internal static void LogInfo(LoggerFunc logger, string data)
+        internal static void LogInfo(ILogger logger, string data)
         {
             if (logger == null)
             {
@@ -39,11 +37,11 @@ namespace Microsoft.AspNet.Server.WebListener
             }
             else
             {
-                logger(TraceEventType.Information, 0, data, null, LogState);
+                logger.WriteInformation(data);
             }
         }
 
-        internal static void LogVerbose(LoggerFunc logger, string data)
+        internal static void LogVerbose(ILogger logger, string data)
         {
             if (logger == null)
             {
@@ -51,11 +49,11 @@ namespace Microsoft.AspNet.Server.WebListener
             }
             else
             {
-                logger(TraceEventType.Verbose, 0, data, null, LogState);
+                logger.WriteVerbose(data);
             }
         }
 
-        internal static void LogException(LoggerFunc logger, string location, Exception exception)
+        internal static void LogException(ILogger logger, string location, Exception exception)
         {
             if (logger == null)
             {
@@ -63,11 +61,11 @@ namespace Microsoft.AspNet.Server.WebListener
             }
             else
             {
-                logger(TraceEventType.Error, 0, location, exception, LogStateAndError);
+                logger.WriteError(location, exception);
             }
         }
 
-        internal static void LogError(LoggerFunc logger, string location, string message)
+        internal static void LogError(ILogger logger, string location, string message)
         {
             if (logger == null)
             {
@@ -75,7 +73,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }
             else
             {
-                logger(TraceEventType.Error, 0, location + ": " + message, null, LogState);
+                logger.WriteError(location + "; " + message);
             }
         }
     }

@@ -15,12 +15,11 @@ using System.Runtime.InteropServices;
 using System.Security.Authentication.ExtendedProtection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Logging;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
     using AppFunc = Func<object, Task>;
-    using LoggerFactoryFunc = Func<string, Func<TraceEventType, int, object, Exception, Func<object, Exception, string>, bool>>;
-    using LoggerFunc = Func<TraceEventType, int, object, Exception, Func<object, Exception, string>, bool>;
 
     /// <summary>
     /// An HTTP server wrapping the Http.Sys APIs that accepts requests and passes them on to the given OWIN application.
@@ -58,7 +57,7 @@ namespace Microsoft.AspNet.Server.WebListener
 
         private readonly ConcurrentDictionary<ulong, ConnectionCancellation> _connectionCancellationTokens;
 
-        private LoggerFunc _logger;
+        private ILogger _logger;
 
         private SafeHandle _requestQueueHandle;
         private volatile State _state; // m_State is set only within lock blocks, but often read outside locks.
@@ -101,12 +100,12 @@ namespace Microsoft.AspNet.Server.WebListener
             Disposed,
         }
 
-        internal LoggerFunc Logger
+        internal ILogger Logger
         {
             get { return _logger; }
         }
 
-        internal List<Prefix> UriPrefixes
+        public List<Prefix> UriPrefixes
         {
             get { return _uriPrefixes; }
         }

@@ -2,8 +2,11 @@
   "version": "0.1-alpha-*",
   "dependencies": {
     "Microsoft.AspNet.Abstractions": "0.1-alpha-*",
+    "Microsoft.AspNet.ConfigurationModel": "0.1-alpha-*",
     "Microsoft.AspNet.HttpFeature": "0.1-alpha-*",
-    "Microsoft.AspNet.FeatureModel": "0.1-alpha-*"
+    "Microsoft.AspNet.FeatureModel": "0.1-alpha-*",
+    "Microsoft.AspNet.Logging": "0.1-alpha-*",
+    "Microsoft.AspNet.Hosting": "0.1-alpha-*"
   },
   "compilationOptions": {
     "allowUnsafe": true
