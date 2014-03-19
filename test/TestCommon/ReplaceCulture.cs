@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Globalization;
 using System.Reflection;
-using System.Threading;
 using Xunit.Sdk;
 
 namespace Microsoft.AspNet.Mvc
@@ -14,7 +13,7 @@ namespace Microsoft.AspNet.Mvc
     {
         private const string _defaultCultureName = "en-GB";
         private const string _defaultUICultureName = "en-US";
-        private static readonly CultureInfo _defaultCulture = CultureInfo.GetCultureInfo(_defaultCultureName);
+        private static readonly CultureInfo _defaultCulture = new CultureInfo(_defaultCultureName);
         private CultureInfo _originalCulture;
         private CultureInfo _originalUICulture;
 
@@ -41,17 +40,17 @@ namespace Microsoft.AspNet.Mvc
 
         public override void Before(MethodInfo methodUnderTest)
         {
-            _originalCulture = Thread.CurrentThread.CurrentCulture;
-            _originalUICulture = Thread.CurrentThread.CurrentUICulture;
+            _originalCulture = CultureInfo.DefaultThreadCurrentCulture;
+            _originalUICulture = CultureInfo.DefaultThreadCurrentUICulture;
 
-            Thread.CurrentThread.CurrentCulture = Culture;
-            Thread.CurrentThread.CurrentUICulture = UICulture;
+            CultureInfo.DefaultThreadCurrentCulture = Culture;
+            CultureInfo.DefaultThreadCurrentUICulture = UICulture;
         }
 
         public override void After(MethodInfo methodUnderTest)
         {
-            Thread.CurrentThread.CurrentCulture = _originalCulture;
-            Thread.CurrentThread.CurrentUICulture = _originalUICulture;
+            CultureInfo.DefaultThreadCurrentCulture = _originalCulture;
+            CultureInfo.DefaultThreadCurrentUICulture = _originalUICulture;
         }
     }
 }

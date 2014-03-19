@@ -2,7 +2,9 @@
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
+#if NET45
 using Moq;
+#endif
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Test
@@ -18,6 +20,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             ExceptionAssert.ThrowsArgumentNull(() => _factory.GetValueProviderAsync(requestContext: null), "requestContext");
         }
 
+#if NET45
         [Fact]
         public async Task GetValueProvider_ReturnsQueryStringValueProviderInstaceWithInvariantCulture()
         {
@@ -36,5 +39,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var valueProvider = Assert.IsType<ReadableStringCollectionValueProvider>(result);
             Assert.Equal(CultureInfo.InvariantCulture, valueProvider.Culture);
         }
+#endif
     }
 }

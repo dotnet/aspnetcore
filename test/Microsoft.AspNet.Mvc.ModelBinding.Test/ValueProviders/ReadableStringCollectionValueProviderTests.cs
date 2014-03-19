@@ -162,7 +162,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public void GetValue_SingleValue()
         {
             // Arrange
-            var culture = CultureInfo.GetCultureInfo("fr-FR");
+            var culture = new CultureInfo("fr-FR");
             var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, culture);
 
             // Act
@@ -179,7 +179,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public void GetValue_MultiValue()
         {
             // Arrange
-            var culture = CultureInfo.GetCultureInfo("fr-FR");
+            var culture = new CultureInfo("fr-FR");
             var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, culture);
 
             // Act
@@ -200,7 +200,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         //public void GetValue_NullValue(string key)
         //{
         //    // Arrange
-        //    var culture = CultureInfo.GetCultureInfo("fr-FR");
+        //    var culture = new CultureInfo("fr-FR");
         //    var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, culture);
 
         //    // Act
@@ -222,7 +222,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 { 
                     { "key", new string[] { null, null, "value" } }
                 });
-            var culture = CultureInfo.GetCultureInfo("fr-FR");
+            var culture = new CultureInfo("fr-FR");
             var valueProvider = new ReadableStringCollectionValueProvider(backingStore, culture);
 
             // Act

@@ -1,13 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+#if NET45
 using Moq;
+#endif
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 {
     public class CollectionModelBinderTest
     {
+#if NET45
         [Fact]
         public void BindComplexCollectionFromIndexes_FiniteIndexes()
         {
@@ -88,6 +91,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.True(retVal);
             Assert.Equal(new[] { 42, 100, 200 }, ((List<int>)bindingContext.Model).ToArray());
         }
+#endif
 
         [Fact]
         public void BindSimpleCollection_RawValueIsEmptyCollection_ReturnsEmptyList()
@@ -116,11 +120,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Null(boundCollection);
         }
 
+#if NET45
         [Fact]
         public void BindSimpleCollection_SubBindingSucceeds()
         {
             // Arrange
-            var culture = CultureInfo.GetCultureInfo("fr-FR");
+            var culture = new CultureInfo("fr-FR");
             var bindingContext = GetModelBindingContext(new SimpleHttpValueProvider());
 
             ModelValidationNode childValidationNode = null;
@@ -174,5 +179,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 });
             return mockIntBinder.Object;
         }
+#endif
     }
 }

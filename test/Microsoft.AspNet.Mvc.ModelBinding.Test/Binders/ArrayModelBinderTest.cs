@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿#if NET45
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Test
@@ -93,3 +94,4 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
     }
 }
+#endif

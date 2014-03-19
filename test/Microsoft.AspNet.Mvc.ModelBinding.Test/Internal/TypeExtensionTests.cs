@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding.Internal.Test
+namespace Microsoft.AspNet.Mvc
 {
     public class TypeExtensionTests
     {

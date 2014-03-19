@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#if NET45
+using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
@@ -56,3 +57,4 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
     }
 }
+#endif

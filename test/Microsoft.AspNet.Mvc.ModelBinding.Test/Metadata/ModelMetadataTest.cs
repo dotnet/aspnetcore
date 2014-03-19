@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+#if NET45
 using Moq;
+#endif
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Test
@@ -19,6 +21,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 "provider");
         }
 
+#if NET45
         [Fact]
         public void NullTypeThrows()
         {
@@ -51,6 +54,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Equal("propertyName", metadata.PropertyName);
             Assert.False(metadata.IsReadOnly);
         }
+#endif
 
         // IsComplexType
 
@@ -58,6 +62,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
         }
 
+#if NET45
         [Theory]
         [InlineData(typeof(string))]
         [InlineData(typeof(Nullable<int>))]
@@ -127,6 +132,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Equal(propertyMetadata, result.ToList());
             provider.Verify();
         }
+#endif
 
         [Fact]
         public void PropertiesListGetsResetWhenModelGetsReset()
@@ -162,6 +168,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
         // GetDisplayName()
 
+#if NET45
         [Fact]
         public void ReturnsPropertyNameWhenSetAndDisplayNameIsNull()
         {
@@ -189,6 +196,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             // Assert
             Assert.Equal("Object", result);
         }
+#endif
 
         // Helpers
 

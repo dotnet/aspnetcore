@@ -31,29 +31,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Equal("Input string was not in a correct format.", bindingContext.ModelState["theModelName"].Errors[0].ErrorMessage);
         }
 
-        // TODO: TypeConverter
-        //[Fact]
-        //public void BindModel_Error_GeneralExceptionsSavedInModelState()
-        //{
-        //    // Arrange
-        //    ModelBindingContext bindingContext = GetBindingContext(typeof(Dummy));
-        //    bindingContext.ValueProvider = new SimpleHttpValueProvider
-        //    {
-        //        { "theModelName", "foo" }
-        //    };
-
-        //    TypeConverterModelBinder binder = new TypeConverterModelBinder();
-
-        //    // Act
-        //    bool retVal = binder.BindModel(bindingContext);
-
-        //    // Assert
-        //    Assert.False(retVal);
-        //    Assert.Null(bindingContext.Model);
-        //    Assert.Equal("The parameter conversion from type 'System.String' to type 'Microsoft.AspNet.Mvc.ModelBinding.Test.TypeConverterModelBinderTest+Dummy' failed. See the inner exception for more information.", bindingContext.ModelState["theModelName"].Errors[0].Exception.Message);
-        //    Assert.Equal("From DummyTypeConverter: foo", bindingContext.ModelState["theModelName"].Errors[0].Exception.InnerException.Message);
-        //}
-
         [Fact]
         public void BindModel_NullValueProviderResult_ReturnsFalse()
         {
@@ -120,25 +97,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 ModelName = "theModelName",
                 ValueProvider = new SimpleHttpValueProvider() // empty
             };
-        }
-
-        // TODO: TypeConverter
-        //[TypeConverter(typeof(DummyTypeConverter))]
-        //private struct Dummy
-        //{
-        //}
-
-        private sealed class DummyTypeConverter : TypeConverter
-        {
-            public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
-            {
-                return (sourceType == typeof(string)) || base.CanConvertFrom(context, sourceType);
-            }
-
-            public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
-            {
-                throw new InvalidOperationException(String.Format("From DummyTypeConverter: {0}", value));
-            }
         }
     }
 }

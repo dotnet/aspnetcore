@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#if NET45
+using System.Collections.Generic;
 using Moq;
 using Xunit;
 
@@ -57,3 +58,4 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
     }
 }
+#endif

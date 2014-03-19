@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+#if NET45
 using Moq;
 using Moq.Protected;
+#endif
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -56,6 +58,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
+#if NET45
         [Theory]
         [MemberData("ValidateSetsMemberNamePropertyDataSet")]
         public void ValidateSetsMemberNamePropertyOfValidationContextForProperties(ModelMetadata metadata, string expectedMemberName)
@@ -199,6 +202,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             ModelValidationResult validationResult = Assert.Single(results);
             Assert.Equal("Name", validationResult.MemberName);
         }
+#endif
 
         [Fact]
         public void IsRequiredTests()

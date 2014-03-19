@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Mvc
     {
         private const string _defaultCultureName = "en-GB";
         private const string _defaultUICultureName = "en-US";
-        private static readonly CultureInfo _defaultCulture = CultureInfo.GetCultureInfo(_defaultCultureName);
+        private static readonly CultureInfo _defaultCulture = new CultureInfo(_defaultCultureName);
         private readonly CultureInfo _originalCulture;
         private readonly CultureInfo _originalUICulture;
         private readonly long _threadId;
@@ -20,12 +20,12 @@ namespace Microsoft.AspNet.Mvc
         // UICulture => Language
         public CultureReplacer(string culture = _defaultCultureName, string uiCulture = _defaultUICultureName)
         {
-            _originalCulture = Thread.CurrentThread.CurrentCulture;
-            _originalUICulture = Thread.CurrentThread.CurrentUICulture;
+            _originalCulture = CultureInfo.DefaultThreadCurrentCulture;
+            _originalUICulture = CultureInfo.DefaultThreadCurrentUICulture;
             _threadId = Thread.CurrentThread.ManagedThreadId;
 
-            Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo(culture);
-            Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(uiCulture);
+            CultureInfo.DefaultThreadCurrentCulture = new CultureInfo(culture);
+            CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(uiCulture);
         }
 
         /// <summary>
@@ -62,9 +62,10 @@ namespace Microsoft.AspNet.Mvc
         {
             if (disposing)
             {
-                Assert.True(Thread.CurrentThread.ManagedThreadId == _threadId, "The current thread is not the same as the thread invoking the constructor. This should never happen.");
-                Thread.CurrentThread.CurrentCulture = _originalCulture;
-                Thread.CurrentThread.CurrentUICulture = _originalUICulture;
+                Assert.True(Thread.CurrentThread.ManagedThreadId == _threadId,
+                    "The current thread is not the same as the thread invoking the constructor. This should never happen.");
+                CultureInfo.DefaultThreadCurrentCulture = _originalCulture;
+                CultureInfo.DefaultThreadCurrentUICulture = _originalUICulture;
             }
         }
     }

@@ -179,6 +179,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test.Binders
         //        "modelType");
         //}
 
+#if NET45 // No ReadOnlyAttribute in K
         [Fact]
         public void GetMetadataForTypeIncludesAttributesOnType()
         {
@@ -194,6 +195,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test.Binders
             CreateMetadataPrototypeParams parms = provider.CreateMetadataPrototypeLog.Single(p => p.ModelType == typeof(TypeModel));
             Assert.True(parms.Attributes.Any(a => a is ReadOnlyAttribute));
         }
+#endif
 
         // Helpers
 
@@ -227,10 +229,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test.Binders
             public int ReadOnlyProperty { get; private set; }
         }
 
+#if NET45 // No [ReadOnly] in K
         [ReadOnly(true)]
         private class TypeModel
         {
         }
+#endif
 
         class TestableAssociatedMetadataProvider : AssociatedMetadataProvider<ModelMetadata>
         {
