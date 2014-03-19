@@ -10,21 +10,21 @@ namespace Microsoft.AspNet.PipelineCore
     {
         private readonly IFeatureCollection _features;
         private readonly FeatureReference<IHttpResponseInformation> _request = FeatureReference<IHttpResponseInformation>.Default;
-        private IResponseCookiesCollection _cookiesCollection;
+        private IResponseCookies _cookiesCollection;
 
         public DefaultCanHasResponseCookies(IFeatureCollection features)
         {
             _features = features;
         }
 
-        public IResponseCookiesCollection Cookies
+        public IResponseCookies Cookies
         {
             get
             {
                 if (_cookiesCollection == null)
                 {
                     var headers = _request.Fetch(_features).Headers;
-                    _cookiesCollection = new ResponseCookiesCollection(new HeaderDictionary(headers));
+                    _cookiesCollection = new ResponseCookies(new HeaderDictionary(headers));
                 }
 
                 return _cookiesCollection;

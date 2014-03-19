@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Abstractions
         public abstract long? ContentLength { get; set; }
         public abstract string ContentType { get; set; }
 
-        public abstract IResponseCookiesCollection Cookies { get; }
+        public abstract IResponseCookies Cookies { get; }
 
         public abstract void OnSendingHeaders(Action<object> callback, object state);
 

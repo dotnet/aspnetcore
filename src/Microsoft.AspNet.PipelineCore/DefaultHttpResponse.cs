@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.PipelineCore
             }
         }
 
-        public override IResponseCookiesCollection Cookies
+        public override IResponseCookies Cookies
         {
             get { return CanHasResponseCookies.Cookies; }
         }

@@ -10,13 +10,13 @@ namespace Microsoft.AspNet.PipelineCore.Collections
     /// <summary>
     /// A wrapper for the response Set-Cookie header
     /// </summary>
-    public class ResponseCookiesCollection : IResponseCookiesCollection
+    public class ResponseCookies : IResponseCookies
     {
         /// <summary>
         /// Create a new wrapper
         /// </summary>
         /// <param name="headers"></param>
-        public ResponseCookiesCollection(IHeaderDictionary headers)
+        public ResponseCookies(IHeaderDictionary headers)
         {
             if (headers == null)
             {

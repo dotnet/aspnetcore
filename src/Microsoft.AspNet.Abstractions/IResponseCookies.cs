@@ -4,7 +4,7 @@ namespace Microsoft.AspNet.Abstractions
     /// <summary>
     /// A wrapper for the response Set-Cookie header
     /// </summary>
-    public interface IResponseCookiesCollection
+    public interface IResponseCookies
     {
         /// <summary>
         /// Add a new cookie and value

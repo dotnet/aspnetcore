@@ -5,6 +5,6 @@ namespace Microsoft.AspNet.PipelineCore
 {
     public interface ICanHasResponseCookies
     {
-        IResponseCookiesCollection Cookies { get; }
+        IResponseCookies Cookies { get; }
     }
 }
