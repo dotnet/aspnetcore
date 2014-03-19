@@ -14,7 +14,14 @@ namespace Microsoft.AspNet.PipelineCore
             ServiceProvider = serviceProvider;
         }
 
+        internal Builder(Builder builder)
+        {
+            ServiceProvider = builder.ServiceProvider;
+            Server = builder.Server;
+        }
+
         public IServiceProvider ServiceProvider { get; set; }
+        public IServerInformation Server { get; set; }
 
         public IBuilder Use(Func<RequestDelegate, RequestDelegate> middleware)
         {
@@ -29,7 +36,7 @@ namespace Microsoft.AspNet.PipelineCore
 
         public IBuilder New()
         {
-            return new Builder(ServiceProvider);
+            return new Builder(this);
         }
 
         public RequestDelegate Build()
