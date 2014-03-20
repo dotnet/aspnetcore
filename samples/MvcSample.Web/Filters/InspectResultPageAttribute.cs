@@ -9,11 +9,11 @@ namespace MvcSample.Web.Filters
     {
         public async override Task Invoke(ActionResultFilterContext context, Func<Task> next)
         {
-            ViewResult viewResult = context.Result as ViewResult;
+            var viewResult = context.ActionResult as ViewResult;
 
             if (viewResult != null)
             {
-                User user = viewResult.ViewData.Model as User;
+                var user = viewResult.ViewData.Model as User;
 
                 if (user != null)
                 {

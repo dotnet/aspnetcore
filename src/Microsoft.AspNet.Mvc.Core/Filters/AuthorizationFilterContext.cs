@@ -1,25 +1,21 @@
 ﻿using System.Collections.Generic;
+using Microsoft.AspNet.Mvc.Filters;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class AuthorizationFilterContext
+    public class AuthorizationFilterContext : FilterContext
     {
         private IActionResult _actionResult;
 
         public AuthorizationFilterContext([NotNull] ActionContext actionContext, [NotNull] IReadOnlyList<FilterItem> filterItems)
+            : base(actionContext, filterItems)
         {
-            ActionContext = actionContext;
-            FilterItems = filterItems;
         }
 
         public bool HasFailed { get; private set; }
 
-        public ActionContext ActionContext { get; private set; }
-
-        public IReadOnlyList<FilterItem> FilterItems { get; private set; }
-
         // Result
-        public IActionResult ActionResult
+        public override IActionResult ActionResult
         {
             get { return _actionResult; }
             set

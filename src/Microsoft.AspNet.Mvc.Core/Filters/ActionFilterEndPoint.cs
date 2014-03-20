@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.Filters
                                                             context.ActionArguments);
 
             var underlyingReturnType = TypeHelper.GetTaskInnerTypeOrNull(actionMethodInfo.ReturnType) ?? actionMethodInfo.ReturnType;
-            context.Result = _actionResultFactory.CreateActionResult(
+            context.ActionResult = _actionResultFactory.CreateActionResult(
                                                             underlyingReturnType,
                                                             actionReturnValue,
                                                             context.ActionContext);

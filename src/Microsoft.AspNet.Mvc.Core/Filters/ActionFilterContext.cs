@@ -1,21 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Microsoft.AspNet.Mvc.Filters;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class ActionFilterContext
+    public class ActionFilterContext : FilterContext
     {
-        public ActionFilterContext(ActionContext actionContext,
-                                   IDictionary<string, object> actionArguments)
+        public ActionFilterContext([NotNull] ActionContext actionContext,
+                                   [NotNull] IReadOnlyList<FilterItem> filterItems,
+                                   [NotNull] IDictionary<string, object> actionArguments)
+            : base(actionContext, filterItems)
         {
-            ActionContext = actionContext;
             ActionArguments = actionArguments;
         }
 
         public virtual IDictionary<string, object> ActionArguments { get; private set; }
-
-        public virtual ActionContext ActionContext { get; private set; }
-
-        public virtual IActionResult Result { get; set; }
     }
 }

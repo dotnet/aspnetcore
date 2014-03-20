@@ -9,7 +9,7 @@ namespace MvcSample.Web
     [PassThrough(Order = 0)]
     [PassThrough(Order = 2)]
     [InspectResultPage]
-    [BlockAnonynous]
+    [BlockAnonymous]
     [UserNameProvider(Order = -1)]
     public class FiltersController : Controller
     {

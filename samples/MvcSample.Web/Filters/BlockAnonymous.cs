@@ -4,7 +4,7 @@ using Microsoft.AspNet.Mvc;
 
 namespace MvcSample.Web.Filters
 {
-    public class BlockAnonynous : AuthorizationFilterAttribute
+    public class BlockAnonymous : AuthorizationFilterAttribute
     {
         public override async Task Invoke(AuthorizationFilterContext context, Func<Task> next)
         {

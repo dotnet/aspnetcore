@@ -1,15 +1,14 @@
-﻿namespace Microsoft.AspNet.Mvc
+﻿using System.Collections.Generic;
+using Microsoft.AspNet.Mvc.Filters;
+
+namespace Microsoft.AspNet.Mvc
 {
-    public class ActionResultFilterContext
+    public class ActionResultFilterContext : FilterContext
     {
-        public ActionResultFilterContext(ActionContext actionContext, IActionResult initialResult)
+        public ActionResultFilterContext(ActionContext actionContext, IReadOnlyList<FilterItem> filterItems, IActionResult initialResult)
+            : base(actionContext, filterItems)
         {
-            ActionContext = actionContext;
-            Result = initialResult;
+            ActionResult = initialResult;
         }
-
-        public ActionContext ActionContext { get; private set; }
-
-        public IActionResult Result { get; set; }
     }
 }

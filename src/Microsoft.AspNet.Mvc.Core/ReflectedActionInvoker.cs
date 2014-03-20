@@ -47,6 +47,7 @@ namespace Microsoft.AspNet.Mvc
                                           Select(fd => new FilterItem(fd)).ToList());
 
             _filterProvider.Invoke(filterProviderContext);
+            var filterMetaItems = filterProviderContext.Result.ToArray();
 
             PreArrangeFiltersInPipeline(filterProviderContext);
 
@@ -72,7 +73,7 @@ namespace Microsoft.AspNet.Mvc
                         var authZEndPoint = new AuthorizationFilterEndPoint();
                         _authorizationFilters.Add(authZEndPoint);
 
-                        var authZContext = new AuthorizationFilterContext(_actionContext, filterProviderContext.Result.ToArray());
+                        var authZContext = new AuthorizationFilterContext(_actionContext, filterMetaItems);
                         var authZPipeline = new FilterPipelineBuilder<AuthorizationFilterContext>(_authorizationFilters, authZContext);
 
                         await authZPipeline.InvokeAsync();
@@ -99,6 +100,7 @@ namespace Microsoft.AspNet.Mvc
                         var parameterValues = await GetParameterValues(modelState);
 
                         var actionFilterContext = new ActionFilterContext(_actionContext,
+                                                                          filterMetaItems,
                                                                           parameterValues);
 
                         var actionEndPoint = new ReflectedActionFilterEndPoint(_actionResultFactory, controller);
@@ -109,12 +111,12 @@ namespace Microsoft.AspNet.Mvc
 
                         await actionFilterPipeline.InvokeAsync();
 
-                        actionResult = actionFilterContext.Result;
+                        actionResult = actionFilterContext.ActionResult;
                     }
                 }
             }
 
-            var actionResultFilterContext = new ActionResultFilterContext(_actionContext, actionResult);
+            var actionResultFilterContext = new ActionResultFilterContext(_actionContext, filterMetaItems, actionResult);
             var actionResultFilterEndPoint = new ActionResultFilterEndPoint();
             _actionResultFilters.Add(actionResultFilterEndPoint);
 
