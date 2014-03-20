@@ -1,15 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
     public class ViewContext
     {
-        public ViewContext(HttpContext context, ViewData viewData, IServiceProvider serviceProvider)
+        public ViewContext(IServiceProvider serviceProvider, HttpContext httpContext, IDictionary<string, object> viewEngineContext, ViewData viewData)
         {
-            HttpContext = context;
-            ViewData = viewData;
             ServiceProvider = serviceProvider;
+            HttpContext = httpContext;
+            ViewEngineContext = viewEngineContext;
+            ViewData = viewData;
         }
 
         public HttpContext HttpContext { get; private set; }
@@ -19,5 +21,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public IUrlHelper Url { get; set; }
 
         public ViewData ViewData { get; private set; }
+
+        public IDictionary<string, object> ViewEngineContext { get; private set; }
     }
 }
