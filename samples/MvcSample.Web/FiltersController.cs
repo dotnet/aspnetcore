@@ -9,6 +9,7 @@ namespace MvcSample.Web
     [PassThrough(Order = 0)]
     [PassThrough(Order = 2)]
     [InspectResultPage]
+    [BlockAnonynous]
     [UserNameProvider(Order = -1)]
     public class FiltersController : Controller
     {
@@ -16,6 +17,7 @@ namespace MvcSample.Web
 
         // TODO: Add a real filter here
         [ServiceFilter(typeof(PassThroughAttribute))]
+        [AllowAnonymous]
         [AgeEnhancer]
         public IActionResult Index(int age, string userName)
         {
@@ -28,5 +30,10 @@ namespace MvcSample.Web
 
             return View("MyView", _user);
         }
-    }   
+
+        public IActionResult Blocked(int age, string userName)
+        {
+            return Index(age, userName);
+        }
+    }
 }

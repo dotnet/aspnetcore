@@ -48,7 +48,6 @@ namespace Microsoft.AspNet.Mvc
 
             _filterProvider.Invoke(filterProviderContext);
 
-            // TODO: arrange when needed.
             PreArrangeFiltersInPipeline(filterProviderContext);
 
             var modelState = new ModelStateDictionary();
@@ -73,7 +72,7 @@ namespace Microsoft.AspNet.Mvc
                         var authZEndPoint = new AuthorizationFilterEndPoint();
                         _authorizationFilters.Add(authZEndPoint);
 
-                        var authZContext = new AuthorizationFilterContext(_actionContext);
+                        var authZContext = new AuthorizationFilterContext(_actionContext, filterProviderContext.Result.ToArray());
                         var authZPipeline = new FilterPipelineBuilder<AuthorizationFilterContext>(_authorizationFilters, authZContext);
 
                         await authZPipeline.InvokeAsync();
@@ -172,8 +171,6 @@ namespace Microsoft.AspNet.Mvc
             var authFilter = filter as IAuthorizationFilter;
             var actionFilter = filter as IActionFilter;
             var actionResultFilter = filter as IActionResultFilter;
-
-            // TODO: Exception filters
 
             if (authFilter != null)
             {
