@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.Mvc.Rendering
@@ -23,5 +24,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public ViewData ViewData { get; private set; }
 
         public IDictionary<string, object> ViewEngineContext { get; private set; }
+
+        public TextWriter Writer { get; set; }
     }
 }

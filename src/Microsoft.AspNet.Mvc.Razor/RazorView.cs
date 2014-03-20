@@ -31,7 +31,20 @@ namespace Microsoft.AspNet.Mvc.Razor
             using (var bodyWriter = new StringWriter(contentBuilder))
             {
                 Output = bodyWriter;
-                await ExecuteAsync();
+
+                // The writer for the body is passed through the ViewContext, allowing things like HtmlHelpers
+                // and ViewComponents to reference it.
+                var oldWriter = context.Writer;
+                context.Writer = bodyWriter;
+
+                try
+                {
+                    await ExecuteAsync();
+                }
+                finally
+                {
+                    context.Writer = oldWriter;
+                }
             }
 
             var bodyContent = contentBuilder.ToString();
