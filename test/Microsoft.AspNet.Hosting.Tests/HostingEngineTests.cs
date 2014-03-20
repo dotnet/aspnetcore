@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Hosting
 
         }
 
-        public IServerInformation Initialize(IConfiguration configuraiton)
+        public IServerInformation Initialize(IConfiguration configuration)
         {
             return null;
         }
