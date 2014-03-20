@@ -28,27 +28,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             get { return _viewLocationFormats; }
         }
 
-        public async Task<ViewEngineResult> FindView(object context, string viewName)
+        public async Task<ViewEngineResult> FindView([NotNull] IDictionary<string, object> context,[NotNull] string viewName)
         {
-            var actionContext = (ActionContext)context;
-
-            var actionDescriptor = actionContext.ActionDescriptor;
-            
-            if (actionDescriptor == null)
-            {
-                return null;
-            }
-            
-            if (string.IsNullOrEmpty(viewName))
-            {
-                viewName = actionDescriptor.Name;
-            }
-
-            if (string.IsNullOrEmpty(viewName))
-            {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "viewName");
-            }
-
             var nameRepresentsPath = IsSpecificPath(viewName);
 
             if (nameRepresentsPath)
@@ -59,8 +40,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
             else
             {
-                var controllerName = actionContext.RouteValues.GetValueOrDefault<string>("controller");
-                var areaName = actionContext.RouteValues.GetValueOrDefault<string>("area");
+                var controllerName = context.GetValueOrDefault<string>("controller");
+                var areaName = context.GetValueOrDefault<string>("area");
 
                 var searchedLocations = new List<string>(_viewLocationFormats.Length);
                 for (int i = 0; i < _viewLocationFormats.Length; i++)
@@ -73,6 +54,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     }
                     searchedLocations.Add(path);
                 }
+
                 return ViewEngineResult.NotFound(searchedLocations);
             }
         }

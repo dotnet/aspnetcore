@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -22,14 +23,11 @@ namespace Microsoft.AspNet.Mvc
 
         public ViewData ViewData { get; set; }
 
-        public async Task ExecuteResultAsync(ActionContext context)
+        public async Task ExecuteResultAsync([NotNull] ActionContext context)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException("context");
-            }
+            var viewName = ViewName ?? context.ActionDescriptor.Name;
+            var view = await FindView(context.RouteValues, viewName);
 
-            IView view = await FindView(context, ViewName);
             using (view as IDisposable)
             {
                 context.HttpContext.Response.ContentType = "text/html";
@@ -44,12 +42,12 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        private async Task<IView> FindView(ActionContext actionContext, string viewName)
+        private async Task<IView> FindView([NotNull] IDictionary<string, object> context,[NotNull] string viewName)
         {
-            ViewEngineResult result = await _viewEngine.FindView(actionContext, viewName);
+            var result = await _viewEngine.FindView(context, viewName);
             if (!result.Success)
             {
-                string locationsText = string.Join(Environment.NewLine, result.SearchedLocations);
+                var locationsText = string.Join(Environment.NewLine, result.SearchedLocations);
                 const string message = @"The view &apos;{0}&apos; was not found. The following locations were searched:{1}.";
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, message, viewName, locationsText));
             }

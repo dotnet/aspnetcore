@@ -83,26 +83,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return value != null ? WebUtility.HtmlEncode(value.ToString()) : string.Empty;
         }
 
-        internal static IView FindPartialView([NotNull] ViewContext viewContext, string partialViewName,
-            [NotNull] IViewEngine viewEngine)
-        {
-            ViewEngineResult result = viewEngine.FindView(viewContext, partialViewName).Result;
-            if (result.View != null)
-            {
-                return result.View;
-            }
-
-            StringBuilder locationsText = new StringBuilder();
-            foreach (string location in result.SearchedLocations)
-            {
-                locationsText.AppendLine();
-                locationsText.Append(location);
-            }
-
-            throw new InvalidOperationException(Resources.FormatCommon_PartialViewNotFound(partialViewName,
-                locationsText));
-        }
-
         public string GenerateIdFromName([NotNull] string name)
         {
             return TagBuilder.CreateSanitizedId(name, IdAttributeDotReplacement);

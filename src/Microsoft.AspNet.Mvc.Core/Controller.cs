@@ -31,8 +31,7 @@ namespace Microsoft.AspNet.Mvc
 
         public IActionResult View(string view)
         {
-            object model = null;
-            return View(view, model);
+            return View(view, model: (object)null);
         }
 
         public IActionResult View<TModel>(TModel model)
