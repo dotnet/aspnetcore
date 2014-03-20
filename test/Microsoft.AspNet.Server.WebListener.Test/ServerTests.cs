@@ -191,8 +191,8 @@ namespace Microsoft.AspNet.Server.WebListener.Test
         [Fact]
         public async Task Server_SetQueueLimit_Success()
         {
-            ServerFactory factory = new ServerFactory(null);
-            WebListenerWrapper wrapper = (WebListenerWrapper)factory.Initialize(null);
+            var factory = new ServerFactory(null);
+            var wrapper = (WebListenerWrapper)factory.Initialize(null);
             wrapper.Listener.UriPrefixes.Add(Prefix.Create("http://localhost:8080"));
 
             wrapper.Listener.SetRequestQueueLimit(1001);

@@ -47,10 +47,10 @@ namespace Microsoft.AspNet.Server.WebListener
         /// </summary>
         /// <param name="properties"></param>
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposed by caller")]
-        public IServerInformation Initialize(IConfiguration config)
+        public IServerInformation Initialize(IConfiguration configuration)
         {
             OwinWebListener listener = new OwinWebListener();
-            ParseAddresses(config, listener);
+            ParseAddresses(configuration, listener);
             return new WebListenerWrapper(listener, _loggerFactory);
         }
 

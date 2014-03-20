@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
@@ -44,7 +45,7 @@ namespace Microsoft.AspNet.Server.WebListener
         // Microsoft.AspNet.Server.WebListener
         public string Name
         {
-            get { return System.Reflection.IntrospectionExtensions.GetTypeInfo(GetType()).Assembly.GetName().Name; }
+            get { return GetType().GetTypeInfo().Assembly.GetName().Name; }
         }
 
         internal void Start(AppFunc app)

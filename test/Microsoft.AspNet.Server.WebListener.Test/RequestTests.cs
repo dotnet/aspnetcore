@@ -150,8 +150,8 @@ namespace Microsoft.AspNet.Server.WebListener.Test
 
         private IDisposable CreateServer(AppFunc app)
         {
-            ServerFactory factory = new ServerFactory(null);
-            WebListenerWrapper wrapper = (WebListenerWrapper)factory.Initialize(null);
+            var factory = new ServerFactory(null);
+            var wrapper = (WebListenerWrapper)factory.Initialize(null);
 
             foreach (string path in new[] { "/", "/11", "/2/3", "/2", "/11/2" })
             {

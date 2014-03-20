@@ -13,12 +13,6 @@ namespace Microsoft.AspNet.Server.WebListener
 {
     internal static class LogHelper
     {
-        private static readonly Func<object, Exception, string> LogState =
-            (state, error) => Convert.ToString(state, CultureInfo.CurrentCulture);
-
-        private static readonly Func<object, Exception, string> LogStateAndError =
-            (state, error) => string.Format(CultureInfo.CurrentCulture, "{0}\r\n{1}", state, error);
-
         internal static ILogger CreateLogger(ILoggerFactory factory, Type type)
         {
             if (factory == null)
