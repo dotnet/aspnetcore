@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.PipelineCore
             ServiceProvider = serviceProvider;
         }
 
-        internal Builder(Builder builder)
+        private Builder(Builder builder)
         {
             ServiceProvider = builder.ServiceProvider;
             Server = builder.Server;
