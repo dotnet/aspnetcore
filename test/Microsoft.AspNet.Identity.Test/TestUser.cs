@@ -1,4 +1,3 @@
-
 namespace Microsoft.AspNet.Identity.Test
 {
     public class TestUser : TestUser<string>
@@ -10,5 +9,4 @@ namespace Microsoft.AspNet.Identity.Test
         public TKey Id { get; private set; }
         public string UserName { get; set; }
     }
-
 }

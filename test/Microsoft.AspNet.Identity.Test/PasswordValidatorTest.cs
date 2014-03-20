@@ -7,6 +7,17 @@ namespace Microsoft.AspNet.Identity.Test
 {
     public class PasswordValidatorTest
     {
+        [Flags]
+        public enum Errors
+        {
+            None = 0,
+            Length = 2,
+            Alpha = 4,
+            Upper = 8,
+            Lower = 16,
+            Digit = 32,
+        }
+
         [Fact]
         public async Task ValidateThrowsWithNullTest()
         {
@@ -21,7 +32,7 @@ namespace Microsoft.AspNet.Identity.Test
 
         [Theory]
         [InlineData("")]
-        [InlineData("abc")] 
+        [InlineData("abc")]
         [InlineData("abcde")]
         public async Task FailsIfTooShortTests(string input)
         {
@@ -33,39 +44,30 @@ namespace Microsoft.AspNet.Identity.Test
         [Theory]
         [InlineData("abcdef")]
         [InlineData("aaaaaaaaaaa")]
-        public async Task SuccessIfLongEnoughTests(string input) {
+        public async Task SuccessIfLongEnoughTests(string input)
+        {
             var valid = new PasswordValidator {RequiredLength = 6};
             IdentityResultAssert.IsSuccess(await valid.Validate(input));
         }
 
         [Theory]
-        [InlineData("a")] 
+        [InlineData("a")]
         [InlineData("aaaaaaaaaaa")]
         public async Task FailsWithoutRequiredNonAlphanumericTests(string input)
         {
-            var valid = new PasswordValidator { RequireNonLetterOrDigit = true };
-            IdentityResultAssert.IsFailure(await valid.Validate(input), "Passwords must have at least one non letter or digit character.");
+            var valid = new PasswordValidator {RequireNonLetterOrDigit = true};
+            IdentityResultAssert.IsFailure(await valid.Validate(input),
+                "Passwords must have at least one non letter or digit character.");
         }
 
-        [Theory] 
+        [Theory]
         [InlineData("@")]
         [InlineData("abcd@e!ld!kajfd")]
         [InlineData("!!!!!!")]
         public async Task SucceedsWithRequiredNonAlphanumericTests(string input)
         {
-            var valid = new PasswordValidator { RequireNonLetterOrDigit = true };
+            var valid = new PasswordValidator {RequireNonLetterOrDigit = true};
             IdentityResultAssert.IsSuccess(await valid.Validate(input));
-        }
-
-        [Flags]
-        public enum Errors
-        {
-            None = 0,
-            Length = 2,
-            Alpha = 4,
-            Upper = 8,
-            Lower = 16,
-            Digit = 32,
         }
 
         [Theory]

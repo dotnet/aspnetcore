@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace Microsoft.AspNet.Identity
+﻿namespace Microsoft.AspNet.Identity
 {
     /// <summary>
     ///     Represents a message

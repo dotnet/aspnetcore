@@ -68,7 +68,10 @@ namespace Microsoft.AspNet.Identity
             {
                 errors.Add(Resources.PasswordRequireUpper);
             }
-            return Task.FromResult(errors.Count == 0 ? IdentityResult.Success : IdentityResult.Failed(String.Join(" ", errors)));
+            return
+                Task.FromResult(errors.Count == 0
+                    ? IdentityResult.Success
+                    : IdentityResult.Failed(String.Join(" ", errors)));
         }
 
         /// <summary>

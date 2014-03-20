@@ -1,27 +1,33 @@
-using System.Collections.Generic;
-using System.Runtime;
-using System.Security.Claims;
-using Microsoft.AspNet.Testing;
-using Moq;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.Test
 {
     public class UserManagerTest
     {
+        private class TestManager : UserManager<TestUser, string>
+        {
+            public IUserStore<TestUser, string> StorePublic { get { return base.Store; } }
+
+            public TestManager(IServiceProvider provider) : base(provider) { }
+        }
+
         [Fact]
         public void ServiceProviderWireupTest()
         {
-            var manager = new UserManager<TestUser, string>(TestServices.DefaultServiceProvider<TestUser, string>());
+            var manager = new TestManager(TestServices.DefaultServiceProvider<TestUser, string>());
             Assert.NotNull(manager.PasswordHasher);
             Assert.NotNull(manager.PasswordValidator);
             Assert.NotNull(manager.UserValidator);
+            Assert.NotNull(manager.StorePublic);
         }
 
-         //TODO: Mock fails in K (this works fine in net45)
+        //TODO: Mock fails in K (this works fine in net45)
         //[Fact]
         //public async Task CreateTest()
         //{
@@ -113,8 +119,12 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.False(manager.SupportsUserSecurityStamp);
             await Assert.ThrowsAsync<NotSupportedException>(() => manager.UpdateSecurityStamp("bogus"));
             await Assert.ThrowsAsync<NotSupportedException>(() => manager.GetSecurityStamp("bogus"));
-            await Assert.ThrowsAsync<NotSupportedException>(() => manager.VerifyChangePhoneNumberToken("bogus", "1", "111-111-1111"));
-            await Assert.ThrowsAsync<NotSupportedException>(() => manager.GenerateChangePhoneNumberToken("bogus", "111-111-1111"));
+            await
+                Assert.ThrowsAsync<NotSupportedException>(
+                    () => manager.VerifyChangePhoneNumberToken("bogus", "1", "111-111-1111"));
+            await
+                Assert.ThrowsAsync<NotSupportedException>(
+                    () => manager.GenerateChangePhoneNumberToken("bogus", "111-111-1111"));
         }
 
         [Fact]
@@ -144,7 +154,8 @@ namespace Microsoft.AspNet.Identity.Test
             var manager = new UserManager<TestUser, string>(new NoopUserStore());
             Assert.False(manager.SupportsUserTwoFactor);
             await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetTwoFactorEnabled("bogus"));
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.SetTwoFactorEnabled("bogus", true));
+            await
+                Assert.ThrowsAsync<NotSupportedException>(async () => await manager.SetTwoFactorEnabled("bogus", true));
         }
 
         [Fact]
@@ -179,16 +190,6 @@ namespace Microsoft.AspNet.Identity.Test
             manager.Dispose();
         }
 
-        private class BadPasswordValidtor : IPasswordValidator
-        {
-            public const string ErrorMessage = "I'm Bad.";
-
-            public Task<IdentityResult> Validate(string password)
-            {
-                return Task.FromResult(IdentityResult.Failed(ErrorMessage));
-            }
-        }
-
         [Fact]
         public async Task PasswordValidatorBlocksCreate()
         {
@@ -204,23 +205,32 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public async Task ManagerPublicNullChecks()
         {
-            Assert.Throws<ArgumentNullException>("store", () => new UserManager<TestUser, string>((IUserStore<TestUser, string>)null));
+            Assert.Throws<ArgumentNullException>("store",
+                () => new UserManager<TestUser, string>((IUserStore<TestUser, string>) null));
+            Assert.Throws<ArgumentNullException>("serviceProvider",
+                () => new UserManager<TestUser, string>((IServiceProvider)null));
             var manager = new UserManager<TestUser, string>(new NotImplementedStore());
             Assert.Throws<ArgumentNullException>(() => manager.ClaimsIdentityFactory = null);
             Assert.Throws<ArgumentNullException>(() => manager.PasswordHasher = null);
-            await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await manager.CreateIdentity(null, "whatever"));
+            await
+                Assert.ThrowsAsync<ArgumentNullException>("user",
+                    async () => await manager.CreateIdentity(null, "whatever"));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await manager.Create(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await manager.Create(null, null));
-            await Assert.ThrowsAsync<ArgumentNullException>("password", async () => await manager.Create(new TestUser(), null));
+            await
+                Assert.ThrowsAsync<ArgumentNullException>("password",
+                    async () => await manager.Create(new TestUser(), null));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await manager.Update(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await manager.Delete(null));
             await Assert.ThrowsAsync<ArgumentNullException>("claim", async () => await manager.AddClaim("bogus", null));
             await Assert.ThrowsAsync<ArgumentNullException>("userName", async () => await manager.FindByName(null));
             await Assert.ThrowsAsync<ArgumentNullException>("userName", async () => await manager.Find(null, null));
             await Assert.ThrowsAsync<ArgumentNullException>("login", async () => await manager.AddLogin("bogus", null));
-            await Assert.ThrowsAsync<ArgumentNullException>("login", async () => await manager.RemoveLogin("bogus", null));
+            await
+                Assert.ThrowsAsync<ArgumentNullException>("login", async () => await manager.RemoveLogin("bogus", null));
             await Assert.ThrowsAsync<ArgumentNullException>("email", async () => await manager.FindByEmail(null));
-            Assert.Throws<ArgumentNullException>("twoFactorProvider", () => manager.RegisterTwoFactorProvider(null, null));
+            Assert.Throws<ArgumentNullException>("twoFactorProvider",
+                () => manager.RegisterTwoFactorProvider(null, null));
             Assert.Throws<ArgumentNullException>("provider", () => manager.RegisterTwoFactorProvider("bogus", null));
         }
 
@@ -358,27 +368,13 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.ConfirmEmail(null, null));
         }
 
-        private class NoOpTokenProvider : IUserTokenProvider<TestUser, string>
+        private class BadPasswordValidtor : IPasswordValidator
         {
+            public const string ErrorMessage = "I'm Bad.";
 
-            public Task<string> Generate(string purpose, UserManager<TestUser, string> manager, TestUser user)
+            public Task<IdentityResult> Validate(string password)
             {
-                return Task.FromResult("Test");
-            }
-
-            public Task<bool> Validate(string purpose, string token, UserManager<TestUser, string> manager, TestUser user)
-            {
-                return Task.FromResult(true);
-            }
-
-            public Task Notify(string token, UserManager<TestUser, string> manager, TestUser user)
-            {
-                return Task.FromResult(0);
-            }
-
-            public Task<bool> IsValidProviderForUser(UserManager<TestUser, string> manager, TestUser user)
-            {
-                return Task.FromResult(true);
+                return Task.FromResult(IdentityResult.Failed(ErrorMessage));
             }
         }
 
@@ -393,6 +389,101 @@ namespace Microsoft.AspNet.Identity.Test
             IUserRoleStore<TestUser, string>,
             IUserSecurityStampStore<TestUser, string>
         {
+            public Task<IList<Claim>> GetClaims(TestUser user)
+            {
+                return Task.FromResult<IList<Claim>>(new List<Claim>());
+            }
+
+            public Task AddClaim(TestUser user, Claim claim)
+            {
+                return Task.FromResult(0);
+            }
+
+            public Task RemoveClaim(TestUser user, Claim claim)
+            {
+                return Task.FromResult(0);
+            }
+
+            public Task SetEmail(TestUser user, string email)
+            {
+                return Task.FromResult(0);
+            }
+
+            public Task<string> GetEmail(TestUser user)
+            {
+                return Task.FromResult("");
+            }
+
+            public Task<bool> GetEmailConfirmed(TestUser user)
+            {
+                return Task.FromResult(false);
+            }
+
+            public Task SetEmailConfirmed(TestUser user, bool confirmed)
+            {
+                return Task.FromResult(0);
+            }
+
+            public Task<TestUser> FindByEmail(string email)
+            {
+                return Task.FromResult<TestUser>(null);
+            }
+
+            public Task<DateTimeOffset> GetLockoutEndDate(TestUser user)
+            {
+                return Task.FromResult(DateTimeOffset.MinValue);
+            }
+
+            public Task SetLockoutEndDate(TestUser user, DateTimeOffset lockoutEnd)
+            {
+                return Task.FromResult(0);
+            }
+
+            public Task<int> IncrementAccessFailedCount(TestUser user)
+            {
+                return Task.FromResult(0);
+            }
+
+            public Task ResetAccessFailedCount(TestUser user)
+            {
+                return Task.FromResult(0);
+            }
+
+            public Task<int> GetAccessFailedCount(TestUser user)
+            {
+                return Task.FromResult(0);
+            }
+
+            public Task<bool> GetLockoutEnabled(TestUser user)
+            {
+                return Task.FromResult(false);
+            }
+
+            public Task SetLockoutEnabled(TestUser user, bool enabled)
+            {
+                return Task.FromResult(0);
+            }
+
+            public Task AddLogin(TestUser user, UserLoginInfo login)
+            {
+                return Task.FromResult(0);
+            }
+
+            public Task RemoveLogin(TestUser user, UserLoginInfo login)
+            {
+                return Task.FromResult(0);
+            }
+
+            public Task<IList<UserLoginInfo>> GetLogins(TestUser user)
+            {
+                return Task.FromResult<IList<UserLoginInfo>>(new List<UserLoginInfo>());
+            }
+
+            public Task<TestUser> Find(UserLoginInfo login)
+            {
+                return Task.FromResult<TestUser>(null);
+            }
+
             public void Dispose()
             {
             }
@@ -437,66 +528,6 @@ namespace Microsoft.AspNet.Identity.Test
                 return Task.FromResult(false);
             }
 
-            public Task<IList<Claim>> GetClaims(TestUser user)
-            {
-                return Task.FromResult<IList<Claim>>(new List<Claim>());
-            }
-
-            public Task AddClaim(TestUser user, Claim claim)
-            {
-                return Task.FromResult(0);
-            }
-
-            public Task RemoveClaim(TestUser user, Claim claim)
-            {
-                return Task.FromResult(0);
-            }
-
-            public Task AddLogin(TestUser user, UserLoginInfo login)
-            {
-                return Task.FromResult(0);
-            }
-
-            public Task RemoveLogin(TestUser user, UserLoginInfo login)
-            {
-                return Task.FromResult(0);
-            }
-
-            public Task<IList<UserLoginInfo>> GetLogins(TestUser user)
-            {
-                return Task.FromResult<IList<UserLoginInfo>>(new List<UserLoginInfo>());
-            }
-
-            public Task<TestUser> Find(UserLoginInfo login)
-            {
-                return Task.FromResult<TestUser>(null);
-            }
-
-            public Task SetEmail(TestUser user, string email)
-            {
-                return Task.FromResult(0);
-            }
-
-            public Task<string> GetEmail(TestUser user)
-            {
-                return Task.FromResult("");
-            }
-
-            public Task<bool> GetEmailConfirmed(TestUser user)
-            {
-                return Task.FromResult(false);
-            }
-
-            public Task SetEmailConfirmed(TestUser user, bool confirmed)
-            {
-                return Task.FromResult(0);
-            }
-
-            public Task<TestUser> FindByEmail(string email)
-            {
-                return Task.FromResult<TestUser>(null);
-            }
-
             public Task SetPhoneNumber(TestUser user, string phoneNumber)
             {
                 return Task.FromResult(0);
@@ -515,51 +546,6 @@ namespace Microsoft.AspNet.Identity.Test
             public Task SetPhoneNumberConfirmed(TestUser user, bool confirmed)
             {
                 return Task.FromResult(0);
-            }
-
-            public Task<DateTimeOffset> GetLockoutEndDate(TestUser user)
-            {
-                return Task.FromResult(DateTimeOffset.MinValue);
-            }
-
-            public Task SetLockoutEndDate(TestUser user, DateTimeOffset lockoutEnd)
-            {
-                return Task.FromResult(0);
-            }
-
-            public Task<int> IncrementAccessFailedCount(TestUser user)
-            {
-                return Task.FromResult(0);
-            }
-
-            public Task ResetAccessFailedCount(TestUser user)
-            {
-                return Task.FromResult(0);
-            }
-
-            public Task<int> GetAccessFailedCount(TestUser user)
-            {
-                return Task.FromResult(0);
-            }
-
-            public Task<bool> GetLockoutEnabled(TestUser user)
-            {
-                return Task.FromResult(false);
-            }
-
-            public Task SetLockoutEnabled(TestUser user, bool enabled)
-            {
-                return Task.FromResult(0);
-            }
-
-            public Task SetTwoFactorEnabled(TestUser user, bool enabled)
-            {
-                return Task.FromResult(0);
-            }
-
-            public Task<bool> GetTwoFactorEnabled(TestUser user)
-            {
-                return Task.FromResult(false);
             }
 
             public Task AddToRole(TestUser user, string roleName)
@@ -591,10 +577,44 @@ namespace Microsoft.AspNet.Identity.Test
             {
                 return Task.FromResult("");
             }
+
+            public Task SetTwoFactorEnabled(TestUser user, bool enabled)
+            {
+                return Task.FromResult(0);
+            }
+
+            public Task<bool> GetTwoFactorEnabled(TestUser user)
+            {
+                return Task.FromResult(false);
+            }
         }
 
-        private class NotImplementedStore : 
-            IUserPasswordStore<TestUser, string>, 
+        private class NoOpTokenProvider : IUserTokenProvider<TestUser, string>
+        {
+            public Task<string> Generate(string purpose, UserManager<TestUser, string> manager, TestUser user)
+            {
+                return Task.FromResult("Test");
+            }
+
+            public Task<bool> Validate(string purpose, string token, UserManager<TestUser, string> manager,
+                TestUser user)
+            {
+                return Task.FromResult(true);
+            }
+
+            public Task Notify(string token, UserManager<TestUser, string> manager, TestUser user)
+            {
+                return Task.FromResult(0);
+            }
+
+            public Task<bool> IsValidProviderForUser(UserManager<TestUser, string> manager, TestUser user)
+            {
+                return Task.FromResult(true);
+            }
+        }
+
+        private class NotImplementedStore :
+            IUserPasswordStore<TestUser, string>,
             IUserClaimStore<TestUser, string>,
             IUserLoginStore<TestUser, string>,
             IUserEmailStore<TestUser, string>,
@@ -602,6 +622,101 @@ namespace Microsoft.AspNet.Identity.Test
             IUserLockoutStore<TestUser, string>,
             IUserTwoFactorStore<TestUser, string>
         {
+            public Task<IList<Claim>> GetClaims(TestUser user)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task AddClaim(TestUser user, Claim claim)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task RemoveClaim(TestUser user, Claim claim)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SetEmail(TestUser user, string email)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<string> GetEmail(TestUser user)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<bool> GetEmailConfirmed(TestUser user)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SetEmailConfirmed(TestUser user, bool confirmed)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<TestUser> FindByEmail(string email)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<DateTimeOffset> GetLockoutEndDate(TestUser user)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SetLockoutEndDate(TestUser user, DateTimeOffset lockoutEnd)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<int> IncrementAccessFailedCount(TestUser user)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task ResetAccessFailedCount(TestUser user)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<int> GetAccessFailedCount(TestUser user)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<bool> GetLockoutEnabled(TestUser user)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SetLockoutEnabled(TestUser user, bool enabled)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task AddLogin(TestUser user, UserLoginInfo login)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task RemoveLogin(TestUser user, UserLoginInfo login)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<IList<UserLoginInfo>> GetLogins(TestUser user)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<TestUser> Find(UserLoginInfo login)
+            {
+                throw new NotImplementedException();
+            }
+
             public void Dispose()
             {
                 throw new NotImplementedException();
@@ -647,66 +762,6 @@ namespace Microsoft.AspNet.Identity.Test
                 throw new NotImplementedException();
             }
 
-            public Task<IList<Claim>> GetClaims(TestUser user)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task AddClaim(TestUser user, Claim claim)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task RemoveClaim(TestUser user, Claim claim)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task AddLogin(TestUser user, UserLoginInfo login)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task RemoveLogin(TestUser user, UserLoginInfo login)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task<IList<UserLoginInfo>> GetLogins(TestUser user)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task<TestUser> Find(UserLoginInfo login)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task SetEmail(TestUser user, string email)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task<string> GetEmail(TestUser user)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task<bool> GetEmailConfirmed(TestUser user)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task SetEmailConfirmed(TestUser user, bool confirmed)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task<TestUser> FindByEmail(string email)
-            {
-                throw new NotImplementedException();
-            }
-
             public Task SetPhoneNumber(TestUser user, string phoneNumber)
             {
                 throw new NotImplementedException();
@@ -723,41 +778,6 @@ namespace Microsoft.AspNet.Identity.Test
             }
 
             public Task SetPhoneNumberConfirmed(TestUser user, bool confirmed)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task<DateTimeOffset> GetLockoutEndDate(TestUser user)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task SetLockoutEndDate(TestUser user, DateTimeOffset lockoutEnd)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task<int> IncrementAccessFailedCount(TestUser user)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task ResetAccessFailedCount(TestUser user)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task<int> GetAccessFailedCount(TestUser user)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task<bool> GetLockoutEnabled(TestUser user)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task SetLockoutEnabled(TestUser user, bool enabled)
             {
                 throw new NotImplementedException();
             }

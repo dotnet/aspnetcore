@@ -1,7 +1,4 @@
-using System.Collections.Generic;
-using System;
 using System.Linq;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.Test
@@ -25,6 +22,5 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.Equal(1, result.Errors.Count());
             Assert.Equal("An unknown failure has occured.", result.Errors.First());
         }
-
     }
 }

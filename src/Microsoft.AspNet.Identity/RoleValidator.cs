@@ -39,7 +39,8 @@ namespace Microsoft.AspNet.Identity
             return IdentityResult.Success;
         }
 
-        private static async Task ValidateRoleName(RoleManager<TRole, TKey> manager, TRole role, ICollection<string> errors)
+        private static async Task ValidateRoleName(RoleManager<TRole, TKey> manager, TRole role,
+            ICollection<string> errors)
         {
             if (string.IsNullOrWhiteSpace(role.Name))
             {

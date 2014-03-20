@@ -1,10 +1,10 @@
+#if NET45
+using System.Net.Mail;
+#endif
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-#if NET45
-using System.Net.Mail;
-#endif
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Identity
@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Identity
             }
             return errors.Count > 0 ? IdentityResult.Failed(errors.ToArray()) : IdentityResult.Success;
         }
-        
+
         // TODO: Revisit extensibility for Validators
 
         /// <summary>
@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.Identity
         // make sure email is not empty, valid, and unique
         private static async Task ValidateEmail(UserManager<TUser, TKey> manager, TUser user, List<string> errors)
         {
-            var email = await manager.GetEmailStore().GetEmail(user).ConfigureAwait(false);
+            var email = await manager.GetEmailStore().GetEmail(user);
             if (string.IsNullOrWhiteSpace(email))
             {
                 errors.Add(String.Format(CultureInfo.CurrentCulture, Resources.PropertyTooShort, "Email"));

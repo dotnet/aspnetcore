@@ -1,4 +1,3 @@
-
 namespace Microsoft.AspNet.Identity.Test
 {
     public class TestRole : IRole<string>

@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Identity
     /// </summary>
     /// <typeparam name="TUser"></typeparam>
     /// <typeparam name="TKey"></typeparam>
-    public interface IUserValidator<TUser, TKey> 
+    public interface IUserValidator<TUser, TKey>
         where TUser : class, IUser<TKey>
         where TKey : IEquatable<TKey>
     {

@@ -1,9 +1,5 @@
 using System;
-using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.Test
@@ -15,12 +11,12 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var factory = new ClaimsIdentityFactory<TestUser, string>();
             var manager = new UserManager<TestUser, string>(new NoopUserStore());
-            await Assert.ThrowsAsync<ArgumentNullException>("manager", 
+            await Assert.ThrowsAsync<ArgumentNullException>("manager",
                 async () => await factory.Create(null, null, "whatever"));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await factory.Create(manager, null, "whatever"));
             await Assert.ThrowsAsync<ArgumentNullException>("value",
-               async () => await factory.Create(manager, new TestUser(), null));
+                async () => await factory.Create(manager, new TestUser(), null));
         }
 
         [Fact]

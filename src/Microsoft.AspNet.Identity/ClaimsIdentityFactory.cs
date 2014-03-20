@@ -72,12 +72,11 @@ namespace Microsoft.AspNet.Identity
             id.AddClaim(new Claim(UserNameClaimType, user.UserName, ClaimValueTypes.String));
             if (manager.SupportsUserSecurityStamp)
             {
-                id.AddClaim(new Claim(SecurityStampClaimType,
-                    await manager.GetSecurityStamp(user.Id).ConfigureAwait(false)));
+                id.AddClaim(new Claim(SecurityStampClaimType, await manager.GetSecurityStamp(user.Id)));
             }
             if (manager.SupportsUserRole)
             {
-                var roles = await manager.GetRoles(user.Id).ConfigureAwait(false);
+                var roles = await manager.GetRoles(user.Id);
                 foreach (var roleName in roles)
                 {
                     id.AddClaim(new Claim(RoleClaimType, roleName, ClaimValueTypes.String));
@@ -85,7 +84,7 @@ namespace Microsoft.AspNet.Identity
             }
             if (manager.SupportsUserClaim)
             {
-                id.AddClaims(await manager.GetClaims(user.Id).ConfigureAwait(false));
+                id.AddClaims(await manager.GetClaims(user.Id));
             }
             return id;
         }

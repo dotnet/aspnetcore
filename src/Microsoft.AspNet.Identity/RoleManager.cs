@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.Identity
 
         private async Task<IdentityResult> ValidateRoleInternal(TRole role)
         {
-            return (RoleValidator == null) ? IdentityResult.Success : await RoleValidator.Validate(this, role).ConfigureAwait(false);
+            return (RoleValidator == null) ? IdentityResult.Success : await RoleValidator.Validate(this, role);
         }
 
         /// <summary>
@@ -137,7 +137,7 @@ namespace Microsoft.AspNet.Identity
             {
                 return result;
             }
-            await Store.Update(role).ConfigureAwait(false);
+            await Store.Update(role);
             return IdentityResult.Success;
         }
 
@@ -154,7 +154,7 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("role");
             }
 
-            await Store.Delete(role).ConfigureAwait(false);
+            await Store.Delete(role);
             return IdentityResult.Success;
         }
 
@@ -171,7 +171,7 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("roleName");
             }
 
-            return await FindByName(roleName).ConfigureAwait(false) != null;
+            return await FindByName(roleName) != null;
         }
 
         /// <summary>
@@ -182,7 +182,7 @@ namespace Microsoft.AspNet.Identity
         public virtual async Task<TRole> FindById(TKey roleId)
         {
             ThrowIfDisposed();
-            return await Store.FindById(roleId).ConfigureAwait(false);
+            return await Store.FindById(roleId);
         }
 
         /// <summary>
@@ -198,7 +198,7 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("roleName");
             }
 
-            return await Store.FindByName(roleName).ConfigureAwait(false);
+            return await Store.FindByName(roleName);
         }
 
         private void ThrowIfDisposed()

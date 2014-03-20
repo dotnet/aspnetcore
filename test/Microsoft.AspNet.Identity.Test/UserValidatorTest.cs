@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Identity.Test
             // Setup
             var manager = new UserManager<TestUser, string>(new NoopUserStore());
             var validator = new UserValidator<TestUser, string>();
-            var user = new TestUser() { UserName = input };
+            var user = new TestUser {UserName = input};
 
             // Act
             var result = await validator.Validate(manager, user);
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Identity.Test
             // Setup
             var manager = new UserManager<TestUser, string>(new NoopUserStore());
             var validator = new UserValidator<TestUser, string>();
-            var user = new TestUser() {UserName=userName};
+            var user = new TestUser {UserName = userName};
 
             // Act
             var result = await validator.Validate(manager, user);
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Identity.Test
             {
                 IdentityResultAssert.IsSuccess(result);
             }
-            else 
+            else
             {
                 IdentityResultAssert.IsFailure(result);
             }
@@ -73,8 +73,8 @@ namespace Microsoft.AspNet.Identity.Test
         {
             // Setup
             var manager = new UserManager<TestUser, string>(new NoopUserStore());
-            var validator = new UserValidator<TestUser, string>() { AllowOnlyAlphanumericUserNames = false };
-            var user = new TestUser() { UserName = userName };
+            var validator = new UserValidator<TestUser, string> {AllowOnlyAlphanumericUserNames = false};
+            var user = new TestUser {UserName = userName};
 
             // Act
             var result = await validator.Validate(manager, user);

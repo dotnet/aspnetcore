@@ -42,13 +42,18 @@ namespace Microsoft.AspNet.Identity.InMemory
 
         public Task<InMemoryRole> FindByName(string roleName)
         {
-            return Task.FromResult(Roles.SingleOrDefault(r => String.Equals(r.Name, roleName, StringComparison.OrdinalIgnoreCase)));
+            return
+                Task.FromResult(
+                    Roles.SingleOrDefault(r => String.Equals(r.Name, roleName, StringComparison.OrdinalIgnoreCase)));
         }
 
         public void Dispose()
         {
         }
 
-        public IQueryable<InMemoryRole> Roles { get { return _roles.Values.AsQueryable(); } }
+        public IQueryable<InMemoryRole> Roles
+        {
+            get { return _roles.Values.AsQueryable(); }
+        }
     }
 }

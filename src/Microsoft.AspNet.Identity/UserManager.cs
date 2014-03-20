@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Identity
         private IPasswordHasher _passwordHasher;
 
         /// <summary>
-        /// Constructor which takes a service provider to find the default interfaces to hook up
+        ///     Constructor which takes a service provider to find the default interfaces to hook up
         /// </summary>
         /// <param name="serviceProvider"></param>
         public UserManager(IServiceProvider serviceProvider)
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Identity
             UserValidator = serviceProvider.GetService<IUserValidator<TUser, TKey>>();
             PasswordValidator = serviceProvider.GetService<IPasswordValidator>();
             ClaimsIdentityFactory = serviceProvider.GetService<IClaimsIdentityFactory<TUser, TKey>>();
-            //TODO: Store = serviceProvider.GetService<IUserStore<TUser, TKey>>();
+            Store = serviceProvider.GetService<IUserStore<TUser, TKey>>();
             // TODO: maybe each optional store as well?  Email and SMS services?
         }
 
@@ -320,8 +320,11 @@ namespace Microsoft.AspNet.Identity
             return ClaimsIdentityFactory.Create(this, user, authenticationType);
         }
 
-        private async Task<IdentityResult> ValidateUserInternal(TUser user) {
-            return (UserValidator == null) ? IdentityResult.Success : await UserValidator.Validate(this, user).ConfigureAwait(false);
+        private async Task<IdentityResult> ValidateUserInternal(TUser user)
+        {
+            return (UserValidator == null)
+                ? IdentityResult.Success
+                : await UserValidator.Validate(this, user);
         }
 
         /// <summary>
@@ -332,7 +335,7 @@ namespace Microsoft.AspNet.Identity
         public virtual async Task<IdentityResult> Create(TUser user)
         {
             ThrowIfDisposed();
-            await UpdateSecurityStampInternal(user).ConfigureAwait(false);
+            await UpdateSecurityStampInternal(user);
             var result = await ValidateUserInternal(user);
             if (!result.Succeeded)
             {
@@ -340,9 +343,9 @@ namespace Microsoft.AspNet.Identity
             }
             if (UserLockoutEnabledByDefault && SupportsUserLockout)
             {
-                await GetUserLockoutStore().SetLockoutEnabled(user, true).ConfigureAwait(false);
+                await GetUserLockoutStore().SetLockoutEnabled(user, true);
             }
-            await Store.Create(user).ConfigureAwait(false);
+            await Store.Create(user);
             return IdentityResult.Success;
         }
 
@@ -363,7 +366,7 @@ namespace Microsoft.AspNet.Identity
             {
                 return result;
             }
-            await Store.Update(user).ConfigureAwait(false);
+            await Store.Update(user);
             return IdentityResult.Success;
         }
 
@@ -379,7 +382,7 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            await Store.Delete(user).ConfigureAwait(false);
+            await Store.Delete(user);
             return IdentityResult.Success;
         }
 
@@ -438,12 +441,12 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("password");
             }
-            var result = await UpdatePasswordInternal(passwordStore, user, password).ConfigureAwait(false);
+            var result = await UpdatePasswordInternal(passwordStore, user, password);
             if (!result.Succeeded)
             {
                 return result;
             }
-            return await Create(user).ConfigureAwait(false);
+            return await Create(user);
         }
 
         /// <summary>
@@ -455,12 +458,12 @@ namespace Microsoft.AspNet.Identity
         public virtual async Task<TUser> Find(string userName, string password)
         {
             ThrowIfDisposed();
-            var user = await FindByName(userName).ConfigureAwait(false);
+            var user = await FindByName(userName);
             if (user == null)
             {
                 return null;
             }
-            return await CheckPassword(user, password).ConfigureAwait(false) ? user : null;
+            return await CheckPassword(user, password) ? user : null;
         }
 
         /// <summary>
@@ -477,7 +480,7 @@ namespace Microsoft.AspNet.Identity
             {
                 return false;
             }
-            return await VerifyPassword(passwordStore, user, password).ConfigureAwait(false);
+            return await VerifyPassword(passwordStore, user, password);
         }
 
         /// <summary>
@@ -489,13 +492,13 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             var passwordStore = GetPasswordStore();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            return await passwordStore.HasPassword(user).ConfigureAwait(false);
+            return await passwordStore.HasPassword(user);
         }
 
         /// <summary>
@@ -508,23 +511,23 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             var passwordStore = GetPasswordStore();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            var hash = await passwordStore.GetPasswordHash(user).ConfigureAwait(false);
+            var hash = await passwordStore.GetPasswordHash(user);
             if (hash != null)
             {
                 return new IdentityResult(Resources.UserAlreadyHasPassword);
             }
-            var result = await UpdatePasswordInternal(passwordStore, user, password).ConfigureAwait(false);
+            var result = await UpdatePasswordInternal(passwordStore, user, password);
             if (!result.Succeeded)
             {
                 return result;
             }
-            return await Update(user).ConfigureAwait(false);
+            return await Update(user);
         }
 
         /// <summary>
@@ -539,20 +542,20 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             var passwordStore = GetPasswordStore();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            if (await VerifyPassword(passwordStore, user, currentPassword).ConfigureAwait(false))
+            if (await VerifyPassword(passwordStore, user, currentPassword))
             {
-                var result = await UpdatePasswordInternal(passwordStore, user, newPassword).ConfigureAwait(false);
+                var result = await UpdatePasswordInternal(passwordStore, user, newPassword);
                 if (!result.Succeeded)
                 {
                     return result;
                 }
-                return await Update(user).ConfigureAwait(false);
+                return await Update(user);
             }
             return IdentityResult.Failed(Resources.PasswordMismatch);
         }
@@ -566,15 +569,15 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             var passwordStore = GetPasswordStore();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            await passwordStore.SetPasswordHash(user, null).ConfigureAwait(false);
-            await UpdateSecurityStampInternal(user).ConfigureAwait(false);
-            return await Update(user).ConfigureAwait(false);
+            await passwordStore.SetPasswordHash(user, null);
+            await UpdateSecurityStampInternal(user);
+            return await Update(user);
         }
 
         internal async Task<IdentityResult> UpdatePasswordInternal(IUserPasswordStore<TUser, TKey> passwordStore,
@@ -582,15 +585,15 @@ namespace Microsoft.AspNet.Identity
         {
             if (PasswordValidator != null)
             {
-                var result = await PasswordValidator.Validate(newPassword).ConfigureAwait(false);
+                var result = await PasswordValidator.Validate(newPassword);
                 if (!result.Succeeded)
                 {
                     return result;
                 }
             }
             await
-                passwordStore.SetPasswordHash(user, PasswordHasher.HashPassword(newPassword)).ConfigureAwait(false);
-            await UpdateSecurityStampInternal(user).ConfigureAwait(false);
+                passwordStore.SetPasswordHash(user, PasswordHasher.HashPassword(newPassword));
+            await UpdateSecurityStampInternal(user);
             return IdentityResult.Success;
         }
 
@@ -604,7 +607,7 @@ namespace Microsoft.AspNet.Identity
         protected virtual async Task<bool> VerifyPassword(IUserPasswordStore<TUser, TKey> store, TUser user,
             string password)
         {
-            var hash = await store.GetPasswordHash(user).ConfigureAwait(false);
+            var hash = await store.GetPasswordHash(user);
             return PasswordHasher.VerifyHashedPassword(hash, password) != PasswordVerificationResult.Failed;
         }
 
@@ -628,13 +631,13 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             var securityStore = GetSecurityStore();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            return await securityStore.GetSecurityStamp(user).ConfigureAwait(false);
+            return await securityStore.GetSecurityStamp(user);
         }
 
         /// <summary>
@@ -646,14 +649,14 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             var securityStore = GetSecurityStore();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            await securityStore.SetSecurityStamp(user, NewSecurityStamp()).ConfigureAwait(false);
-            return await Update(user).ConfigureAwait(false);
+            await securityStore.SetSecurityStamp(user, NewSecurityStamp());
+            return await Update(user);
         }
 
         /// <summary>
@@ -677,24 +680,24 @@ namespace Microsoft.AspNet.Identity
         public virtual async Task<IdentityResult> ResetPassword(TKey userId, string token, string newPassword)
         {
             ThrowIfDisposed();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
             // Make sure the token is valid and the stamp matches
-            if (!await VerifyUserToken(userId, "ResetPassword", token).ConfigureAwait(false))
+            if (!await VerifyUserToken(userId, "ResetPassword", token))
             {
                 return IdentityResult.Failed(Resources.InvalidToken);
             }
             var passwordStore = GetPasswordStore();
-            var result = await UpdatePasswordInternal(passwordStore, user, newPassword).ConfigureAwait(false);
+            var result = await UpdatePasswordInternal(passwordStore, user, newPassword);
             if (!result.Succeeded)
             {
                 return result;
             }
-            return await Update(user).ConfigureAwait(false);
+            return await Update(user);
         }
 
         // Update the security stamp if the store supports it
@@ -702,7 +705,7 @@ namespace Microsoft.AspNet.Identity
         {
             if (SupportsUserSecurityStamp)
             {
-                await GetSecurityStore().SetSecurityStamp(user, NewSecurityStamp()).ConfigureAwait(false);
+                await GetSecurityStore().SetSecurityStamp(user, NewSecurityStamp());
             }
         }
 
@@ -746,15 +749,15 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("login");
             }
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            await loginStore.RemoveLogin(user, login).ConfigureAwait(false);
-            await UpdateSecurityStampInternal(user).ConfigureAwait(false);
-            return await Update(user).ConfigureAwait(false);
+            await loginStore.RemoveLogin(user, login);
+            await UpdateSecurityStampInternal(user);
+            return await Update(user);
         }
 
         /// <summary>
@@ -771,19 +774,19 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("login");
             }
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            var existingUser = await Find(login).ConfigureAwait(false);
+            var existingUser = await Find(login);
             if (existingUser != null)
             {
                 return IdentityResult.Failed(Resources.ExternalLoginExists);
             }
-            await loginStore.AddLogin(user, login).ConfigureAwait(false);
-            return await Update(user).ConfigureAwait(false);
+            await loginStore.AddLogin(user, login);
+            return await Update(user);
         }
 
         /// <summary>
@@ -795,13 +798,13 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             var loginStore = GetLoginStore();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            return await loginStore.GetLogins(user).ConfigureAwait(false);
+            return await loginStore.GetLogins(user);
         }
 
         // IUserClaimStore methods
@@ -829,14 +832,14 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("claim");
             }
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            await claimStore.AddClaim(user, claim).ConfigureAwait(false);
-            return await Update(user).ConfigureAwait(false);
+            await claimStore.AddClaim(user, claim);
+            return await Update(user);
         }
 
         /// <summary>
@@ -849,14 +852,14 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             var claimStore = GetClaimStore();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            await claimStore.RemoveClaim(user, claim).ConfigureAwait(false);
-            return await Update(user).ConfigureAwait(false);
+            await claimStore.RemoveClaim(user, claim);
+            return await Update(user);
         }
 
         /// <summary>
@@ -868,13 +871,13 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             var claimStore = GetClaimStore();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            return await claimStore.GetClaims(user).ConfigureAwait(false);
+            return await claimStore.GetClaims(user);
         }
 
         private IUserRoleStore<TUser, TKey> GetUserRoleStore()
@@ -897,19 +900,19 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             var userRoleStore = GetUserRoleStore();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            var userRoles = await userRoleStore.GetRoles(user).ConfigureAwait(false);
+            var userRoles = await userRoleStore.GetRoles(user);
             if (userRoles.Contains(role))
             {
                 return new IdentityResult(Resources.UserAlreadyInRole);
             }
-            await userRoleStore.AddToRole(user, role).ConfigureAwait(false);
-            return await Update(user).ConfigureAwait(false);
+            await userRoleStore.AddToRole(user, role);
+            return await Update(user);
         }
 
         /// <summary>
@@ -922,18 +925,18 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             var userRoleStore = GetUserRoleStore();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            if (!await userRoleStore.IsInRole(user, role).ConfigureAwait(false))
+            if (!await userRoleStore.IsInRole(user, role))
             {
                 return new IdentityResult(Resources.UserNotInRole);
             }
-            await userRoleStore.RemoveFromRole(user, role).ConfigureAwait(false);
-            return await Update(user).ConfigureAwait(false);
+            await userRoleStore.RemoveFromRole(user, role);
+            return await Update(user);
         }
 
         /// <summary>
@@ -945,13 +948,13 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             var userRoleStore = GetUserRoleStore();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            return await userRoleStore.GetRoles(user).ConfigureAwait(false);
+            return await userRoleStore.GetRoles(user);
         }
 
         /// <summary>
@@ -964,13 +967,13 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             var userRoleStore = GetUserRoleStore();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            return await userRoleStore.IsInRole(user, role).ConfigureAwait(false);
+            return await userRoleStore.IsInRole(user, role);
         }
 
         // IUserEmailStore methods
@@ -993,13 +996,13 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             var store = GetEmailStore();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            return await store.GetEmail(user).ConfigureAwait(false);
+            return await store.GetEmail(user);
         }
 
         /// <summary>
@@ -1012,16 +1015,16 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             var store = GetEmailStore();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            await store.SetEmail(user, email).ConfigureAwait(false);
-            await store.SetEmailConfirmed(user, false).ConfigureAwait(false);
-            await UpdateSecurityStampInternal(user).ConfigureAwait(false);
-            return await Update(user).ConfigureAwait(false);
+            await store.SetEmail(user, email);
+            await store.SetEmailConfirmed(user, false);
+            await UpdateSecurityStampInternal(user);
+            return await Update(user);
         }
 
         /// <summary>
@@ -1061,7 +1064,7 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             var store = GetEmailStore();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
@@ -1071,8 +1074,8 @@ namespace Microsoft.AspNet.Identity
             {
                 return IdentityResult.Failed(Resources.InvalidToken);
             }
-            await store.SetEmailConfirmed(user, true).ConfigureAwait(false);
-            return await Update(user).ConfigureAwait(false);
+            await store.SetEmailConfirmed(user, true);
+            return await Update(user);
         }
 
         /// <summary>
@@ -1084,13 +1087,13 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             var store = GetEmailStore();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            return await store.GetEmailConfirmed(user).ConfigureAwait(false);
+            return await store.GetEmailConfirmed(user);
         }
 
         // IUserPhoneNumberStore methods
@@ -1113,13 +1116,13 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             var store = GetPhoneNumberStore();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            return await store.GetPhoneNumber(user).ConfigureAwait(false);
+            return await store.GetPhoneNumber(user);
         }
 
         /// <summary>
@@ -1132,16 +1135,16 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             var store = GetPhoneNumberStore();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            await store.SetPhoneNumber(user, phoneNumber).ConfigureAwait(false);
-            await store.SetPhoneNumberConfirmed(user, false).ConfigureAwait(false);
-            await UpdateSecurityStampInternal(user).ConfigureAwait(false);
-            return await Update(user).ConfigureAwait(false);
+            await store.SetPhoneNumber(user, phoneNumber);
+            await store.SetPhoneNumberConfirmed(user, false);
+            await UpdateSecurityStampInternal(user);
+            return await Update(user);
         }
 
         /// <summary>
@@ -1155,20 +1158,20 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             var store = GetPhoneNumberStore();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            if (!await VerifyChangePhoneNumberToken(userId, token, phoneNumber).ConfigureAwait(false))
+            if (!await VerifyChangePhoneNumberToken(userId, token, phoneNumber))
             {
                 return IdentityResult.Failed(Resources.InvalidToken);
             }
-            await store.SetPhoneNumber(user, phoneNumber).ConfigureAwait(false);
-            await store.SetPhoneNumberConfirmed(user, true).ConfigureAwait(false);
-            await UpdateSecurityStampInternal(user).ConfigureAwait(false);
-            return await Update(user).ConfigureAwait(false);
+            await store.SetPhoneNumber(user, phoneNumber);
+            await store.SetPhoneNumberConfirmed(user, true);
+            await UpdateSecurityStampInternal(user);
+            return await Update(user);
         }
 
         /// <summary>
@@ -1180,13 +1183,13 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             var store = GetPhoneNumberStore();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            return await store.GetPhoneNumberConfirmed(user).ConfigureAwait(false);
+            return await store.GetPhoneNumberConfirmed(user);
         }
 
         // Two factor APIS
@@ -1195,7 +1198,7 @@ namespace Microsoft.AspNet.Identity
         internal async Task<SecurityToken> CreateSecurityToken(TKey userId)
         {
             return
-                new SecurityToken(Encoding.Unicode.GetBytes(await GetSecurityStamp(userId).ConfigureAwait(false)));
+                new SecurityToken(Encoding.Unicode.GetBytes(await GetSecurityStamp(userId)));
         }
 
         /// <summary>
@@ -1248,14 +1251,14 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new NotSupportedException(Resources.NoTokenProvider);
             }
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
             // Make sure the token is valid
-            return await UserTokenProvider.Validate(purpose, token, this, user).ConfigureAwait(false);
+            return await UserTokenProvider.Validate(purpose, token, this, user);
         }
 
         /// <summary>
@@ -1271,13 +1274,13 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new NotSupportedException(Resources.NoTokenProvider);
             }
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            return await UserTokenProvider.Generate(purpose, this, user).ConfigureAwait(false);
+            return await UserTokenProvider.Generate(purpose, this, user);
         }
 
         /// <summary>
@@ -1307,7 +1310,7 @@ namespace Microsoft.AspNet.Identity
         public virtual async Task<IList<string>> GetValidTwoFactorProviders(TKey userId)
         {
             ThrowIfDisposed();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
@@ -1334,7 +1337,7 @@ namespace Microsoft.AspNet.Identity
         public virtual async Task<bool> VerifyTwoFactorToken(TKey userId, string twoFactorProvider, string token)
         {
             ThrowIfDisposed();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
@@ -1347,7 +1350,7 @@ namespace Microsoft.AspNet.Identity
             }
             // Make sure the token is valid
             var provider = _factors[twoFactorProvider];
-            return await provider.Validate(twoFactorProvider, token, this, user).ConfigureAwait(false);
+            return await provider.Validate(twoFactorProvider, token, this, user);
         }
 
         /// <summary>
@@ -1359,7 +1362,7 @@ namespace Microsoft.AspNet.Identity
         public virtual async Task<string> GenerateTwoFactorToken(TKey userId, string twoFactorProvider)
         {
             ThrowIfDisposed();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
@@ -1370,7 +1373,7 @@ namespace Microsoft.AspNet.Identity
                 throw new NotSupportedException(String.Format(CultureInfo.CurrentCulture, Resources.NoTwoFactorProvider,
                     twoFactorProvider));
             }
-            return await _factors[twoFactorProvider].Generate(twoFactorProvider, this, user).ConfigureAwait(false);
+            return await _factors[twoFactorProvider].Generate(twoFactorProvider, this, user);
         }
 
         /// <summary>
@@ -1384,7 +1387,7 @@ namespace Microsoft.AspNet.Identity
             string token)
         {
             ThrowIfDisposed();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
@@ -1395,7 +1398,7 @@ namespace Microsoft.AspNet.Identity
                 throw new NotSupportedException(String.Format(CultureInfo.CurrentCulture, Resources.NoTwoFactorProvider,
                     twoFactorProvider));
             }
-            await _factors[twoFactorProvider].Notify(token, this, user).ConfigureAwait(false);
+            await _factors[twoFactorProvider].Notify(token, this, user);
             return IdentityResult.Success;
         }
 
@@ -1419,13 +1422,13 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             var store = GetUserTwoFactorStore();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            return await store.GetTwoFactorEnabled(user).ConfigureAwait(false);
+            return await store.GetTwoFactorEnabled(user);
         }
 
         /// <summary>
@@ -1438,15 +1441,15 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             var store = GetUserTwoFactorStore();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            await store.SetTwoFactorEnabled(user, enabled).ConfigureAwait(false);
-            await UpdateSecurityStampInternal(user).ConfigureAwait(false);
-            return await Update(user).ConfigureAwait(false);
+            await store.SetTwoFactorEnabled(user, enabled);
+            await UpdateSecurityStampInternal(user);
+            return await Update(user);
         }
 
         // SMS/Email methods
@@ -1513,13 +1516,13 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             var store = GetUserLockoutStore();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            if (!await store.GetLockoutEnabled(user).ConfigureAwait(false))
+            if (!await store.GetLockoutEnabled(user))
             {
                 return false;
             }
@@ -1537,14 +1540,14 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             var store = GetUserLockoutStore();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            await store.SetLockoutEnabled(user, enabled).ConfigureAwait(false);
-            return await Update(user).ConfigureAwait(false);
+            await store.SetLockoutEnabled(user, enabled);
+            return await Update(user);
         }
 
         /// <summary>
@@ -1556,13 +1559,13 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             var store = GetUserLockoutStore();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            return await store.GetLockoutEnabled(user).ConfigureAwait(false);
+            return await store.GetLockoutEnabled(user);
         }
 
         /// <summary>
@@ -1574,13 +1577,13 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             var store = GetUserLockoutStore();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            return await store.GetLockoutEndDate(user).ConfigureAwait(false);
+            return await store.GetLockoutEndDate(user);
         }
 
         /// <summary>
@@ -1593,7 +1596,7 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             var store = GetUserLockoutStore();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
@@ -1603,8 +1606,8 @@ namespace Microsoft.AspNet.Identity
             {
                 return IdentityResult.Failed(Resources.LockoutNotEnabled);
             }
-            await store.SetLockoutEndDate(user, lockoutEnd).ConfigureAwait(false);
-            return await Update(user).ConfigureAwait(false);
+            await store.SetLockoutEndDate(user, lockoutEnd);
+            return await Update(user);
         }
 
         /// <summary>
@@ -1618,23 +1621,23 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             var store = GetUserLockoutStore();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
             // If this puts the user over the threshold for lockout, lock them out and reset the access failed count
-            var count = await store.IncrementAccessFailedCount(user).ConfigureAwait(false);
+            var count = await store.IncrementAccessFailedCount(user);
             if (count < MaxFailedAccessAttemptsBeforeLockout)
             {
-                return await Update(user).ConfigureAwait(false);
+                return await Update(user);
             }
             await
                 store.SetLockoutEndDate(user, DateTimeOffset.UtcNow.Add(DefaultAccountLockoutTimeSpan))
-                    .ConfigureAwait(false);
-            await store.ResetAccessFailedCount(user).ConfigureAwait(false);
-            return await Update(user).ConfigureAwait(false);
+                    ;
+            await store.ResetAccessFailedCount(user);
+            return await Update(user);
         }
 
         /// <summary>
@@ -1646,14 +1649,14 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             var store = GetUserLockoutStore();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            await store.ResetAccessFailedCount(user).ConfigureAwait(false);
-            return await Update(user).ConfigureAwait(false);
+            await store.ResetAccessFailedCount(user);
+            return await Update(user);
         }
 
         /// <summary>
@@ -1665,13 +1668,13 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             var store = GetUserLockoutStore();
-            var user = await FindById(userId).ConfigureAwait(false);
+            var user = await FindById(userId);
             if (user == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.UserIdNotFound,
                     userId));
             }
-            return await store.GetAccessFailedCount(user).ConfigureAwait(false);
+            return await store.GetAccessFailedCount(user);
         }
 
         private void ThrowIfDisposed()

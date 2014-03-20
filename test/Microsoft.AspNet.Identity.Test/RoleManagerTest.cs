@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Security.Claims;
-using Moq;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -60,7 +57,6 @@ namespace Microsoft.AspNet.Identity.Test
 
         private class NotImplementedStore : IRoleStore<TestRole, string>
         {
-
             public Task Create(TestRole role)
             {
                 throw new NotImplementedException();
@@ -91,6 +87,5 @@ namespace Microsoft.AspNet.Identity.Test
                 throw new NotImplementedException();
             }
         }
-
     }
 }

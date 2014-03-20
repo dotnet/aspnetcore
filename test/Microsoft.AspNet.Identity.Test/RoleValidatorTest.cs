@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Identity.Test
             // Setup
             var manager = new RoleManager<TestRole, string>(new NoopRoleStore());
             var validator = new RoleValidator<TestRole, string>();
-            var user = new TestRole { Name = input };
+            var user = new TestRole {Name = input};
 
             // Act
             var result = await validator.Validate(manager, user);
