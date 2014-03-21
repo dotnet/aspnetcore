@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNet.ConfigurationModel;
 using Microsoft.AspNet.DependencyInjection;
+using Microsoft.AspNet.DependencyInjection.NestedProviders;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Razor;
@@ -66,6 +67,20 @@ namespace Microsoft.AspNet.Mvc
 
             yield return describe.Transient<IModelValidatorProvider, DataAnnotationsModelValidatorProvider>();
             yield return describe.Transient<IModelValidatorProvider, DataMemberModelValidatorProvider>();
+
+            yield return
+               describe.Describe(
+                   typeof(INestedProviderManager<>),
+                   typeof(NestedProviderManager<>),
+                   implementationInstance: null,
+                   lifecycle: LifecycleKind.Transient);
+
+            yield return
+                describe.Describe(
+                    typeof(INestedProviderManagerAsync<>),
+                    typeof(NestedProviderManagerAsync<>),
+                    implementationInstance: null,
+                    lifecycle: LifecycleKind.Transient);
         }
     }
 }

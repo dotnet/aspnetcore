@@ -1,10 +1,8 @@
-﻿#if NET45
-using System;
-using Autofac;
+﻿
+#if NET45
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.DependencyInjection;
-using Microsoft.AspNet.DependencyInjection.Autofac;
-using Microsoft.AspNet.DependencyInjection.NestedProviders;
+using Microsoft.AspNet.DependencyInjection.Fallback;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
 
@@ -14,17 +12,11 @@ namespace MvcSample.Web
     {
         public void Configuration(IBuilder builder)
         {
-            var containerBuilder = new ContainerBuilder();
-            var services = MvcServices.GetDefaultServices();
+            var services = new ServiceCollection();
+            services.Add(MvcServices.GetDefaultServices());
+            services.AddSingleton<PassThroughAttribute, PassThroughAttribute>();
 
-            AutofacRegistration.Populate(containerBuilder, builder.ServiceProvider, services);
-            containerBuilder.RegisterInstance<PassThroughAttribute>(new PassThroughAttribute());
-
-            // Temporary until we have support for open generics in our DI system.
-            containerBuilder.RegisterGeneric(typeof(NestedProviderManager<>)).As(typeof(INestedProviderManager<>));
-            containerBuilder.RegisterGeneric(typeof(NestedProviderManagerAsync<>)).As(typeof(INestedProviderManagerAsync<>));
-
-            var serviceProvider = containerBuilder.Build().Resolve<IServiceProvider>();
+            var serviceProvider = services.BuildServiceProvider(builder.ServiceProvider);
 
             var routes = new RouteCollection()
             {

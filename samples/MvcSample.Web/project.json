@@ -16,9 +16,7 @@
   "configurations": {
     "net45": {
       "dependencies": {
-        "Autofac": "3.3.0",
-        "System.ComponentModel.DataAnnotations": "",
-        "Microsoft.AspNet.DependencyInjection.Autofac": "0.1-alpha-*"
+        "System.ComponentModel.DataAnnotations": ""
       }
     },
     "k10": {
