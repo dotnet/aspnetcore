@@ -153,4 +153,10 @@
   <data name="ViewComponent_InvalidReturnValue" xml:space="preserve">
     <value>View components only support returning {0}, {1} or {2}.</value>
   </data>
+  <data name="ActionContextAccessor_SetValueNotSupported" xml:space="preserve">
+    <value>Replacing the action context is not supported.</value>
+  </data>
+  <data name="ActionInvokerFactory_CouldNotCreateInvoker" xml:space="preserve">
+    <value>An action invoker could not be created for action '{0}'.</value>
+  </data>
 </root>

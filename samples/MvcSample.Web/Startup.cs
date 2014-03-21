@@ -2,6 +2,7 @@
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.DependencyInjection.Fallback;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.RequestContainer;
 using Microsoft.AspNet.Routing;
 
 namespace MvcSample.Web
@@ -32,6 +33,7 @@ namespace MvcSample.Web
                 "{controller}",
                 new { controller = "Home" });
 
+            builder.UseContainer(serviceProvider);
             builder.UseRouter(routes);
         }
     }

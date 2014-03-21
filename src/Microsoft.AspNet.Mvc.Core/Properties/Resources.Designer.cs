@@ -201,6 +201,38 @@ namespace Microsoft.AspNet.Mvc.Core
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_InvalidReturnValue"), p0, p1, p2);
         }
+        
+        /// <summary>
+        /// Replacing the action context is not supported.
+        /// </summary>
+        internal static string ActionContextAccessor_SetValueNotSupported
+        {
+            get { return GetString("ActionContextAccessor_SetValueNotSupported"); }
+        }
+
+        /// <summary>
+        /// Replacing the action context is not supported.
+        /// </summary>
+        internal static string FormatActionContextAccessor_SetValueNotSupported()
+        {
+            return GetString("ActionContextAccessor_SetValueNotSupported");
+        }
+
+        /// <summary>
+        /// An action invoker could not be created for action '{0}'.
+        /// </summary>
+        internal static string ActionInvokerFactory_CouldNotCreateInvoker
+        {
+            get { return GetString("ActionInvokerFactory_CouldNotCreateInvoker"); }
+        }
+
+        /// <summary>
+        /// An action invoker could not be created for action '{0}'.
+        /// </summary>
+        internal static string FormatActionInvokerFactory_CouldNotCreateInvoker(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ActionInvokerFactory_CouldNotCreateInvoker"), p0);
+        }
 
         private static string GetString(string name, params string[] formatterNames)
         {

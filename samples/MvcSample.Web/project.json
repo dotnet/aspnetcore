@@ -5,6 +5,7 @@
     "Microsoft.AspNet.Abstractions": "0.1-alpha-*",
     "Microsoft.AspNet.ConfigurationModel": "0.1-alpha-*",
     "Microsoft.AspNet.DependencyInjection": "0.1-alpha-*",
+    "Microsoft.AspNet.RequestContainer": "0.1-alpha-*",
     "Microsoft.AspNet.Routing": "0.1-alpha-*",
     "Microsoft.AspNet.Server.WebListener": "0.1-alpha-*",
     "Microsoft.ComponentModel.DataAnnotations": "4.0.10.0",

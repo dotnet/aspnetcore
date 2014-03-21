@@ -68,6 +68,8 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Transient<IModelValidatorProvider, DataAnnotationsModelValidatorProvider>();
             yield return describe.Transient<IModelValidatorProvider, DataMemberModelValidatorProvider>();
 
+            yield return describe.Scoped<IUrlHelper, UrlHelper>();
+
             yield return describe.Transient<IViewComponentSelector, DefaultViewComponentSelector>();
             yield return describe.Transient<IViewComponentInvokerFactory, DefaultViewComponentInvokerFactory>();
             yield return describe.Transient<INestedProvider<ViewComponentInvokerProviderContext>, DefaultViewComponentInvokerProvider>();
@@ -86,6 +88,7 @@ namespace Microsoft.AspNet.Mvc
                     typeof(NestedProviderManagerAsync<>),
                     implementationInstance: null,
                     lifecycle: LifecycleKind.Transient);
+            
         }
     }
 }

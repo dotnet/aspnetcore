@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Routing;
 
@@ -11,11 +12,11 @@ namespace Microsoft.AspNet.Mvc
         private readonly IRouter _router;
         private readonly IDictionary<string, object> _ambientValues;
 
-        public UrlHelper([NotNull] HttpContext httpContext, [NotNull] IRouter router, [NotNull] IDictionary<string, object> ambientValues)
+        public UrlHelper(IContextAccessor<ActionContext> contextAccessor)
         {
-            _httpContext = httpContext;
-            _router = router;
-            _ambientValues = ambientValues;
+            _httpContext = contextAccessor.Value.HttpContext;
+            _router = contextAccessor.Value.Router;
+            _ambientValues = contextAccessor.Value.RouteValues;
         }
 
         public string Action(string action, string controller, object values)

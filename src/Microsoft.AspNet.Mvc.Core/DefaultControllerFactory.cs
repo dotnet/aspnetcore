@@ -54,10 +54,7 @@ namespace Microsoft.AspNet.Mvc
                 actionContext.ModelState);
             Injector.InjectProperty(controller, "ViewData", viewData);
 
-            var urlHelper = new UrlHelper(
-                actionContext.HttpContext,
-                actionContext.Router,
-                actionContext.RouteValues);
+            var urlHelper = _serviceProvider.GetService<IUrlHelper>();
             Injector.InjectProperty(controller, "Url", urlHelper);
 
             Injector.CallInitializer(controller, _serviceProvider);

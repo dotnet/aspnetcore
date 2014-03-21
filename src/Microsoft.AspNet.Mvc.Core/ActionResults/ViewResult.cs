@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Mvc
 
         private ViewContext CreateViewContext([NotNull] ActionContext actionContext, [NotNull] TextWriter writer)
         {
-            var urlHelper = new UrlHelper(actionContext.HttpContext, actionContext.Router, actionContext.RouteValues);
+            var urlHelper = _serviceProvider.GetService<IUrlHelper>();
 
             var viewContext = new ViewContext(_serviceProvider, actionContext.HttpContext, actionContext.RouteValues)
             {
