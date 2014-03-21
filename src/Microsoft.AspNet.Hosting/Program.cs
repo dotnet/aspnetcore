@@ -22,11 +22,11 @@ namespace Microsoft.AspNet.Hosting
         {
             var config = new Configuration();
             config.AddCommandLine(args);
-            config.AddEnvironmentVariables();
             if (File.Exists(HostingIniFile))
             {
                 config.AddIniFile(HostingIniFile);
             }
+            config.AddEnvironmentVariables();
 
             var serviceCollection = new ServiceCollection();
             serviceCollection.Add(HostingServices.GetDefaultServices(config));
