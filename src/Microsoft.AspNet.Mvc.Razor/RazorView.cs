@@ -35,10 +35,10 @@ namespace Microsoft.AspNet.Mvc.Razor
                 // The writer for the body is passed through the ViewContext, allowing things like HtmlHelpers
                 // and ViewComponents to reference it.
                 var oldWriter = context.Writer;
-                context.Writer = bodyWriter;
 
                 try
                 {
+                    context.Writer = bodyWriter;
                     await ExecuteAsync();
                 }
                 finally
