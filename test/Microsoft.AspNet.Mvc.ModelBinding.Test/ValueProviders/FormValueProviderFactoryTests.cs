@@ -24,11 +24,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Null(result);
         }
 
-        [Fact]
-        public async Task GetValueProvider_ReturnsValueProviderInstaceWithInvariantCulture()
+        [Theory]
+        [InlineData("application/x-www-form-urlencoded")]
+        [InlineData("application/x-www-form-urlencoded;charset=utf-8")]
+        public async Task GetValueProvider_ReturnsValueProviderInstaceWithInvariantCulture(string contentType)
         {
             // Arrange
-            var requestContext = CreateRequestContext("application/x-www-form-urlencoded");
+            var requestContext = CreateRequestContext(contentType);
             var factory = new FormValueProviderFactory();
 
             // Act

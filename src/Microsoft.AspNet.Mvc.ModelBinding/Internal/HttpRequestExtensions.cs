@@ -1,9 +1,9 @@
 ﻿using System;
 using Microsoft.AspNet.Abstractions;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
+namespace Microsoft.AspNet.Mvc.ModelBinding
 {
-    public static class HttpRequestExtensions
+    internal static class HttpRequestExtensions
     {
         private const string ContentTypeHeader = "Content-Type";
         private const string CharSetToken = "charset=";

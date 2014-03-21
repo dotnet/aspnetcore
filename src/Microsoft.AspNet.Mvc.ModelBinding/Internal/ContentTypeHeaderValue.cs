@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
+﻿
+namespace Microsoft.AspNet.Mvc.ModelBinding
 {
-    public class ContentTypeHeaderValue
+    internal class ContentTypeHeaderValue
     {
         public ContentTypeHeaderValue([NotNull] string contentType,
                                       string charSet)
@@ -18,6 +13,5 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
         public string ContentType { get; private set; }
 
         public string CharSet { get; set; }
-
     }
 }
