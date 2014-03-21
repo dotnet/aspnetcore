@@ -13,8 +13,6 @@ namespace Microsoft.AspNet.Mvc
             "POST", 
             "PUT", 
             "DELETE", 
-            "HEAD", 
-            "OPTIONS", 
             "PATCH",
         };
 
@@ -56,7 +54,7 @@ namespace Microsoft.AspNet.Mvc
 
             for (var i = 0; i < _supportedHttpMethodsByConvention.Length; i++)
             {
-                if (methodInfo.Name.StartsWith(_supportedHttpMethodsByConvention[i], StringComparison.OrdinalIgnoreCase))
+                if (methodInfo.Name.Equals(_supportedHttpMethodsByConvention[i], StringComparison.OrdinalIgnoreCase))
                 {
                     return new [] {
                         new ActionInfo()
