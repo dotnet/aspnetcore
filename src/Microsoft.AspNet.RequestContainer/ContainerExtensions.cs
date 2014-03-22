@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.RequestContainer
             return builder.Use(next =>
             {
                 var typeActivator = builder.ServiceProvider.GetService<ITypeActivator>();
-                var instance = typeActivator.CreateInstance(middleware, new[] { next }.Concat(args).ToArray());
+                var instance = typeActivator.CreateInstance(builder.ServiceProvider, middleware, new[] { next }.Concat(args).ToArray());
                 var methodinfo = middleware.GetTypeInfo().GetDeclaredMethod("Invoke");
                 return (RequestDelegate)methodinfo.CreateDelegate(typeof(RequestDelegate), instance);
             });
