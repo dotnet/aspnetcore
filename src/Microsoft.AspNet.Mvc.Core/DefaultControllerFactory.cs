@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
@@ -29,7 +28,7 @@ namespace Microsoft.AspNet.Mvc
 
             try
             {
-                var controller = _activator.CreateInstance(actionDescriptor.ControllerDescriptor.ControllerTypeInfo.AsType());
+                var controller = _activator.CreateInstance(_serviceProvider, actionDescriptor.ControllerDescriptor.ControllerTypeInfo.AsType());
 
                 // TODO: How do we feed the controller with context (need DI improvements)
                 InitializeController(controller, actionContext);
