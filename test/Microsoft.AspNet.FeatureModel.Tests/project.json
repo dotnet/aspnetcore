@@ -4,13 +4,21 @@
     "Microsoft.AspNet.AppBuilderSupport": "",
     "Microsoft.AspNet.HttpFeature": "",
     "Microsoft.AspNet.Abstractions": "",
-    "Microsoft.AspNet.FeatureModel": ""
+    "Microsoft.AspNet.FeatureModel": "",
+    "Xunit.KRunner": "0.1-alpha-*",
+    "xunit.abstractions": "2.0.0-aspnet-*",
+    "xunit.assert": "2.0.0-aspnet-*",
+    "xunit.core": "2.0.0-aspnet-*",
+    "xunit.execution": "2.0.0-aspnet-*"
+  },
+  "commands": {
+    "test": "Xunit.KRunner"
   },
   "configurations": {
     "net45": { 
       "dependencies": {
-      "Shouldly": "1.1.1.1",
-      "xunit": "1.9.2"
+        "Shouldly": "1.1.1.1",
+        "System.Runtime": ""
       }
     }
   }

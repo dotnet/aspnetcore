@@ -6,7 +6,6 @@ using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.HttpFeature;
 using Moq;
 using Xunit;
-using Xunit.Extensions;
 
 namespace Microsoft.AspNet.PipelineCore.Tests
 {
