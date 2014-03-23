@@ -19,7 +19,6 @@ namespace Microsoft.AspNet.Mvc
             "Microsoft.AspNet.Mvc.Rendering",
         };
         private readonly ILibraryManager _libraryManager;
-        private readonly Func<ILibraryInformation, Assembly> _assemblyLoader;
 
         public DefaultControllerAssemblyProvider(ILibraryManager libraryManager)
         {

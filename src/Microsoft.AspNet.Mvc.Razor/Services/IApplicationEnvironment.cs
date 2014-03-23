@@ -11,7 +11,4 @@ namespace Microsoft.Net.Runtime
         string ApplicationBasePath { get; }
         FrameworkName TargetFramework { get; }
     }
-
-    [AssemblyNeutral]
-    public class AssemblyNeutralAttribute : Attribute { }
 }
