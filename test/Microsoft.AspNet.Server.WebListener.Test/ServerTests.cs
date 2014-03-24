@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.Server.WebListener.Test
                     requestTasks.Add(requestTask);
                 }
 
-                bool success = Task.WaitAll(requestTasks.ToArray(), TimeSpan.FromSeconds(5));
+                bool success = Task.WaitAll(requestTasks.ToArray(), TimeSpan.FromSeconds(10));
                 if (!success)
                 {
                     Console.WriteLine();
@@ -191,13 +191,13 @@ namespace Microsoft.AspNet.Server.WebListener.Test
         [Fact]
         public async Task Server_SetQueueLimit_Success()
         {
-            var factory = new ServerFactory(null);
-            var wrapper = (WebListenerWrapper)factory.Initialize(null);
-            wrapper.Listener.UriPrefixes.Add(Prefix.Create("http://localhost:8080"));
+            var factory = new ServerFactory(loggerFactory: null);
+            var serverInfo = (ServerInformation)factory.Initialize(configuration: null);
+            serverInfo.Listener.UrlPrefixes.Add(UrlPrefix.Create("http://localhost:8080"));
 
-            wrapper.Listener.SetRequestQueueLimit(1001);
+            serverInfo.Listener.SetRequestQueueLimit(1001);
 
-            using (factory.Start(wrapper, env => Task.FromResult(0)))
+            using (factory.Start(serverInfo, env => Task.FromResult(0)))
             {
                 string response = await SendRequestAsync(Address);
                 Assert.Equal(string.Empty, response);

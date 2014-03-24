@@ -1,5 +1,5 @@
 ﻿//------------------------------------------------------------------------------
-// <copyright file="HttpListener.cs" company="Microsoft">
+// <copyright file="UrlPrefix.cs" company="Microsoft">
 //     Copyright (c) Microsoft Corporation.  All rights reserved.
 // </copyright>
 //------------------------------------------------------------------------------
@@ -9,9 +9,9 @@ using System.Globalization;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
-    public class Prefix
+    public class UrlPrefix
     {
-        private Prefix(bool isHttps, string scheme, string host, string port, int portValue, string path)
+        private UrlPrefix(bool isHttps, string scheme, string host, string port, int portValue, string path)
         {
             IsHttps = isHttps;
             Scheme = scheme;
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Server.WebListener
         /// <param name="host">+, *, IPv4, [IPv6], or a dns name. Http.Sys does not permit punycode (xn--), use Unicode instead.</param>
         /// <param name="port">If empty, the default port for the given scheme will be used (80 or 443).</param>
         /// <param name="path">Should start and end with a '/', though a missing trailing slash will be added. This value must be un-escaped.</param>
-        public static Prefix Create(string scheme, string host, string port, string path)
+        public static UrlPrefix Create(string scheme, string host, string port, string path)
         {
             bool isHttps;
             if (string.Equals(Constants.HttpScheme, scheme, StringComparison.OrdinalIgnoreCase))
@@ -73,10 +73,10 @@ namespace Microsoft.AspNet.Server.WebListener
                 path += "/";
             }
 
-            return new Prefix(isHttps, scheme, host, port, portValue, path);
+            return new UrlPrefix(isHttps, scheme, host, port, portValue, path);
         }
 
-        public static Prefix Create(string prefix)
+        public static UrlPrefix Create(string prefix)
         {
             string scheme = null;
             string host = null;
@@ -118,7 +118,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }
             path = whole.Substring(delimiterStart3);
 
-            return Prefix.Create(scheme, host, port, path);
+            return UrlPrefix.Create(scheme, host, port, path);
         }
 
         public bool IsHttps { get; private set; }

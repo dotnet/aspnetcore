@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             OwinWebListener listener = new OwinWebListener();
             ParseAddresses(configuration, listener);
-            return new WebListenerWrapper(listener, _loggerFactory);
+            return new ServerInformation(new WebListenerWrapper(listener, _loggerFactory));
         }
 
         /// <summary>
@@ -70,16 +70,16 @@ namespace Microsoft.AspNet.Server.WebListener
                 throw new ArgumentNullException("app");
             }
 
-            WebListenerWrapper wrapper = server as WebListenerWrapper;
-            if (wrapper == null)
+            var serverInfo = server as ServerInformation;
+            if (serverInfo == null)
             {
                 throw new ArgumentException("server");
             }
 
             // TODO: var capabilities = new Dictionary<string, object>();
 
-            wrapper.Start(app);
-            return wrapper;
+            serverInfo.Wrapper.Start(app);
+            return serverInfo.Wrapper;
         }
 
         private void ParseAddresses(IConfiguration config, OwinWebListener listener)
@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.Server.WebListener
             {
                 foreach (var value in urls.Split(';'))
                 {
-                    listener.UriPrefixes.Add(Prefix.Create(value));
+                    listener.UrlPrefixes.Add(UrlPrefix.Create(value));
                 }
             }
             // TODO: look for just a port option?

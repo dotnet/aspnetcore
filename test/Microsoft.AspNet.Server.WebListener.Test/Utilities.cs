@@ -32,12 +32,12 @@ namespace Microsoft.AspNet.Server.WebListener.Test
 
         internal static IDisposable CreateServer(string scheme, string host, string port, string path, AuthenticationType authType, AppFunc app)
         {
-            ServerFactory factory = new ServerFactory(null);
-            WebListenerWrapper wrapper = (WebListenerWrapper)factory.Initialize(null);
-            wrapper.Listener.UriPrefixes.Add(Prefix.Create(scheme, host, port, path));
-            wrapper.Listener.AuthenticationManager.AuthenticationTypes = authType;
+            var factory = new ServerFactory(loggerFactory: null);
+            var serverInfo = (ServerInformation)factory.Initialize(configuration: null);
+            serverInfo.Listener.UrlPrefixes.Add(UrlPrefix.Create(scheme, host, port, path));
+            serverInfo.Listener.AuthenticationManager.AuthenticationTypes = authType;
 
-            return factory.Start(wrapper, app);
+            return factory.Start(serverInfo, app);
         }
     }
 }

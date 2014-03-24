@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Server.WebListener
 
         private object _internalLock;
 
-        private List<Prefix> _uriPrefixes = new List<Prefix>();
+        private List<UrlPrefix> _urlPrefixes = new List<UrlPrefix>();
 
         // The native request queue
         private long? _requestQueueLength;
@@ -105,9 +105,9 @@ namespace Microsoft.AspNet.Server.WebListener
             get { return _logger; }
         }
 
-        public List<Prefix> UriPrefixes
+        public List<UrlPrefix> UrlPrefixes
         {
-            get { return _uriPrefixes; }
+            get { return _urlPrefixes; }
         }
 
         internal SafeHandle RequestQueueHandle
@@ -247,12 +247,12 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             CheckDisposed();
             // go through the uri list and unregister for each one of them
-            if (_uriPrefixes.Count > 0)
+            if (_urlPrefixes.Count > 0)
             {
                 LogHelper.LogInfo(_logger, "RemoveAll");
                 if (_state == State.Started)
                 {
-                    foreach (Prefix registeredPrefix in _uriPrefixes)
+                    foreach (UrlPrefix registeredPrefix in _urlPrefixes)
                     {
                         // ignore possible failures
                         InternalRemovePrefix(registeredPrefix.Whole);
@@ -261,7 +261,7 @@ namespace Microsoft.AspNet.Server.WebListener
 
                 if (clear)
                 {
-                    _uriPrefixes.Clear();
+                    _urlPrefixes.Clear();
                 }
             }
         }
@@ -605,12 +605,12 @@ namespace Microsoft.AspNet.Server.WebListener
         private void AddAllPrefixes()
         {
             // go through the uri list and register for each one of them
-            if (_uriPrefixes.Count > 0)
+            if (_urlPrefixes.Count > 0)
             {
-                for (int i = 0; i < _uriPrefixes.Count; i++)
+                for (int i = 0; i < _urlPrefixes.Count; i++)
                 {
                     // We'll get this index back on each request and use it to look up the prefix to calculate PathBase.
-                    Prefix registeredPrefix = _uriPrefixes[i];
+                    UrlPrefix registeredPrefix = _urlPrefixes[i];
                     uint statusCode = InternalAddPrefix(registeredPrefix.Whole, i);
                     if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
                     {
