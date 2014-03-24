@@ -1,419 +1,505 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Abstractions;
-using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.InMemory;
-using Microsoft.AspNet.Mvc;
-//using Microsoft.Owin.Security;
-using MvcMusicStore.Models;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
-namespace MvcMusicStore.Controllers
-{
-    //[Authorize]
-    public class AccountController : Controller
-    {
-        public AccountController()
-            : this(new UserManager<ApplicationUser, string>(new InMemoryUserStore<ApplicationUser>()))
-        {
-        }
+//using Microsoft.AspNet.Identity;
+//using Microsoft.AspNet.Identity.InMemory;
+//using Microsoft.AspNet.Mvc;
+//using Microsoft.AspNet.Mvc.ModelBinding;
+//using MusicStore.Models;
+//using System;
+//using System.Collections.Generic;
+//using System.Linq;
+//using System.Threading.Tasks;
 
-        public AccountController(UserManager<ApplicationUser, string> userManager)
-        {
-            UserManager = userManager;
-        }
+//namespace MusicStore.Controllers
+//{
+//    //[Authorize]
+//    public class AccountController : Controller
+//    {
+//        public AccountController()
+//            //Bug: No EF yet - using an in memory store
+//            //: this(new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext())))
+//            : this(new UserManager<ApplicationUser, string>(new InMemoryUserStore<ApplicationUser>()))
+//        {
+//        }
 
-        public UserManager<ApplicationUser, string> UserManager { get; private set; }
+//        public AccountController(UserManager<ApplicationUser, string> userManager)
+//        {
+//            UserManager = userManager;
+//        }
 
-        private void MigrateShoppingCart(string userName)
-        {
-            //var storeDb = new MusicStoreEntities();
+//        public UserManager<ApplicationUser, string> UserManager { get; private set; }
 
-            // Associate shopping cart items with logged-in user
-            //var cart = ShoppingCart.GetCart(storeDb, this.HttpContext);
-            //cart.MigrateCart(userName);
-            //storeDb.SaveChanges();
+//        private void MigrateShoppingCart(string UserName)
+//        {
+//            //Bug: No EF
+//            //var storeDb = new MusicStoreEntities();
+//            var storeDb = MusicStoreEntities.Instance;
 
-            //Session[ShoppingCart.CartSessionKey] = userName;
-        }
+//            // Associate shopping cart items with logged-in user
+//            var cart = ShoppingCart.GetCart(storeDb, this.Context);
+//            cart.MigrateCart(UserName);
+//            storeDb.SaveChanges();
 
-        //
-        // GET: /Account/Login
-        //[AllowAnonymous]
-        public IActionResult Login(string returnUrl)
-        {
-            ViewBag.ReturnUrl = returnUrl;
-            return View();
-        }
+//            //Bug: TODO
+//            //Session[ShoppingCart.CartSessionKey] = UserName;
+//        }
 
-        //
-        // POST: /Account/Login
-        //[HttpPost]
-        //[AllowAnonymous]
-        //[ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model, string returnUrl)
-        {
-            //if (ModelState.IsValid)
-            //{
-                var user = await UserManager.Find(model.UserName, model.Password);
-                if (user != null)
-                {
-                    await SignIn(user, model.RememberMe);
-                    return RedirectToLocal(returnUrl);
-                }
-                else
-                {
-                //    ModelState.AddModelError("", "Invalid username or password.");
-                }
-            //}
+//        //
+//        // GET: /Account/Login
+//        [AllowAnonymous]
+//        public IActionResult Login(string returnUrl)
+//        {
+//            //ViewBag.ReturnUrl = returnUrl;
+//            return View();
+//        }
 
-            // If we got this far, something failed, redisplay form
-            return View(model);
-        }
+//        //
+//        // POST: /Account/Login
+//        //Bug: HTTP verb attribs not available
+//        //[HttpPost]
+//        [AllowAnonymous]
+//        //[ValidateAntiForgeryToken]
+//        public async Task<IActionResult> Login(LoginViewModel model, string returnUrl)
+//        {
+//            //Bug: How to validate the model state?
+//            //if (ModelState.IsValid)
+//            {
+//                var user = await UserManager.Find(model.UserName, model.Password);
+//                if (user != null)
+//                {
+//                    await SignIn(user, model.RememberMe);
+//                    return RedirectToLocal(returnUrl);
+//                }
+//                else
+//                {
+//                    //Bug: Model state error
+//                    //ModelState.AddModelError("", "Invalid username or password.");
+//                }
+//            }
 
-        //
-        // GET: /Account/Register
-        //[AllowAnonymous]
-        public IActionResult Register()
-        {
-            return View();
-        }
+//            // If we got this far, something failed, redisplay form
+//            return View(model);
+//        }
 
-        //
-        // POST: /Account/Register
-        //[HttpPost]
-        //[AllowAnonymous]
-        //[ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register(RegisterViewModel model)
-        {
-            //if (ModelState.IsValid)
-            //{
-                var user = new ApplicationUser() { UserName = model.UserName };
-                var result = await UserManager.Create(user, model.Password);
-                if (result.Succeeded)
-                {
-                    await SignIn(user, isPersistent: false);
-                    return null;//RedirectToAction("Index", "Home");
-                }
-                else
-                {
-                    AddErrors(result);
-                }
-            //}
+//        //
+//        // GET: /Account/Register
+//        [AllowAnonymous]
+//        public IActionResult Register()
+//        {
+//            return View();
+//        }
 
-            // If we got this far, something failed, redisplay form
-            return View(model);
-        }
+//        //
+//        // POST: /Account/Register
+//        //Bug: Missing verb attributes
+//        //[HttpPost]
+//        [AllowAnonymous]
+//        //[ValidateAntiForgeryToken]
+//        public async Task<IActionResult> Register(RegisterViewModel model)
+//        {
+//            //Bug: How to validate the model state?
+//            //if (ModelState.IsValid)
+//            {
+//                //Bug: Replacing it with InmemoryUser
+//                var user = new ApplicationUser() { UserName = model.UserName };
+//                var result = await UserManager.Create(user, model.Password);
+//                if (result.Succeeded)
+//                {
+//                    await SignIn(user, isPersistent: false);
+//                    //Bug: No helper methods
+//                    //return RedirectToAction("Index", "Home");
+//                }
+//                else
+//                {
+//                    AddErrors(result);
+//                }
+//            }
 
-        //
-        // POST: /Account/Disassociate
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        public async Task<IActionResult> Disassociate(string loginProvider, string providerKey)
-        {
-            ManageMessageId? message = null;
-            IdentityResult result = await UserManager.RemoveLogin(null /*User.Identity.GetUserId()*/, new UserLoginInfo(loginProvider, providerKey));
-            if (result.Succeeded)
-            {
-                message = ManageMessageId.RemoveLoginSuccess;
-            }
-            else
-            {
-                message = ManageMessageId.Error;
-            }
-            return null;//RedirectToAction("Manage", new { Message = message });
-        }
+//            // If we got this far, something failed, redisplay form
+//            return View(model);
+//        }
 
-        //
-        // GET: /Account/Manage
-        public IActionResult Manage(ManageMessageId? message)
-        {
-            ViewBag.StatusMessage =
-                message == ManageMessageId.ChangePasswordSuccess ? "Your password has been changed."
-                : message == ManageMessageId.SetPasswordSuccess ? "Your password has been set."
-                : message == ManageMessageId.RemoveLoginSuccess ? "The external login was removed."
-                : message == ManageMessageId.Error ? "An error has occurred."
-                : "";
-            ViewBag.HasLocalPassword = HasPassword();
-            //ViewBag.ReturnUrl = Url.Action("Manage");
-            return View();
-        }
+//        //
+//        // POST: /Account/Disassociate
+//        //Bug: HTTP verbs
+//        //[HttpPost]
+//        //[ValidateAntiForgeryToken]
+//        public async Task<IActionResult> Disassociate(string loginProvider, string providerKey)
+//        {
+//            ManageMessageId? message = null;
+//            IdentityResult result = await UserManager.RemoveLogin(User.Identity.GetUserId(), new UserLoginInfo(loginProvider, providerKey));
+//            if (result.Succeeded)
+//            {
+//                message = ManageMessageId.RemoveLoginSuccess;
+//            }
+//            else
+//            {
+//                message = ManageMessageId.Error;
+//            }
+//            //Bug: No helpers available
+//            //return RedirectToAction("Manage", new { Message = message });
+//            return View();
+//        }
 
-        //
-        // POST: /Account/Manage
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        public async Task<IActionResult> Manage(ManageUserViewModel model)
-        {
-            bool hasPassword = HasPassword();
-            ViewBag.HasLocalPassword = hasPassword;
-            //ViewBag.ReturnUrl = Url.Action("Manage");
-            if (hasPassword)
-            {
-                //if (ModelState.IsValid)
-                //{
-                    IdentityResult result = await UserManager.ChangePassword("userId" /*User.Identity.GetUserId()*/, model.OldPassword, model.NewPassword);
-                    if (result.Succeeded)
-                    {
-                        return null;//RedirectToAction("Manage", new { Message = ManageMessageId.ChangePasswordSuccess });
-                    }
-                    else
-                    {
-                        AddErrors(result);
-                    }
-                //}
-            }
-            else
-            {
-                // User does not have a password so remove any validation errors caused by a missing OldPassword field
-                //ModelState state = ModelState["OldPassword"];
-                //if (state != null)
-                //{
-                //    state.Errors.Clear();
-                //}
+//        //
+//        // GET: /Account/Manage
+//        public IActionResult Manage(ManageMessageId? message)
+//        {
+//            //ViewBag.StatusMessage =
+//            //    message == ManageMessageId.ChangePasswordSuccess ? "Your password has been changed."
+//            //    : message == ManageMessageId.SetPasswordSuccess ? "Your password has been set."
+//            //    : message == ManageMessageId.RemoveLoginSuccess ? "The external login was removed."
+//            //    : message == ManageMessageId.Error ? "An error has occurred."
+//            //    : "";
+//            //ViewBag.HasLocalPassword = HasPassword();
+//            //Bug: No Action method with single parameter
+//            //ViewBag.ReturnUrl = Url.Action("Manage");
+//            //ViewBag.ReturnUrl = Url.Action("Manage", "Account", null);
+//            return View();
+//        }
 
-                //if (ModelState.IsValid)
-                //{
-                    IdentityResult result = await UserManager.AddPassword("userId" /*User.Identity.GetUserId()*/, model.NewPassword);
-                    if (result.Succeeded)
-                    {
-                        return null;//RedirectToAction("Manage", new { Message = ManageMessageId.SetPasswordSuccess });
-                    }
-                    else
-                    {
-                        AddErrors(result);
-                    }
-                //}
-            }
+//        //
+//        // POST: /Account/Manage
+//        //Bug: No verb attributes
+//        //[HttpPost]
+//        //[ValidateAntiForgeryToken]
+//        public async Task<IActionResult> Manage(ManageUserViewModel model)
+//        {
+//            bool hasPassword = await HasPassword();
+//            //ViewBag.HasLocalPassword = hasPassword;
+//            //Bug: No Action method with single parameter
+//            //ViewBag.ReturnUrl = Url.Action("Manage");
+//            //ViewBag.ReturnUrl = Url.Action("Manage", "Account", null);
+//            if (hasPassword)
+//            {
+//                //if (ModelState.IsValid)
+//                {
+//                    IdentityResult result = await UserManager.ChangePassword(User.Identity.GetUserId(), model.OldPassword, model.NewPassword);
+//                    if (result.Succeeded)
+//                    {
+//                        //Bug: No helper method
+//                        //return RedirectToAction("Manage", new { Message = ManageMessageId.ChangePasswordSuccess });
+//                        return View();
+//                    }
+//                    else
+//                    {
+//                        AddErrors(result);
+//                    }
+//                }
+//            }
+//            else
+//            {
+//                // User does not have a password so remove any validation errors caused by a missing OldPassword field
+//                //Bug: Still controller does not have a ModelState property
+//                //ModelState state = ModelState["OldPassword"];
+//                ModelState state = null;
 
-            // If we got this far, something failed, redisplay form
-            return View(model);
-        }
+//                if (state != null)
+//                {
+//                    state.Errors.Clear();
+//                }
 
-        //
-        // POST: /Account/ExternalLogin
-        //[HttpPost]
-        //[AllowAnonymous]
-        //[ValidateAntiForgeryToken]
-        public IActionResult ExternalLogin(string provider, string returnUrl)
-        {
-            // Request a redirect to the external login provider
-            //return new ChallengeResult(provider, Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl }));
-            return null;
-        }
+//                //Bug: No model state validation
+//                //if (ModelState.IsValid)
+//                {
+//                    IdentityResult result = await UserManager.AddPassword(User.Identity.GetUserId(), model.NewPassword);
+//                    if (result.Succeeded)
+//                    {
+//                        //Bug: No helper method
+//                        //return RedirectToAction("Manage", new { Message = ManageMessageId.SetPasswordSuccess });
+//                    }
+//                    else
+//                    {
+//                        AddErrors(result);
+//                    }
+//                }
+//            }
 
-        //
-        // GET: /Account/ExternalLoginCallback
-        //[AllowAnonymous]
-        public async Task<IActionResult> ExternalLoginCallback(string returnUrl)
-        {
-            //var loginInfo = await AuthenticationManager.GetExternalLoginInfo();
-            //if (loginInfo == null)
-            //{
-            //    return RedirectToAction("Login");
-            //}
+//            // If we got this far, something failed, redisplay form
+//            return View(model);
+//        }
 
-            // Sign in the user with this external login provider if the user already has a login
-            var user = await UserManager.Find(null/*loginInfo.Login*/);
-            if (user != null)
-            {
-                await SignIn(user, isPersistent: false);
-                return RedirectToLocal(returnUrl);
-            }
-            else
-            {
-                // If the user does not have an account, then prompt the user to create an account
-                ViewBag.ReturnUrl = returnUrl;
-                ViewBag.LoginProvider = null;//loginInfo.Login.LoginProvider;
-                return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { /*UserName = loginInfo.DefaultUserName*/ });
-            }
-        }
+//        //
+//        // POST: /Account/ExternalLogin
+//        //Bug: No verb attributes
+//        //[HttpPost]
+//        [AllowAnonymous]
+//        //[ValidateAntiForgeryToken]
+//        public IActionResult ExternalLogin(string provider, string returnUrl)
+//        {
+//            // Request a redirect to the external login provider
+//            return new ChallengeResult(provider, Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl }));
+//        }
 
-        //
-        // POST: /Account/LinkLogin
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        public IActionResult LinkLogin(string provider)
-        {
-            // Request a redirect to the external login provider to link a login for the current user
-            //return new ChallengeResult(provider, Url.Action("LinkLoginCallback", "Account"), User.Identity.GetUserId());
-            return null;
-        }
+//        //
+//        // GET: /Account/ExternalLoginCallback
+//        [AllowAnonymous]
+//        public async Task<IActionResult> ExternalLoginCallback(string returnUrl)
+//        {
+//            var loginInfo = await AuthenticationManager.GetExternalLoginInfoAsync();
+//            if (loginInfo == null)
+//            {
+//                //Bug: No helper
+//                //return RedirectToAction("Login");
+//                return View();
+//            }
 
-        //
-        // GET: /Account/LinkLoginCallback
-        public async Task<IActionResult> LinkLoginCallback()
-        {
-            //var loginInfo = await AuthenticationManager.GetExternalLoginInfo(XsrfKey, User.Identity.GetUserId());
-            //if (loginInfo == null)
-            //{
-            //    return RedirectToAction("Manage", new { Message = ManageMessageId.Error });
-            //}
-            //var result = await UserManager.AddLogin(User.Identity.GetUserId(), loginInfo.Login);
-            //if (result.Succeeded)
-            //{
-            //    return RedirectToAction("Manage");
-            //}
-            return null;//RedirectToAction("Manage", new { Message = ManageMessageId.Error });
-        }
+//            // Sign in the user with this external login provider if the user already has a login
+//            var user = await UserManager.Find(loginInfo.Login);
+//            if (user != null)
+//            {
+//                await SignIn(user, isPersistent: false);
+//                return RedirectToLocal(returnUrl);
+//            }
+//            else
+//            {
+//                // If the user does not have an account, then prompt the user to create an account
+//                //ViewBag.ReturnUrl = returnUrl;
+//                //ViewBag.LoginProvider = loginInfo.Login.LoginProvider;
+//                return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { UserName = loginInfo.DefaultUserName });
+//            }
+//        }
 
-        //
-        // POST: /Account/ExternalLoginConfirmation
-        //[HttpPost]
-        //[AllowAnonymous]
-        //[ValidateAntiForgeryToken]
-        public async Task<IActionResult> ExternalLoginConfirmation(ExternalLoginConfirmationViewModel model, string returnUrl)
-        {
-            //if (User.Identity.IsAuthenticated)
-            //{
-            //    return RedirectToAction("Manage");
-            //}
+//        //
+//        // POST: /Account/LinkLogin
+//        //Bug: No HTTP verbs
+//        //[HttpPost]
+//        //[ValidateAntiForgeryToken]
+//        public IActionResult LinkLogin(string provider)
+//        {
+//            // Request a redirect to the external login provider to link a login for the current user
+//            return new ChallengeResult(provider, Url.Action("LinkLoginCallback", "Account", null), User.Identity.GetUserId());
+//        }
 
-            //if (ModelState.IsValid)
-            //{
-                // Get the information about the user from the external login provider
-                //var info = await AuthenticationManager.GetExternalLoginInfoAsync();
-                //if (info == null)
-                //{
-                //    return View("ExternalLoginFailure");
-                //}
-                var user = new ApplicationUser() { UserName = model.UserName };
-                var result = await UserManager.Create(user);
-                if (result.Succeeded)
-                {
-                    result = await UserManager.AddLogin(user.Id, null/*info.Login*/);
-                    if (result.Succeeded)
-                    {
-                        await SignIn(user, isPersistent: false);
-                        return null;//RedirectToLocal(returnUrl);
-                    }
-                }
-                AddErrors(result);
-            //}
+//        //
+//        // GET: /Account/LinkLoginCallback
+//        public async Task<IActionResult> LinkLoginCallback()
+//        {
+//            var loginInfo = null;// await AuthenticationManager.GetExternalLoginInfoAsync(XsrfKey, User.Identity.GetUserId());
+//            if (loginInfo == null)
+//            {
+//                //Bug: No helper method
+//                //return RedirectToAction("Manage", new { Message = ManageMessageId.Error });
+//                return View();
+//            }
+//            var result = await UserManager.AddLogin(User.Identity.GetUserId(), loginInfo.Login);
+//            if (result.Succeeded)
+//            {
+//                //Bug: No helper method
+//                //return RedirectToAction("Manage");
+//                return View();
+//            }
+//            //Bug: No helper method
+//            //return RedirectToAction("Manage", new { Message = ManageMessageId.Error });
+//            return View();
+//        }
 
-            ViewBag.ReturnUrl = returnUrl;
-            return View(model);
-        }
+//        //
+//        // POST: /Account/ExternalLoginConfirmation
+//        //Bug: No HTTP verbs
+//        //[HttpPost]
+//        [AllowAnonymous]
+//        //[ValidateAntiForgeryToken]
+//        public async Task<IActionResult> ExternalLoginConfirmation(ExternalLoginConfirmationViewModel model, string returnUrl)
+//        {
+//            if (User.Identity.IsAuthenticated)
+//            {
+//                //Bug: No helper yet
+//                //return RedirectToAction("Manage");
+//                return View();
+//            }
 
-        //
-        // POST: /Account/LogOff
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        public IActionResult LogOff()
-        {
-            //AuthenticationManager.SignOut();
-            return null;//RedirectToAction("Index", "Home");
-        }
+//            //Bug: No model state validation
+//            //if (ModelState.IsValid)
+//            {
+//                // Get the information about the user from the external login provider
+//                var info = await AuthenticationManager.GetExternalLoginInfoAsync();
+//                if (info == null)
+//                {
+//                    return View("ExternalLoginFailure");
+//                }
+//                //Using InMemory user
+//                var user = new ApplicationUser() { UserName = model.UserName };
+//                var result = await UserManager.Create(user);
+//                if (result.Succeeded)
+//                {
+//                    result = await UserManager.AddLogin(user.Id, info.Login);
+//                    if (result.Succeeded)
+//                    {
+//                        await SignIn(user, isPersistent: false);
+//                        return RedirectToLocal(returnUrl);
+//                    }
+//                }
+//                AddErrors(result);
+//            }
 
-        //
-        // GET: /Account/ExternalLoginFailure
-        //[AllowAnonymous]
-        public IActionResult ExternalLoginFailure()
-        {
-            return View();
-        }
+//            //ViewBag.ReturnUrl = returnUrl;
+//            return View(model);
+//        }
 
-        //[ChildActionOnly]
-        public IActionResult RemoveAccountList()
-        {
-            //var linkedAccounts = UserManager.GetLogins(null /*User.Identity.GetUserId()*/);
-            //ViewBag.ShowRemoveButton = HasPassword() || linkedAccounts.Count > 1;
-            return null;//(IActionResult)PartialView("_RemoveAccountPartial", linkedAccounts);
-        }
+//        //
+//        // POST: /Account/LogOff
+//        //Bug: No HTTP verbs
+//        //[HttpPost]
+//        //[ValidateAntiForgeryToken]
+//        public IActionResult LogOff()
+//        {
+//            AuthenticationManager.SignOut();
+//            //return RedirectToAction("Index", "Home");
+//            return View();
+//        }
 
-        #region Helpers
-        // Used for XSRF protection when adding external logins
-        private const string XsrfKey = "XsrfId";
+//        //
+//        // GET: /Account/ExternalLoginFailure
+//        [AllowAnonymous]
+//        public IActionResult ExternalLoginFailure()
+//        {
+//            return View();
+//        }
 
-        //private IAuthenticationManager AuthenticationManager
-        //{
-        //    get
-        //    {
-        //        return HttpContext.GetOwinContext().Authentication;
-        //    }
-        //}
+//        //Bug: Need this attribute
+//        //[ChildActionOnly]
+//        public async Task<IActionResult> RemoveAccountList()
+//        {
+//            var linkedAccounts = await UserManager.GetLogins(User.Identity.GetUserId());
+//            //ViewBag.ShowRemoveButton = await HasPassword() || linkedAccounts.Count > 1;
+//            //Bug: We dont have partial views yet
+//            //return (IActionResult)PartialView("_RemoveAccountPartial", linkedAccounts);
+//            return View();
+//        }
 
-        private async Task SignIn(ApplicationUser user, bool isPersistent)
-        {
-            //AuthenticationManager.SignOut(DefaultAuthenticationTypes.ExternalCookie);
-            var identity = await UserManager.CreateIdentity(user, "Application" /*DefaultAuthenticationTypes.ApplicationCookie */);
-            //AuthenticationManager.SignIn(new AuthenticationProperties() { IsPersistent = isPersistent }, identity);
+//        //Bug: Controllers need to be disposable? 
+//        protected void Dispose(bool disposing)
+//        {
+//            if (disposing && UserManager != null)
+//            {
+//                UserManager.Dispose();
+//                UserManager = null;
+//            }
+            
+//            //base.Dispose(disposing);
+//        }
 
-            // Migrate the user's shopping cart
-            MigrateShoppingCart(user.UserName);
-        }
+//        #region Helpers
+//        // Used for XSRF protection when adding external logins
+//        private const string XsrfKey = "XsrfId";
 
-        private void AddErrors(IdentityResult result)
-        {
-            foreach (var error in result.Errors)
-            {
-                //ModelState.AddModelError("", error);
-            }
-        }
+//        //private IAuthenticationManager AuthenticationManager
+//        //{
+//        //    get
+//        //    {
+//        //        //Will change to Context.Authentication
+//        //        return new IAuthenticationManager();
+//        //    }
+//        //}
 
-        private bool HasPassword()
-        {
-            // No sync helpers yet
-            //var user = UserManager.FindById(null /*User.Identity.GetUserId()*/);
-            //if (user != null)
-            //{
-            //    return user.PasswordHash != null;
-            //}
-            return false;
-        }
+//        private async Task SignIn(ApplicationUser user, bool isPersistent)
+//        {
+//            //Bug: No cookies middleware now.
+//            //AuthenticationManager.SignOut(DefaultAuthenticationTypes.ExternalCookie);
+//            //var identity = await UserManager.CreateIdentityAsync(user, DefaultAuthenticationTypes.ApplicationCookie);
+//            //AuthenticationManager.SignIn(new AuthenticationProperties() { IsPersistent = isPersistent }, identity);
 
-        public enum ManageMessageId
-        {
-            ChangePasswordSuccess,
-            SetPasswordSuccess,
-            RemoveLoginSuccess,
-            Error
-        }
+//            // Migrate the user's shopping cart
+//            MigrateShoppingCart(user.UserName);
+//        }
 
-        private IActionResult RedirectToLocal(string returnUrl)
-        {
-            //if (Url.IsLocalUrl(returnUrl))
-            //{
-            //    return Redirect(returnUrl);
-            //}
-            //else
-            //{
-            //    return RedirectToAction("Index", "Home");
-            //}
-            return null;
-        }
+//        private void AddErrors(IdentityResult result)
+//        {
+//            foreach (var error in result.Errors)
+//            {
+//                //ModelState.AddModelError("", error);
+//            }
+//        }
 
-        //private class ChallengeResult : HttpUnauthorizedResult
-        //{
-        //    public ChallengeResult(string provider, string redirectUri)
-        //        : this(provider, redirectUri, null)
-        //    {
-        //    }
+//        private async Task<bool> HasPassword()
+//        {
+//            //Bug: Need to get the User object somehow: TODO
+//            //var user = await UserManager.FindById(User.Identity.GetUserId());
+//            var user = await UserManager.FindById("TODO");
+//            if (user != null)
+//            {
+//                return user.PasswordHash != null;
+//            }
+//            return false;
+//        }
 
-        //    public ChallengeResult(string provider, string redirectUri, string userId)
-        //    {
-        //        LoginProvider = provider;
-        //        RedirectUri = redirectUri;
-        //        UserId = userId;
-        //    }
+//        public enum ManageMessageId
+//        {
+//            ChangePasswordSuccess,
+//            SetPasswordSuccess,
+//            RemoveLoginSuccess,
+//            Error
+//        }
 
-        //    public string LoginProvider { get; set; }
-        //    public string RedirectUri { get; set; }
-        //    public string UserId { get; set; }
+//        private IActionResult RedirectToLocal(string returnUrl)
+//        {
+//            //Bug: No helpers available
+//            //if (Url.IsLocalUrl(returnUrl))
+//            //{
+//            //    return Redirect(returnUrl);
+//            //}
+//            //else
+//            //{
+//            //    return RedirectToAction("Index", "Home");
+//            //}
+//            return View();
+//        }
 
-        //    public override void ExecuteResult(ControllerContext context)
-        //    {
-        //        var properties = new AuthenticationProperties() { RedirectUri = RedirectUri };
-        //        if (UserId != null)
-        //        {
-        //            properties.Dictionary[XsrfKey] = UserId;
-        //        }
-        //        context.HttpContext.GetOwinContext().Authentication.Challenge(properties, LoginProvider);
-        //    }
-        //}
-        #endregion
-    }
-}
+//        private class ChallengeResult : HttpStatusCodeResult
+//        {
+//            public ChallengeResult(string provider, string redirectUri)
+//                : this(provider, redirectUri, null)
+//            {
+//            }
+
+//            public ChallengeResult(string provider, string redirectUri, string userId)
+//                : base(401)
+//            {
+//                LoginProvider = provider;
+//                RedirectUri = redirectUri;
+//                UserId = userId;
+//            }
+
+//            public string LoginProvider { get; set; }
+//            public string RedirectUri { get; set; }
+//            public string UserId { get; set; }
+
+//            new public void ExecuteResultAsync(ActionContext context)
+//            {
+//                //Bug: No security package yet
+//                //var properties = new AuthenticationProperties() { RedirectUri = RedirectUri };
+//                //if (UserId != null)
+//                //{
+//                //    properties.Dictionary[XsrfKey] = UserId;
+//                //}
+//                //context.HttpContext.GetOwinContext().Authentication.Challenge(properties, LoginProvider);
+//            }
+//        }
+//        #endregion
+//    }
+
+//    //Bug: To remove this. Until we have ClaimsPrincipal available
+//    internal class User
+//    {
+//        public static IdentityInstance Identity { get; set; }
+
+//        public User()
+//        {
+//            if (Identity == null)
+//            {
+//                Identity = new IdentityInstance();
+//            }
+//        }
+
+//        internal class IdentityInstance
+//        {
+//            public string GetUserId()
+//            {
+//                return string.Empty;
+//            }
+
+//            public bool IsAuthenticated { get; set; }
+//        }
+//    }
+//}

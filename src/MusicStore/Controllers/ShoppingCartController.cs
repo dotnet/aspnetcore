@@ -1,94 +1,95 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc;
-using Microsoft.Data.Entity;
-using MvcMusicStore.Models;
-using MvcMusicStore.ViewModels;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
-namespace MvcMusicStore.Controllers
+using Microsoft.AspNet.Mvc;
+using MusicStore.Models;
+using MusicStore.ViewModels;
+using System.Linq;
+
+namespace MusicStore.Controllers
 {
     public class ShoppingCartController : Controller
     {
-        private readonly MusicStoreEntities _storeContext = new MusicStoreEntities();
+        //Bug: No EF yet
+        //private MusicStoreEntities storeDB = new MusicStoreEntities();
+        private MusicStoreEntities storeDB = MusicStoreEntities.Instance;
 
+        //
         // GET: /ShoppingCart/
-        public async Task<IActionResult> Index()
-        {
-            var cart = ShoppingCart.GetCart(_storeContext, this);
 
+        public IActionResult Index()
+        {
+            var cart = ShoppingCart.GetCart(storeDB, this.Context);
+
+            // Set up our ViewModel
             var viewModel = new ShoppingCartViewModel
             {
-                CartItems = await cart.GetCartItems().ToListAsync(),
-                CartTotal = await cart.GetTotal()
+                CartItems = cart.GetCartItems(),
+                CartTotal = cart.GetTotal()
             };
 
+            // Return the view
             return View(viewModel);
         }
 
+        //
         // GET: /ShoppingCart/AddToCart/5
-        public async Task<IActionResult> AddToCart(int id)
+
+        public IActionResult AddToCart(int id)
         {
-            var cart = ShoppingCart.GetCart(_storeContext, this);
 
-            await cart.AddToCart(await _storeContext.Albums.SingleAsync(a => a.AlbumId == id));
+            // Retrieve the album from the database
+            var addedAlbum = storeDB.Albums
+                .Single(album => album.AlbumId == id);
 
-            await _storeContext.SaveChangesAsync();
+            // Add it to the shopping cart
+            var cart = ShoppingCart.GetCart(storeDB, this.Context);
 
-            return null;//RedirectToAction("Index");
+            cart.AddToCart(addedAlbum);
+
+            storeDB.SaveChanges();
+
+            // Go back to the main store page for more shopping
+            //Bug: Helper method not available
+            //return RedirectToAction("Index");
+            return View();
         }
 
+        //
         // AJAX: /ShoppingCart/RemoveFromCart/5
+
+        //Bug: Missing HTTP verb attribute
         //[HttpPost]
-        public async Task<IActionResult> RemoveFromCart(int id)
+        public IActionResult RemoveFromCart(int id)
         {
-            var cart = ShoppingCart.GetCart(_storeContext, this);
+            // Retrieve the current user's shopping cart
+            var cart = ShoppingCart.GetCart(storeDB, this.Context);
 
-            var albumName = await _storeContext.Carts
-                .Where(i => i.RecordId == id)
-                .Select(i => i.Album.Title)
-                .SingleOrDefaultAsync();
+            // Get the name of the album to display confirmation
+            string albumName = storeDB.Carts
+                .Single(item => item.RecordId == id).Album.Title;
 
-            var itemCount = await cart.RemoveFromCart(id);
+            // Remove from cart
+            int itemCount = cart.RemoveFromCart(id);
 
-            await _storeContext.SaveChangesAsync();
+            storeDB.SaveChanges();
 
-            var removed = (itemCount > 0) ? " 1 copy of " : string.Empty;
+            string removed = (itemCount > 0) ? " 1 copy of " : string.Empty;
+
+            // Display the confirmation message
 
             var results = new ShoppingCartRemoveViewModel
             {
-                Message = removed + albumName + " has been removed from your shopping cart.",
-                CartTotal = await cart.GetTotal(),
-                CartCount = await cart.GetCount(),
+                Message = removed + albumName +
+                    " has been removed from your shopping cart.",
+                CartTotal = cart.GetTotal(),
+                CartCount = cart.GetCount(),
                 ItemCount = itemCount,
                 DeleteId = id
             };
 
-            return Result.Json(results);
+            //Bug: Missing helper
+            //return Json(results);
+            return new JsonResult(results);
         }
-
-        //[ChildActionOnly]
-        public IActionResult CartSummary()
-        {
-            var cart = ShoppingCart.GetCart(_storeContext, this);
-
-            var cartItems = cart.GetCartItems()
-                .Select(a => a.Album.Title)
-                .OrderBy(x => x)
-                .ToList();
-
-            ViewBag.CartCount = cartItems.Count();
-            ViewBag.CartSummary = string.Join("\n", cartItems.Distinct());
-
-            return null;//PartialView("CartSummary");
-        }
-
-        //protected override void Dispose(bool disposing)
-        //{
-        //    if (disposing)
-        //    {
-        //        _storeContext.Dispose();
-        //    }
-        //    base.Dispose(disposing);
-        //}
     }
 }

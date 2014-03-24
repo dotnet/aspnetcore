@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
-namespace MvcMusicStore.Models
+using System.Collections.Generic;
+
+namespace MusicStore.Models
 {
     public class Genre
     {

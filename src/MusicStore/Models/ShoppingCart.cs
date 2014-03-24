@@ -1,159 +1,202 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
+
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Mvc;
-using Microsoft.Data.Entity;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace MvcMusicStore.Models
+namespace MusicStore.Models
 {
-    public class ShoppingCart
+    public partial class ShoppingCart
     {
+        MusicStoreEntities _db;
+        string ShoppingCartId { get; set; }
+
+        public ShoppingCart(MusicStoreEntities db)
+        {
+            _db = db;
+        }
+
         public const string CartSessionKey = "CartId";
 
-        private readonly MusicStoreEntities _storeContext;
-        private readonly string _cartId;
-
-        private ShoppingCart(MusicStoreEntities storeContext, string cartId)
+        public static ShoppingCart GetCart(MusicStoreEntities db, HttpContext context)
         {
-            _storeContext = storeContext;
-            _cartId = cartId;
+            var cart = new ShoppingCart(db);
+            cart.ShoppingCartId = cart.GetCartId(context);
+            return cart;
         }
 
-        public static ShoppingCart GetCart(MusicStoreEntities storeContext, Controller controller)
+        //TODO: Not used by anyone. Not sure why we have this.
+        // Helper method to simplify shopping cart calls
+        //public static ShoppingCart GetCart(MusicStoreEntities db, Controller controller)
+        //{
+        //    return GetCart(db, controller.HttpContext);
+        //}
+
+        public void AddToCart(Album album)
         {
-            return new ShoppingCart(storeContext, GetCartId(controller.Context));
-        }
-
-        private static string GetCartId(HttpContext context)
-        {
-            throw new NotImplementedException();
-            //if (context.Session[CartSessionKey] == null)
-            //{
-            //    var username = context.User.Identity.Name;
-
-            //    context.Session[CartSessionKey] = !string.IsNullOrWhiteSpace(username)
-            //        ? username
-            //        : Guid.NewGuid().ToString();
-            //}
-
-            //return context.Session[CartSessionKey].ToString();
-        }
-
-        public async Task AddToCart(Album album)
-        {
-            var cartItem = await GetCartItem(album.AlbumId);
+            // Get the matching cart and album instances
+            var cartItem = _db.Carts.SingleOrDefault(
+                c => c.CartId == ShoppingCartId
+                && c.AlbumId == album.AlbumId);
 
             if (cartItem == null)
             {
+                // Create a new cart item if no cart item exists
                 cartItem = new Cart
                 {
                     AlbumId = album.AlbumId,
-                    CartId = _cartId,
+                    CartId = ShoppingCartId,
                     Count = 1,
                     DateCreated = DateTime.Now
                 };
 
-                _storeContext.Carts.Add(cartItem);
+                _db.Carts.Add(cartItem);
             }
             else
             {
+                // If the item does exist in the cart, then add one to the quantity
                 cartItem.Count++;
             }
         }
 
-        public async Task<int> RemoveFromCart(int id)
+        public int RemoveFromCart(int id)
         {
-            var cartItem = await GetCartItem(id);
+            // Get the cart
+            var cartItem = _db.Carts.Single(
+                cart => cart.CartId == ShoppingCartId
+                && cart.RecordId == id);
+
+            int itemCount = 0;
 
             if (cartItem != null)
             {
                 if (cartItem.Count > 1)
                 {
-                    return --cartItem.Count;
+                    cartItem.Count--;
+                    itemCount = cartItem.Count;
+                }
+                else
+                {
+                    _db.Carts.Remove(cartItem);
                 }
 
-                _storeContext.Carts.Remove(cartItem);
             }
 
-            return 0;
+            return itemCount;
         }
 
-        private Task<Cart> GetCartItem(int albumId)
+        public void EmptyCart()
         {
-            return _storeContext.Carts.SingleOrDefaultAsync(
-                c => c.CartId == _cartId && c.AlbumId == albumId);
+            var cartItems = _db.Carts.Where(cart => cart.CartId == ShoppingCartId);
+
+            foreach (var cartItem in cartItems)
+            {
+                _db.Carts.Remove(cartItem);
+            }
+
         }
 
-        public IQueryable<Cart> GetCartItems()
+        public List<Cart> GetCartItems()
         {
-            return _storeContext.Carts.Where(c => c.CartId == _cartId);
+            return _db.Carts.Where(cart => cart.CartId == ShoppingCartId).ToList();
         }
 
-        public Task<int> GetCount()
+        public int GetCount()
         {
-            return _storeContext.Carts
-                .Where(c => c.CartId == _cartId)
-                .Select(c => c.Count)
-                .SumAsync();
+            // Get the count of each item in the cart and sum them up
+            int? count = (from cartItems in _db.Carts
+                          where cartItems.CartId == ShoppingCartId
+                          select (int?)cartItems.Count).Sum();
+
+            // Return 0 if all entries are null
+            return count ?? 0;
         }
 
-        public Task<decimal> GetTotal()
+        public decimal GetTotal()
         {
-            return _storeContext.Carts
-                .Where(c => c.CartId == _cartId)
-                .Select(c => c.Count * c.Album.Price)
-                .SumAsync();
+            // Multiply album price by count of that album to get 
+            // the current price for each of those albums in the cart
+            // sum all album price totals to get the cart total
+            decimal? total = (from cartItems in _db.Carts
+                              where cartItems.CartId == ShoppingCartId
+                              select (int?)cartItems.Count * cartItems.Album.Price).Sum();
+            return total ?? decimal.Zero;
         }
 
-        public async Task<int> CreateOrder(Order order)
+        public int CreateOrder(Order order)
         {
             decimal orderTotal = 0;
 
-            var cartItems = await _storeContext.Carts
-                .Where(c => c.CartId == _cartId)
-                .Include(c => c.Album)
-                .ToListAsync();
+            var cartItems = GetCartItems();
 
+            // Iterate over the items in the cart, adding the order details for each
             foreach (var item in cartItems)
             {
-                order.OrderDetails.Add(new OrderDetail
+                //Bug: Missing EF
+                //var album = _db.Albums.Find(item.AlbumId);
+                var album = _db.Albums.Single(a => a.AlbumId == item.AlbumId);
+
+                var orderDetail = new OrderDetail
                 {
                     AlbumId = item.AlbumId,
                     OrderId = order.OrderId,
-                    UnitPrice = item.Album.Price,
+                    UnitPrice = album.Price,
                     Quantity = item.Count,
-                });
+                };
 
-                orderTotal += item.Count * item.Album.Price;
+                // Set the order total of the shopping cart
+                orderTotal += (item.Count * item.Album.Price);
+
+                _db.OrderDetails.Add(orderDetail);
             }
 
+            // Set the order's total to the orderTotal count
             order.Total = orderTotal;
 
-            await EmptyCart();
+            // Empty the shopping cart
+            EmptyCart();
 
+            // Return the OrderId as the confirmation number
             return order.OrderId;
         }
 
-        private async Task EmptyCart()
+        // We're using HttpContextBase to allow access to cookies.
+        public string GetCartId(HttpContext context)
         {
-            foreach (var cartItem in await _storeContext.Carts.Where(
-                c => c.CartId == _cartId).ToListAsync())
-            {
-                _storeContext.Carts.Remove(cartItem);
-            }
+            //Bug: Session not in scope. But we should substitute this with cookies when available.
+            //if (context.Session[CartSessionKey] == null)
+            //{
+            //    if (!string.IsNullOrWhiteSpace(context.User.Identity.Name))
+            //    {
+            //        context.Session[CartSessionKey] = context.User.Identity.Name;
+            //    }
+            //    else
+            //    {
+            //        // Generate a new random GUID using System.Guid class
+            //        Guid tempCartId = Guid.NewGuid();
+
+            //        // Send tempCartId back to client as a cookie
+            //        context.Session[CartSessionKey] = tempCartId.ToString();
+            //    }
+            //}
+
+            //return context.Session[CartSessionKey].ToString();
+            return string.Empty;
         }
 
-        public async Task MigrateCart(string userName)
+        // When a user has logged in, migrate their shopping cart to
+        // be associated with their username
+        public void MigrateCart(string userName)
         {
-            var carts = await _storeContext.Carts.Where(c => c.CartId == _cartId).ToListAsync();
+            var shoppingCart = _db.Carts.Where(c => c.CartId == ShoppingCartId);
 
-            foreach (var item in carts)
+            foreach (Cart item in shoppingCart)
             {
                 item.CartId = userName;
             }
 
-            await _storeContext.SaveChangesAsync();
         }
     }
 }

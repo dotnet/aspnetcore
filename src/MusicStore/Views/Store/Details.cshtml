@@ -1,0 +1,34 @@
+﻿@model MusicStore.Models.Album
+
+@{
+    ViewBag.Title = "Album - " + Model.Title;
+}
+
+<h2>@Model.Title</h2>
+
+<p>
+    @*Bug: Url helpers not implemented yet*@
+    @*<img alt="@Model.Title" src="@Url.Content(@Model.AlbumArtUrl)" />*@
+    <img alt="@Model.Title" src="@Model.AlbumArtUrl" />
+</p>
+
+<div id="album-details">
+    <p>
+        <em>Genre:</em>
+        @Model.Genre.Name
+    </p>
+    <p>
+        <em>Artist:</em>
+        @Model.Artist.Name
+    </p>
+    <p>
+        <em>Price:</em>
+        @*Bug: HTML helpers not implemented yet*@
+        @*@Html.DisplayFor(model => model.Price)*@
+    </p>
+    <p class="button">
+        @*Bug: HTML helpers not implemented yet*@
+        @*@Html.ActionLink("Add to cart", "AddToCart",
+            "ShoppingCart", new { id = Model.AlbumId }, "")*@
+    </p>
+</div>

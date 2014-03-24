@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using MvcMusicStore.Models;
+using MusicStore.Models;
 
-namespace MvcMusicStore.ViewModels
+namespace MusicStore.ViewModels
 {
     public class ShoppingCartViewModel
     {

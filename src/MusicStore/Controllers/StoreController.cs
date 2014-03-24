@@ -1,55 +1,66 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc;
-using Microsoft.Data.Entity;
-using MvcMusicStore.Models;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
-namespace MvcMusicStore.Controllers
+using Microsoft.AspNet.Mvc;
+using MusicStore.Models;
+using System.Linq;
+
+namespace MusicStore.Controllers
 {
     public class StoreController : Controller
     {
-        private readonly MusicStoreEntities _storeContext = new MusicStoreEntities();
-
+        //Bug: Need to remove singleton instance after EF is implemented. 
+        //MusicStoreEntities storeDB = new MusicStoreEntities();
+        MusicStoreEntities storeDB = MusicStoreEntities.Instance;
+        //
         // GET: /Store/
-        public async Task<IActionResult> Index()
+
+        public IActionResult Index()
         {
-            return View(await _storeContext.Genres.ToListAsync());
+            var genres = storeDB.Genres.ToList();
+
+            return View(genres);
         }
 
+        //
         // GET: /Store/Browse?genre=Disco
-        public async Task<IActionResult> Browse(string genre)
+
+        public IActionResult Browse(string genre)
         {
-            return View(await _storeContext.Genres.Include(e => e.Albums).SingleAsync(g => g.Name == genre));
+            // Retrieve Genre genre and its Associated associated Albums albums from database
+            //Bug: Include is part of EF. We need to work around this temporarily
+            //var genreModel = storeDB.Genres.Include("Albums")
+            //    .Single(g => g.Name == genre);
+
+            var genreModel = storeDB.Genres.Single(g => g.Name == genre);
+            genreModel.Albums = storeDB.Albums.Where(a => a.GenreId == genreModel.GenreId).ToList();
+
+            return View(genreModel);
         }
 
-        public async Task<IActionResult> Details(int id)
+        public IActionResult Details(int id)
         {
-            var album = await _storeContext.Albums.SingleOrDefaultAsync(a => a.AlbumId == id);
+            //Bug: Need Find method from EF. 
+            //var album = storeDB.Albums.Find(id);
+            var album = storeDB.Albums.Single(a => a.AlbumId == id);
 
-            return album != null ? View(album) : (IActionResult)null;//HttpNotFound();
+            return View(album);
         }
 
+        ///Bug: Missing [ChildActionOnly] attribute
         //[ChildActionOnly]
         public IActionResult GenreMenu()
         {
-            var genres = _storeContext.Genres
+            var genres = storeDB.Genres
                 .OrderByDescending(
                     g => g.Albums.Sum(
-                        a => a.OrderDetails.Sum(
-                            od => od.Quantity)))
+                    a => a.OrderDetails.Sum(
+                    od => od.Quantity)))
                 .Take(9)
                 .ToList();
 
-            return null; //PartialView(genres);
+            //Bug: Missing PartialView method.
+            //return PartialView(genres);
+            return View();
         }
-
-        //protected override void Dispose(bool disposing)
-        //{
-        //    if (disposing)
-        //    {
-        //        _storeContext.Dispose();
-        //    }
-        //    base.Dispose(disposing);
-        //}
     }
 }

@@ -62,39 +62,41 @@
       <HintPath>..\..\packages\Microsoft.AspNet.Identity.Owin.1.0.0\lib\net45\Microsoft.AspNet.Identity.Owin.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Microsoft.Owin">
-      <HintPath>..\..\packages\Microsoft.Owin.2.0.2\lib\net45\Microsoft.Owin.dll</HintPath>
+    <Reference Include="Microsoft.Owin, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.Owin.2.1.0\lib\net45\Microsoft.Owin.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Owin.Host.SystemWeb">
-      <HintPath>..\..\packages\Microsoft.Owin.Host.SystemWeb.2.0.0\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Owin.Host.SystemWeb.2.1.0\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Owin.Security">
-      <HintPath>..\..\packages\Microsoft.Owin.Security.2.0.2\lib\net45\Microsoft.Owin.Security.dll</HintPath>
+    <Reference Include="Microsoft.Owin.Security, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.Owin.Security.2.1.0\lib\net45\Microsoft.Owin.Security.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Owin.Security.Cookies">
-      <HintPath>..\..\packages\Microsoft.Owin.Security.Cookies.2.0.2\lib\net45\Microsoft.Owin.Security.Cookies.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Owin.Security.Cookies.2.1.0\lib\net45\Microsoft.Owin.Security.Cookies.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Owin.Security.Facebook">
-      <HintPath>..\..\packages\Microsoft.Owin.Security.Facebook.2.0.0\lib\net45\Microsoft.Owin.Security.Facebook.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Owin.Security.Facebook.2.1.0\lib\net45\Microsoft.Owin.Security.Facebook.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Owin.Security.Google">
-      <HintPath>..\..\packages\Microsoft.Owin.Security.Google.2.0.0\lib\net45\Microsoft.Owin.Security.Google.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Owin.Security.Google.2.1.0\lib\net45\Microsoft.Owin.Security.Google.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Owin.Security.MicrosoftAccount">
-      <HintPath>..\..\packages\Microsoft.Owin.Security.MicrosoftAccount.2.0.0\lib\net45\Microsoft.Owin.Security.MicrosoftAccount.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Owin.Security.MicrosoftAccount.2.1.0\lib\net45\Microsoft.Owin.Security.MicrosoftAccount.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Owin.Security.OAuth">
-      <HintPath>..\..\packages\Microsoft.Owin.Security.OAuth.2.0.2\lib\net45\Microsoft.Owin.Security.OAuth.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Owin.Security.OAuth.2.1.0\lib\net45\Microsoft.Owin.Security.OAuth.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Owin.Security.Twitter">
-      <HintPath>..\..\packages\Microsoft.Owin.Security.Twitter.2.0.0\lib\net45\Microsoft.Owin.Security.Twitter.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Owin.Security.Twitter.2.1.0\lib\net45\Microsoft.Owin.Security.Twitter.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <Private>True</Private>
       <HintPath>..\..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\..\packages\Newtonsoft.Json.5.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Owin">
       <HintPath>..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>

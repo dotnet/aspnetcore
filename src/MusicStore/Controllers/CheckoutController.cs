@@ -1,65 +1,103 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc;
-using Microsoft.Data.Entity;
-using MvcMusicStore.Models;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
-namespace MvcMusicStore.Controllers
+using Microsoft.AspNet.Mvc;
+using MusicStore.Models;
+using System;
+using System.Linq;
+
+namespace MusicStore.Controllers
 {
+    //Bug: Missing auth filter
     //[Authorize]
     public class CheckoutController : Controller
     {
-        private const string PromoCode = "FREE";
+        //Bug: Missing EF
+        //MusicStoreEntities storeDB = new MusicStoreEntities();
+        MusicStoreEntities storeDB = MusicStoreEntities.Instance;
+        const string PromoCode = "FREE";
 
-        private readonly MusicStoreEntities _storeContext = new MusicStoreEntities();
-
+        //
         // GET: /Checkout/
+
         public IActionResult AddressAndPayment()
         {
             return View();
         }
 
+        //
         // POST: /Checkout/AddressAndPayment
+
+        //Bug: Http verbs not available. Also binding to FormCollection is not available.
         //[HttpPost]
-        public async Task<IActionResult> AddressAndPayment(IDictionary<string, string> values /*FormCollection values*/)
+        //public IActionResult AddressAndPayment(FormCollection values)
+        public IActionResult AddressAndPayment(int workaroundId)
         {
+            var coll = this.Context.Request.GetFormAsync().Result;
+
             var order = new Order();
             //TryUpdateModel(order);
 
-            if (//ModelState.IsValid && 
-                string.Equals(values["PromoCode"], PromoCode, StringComparison.OrdinalIgnoreCase))
+            try
             {
-                order.Username = "";//User.Identity.Name;
-                order.OrderDate = DateTime.Now;
+                //if (string.Equals(values["PromoCode"], PromoCode,
+                //    StringComparison.OrdinalIgnoreCase) == false)
+                if (string.Equals(coll.GetValues("PromoCode").FirstOrDefault(), PromoCode,
+                    StringComparison.OrdinalIgnoreCase) == false)
+                {
+                    return View(order);
+                }
+                else
+                {
+                    //Bug: Identity not available
+                    order.Username = null; //User.Identity.Name;
+                    order.OrderDate = DateTime.Now;
 
-                _storeContext.Orders.Add(order);
+                    //Add the Order
+                    storeDB.Orders.Add(order);
 
-                await ShoppingCart.GetCart(_storeContext, this).CreateOrder(order);
+                    //Process the order
+                    var cart = ShoppingCart.GetCart(storeDB, this.Context);
+                    cart.CreateOrder(order);
 
-                await _storeContext.SaveChangesAsync();
+                    // Save all changes
+                    storeDB.SaveChanges();
 
-                return null;//RedirectToAction("Complete", new { id = order.OrderId });
+                    //Bug: Helper not available
+                    //return RedirectToAction("Complete",
+                    //    new { id = order.OrderId });
+                    return View();
+                }
+
             }
-
-            return View(order);
+            catch
+            {
+                //Invalid - redisplay with errors
+                return View(order);
+            }
         }
 
+        //
         // GET: /Checkout/Complete
-        public async Task<IActionResult> Complete(int id)
-        {
-            return await _storeContext.Orders.AnyAsync(o => o.OrderId == id && o.Username == "")//User.Identity.Name)
-                ? View(id)
-                : View("Error");
-        }
 
-        //protected override void Dispose(bool disposing)
-        //{
-        //    if (disposing)
-        //    {
-        //        _storeContext.Dispose();
-        //    }
-        //    base.Dispose(disposing);
-        //}
+        public IActionResult Complete(int id)
+        {
+            // Validate customer owns this order
+            //Bug: Identity not available
+            //bool isValid = storeDB.Orders.Any(
+            //    o => o.OrderId == id &&
+            //    o.Username == User.Identity.Name);
+
+            bool isValid = storeDB.Orders.Any(
+                o => o.OrderId == id);
+
+            if (isValid)
+            {
+                return View(id);
+            }
+            else
+            {
+                return View("Error");
+            }
+        }
     }
 }

@@ -1,141 +1,189 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc;
-using Microsoft.Data.Entity;
-using MvcMusicStore.Models;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
-namespace MvcMusicStore.Controllers
+using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.ModelBinding;
+using MusicStore.Models;
+using System.Linq;
+
+namespace MusicStore.Controllers
 {
-    //[Authorize(Roles = "Administrator")]
+    ///Bug: No Authorize attribute
+    //[Authorize(Roles="Administrator")]
     public class StoreManagerController : Controller
     {
-        private readonly MusicStoreEntities _storeContext = new MusicStoreEntities();
+        //Bug: No EF yet
+        //private MusicStoreEntities db = new MusicStoreEntities();
+        private MusicStoreEntities db = MusicStoreEntities.Instance;
 
+        //
         // GET: /StoreManager/
-        public async Task<IActionResult> Index()
+
+        public IActionResult Index()
         {
-            return View(await _storeContext.Albums
-                .Include(a => a.Genre)
-                .Include(a => a.Artist)
-                .OrderBy(a => a.Price).ToListAsync());
+            //Bug: Include needs EF.
+            //var albums = db.Albums.Include(a => a.Genre).Include(a => a.Artist)
+            //    .OrderBy(a => a.Price);
+
+            var albums = db.Albums;
+            foreach (var album in albums)
+            {
+                album.Genre = db.Genres.Single(g => g.GenreId == album.GenreId);
+                album.Artist = db.Artists.Single(a => a.ArtistId == album.ArtistId);
+            }
+
+            return View(albums.ToList());
         }
 
+        //
         // GET: /StoreManager/Details/5
-        public async Task<IActionResult> Details(int id = 0)
-        {
-            var album = await _storeContext.Albums.SingleOrDefaultAsync(e => e.AlbumId == id);
 
+        public IActionResult Details(int id = 0)
+        {
+            //Bug: Find needs EF
+            //Album album = db.Albums.Find(id);
+            Album album = db.Albums.Single(a => a.AlbumId == id);
             if (album == null)
             {
-                return null;//HttpNotFound();
+                //Bug: Need method HttpNotFound() on Controller
+                //return HttpNotFound();
+                return this.HttpNotFound();
             }
-
             return View(album);
         }
 
+        //Bug: SelectList still not available
+        //
         // GET: /StoreManager/Create
-        public async Task<IActionResult> Create()
-        {
-            return await BuildView(null);
-        }
 
+        //public IActionResult Create()
+        //{
+        //    ViewBag.GenreId = new SelectList(db.Genres, "GenreId", "Name");
+        //    ViewBag.ArtistId = new SelectList(db.Artists, "ArtistId", "Name");
+        //    return View();
+        //}
+
+        //Bug: ModelState.IsValid not available
+        //Bug: RedirectToAction() not available
+        //Bug: SelectList not available
         // POST: /StoreManager/Create
+
         //[HttpPost]
-        public async Task<IActionResult> Create(Album album)
-        {
-            if (true)//ModelState.IsValid)
-            {
-                _storeContext.Albums.Add(album);
+        //public IActionResult Create(Album album)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        db.Albums.Add(album);
+        //        db.SaveChanges();
+        //        return RedirectToAction("Index");
+        //    }
 
-                await _storeContext.SaveChangesAsync();
+        //    ViewBag.GenreId = new SelectList(db.Genres, "GenreId", "Name", album.GenreId);
+        //    ViewBag.ArtistId = new SelectList(db.Artists, "ArtistId", "Name", album.ArtistId);
+        //    return View(album);
+        //}
 
-                return null;//RedirectToAction("Index");
-            }
-
-            return await BuildView(album);
-        }
-
+        //
         // GET: /StoreManager/Edit/5
-        public async Task<IActionResult> Edit(int id = 0)
+
+        public IActionResult Edit(int id = 0)
         {
-            var album = await _storeContext.Albums.SingleOrDefaultAsync(e => e.AlbumId == id);
+            //Bug: Need EF to implement Find
+            //Album album = db.Albums.Find(id);
+            Album album = db.Albums.Single(a => a.AlbumId == id);
+
             if (album == null)
             {
-                return null;//HttpNotFound();
+                //Bug: Need method HttpNotFound() on Controller
+                //return HttpNotFound();
+                return this.HttpNotFound();
             }
-
-            return await BuildView(album);
+            //ViewBag.GenreId = new SelectList(db.Genres, "GenreId", "Name", album.GenreId);
+            //ViewBag.ArtistId = new SelectList(db.Artists, "ArtistId", "Name", album.ArtistId);
+            return View(album);
         }
 
+        //
         // POST: /StoreManager/Edit/5
+        //Bug: Http actions not available
         //[HttpPost]
-        public async Task<IActionResult> Edit(Album album)
+        public IActionResult Edit(Album album)
         {
-            if (true)//ModelState.IsValid)
+            //Bug: ModelState.IsValid missing
+            //if (ModelState.IsValid)
             {
-                _storeContext.Albums.Update(album);
-
-                await _storeContext.SaveChangesAsync();
-
-                return null;//RedirectToAction("Index");
+                //Bug: Missing EF
+                //db.Entry(album).State = EntityState.Modified;
+                db.SaveChanges();
+                //Bug: Missing RedirectToAction helper
+                //return RedirectToAction("Index");
             }
-
-            return await BuildView(album);
+            //ViewBag.GenreId = new SelectList(db.Genres, "GenreId", "Name", album.GenreId);
+            //ViewBag.ArtistId = new SelectList(db.Artists, "ArtistId", "Name", album.ArtistId);
+            return View(album);
         }
 
+        //
         // GET: /StoreManager/Delete/5
-        public async Task<IActionResult> Delete(int id = 0)
+
+        public IActionResult Delete(int id = 0)
         {
-            var album = await _storeContext.Albums.SingleOrDefaultAsync(e => e.AlbumId == id);
+            //Bug: EF missing
+            //Album album = db.Albums.Find(id);
+            Album album = db.Albums.Single(a => a.AlbumId == id);
             if (album == null)
             {
-                return null;//HttpNotFound();
+                //Bug: Missing Helper
+                return this.HttpNotFound();
             }
-
             return View(album);
         }
 
+        //
         // POST: /StoreManager/Delete/5
+        //Bug: Missing HTTP verb & action name. ActionName out of scope for alpha - So fixing the name of method in code
         //[HttpPost, ActionName("Delete")]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        //TODO: How to have an action with same name 'Delete'??
+        public IActionResult DeleteConfirmed(int id)
         {
-            var album = await _storeContext.Albums.SingleOrDefaultAsync(e => e.AlbumId == id);
-            if (album == null)
-            {
-                return null;//HttpNotFound();
-            }
+            //Bug: EF missing
+            //Album album = db.Albums.Find(id);
+            Album album = db.Albums.Single(a => a.AlbumId == id);
+            db.Albums.Remove(album);
+            db.SaveChanges();
+            //Bug: Missing helper
+            //return RedirectToAction("Index");
 
-            _storeContext.Albums.Remove(album);
-
-            await _storeContext.SaveChangesAsync();
-
-            return null;//RedirectToAction("Index");
+            return View();
         }
 
-        private async Task<IActionResult> BuildView(Album album)
-        {
-            //ViewBag.GenreId = new SelectList(
-            //    await _storeContext.Genres.ToListAsync(),
-            //    "GenreId",
-            //    "Name",
-            //    album == null ? null : (object)album.GenreId);
-
-            //ViewBag.ArtistId = new SelectList(
-            //    await _storeContext.Artists.ToListAsync(),
-            //    "ArtistId",
-            //    "Name",
-            //    album == null ? null : (object)album.ArtistId);
-
-            return View(album);
-        }
-
+        //Bug: Can't dispose db. 
         //protected override void Dispose(bool disposing)
         //{
-        //    if (disposing)
-        //    {
-        //        _storeContext.Dispose();
-        //    }
+        //    db.Dispose();
         //    base.Dispose(disposing);
         //}
+    }
+
+    /// <summary>
+    /// Bug: HttpNotFoundResult not available in Controllers. Work around.
+    /// </summary>
+    public class HttpNotFoundResult : HttpStatusCodeResult
+    {
+        public HttpNotFoundResult()
+            : base(404)
+        {
+
+        }
+    }
+
+    /// <summary>
+    /// Bug: HttpNotFoundResult not available in Controllers. Work around.
+    /// </summary>
+    public static class Extensions
+    {
+        public static IActionResult HttpNotFound(this Controller controller)
+        {
+            return new HttpNotFoundResult();
+        }
     }
 }
