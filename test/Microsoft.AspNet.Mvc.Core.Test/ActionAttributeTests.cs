@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Core.Test
 {
-    public class ActionSelectionConventionTests
+    public class ActionAttributeTests
     {
         private DefaultActionDiscoveryConventions _actionDiscoveryConventions = new DefaultActionDiscoveryConventions();
         private IControllerDescriptorFactory _controllerDescriptorFactory = new DefaultControllerDescriptorFactory();
@@ -20,15 +20,59 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
         [Theory]
         [InlineData("GET")]
+        [InlineData("PUT")]
         [InlineData("POST")]
-        public async Task ActionSelection_IndexSelectedByDefaultInAbsenceOfVerbOnlyMethod(string verb)
+        public async Task HttpMethodAttribute_ActionDecoratedWithMultipleHttpMethodAttribute_ORsMultipleHttpMethods(string verb)
         {
             // Arrange
             var requestContext = new RequestContext(
                                         GetHttpContext(verb),
                                         new Dictionary<string, object>
                                             {
-                                                { "controller", "RpcOnly" }
+                                                { "controller", "HttpMethodAttributeTests_RestOnly" },
+                                                { "action", "Put" }
+                                            });
+
+            // Act
+            var result = await InvokeActionSelector(requestContext);
+
+            // Assert
+            Assert.Equal("Put", result.Name);
+        }
+
+        [Theory]
+        [InlineData("GET")]
+        [InlineData("PUT")]
+        public async Task HttpMethodAttribute_ActionDecoratedWithHttpMethodAttribute_OverridesConvention(string verb)
+        {
+            // Arrange
+            // Note no action name is passed, hence should return a null action descriptor.
+            var requestContext = new RequestContext(
+                                        GetHttpContext(verb),
+                                        new Dictionary<string, object>
+                                            {
+                                                { "controller", "HttpMethodAttributeTests_RestOnly" },
+                                            });
+
+            // Act
+            var result = await InvokeActionSelector(requestContext);
+
+            // Assert
+            Assert.Equal(null, result);
+        }
+
+        [Theory]
+        [InlineData("GET")]
+        [InlineData("POST")]
+        public async Task HttpMethodAttribute_DefaultMethod_IgnoresMethodsWithCustomAttributesAndInvalidMethods(string verb)
+        {
+            // Arrange
+            // Note no action name is passed, hence should return a null action descriptor.
+            var requestContext = new RequestContext(
+                                        GetHttpContext(verb),
+                                        new Dictionary<string, object>
+                                            {
+                                                { "controller", "HttpMethodAttributeTests_DefaultMethodValidation" },
                                             });
 
             // Act
@@ -36,124 +80,6 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             // Assert
             Assert.Equal("Index", result.Name);
-        }
-
-        [Theory]
-        [InlineData("GET")]
-        [InlineData("POST")]
-        public async Task ActionSelection_PrefersVerbOnlyMethodOverIndex(string verb)
-        {
-            // Arrange
-            var requestContext = new RequestContext(
-                                        GetHttpContext(verb),
-                                        new Dictionary<string, object>
-                                            {
-                                                { "controller", "MixedRpcAndRest" }
-                                            });
-
-            // Act
-            var result = await InvokeActionSelector(requestContext);
-
-            // Assert
-            Assert.Equal(verb, result.Name, StringComparer.OrdinalIgnoreCase);
-        }
-
-        [Theory]
-        [InlineData("PUT")]
-        [InlineData("DELETE")]
-        [InlineData("PATCH")]
-        public async Task ActionSelection_IndexNotSelectedByDefaultExceptGetAndPostVerbs(string verb)
-        {
-            // Arrange
-            var requestContext = new RequestContext(
-                                        GetHttpContext(verb),
-                                        new Dictionary<string, object>
-                                            {
-                                                { "controller", "RpcOnly" }
-                                            });
-
-            // Act
-            var result = await InvokeActionSelector(requestContext);
-
-            // Assert
-            Assert.Equal(null, result);
-        }
-
-        [Theory]
-        [InlineData("HEAD")]
-        [InlineData("OPTIONS")]
-        public async Task ActionSelection_NoConventionBasedRoutingForHeadAndOptions(string verb)
-        {
-            // Arrange
-            var requestContext = new RequestContext(
-                GetHttpContext(verb),
-                new Dictionary<string, object>
-                {
-                    {"controller", "MixedRpcAndRest"},
-                });
-
-            // Act
-            var result = await InvokeActionSelector(requestContext);
-
-            // Assert
-            Assert.Equal(null, result);
-        }
-
-        [Theory]
-        [InlineData("HEAD")]
-        [InlineData("OPTIONS")]
-        public async Task ActionSelection_ActionNameBasedRoutingForHeadAndOptions(string verb)
-        {
-            // Arrange
-            var requestContext = new RequestContext(
-                                        GetHttpContext(verb),
-                                        new Dictionary<string, object>
-                                            {
-                                                { "controller", "MixedRpcAndRest" },
-                                                { "action", verb },
-                                            });
-
-            // Act
-            var result = await InvokeActionSelector(requestContext);
-
-            // Assert
-            Assert.Equal(verb, result.Name, StringComparer.OrdinalIgnoreCase);
-        }
-
-        [Fact]
-        public async Task ActionSelection_ChangeDefaultConventionPicksCustomMethodForPost_DefaultMethodIsSelectedForGet()
-        {
-            // Arrange
-            var requestContext = new RequestContext(
-                                        GetHttpContext("GET"),
-                                        new Dictionary<string, object>
-                                            {
-                                                { "controller", "RpcOnly" }
-                                            });
-
-            // Act
-            var result = await InvokeActionSelector(requestContext, new CustomActionConvention());
-
-            // Assert
-            Assert.Equal("INDEX", result.Name, StringComparer.OrdinalIgnoreCase);
-        }
-
-        [Fact]
-        public async Task ActionSelection_ChangeDefaultConventionPicksCustomMethodForPost_CutomMethodIsSelected()
-        {
-            // Arrange
-            var requestContext = new RequestContext(
-                                        GetHttpContext("POST"),
-                                        new Dictionary<string, object>
-                                            {
-                                                { "controller", "RpcOnly" }
-                                            });
-
-            // Act
-            var result = await InvokeActionSelector(requestContext, new CustomActionConvention());
-
-            // Assert
-            Assert.Equal("PostSomething", result.Name);
         }
 
         private async Task<ActionDescriptor> InvokeActionSelector(RequestContext context)
@@ -190,7 +116,6 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var headers = new Mock<IHeaderDictionary>();
             request.SetupGet(r => r.Headers).Returns(headers.Object);
             request.SetupGet(x => x.Method).Returns(httpMethod);
-
             var httpContext = new Mock<HttpContext>();
             httpContext.SetupGet(c => c.Request).Returns(request.Object);
             return httpContext.Object;
@@ -211,44 +136,27 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
         #region Controller Classes
 
-        private class MixedRpcAndRestController
+        private class HttpMethodAttributeTests_DefaultMethodValidationController
         {
             public void Index()
             {
             }
 
+            // Method with custom attribute.
+            [HttpGet]
             public void Get()
-            {
-            }
-
-            public void Post()
             { }
 
-            public void GetSomething()
+            // InvalidMethod ( since its private)
+            private void Post()
             { }
-
-            // This will be treated as an RPC method.
-            public void Head()
-            {
-            }
-
-            // This will be treated as an RPC method.
-            public void Options()
-            {
-            }
         }
 
-        private class RestOnlyController
+        private class HttpMethodAttributeTests_RestOnlyController
         {
-            public void Get()
-            {
-            }
-
+            [HttpGet]
+            [AcceptVerbs("PUT", "POST")]
             public void Put()
-            {
-            }
-
-            public void Post()
             {
             }
 
@@ -261,40 +169,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             }
         }
 
-        private class RpcOnlyController
+        private class HttpMethodAttributeTests_DerivedController : HttpMethodAttributeTests_RestOnlyController
         {
-            public void Index()
-            {
-            }
-
-            public void GetSomething()
-            {
-            }
-
-            public void PutSomething()
-            {
-            }
-
-            public void PostSomething()
-            {
-            }
-
-            public void DeleteSomething()
-            {
-            }
-
-            public void PatchSomething()
-            {
-            }
-        }
-
-        private class AmbiguousController
-        {
-            public void Index(int i)
-            { }
-
-            public void Index(string s)
-            { }
         }
 
         #endregion Controller Classes

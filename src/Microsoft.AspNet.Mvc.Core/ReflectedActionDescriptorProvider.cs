@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc
                                                  IEnumerable<IFilter> globalFilters)
         {
             _controllerAssemblyProvider = controllerAssemblyProvider;
-            _conventions = conventions;
+            _conventions = conventions; 
             _controllerDescriptorFactory = controllerDescriptorFactory;
             _parameterDescriptorFactory = parameterDescriptorFactory;
             var filters = globalFilters ?? Enumerable.Empty<IFilter>();
