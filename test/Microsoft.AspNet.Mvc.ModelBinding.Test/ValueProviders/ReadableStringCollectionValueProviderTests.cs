@@ -20,18 +20,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
 
         [Fact]
-        public void ContainsPrefix_GuardClauses()
-        {
-            // Arrange
-            var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, null);
-
-            // Act & assert
-            ExceptionAssert.ThrowsArgumentNull(
-                () => valueProvider.ContainsPrefix(null),
-                "prefix");
-        }
-
-        [Fact]
         public void ContainsPrefix_WithEmptyCollection_ReturnsFalseForEmptyPrefix()
         {
             // Arrange
@@ -124,18 +112,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             KeyValuePair<string, string> kvp = Assert.Single(result);
             Assert.Equal("baz", kvp.Key);
             Assert.Equal("bar.baz", kvp.Value);
-        }
-
-        [Fact]
-        public void GetValue_GuardClauses()
-        {
-            // Arrange
-            var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, null);
-
-            // Act & assert
-            ExceptionAssert.ThrowsArgumentNull(
-                () => valueProvider.GetValue(null),
-                "key");
         }
 
         [Fact]

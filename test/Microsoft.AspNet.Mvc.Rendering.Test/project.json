@@ -5,7 +5,7 @@
     "Microsoft.AspNet.PipelineCore": "0.1-alpha-*",
     "Microsoft.AspNet.Mvc.ModelBinding" : "",
     "Microsoft.AspNet.Mvc.Rendering" : "",
-    "TestCommon" : "",
+    "Microsoft.AspNet.Testing" : "0.1-alpha-*",
     "Xunit.KRunner": "0.1-alpha-*",
     "xunit.abstractions": "2.0.0-aspnet-*",
     "xunit.assert": "2.0.0-aspnet-*",

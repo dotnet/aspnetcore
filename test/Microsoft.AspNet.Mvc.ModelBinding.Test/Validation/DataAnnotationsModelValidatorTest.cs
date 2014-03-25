@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using Microsoft.AspNet.Testing;
 #if NET45
 using Moq;
 using Moq.Protected;
@@ -12,19 +13,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public class DataAnnotationsModelValidatorTest
     {
         private static DataAnnotationsModelMetadataProvider _metadataProvider = new DataAnnotationsModelMetadataProvider();
-
-        [Fact]
-        public void ConstructorGuards()
-        {
-            // Arrange
-            var metadata = _metadataProvider.GetMetadataForType(null, typeof(object));
-            var attribute = new RequiredAttribute();
-
-            // Act & Assert
-           ExceptionAssert.ThrowsArgumentNull(
-                () => new DataAnnotationsModelValidator(null),
-                "attribute");
-        }
 
         [Fact]
         public void ValuesSet()

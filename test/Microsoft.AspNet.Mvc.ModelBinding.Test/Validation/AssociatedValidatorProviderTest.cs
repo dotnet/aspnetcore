@@ -13,19 +13,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private readonly DataAnnotationsModelMetadataProvider _metadataProvider = new DataAnnotationsModelMetadataProvider();
 
         [Fact]
-        public void GetValidatorsThrowsIfMetadataIsNull()
-        {
-            // Arrange
-            var metadata = _metadataProvider.GetMetadataForType(null, typeof(object));
-            var provider = new Mock<AssociatedValidatorProvider> { CallBase = true };
-
-            // Act & Assert
-            ExceptionAssert.ThrowsArgumentNull(
-                () => provider.Object.GetValidators(metadata: null),
-                "metadata");
-        }
-
-        [Fact]
         public void GetValidatorsForPropertyWithLocalAttributes()
         {
             // Arrange

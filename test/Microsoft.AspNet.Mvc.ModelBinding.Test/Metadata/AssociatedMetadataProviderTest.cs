@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using Microsoft.AspNet.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Test.Binders
@@ -71,18 +72,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test.Binders
         }
 
         // GetMetadataForProperty
-
-        //[Fact]
-        //public void GetMetadataForPropertyNullContainerTypeThrows()
-        //{
-        //    // Arrange
-        //    TestableAssociatedMetadataProvider provider = new TestableAssociatedMetadataProvider();
-
-        //    // Act & Assert
-        //    ExceptionAssert.ThrowsArgumentNull(
-        //        () => provider.GetMetadataForProperty(modelAccessor: null, containerType: null, propertyName: "propertyName"),
-        //        "containerType");
-        //}
 
         [Fact]
         public void GetMetadataForPropertyNullOrEmptyPropertyNameThrows()

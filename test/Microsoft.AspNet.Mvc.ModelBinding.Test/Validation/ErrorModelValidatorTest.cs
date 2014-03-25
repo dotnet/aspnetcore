@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.AspNet.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
