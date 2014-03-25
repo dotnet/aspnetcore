@@ -6,13 +6,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public abstract class AssociatedValidatorProvider : IModelValidatorProvider
     {
-        public IEnumerable<IModelValidator> GetValidators(ModelMetadata metadata)
+        public IEnumerable<IModelValidator> GetValidators([NotNull] ModelMetadata metadata)
         {
-            if (metadata == null)
-            {
-                throw new ArgumentNullException("metadata");
-            }
-
             if (metadata.ContainerType != null && !string.IsNullOrEmpty(metadata.PropertyName))
             {
                 return GetValidatorsForProperty(metadata);

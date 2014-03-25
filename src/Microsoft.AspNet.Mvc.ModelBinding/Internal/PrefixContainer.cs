@@ -13,25 +13,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
         private readonly ICollection<string> _originalValues;
         private readonly string[] _sortedValues;
 
-        internal PrefixContainer(ICollection<string> values)
+        internal PrefixContainer([NotNull] ICollection<string> values)
         {
-            if (values == null)
-            {
-                throw new ArgumentNullException("values");
-            }
-
             _originalValues = values;
             _sortedValues = _originalValues.ToArrayWithoutNulls();
             Array.Sort(_sortedValues, StringComparer.OrdinalIgnoreCase);
         }
 
-        internal bool ContainsPrefix(string prefix)
+        internal bool ContainsPrefix([NotNull] string prefix)
         {
-            if (prefix == null)
-            {
-                throw new ArgumentNullException("prefix");
-            }
-
             if (prefix.Length == 0)
             {
                 return _sortedValues.Length > 0; // only match empty string when we have some value

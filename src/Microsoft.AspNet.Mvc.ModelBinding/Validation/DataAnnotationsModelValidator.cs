@@ -7,13 +7,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class DataAnnotationsModelValidator : IModelValidator
     {
-        public DataAnnotationsModelValidator(ValidationAttribute attribute)
+        public DataAnnotationsModelValidator([NotNull] ValidationAttribute attribute)
         {
-            if (attribute == null)
-            {
-                throw new ArgumentNullException("attribute");
-            }
-
             Attribute = attribute;
         }
 
