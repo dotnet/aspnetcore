@@ -11,6 +11,7 @@ using Microsoft.AspNet.Identity.InMemory;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
 using MusicStore.Models;
+using MusicStore.Web.Models;
 using System;
 using System.Collections.Generic;
 
@@ -38,6 +39,8 @@ public class Startup
             new { controller = "Home" });
 
         app.UseRouter(routes);
+
+        SampleData.InitializeMusicStoreDatabase();
     }
 
     //Bug: We need EF to integrate with SQL server. Until then we will use in memory store

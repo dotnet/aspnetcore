@@ -9,9 +9,8 @@ namespace MvcMusicStore.Controllers
 {
     public class HomeController : Controller
     {
-        /// Bug: Hacking to return a singleton. Should go away once we have EF. 
-        //private MusicStoreEntities storeDB = new MusicStoreEntities();
-        private MusicStoreEntities storeDB = MusicStoreEntities.Instance;
+        private MusicStoreContext db = new MusicStoreContext();
+
         //
         // GET: /Home/
         public IActionResult Index()
@@ -27,7 +26,8 @@ namespace MvcMusicStore.Controllers
             // Group the order details by album and return
             // the albums with the highest count
 
-            return storeDB.Albums
+            // TODO [EF] We don't query related data as yet, so the OrderByDescending isn't doing anything
+            return db.Albums
                 .OrderByDescending(a => a.OrderDetails.Count())
                 .Take(count)
                 .ToList();

@@ -18,13 +18,18 @@
         "Microsoft.AspNet.Security.DataProtection": "0.1-alpha-*",
         "Microsoft.AspNet.Identity": "0.1-alpha-*",
         "Microsoft.AspNet.Identity.Entity": "0.1-alpha-*",
-        "Microsoft.AspNet.Identity.InMemory": "0.1-alpha-*"
+        "Microsoft.AspNet.Identity.InMemory": "0.1-alpha-*",
+        "Microsoft.Data.Entity": "0.1-alpha-*",
+        "Microsoft.Data.Relational": "0.1-alpha-*",
+        "Microsoft.Data.SqlServer": "0.1-pre-*",
+        "Microsoft.Data.InMemory": "0.1-alpha-*"
     },
     "configurations": {
         "net45": {
             "dependencies": {
                 "System.Runtime": "",
-                "System.ComponentModel.DataAnnotations": ""
+                "System.ComponentModel.DataAnnotations": "",
+                "System.Data": ""
             }
         },
         "k10": {

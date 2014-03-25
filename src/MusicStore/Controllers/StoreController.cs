@@ -8,15 +8,14 @@ namespace MusicStore.Controllers
 {
     public class StoreController : Controller
     {
-        //Bug: Need to remove singleton instance after EF is implemented. 
-        //MusicStoreEntities storeDB = new MusicStoreEntities();
-        MusicStoreEntities storeDB = MusicStoreEntities.Instance;
+        MusicStoreContext db = new MusicStoreContext();
+
         //
         // GET: /Store/
 
         public IActionResult Index()
         {
-            var genres = storeDB.Genres.ToList();
+            var genres = db.Genres.ToList();
 
             return View(genres);
         }
@@ -27,21 +26,17 @@ namespace MusicStore.Controllers
         public IActionResult Browse(string genre)
         {
             // Retrieve Genre genre and its Associated associated Albums albums from database
-            //Bug: Include is part of EF. We need to work around this temporarily
-            //var genreModel = storeDB.Genres.Include("Albums")
-            //    .Single(g => g.Name == genre);
 
-            var genreModel = storeDB.Genres.Single(g => g.Name == genre);
-            genreModel.Albums = storeDB.Albums.Where(a => a.GenreId == genreModel.GenreId).ToList();
+            // TODO [EF] Swap to native support for loading related data when available
+            var genreModel = db.Genres.Single(g => g.Name == genre);
+            genreModel.Albums = db.Albums.Where(a => a.GenreId == genreModel.GenreId).ToList();
 
             return View(genreModel);
         }
 
         public IActionResult Details(int id)
         {
-            //Bug: Need Find method from EF. 
-            //var album = storeDB.Albums.Find(id);
-            var album = storeDB.Albums.Single(a => a.AlbumId == id);
+            var album = db.Albums.Single(a => a.AlbumId == id);
 
             return View(album);
         }
@@ -50,7 +45,8 @@ namespace MusicStore.Controllers
         //[ChildActionOnly]
         public IActionResult GenreMenu()
         {
-            var genres = storeDB.Genres
+            // TODO [EF] We don't query related data as yet, so the OrderByDescending isn't doing anything
+            var genres = db.Genres
                 .OrderByDescending(
                     g => g.Albums.Sum(
                     a => a.OrderDetails.Sum(

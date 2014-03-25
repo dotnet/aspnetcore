@@ -2,6 +2,7 @@
 
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Mvc;
+using Microsoft.Data.Entity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,17 +11,17 @@ namespace MusicStore.Models
 {
     public partial class ShoppingCart
     {
-        MusicStoreEntities _db;
+        MusicStoreContext _db;
         string ShoppingCartId { get; set; }
 
-        public ShoppingCart(MusicStoreEntities db)
+        public ShoppingCart(MusicStoreContext db)
         {
             _db = db;
         }
 
         public const string CartSessionKey = "CartId";
 
-        public static ShoppingCart GetCart(MusicStoreEntities db, HttpContext context)
+        public static ShoppingCart GetCart(MusicStoreContext db, HttpContext context)
         {
             var cart = new ShoppingCart(db);
             cart.ShoppingCartId = cart.GetCartId(context);
@@ -43,9 +44,15 @@ namespace MusicStore.Models
 
             if (cartItem == null)
             {
+                // TODO [EF] Swap to store generated key once we support identity pattern
+                var nextRecordId = _db.Carts.Any()
+                    ? _db.Carts.Max(c => c.RecordId) + 1
+                    : 1;
+
                 // Create a new cart item if no cart item exists
                 cartItem = new Cart
                 {
+                    RecordId = nextRecordId,
                     AlbumId = album.AlbumId,
                     CartId = ShoppingCartId,
                     Count = 1,
@@ -58,6 +65,9 @@ namespace MusicStore.Models
             {
                 // If the item does exist in the cart, then add one to the quantity
                 cartItem.Count++;
+
+                // TODO [EF] Remove this line once change detection is available
+                _db.ChangeTracker.Entry(cartItem).State = Microsoft.Data.Entity.EntityState.Modified;
             }
         }
 
@@ -75,6 +85,10 @@ namespace MusicStore.Models
                 if (cartItem.Count > 1)
                 {
                     cartItem.Count--;
+
+                    // TODO [EF] Remove this line once change detection is available
+                    _db.ChangeTracker.Entry(cartItem).State = EntityState.Modified;
+
                     itemCount = cartItem.Count;
                 }
                 else
@@ -93,7 +107,8 @@ namespace MusicStore.Models
 
             foreach (var cartItem in cartItems)
             {
-                _db.Carts.Remove(cartItem);
+                // TODO [EF] Change to EntitySet.Remove once querying attaches instances
+                _db.ChangeTracker.Entry(cartItem).State = EntityState.Deleted;
             }
 
         }
@@ -119,10 +134,16 @@ namespace MusicStore.Models
             // Multiply album price by count of that album to get 
             // the current price for each of those albums in the cart
             // sum all album price totals to get the cart total
-            decimal? total = (from cartItems in _db.Carts
-                              where cartItems.CartId == ShoppingCartId
-                              select (int?)cartItems.Count * cartItems.Album.Price).Sum();
-            return total ?? decimal.Zero;
+
+            // TODO Collapse to a single query once EF supports querying related data
+            decimal total = 0;
+            foreach (var item in _db.Carts.Where(c => c.CartId == ShoppingCartId))
+            {
+                var album = _db.Albums.Single(a => a.AlbumId == item.AlbumId);
+                total += item.Count * album.Price;
+            }
+
+            return total;
         }
 
         public int CreateOrder(Order order)
@@ -130,6 +151,11 @@ namespace MusicStore.Models
             decimal orderTotal = 0;
 
             var cartItems = GetCartItems();
+
+            // TODO [EF] Swap to store generated identity key when supported
+            var nextId = _db.OrderDetails.Any()
+                ? _db.OrderDetails.Max(o => o.OrderDetailId) + 1
+                : 1;
 
             // Iterate over the items in the cart, adding the order details for each
             foreach (var item in cartItems)
@@ -140,6 +166,7 @@ namespace MusicStore.Models
 
                 var orderDetail = new OrderDetail
                 {
+                    OrderDetailId = nextId,
                     AlbumId = item.AlbumId,
                     OrderId = order.OrderId,
                     UnitPrice = album.Price,
@@ -147,9 +174,11 @@ namespace MusicStore.Models
                 };
 
                 // Set the order total of the shopping cart
-                orderTotal += (item.Count * item.Album.Price);
+                orderTotal += (item.Count * album.Price);
 
                 _db.OrderDetails.Add(orderDetail);
+
+                nextId++;
             }
 
             // Set the order's total to the orderTotal count

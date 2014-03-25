@@ -2,6 +2,7 @@
 
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.Data.Entity;
 using MusicStore.Models;
 using System.Linq;
 
@@ -11,9 +12,7 @@ namespace MusicStore.Controllers
     //[Authorize(Roles="Administrator")]
     public class StoreManagerController : Controller
     {
-        //Bug: No EF yet
-        //private MusicStoreEntities db = new MusicStoreEntities();
-        private MusicStoreEntities db = MusicStoreEntities.Instance;
+        private MusicStoreContext db = new MusicStoreContext();
 
         //
         // GET: /StoreManager/
@@ -111,8 +110,7 @@ namespace MusicStore.Controllers
             //Bug: ModelState.IsValid missing
             //if (ModelState.IsValid)
             {
-                //Bug: Missing EF
-                //db.Entry(album).State = EntityState.Modified;
+                db.ChangeTracker.Entry(album).State = EntityState.Modified;
                 db.SaveChanges();
                 //Bug: Missing RedirectToAction helper
                 //return RedirectToAction("Index");
@@ -127,8 +125,6 @@ namespace MusicStore.Controllers
 
         public IActionResult Delete(int id = 0)
         {
-            //Bug: EF missing
-            //Album album = db.Albums.Find(id);
             Album album = db.Albums.Single(a => a.AlbumId == id);
             if (album == null)
             {
@@ -145,10 +141,9 @@ namespace MusicStore.Controllers
         //TODO: How to have an action with same name 'Delete'??
         public IActionResult DeleteConfirmed(int id)
         {
-            //Bug: EF missing
-            //Album album = db.Albums.Find(id);
             Album album = db.Albums.Single(a => a.AlbumId == id);
-            db.Albums.Remove(album);
+            // TODO [EF] Replace with EntitySet.Remove when querying attaches instances
+            db.ChangeTracker.Entry(album).State = EntityState.Deleted;
             db.SaveChanges();
             //Bug: Missing helper
             //return RedirectToAction("Index");

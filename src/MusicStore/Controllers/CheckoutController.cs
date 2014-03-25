@@ -11,9 +11,7 @@ namespace MusicStore.Controllers
     //[Authorize]
     public class CheckoutController : Controller
     {
-        //Bug: Missing EF
-        //MusicStoreEntities storeDB = new MusicStoreEntities();
-        MusicStoreEntities storeDB = MusicStoreEntities.Instance;
+        MusicStoreContext db = new MusicStoreContext();
         const string PromoCode = "FREE";
 
         //
@@ -48,19 +46,35 @@ namespace MusicStore.Controllers
                 }
                 else
                 {
+                    // TODO [EF] Swap to store generated identity key when supported
+                    var nextId = db.Orders.Any()
+                        ? db.Orders.Max(o => o.OrderId) + 1
+                        : 1;
+
+                    //Bug: Object values should come from page (putting in hard coded values as EF can't work with nulls against SQL Server yet)
                     //Bug: Identity not available
-                    order.Username = null; //User.Identity.Name;
+                    order.Username = "unknown"; //User.Identity.Name;
+                    order.OrderId = nextId;
                     order.OrderDate = DateTime.Now;
+                    order.FirstName = "John";
+                    order.LastName = "Doe";
+                    order.Address = "One Microsoft Way";
+                    order.City = "Redmond";
+                    order.State = "WA";
+                    order.Country = "USA";
+                    order.Email = "john.doe@example.com";
+                    order.Phone = "555-555-5555";
+                    order.PostalCode = "98052";
 
                     //Add the Order
-                    storeDB.Orders.Add(order);
+                    db.Orders.Add(order);
 
                     //Process the order
-                    var cart = ShoppingCart.GetCart(storeDB, this.Context);
+                    var cart = ShoppingCart.GetCart(db, this.Context);
                     cart.CreateOrder(order);
 
                     // Save all changes
-                    storeDB.SaveChanges();
+                    db.SaveChanges();
 
                     //Bug: Helper not available
                     //return RedirectToAction("Complete",
@@ -87,7 +101,7 @@ namespace MusicStore.Controllers
             //    o => o.OrderId == id &&
             //    o.Username == User.Identity.Name);
 
-            bool isValid = storeDB.Orders.Any(
+            bool isValid = db.Orders.Any(
                 o => o.OrderId == id);
 
             if (isValid)

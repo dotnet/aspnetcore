@@ -9,16 +9,14 @@ namespace MusicStore.Controllers
 {
     public class ShoppingCartController : Controller
     {
-        //Bug: No EF yet
-        //private MusicStoreEntities storeDB = new MusicStoreEntities();
-        private MusicStoreEntities storeDB = MusicStoreEntities.Instance;
+        private MusicStoreContext db = new MusicStoreContext();
 
         //
         // GET: /ShoppingCart/
 
         public IActionResult Index()
         {
-            var cart = ShoppingCart.GetCart(storeDB, this.Context);
+            var cart = ShoppingCart.GetCart(db, this.Context);
 
             // Set up our ViewModel
             var viewModel = new ShoppingCartViewModel
@@ -38,15 +36,15 @@ namespace MusicStore.Controllers
         {
 
             // Retrieve the album from the database
-            var addedAlbum = storeDB.Albums
+            var addedAlbum = db.Albums
                 .Single(album => album.AlbumId == id);
 
             // Add it to the shopping cart
-            var cart = ShoppingCart.GetCart(storeDB, this.Context);
+            var cart = ShoppingCart.GetCart(db, this.Context);
 
             cart.AddToCart(addedAlbum);
 
-            storeDB.SaveChanges();
+            db.SaveChanges();
 
             // Go back to the main store page for more shopping
             //Bug: Helper method not available
@@ -62,16 +60,17 @@ namespace MusicStore.Controllers
         public IActionResult RemoveFromCart(int id)
         {
             // Retrieve the current user's shopping cart
-            var cart = ShoppingCart.GetCart(storeDB, this.Context);
+            var cart = ShoppingCart.GetCart(db, this.Context);
 
             // Get the name of the album to display confirmation
-            string albumName = storeDB.Carts
-                .Single(item => item.RecordId == id).Album.Title;
+            // TODO [EF] Turn into one query once query of related data is enabled
+            int albumId = db.Carts.Single(item => item.RecordId == id).AlbumId;
+            string albumName = db.Albums.Single(a => a.AlbumId == albumId).Title;
 
             // Remove from cart
             int itemCount = cart.RemoveFromCart(id);
 
-            storeDB.SaveChanges();
+            db.SaveChanges();
 
             string removed = (itemCount > 0) ? " 1 copy of " : string.Empty;
 
