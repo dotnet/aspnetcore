@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc
                 using (var writer = new StreamWriter(context.HttpContext.Response.Body, Encoding.UTF8, 1024, leaveOpen: true))
                 {
                     var viewContext = CreateViewContext(context, writer);
-                    await view.RenderAsync(viewContext, writer);
+                    await view.RenderAsync(viewContext);
                 }
             }
         }

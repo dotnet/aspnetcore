@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private string BodyContent { get; set; }
 
-        public virtual async Task RenderAsync([NotNull] ViewContext context, [NotNull] TextWriter writer)
+        public virtual async Task RenderAsync([NotNull] ViewContext context)
         {
             Context = context;
 
@@ -55,15 +55,15 @@ namespace Microsoft.AspNet.Mvc.Razor
             var bodyContent = contentBuilder.ToString();
             if (!string.IsNullOrEmpty(Layout))
             {
-                await RenderLayoutAsync(context, writer, bodyContent);
+                await RenderLayoutAsync(context, bodyContent);
             }
             else
             {
-                await writer.WriteAsync(bodyContent);
+                await context.Writer.WriteAsync(bodyContent);
             }
         }
 
-        private async Task RenderLayoutAsync(ViewContext context, TextWriter writer, string bodyContent)
+        private async Task RenderLayoutAsync(ViewContext context, string bodyContent)
         {
             var virtualPathFactory = context.ServiceProvider.GetService<IVirtualPathViewFactory>();
             var layoutView = (RazorView)(await virtualPathFactory.CreateInstance(Layout));
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
 
             layoutView.BodyContent = bodyContent;
-            await layoutView.RenderAsync(context, writer);
+            await layoutView.RenderAsync(context);
         }
 
         public abstract Task ExecuteAsync();

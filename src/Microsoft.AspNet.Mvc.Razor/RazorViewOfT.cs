@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         public HtmlHelper<TModel> Html { get; set; }
 
-        public override Task RenderAsync([NotNull] ViewContext context, [NotNull] TextWriter writer)
+        public override Task RenderAsync([NotNull] ViewContext context)
         {
             ViewData = context.ViewData as ViewData<TModel>;
             if (ViewData == null)
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             InitHelpers(context);
 
-            return base.RenderAsync(context, writer);
+            return base.RenderAsync(context);
         }
 
         private void InitHelpers(ViewContext context)

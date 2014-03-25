@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Mvc
             var view = await FindView(context.ViewContext.ViewEngineContext, qualifiedViewName);
             using (view as IDisposable)
             {
-                await view.RenderAsync(childViewContext, context.Writer);
+                await view.RenderAsync(childViewContext);
             }
         }
 
