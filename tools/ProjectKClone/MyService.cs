@@ -61,9 +61,15 @@ namespace NuGetClone
             var packages = remoteRepo.GetPackages()
                                      .Where(p => p.IsAbsoluteLatestVersion)
                                      .ToList();
+            
             Parallel.ForEach(packages, package =>
             {
-                if (!targetRepo.Exists(package))
+                // Some packages are updated without revving the version. We'll only opt not to re-download
+                // a package if an identical version does not exist on disk.
+                var existingPackage = targetRepo.FindPackage(package.Id, package.Version);
+                var dataServicePackage = (DataServicePackage)package;
+                if (existingPackage == null ||
+                    !existingPackage.GetHash(dataServicePackage.PackageHashAlgorithm).Equals(dataServicePackage.PackageHash, StringComparison.Ordinal))
                 {
                     PurgeOldVersions(targetRepo, package);
 
@@ -85,7 +91,7 @@ namespace NuGetClone
 
         private void PurgeOldVersions(LocalPackageRepository targetRepo, IPackage package)
         {
-            foreach (var oldPackage in targetRepo.FindPackagesById(package.Id).Where(p => p.Version < package.Version))
+            foreach (var oldPackage in targetRepo.FindPackagesById(package.Id).Where(p => p.Version <= package.Version))
             {
                 try
                 {
