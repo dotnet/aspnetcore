@@ -7,6 +7,6 @@ namespace Microsoft.AspNet.Mvc
     {
         bool IsController(TypeInfo typeInfo);
 
-        IEnumerable<ActionInfo> GetActions(MethodInfo methodInfo);
+        IEnumerable<ActionInfo> GetActions(MethodInfo methodInfo, TypeInfo controllerTypeInfo);
     }
 }

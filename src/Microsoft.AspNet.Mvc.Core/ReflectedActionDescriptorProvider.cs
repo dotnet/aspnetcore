@@ -60,8 +60,7 @@ namespace Microsoft.AspNet.Mvc
 
                 foreach (var methodInfo in cd.ControllerTypeInfo.DeclaredMethods)
                 {
-                    var actionInfos = _conventions.GetActions(methodInfo);
-
+                    var actionInfos = _conventions.GetActions(methodInfo, cd.ControllerTypeInfo);
                     if (actionInfos == null)
                     {
                         continue;

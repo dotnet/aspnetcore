@@ -1,4 +1,6 @@
-﻿namespace Microsoft.AspNet.Mvc
+﻿using System.Collections.Generic;
+
+namespace Microsoft.AspNet.Mvc
 {
     public class ActionInfo
     {
