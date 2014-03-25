@@ -6,6 +6,7 @@
     "Microsoft.AspNet.ConfigurationModel": "0.1-alpha-*",
     "Microsoft.AspNet.DependencyInjection": "0.1-alpha-*",
     "Microsoft.AspNet.Routing": "0.1-alpha-*",
+    "Microsoft.AspNet.Server.WebListener": "0.1-alpha-*",
     "Microsoft.ComponentModel.DataAnnotations": "4.0.10.0",
     "Microsoft.AspNet.Mvc.ModelBinding": "",
     "Microsoft.AspNet.Mvc.Core": "",
@@ -13,6 +14,7 @@
     "Microsoft.AspNet.Mvc.Razor": "",
     "Microsoft.AspNet.Mvc.Rendering": ""
   },
+  "commands": { "web": "Microsoft.AspNet.Hosting server.name=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001" },
   "configurations": {
     "net45": {
       "dependencies": {
