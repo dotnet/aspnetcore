@@ -1,6 +1,5 @@
 ﻿
 using System;
-using System.IO;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
@@ -15,7 +14,7 @@ namespace Microsoft.AspNet.Mvc
         public JsonViewComponentResult([NotNull] object value)
         {
             _value = value;
-            _jsonSerializerSettings = CreateSerializerSettings();
+            _jsonSerializerSettings = JsonOutputFormatter.CreateDefaultSettings();
         }
 
         public JsonSerializerSettings SerializerSettings
@@ -38,46 +37,10 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         public bool Indent { get; set; }
 
-        private JsonSerializerSettings CreateSerializerSettings()
-        {
-            return new JsonSerializerSettings()
-            {
-                MissingMemberHandling = MissingMemberHandling.Ignore,
-
-                // Do not change this setting
-                // Setting this to None prevents Json.NET from loading malicious, unsafe, or security-sensitive types.
-                TypeNameHandling = TypeNameHandling.None
-            };
-        }
-
-        private JsonSerializer CreateJsonSerializer()
-        {
-            var jsonSerializer = JsonSerializer.Create(SerializerSettings);
-            return jsonSerializer;
-        }
-
-        private JsonWriter CreateJsonWriter([NotNull] TextWriter writer)
-        {
-            var jsonWriter = new JsonTextWriter(writer);
-            if (Indent)
-            {
-                jsonWriter.Formatting = Formatting.Indented;
-            }
-
-            return jsonWriter;
-        }
-
         public void Execute([NotNull] ViewComponentContext context)
         {
-            using (var jsonWriter = CreateJsonWriter(context.Writer))
-            {
-                jsonWriter.CloseOutput = false;
-
-                var jsonSerializer = CreateJsonSerializer();
-                jsonSerializer.Serialize(jsonWriter, _value);
-
-                jsonWriter.Flush();
-            }
+            var formatter = new JsonOutputFormatter(SerializerSettings, Indent);
+            formatter.WriteObject(context.Writer, _value);
         }
 
         public async Task ExecuteAsync([NotNull] ViewComponentContext context)

@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc
             }
 
             _returnValue = returnValue;
-            _jsonSerializerSettings = CreateSerializerSettings();
+            _jsonSerializerSettings = JsonOutputFormatter.CreateDefaultSettings();
         }
 
         public JsonSerializerSettings SerializerSettings
@@ -70,45 +70,11 @@ namespace Microsoft.AspNet.Mvc
                 response.ContentType = "application/json";
             }
 
-            using (JsonWriter jsonWriter = CreateJsonWriter(writeStream, Encoding))
+            using (var writer = new StreamWriter(writeStream, Encoding, 1024, leaveOpen: true))
             {
-                jsonWriter.CloseOutput = false;
-
-                JsonSerializer jsonSerializer = CreateJsonSerializer();
-                jsonSerializer.Serialize(jsonWriter, _returnValue);
-
-                jsonWriter.Flush();
+                var formatter = new JsonOutputFormatter(SerializerSettings, Indent);
+                formatter.WriteObject(writer, _returnValue);
             }
-        }
-
-        private JsonSerializerSettings CreateSerializerSettings()
-        {
-            return new JsonSerializerSettings()
-            {
-                MissingMemberHandling = MissingMemberHandling.Ignore,
-
-                // Do not change this setting
-                // Setting this to None prevents Json.NET from loading malicious, unsafe, or security-sensitive types.
-                TypeNameHandling = TypeNameHandling.None
-            };
-        }
-
-        private JsonSerializer CreateJsonSerializer()
-        {
-            JsonSerializer jsonSerializer = JsonSerializer.Create(SerializerSettings);
-
-            return jsonSerializer;
-        }
-
-        private JsonWriter CreateJsonWriter(Stream writeStream, Encoding effectiveEncoding)
-        {
-            JsonWriter jsonWriter = new JsonTextWriter(new StreamWriter(writeStream, effectiveEncoding));
-            if (Indent)
-            {
-                jsonWriter.Formatting = Formatting.Indented;
-            }
-
-            return jsonWriter;
         }
     }
 }
