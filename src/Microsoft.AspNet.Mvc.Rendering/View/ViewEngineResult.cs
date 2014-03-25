@@ -13,25 +13,42 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         public IView View { get; private set; }
 
+        public string ViewName { get; private set; }
+
         public bool Success 
         { 
             get { return View != null; } 
         }
 
-        public static ViewEngineResult NotFound([NotNull] IEnumerable<string> searchedLocations)
+        public static ViewEngineResult NotFound([NotNull] string viewName, [NotNull] IEnumerable<string> searchedLocations)
         {
             return new ViewEngineResult
             {
-                SearchedLocations = searchedLocations
+                SearchedLocations = searchedLocations,
+                ViewName = viewName,
             };
         }
 
-        public static ViewEngineResult Found([NotNull] IView view)
+        public static ViewEngineResult Found([NotNull] string viewName, [NotNull] IView view)
         {
             return new ViewEngineResult
             {
-                View = view
+                View = view,
+                ViewName = viewName,
             };
+        }
+
+        public ViewEngineResult EnsureSuccess()
+        {
+            if (Success)
+            {
+                return this;
+            }
+
+            var locationsText = Environment.NewLine + string.Join(Environment.NewLine, SearchedLocations);
+            throw new InvalidOperationException(Resources.FormatViewEngine_ViewNotFound(
+                ViewName,
+                 locationsText));
         }
     }
 }

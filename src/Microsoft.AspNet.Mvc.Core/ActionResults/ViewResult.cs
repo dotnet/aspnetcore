@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -43,13 +42,7 @@ namespace Microsoft.AspNet.Mvc
         private async Task<IView> FindView([NotNull] IDictionary<string, object> context,[NotNull] string viewName)
         {
             var result = await _viewEngine.FindView(context, viewName);
-            if (!result.Success)
-            {
-                var locationsText = string.Join(Environment.NewLine, result.SearchedLocations);
-                const string message = @"The view &apos;{0}&apos; was not found. The following locations were searched:{1}.";
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, message, viewName, locationsText));
-            }
-
+            result.EnsureSuccess();
             return result.View;
         }
 

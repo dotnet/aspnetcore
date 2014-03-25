@@ -35,8 +35,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             if (nameRepresentsPath)
             {
                 var view = await _virtualPathFactory.CreateInstance(viewName);
-                return view != null ? ViewEngineResult.Found(view) :
-                                      ViewEngineResult.NotFound(new[] { viewName });
+                return view != null ? ViewEngineResult.Found(viewName, view) :
+                                      ViewEngineResult.NotFound(viewName, new[] { viewName });
             }
             else
             {
@@ -50,18 +50,13 @@ namespace Microsoft.AspNet.Mvc.Razor
                     IView view = await _virtualPathFactory.CreateInstance(path);
                     if (view != null)
                     {
-                        return ViewEngineResult.Found(view);
+                        return ViewEngineResult.Found(viewName, view);
                     }
                     searchedLocations.Add(path);
                 }
 
-                return ViewEngineResult.NotFound(searchedLocations);
+                return ViewEngineResult.NotFound(viewName, searchedLocations);
             }
-        }
-
-        public Task<ViewEngineResult> FindComponentView(object actionContext, string viewName)
-        {
-            throw new NotImplementedException();
         }
 
         private static bool IsSpecificPath(string name)

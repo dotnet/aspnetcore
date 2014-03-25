@@ -129,4 +129,7 @@
   <data name="ViewData_WrongTModelType" xml:space="preserve">
     <value>The model item passed into the ViewData is of type '{0}', but this ViewData instance requires a model item of type '{1}'.</value>
   </data>
+  <data name="ViewEngine_ViewNotFound" xml:space="preserve">
+    <value>The view '{0}' was not found. The following locations were searched:{1}.</value>
+  </data>
 </root>
