@@ -5,7 +5,6 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -23,14 +22,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             if (string.IsNullOrEmpty(propertyName))
             {
-                throw Error.ArgumentNullOrEmpty("propertyName");
+                throw new ArgumentException(Resources.FormatArgumentNullOrEmpty("propertyName"), "propertyName");
             }
 
             var typeInfo = GetTypeInformation(containerType);
             PropertyInformation propertyInfo;
             if (!typeInfo.Properties.TryGetValue(propertyName, out propertyInfo))
             {
-                throw Error.Argument("propertyName", Resources.FormatCommon_PropertyNotFound(containerType, propertyName));
+                throw new ArgumentException(Resources.FormatCommon_PropertyNotFound(containerType, propertyName), "propertyName");
             }
 
             return CreatePropertyMetadata(modelAccessor, propertyInfo);

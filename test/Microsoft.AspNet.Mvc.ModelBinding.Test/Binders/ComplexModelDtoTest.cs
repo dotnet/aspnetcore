@@ -6,27 +6,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
     public class ComplexModelDtoTest
     {
         [Fact]
-        public void ConstructorThrowsIfModelMetadataIsNull()
-        {
-            // Act & assert
-            ExceptionAssert.ThrowsArgumentNull(
-                () => new ComplexModelDto(null, Enumerable.Empty<ModelMetadata>()),
-                "modelMetadata");
-        }
-
-        [Fact]
-        public void ConstructorThrowsIfPropertyMetadataIsNull()
-        {
-            // Arrange
-            ModelMetadata modelMetadata = GetModelMetadata();
-
-            // Act & assert
-            ExceptionAssert.ThrowsArgumentNull(
-                () => new ComplexModelDto(modelMetadata, null),
-                "propertyMetadata");
-        }
-
-        [Fact]
         public void ConstructorSetsProperties()
         {
             // Arrange

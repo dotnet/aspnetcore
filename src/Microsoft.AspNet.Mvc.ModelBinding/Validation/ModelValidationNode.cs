@@ -97,13 +97,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Validate(validationContext, parentNode: null);
         }
 
-        public void Validate(ModelValidationContext validationContext, ModelValidationNode parentNode)
+        public void Validate([NotNull] ModelValidationContext validationContext, ModelValidationNode parentNode)
         {
-            if (validationContext == null)
-            {
-                throw Error.ArgumentNull("validationContext");
-            }
-
             if (SuppressValidation)
             {
                 // no-op

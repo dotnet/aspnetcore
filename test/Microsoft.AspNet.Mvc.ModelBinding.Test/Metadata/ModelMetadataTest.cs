@@ -10,30 +10,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 {
     public class ModelMetadataTest
     {
-        // Guard clauses
-
-        [Fact]
-        public void NullProviderThrows()
-        {
-            // Act & Assert
-            ExceptionAssert.ThrowsArgumentNull(
-                () => new ModelMetadata(provider: null, containerType: null, modelAccessor: null, modelType: typeof(object), propertyName: null),
-                "provider");
-        }
-
 #if NET45
-        [Fact]
-        public void NullTypeThrows()
-        {
-            // Arrange
-            Mock<IModelMetadataProvider> provider = new Mock<IModelMetadataProvider>();
-
-            // Act & Assert
-            ExceptionAssert.ThrowsArgumentNull(
-                () => new ModelMetadata(provider: provider.Object, containerType: null, modelAccessor: null, modelType: null, propertyName: null),
-                "modelType");
-        }
-
         // Constructor
 
         [Fact]

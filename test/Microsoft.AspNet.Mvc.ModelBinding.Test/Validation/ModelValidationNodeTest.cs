@@ -216,18 +216,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Fact]
-        public void Validate_ThrowsIfControllerContextIsNull()
-        {
-            // Arrange
-            var node = new ModelValidationNode(GetModelMetadata(), "someKey");
-
-            // Act & assert
-            ExceptionAssert.ThrowsArgumentNull(
-                () => node.Validate(null),
-                "validationContext");
-        }
-
-        [Fact]
         [ReplaceCulture]
         public void Validate_ValidateAllProperties_AddsValidationErrors()
         {

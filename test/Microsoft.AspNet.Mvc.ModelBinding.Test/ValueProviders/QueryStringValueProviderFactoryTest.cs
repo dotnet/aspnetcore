@@ -13,13 +13,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
     {
         private readonly QueryStringValueProviderFactory _factory = new QueryStringValueProviderFactory();
 
-        [Fact]
-        public void GetValueProvider_WhenrequestContextParameterIsNull_Throws()
-        {
-            // Act and Assert
-            ExceptionAssert.ThrowsArgumentNull(() => _factory.GetValueProviderAsync(requestContext: null), "requestContext");
-        }
-
 #if NET45
         [Fact]
         public async Task GetValueProvider_ReturnsQueryStringValueProviderInstaceWithInvariantCulture()

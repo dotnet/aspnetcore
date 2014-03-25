@@ -1,7 +1,6 @@
 ﻿
 using System.Collections.Generic;
 using System.Globalization;
-using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -19,13 +18,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return _values.ContainsKey(key);
         }
 
-        public ValueProviderResult GetValue(string key)
+        public ValueProviderResult GetValue([NotNull] string key)
         {
-            if (key == null)
-            {
-                throw Error.ArgumentNull("key");
-            }
-
             object value;
             if (_values.TryGetValue(key, out value))
             {

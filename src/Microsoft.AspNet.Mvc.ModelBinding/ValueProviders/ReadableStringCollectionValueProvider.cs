@@ -17,13 +17,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </summary>
         /// <param name="values">The key value pairs to wrap.</param>
         /// <param name="culture">The culture to return with ValueProviderResult instances.</param>
-        public ReadableStringCollectionValueProvider(IReadableStringCollection values, CultureInfo culture)
+        public ReadableStringCollectionValueProvider([NotNull] IReadableStringCollection values, CultureInfo culture)
         {
-            if (values == null)
-            {
-                throw Error.ArgumentNull("values");
-            }
-
             _values = values;
             _culture = culture;
         }
@@ -56,24 +51,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return PrefixContainer.ContainsPrefix(prefix);
         }
 
-        public virtual IDictionary<string, string> GetKeysFromPrefix(string prefix)
+        public virtual IDictionary<string, string> GetKeysFromPrefix([NotNull] string prefix)
         {
-            if (prefix == null)
-            {
-                throw Error.ArgumentNull("prefix");
-            }
-
             return PrefixContainer.GetKeysFromPrefix(prefix);
         }
 
-        public virtual ValueProviderResult GetValue(string key)
-        {
-            if (key == null)
-            {
-                throw Error.ArgumentNull("key");
-            }
 
-            IList<string> values = _values.GetValues(key);
+        public virtual ValueProviderResult GetValue([NotNull] string key)
+        {
+            var values = _values.GetValues(key);
             if (values == null)
             {
                 return null;

@@ -18,14 +18,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 {"prefix.null_value", null}
             });
 
-        [Fact]
-        public void Constructor_GuardClauses()
-        {
-            // Act & assert
-            ExceptionAssert.ThrowsArgumentNull(
-                () => new ReadableStringCollectionValueProvider(values: null, culture: CultureInfo.InvariantCulture),
-                "values");
-        }
 
         [Fact]
         public void ContainsPrefix_GuardClauses()
@@ -89,18 +81,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             // Assert
             Assert.False(result);
-        }
-
-        [Fact]
-        public void GetKeysFromPrefix_GuardClauses()
-        {
-            // Arrange
-            var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, null);
-
-            // Act & assert
-            ExceptionAssert.ThrowsArgumentNull(
-                () => valueProvider.GetKeysFromPrefix(null),
-                "prefix");
         }
 
         [Fact]

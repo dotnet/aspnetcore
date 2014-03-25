@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -68,21 +67,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return (enumeratedProvider != null) ? enumeratedProvider.GetKeysFromPrefix(prefix) : null;
         }
 
-        protected override void InsertItem(int index, IValueProvider item)
+        protected override void InsertItem(int index, [NotNull] IValueProvider item)
         {
-            if (item == null)
-            {
-                throw Error.ArgumentNull("item");
-            }
             base.InsertItem(index, item);
         }
 
-        protected override void SetItem(int index, IValueProvider item)
+        protected override void SetItem(int index, [NotNull] IValueProvider item)
         {
-            if (item == null)
-            {
-                throw Error.ArgumentNull("item");
-            }
             base.SetItem(index, item);
         }
     }

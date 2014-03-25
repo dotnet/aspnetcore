@@ -18,21 +18,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private IEnumerable<ModelMetadata> _properties;
         private Type _realModelType;
 
-        public ModelMetadata(IModelMetadataProvider provider, 
+        public ModelMetadata([NotNull] IModelMetadataProvider provider, 
                              Type containerType, 
-                             Func<object> modelAccessor, 
-                             Type modelType, 
+                             Func<object> modelAccessor,
+                             [NotNull] Type modelType, 
                              string propertyName)
         {
-            if (provider == null)
-            {
-                throw Error.ArgumentNull("provider");
-            }
-            if (modelType == null)
-            {
-                throw Error.ArgumentNull("modelType");
-            }
-
             Provider = provider;
 
             _containerType = containerType;

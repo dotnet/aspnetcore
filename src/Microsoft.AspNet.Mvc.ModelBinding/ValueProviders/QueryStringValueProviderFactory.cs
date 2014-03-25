@@ -8,13 +8,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     {
         private static readonly object _cacheKey = new object();
 
-        public Task<IValueProvider> GetValueProviderAsync(RequestContext requestContext)
+        public Task<IValueProvider> GetValueProviderAsync([NotNull] RequestContext requestContext)
         {
-            if (requestContext == null)
-            {
-                throw Error.ArgumentNull("requestContext");
-            }
-
             // Process the query collection once-per request. 
             var storage = requestContext.HttpContext.Items;
             object value;

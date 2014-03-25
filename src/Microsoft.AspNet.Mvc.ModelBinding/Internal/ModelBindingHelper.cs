@@ -53,16 +53,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
             }
         }
 
-        internal static void ValidateBindingContext(ModelBindingContext bindingContext)
+        internal static void ValidateBindingContext([NotNull] ModelBindingContext bindingContext)
         {
-            if (bindingContext == null)
-            {
-                throw Error.ArgumentNull("bindingContext");
-            }
-
             if (bindingContext.ModelMetadata == null)
             {
-                throw Error.Argument("bindingContext", Resources.ModelBinderUtil_ModelMetadataCannotBeNull);
+                throw new ArgumentException("bindingContext", Resources.ModelBinderUtil_ModelMetadataCannotBeNull);
             }
         }
 
@@ -73,13 +68,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
             if (bindingContext.ModelType != requiredType)
             {
                 var message = Resources.FormatModelBinderUtil_ModelTypeIsWrong(bindingContext.ModelType, requiredType);
-                throw Error.Argument("bindingContext", message);
+                throw new ArgumentException(message, "bindingContext");
             }
 
             if (!allowNullModel && bindingContext.Model == null)
             {
                 var message = Resources.FormatModelBinderUtil_ModelCannotBeNull(requiredType);
-                throw Error.Argument("bindingContext", message);
+                throw new ArgumentException(message, "bindingContext");
             }
 
             if (bindingContext.Model != null && !bindingContext.ModelType.GetTypeInfo().IsAssignableFrom(requiredType.GetTypeInfo()))
@@ -87,7 +82,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
                 var message = Resources.FormatModelBinderUtil_ModelInstanceIsWrong(
                     bindingContext.Model.GetType(), 
                     requiredType);
-                throw Error.Argument("bindingContext", message);
+                throw new ArgumentException(message, "bindingContext");
             }
         }
     }

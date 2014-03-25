@@ -1,25 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     // Describes a complex model, but uses a collection rather than individual properties as the data store.
     public class ComplexModelDto
     {
-        public ComplexModelDto(ModelMetadata modelMetadata, IEnumerable<ModelMetadata> propertyMetadata)
+        public ComplexModelDto([NotNull] ModelMetadata modelMetadata, 
+                               [NotNull] IEnumerable<ModelMetadata> propertyMetadata)
         {
-            if (modelMetadata == null)
-            {
-                throw Error.ArgumentNull("modelMetadata");
-            }
-
-            if (propertyMetadata == null)
-            {
-                throw Error.ArgumentNull("propertyMetadata");
-            }
-
             ModelMetadata = modelMetadata;
             PropertyMetadata = new Collection<ModelMetadata>(propertyMetadata.ToList());
             Results = new Dictionary<ModelMetadata, ComplexModelDtoResult>();
