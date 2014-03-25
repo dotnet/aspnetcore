@@ -5,10 +5,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace MusicStore.Models
 {
-    public class Cart
+    public class CartItem
     {
-        [Key]
-        public int RecordId { get; set; }
+        public int CartItemId { get; set; }
+
+        [Required]
         public string CartId { get; set; }
         public int AlbumId { get; set; }
         public int Count { get; set; }

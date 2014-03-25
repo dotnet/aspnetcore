@@ -874,7 +874,7 @@ namespace MusicStore.Web.Models
             {
                 genre.GenreId = genreId++;
 
-                // TODO [EF] Remove when null values are supported
+                // TODO [EF] Remove when null values are supported by update pipeline
                 genre.Description = genre.Name + " is great music (if you like it).";
             }
 
@@ -918,7 +918,7 @@ CREATE TABLE [dbo].[Album](
 	[ArtistId] [int] NOT NULL,
 	[Title] [nvarchar](160) NOT NULL,
 	[Price] [numeric](18, 2) NOT NULL,
-	[AlbumArtUrl] [nvarchar](1024) NOT NULL
+	[AlbumArtUrl] [nvarchar](1024) NULL
 ) 
 
 CREATE TABLE [dbo].[Artist](
@@ -926,8 +926,8 @@ CREATE TABLE [dbo].[Artist](
 	[Name] [nvarchar](max) NOT NULL
 ) 
 
-CREATE TABLE [dbo].[Cart](
-	[RecordId] [int] NOT NULL,
+CREATE TABLE [dbo].[CartItem](
+	[CartItemId] [int] NOT NULL,
 	[CartId] [nvarchar](max) NOT NULL,
 	[AlbumId] [int] NOT NULL,
 	[Count] [int] NOT NULL,
@@ -937,7 +937,7 @@ CREATE TABLE [dbo].[Cart](
 CREATE TABLE [dbo].[Genre](
 	[GenreId] [int] NOT NULL,
 	[Name] [nvarchar](max) NOT NULL,
-	[Description] [nvarchar](max) NOT NULL
+	[Description] [nvarchar](max) NULL
 ) 
 
 CREATE TABLE [dbo].[Order](

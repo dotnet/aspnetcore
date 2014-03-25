@@ -19,10 +19,7 @@ namespace MusicStore.Controllers
 
         public IActionResult Index()
         {
-            //Bug: Include needs EF.
-            //var albums = db.Albums.Include(a => a.Genre).Include(a => a.Artist)
-            //    .OrderBy(a => a.Price);
-
+            // TODO [EF] Swap to native support for loading related data when available
             var albums = db.Albums;
             foreach (var album in albums)
             {
@@ -38,8 +35,6 @@ namespace MusicStore.Controllers
 
         public IActionResult Details(int id = 0)
         {
-            //Bug: Find needs EF
-            //Album album = db.Albums.Find(id);
             Album album = db.Albums.Single(a => a.AlbumId == id);
             if (album == null)
             {
@@ -86,8 +81,6 @@ namespace MusicStore.Controllers
 
         public IActionResult Edit(int id = 0)
         {
-            //Bug: Need EF to implement Find
-            //Album album = db.Albums.Find(id);
             Album album = db.Albums.Single(a => a.AlbumId == id);
 
             if (album == null)

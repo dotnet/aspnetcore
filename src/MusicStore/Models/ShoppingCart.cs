@@ -45,14 +45,14 @@ namespace MusicStore.Models
             if (cartItem == null)
             {
                 // TODO [EF] Swap to store generated key once we support identity pattern
-                var nextRecordId = _db.Carts.Any()
-                    ? _db.Carts.Max(c => c.RecordId) + 1
+                var nextCartItemId = _db.Carts.Any()
+                    ? _db.Carts.Max(c => c.CartItemId) + 1
                     : 1;
 
                 // Create a new cart item if no cart item exists
-                cartItem = new Cart
+                cartItem = new CartItem
                 {
-                    RecordId = nextRecordId,
+                    CartItemId = nextCartItemId,
                     AlbumId = album.AlbumId,
                     CartId = ShoppingCartId,
                     Count = 1,
@@ -76,7 +76,7 @@ namespace MusicStore.Models
             // Get the cart
             var cartItem = _db.Carts.Single(
                 cart => cart.CartId == ShoppingCartId
-                && cart.RecordId == id);
+                && cart.CartItemId == id);
 
             int itemCount = 0;
 
@@ -113,7 +113,7 @@ namespace MusicStore.Models
 
         }
 
-        public List<Cart> GetCartItems()
+        public List<CartItem> GetCartItems()
         {
             return _db.Carts.Where(cart => cart.CartId == ShoppingCartId).ToList();
         }
@@ -221,7 +221,7 @@ namespace MusicStore.Models
         {
             var shoppingCart = _db.Carts.Where(c => c.CartId == ShoppingCartId);
 
-            foreach (Cart item in shoppingCart)
+            foreach (CartItem item in shoppingCart)
             {
                 item.CartId = userName;
             }
