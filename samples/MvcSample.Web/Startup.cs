@@ -1,6 +1,4 @@
-﻿
-#if NET45
-using Microsoft.AspNet.Abstractions;
+﻿using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.DependencyInjection.Fallback;
 using Microsoft.AspNet.Mvc;
@@ -38,4 +36,3 @@ namespace MvcSample.Web
         }
     }
 }
-#endif
