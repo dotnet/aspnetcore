@@ -16,7 +16,6 @@ using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.PipelineCore;
 using Xunit;
-using Xunit.Extensions;
 
 namespace Microsoft.AspNet.Server.WebListener.Test
 {

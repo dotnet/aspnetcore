@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Hosting.Server;
 
+// These tests can't run in parallel because they all use the same port.
+[assembly: Xunit.CollectionBehaviorAttribute(Xunit.CollectionBehavior.CollectionPerAssembly, DisableTestParallelization = true)]
+
 namespace Microsoft.AspNet.Server.WebListener.Test
 {
     using AppFunc = Func<object, Task>;

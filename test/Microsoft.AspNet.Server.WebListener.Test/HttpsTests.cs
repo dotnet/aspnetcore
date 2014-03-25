@@ -5,7 +5,6 @@
 // -----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
@@ -18,13 +17,11 @@ using Xunit;
 
 namespace Microsoft.AspNet.Server.WebListener.Test
 {
-    using AppFunc = Func<object, Task>;
-
     public class HttpsTests
     {
         private const string Address = "https://localhost:9090/";
 
-        [Fact]
+        [Fact(Skip = "TODO: Add trait filtering support so these SSL tests don't get run on teamcity or the command line."), Trait("scheme", "https")]
         public async Task Https_200OK_Success()
         {
             using (Utilities.CreateHttpsServer(env =>
@@ -37,7 +34,7 @@ namespace Microsoft.AspNet.Server.WebListener.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "TODO: Add trait filtering support so these SSL tests don't get run on teamcity or the command line."), Trait("scheme", "https")]
         public async Task Https_SendHelloWorld_Success()
         {
             using (Utilities.CreateHttpsServer(env =>
@@ -53,7 +50,7 @@ namespace Microsoft.AspNet.Server.WebListener.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "TODO: Add trait filtering support so these SSL tests don't get run on teamcity or the command line."), Trait("scheme", "https")]
         public async Task Https_EchoHelloWorld_Success()
         {
             using (Utilities.CreateHttpsServer(env =>
@@ -72,7 +69,7 @@ namespace Microsoft.AspNet.Server.WebListener.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "TODO: Add trait filtering support so these SSL tests don't get run on teamcity or the command line."), Trait("scheme", "https")]
         public async Task Https_ClientCertNotSent_ClientCertNotPresent()
         {
             using (Utilities.CreateHttpsServer(async env =>
@@ -89,7 +86,7 @@ namespace Microsoft.AspNet.Server.WebListener.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "TODO: Add trait filtering support so these SSL tests don't get run on teamcity or the command line."), Trait("scheme", "https")]
         public async Task Https_ClientCertRequested_ClientCertPresent()
         {
             using (Utilities.CreateHttpsServer(async env =>

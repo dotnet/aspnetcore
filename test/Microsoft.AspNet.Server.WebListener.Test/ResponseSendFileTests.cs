@@ -20,15 +20,20 @@ using Xunit;
 
 namespace Microsoft.AspNet.Server.WebListener.Test
 {
-    using AppFunc = Func<object, Task>;
-
     public class ResponseSendFileTests
     {
         private const string Address = "http://localhost:8080/";
-        private static readonly string AbsoluteFilePath = Environment.CurrentDirectory + "\\Microsoft.AspNet.Server.WebListener.dll";
-        private static readonly string RelativeFilePath = "Microsoft.AspNet.Server.WebListener.dll";
-        private static readonly long FileLength = new FileInfo(AbsoluteFilePath).Length;
+        private readonly string AbsoluteFilePath;
+        private readonly string RelativeFilePath;
+        private readonly long FileLength;
         
+        public ResponseSendFileTests()
+        {
+            AbsoluteFilePath = Directory.GetFiles(Environment.CurrentDirectory).First();
+            RelativeFilePath = Path.GetFileName(AbsoluteFilePath);
+            FileLength = new FileInfo(AbsoluteFilePath).Length;
+        }
+
         [Fact]
         public async Task ResponseSendFile_SupportKeys_Present()
         {

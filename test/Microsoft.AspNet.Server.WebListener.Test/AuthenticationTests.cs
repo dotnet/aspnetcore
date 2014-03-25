@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.PipelineCore;
 using Xunit;
-using Xunit.Extensions;
 
 namespace Microsoft.AspNet.Server.WebListener.Test
 {

@@ -1,6 +1,14 @@
 {
      "version" : "0.1-alpha-*",
+     "commands": {
+          "test": "Xunit.KRunner"
+     },
      "dependencies": {
+          "Xunit.KRunner": "0.1-alpha-*",
+          "xunit.abstractions": "2.0.0-aspnet-*",
+          "xunit.assert": "2.0.0-aspnet-*",
+          "xunit.core": "2.0.0-aspnet-*",
+          "xunit.execution": "2.0.0-aspnet-*",
           "Microsoft.AspNet.Server.WebListener" : "",
           "Microsoft.AspNet.Abstractions" : "0.1-alpha-*",
           "Microsoft.AspNet.ConfigurationModel": "0.1-alpha-*",
@@ -11,13 +19,12 @@
           "Microsoft.AspNet.Hosting": "0.1-alpha-*"
      },
      "configurations": {
-          "net45": {
-               "dependencies": {
-                    "XUnit": "1.9.2",
-                    "XUnit.Extensions": "1.9.2",
-                    "System.Net.Http": "",
-                    "System.Net.Http.WebRequest": ""
-               }
-          }
+        "net45": {
+            "dependencies": {
+                "System.Runtime": "",
+                "System.Net.Http": "",
+                "System.Net.Http.WebRequest": ""
+            }
+        }
      }
 }
