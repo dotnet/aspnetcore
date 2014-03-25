@@ -1,6 +1,5 @@
 ﻿
 using System;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
@@ -75,33 +74,14 @@ namespace Microsoft.AspNet.Mvc
             var activator = _serviceProvider.GetService<ITypeActivator>();
             object component = activator.CreateInstance(_serviceProvider, _componentType.AsType());
 
-            foreach (var prop in _componentType.AsType().GetRuntimeProperties())
-            {
-                if (prop.Name == "ViewContext" && 
-                    typeof(ViewContext).GetTypeInfo().IsAssignableFrom(prop.PropertyType.GetTypeInfo()))
-                {
-                    prop.SetValue(component, context);
-                }
-                else if (prop.Name == "ViewData" && 
-                    typeof(ViewDataDictionary).GetTypeInfo().IsAssignableFrom(prop.PropertyType.GetTypeInfo()))
-                {
-                    // We're flowing the viewbag across, but the concept of model doesn't really apply here
-                    var viewData = new ViewDataDictionary(context.ViewData);
-                    viewData.Model = null;
+            Injector.InjectProperty(component, "ViewContext", context);
 
-                    prop.SetValue(component, viewData);
-                }
-            }
+            // We're flowing the viewbag across, but the concept of model doesn't really apply here
+            var viewData = new ViewDataDictionary(context.ViewData);
+            viewData.Model = null;
+            Injector.InjectProperty(component, "ViewData", viewData);
 
-            var method = _componentType.AsType().GetRuntimeMethods()
-                .FirstOrDefault(m => m.Name.Equals("Initialize", StringComparison.OrdinalIgnoreCase));
-            if (method != null)
-            {
-                var args = method.GetParameters()
-                                 .Select(p => _serviceProvider.GetService(p.ParameterType)).ToArray();
-
-                method.Invoke(component, args);
-            }
+            Injector.CallInitializer(component, _serviceProvider);
 
             return component;
         }

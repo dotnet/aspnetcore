@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -48,44 +47,20 @@ namespace Microsoft.AspNet.Mvc
 
         private void InitializeController(object controller, ActionContext actionContext)
         {
-            var controllerType = controller.GetType();
+            Injector.InjectProperty(controller, "ActionContext", actionContext);
 
-            foreach (var prop in controllerType.GetRuntimeProperties())
-            {
-                if(prop.Name == "ActionContext" &&
-                    prop.PropertyType.GetTypeInfo().IsAssignableFrom(typeof(ActionContext).GetTypeInfo()))
-                {
-                    prop.SetValue(controller, actionContext);
-                }
-                else if (prop.Name == "ViewData" &&
-                    prop.PropertyType.GetTypeInfo().IsAssignableFrom(typeof(ViewDataDictionary<object>).GetTypeInfo()))
-                {
-                    prop.SetValue(controller, new ViewDataDictionary<object>(
-                        _serviceProvider.GetService<IModelMetadataProvider>(), actionContext.ModelState));
-                }
-                else if (prop.Name == "Url" &&
-                    prop.PropertyType.GetTypeInfo().IsAssignableFrom(typeof(IUrlHelper).GetTypeInfo()))
-                {
-                    var urlHelper = new UrlHelper(
-                        actionContext.HttpContext,
-                        actionContext.Router,
-                        actionContext.RouteValues);
+            var viewData = new ViewDataDictionary<object>(
+                _serviceProvider.GetService<IModelMetadataProvider>(),
+                actionContext.ModelState);
+            Injector.InjectProperty(controller, "ViewData", viewData);
 
-                    prop.SetValue(controller, urlHelper);
-                }
-            }
+            var urlHelper = new UrlHelper(
+                actionContext.HttpContext,
+                actionContext.Router,
+                actionContext.RouteValues);
+            Injector.InjectProperty(controller, "Url", urlHelper);
 
-            var method = controllerType.GetRuntimeMethods().FirstOrDefault(m => m.Name.Equals("Initialize", StringComparison.OrdinalIgnoreCase));
-
-            if (method == null)
-            {
-                return;
-            }
-
-            var args = method.GetParameters()
-                             .Select(p => _serviceProvider.GetService(p.ParameterType)).ToArray();
-
-            method.Invoke(controller, args);
+            Injector.CallInitializer(controller, _serviceProvider);
         }
     }
 }
