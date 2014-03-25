@@ -16,31 +16,26 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
-        public dynamic ViewBag
-        {
-            get { return ViewData; }
-        }
-
-        public ViewData<TModel> ViewData { get; private set; }
+        public ViewDataDictionary<TModel> ViewData { get; private set; }
 
         public HtmlHelper<TModel> Html { get; set; }
 
         public override Task RenderAsync([NotNull] ViewContext context)
         {
-            ViewData = context.ViewData as ViewData<TModel>;
+            ViewData = context.ViewData as ViewDataDictionary<TModel>;
             if (ViewData == null)
             {
                 if (context.ViewData != null)
                 {
-                    ViewData = new ViewData<TModel>(context.ViewData);
+                    ViewData = new ViewDataDictionary<TModel>(context.ViewData);
                 }
                 else
                 {
                     var metadataProvider = context.ServiceProvider.GetService<IModelMetadataProvider>();
-                    ViewData = new ViewData<TModel>(metadataProvider);
+                    ViewData = new ViewDataDictionary<TModel>(metadataProvider);
                 }
 
-                // Have new ViewData; make sure it's visible everywhere.
+                // Have new ViewDataDictionary; make sure it's visible everywhere.
                 context.ViewData = ViewData;
             }
 

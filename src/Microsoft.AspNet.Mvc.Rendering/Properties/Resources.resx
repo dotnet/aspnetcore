@@ -123,11 +123,14 @@
   <data name="Common_PartialViewNotFound" xml:space="preserve">
     <value>The partial view '{0}' was not found or no view engine supports the searched locations. The following locations were searched:{1}</value>
   </data>
+  <data name="DynamicViewData_ViewDataNull" xml:space="preserve">
+    <value>ViewData value must not be null.</value>
+  </data>
   <data name="ViewData_ModelCannotBeNull" xml:space="preserve">
-    <value>The model item passed is null, but this ViewData instance requires a non-null model item of type '{0}'.</value>
+    <value>The model item passed is null, but this ViewDataDictionary instance requires a non-null model item of type '{0}'.</value>
   </data>
   <data name="ViewData_WrongTModelType" xml:space="preserve">
-    <value>The model item passed into the ViewData is of type '{0}', but this ViewData instance requires a model item of type '{1}'.</value>
+    <value>The model item passed into the ViewDataDictionary is of type '{0}', but this ViewDataDictionary instance requires a model item of type '{1}'.</value>
   </data>
   <data name="ViewEngine_ViewNotFound" xml:space="preserve">
     <value>The view '{0}' was not found. The following locations were searched:{1}.</value>

@@ -52,15 +52,19 @@ namespace Microsoft.AspNet.Mvc
 
             foreach (var prop in controllerType.GetRuntimeProperties())
             {
-                if(prop.Name == "ActionContext" && prop.PropertyType.GetTypeInfo().IsAssignableFrom(typeof(ActionContext).GetTypeInfo()))
+                if(prop.Name == "ActionContext" &&
+                    prop.PropertyType.GetTypeInfo().IsAssignableFrom(typeof(ActionContext).GetTypeInfo()))
                 {
                     prop.SetValue(controller, actionContext);
                 }
-                else if (prop.Name == "ViewData" && prop.PropertyType.GetTypeInfo().IsAssignableFrom(typeof(ViewData<object>).GetTypeInfo()))
+                else if (prop.Name == "ViewData" &&
+                    prop.PropertyType.GetTypeInfo().IsAssignableFrom(typeof(ViewDataDictionary<object>).GetTypeInfo()))
                 {
-                    prop.SetValue(controller, new ViewData<object>(_serviceProvider.GetService<IModelMetadataProvider>(), actionContext.ModelState));
+                    prop.SetValue(controller, new ViewDataDictionary<object>(
+                        _serviceProvider.GetService<IModelMetadataProvider>(), actionContext.ModelState));
                 }
-                else if (prop.Name == "Url" && prop.PropertyType.GetTypeInfo().IsAssignableFrom(typeof(IUrlHelper).GetTypeInfo()))
+                else if (prop.Name == "Url" &&
+                    prop.PropertyType.GetTypeInfo().IsAssignableFrom(typeof(IUrlHelper).GetTypeInfo()))
                 {
                     var urlHelper = new UrlHelper(
                         actionContext.HttpContext,

@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Mvc
             return new JsonResult(value);
         }
 
-        public IActionResult View(string view, ViewData viewData)
+        public IActionResult View(string view, ViewDataDictionary viewData)
         {
             return new ViewResult(_serviceProvider, _viewEngine)
             {

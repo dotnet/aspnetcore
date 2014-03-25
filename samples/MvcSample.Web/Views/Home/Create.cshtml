@@ -1,24 +1,23 @@
 ﻿@using MvcSample.Web.Models
 @model User
 @{
-    string nullValue = null;
     ViewBag.Title = (Model == null) ? "Create Page" : "Edit Page";
-    if (ViewData["Gift"] == null)
+    if (ViewBag.Gift == null)
     {
         ViewBag.Gift = "nothing";
     }
 }
 
 <div class="row">
-    <h2 title="@ViewBag.Title" class="@nullValue">@ViewBag.Title</h2>
-    <h3 title="Thanks" class="@nullValue">Thanks for @ViewBag.Gift</h3>
+    <h2 title="@ViewBag.Title" class="@ViewBag.NullValue">@ViewBag.Title</h2>
+    <h3 title="Thanks" class="@ViewBag.NullValue">Thanks for @ViewBag.Gift</h3>
     @if (Model == null)
     {
-        <h4 title ="Null Model" class="@nullValue">Howdy, your model is null.</h4>
+        <h4 title ="Null Model" class="@ViewBag.NullValue">Howdy, your model is null.</h4>
     }
     else
     {
-        <h4 title="@Model.Name" class="@nullValue">Hello @Model.Name! Happy @Model.Age birthday.</h4>
+        <h4 title="@Model.Name" class="@ViewBag.NullValue">Hello @Model.Name! Happy @(Model.Age)th birthday.</h4>
     }
 
     @{

@@ -4,6 +4,8 @@
     "Microsoft.AspNet.Mvc.Core" : "",
     "Microsoft.AspNet.Mvc" : "",
     "Microsoft.AspNet.Testing": "0.1-alpha-*",
+    "Microsoft.AspNet.Mvc.ModelBinding": "",
+    "Microsoft.AspNet.Mvc.Rendering": "",
     "Moq": "4.2.1312.1622",
     "Xunit.KRunner": "0.1-alpha-*",
     "xunit.abstractions": "2.0.0-aspnet-*",

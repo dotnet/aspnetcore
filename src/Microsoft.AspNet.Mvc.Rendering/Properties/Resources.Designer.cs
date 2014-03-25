@@ -43,6 +43,22 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <summary>
+        /// ViewData value must not be null.
+        /// </summary>
+        internal static string DynamicViewData_ViewDataNull
+        {
+            get { return GetString("DynamicViewData_ViewDataNull"); }
+        }
+
+        /// <summary>
+        /// ViewData value must not be null.
+        /// </summary>
+        internal static string FormatDynamicViewData_ViewDataNull()
+        {
+            return GetString("DynamicViewData_ViewDataNull");
+        }
+
+        /// <summary>
         /// The model item passed is null, but this ViewData instance requires a non-null model item of type '{0}'.
         /// </summary>
         internal static string ViewData_ModelCannotBeNull

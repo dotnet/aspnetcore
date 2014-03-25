@@ -83,10 +83,10 @@ namespace Microsoft.AspNet.Mvc
                     prop.SetValue(component, context);
                 }
                 else if (prop.Name == "ViewData" && 
-                    typeof(ViewData).GetTypeInfo().IsAssignableFrom(prop.PropertyType.GetTypeInfo()))
+                    typeof(ViewDataDictionary).GetTypeInfo().IsAssignableFrom(prop.PropertyType.GetTypeInfo()))
                 {
                     // We're flowing the viewbag across, but the concept of model doesn't really apply here
-                    var viewData = new ViewData(context.ViewData);
+                    var viewData = new ViewDataDictionary(context.ViewData);
                     viewData.Model = null;
 
                     prop.SetValue(component, viewData);

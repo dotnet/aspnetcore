@@ -14,9 +14,10 @@ namespace Microsoft.AspNet.Mvc
 
         private readonly IViewEngine _viewEngine;
         private readonly string _viewName;
-        private readonly ViewData _viewData;
+        private readonly ViewDataDictionary _viewData;
 
-        public ViewViewComponentResult([NotNull] IViewEngine viewEngine, [NotNull] string viewName, ViewData viewData)
+        public ViewViewComponentResult([NotNull] IViewEngine viewEngine, [NotNull] string viewName,
+            ViewDataDictionary viewData)
         {
             _viewEngine = viewEngine;
             _viewName = viewName;

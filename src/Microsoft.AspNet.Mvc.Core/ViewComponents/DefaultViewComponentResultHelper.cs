@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc
             return new JsonViewComponentResult(value);
         }
 
-        public IViewComponentResult View([NotNull] string viewName, [NotNull] ViewData viewData)
+        public IViewComponentResult View([NotNull] string viewName, [NotNull] ViewDataDictionary viewData)
         {
             return new ViewViewComponentResult(_viewEngine, viewName, viewData);
         }

@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public static readonly string ValidationSummaryCssClassName = "validation-summary-errors";
         public static readonly string ValidationSummaryValidCssClassName = "validation-summary-valid";
 
-        public HtmlHelper([NotNull] HttpContext httpContext, ViewData viewData)
+        public HtmlHelper([NotNull] HttpContext httpContext, ViewDataDictionary viewData)
         {
             HttpContext = httpContext;
             ViewData = viewData;
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         public HttpContext HttpContext { get; private set; }
 
-        public ViewData ViewData
+        public ViewDataDictionary ViewData
         {
             get;
             private set;

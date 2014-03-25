@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc
 
         public ViewContext ViewContext { get; set; }
 
-        public ViewData ViewData { get; set; }
+        public ViewDataDictionary ViewData { get; set; }
 
         public void Initialize(IViewComponentResultHelper result)
         {
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Mvc
 
         public IViewComponentResult View<TModel>(string viewName, TModel model)
         {
-            var viewData = new ViewData<TModel>(ViewData);
+            var viewData = new ViewDataDictionary<TModel>(ViewData);
             if (model != null)
             {
                 viewData.Model = model;

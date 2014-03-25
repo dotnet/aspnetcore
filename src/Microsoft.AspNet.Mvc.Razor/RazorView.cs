@@ -26,6 +26,14 @@ namespace Microsoft.AspNet.Mvc.Razor
             get { return Context == null ? null : Context.Url; }
         }
 
+        public dynamic ViewBag
+        {
+            get
+            {
+                return (Context == null) ? null : Context.ViewBag;
+            }
+        }
+
         private string BodyContent { get; set; }
 
         public virtual async Task RenderAsync([NotNull] ViewContext context)

@@ -3,27 +3,35 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
-    public class ViewData<TModel> : ViewData
+    public class ViewDataDictionary<TModel> : ViewDataDictionary
     {
-        // Fallback ModelMetadata based on TModel. Used when Model is null and base ViewData class is unable to
-        // determine the correct metadata.
+        // Fallback ModelMetadata based on TModel. Used when Model is null and base ViewDataDictionary class is unable
+        // to determine the correct metadata.
         private readonly ModelMetadata _defaultModelMetadata;
 
-        public ViewData([NotNull] IModelMetadataProvider metadataProvider)
+        public ViewDataDictionary([NotNull] IModelMetadataProvider metadataProvider)
             : base(metadataProvider)
         {
             _defaultModelMetadata = MetadataProvider.GetMetadataForType(null, typeof(TModel));
         }
         
-        public ViewData([NotNull] IModelMetadataProvider metadataProvider, [NotNull] ModelStateDictionary modelState)
+        public ViewDataDictionary([NotNull] IModelMetadataProvider metadataProvider,
+            [NotNull] ModelStateDictionary modelState)
             : base(metadataProvider, modelState)
         {
         }
 
-        public ViewData(ViewData source)
-            : base(source)
+        /// <inheritdoc />
+        public ViewDataDictionary([NotNull] ViewDataDictionary source)
+            : this(source, source.Model)
         {
-            var original = source as ViewData<TModel>;
+        }
+
+        /// <inheritdoc />
+        public ViewDataDictionary([NotNull] ViewDataDictionary source, object model)
+            : base(source, model)
+        {
+            var original = source as ViewDataDictionary<TModel>;
             if (original != null)
             {
                 _defaultModelMetadata = original._defaultModelMetadata;
