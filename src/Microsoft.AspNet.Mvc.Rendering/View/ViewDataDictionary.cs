@@ -21,6 +21,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             [NotNull] ModelStateDictionary modelState)
         {
             ModelState = modelState;
+            TemplateInfo = new TemplateInfo();
             _data = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             _metadataProvider = metadataProvider;
         }
@@ -41,6 +42,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             : this(source.MetadataProvider)
         {
             _modelMetadata = source.ModelMetadata;
+             TemplateInfo = new TemplateInfo(source.TemplateInfo);
 
             foreach (var entry in source.ModelState)
             {
@@ -74,6 +76,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 _modelMetadata = value;
             }
         }
+
+        public TemplateInfo TemplateInfo { get; private set; }
 
         /// <summary>
         /// Provider for subclasses that need it to override <see cref="ModelMetadata"/>.
