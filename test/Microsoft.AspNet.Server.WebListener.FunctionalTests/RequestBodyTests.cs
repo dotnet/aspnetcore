@@ -1,11 +1,6 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="RequestBodyTests.cs" company="Microsoft">
-//      Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -15,10 +10,8 @@ using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.PipelineCore;
 using Xunit;
 
-namespace Microsoft.AspNet.Server.WebListener.Test
+namespace Microsoft.AspNet.Server.WebListener
 {
-    using AppFunc = Func<object, Task>;
-
     public class RequestBodyTests
     {
         private const string Address = "http://localhost:8080/";

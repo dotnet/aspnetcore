@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Abstractions;
-using Microsoft.AspNet.Hosting.Server;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNet.Server.WebListener.Test
+using System;
+using System.Threading.Tasks;
+
+namespace Microsoft.AspNet.Server.WebListener
 {
     using AppFunc = Func<object, Task>;
 
