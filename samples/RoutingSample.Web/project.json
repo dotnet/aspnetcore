@@ -3,7 +3,8 @@
   "dependencies": {
     "Helios": "0.1-alpha-*",
     "Microsoft.AspNet.Abstractions" : "0.1-alpha-*",
-    "Microsoft.AspNet.Routing" : ""
+    "Microsoft.AspNet.Routing" : "0.1-alpha-*",
+    "Microsoft.AspNet.ConfigurationModel": "0.1-alpha-*"
   },
   "configurations": {
     "net45": { },
