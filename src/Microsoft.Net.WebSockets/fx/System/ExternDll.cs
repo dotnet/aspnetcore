@@ -27,7 +27,11 @@ namespace System
 {
     internal static class ExternDll
     {
+#if NETFX || ASPNET50
         public const string Kernel32 = "kernel32.dll";
+#else
+        public const string api_ms_win_core_localization_LIB = "api-ms-win-core-localization-l2-1-0.dll";
+#endif
     }
 }
 #endif

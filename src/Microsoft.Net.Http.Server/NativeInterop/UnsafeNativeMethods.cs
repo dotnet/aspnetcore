@@ -30,10 +30,20 @@ namespace Microsoft.Net.Http.Server
 {
     internal static class UnsafeNclNativeMethods
     {
-        private const string KERNEL32 = "kernel32.dll";
-        private const string SECUR32 = "secur32.dll";
         private const string HTTPAPI = "httpapi.dll";
 
+#if ASPNETCORE50
+        private const string sspicli_LIB = "sspicli.dll";
+        private const string api_ms_win_core_processthreads_LIB = "api-ms-win-core-processthreads-l1-1-1.dll";
+        private const string api_ms_win_core_io_LIB = "api-ms-win-core-io-l1-1-1.dll";
+        private const string api_ms_win_core_handle_LIB = "api-ms-win-core-handle-l1-1-0.dll";
+        private const string api_ms_win_core_libraryloader_LIB = "api-ms-win-core-libraryloader-l1-1-1.dll";
+        private const string api_ms_win_core_heap_obsolete_LIB = "api-ms-win-core-heap-obsolete-L1-1-0.dll";
+        private const string api_ms_win_core_kernel32_legacy_LIB = "api-ms-win-core-kernel32-legacy-l1-1-0.dll";
+#else
+        private const string KERNEL32 = "kernel32.dll";
+        private const string SECUR32 = "secur32.dll";
+#endif
         // CONSIDER: Make this an enum, requires changing a lot of types from uint to ErrorCodes.
         internal static class ErrorCodes
         {
@@ -49,13 +59,25 @@ namespace Microsoft.Net.Http.Server
             internal const uint ERROR_CONNECTION_INVALID = 1229;
         }
 
+#if ASPNETCORE50
+        [DllImport(api_ms_win_core_processthreads_LIB, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
+#else
         [DllImport(KERNEL32, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
+#endif
         internal static extern uint GetCurrentThreadId();
 
+#if ASPNETCORE50
+        [DllImport(api_ms_win_core_io_LIB, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
+#else
         [DllImport(KERNEL32, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
+#endif
         internal static unsafe extern uint CancelIoEx(SafeHandle handle, SafeNativeOverlapped overlapped);
 
+#if ASPNETCORE50
+        [DllImport(api_ms_win_core_kernel32_legacy_LIB, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
+#else
         [DllImport(KERNEL32, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
+#endif
         internal static unsafe extern bool SetFileCompletionNotificationModes(SafeHandle handle, FileCompletionNotificationModes modes);
 
         [Flags]
@@ -68,11 +90,19 @@ namespace Microsoft.Net.Http.Server
 
         internal static class SafeNetHandles
         {
+#if ASPNETCORE50
+            [DllImport(sspicli_LIB, ExactSpelling = true, SetLastError = true)]
+#else
             [DllImport(SECUR32, ExactSpelling = true, SetLastError = true)]
+#endif        
             internal static extern int FreeContextBuffer(
                 [In] IntPtr contextBuffer);
 
+#if ASPNETCORE50
+            [DllImport(sspicli_LIB, ExactSpelling = true, SetLastError = true)]
+#else
             [DllImport(SECUR32, ExactSpelling = true, SetLastError = true)]
+#endif        
             internal static unsafe extern int QueryContextAttributesW(
                 ref SSPIHandle contextHandle,
                 [In] ContextAttribute attribute,
@@ -85,22 +115,47 @@ namespace Microsoft.Net.Http.Server
             [DllImport(HTTPAPI, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
             internal static extern unsafe uint HttpCloseRequestQueue(IntPtr pReqQueueHandle);
 
+#if ASPNETCORE50
+            [DllImport(api_ms_win_core_handle_LIB, ExactSpelling = true, SetLastError = true)]
+#else
             [DllImport(KERNEL32, ExactSpelling = true, SetLastError = true)]
+#endif
             internal static extern bool CloseHandle(IntPtr handle);
 
+#if ASPNETCORE50
+            [DllImport(api_ms_win_core_heap_obsolete_LIB, ExactSpelling = true, SetLastError = true)]
+#else
             [DllImport(KERNEL32, ExactSpelling = true, SetLastError = true)]
+#endif
             internal static extern SafeLocalFree LocalAlloc(int uFlags, UIntPtr sizetdwBytes);
 
+#if ASPNETCORE50
+            [DllImport(api_ms_win_core_heap_obsolete_LIB, EntryPoint = "LocalAlloc", SetLastError = true)]
+#else
             [DllImport(KERNEL32, EntryPoint = "LocalAlloc", SetLastError = true)]
+#endif
+
             internal static extern SafeLocalFreeChannelBinding LocalAllocChannelBinding(int uFlags, UIntPtr sizetdwBytes);
 
+#if ASPNETCORE50
+            [DllImport(api_ms_win_core_heap_obsolete_LIB, ExactSpelling = true, SetLastError = true)]
+#else
             [DllImport(KERNEL32, ExactSpelling = true, SetLastError = true)]
+#endif
             internal static extern IntPtr LocalFree(IntPtr handle);
 
+#if ASPNETCORE50
+            [DllImport(api_ms_win_core_libraryloader_LIB, ExactSpelling = true, CharSet = CharSet.Unicode, SetLastError = true)]
+#else
             [DllImport(KERNEL32, ExactSpelling = true, CharSet = CharSet.Unicode, SetLastError = true)]
+#endif            
             internal static extern unsafe SafeLoadLibrary LoadLibraryExW([In] string lpwLibFileName, [In] void* hFile, [In] uint dwFlags);
 
+#if ASPNETCORE50
+            [DllImport(api_ms_win_core_libraryloader_LIB, ExactSpelling = true, SetLastError = true)]
+#else
             [DllImport(KERNEL32, ExactSpelling = true, SetLastError = true)]
+#endif
             internal static extern unsafe bool FreeLibrary([In] IntPtr hModule);
         }
 

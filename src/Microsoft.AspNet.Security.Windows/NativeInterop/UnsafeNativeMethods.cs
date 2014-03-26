@@ -32,12 +32,25 @@ namespace Microsoft.AspNet.Security.Windows
     [System.Security.SuppressUnmanagedCodeSecurityAttribute]
     internal static class UnsafeNclNativeMethods
     {
+#if ASPNETCORE50
+        private const string sspicli_LIB = "sspicli.dll";
+        private const string api_ms_win_core_processthreads_LIB = "api-ms-win-core-processthreads-l1-1-1.dll";
+        private const string api_ms_win_core_handle_LIB = "api-ms-win-core-handle-l1-1-0.dll";
+        private const string api_ms_win_core_libraryloader_LIB = "api-ms-win-core-libraryloader-l1-1-1.dll";
+        private const string api_ms_win_core_heap_obsolete_LIB = "api-ms-win-core-heap-obsolete-l1-1-0.dll";
+#else
         private const string KERNEL32 = "kernel32.dll";
+#endif
         private const string SECUR32 = "secur32.dll";
         private const string CRYPT32 = "crypt32.dll";
 
+#if ASPNETCORE50
+        [DllImport(api_ms_win_core_processthreads_LIB, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
+#else
         [DllImport(KERNEL32, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
+#endif
         internal static extern uint GetCurrentThreadId();
+
 
         [System.Security.SuppressUnmanagedCodeSecurityAttribute]
         internal static class SafeNetHandles
@@ -164,18 +177,34 @@ namespace Microsoft.AspNet.Security.Windows
             [DllImport(SECUR32, ExactSpelling = true, SetLastError = true)]
             internal static extern int QuerySecurityContextToken(ref SSPIHandle phContext, [Out] out SafeCloseHandle handle);
 
+#if ASPNETCORE50
+            [DllImport(api_ms_win_core_handle_LIB, ExactSpelling = true, SetLastError = true)]
+#else
             [DllImport(KERNEL32, ExactSpelling = true, SetLastError = true)]
+#endif
             [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
             internal static extern bool CloseHandle(IntPtr handle);
 
+#if ASPNETCORE50
+            [DllImport(api_ms_win_core_heap_obsolete_LIB, ExactSpelling = true, SetLastError = true)]
+#else
             [DllImport(KERNEL32, ExactSpelling = true, SetLastError = true)]
+#endif
             internal static extern SafeLocalFree LocalAlloc(int uFlags, UIntPtr sizetdwBytes);
 
+#if ASPNETCORE50
+            [DllImport(api_ms_win_core_heap_obsolete_LIB, ExactSpelling = true, SetLastError = true)]
+#else
             [DllImport(KERNEL32, ExactSpelling = true, SetLastError = true)]
+#endif
             [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
             internal static extern IntPtr LocalFree(IntPtr handle);
 
+#if ASPNETCORE50
+            [DllImport(api_ms_win_core_libraryloader_LIB, ExactSpelling = true, SetLastError = true)]
+#else
             [DllImport(KERNEL32, ExactSpelling = true, SetLastError = true)]
+#endif
             [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
             internal static extern unsafe bool FreeLibrary([In] IntPtr hModule);
 
@@ -194,7 +223,11 @@ namespace Microsoft.AspNet.Security.Windows
             internal static extern bool CertFreeCertificateContext(      // Suppressing returned status check, it's always==TRUE,
                 [In] IntPtr certContext);
 
+#if ASPNETCORE50
+            [DllImport(api_ms_win_core_heap_obsolete_LIB, ExactSpelling = true, SetLastError = true)]
+#else
             [DllImport(KERNEL32, ExactSpelling = true, SetLastError = true)]
+#endif
             [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
             internal static extern IntPtr GlobalFree(IntPtr handle);
         }

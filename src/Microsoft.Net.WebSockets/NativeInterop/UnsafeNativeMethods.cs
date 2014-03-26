@@ -31,15 +31,27 @@ namespace Microsoft.Net.WebSockets
 {
     internal static class UnsafeNativeMethods
     {
+#if ASPNETCORE50
+        private const string api_ms_win_core_libraryloader_LIB = "api-ms-win-core-libraryloader-l1-1-1.dll";
+#else    
         private const string KERNEL32 = "kernel32.dll";
+#endif
         private const string WEBSOCKET = "websocket.dll";
 
         internal static class SafeNetHandles
         {
+#if ASPNETCORE50
+            [DllImport(api_ms_win_core_libraryloader_LIB, ExactSpelling = true, CharSet = CharSet.Unicode, SetLastError = true)]
+#else
             [DllImport(KERNEL32, ExactSpelling = true, CharSet=CharSet.Unicode, SetLastError = true)]
+#endif
             internal static extern unsafe SafeLoadLibrary LoadLibraryExW([In] string lpwLibFileName, [In] void* hFile, [In] uint dwFlags);
 
+#if ASPNETCORE50
+            [DllImport(api_ms_win_core_libraryloader_LIB, ExactSpelling = true, SetLastError = true)]
+#else
             [DllImport(KERNEL32, ExactSpelling = true, SetLastError = true)]
+#endif
             internal static extern unsafe bool FreeLibrary([In] IntPtr hModule);
         }
 

@@ -36,10 +36,13 @@ namespace System
             FORMAT_MESSAGE_FROM_SYSTEM = 0x00001000,
             FORMAT_MESSAGE_ARGUMENT_ARRAY = 0x00002000;
 
+#if ASPNETCORE50
+        [DllImport(ExternDll.api_ms_win_core_localization_LIB, CharSet = System.Runtime.InteropServices.CharSet.Unicode, SetLastError = true, BestFitMapping = true)]
+#else
         [DllImport(ExternDll.Kernel32, CharSet = System.Runtime.InteropServices.CharSet.Unicode, SetLastError = true, BestFitMapping = true)]
+#endif
         public static unsafe extern int FormatMessage(int dwFlags, IntPtr lpSource_mustBeNull, uint dwMessageId,
                 int dwLanguageId, StringBuilder lpBuffer, int nSize, IntPtr[] arguments);
-
     }
 }
 #endif
