@@ -119,6 +119,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // post-validation steps
             var validatedEventArgs = new ModelValidatedEventArgs(validationContext, parentNode);
             OnValidated(validatedEventArgs);
+
+            var modelState = validationContext.ModelState;
+            if (modelState.IsValidField(ModelStateKey) != false)
+            {
+                // If a node or its subtree were not marked invalid, we can consider it valid at this point.
+                modelState.MarkFieldValid(ModelStateKey);
+            }
         }
 
         private void ValidateChildren(ModelValidationContext validationContext)
@@ -149,7 +156,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 // else we could end up with duplicate or irrelevant error messages.
                 var propertyKeyRoot = ModelBindingHelper.CreatePropertyModelName(ModelStateKey, propertyMetadata.PropertyName);
 
-                if (modelState.IsValidField(propertyKeyRoot))
+                if (modelState.IsValidField(propertyKeyRoot) == null)
                 {
                     var propertyValidators = GetValidators(validationContext, propertyMetadata);
                     var propertyValidationContext = new ModelValidationContext(validationContext, propertyMetadata);
@@ -168,18 +175,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private void ValidateThis(ModelValidationContext validationContext, ModelValidationNode parentNode)
         {
             var modelState = validationContext.ModelState;
-            if (!modelState.IsValidField(ModelStateKey))
+            if (modelState.IsValidField(ModelStateKey) == false)
             {
-                return; // short-circuit
+                // If any item in the key's subtree has been identified as invalid, short-circuit
+                return;
             }
 
             // If the Model at the current node is null and there is no parent, we cannot validate, and the 
             // DataAnnotationsModelValidator will throw. So we intercept here to provide a catch-all value-required 
             // validation error
+            var modelStateKey = ModelBindingHelper.CreatePropertyModelName(ModelStateKey, ModelMetadata.GetDisplayName());
             if (parentNode == null && ModelMetadata.Model == null)
             {
-                var trueModelStateKey = ModelBindingHelper.CreatePropertyModelName(ModelStateKey, ModelMetadata.GetDisplayName());
-                modelState.AddModelError(trueModelStateKey, Resources.Validation_ValueNotFound);
+                modelState.AddModelError(modelStateKey, Resources.Validation_ValueNotFound);
                 return;
             }
 
@@ -190,8 +198,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 var validator = validators[i];
                 foreach (var validationResult in validator.Validate(validationContext))
                 {
-                    var trueModelStateKey = ModelBindingHelper.CreatePropertyModelName(ModelStateKey, validationResult.MemberName);
-                    modelState.AddModelError(trueModelStateKey, validationResult.Message);
+                    var currentModelStateKey = ModelBindingHelper.CreatePropertyModelName(ModelStateKey, validationResult.MemberName);
+                    modelState.AddModelError(currentModelStateKey, validationResult.Message);
                 }
             }
         }

@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Equal(42, bindingContext.Model);
             
             Assert.True(validationCalled);
-            Assert.True(bindingContext.ModelState.IsValid);
+            Assert.Equal(true, bindingContext.ModelState.IsValid);
         }
 
         [Fact]
@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.True(isBound);
             Assert.Equal(expectedModel, bindingContext.Model);
             Assert.True(validationCalled);
-            Assert.True(bindingContext.ModelState.IsValid);
+            Assert.Equal(true, bindingContext.ModelState.IsValid);
         }
 
         [Fact]
@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             // Assert
             Assert.False(isBound);
             Assert.Null(bindingContext.Model);
-            Assert.True(bindingContext.ModelState.IsValid);
+            Assert.Equal(true, bindingContext.ModelState.IsValid);
             mockListBinder.Verify();
         }
 

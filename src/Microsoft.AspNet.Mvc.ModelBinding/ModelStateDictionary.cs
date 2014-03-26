@@ -44,9 +44,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
         #endregion
 
-        public bool IsValid
+        public bool? IsValid
         {
-            get { return Values.All(modelState => modelState.Errors.Count == 0); }
+            get { return GetValidity(_innerDictionary); }
         }
 
         public ModelState this[[NotNull] string key]
@@ -62,25 +62,39 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         public void AddModelError([NotNull] string key, [NotNull] Exception exception)
         {
-            GetModelStateForKey(key).Errors.Add(exception);
+            var modelState = GetModelStateForKey(key);
+            modelState.IsValid = false;
+            modelState.Errors.Add(exception);
         }
 
         public void AddModelError([NotNull] string key, [NotNull] string errorMessage)
         {
-            GetModelStateForKey(key).Errors.Add(errorMessage);
+            var modelState = GetModelStateForKey(key);
+            modelState.IsValid = false;
+            modelState.Errors.Add(errorMessage);
         }
 
-        public bool IsValidField([NotNull] string key)
+        public bool? IsValidField([NotNull] string key)
         {
-            // if the key is not found in the dictionary, we just say that it's valid (since there are no errors)
-            foreach (var entry in DictionaryHelper.FindKeysWithPrefix(_innerDictionary, key))
+            var entries = DictionaryHelper.FindKeysWithPrefix(this, key);
+            if (!entries.Any())
             {
-                if (entry.Value.Errors.Count != 0)
-                {
-                    return false;
-                }
+                return null;
             }
-            return true;
+
+            return GetValidity(entries);
+        }
+
+        public void MarkFieldValid([NotNull] string key)
+        {
+            var modelState = GetModelStateForKey(key);
+            if (modelState.IsValid == false)
+            {
+                // TODO We should never end up here from our code
+                throw new InvalidOperationException(Resources.Validation_InvalidFieldCannotBeReset);
+            }
+
+            modelState.IsValid = true;
         }
 
         public void Merge(ModelStateDictionary dictionary)
@@ -111,6 +125,25 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             return modelState;
+        }
+
+        private static bool? GetValidity(IEnumerable<KeyValuePair<string, ModelState>> entries)
+        {
+            var state = true;
+            foreach (var entry in entries)
+            {
+                var entryState = entry.Value.IsValid;
+                if (entryState == null)
+                {
+                    // If any entries of a field is unvalidated, we'll treat the tree as unvalidated.
+                    return null;
+                }
+                else if (!entryState.Value)
+                {
+                    state = false;
+                }
+            }
+            return state;
         }
 
         #region IDictionary members
@@ -144,7 +177,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             _innerDictionary.CopyTo(array, arrayIndex);
         }
 
-        
         public bool Remove(KeyValuePair<string, ModelState> item)
         {
             return _innerDictionary.Remove(item);

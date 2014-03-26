@@ -165,6 +165,9 @@
   <data name="ValidationAttributeOnNonPublicProperty" xml:space="preserve">
     <value>Non-public property '{0}' on type '{1}' is attributed with one or more validation attributes. Validation attributes on non-public properties are not supported. Consider using a public property for validation instead.</value>
   </data>
+  <data name="Validation_InvalidFieldCannotBeReset" xml:space="preserve">
+    <value>A field previously marked invalid should not be marked valid.</value>
+  </data>
   <data name="Validation_ValueNotFound" xml:space="preserve">
     <value>A value is required but was not present in the request.</value>
   </data>

@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 var validationNode = (ModelValidationNode)sender;
                 var modelState = e.ValidationContext.ModelState;
 
-                if (modelState.IsValidField(validationNode.ModelStateKey))
+                if (modelState.IsValidField(validationNode.ModelStateKey) == null)
                 {
                     // TODO: Revive ModelBinderConfig
                     // string errorMessage =  ModelBinderConfig.ValueRequiredErrorMessageProvider(e.ValidationContext, modelMetadata, incomingValue);
@@ -266,7 +266,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             if (value == null)
             {
                 var modelStateKey = dtoResult.ValidationNode.ModelStateKey;
-                if (bindingContext.ModelState.IsValidField(modelStateKey))
+                if (bindingContext.ModelState.IsValidField(modelStateKey) == null)
                 {
                     if (requiredValidator != null)
                     {
@@ -295,7 +295,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                         ex = targetInvocationException.InnerException;
                     }
                     var modelStateKey = dtoResult.ValidationNode.ModelStateKey;
-                    if (bindingContext.ModelState.IsValidField(modelStateKey))
+                    if (bindingContext.ModelState.IsValidField(modelStateKey) == null)
                     {
                         bindingContext.ModelState.AddModelError(modelStateKey, ex);
                     }
@@ -305,7 +305,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 // trying to set a non-nullable value type to null, need to make sure there's a message
                 var modelStateKey = dtoResult.ValidationNode.ModelStateKey;
-                if (bindingContext.ModelState.IsValidField(modelStateKey))
+                if (bindingContext.ModelState.IsValidField(modelStateKey) == null)
                 {
                     dtoResult.ValidationNode.Validated += CreateNullCheckFailedHandler(propertyMetadata, value);
                 }
@@ -326,6 +326,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 bindingContext.ModelState.AddModelError(modelStateKey, validationResult.Message);
                 addedError = true;
             }
+
+            if (!addedError)
+            {
+                bindingContext.ModelState.MarkFieldValid(modelStateKey);
+            }
+
             return addedError;
         }
 

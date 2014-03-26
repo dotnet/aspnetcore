@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Fact]
-        public void IsValidFieldReturnsFalseIfDictionaryDoesNotContainKey()
+        public void IsValidFieldReturnsNullIfDictionaryDoesNotContainKey()
         {
             // Arrange
             var msd = new ModelStateDictionary();
@@ -69,7 +69,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var isValid = msd.IsValidField("foo");
 
             // Assert
-            Assert.True(isValid);
+            Assert.Null(isValid);
         }
 
         [Fact]
@@ -83,7 +83,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var isValid = msd.IsValidField("foo");
 
             // Assert
-            Assert.False(isValid);
+            Assert.Equal(false, isValid);
         }
 
         [Fact]
@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var isValid = msd.IsValidField("foo");
 
             // Assert
-            Assert.False(isValid);
+            Assert.Equal(false, isValid);
         }
 
         [Fact]
@@ -106,25 +106,25 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Arrange
             var msd = new ModelStateDictionary()
             {
-                { "foo", new ModelState() { Value = new ValueProviderResult(null, null, null) } }
+                { "foo", new ModelState() { Value = new ValueProviderResult(null, null, null), IsValid = true } }
             };
 
             // Act
             var isValid = msd.IsValidField("foo");
 
             // Assert
-            Assert.True(isValid);
+            Assert.Equal(true, isValid);
         }
 
         [Fact]
         public void IsValidPropertyReturnsFalseIfErrors()
         {
             // Arrange
-            var errorState = new ModelState() { Value = GetValueProviderResult("quux", "quux") };
+            var errorState = new ModelState() { Value = GetValueProviderResult("quux", "quux"), IsValid = false };
             errorState.Errors.Add("some error");
             var dictionary = new ModelStateDictionary()
             {
-                { "foo", new ModelState() { Value = GetValueProviderResult("bar", "bar") } },
+                { "foo", new ModelState() { Value = GetValueProviderResult("bar", "bar"), IsValid = true } },
                 { "baz", errorState }
             };
 
@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var isValid = dictionary.IsValid;
 
             // Assert
-            Assert.False(isValid);
+            Assert.Equal(false, isValid);
         }
 
         [Fact]
@@ -141,15 +141,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Arrange
             var dictionary = new ModelStateDictionary()
             {
-                { "foo", new ModelState() { Value = GetValueProviderResult("bar", "bar") } },
-                { "baz", new ModelState() { Value = GetValueProviderResult("quux", "bar") } }
+                { "foo", new ModelState() { IsValid = true, Value = GetValueProviderResult("bar", "bar") } },
+                { "baz", new ModelState() { IsValid = true, Value = GetValueProviderResult("quux", "bar") } }
             };
 
             // Act
             var isValid = dictionary.IsValid;
 
             // Assert
-            Assert.True(isValid);
+            Assert.Equal(true, isValid);
         }
 
         [Fact]
@@ -218,9 +218,74 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Equal("some value", modelState.Value.ConvertTo(typeof(string)));
         }
 
-        private static ValueProviderResult GetValueProviderResult(object rawValue, string attemptedValue)
+        [Fact]
+        public void GetFieldValidity_ReturnsUnvalidated_IfNoEntryExistsForKey()
         {
-            return new ValueProviderResult(rawValue, attemptedValue, CultureInfo.InvariantCulture);
+            // Arrange
+            var dictionary = new ModelStateDictionary();
+            dictionary.SetModelValue("user.Name", GetValueProviderResult());
+
+            // Act
+            var isValidField = dictionary.IsValidField("not-user");
+
+            // Assert
+            Assert.Equal(null, isValidField);
+        }
+
+        [Fact]
+        public void GetFieldValidity_ReturnsUnvalidated_IfAnyItemInSubtreeIsInvalid()
+        {
+            // Arrange
+            var dictionary = new ModelStateDictionary();
+            dictionary["user.Address"] = new ModelState { IsValid = true };
+            dictionary.SetModelValue("user.Name", GetValueProviderResult());
+            dictionary.AddModelError("user.Age", "Age is not a valid int");
+
+            // Act
+            var isValidField = dictionary.IsValidField("user");
+
+            // Assert
+            Assert.Equal(null, isValidField);
+        }
+
+        [Theory]
+        [InlineData("user")]
+        [InlineData("user.Age")]
+        public void GetFieldValidity_ReturnsInvalid_IfAllKeysAreValidatedAndAnyEntryIsInvalid(string key)
+        {
+            // Arrange
+            var dictionary = new ModelStateDictionary();
+            dictionary["user.Address"] = new ModelState { IsValid = true };
+            dictionary["user.Name"] = new ModelState { IsValid = true };
+            dictionary.AddModelError("user.Age", "Age is not a valid int");
+
+            // Act
+            var isValidField = dictionary.IsValidField(key);
+
+            // Assert
+            Assert.Equal(false, isValidField);
+        }
+
+        [Fact]
+        public void GetFieldValidity_ReturnsValid_IfAllKeysAreValid()
+        {
+            // Arrange
+            var dictionary = new ModelStateDictionary();
+            dictionary["user.Address"] = new ModelState { IsValid = true };
+            dictionary["user.Name"] = new ModelState { IsValid = true };
+
+            // Act
+            var isValidField = dictionary.IsValidField("user");
+
+            // Assert
+            Assert.Equal(true, isValidField);
+        }
+
+        private static ValueProviderResult GetValueProviderResult(object rawValue = null, string attemptedValue = null)
+        {
+            return new ValueProviderResult(rawValue ?? "some value", 
+                                           attemptedValue ?? "some value", 
+                                           CultureInfo.InvariantCulture);
         }
     }
 }

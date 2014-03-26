@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             // Assert
             Assert.False(retVal);
             Assert.Null(bindingContext.Model);
-            Assert.False(bindingContext.ModelState.IsValid);
+            Assert.Equal(false, bindingContext.ModelState.IsValid);
             Assert.Equal("Input string was not in a correct format.", bindingContext.ModelState["theModelName"].Errors[0].ErrorMessage);
         }
 

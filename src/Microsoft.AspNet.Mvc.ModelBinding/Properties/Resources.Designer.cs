@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// No encoding found for media type formatter '{0}'. There must be at least one supported encoding registered in order for the media type formatter to read or write content.
+        /// No encoding found for input formatter '{0}'. There must be at least one supported encoding registered in order for the formatter to read content.
         /// </summary>
         internal static string MediaTypeFormatterNoEncoding
         {
@@ -67,12 +67,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// No encoding found for media type formatter '{0}'. There must be at least one supported encoding registered in order for the media type formatter to read or write content.
+        /// No encoding found for input formatter '{0}'. There must be at least one supported encoding registered in order for the formatter to read content.
         /// </summary>
         internal static string FormatMediaTypeFormatterNoEncoding(object p0)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("MediaTypeFormatterNoEncoding"), p0);
         }
+
+        /// <summary>
         /// Property '{0}' on type '{1}' is invalid. Value-typed properties marked as [Required] must also be marked with [DataMember(IsRequired=true)] to be recognized as required. Consider attributing the declaring type with [DataContract] and the property with [DataMember(IsRequired=true)].
         /// </summary>
         internal static string MissingDataMemberIsRequired
@@ -262,6 +264,22 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         internal static string FormatValidationAttributeOnNonPublicProperty(object p0, object p1)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("ValidationAttributeOnNonPublicProperty"), p0, p1);
+        }
+
+        /// <summary>
+        /// A field previously marked invalid should not be marked valid.
+        /// </summary>
+        internal static string Validation_InvalidFieldCannotBeReset
+        {
+            get { return GetString("Validation_InvalidFieldCannotBeReset"); }
+        }
+
+        /// <summary>
+        /// A field previously marked invalid should not be marked valid.
+        /// </summary>
+        internal static string FormatValidation_InvalidFieldCannotBeReset()
+        {
+            return GetString("Validation_InvalidFieldCannotBeReset");
         }
 
         /// <summary>

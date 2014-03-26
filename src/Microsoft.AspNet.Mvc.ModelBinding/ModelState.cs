@@ -11,5 +11,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             get { return _errors; }
         }
+
+        public bool? IsValid { get; set; }
     }
 }
