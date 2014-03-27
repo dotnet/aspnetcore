@@ -32,7 +32,7 @@ namespace MusicStore
                 Services = services,
                 Configuration = config,
                 ServerName = "Microsoft.AspNet.Server.WebListener",
-                ApplicationName = "BugTracker"
+                ApplicationName = "MusicStore"
             };
 
             var engine = services.GetService<IHostingEngine>();
