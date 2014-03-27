@@ -22,15 +22,7 @@ public class Startup
     {
         CreateAdminUser();
 
-        app.UseErrorPage(new ErrorPageOptions()
-        {
-            ShowCookies = true,
-            ShowEnvironment = true,
-            ShowExceptionDetails = true,
-            ShowHeaders = true,
-            ShowQuery = true,
-            ShowSourceCode = true
-        });
+        app.UseErrorPage(ErrorPageOptions.ShowAll);
 
         app.UseFileServer();
 
