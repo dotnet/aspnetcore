@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             var contentType = request.GetContentType();
             return contentType != null &&
-                   contentType.ContentType.Equals(FormEncodedContentType, StringComparison.OrdinalIgnoreCase);
+                   string.Equals(contentType.ContentType, FormEncodedContentType, StringComparison.OrdinalIgnoreCase);
         }
 
         private static CultureInfo GetCultureInfo(HttpRequest request)

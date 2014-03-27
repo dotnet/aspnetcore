@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using System.Reflection;
-using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -181,7 +180,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     for (var i = 0; i < _supportedEncodings.Count; i++)
                     {
                         var supportedEncoding = _supportedEncodings[i];
-                        if (charset.Equals(supportedEncoding.WebName, StringComparison.OrdinalIgnoreCase))
+                        if (string.Equals(charset, supportedEncoding.WebName, StringComparison.OrdinalIgnoreCase))
                         {
                             return supportedEncoding;
                         }

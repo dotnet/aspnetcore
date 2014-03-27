@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         public ValueProviderResult GetValue(string key)
         {
-            return String.Equals(key, Name, StringComparison.OrdinalIgnoreCase)
+            return string.Equals(key, Name, StringComparison.OrdinalIgnoreCase)
                        ? new ValueProviderResult(RawValue, Convert.ToString(RawValue, Culture), Culture)
                        : null;
         }
