@@ -1,4 +1,5 @@
 ﻿@using MvcSample.Web.Models
+@using Microsoft.AspNet.Mvc.ModelBinding
 @model User
 @{
     ViewBag.Title = (Model == null) ? "Create Page" : "Edit Page";
@@ -30,12 +31,17 @@
             <ul>
                 @foreach (var property in metadata.Properties)
                 {
-                    var propertyName = property.PropertyName;
-                    var propertyTypeName = property.ModelType.Name;
-                    var propertyDescription = property.Description;
-                    <li>Property @propertyName has type @propertyTypeName and description '@propertyDescription'</li>
+                    @PropertyListItem(property)
                 }
             </ul>
         }
     }
 </div>
+
+@helper PropertyListItem(ModelMetadata property)
+{
+    var propertyName = property.PropertyName;
+    var propertyTypeName = property.ModelType.Name;
+    
+    <li>Property @propertyName is type @propertyTypeName and '@(property.Description ?? "no description")'</li>
+}

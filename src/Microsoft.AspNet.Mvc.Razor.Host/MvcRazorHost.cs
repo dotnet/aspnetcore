@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 writeLiteralMethodName: "WriteLiteral",
                 writeToMethodName: "WriteTo",
                 writeLiteralToMethodName: "WriteLiteralTo",
-                templateTypeName: "Template",
+                templateTypeName: "HelperResult",
                 defineSectionMethodName: "DefineSection")
             {
                 ResolveUrlMethodName = "Href"

@@ -97,10 +97,24 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             if (content != null)
             {
-                var htmlString = content as HtmlString;
-                var contentToWrite = htmlString != null ? content.ToString() :
-                                                          WebUtility.HtmlEncode(content.ToString());
-                writer.Write(contentToWrite);
+                var helperResult = content as HelperResult;
+                if (helperResult != null)
+                {
+                    helperResult.WriteTo(writer);
+
+                }
+                else
+                {
+                    var htmlString = content as HtmlString;
+                    if (htmlString != null)
+                    {
+                        writer.Write(content.ToString());
+                    }
+                    else
+                    {
+                        writer.Write(WebUtility.HtmlEncode(content.ToString()));
+                    }
+                }
             }
         }
 
