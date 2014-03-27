@@ -1,6 +1,12 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using System.Security.Claims;
+using Microsoft.AspNet.Abstractions.Security;
+using Microsoft.AspNet.HttpFeature.Security;
+using Microsoft.AspNet.PipelineCore.Security;
+using Microsoft.AspNet.Security.Infrastructure;
 
 namespace Microsoft.AspNet.Security
 {

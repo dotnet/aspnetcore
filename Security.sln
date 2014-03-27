@@ -9,6 +9,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{4D2B6A51-2F9
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Security.k10", "src\Microsoft.AspNet.Security\Microsoft.AspNet.Security.k10.csproj", "{F2391907-4463-4650-AEA4-E1B5733105C4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Security.Cookies.net45", "src\Microsoft.AspNet.Security.Cookies\Microsoft.AspNet.Security.Cookies.net45.csproj", "{4579FEC1-3C4C-4F56-ADDB-850F947FDC2D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Security.Cookies.k10", "src\Microsoft.AspNet.Security.Cookies\Microsoft.AspNet.Security.Cookies.k10.csproj", "{17DD587C-CFB8-407C-A674-1C99F5CE9C7E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{F8C0AA27-F3FB-4286-8E4C-47EF86B539FF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CookieSample.net45", "samples\CookieSample\CookieSample.net45.csproj", "{3C25520E-1AF0-4535-A111-6A1C04D31364}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,6 +31,18 @@ Global
 		{F2391907-4463-4650-AEA4-E1B5733105C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F2391907-4463-4650-AEA4-E1B5733105C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F2391907-4463-4650-AEA4-E1B5733105C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4579FEC1-3C4C-4F56-ADDB-850F947FDC2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4579FEC1-3C4C-4F56-ADDB-850F947FDC2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4579FEC1-3C4C-4F56-ADDB-850F947FDC2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4579FEC1-3C4C-4F56-ADDB-850F947FDC2D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17DD587C-CFB8-407C-A674-1C99F5CE9C7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17DD587C-CFB8-407C-A674-1C99F5CE9C7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17DD587C-CFB8-407C-A674-1C99F5CE9C7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17DD587C-CFB8-407C-A674-1C99F5CE9C7E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C25520E-1AF0-4535-A111-6A1C04D31364}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C25520E-1AF0-4535-A111-6A1C04D31364}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C25520E-1AF0-4535-A111-6A1C04D31364}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C25520E-1AF0-4535-A111-6A1C04D31364}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -30,5 +50,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{70640501-CCBB-4FD7-8231-329B6A436DE4} = {4D2B6A51-2F9F-44F5-8131-EA5CAC053652}
 		{F2391907-4463-4650-AEA4-E1B5733105C4} = {4D2B6A51-2F9F-44F5-8131-EA5CAC053652}
+		{4579FEC1-3C4C-4F56-ADDB-850F947FDC2D} = {4D2B6A51-2F9F-44F5-8131-EA5CAC053652}
+		{17DD587C-CFB8-407C-A674-1C99F5CE9C7E} = {4D2B6A51-2F9F-44F5-8131-EA5CAC053652}
+		{3C25520E-1AF0-4535-A111-6A1C04D31364} = {F8C0AA27-F3FB-4286-8E4C-47EF86B539FF}
 	EndGlobalSection
 EndGlobal

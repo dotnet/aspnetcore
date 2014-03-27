@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Security.Infrastructure
 
         public TOptions Options { get; set; }
 
-        public override async Task Invoke(HttpContext context)
+        public async Task Invoke(HttpContext context)
         {
             AuthenticationHandler<TOptions> handler = CreateHandler();
             await handler.Initialize(Options, context);

@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
-/* TODO:
+#if NET45
 using System;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
@@ -25,4 +25,4 @@ namespace Microsoft.AspNet.Security
         bool Validate(Object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors);
     }
 }
-*/
+#endif

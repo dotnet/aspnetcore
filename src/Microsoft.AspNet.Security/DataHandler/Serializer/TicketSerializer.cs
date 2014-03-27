@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -98,7 +99,7 @@ namespace Microsoft.AspNet.Security.DataHandler.Serializer
                 claims[index] = new Claim(type, value, valueType, issuer, originalIssuer);
             }
             var identity = new ClaimsIdentity(claims, authenticationType, nameClaimType, roleClaimType);
-            AuthenticationProperties properties = PropertiesSerializer.Read(reader);
+            var properties = PropertiesSerializer.Read(reader);
             return new AuthenticationTicket(identity, properties);
         }
 

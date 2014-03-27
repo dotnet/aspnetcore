@@ -13,6 +13,5 @@ namespace Microsoft.AspNet.Security.Notifications
         public bool Cancel { get; set; }
         public Exception Exception { get; set; }
         public TMessage ProtocolMessage { get; set; }
-        public int StatusCode { get; set; }
     }
 }

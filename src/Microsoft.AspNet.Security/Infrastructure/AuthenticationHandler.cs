@@ -1,25 +1,29 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Abstractions.Security;
+using Microsoft.AspNet.HttpFeature.Security;
 using Microsoft.AspNet.Logging;
 using Microsoft.AspNet.Security.DataHandler.Encoder;
-using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.Security.Infrastructure
 {
     /// <summary>
     /// Base class for the per-request work performed by most authentication middleware.
     /// </summary>
-    public abstract class AuthenticationHandler
+    public abstract class AuthenticationHandler : IAuthenticationHandler
     {
+#if NET45
         private static readonly RNGCryptoServiceProvider Random = new RNGCryptoServiceProvider();
-
-        private object _registration;
-
+#endif
         private Task<AuthenticationTicket> _authenticate;
         private bool _authenticateInitialized;
         private object _authenticateSyncLock;
@@ -29,6 +33,10 @@ namespace Microsoft.AspNet.Security.Infrastructure
         private object _applyResponseSyncLock;
 
         private AuthenticationOptions _baseOptions;
+
+        protected IChallengeContext ChallengeContext { get; set; }
+        protected SignInIdentityContext SignInIdentityContext { get; set; }
+        protected ISignOutContext SignOutContext { get; set; }
 
         protected HttpContext Context { get; private set; }
 
@@ -43,21 +51,21 @@ namespace Microsoft.AspNet.Security.Infrastructure
         }
 
         protected PathString RequestPathBase { get; private set; }
-        protected SecurityHelper Helper { get; private set; }
 
         internal AuthenticationOptions BaseOptions
         {
             get { return _baseOptions; }
         }
 
+        public IAuthenticationHandler PriorHandler { get; set; }
+
         protected async Task BaseInitializeAsync(AuthenticationOptions options, HttpContext context)
         {
             _baseOptions = options;
             Context = context;
-            Helper = new SecurityHelper(context);
             RequestPathBase = Request.PathBase;
 
-            _registration = Request.RegisterAuthenticationHandler(this);
+            RegisterAuthenticationHandler();
 
             Response.OnSendingHeaders(OnSendingHeaderCallback, this);
 
@@ -68,7 +76,7 @@ namespace Microsoft.AspNet.Security.Infrastructure
                 AuthenticationTicket ticket = await AuthenticateAsync();
                 if (ticket != null && ticket.Identity != null)
                 {
-                    Helper.AddUserIdentity(ticket.Identity);
+                    Context.AddUserIdentity(ticket.Identity);
                 }
             }
         }
@@ -76,12 +84,12 @@ namespace Microsoft.AspNet.Security.Infrastructure
         private static void OnSendingHeaderCallback(object state)
         {
             AuthenticationHandler handler = (AuthenticationHandler)state;
-            handler.ApplyResponseAsync().Wait();
+            handler.ApplyResponse();
         }
 
         protected virtual Task InitializeCoreAsync()
         {
-            return Task.FromResult<object>(null);
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -92,12 +100,12 @@ namespace Microsoft.AspNet.Security.Infrastructure
         {
             await ApplyResponseAsync();
             await TeardownCoreAsync();
-            Request.UnregisterAuthenticationHandler(_registration);
+            UnregisterAuthenticationHandler();
         }
 
         protected virtual Task TeardownCoreAsync()
         {
-            return Task.FromResult<object>(null);
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -111,6 +119,63 @@ namespace Microsoft.AspNet.Security.Infrastructure
         public virtual Task<bool> InvokeAsync()
         {
             return Task.FromResult<bool>(false);
+        }
+
+        public virtual void GetDescriptions(DescriptionDelegate callback, object state)
+        {
+            callback(BaseOptions.Description.Dictionary, state);
+            if (PriorHandler != null)
+            {
+                PriorHandler.GetDescriptions(callback, state);
+            }
+        }
+
+        public virtual void Authenticate(IAuthenticateContext context)
+        {
+            if (context.AuthenticationTypes.Contains(BaseOptions.AuthenticationType, StringComparer.Ordinal))
+            {
+                AuthenticationTicket ticket = Authenticate();
+                if (ticket != null && ticket.Identity != null)
+                {
+                    context.Authenticated(ticket.Identity, ticket.Properties.Dictionary, BaseOptions.Description.Dictionary);
+                }
+            }
+
+            if (PriorHandler != null)
+            {
+                PriorHandler.Authenticate(context);
+            }
+        }
+
+        public AuthenticationTicket Authenticate()
+        {
+            return LazyInitializer.EnsureInitialized(
+                ref _authenticate,
+                ref _authenticateInitialized,
+                ref _authenticateSyncLock,
+                () =>
+                {
+                    return Task.FromResult(AuthenticateCore());
+                }).Result;
+        }
+
+        protected abstract AuthenticationTicket AuthenticateCore();
+
+        public virtual async Task AuthenticateAsync(IAuthenticateContext context)
+        {
+            if (context.AuthenticationTypes.Contains(BaseOptions.AuthenticationType, StringComparer.Ordinal))
+            {
+                AuthenticationTicket ticket = await AuthenticateAsync();
+                if (ticket != null && ticket.Identity != null)
+                {
+                    context.Authenticated(ticket.Identity, ticket.Properties.Dictionary, BaseOptions.Description.Dictionary);
+                }
+            }
+
+            if (PriorHandler != null)
+            {
+                await PriorHandler.AuthenticateAsync(context);
+            }
         }
 
         /// <summary>
@@ -135,7 +200,29 @@ namespace Microsoft.AspNet.Security.Infrastructure
         /// once per request. Do not call directly, call the wrapping Authenticate method instead.
         /// </summary>
         /// <returns>The ticket data provided by the authentication logic</returns>
-        protected abstract Task<AuthenticationTicket> AuthenticateCoreAsync();
+        protected virtual Task<AuthenticationTicket> AuthenticateCoreAsync()
+        {
+            return Task.FromResult(AuthenticateCore());
+        }
+
+        private void ApplyResponse()
+        {
+            LazyInitializer.EnsureInitialized(
+                ref _applyResponse,
+                ref _applyResponseInitialized,
+                ref _applyResponseSyncLock,
+                () =>
+                {
+                    ApplyResponseCore();
+                    return Task.FromResult(0);
+                }).Wait(); // Block if the async version is in progress.
+        }
+
+        protected virtual void ApplyResponseCore()
+        {
+            ApplyResponseGrant();
+            ApplyResponseChallenge();
+        }
 
         /// <summary>
         /// Causes the ApplyResponseCore to be invoked at most once per request. This method will be
@@ -163,6 +250,8 @@ namespace Microsoft.AspNet.Security.Infrastructure
             await ApplyResponseChallengeAsync();
         }
 
+        protected abstract void ApplyResponseGrant();
+
         /// <summary>
         /// Override this method to dela with sign-in/sign-out concerns, if an authentication scheme in question
         /// deals with grant/revoke as part of it's request flow. (like setting/deleting cookies)
@@ -170,18 +259,67 @@ namespace Microsoft.AspNet.Security.Infrastructure
         /// <returns></returns>
         protected virtual Task ApplyResponseGrantAsync()
         {
-            return Task.FromResult<object>(null);
+            ApplyResponseGrant();
+            return Task.FromResult(0);
         }
 
+        public virtual void SignIn(ISignInContext context)
+        {
+            ClaimsIdentity identity;
+            if (SecurityHelper.LookupSignIn(context.User, BaseOptions.AuthenticationType, out identity))
+            {
+                SignInIdentityContext = new SignInIdentityContext(identity, new AuthenticationProperties(context.Properties));
+                SignOutContext = null;
+                context.Ack(BaseOptions.AuthenticationType, BaseOptions.Description.Dictionary);
+            }
+
+            if (PriorHandler != null)
+            {
+                PriorHandler.SignIn(context);
+            }
+        }
+
+        public virtual void SignOut(ISignOutContext context)
+        {
+            if (SecurityHelper.LookupSignOut(context.AuthenticationTypes, BaseOptions.AuthenticationType, BaseOptions.AuthenticationMode))
+            {
+                SignInIdentityContext = null;
+                SignOutContext = context;
+                context.Ack(BaseOptions.AuthenticationType, BaseOptions.Description.Dictionary);
+            }
+
+            if (PriorHandler != null)
+            {
+                PriorHandler.SignOut(context);
+            }
+        }
+
+        public virtual void Challenge(IChallengeContext context)
+        {
+            if (SecurityHelper.LookupChallenge(context.AuthenticationTypes, BaseOptions.AuthenticationType, BaseOptions.AuthenticationMode))
+            {
+                ChallengeContext = context;
+                context.Ack(BaseOptions.AuthenticationType, BaseOptions.Description.Dictionary);
+            }
+
+            if (PriorHandler != null)
+            {
+                PriorHandler.Challenge(context);
+            }
+        }
+
+        protected abstract void ApplyResponseChallenge();
+
         /// <summary>
-        /// Override this method to dela with 401 challenge concerns, if an authentication scheme in question
+        /// Override this method to deal with 401 challenge concerns, if an authentication scheme in question
         /// deals an authentication interaction as part of it's request flow. (like adding a response header, or
         /// changing the 401 result to 302 of a login page or external sign-in location.)
         /// </summary>
         /// <returns></returns>
         protected virtual Task ApplyResponseChallengeAsync()
         {
-            return Task.FromResult<object>(null);
+            ApplyResponseChallenge();
+            return Task.FromResult(0);
         }
 
         protected void GenerateCorrelationId(AuthenticationProperties properties)
@@ -194,7 +332,11 @@ namespace Microsoft.AspNet.Security.Infrastructure
             string correlationKey = Constants.CorrelationPrefix + BaseOptions.AuthenticationType;
 
             var nonceBytes = new byte[32];
+#if NET45
             Random.GetBytes(nonceBytes);
+#else
+            Microsoft.AspNet.Security.DataProtection.CryptRand.FillBuffer(new ArraySegment<byte>(nonceBytes));
+#endif
             string correlationId = TextEncodings.Base64Url.Encode(nonceBytes);
 
             var cookieOptions = new CookieOptions
@@ -247,6 +389,19 @@ namespace Microsoft.AspNet.Security.Infrastructure
             }
 
             return true;
+        }
+
+        private void RegisterAuthenticationHandler()
+        {
+            var auth = Context.GetAuthentication();
+            PriorHandler = auth.Handler;
+            auth.Handler = this;
+        }
+
+        private void UnregisterAuthenticationHandler()
+        {
+            var auth = Context.GetAuthentication();
+            auth.Handler = PriorHandler;
         }
     }
 }
