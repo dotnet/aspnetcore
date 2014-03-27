@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using Microsoft.AspNet.Mvc.Rendering;
 
 namespace Microsoft.AspNet.Mvc
@@ -28,6 +29,16 @@ namespace Microsoft.AspNet.Mvc
             {
                 Content = value,
                 ContentType = contentType
+            };
+        }
+
+        public IActionResult Content(string value, string contentType, Encoding contentEncoding)
+        {
+            return new ContentResult
+            {
+                Content = value,
+                ContentType = contentType,
+                ContentEncoding = contentEncoding
             };
         }
 
