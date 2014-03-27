@@ -50,6 +50,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Models\Triggers.cs" />
     <Compile Include="TeamCityAPI.cs" />
     <Compile Include="GitHubAPI.cs" />
     <Compile Include="Program.cs" />

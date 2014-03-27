@@ -8,7 +8,7 @@ namespace TCDependencyManager
 {
     class Program
     {
-        private static readonly string[] _excludedRepos = new[] { "xunit", "kruntime", "coreclr", "universe" };
+        private static readonly string[] _excludedRepos = new[] { "xunit", "kruntime", "coreclr", "universe", "rolsyn" };
 
         static int Main(string[] args)
         {
@@ -39,7 +39,10 @@ namespace TCDependencyManager
             Console.WriteLine("Ensuring dependencies are consistent on TeamCity");
             foreach (var repo in repos.Where(p => p.Dependencies.Any()))
             {
-                teamCity.EnsureDependencies(repo.Name, repo.Dependencies.Select(r => r.Name));
+                var dependencies = repo.Dependencies
+                                       .Select(r => r.Name)
+                                       .Concat(new[] { "CoreCLR" });
+                teamCity.EnsureDependencies(repo.Name, dependencies);
             }
             return 0;
         }
