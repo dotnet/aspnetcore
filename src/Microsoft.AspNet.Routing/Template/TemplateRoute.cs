@@ -11,6 +11,7 @@ namespace Microsoft.AspNet.Routing.Template
         private readonly IDictionary<string, object> _defaults;
         private readonly IDictionary<string, IRouteConstraint> _constraints;
         private readonly IRouter _target;
+        private readonly Template _parsedTemplate;
         private readonly string _routeTemplate;
         private readonly TemplateMatcher _matcher;
         private readonly TemplateBinder _binder;
@@ -29,9 +30,9 @@ namespace Microsoft.AspNet.Routing.Template
             _constraints = RouteConstraintBuilder.BuildConstraints(constraints, _routeTemplate);
 
             // The parser will throw for invalid routes.
-            var parsedTemplate = TemplateParser.Parse(RouteTemplate);
+            _parsedTemplate = TemplateParser.Parse(RouteTemplate);
 
-            _matcher = new TemplateMatcher(parsedTemplate);
+            _matcher = new TemplateMatcher(_parsedTemplate);
             _binder = new TemplateBinder(_parsedTemplate, _defaults);
         }
 
