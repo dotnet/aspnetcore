@@ -1,30 +1,38 @@
 {
   "version": "0.1-alpha-*",
   "dependencies": {
-    "Helios": "0.1-alpha-098",
-    "Microsoft.AspNet.Abstractions": "0.1-alpha-152",
-    "Microsoft.AspNet.Mvc": "0.1-alpha-296",
-    "Microsoft.AspNet.Razor": "0.1-alpha-136",
-    "Microsoft.AspNet.ConfigurationModel": "0.1-alpha-108",
-    "Microsoft.AspNet.DependencyInjection": "0.1-alpha-159",
-    "Microsoft.AspNet.RequestContainer": "0.1-alpha-124",
-    "Microsoft.AspNet.Routing": "0.1-alpha-100",
-    "Microsoft.AspNet.Mvc.ModelBinding": "0.1-alpha-296",
-    "Microsoft.AspNet.Mvc.Core": "0.1-alpha-296",
-    "Microsoft.AspNet.Mvc.Razor": "0.1-alpha-296",
-    "Microsoft.AspNet.Mvc.Rendering": "0.1-alpha-296",
-    "Microsoft.AspNet.StaticFiles": "0.1-alpha-081",
-    "System.Security.Claims": "0.1-alpha-045",
-    "Microsoft.AspNet.Security.DataProtection": "0.1-alpha-092",
-    "Microsoft.AspNet.Identity": "0.1-alpha-155",
-    "Microsoft.AspNet.Identity.Entity": "0.1-alpha-155",
-    "Microsoft.AspNet.Identity.InMemory": "0.1-alpha-155"
+    "Helios": "0.1-alpha-107",
+    "Microsoft.AspNet.Abstractions": "0.1-alpha-162",
+    "Microsoft.AspNet.Mvc": "0.1-alpha-324",
+    "Microsoft.AspNet.Razor": "0.1-alpha-144",
+    "Microsoft.AspNet.ConfigurationModel": "0.1-alpha-117",
+    "Microsoft.AspNet.DependencyInjection": "0.1-alpha-169",
+    "Microsoft.AspNet.RequestContainer": "0.1-alpha-133",
+    "Microsoft.AspNet.Routing": "0.1-alpha-115",
+    "Microsoft.AspNet.Mvc.ModelBinding": "0.1-alpha-324",
+    "Microsoft.AspNet.Mvc.Core": "0.1-alpha-324",
+    "Microsoft.AspNet.Mvc.Razor": "0.1-alpha-324",
+    "Microsoft.AspNet.Mvc.Rendering": "0.1-alpha-324",
+    "Microsoft.AspNet.StaticFiles": "0.1-alpha-090",
+    "System.Security.Claims": "0.1-alpha-052",
+    "Microsoft.AspNet.Security.DataProtection": "0.1-alpha-100",
+    "Microsoft.AspNet.Identity": "0.1-alpha-164",
+    "Microsoft.AspNet.Identity.Entity": "0.1-alpha-164",
+    "Microsoft.AspNet.Identity.InMemory": "0.1-alpha-164",
+    "Microsoft.Data.Entity": "0.1-alpha-284",
+    "Microsoft.Data.Relational": "0.1-alpha-284",
+    "Microsoft.Data.SqlServer": "0.1-pre-284",
+    "Microsoft.Data.InMemory": "0.1-alpha-284",
+    "Microsoft.AspNet.Diagnostics": "0.1-alpha-025",
+    "Microsoft.AspNet.Hosting": "0.1-alpha-133",
+    "Microsoft.AspNet.Server.WebListener": "0.1-alpha-039"
   },
   "configurations": {
     "net45": {
       "dependencies": {
         "System.Runtime": "",
-        "System.ComponentModel.DataAnnotations": ""
+        "System.ComponentModel.DataAnnotations": "",
+        "System.Data": ""
       }
     },
     "k10": {
@@ -38,7 +46,7 @@
         "System.Console": "4.0.0.0",
         "System.Diagnostics.Debug": "4.0.10.0",
         "System.Diagnostics.Tools": "4.0.0.0",
-        "Microsoft.ComponentModel.DataAnnotations": "0.1-alpha-032"
+        "Microsoft.ComponentModel.DataAnnotations": "4.0.10.0"
       }
     }
   }

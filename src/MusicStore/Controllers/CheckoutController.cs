@@ -4,6 +4,7 @@ using Microsoft.AspNet.Mvc;
 using MusicStore.Models;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace MusicStore.Controllers
 {
@@ -28,9 +29,9 @@ namespace MusicStore.Controllers
         //Bug: Http verbs not available. Also binding to FormCollection is not available.
         //[HttpPost]
         //public IActionResult AddressAndPayment(FormCollection values)
-        public IActionResult AddressAndPayment(int workaroundId)
+        public async Task<IActionResult> AddressAndPayment(int workaroundId)
         {
-            var coll = this.Context.Request.GetFormAsync().Result;
+            var formCollection = await Context.Request.GetFormAsync();
 
             var order = new Order();
             //TryUpdateModel(order);
@@ -39,7 +40,7 @@ namespace MusicStore.Controllers
             {
                 //if (string.Equals(values["PromoCode"], PromoCode,
                 //    StringComparison.OrdinalIgnoreCase) == false)
-                if (string.Equals(coll.GetValues("PromoCode").FirstOrDefault(), PromoCode,
+                if (string.Equals(formCollection.GetValues("PromoCode").FirstOrDefault(), PromoCode,
                     StringComparison.OrdinalIgnoreCase) == false)
                 {
                     return View(order);

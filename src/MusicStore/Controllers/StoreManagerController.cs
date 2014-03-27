@@ -40,7 +40,7 @@ namespace MusicStore.Controllers
             {
                 //Bug: Need method HttpNotFound() on Controller
                 //return HttpNotFound();
-                return this.HttpNotFound();
+                return new HttpStatusCodeResult(404);
             }
             return View(album);
         }
@@ -87,7 +87,7 @@ namespace MusicStore.Controllers
             {
                 //Bug: Need method HttpNotFound() on Controller
                 //return HttpNotFound();
-                return this.HttpNotFound();
+                return new HttpStatusCodeResult(404);
             }
             //ViewBag.GenreId = new SelectList(db.Genres, "GenreId", "Name", album.GenreId);
             //ViewBag.ArtistId = new SelectList(db.Artists, "ArtistId", "Name", album.ArtistId);
@@ -122,7 +122,7 @@ namespace MusicStore.Controllers
             if (album == null)
             {
                 //Bug: Missing Helper
-                return this.HttpNotFound();
+                return new HttpStatusCodeResult(404);
             }
             return View(album);
         }
@@ -150,28 +150,5 @@ namespace MusicStore.Controllers
         //    db.Dispose();
         //    base.Dispose(disposing);
         //}
-    }
-
-    /// <summary>
-    /// Bug: HttpNotFoundResult not available in Controllers. Work around.
-    /// </summary>
-    public class HttpNotFoundResult : HttpStatusCodeResult
-    {
-        public HttpNotFoundResult()
-            : base(404)
-        {
-
-        }
-    }
-
-    /// <summary>
-    /// Bug: HttpNotFoundResult not available in Controllers. Work around.
-    /// </summary>
-    public static class Extensions
-    {
-        public static IActionResult HttpNotFound(this Controller controller)
-        {
-            return new HttpNotFoundResult();
-        }
     }
 }

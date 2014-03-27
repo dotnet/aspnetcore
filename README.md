@@ -3,8 +3,13 @@
 ### Run the application:
 1. Run build.cmd to restore all the necessary packages and generate project files
 2. Open a command prompt and cd \src\MusicStore\
-3. Execute CopyAspNetLoader.cmd to copy the AspNet.Loader.dll to the bin directory
-4. Execute Run.cmd to launch the app on IISExpress. 
+3. [Helios]:
+	4. Execute CopyAspNetLoader.cmd to copy the AspNet.Loader.dll to the bin directory
+	5. Helios.cmd to launch the app on IISExpress.
+4. [SelfHost]:
+	5. Run Selfhost.cmd (This runs k web) (Note: If your changes to C# files are not picked up in successive builds - try deleting the bin and obj folder)
+5. [CustomHost]:
+	6. Run CustomHost.cmd (This hosts the app in a console application) (Note: If your changes to C# files are not picked up in successive builds - try deleting the bin and obj folder)
 
 ### Adding a new package:
 1. Edit the project.json to include the package you want to install

@@ -6,6 +6,7 @@ using Microsoft.AspNet.ConfigurationModel;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.DependencyInjection.Fallback;
 using Microsoft.AspNet.DependencyInjection.NestedProviders;
+using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.InMemory;
 using Microsoft.AspNet.Mvc;
@@ -20,6 +21,16 @@ public class Startup
     public void Configuration(IBuilder app)
     {
         CreateAdminUser();
+
+        app.UseErrorPage(new ErrorPageOptions()
+        {
+            ShowCookies = true,
+            ShowEnvironment = true,
+            ShowExceptionDetails = true,
+            ShowHeaders = true,
+            ShowQuery = true,
+            ShowSourceCode = true
+        });
 
         app.UseFileServer();
 

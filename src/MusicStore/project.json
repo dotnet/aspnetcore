@@ -22,7 +22,13 @@
         "Microsoft.Data.Entity": "0.1-alpha-*",
         "Microsoft.Data.Relational": "0.1-alpha-*",
         "Microsoft.Data.SqlServer": "0.1-pre-*",
-        "Microsoft.Data.InMemory": "0.1-alpha-*"
+        "Microsoft.Data.InMemory": "0.1-alpha-*",
+        "Microsoft.AspNet.Diagnostics": "0.1-alpha-*",
+        "Microsoft.AspNet.Hosting": "0.1-alpha-*",
+        "Microsoft.AspNet.Server.WebListener": "0.1-alpha-*"
+    },
+    "commands": {
+        "web": "Microsoft.AspNet.Hosting server.name=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001"
     },
     "configurations": {
         "net45": {
@@ -34,8 +40,8 @@
         },
         "k10": {
             "dependencies": {
-				"System.Collections": "4.0.0.0",
-				"System.Linq": "4.0.0.0",
+                "System.Collections": "4.0.0.0",
+                "System.Linq": "4.0.0.0",
                 "System.Runtime": "4.0.20.0",
                 "System.Dynamic.Runtime": "4.0.0.0",
                 "System.Threading.Tasks": "4.0.0.0",
@@ -43,7 +49,7 @@
                 "System.Console": "4.0.0.0",
                 "System.Diagnostics.Debug": "4.0.10.0",
                 "System.Diagnostics.Tools": "4.0.0.0",
-                "Microsoft.ComponentModel.DataAnnotations": "0.1-alpha-*"
+                "Microsoft.ComponentModel.DataAnnotations": "4.0.10.0"
             }
         }
     }
