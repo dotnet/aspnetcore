@@ -32,7 +32,12 @@ namespace Microsoft.AspNet.Mvc
         {
             var type = obj.GetType();
 
-            var property = type.GetProperty(propertyName);
+            var property = type.GetRuntimeProperty(propertyName);
+            if (property == null)
+            {
+                return;
+            }
+
             if (property.PropertyType.IsAssignableFrom(typeof(TProperty)))
             {
                 property.SetValue(obj, value);
@@ -43,7 +48,12 @@ namespace Microsoft.AspNet.Mvc
         {
             var type = obj.GetType();
 
-            var property = type.GetProperty(propertyName);
+            var property = type.GetRuntimeProperty(propertyName);
+            if (property == null)
+            {
+                return;
+            }
+
             if (property.PropertyType.IsAssignableFrom(typeof(TProperty)))
             {
                 property.SetValue(obj, services.GetService<TProperty>());
