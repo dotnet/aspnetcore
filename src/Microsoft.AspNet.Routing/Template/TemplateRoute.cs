@@ -20,18 +20,13 @@ namespace Microsoft.AspNet.Routing.Template
         {
         }
 
-        public TemplateRoute(IRouter target, string routeTemplate, IDictionary<string, object> defaults,
+        public TemplateRoute([NotNull] IRouter target, string routeTemplate, IDictionary<string, object> defaults,
                              IDictionary<string, object> constraints)
         {
-            if (target == null)
-            {
-                throw new ArgumentNullException("target");
-            }
-
             _target = target;
             _routeTemplate = routeTemplate ?? string.Empty;
             _defaults = defaults ?? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-            _constraints = RouteConstraintBuilder.BuildConstraints(constraints);
+            _constraints = RouteConstraintBuilder.BuildConstraints(constraints, _routeTemplate);
 
             // The parser will throw for invalid routes.
             var parsedTemplate = TemplateParser.Parse(RouteTemplate);
@@ -50,13 +45,8 @@ namespace Microsoft.AspNet.Routing.Template
             get { return _routeTemplate; }
         }
 
-        public async virtual Task RouteAsync(RouteContext context)
+        public async virtual Task RouteAsync([NotNull] RouteContext context)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException("context");
-            }
-
             var requestPath = context.RequestPath;
             if (!string.IsNullOrEmpty(requestPath) && requestPath[0] == '/')
             {

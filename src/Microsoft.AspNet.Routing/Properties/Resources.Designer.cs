@@ -11,11 +11,51 @@ namespace Microsoft.AspNet.Routing
             = new ResourceManager("Microsoft.AspNet.Routing.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// A default handler must be set on the RouteCollection.
+        /// </summary>
+        internal static string DefaultHandler_MustBeSet
+        {
+            get { return GetString("DefaultHandler_MustBeSet"); }
+        }
+
+        /// <summary>
+        /// A default handler must be set on the RouteCollection.
+        /// </summary>
+        internal static string FormatDefaultHandler_MustBeSet()
+        {
+            return GetString("DefaultHandler_MustBeSet");
+        }
+
+        /// <summary>
+        /// The constraint entry '{0}' must have a string value or be of a type which implements '{1}'.
+        /// </summary>
+        internal static string GeneralConstraints_ValidationMustBeStringOrCustomConstraint
+        {
+            get { return GetString("GeneralConstraints_ValidationMustBeStringOrCustomConstraint"); }
+        }
+
+        /// <summary>
+        /// The constraint entry '{0}' must have a string value or be of a type which implements '{1}'.
+        /// </summary>
+        internal static string FormatGeneralConstraints_ValidationMustBeStringOrCustomConstraint(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("GeneralConstraints_ValidationMustBeStringOrCustomConstraint"), p0, p1);
+        }
+
+        /// <summary>
         /// A path segment that contains more than one section, such as a literal section or a parameter, cannot contain a catch-all parameter.
         /// </summary>
         internal static string TemplateRoute_CannotHaveCatchAllInMultiSegment
         {
             get { return GetString("TemplateRoute_CannotHaveCatchAllInMultiSegment"); }
+        }
+
+        /// <summary>
+        /// A path segment that contains more than one section, such as a literal section or a parameter, cannot contain a catch-all parameter.
+        /// </summary>
+        internal static string FormatTemplateRoute_CannotHaveCatchAllInMultiSegment()
+        {
+            return GetString("TemplateRoute_CannotHaveCatchAllInMultiSegment");
         }
 
         /// <summary>
@@ -27,11 +67,27 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <summary>
+        /// A path segment cannot contain two consecutive parameters. They must be separated by a '/' or by a literal string.
+        /// </summary>
+        internal static string FormatTemplateRoute_CannotHaveConsecutiveParameters()
+        {
+            return GetString("TemplateRoute_CannotHaveConsecutiveParameters");
+        }
+
+        /// <summary>
         /// The route template separator character '/' cannot appear consecutively. It must be separated by either a parameter or a literal value.
         /// </summary>
         internal static string TemplateRoute_CannotHaveConsecutiveSeparators
         {
             get { return GetString("TemplateRoute_CannotHaveConsecutiveSeparators"); }
+        }
+
+        /// <summary>
+        /// The route template separator character '/' cannot appear consecutively. It must be separated by either a parameter or a literal value.
+        /// </summary>
+        internal static string FormatTemplateRoute_CannotHaveConsecutiveSeparators()
+        {
+            return GetString("TemplateRoute_CannotHaveConsecutiveSeparators");
         }
 
         /// <summary>
@@ -43,11 +99,27 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <summary>
+        /// A path segment that contains more than one section, such as a literal section or a parameter, cannot contain an optional parameter.
+        /// </summary>
+        internal static string FormatTemplateRoute_CannotHaveOptionalParameterInMultiSegment()
+        {
+            return GetString("TemplateRoute_CannotHaveOptionalParameterInMultiSegment");
+        }
+
+        /// <summary>
         /// A catch-all parameter cannot be marked optional.
         /// </summary>
         internal static string TemplateRoute_CatchAllCannotBeOptional
         {
             get { return GetString("TemplateRoute_CatchAllCannotBeOptional"); }
+        }
+
+        /// <summary>
+        /// A catch-all parameter cannot be marked optional.
+        /// </summary>
+        internal static string FormatTemplateRoute_CatchAllCannotBeOptional()
+        {
+            return GetString("TemplateRoute_CatchAllCannotBeOptional");
         }
 
         /// <summary>
@@ -59,11 +131,27 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <summary>
+        /// A catch-all parameter can only appear as the last segment of the route template.
+        /// </summary>
+        internal static string FormatTemplateRoute_CatchAllMustBeLast()
+        {
+            return GetString("TemplateRoute_CatchAllMustBeLast");
+        }
+
+        /// <summary>
         /// The literal section '{0}' is invalid. Literal sections cannot contain the '?' character.
         /// </summary>
         internal static string TemplateRoute_InvalidLiteral
         {
             get { return GetString("TemplateRoute_InvalidLiteral"); }
+        }
+
+        /// <summary>
+        /// The literal section '{0}' is invalid. Literal sections cannot contain the '?' character.
+        /// </summary>
+        internal static string FormatTemplateRoute_InvalidLiteral(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TemplateRoute_InvalidLiteral"), p0);
         }
 
         /// <summary>
@@ -75,11 +163,27 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <summary>
+        /// The route parameter name '{0}' is invalid. Route parameter names must be non-empty and cannot contain these characters: '{{', '}}', '/'. The '?' character marks a parameter as optional, and can only occur at the end of the parameter.
+        /// </summary>
+        internal static string FormatTemplateRoute_InvalidParameterName(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TemplateRoute_InvalidParameterName"), p0);
+        }
+
+        /// <summary>
         /// The route template cannot start with a '/' or '~' character.
         /// </summary>
         internal static string TemplateRoute_InvalidRouteTemplate
         {
             get { return GetString("TemplateRoute_InvalidRouteTemplate"); }
+        }
+
+        /// <summary>
+        /// The route template cannot start with a '/' or '~' character.
+        /// </summary>
+        internal static string FormatTemplateRoute_InvalidRouteTemplate()
+        {
+            return GetString("TemplateRoute_InvalidRouteTemplate");
         }
 
         /// <summary>
@@ -91,11 +195,27 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <summary>
+        /// There is an incomplete parameter in the route template. Check that each '{' character has a matching '}' character.
+        /// </summary>
+        internal static string FormatTemplateRoute_MismatchedParameter()
+        {
+            return GetString("TemplateRoute_MismatchedParameter");
+        }
+
+        /// <summary>
         /// The route parameter name '{0}' appears more than one time in the route template.
         /// </summary>
         internal static string TemplateRoute_RepeatedParameter
         {
             get { return GetString("TemplateRoute_RepeatedParameter"); }
+        }
+
+        /// <summary>
+        /// The route parameter name '{0}' appears more than one time in the route template.
+        /// </summary>
+        internal static string FormatTemplateRoute_RepeatedParameter(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TemplateRoute_RepeatedParameter"), p0);
         }
 
         /// <summary>
@@ -106,15 +226,26 @@ namespace Microsoft.AspNet.Routing
             get { return GetString("TemplateRoute_ValidationMustBeStringOrCustomConstraint"); }
         }
 
-        private static string GetString(string name, params string[] argumentNames)
+        /// <summary>
+        /// The constraint entry '{0}' on the route with route template '{1}' must have a string value or be of a type which implements '{2}'.
+        /// </summary>
+        internal static string FormatTemplateRoute_ValidationMustBeStringOrCustomConstraint(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TemplateRoute_ValidationMustBeStringOrCustomConstraint"), p0, p1, p2);
+        }
+
+        private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
 
             System.Diagnostics.Debug.Assert(value != null);
-
-            for (var i = 0; i < argumentNames.Length; i++)
+    
+            if (formatterNames != null)
             {
-                value = value.Replace("{" + argumentNames[i] + "}", "{" + i + "}");
+                for (var i = 0; i < formatterNames.Length; i++)
+                {
+                    value = value.Replace("{" + formatterNames[i] + "}", "{" + i + "}");
+                }
             }
 
             return value;
