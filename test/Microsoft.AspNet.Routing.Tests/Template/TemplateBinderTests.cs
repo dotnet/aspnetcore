@@ -125,12 +125,23 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             string expected)
         {
             // Arrange
-            var binder = new TemplateBinder(TemplateParser.Parse(template));
+            var binder = new TemplateBinder(TemplateParser.Parse(template), defaults);
 
-            // Act
-            var boundTemplate = binder.Bind(defaults, null, values);
+            // Act & Assert
+            var acceptedValues = binder.GetAcceptedValues(null, values);
+            if (acceptedValues == null)
+            {
+                if (expected == null)
+                {
+                    return;
+                }
+                else
+                {
+                    Assert.NotNull(acceptedValues);
+                }
+            }
 
-            // Assert
+            var boundTemplate = binder.BindValues(acceptedValues);
             if (expected == null)
             {
                 Assert.Null(boundTemplate);
@@ -947,12 +958,23 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             string expected)
         {
             // Arrange
-            var binder = new TemplateBinder(TemplateParser.Parse(template));
+            var binder = new TemplateBinder(TemplateParser.Parse(template), defaults);
 
-            // Act
-            var boundTemplate = binder.Bind(defaults, ambientValues, values);
+            // Act & Assert
+            var acceptedValues = binder.GetAcceptedValues(ambientValues, values);
+            if (acceptedValues == null)
+            {
+                if (expected == null)
+                {
+                    return;
+                }
+                else
+                {
+                    Assert.NotNull(acceptedValues);
+                }
+            }
 
-            // Assert
+            var boundTemplate = binder.BindValues(acceptedValues);
             if (expected == null)
             {
                 Assert.Null(boundTemplate);

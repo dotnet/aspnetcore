@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Routing.Template
             _parsedTemplate = TemplateParser.Parse(RouteTemplate);
 
             _matcher = new TemplateMatcher(_parsedTemplate);
-            _binder = new TemplateBinder(_parsedTemplate);
+            _binder = new TemplateBinder(_parsedTemplate, _defaults);
         }
 
         public IDictionary<string, object> Defaults
@@ -80,6 +80,13 @@ namespace Microsoft.AspNet.Routing.Template
 
         public string GetVirtualPath(VirtualPathContext context)
         {
+            var values = _binder.GetAcceptedValues(context.AmbientValues, context.Values);
+            if (values == null)
+            {
+                // We're missing one the required values for this route.
+                return null;
+            }
+
             // Validate that the target can accept these values.
             var path = _target.GetVirtualPath(context);
             if (path != null)
@@ -93,9 +100,7 @@ namespace Microsoft.AspNet.Routing.Template
                 return null;
             }
 
-            // This could be optimized more heavily - right now we try to do the full url
-            // generation after validating, but we could do it in two phases if the perf is better.
-            path = _binder.Bind(_defaults, context.AmbientValues, context.Values);
+            path = _binder.BindValues(values);
             if (path == null)
             {
                 context.IsBound = false;

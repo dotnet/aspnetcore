@@ -12,59 +12,38 @@ namespace Microsoft.AspNet.Routing.Template
 {
     public class TemplateBinder
     {
-        public TemplateBinder(Template template)
+        private readonly IDictionary<string, object> _defaults;
+        private readonly Template _template;
+
+        public TemplateBinder(Template template, IDictionary<string, object> defaults)
         {
             if (template == null)
             {
                 throw new ArgumentNullException("template");
             }
 
-            Template = template;
-        }
-
-        public Template Template { get; private set; }
-
-        public string Bind(IDictionary<string, object> defaults, IDictionary<string, object> ambientValues, IDictionary<string, object> values)
-        {
-            if (values == null)
-            {
-                throw new ArgumentNullException("values");
-            }
-
-            var context = GetAcceptedValues(defaults, ambientValues, values);
-            if (context == null)
-            {
-                // We couldn't get values for all the required parameters
-                return null;
-            }
-
-            return BindValues(context);
+            _template = template;
+            _defaults = defaults;
         }
 
         // Step 1: Get the list of values we're going to try to use to match and generate this URI
-        private TemplateBindingContext GetAcceptedValues(IDictionary<string, object> defaults, IDictionary<string, object> ambientValues, IDictionary<string, object> values)
+        public IDictionary<string, object> GetAcceptedValues(IDictionary<string, object> ambientValues, IDictionary<string, object> values)
         {
-            Contract.Assert(values != null);
-
-            var context = new TemplateBindingContext(defaults, values);
+            var context = new TemplateBindingContext(_defaults, values);
 
             // Find out which entries in the URI are valid for the URI we want to generate.
             // If the URI had ordered parameters a="1", b="2", c="3" and the new values
             // specified that b="9", then we need to invalidate everything after it. The new
             // values should then be a="1", b="9", c=<no value>.
-            for (var i = 0; i < Template.Parameters.Count; i++)
+            for (var i = 0; i < _template.Parameters.Count; i++)
             {
-                var parameter = Template.Parameters[i];
+                var parameter = _template.Parameters[i];
 
                 // If it's a parameter subsegment, examine the current value to see if it matches the new value
                 var parameterName = parameter.Name;
 
                 object newParameterValue;
                 var hasNewParameterValue = values.TryGetValue(parameterName, out newParameterValue);
-                if (hasNewParameterValue)
-                {
-                    context.Use(parameterName);
-                }
 
                 object currentParameterValue = null;
                 var hasCurrentParameterValue = ambientValues != null && ambientValues.TryGetValue(parameterName, out currentParameterValue);
@@ -104,23 +83,10 @@ namespace Microsoft.AspNet.Routing.Template
                 }
             }
 
-            // Add all current values that aren't in the URI at all
-            if (ambientValues != null)
-            {
-                foreach (var kvp in ambientValues)
-                {
-                    var parameter = GetParameter(kvp.Key);
-                    if (parameter == null)
-                    {
-                        context.Accept(kvp.Key, kvp.Value);
-                    }
-                }
-            }
-
             // Accept all remaining default values if they match a required parameter
-            for (int i = 0; i < Template.Parameters.Count; i++)
+            for (int i = 0; i < _template.Parameters.Count; i++)
             {
-                var parameter = Template.Parameters[i];
+                var parameter = _template.Parameters[i];
                 if (parameter.IsOptional || parameter.IsCatchAll)
                 {
                     continue;
@@ -136,9 +102,9 @@ namespace Microsoft.AspNet.Routing.Template
             }
 
             // Validate that all required parameters have a value.
-            for (var i = 0; i < Template.Parameters.Count; i++)
+            for (var i = 0; i < _template.Parameters.Count; i++)
             {
-                var parameter = Template.Parameters[i];
+                var parameter = _template.Parameters[i];
                 if (parameter.IsOptional || parameter.IsCatchAll)
                 {
                     continue;
@@ -166,11 +132,7 @@ namespace Microsoft.AspNet.Routing.Template
                     object value;
                     if (values.TryGetValue(filter.Key, out value))
                     {
-                        if (RoutePartsEqual(value, filter.Value))
-                        {
-                            context.Use(filter.Key);
-                        }
-                        else
+                        if (!RoutePartsEqual(value, filter.Value))
                         {
                             // If there is a non-parameterized value in the route and there is a
                             // new value for it and it doesn't match, this route won't match.
@@ -180,20 +142,20 @@ namespace Microsoft.AspNet.Routing.Template
                 }
             }
 
-            return context;
+            return context.AcceptedValues;
         }
 
         // Step 2: If the route is a match generate the appropriate URI
-        private string BindValues(TemplateBindingContext bindingContext)
+        public string BindValues(IDictionary<string, object> acceptedValues)
         {
             var context = new UriBuildingContext();
 
-            for (var i = 0; i < Template.Segments.Count; i++)
+            for (var i = 0; i < _template.Segments.Count; i++)
             {
                 Contract.Assert(context.BufferState == SegmentState.Beginning);
                 Contract.Assert(context.UriState == SegmentState.Beginning);
 
-                var segment = Template.Segments[i];
+                var segment = _template.Segments[i];
 
                 for (var j = 0; j < segment.Parts.Count; j++)
                 {
@@ -210,14 +172,24 @@ namespace Microsoft.AspNet.Routing.Template
                     {
                         // If it's a parameter, get its value
                         object value;
-                        var hasValue = bindingContext.AcceptedValues.TryGetValue(part.Name, out value);
+                        var hasValue = acceptedValues.TryGetValue(part.Name, out value);
                         if (hasValue)
                         {
-                            bindingContext.Use(part.Name);
+                            acceptedValues.Remove(part.Name);
+                        }
+
+                        bool isSameAsDefault = false;
+                        object defaultValue;
+                        if (_defaults != null && _defaults.TryGetValue(part.Name, out defaultValue))
+                        {
+                            if (RoutePartsEqual(value, defaultValue))
+                            {
+                                isSameAsDefault = true;
+                            }
                         }
 
                         var converted = Convert.ToString(value, CultureInfo.InvariantCulture);
-                        if (bindingContext.AcceptedDefaultValues.Contains(part.Name))
+                        if (isSameAsDefault)
                         {
                             // If the accepted value is the same as the default value buffer it since
                             // we won't necessarily add it to the URI we generate.
@@ -243,10 +215,16 @@ namespace Microsoft.AspNet.Routing.Template
             var encoded = new StringBuilder();
             encoded.Append(UriEncode(context.Build()));
 
-            // Generate the query string
+            // Generate the query string from the remaining values
             var firstParam = true;
-            foreach (var kvp in bindingContext.UnusedValues)
+            foreach (var kvp in acceptedValues)
             {
+                if (_defaults != null && _defaults.ContainsKey(kvp.Key))
+                {
+                    // This value is a 'filter' we don't need to put it in the query string.
+                    continue;
+                }
+
                 var converted = Convert.ToString(kvp.Value, CultureInfo.InvariantCulture);
                 if (String.IsNullOrEmpty(converted))
                 {
@@ -277,9 +255,9 @@ namespace Microsoft.AspNet.Routing.Template
 
         private TemplatePart GetParameter(string name)
         {
-            for (int i = 0; i < Template.Parameters.Count; i++)
+            for (int i = 0; i < _template.Parameters.Count; i++)
             {
-                var parameter = Template.Parameters[i];
+                var parameter = _template.Parameters[i];
                 if (string.Equals(parameter.Name, name, StringComparison.OrdinalIgnoreCase))
                 {
                     return parameter;
@@ -333,8 +311,6 @@ namespace Microsoft.AspNet.Routing.Template
             private readonly IDictionary<string, object> _defaults;
 
             private readonly Dictionary<string, object> _acceptedValues;
-            private readonly HashSet<string> _acceptedDefaultValues; 
-            private readonly Dictionary<string, object> _unusedValues;
             private readonly Dictionary<string, object> _filters;
 
             public TemplateBindingContext(IDictionary<string, object> defaults, IDictionary<string, object> values)
@@ -347,8 +323,6 @@ namespace Microsoft.AspNet.Routing.Template
                 _defaults = defaults;
 
                 _acceptedValues = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-                _acceptedDefaultValues = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                _unusedValues = new Dictionary<string, object>(values, StringComparer.OrdinalIgnoreCase);
 
                 if (_defaults != null)
                 {
@@ -361,20 +335,6 @@ namespace Microsoft.AspNet.Routing.Template
                 get { return _acceptedValues; }
             }
 
-            /// <remarks>
-            /// These are values that are equivalent to the default. These aren't written to the url unless
-            /// necessary.
-            /// </remarks>>
-            public HashSet<string> AcceptedDefaultValues
-            {
-                get { return _acceptedDefaultValues; }
-            }
-
-            public Dictionary<string, object> UnusedValues
-            {
-                get { return _unusedValues; }
-            }
-
             public Dictionary<string, object> Filters
             {
                 get { return _filters; }
@@ -385,15 +345,6 @@ namespace Microsoft.AspNet.Routing.Template
                 if (!_acceptedValues.ContainsKey(key))
                 {
                     _acceptedValues.Add(key, value);
-
-                    object defaultValue;
-                    if (_defaults != null && _defaults.TryGetValue(key, out defaultValue))
-                    {
-                        if (RoutePartsEqual(value, defaultValue))
-                        {
-                            _acceptedDefaultValues.Add(key);
-                        }
-                    }
                 }
             }
 
@@ -406,19 +357,12 @@ namespace Microsoft.AspNet.Routing.Template
                 {
                     _filters.Remove(key);
                     _acceptedValues.Add(key, value);
-
-                    _acceptedDefaultValues.Add(key);
                 }
             }
 
             public bool NeedsValue(string key)
             {
                 return !_acceptedValues.ContainsKey(key);
-            }
-
-            public void Use(string key)
-            {
-                _unusedValues.Remove(key);
             }
 
             private string DebuggerToString()
