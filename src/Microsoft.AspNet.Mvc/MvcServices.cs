@@ -88,7 +88,13 @@ namespace Microsoft.AspNet.Mvc
                     typeof(NestedProviderManagerAsync<>),
                     implementationInstance: null,
                     lifecycle: LifecycleKind.Transient);
-            
+
+            yield return
+                describe.Describe(
+                    typeof(IHtmlHelper<>),
+                    typeof(HtmlHelper<>),
+                    implementationInstance: null,
+                    lifecycle: LifecycleKind.Transient);
         }
     }
 }

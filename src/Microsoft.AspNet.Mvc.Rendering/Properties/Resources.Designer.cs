@@ -27,6 +27,38 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <summary>
+        /// Property '{0}' must not be null.
+        /// </summary>
+        internal static string ArgumentPropertyNull
+        {
+            get { return GetString("ArgumentPropertyNull"); }
+        }
+
+        /// <summary>
+        /// Property '{0}' must not be null.
+        /// </summary>
+        internal static string FormatArgumentPropertyNull(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ArgumentPropertyNull"), p0);
+        }
+
+        /// <summary>
+        /// Property '{0}' is of type '{1}', but this method requires a value of type '{2}'.
+        /// </summary>
+        internal static string ArgumentPropertyUnexpectedType
+        {
+            get { return GetString("ArgumentPropertyUnexpectedType"); }
+        }
+
+        /// <summary>
+        /// Property '{0}' is of type '{1}', but this method requires a value of type '{2}'.
+        /// </summary>
+        internal static string FormatArgumentPropertyUnexpectedType(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ArgumentPropertyUnexpectedType"), p0, p1, p2);
+        }
+
+        /// <summary>
         /// The partial view '{0}' was not found or no view engine supports the searched locations. The following locations were searched:{1}
         /// </summary>
         internal static string Common_PartialViewNotFound
@@ -59,7 +91,23 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <summary>
-        /// The model item passed is null, but this ViewData instance requires a non-null model item of type '{0}'.
+        /// Must call 'Contextualize' method before using this HtmlHelper instance.
+        /// </summary>
+        internal static string HtmlHelper_NotContextualized
+        {
+            get { return GetString("HtmlHelper_NotContextualized"); }
+        }
+
+        /// <summary>
+        /// Must call 'Contextualize' method before using this HtmlHelper instance.
+        /// </summary>
+        internal static string FormatHtmlHelper_NotContextualized()
+        {
+            return GetString("HtmlHelper_NotContextualized");
+        }
+
+        /// <summary>
+        /// The model item passed is null, but this ViewDataDictionary instance requires a non-null model item of type '{0}'.
         /// </summary>
         internal static string ViewData_ModelCannotBeNull
         {
@@ -67,7 +115,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <summary>
-        /// The model item passed is null, but this ViewData instance requires a non-null model item of type '{0}'.
+        /// The model item passed is null, but this ViewDataDictionary instance requires a non-null model item of type '{0}'.
         /// </summary>
         internal static string FormatViewData_ModelCannotBeNull(object p0)
         {
@@ -75,7 +123,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <summary>
-        /// The model item passed into the ViewData is of type '{0}', but this ViewData instance requires a model item of type '{1}'.
+        /// The model item passed into the ViewDataDictionary is of type '{0}', but this ViewDataDictionary instance requires a model item of type '{1}'.
         /// </summary>
         internal static string ViewData_WrongTModelType
         {
@@ -83,7 +131,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <summary>
-        /// The model item passed into the ViewData is of type '{0}', but this ViewData instance requires a model item of type '{1}'.
+        /// The model item passed into the ViewDataDictionary is of type '{0}', but this ViewDataDictionary instance requires a model item of type '{1}'.
         /// </summary>
         internal static string FormatViewData_WrongTModelType(object p0, object p1)
         {
