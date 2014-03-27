@@ -14,6 +14,8 @@ namespace Microsoft.AspNet.Routing
             Values = values;
         }
 
+        public IDictionary<string, object> ProvidedValues { get; set; } 
+
         public IDictionary<string, object> AmbientValues { get; private set; } 
 
         public HttpContext Context { get; private set; }

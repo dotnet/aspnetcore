@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Routing.Template
@@ -11,6 +12,7 @@ namespace Microsoft.AspNet.Routing.Template
         private readonly IDictionary<string, object> _defaults;
         private readonly IDictionary<string, IRouteConstraint> _constraints;
         private readonly IRouter _target;
+        private readonly Template _parsedTemplate;
         private readonly string _routeTemplate;
         private readonly TemplateMatcher _matcher;
         private readonly TemplateBinder _binder;
@@ -29,10 +31,10 @@ namespace Microsoft.AspNet.Routing.Template
             _constraints = RouteConstraintBuilder.BuildConstraints(constraints, _routeTemplate);
 
             // The parser will throw for invalid routes.
-            var parsedTemplate = TemplateParser.Parse(RouteTemplate);
+            _parsedTemplate = TemplateParser.Parse(RouteTemplate);
 
-            _matcher = new TemplateMatcher(parsedTemplate);
-            _binder = new TemplateBinder(parsedTemplate, _defaults);
+            _matcher = new TemplateMatcher(_parsedTemplate);
+            _binder = new TemplateBinder(_parsedTemplate, _defaults);
         }
 
         public IDictionary<string, object> Defaults
@@ -85,7 +87,7 @@ namespace Microsoft.AspNet.Routing.Template
             var values = _binder.GetAcceptedValues(context.AmbientValues, context.Values);
             if (values == null)
             {
-                // We're missing one the required values for this route.
+                // We're missing one of the required values for this route.
                 return null;
             }
 
@@ -99,25 +101,59 @@ namespace Microsoft.AspNet.Routing.Template
             }
 
             // Validate that the target can accept these values.
-            var path = _target.GetVirtualPath(context);
+            var childContext = CreateChildVirtualPathContext(context, values);
+            var path = _target.GetVirtualPath(childContext);
             if (path != null)
             {
                 // If the target generates a value then that can short circuit.
+                context.IsBound = true;
                 return path;
             }
-            else if (!context.IsBound)
+            else if (!childContext.IsBound)
             {
                 // The target has rejected these values.
                 return null;
             }
 
             path = _binder.BindValues(values);
-            if (path == null)
+            if (path != null)
             {
-                context.IsBound = false;
+                context.IsBound = true;
             }
 
             return path;
+        }
+
+        private VirtualPathContext CreateChildVirtualPathContext(
+            VirtualPathContext context,
+            IDictionary<string, object> acceptedValues)
+        {
+            // We want to build the set of values that would be provided if this route were to generated
+            // a link and then immediately match it. This includes all the accepted parameter values, and
+            // the defaults. Accepted values that would go in the query string aren't included.
+            var providedValues = new RouteValueDictionary();
+
+            foreach (var parameter in _parsedTemplate.Parameters)
+            {
+                object value;
+                if (acceptedValues.TryGetValue(parameter.Name, out value))
+                {
+                    providedValues.Add(parameter.Name, value);
+                }
+            }
+
+            foreach (var kvp in _defaults)
+            {
+                if (!providedValues.ContainsKey(kvp.Key))
+                {
+                    providedValues.Add(kvp.Key, kvp.Value);
+                }
+            }
+
+            return new VirtualPathContext(context.Context, context.AmbientValues, context.Values)
+            {
+                ProvidedValues = providedValues,
+            };
         }
     }
 }

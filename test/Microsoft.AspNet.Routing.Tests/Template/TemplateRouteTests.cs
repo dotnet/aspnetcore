@@ -284,6 +284,78 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             Assert.Equal("hello/1234", virtualPath);
         }
 
+        [Fact]
+        public void GetVirtualPath_Sends_ProvidedValues()
+        {
+            // Arrange
+            VirtualPathContext childContext = null;
+            var target = new Mock<IRouter>(MockBehavior.Strict);
+            target
+                .Setup(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()))
+                .Callback<VirtualPathContext>(c => { childContext = c; c.IsBound = true; })
+                .Returns<string>(null);
+
+            var route = CreateRoute(target.Object, "{controller}/{action}");
+            var context = CreateVirtualPathContext(new { action = "Store" }, new { Controller = "Home", action = "Blog"});
+
+            var expectedValues = new RouteValueDictionary(new {controller = "Home", action = "Store"});
+
+            // Act
+            var path = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal("Home/Store", path);
+            Assert.Equal(expectedValues, childContext.ProvidedValues);
+        }
+
+        [Fact]
+        public void GetVirtualPath_Sends_ProvidedValues_IncludingDefaults()
+        {
+            // Arrange
+            VirtualPathContext childContext = null;
+            var target = new Mock<IRouter>(MockBehavior.Strict);
+            target
+                .Setup(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()))
+                .Callback<VirtualPathContext>(c => { childContext = c; c.IsBound = true; })
+                .Returns<string>(null);
+
+            var route = CreateRoute(target.Object, "Admin/{controller}/{action}", new {area = "Admin"});
+            var context = CreateVirtualPathContext(new { action = "Store" }, new { Controller = "Home", action = "Blog" });
+
+            var expectedValues = new RouteValueDictionary(new { controller = "Home", action = "Store", area = "Admin" });
+
+            // Act
+            var path = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal("Admin/Home/Store", path);
+            Assert.Equal(expectedValues, childContext.ProvidedValues);
+        }
+
+        [Fact]
+        public void GetVirtualPath_Sends_ProvidedValues_ButNotQueryStringValues()
+        {
+            // Arrange
+            VirtualPathContext childContext = null;
+            var target = new Mock<IRouter>(MockBehavior.Strict);
+            target
+                .Setup(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()))
+                .Callback<VirtualPathContext>(c => { childContext = c; c.IsBound = true; })
+                .Returns<string>(null);
+
+            var route = CreateRoute(target.Object, "{controller}/{action}");
+            var context = CreateVirtualPathContext(new { action = "Store", id = 5 }, new { Controller = "Home", action = "Blog" });
+
+            var expectedValues = new RouteValueDictionary(new { controller = "Home", action = "Store" });
+
+            // Act
+            var path = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal("Home/Store?id=5", path);
+            Assert.Equal(expectedValues, childContext.ProvidedValues);
+        }
+
         private static VirtualPathContext CreateVirtualPathContext(object values)
         {
             return CreateVirtualPathContext(new RouteValueDictionary(values), null);
@@ -353,6 +425,16 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         private static TemplateRoute CreateRoute(string template, object defaults, bool accept = true, IDictionary<string, object> constraints = null)
         {
             return new TemplateRoute(CreateTarget(accept), template, new RouteValueDictionary(defaults), constraints);
+        }
+
+        private static TemplateRoute CreateRoute(IRouter target, string template)
+        {
+            return new TemplateRoute(target, template, new RouteValueDictionary(), constraints: null);
+        }
+
+        private static TemplateRoute CreateRoute(IRouter target, string template, object defaults)
+        {
+            return new TemplateRoute(target, template, new RouteValueDictionary(defaults), constraints: null);
         }
 
         private static IRouter CreateTarget(bool accept = true)
