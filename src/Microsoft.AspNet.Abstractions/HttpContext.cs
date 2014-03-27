@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
+using Microsoft.AspNet.Abstractions.Security;
 
 namespace Microsoft.AspNet.Abstractions
 {
@@ -8,6 +10,10 @@ namespace Microsoft.AspNet.Abstractions
         public abstract HttpRequest Request { get; }
 
         public abstract HttpResponse Response { get; }
+
+        public abstract AuthenticationManager Authentication { get; }
+
+        public abstract ClaimsPrincipal User { get; set; }
         
         public abstract IDictionary<object, object> Items { get; }
 

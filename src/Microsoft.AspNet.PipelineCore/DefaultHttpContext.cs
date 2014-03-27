@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Abstractions.Security;
 using Microsoft.AspNet.FeatureModel;
+using Microsoft.AspNet.HttpFeature.Security;
 using Microsoft.AspNet.PipelineCore.Infrastructure;
+using Microsoft.AspNet.PipelineCore.Security;
 
 namespace Microsoft.AspNet.PipelineCore
 {
@@ -10,9 +14,11 @@ namespace Microsoft.AspNet.PipelineCore
     {
         private readonly HttpRequest _request;
         private readonly HttpResponse _response;
+        private readonly AuthenticationManager _authentication;
 
         private FeatureReference<ICanHasItems> _canHasItems;
         private FeatureReference<ICanHasServiceProviders> _canHasServiceProviders;
+        private FeatureReference<IHttpAuthentication> _auth;
         private IFeatureCollection _features;
 
         public DefaultHttpContext(IFeatureCollection features)
@@ -20,9 +26,11 @@ namespace Microsoft.AspNet.PipelineCore
             _features = features;
             _request = new DefaultHttpRequest(this, features);
             _response = new DefaultHttpResponse(this, features);
+            _authentication = new DefaultAuthenticationManager(this, features);
 
             _canHasItems = FeatureReference<ICanHasItems>.Default;
             _canHasServiceProviders = FeatureReference<ICanHasServiceProviders>.Default;
+            _auth = FeatureReference<IHttpAuthentication>.Default;
         }
 
         ICanHasItems CanHasItems
@@ -35,9 +43,22 @@ namespace Microsoft.AspNet.PipelineCore
             get { return _canHasServiceProviders.Fetch(_features) ?? _canHasServiceProviders.Update(_features, new DefaultCanHasServiceProviders()); }
         }
 
+        private IHttpAuthentication HttpAuthentication
+        {
+            get { return _auth.Fetch(_features) ?? _auth.Update(_features, new DefaultHttpAuthentication()); }
+        }
+
         public override HttpRequest Request { get { return _request; } }
 
         public override HttpResponse Response { get { return _response; } }
+
+        public override AuthenticationManager Authentication { get { return _authentication; } }
+
+        public override ClaimsPrincipal User
+        {
+            get { return HttpAuthentication.User; }
+            set { HttpAuthentication.User = value; }
+        }
 
         public override IDictionary<object, object> Items
         {
