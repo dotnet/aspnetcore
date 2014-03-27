@@ -2,27 +2,26 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.Routing.Template
 {
     public class TemplateRoute : IRouter
     {
         private readonly IDictionary<string, object> _defaults;
+        private readonly IDictionary<string, IRouteConstraint> _constraints;
         private readonly IRouter _target;
-        private readonly Template _parsedTemplate;
         private readonly string _routeTemplate;
         private readonly TemplateMatcher _matcher;
         private readonly TemplateBinder _binder;
 
         public TemplateRoute(IRouter target, string routeTemplate)
-            : this(target, routeTemplate, null)
+            : this(target, routeTemplate, null, null)
         {
         }
 
-        public TemplateRoute(IRouter target, string routeTemplate, IDictionary<string, object> defaults)
+        public TemplateRoute(IRouter target, string routeTemplate, IDictionary<string, object> defaults,
+                             IDictionary<string, object> constraints)
         {
             if (target == null)
             {
@@ -32,11 +31,12 @@ namespace Microsoft.AspNet.Routing.Template
             _target = target;
             _routeTemplate = routeTemplate ?? string.Empty;
             _defaults = defaults ?? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            _constraints = RouteConstraintBuilder.BuildConstraints(constraints);
 
             // The parser will throw for invalid routes.
-            _parsedTemplate = TemplateParser.Parse(RouteTemplate);
+            var parsedTemplate = TemplateParser.Parse(RouteTemplate);
 
-            _matcher = new TemplateMatcher(_parsedTemplate);
+            _matcher = new TemplateMatcher(parsedTemplate);
             _binder = new TemplateBinder(_parsedTemplate, _defaults);
         }
 
@@ -74,7 +74,14 @@ namespace Microsoft.AspNet.Routing.Template
                 // Not currently doing anything to clean this up if it's not a match. Consider hardening this.
                 context.Values = values;
 
-                await _target.RouteAsync(context);
+                if (RouteConstraintMatcher.Match(_constraints,
+                                                 values,
+                                                 context.HttpContext,
+                                                 this,
+                                                 RouteDirection.IncomingRequest))
+                {
+                    await _target.RouteAsync(context);
+                }
             }
         }
 

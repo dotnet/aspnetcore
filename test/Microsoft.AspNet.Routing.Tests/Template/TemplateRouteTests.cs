@@ -196,7 +196,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
         private static TemplateRoute CreateRoute(string template, object defaults, bool accept = true)
         {
-            return new TemplateRoute(CreateTarget(accept), template, new RouteValueDictionary(defaults));
+            return new TemplateRoute(CreateTarget(accept), template, new RouteValueDictionary(defaults), null);
         }
 
         private static IRouter CreateTarget(bool accept = true)

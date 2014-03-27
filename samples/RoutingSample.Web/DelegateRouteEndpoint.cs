@@ -1,21 +1,22 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Routing;
 
 namespace RoutingSample.Web
 {
-    public class HttpContextRouteEndpoint : IRouter
+    public class DelegateRouteEndpoint : IRouter
     {
-        private readonly RequestDelegate _appFunc;
+        public delegate Task RoutedDelegate(RouteContext context);
 
-        public HttpContextRouteEndpoint(RequestDelegate appFunc)
+        private readonly RoutedDelegate _appFunc;
+
+        public DelegateRouteEndpoint(RoutedDelegate appFunc)
         {
             _appFunc = appFunc;
         }
 
         public async Task RouteAsync(RouteContext context)
         {
-            await _appFunc(context.HttpContext);
+            await _appFunc(context);
             context.IsHandled = true;
         }
 
