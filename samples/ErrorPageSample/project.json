@@ -3,18 +3,13 @@
   "dependencies": {
     "Microsoft.AspNet.Diagnostics": "",
     "Microsoft.AspNet.HttpFeature": "0.1-alpha-*",
-    "Microsoft.AspNet.Abstractions": "0.1-alpha-*"
+    "Microsoft.AspNet.Abstractions": "0.1-alpha-*",
+    "Microsoft.AspNet.Server.WebListener": "0.1-alpha-*",
+    "Microsoft.AspNet.Hosting": "0.1-alpha-*"
   },
+  "commands": { "web": "Microsoft.AspNet.Hosting server.name=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001" },
   "configurations": {
-    "net45": {
-      "dependencies": {
-        "Owin": "1.0",
-        "Microsoft.Owin": "2.1.0",
-        "Microsoft.Owin.Hosting": "2.1.0",
-        "Microsoft.Owin.Host.HttpListener": "2.1.0",
-        "Microsoft.AspNet.AppBuilderSupport": "0.1-alpha-*"
-      }
-    },
+    "net45": {},
     "k10": {
       "dependencies": {
         "System.Console": "4.0.0.0",
