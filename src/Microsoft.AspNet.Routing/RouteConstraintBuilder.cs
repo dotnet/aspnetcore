@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Routing
             return BuildConstraintsCore(inputConstraints, routeTemplate);
         }
 
-        public static IDictionary<string, IRouteConstraint>
+        private static IDictionary<string, IRouteConstraint>
             BuildConstraintsCore(IDictionary<string, object> inputConstraints, string routeTemplate)
         {
             if (inputConstraints == null || inputConstraints.Count == 0)
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Routing
             {
                 var constraint = kvp.Value as IRouteConstraint;
 
-                if (constraint == null)
+                if (constraint == null) 
                 {
                     var regexPattern = kvp.Value as string;
 

@@ -11,7 +11,6 @@ namespace Microsoft.AspNet.Routing.Template
         private readonly IDictionary<string, object> _defaults;
         private readonly IDictionary<string, IRouteConstraint> _constraints;
         private readonly IRouter _target;
-        private readonly Template _parsedTemplate;
         private readonly string _routeTemplate;
         private readonly TemplateMatcher _matcher;
         private readonly TemplateBinder _binder;
@@ -30,10 +29,10 @@ namespace Microsoft.AspNet.Routing.Template
             _constraints = RouteConstraintBuilder.BuildConstraints(constraints, _routeTemplate);
 
             // The parser will throw for invalid routes.
-            _parsedTemplate = TemplateParser.Parse(RouteTemplate);
+            var parsedTemplate = TemplateParser.Parse(RouteTemplate);
 
-            _matcher = new TemplateMatcher(_parsedTemplate);
-            _binder = new TemplateBinder(_parsedTemplate, _defaults);
+            _matcher = new TemplateMatcher(parsedTemplate);
+            _binder = new TemplateBinder(parsedTemplate, _defaults);
         }
 
         public IDictionary<string, object> Defaults
@@ -46,6 +45,11 @@ namespace Microsoft.AspNet.Routing.Template
             get { return _routeTemplate; }
         }
 
+        public IDictionary<string, IRouteConstraint> Constraints
+        {
+            get { return _constraints; }
+        }
+
         public async virtual Task RouteAsync([NotNull] RouteContext context)
         {
             var requestPath = context.RequestPath;
@@ -54,7 +58,7 @@ namespace Microsoft.AspNet.Routing.Template
                 requestPath = requestPath.Substring(1);
             }
 
-            var values = _matcher.Match(requestPath, _defaults);
+            var values = _matcher.Match(requestPath, Defaults);
             if (values == null)
             {
                 // If we got back a null value set, that means the URI did not match
@@ -65,7 +69,7 @@ namespace Microsoft.AspNet.Routing.Template
                 // Not currently doing anything to clean this up if it's not a match. Consider hardening this.
                 context.Values = values;
 
-                if (RouteConstraintMatcher.Match(_constraints,
+                if (RouteConstraintMatcher.Match(Constraints,
                                                  values,
                                                  context.HttpContext,
                                                  this,
@@ -82,6 +86,15 @@ namespace Microsoft.AspNet.Routing.Template
             if (values == null)
             {
                 // We're missing one the required values for this route.
+                return null;
+            }
+
+            if (!RouteConstraintMatcher.Match(Constraints,
+                                              values,
+                                              context.Context,
+                                              this,
+                                              RouteDirection.UrlGeneration))
+            {
                 return null;
             }
 

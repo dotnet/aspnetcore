@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.Routing
 {
     public static class RouteConstraintMatcher
     {
-        public static bool Match([NotNull] IDictionary<string, IRouteConstraint> constraints,
+        public static bool Match(IDictionary<string, IRouteConstraint> constraints,
                                  [NotNull] IDictionary<string, object> routeValues,
                                  [NotNull] HttpContext httpContext,
                                  [NotNull] IRouter route,

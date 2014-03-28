@@ -1,8 +1,9 @@
 ﻿﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 #if NET45
-
-using System.Collections.Generic;
+using System;
+using Microsoft.AspNet.Testing;
+ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
 using Moq;
@@ -115,7 +116,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             // Arrange
             var route = CreateRoute("{controller}");
-            var context = CreateVirtualPathContext(new {controller = "Home"});
+            var context = CreateVirtualPathContext(new { controller = "Home" });
 
             // Act
             var path = route.GetVirtualPath(context);
@@ -160,7 +161,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             // Arrange
             var route = CreateRoute("{controller}/{action}");
-            var context = CreateVirtualPathContext(new { action = "Index"}, new { controller = "Home" });
+            var context = CreateVirtualPathContext(new { action = "Index" }, new { controller = "Home" });
 
             // Act
             var path = route.GetVirtualPath(context);
@@ -185,6 +186,48 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var context = new Mock<HttpContext>(MockBehavior.Strict);
 
             return new VirtualPathContext(context.Object, ambientValues, values);
+        }
+
+        #endregion
+
+        #region Route Registration
+
+        [Fact]
+        public void RegisteringRouteWithInvalidConstraints_Throws()
+        {
+            // Arrange
+            var collection = new RouteCollection();
+            collection.DefaultHandler = new Mock<IRouter>().Object;
+
+            // Assert
+            ExceptionAssert.Throws<InvalidOperationException>(() => collection.MapRoute("{controller}/{action}",
+                defaults: null,
+                constraints: new { controller = "a.*", action = new Object() }),
+                "The constraint entry 'action' on the route with route template '{controller}/{action}' " +
+                "must have a string value or be of a type which implements '" +
+                typeof(IRouteConstraint) + "'.");
+        }
+
+        [Fact]
+        public void RegisteringRouteWithTwoConstraints()
+        {
+            // Arrange
+            var collection = new RouteCollection();
+            collection.DefaultHandler = new Mock<IRouter>().Object;
+
+            var mockConstraint = new Mock<IRouteConstraint>().Object;
+
+            collection.MapRoute("{controller}/{action}",
+                defaults: null,
+                constraints: new {controller = "a.*", action = mockConstraint});
+
+            var constraints = ((TemplateRoute) collection[0]).Constraints;
+
+            // Assert
+            Assert.Equal(2, constraints.Count);
+            Assert.IsType<RegexConstraint>(constraints["controller"]);
+            Assert.Equal(mockConstraint, constraints["action"]);
+
         }
 
         #endregion
