@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Mvc
                 InitializeController(controller, actionContext);
 
                 return controller;
-            }
+            } // TODO: Should we not catch it here?
             catch (ReflectionTypeLoadException)
             {
             }

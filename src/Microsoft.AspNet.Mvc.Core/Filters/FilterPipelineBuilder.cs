@@ -5,13 +5,13 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Mvc.Filters
 {
-    public class FilterPipelineBuilder<T>
+    public class FilterPipelineBuilder<TContext>
     {
-        private readonly IFilter<T>[] _filters;
-        private readonly T _context;
+        private readonly IFilter<TContext>[] _filters;
+        private readonly TContext _context;
 
         // FilterDescriptors are already ordered externally.
-        public FilterPipelineBuilder(IEnumerable<IFilter<T>> filters, T context)
+        public FilterPipelineBuilder(IEnumerable<IFilter<TContext>> filters, TContext context)
         {
             _filters = filters.ToArray();
             _context = context;
@@ -26,13 +26,13 @@ namespace Microsoft.AspNet.Mvc.Filters
 
         private class CallNextAsync
         {
-            private readonly T _context;
-            private readonly IFilter<T>[] _filters;
+            private readonly TContext _context;
+            private readonly IFilter<TContext>[] _filters;
             private readonly Func<Task> _next;
 
             private int _index;
 
-            public CallNextAsync(T context, IFilter<T>[] filters)
+            public CallNextAsync(TContext context, IFilter<TContext>[] filters)
             {
                 _context = context;
                 _next = CallNextProvider;

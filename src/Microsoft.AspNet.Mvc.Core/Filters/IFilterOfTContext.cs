@@ -3,8 +3,8 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Mvc.Filters
 {
-    public interface IFilter<T>
+    public interface IFilter<TContext>
     {
-        Task Invoke(T context, Func<Task> next);
+        Task Invoke(TContext context, Func<Task> next);
     }
 }

@@ -54,6 +54,7 @@ namespace Microsoft.AspNet.Mvc
 
             if (controller == null)
             {
+                // TODO: See if these return 404s should turn into 500s
                 actionResult = new HttpStatusCodeResult(404);
             }
             else
@@ -62,6 +63,7 @@ namespace Microsoft.AspNet.Mvc
 
                 if (method == null)
                 {
+                    // TODO: See if these return 404s should turn into 500s
                     actionResult = new HttpStatusCodeResult(404);
                 }
                 else
