@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Server.WebListener
             throw new InvalidOperationException(Resources.Exception_ReadOnlyStream);
         }
 
-        public override unsafe int Read([In, Out] byte[] buffer, int offset, int size)
+        private void ValidateReadBuffer(byte[] buffer, int offset, int size)
         {
             if (buffer == null)
             {
@@ -99,15 +99,19 @@ namespace Microsoft.AspNet.Server.WebListener
             }
             if (offset < 0 || offset > buffer.Length)
             {
-                throw new ArgumentOutOfRangeException("offset");
+                throw new ArgumentOutOfRangeException("offset", offset, string.Empty);
             }
-            if (size < 0 || size > buffer.Length - offset)
+            if (size <= 0 || size > buffer.Length - offset)
             {
-                throw new ArgumentOutOfRangeException("size");
+                throw new ArgumentOutOfRangeException("size", size, string.Empty);
             }
-            if (size == 0 || _closed)
+        }
+
+        public override unsafe int Read([In, Out] byte[] buffer, int offset, int size)
+        {
+            ValidateReadBuffer(buffer, offset, size);
+            if (_closed)
             {
-                // TODO: zero sized buffer should be invalid.
                 return 0;
             }
             // TODO: Verbose log parameters
@@ -177,19 +181,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public unsafe IAsyncResult BeginRead(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
 #endif
         {
-            if (buffer == null)
-            {
-                throw new ArgumentNullException("buffer");
-            }
-            if (offset < 0 || offset > buffer.Length)
-            {
-                throw new ArgumentOutOfRangeException("offset");
-            }
-            if (size < 0 || size > buffer.Length - offset)
-            {
-                throw new ArgumentOutOfRangeException("size");
-            }
-            if (size == 0 || _closed)
+            ValidateReadBuffer(buffer, offset, size);
+            if (_closed)
             {
                 RequestStreamAsyncResult result = new RequestStreamAsyncResult(this, state, callback);
                 result.Complete(0);
@@ -303,26 +296,12 @@ namespace Microsoft.AspNet.Server.WebListener
 
         public override unsafe Task<int> ReadAsync(byte[] buffer, int offset, int size, CancellationToken cancellationToken)
         {
-            if (buffer == null)
-            {
-                throw new ArgumentNullException("buffer");
-            }
-            if (offset < 0 || offset > buffer.Length)
-            {
-                throw new ArgumentOutOfRangeException("offset");
-            }
-            if (size < 0 || size > buffer.Length - offset)
-            {
-                throw new ArgumentOutOfRangeException("size");
-            }
+            ValidateReadBuffer(buffer, offset, size);
             if (_closed)
-            {
-                throw new ObjectDisposedException(GetType().FullName);
-            }
-            if (size == 0)
             {
                 return Task.FromResult<int>(0);
             }
+
             // TODO: Needs full cancellation integration
             cancellationToken.ThrowIfCancellationRequested();
             // TODO: Verbose log parameters

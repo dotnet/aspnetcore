@@ -4,6 +4,8 @@ using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
@@ -69,6 +71,29 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 #endif
+
+        [Fact]
+        public async Task RequestBody_InvalidBuffer_ArgumentException()
+        {
+            using (Utilities.CreateHttpServer(env =>
+            {
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                byte[] input = new byte[100];
+                Assert.Throws<ArgumentNullException>("buffer", () => httpContext.Request.Body.Read(null, 0, 1));
+                Assert.Throws<ArgumentOutOfRangeException>("offset", () => httpContext.Request.Body.Read(input, -1, 1));
+                Assert.Throws<ArgumentOutOfRangeException>("offset", () => httpContext.Request.Body.Read(input, input.Length + 1, 1));
+                Assert.Throws<ArgumentOutOfRangeException>("size", () => httpContext.Request.Body.Read(input, 10, -1));
+                Assert.Throws<ArgumentOutOfRangeException>("size", () => httpContext.Request.Body.Read(input, 0, 0));
+                Assert.Throws<ArgumentOutOfRangeException>("size", () => httpContext.Request.Body.Read(input, 1, input.Length));
+                Assert.Throws<ArgumentOutOfRangeException>("size", () => httpContext.Request.Body.Read(input, 0, input.Length + 1));
+                return Task.FromResult(0);
+            }))
+            {
+                string response = await SendRequestAsync(Address, "Hello World");
+                Assert.Equal(string.Empty, response);
+            }
+        }
+
         [Fact]
         public async Task RequestBody_ReadSyncPartialBody_Success()
         {
@@ -110,6 +135,29 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
+        [Fact]
+        public async Task RequestBody_PostWithImidateBody_Success()
+        {
+            using (Utilities.CreateHttpServer(async env =>
+            {
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                byte[] input = new byte[11];
+                int read = await httpContext.Request.Body.ReadAsync(input, 0, input.Length);
+                Assert.Equal(10, read);
+                read = await httpContext.Request.Body.ReadAsync(input, 0, input.Length);
+                Assert.Equal(0, read);
+                httpContext.Response.ContentLength = 10;
+                await httpContext.Response.Body.WriteAsync(input, 0, 10);
+            }))
+            {
+                string response = await SendSocketRequestAsync(Address);
+                string[] lines = response.Split('\r', '\n');
+                Assert.Equal(13, lines.Length);
+                Assert.Equal("HTTP/1.1 200 OK", lines[0]);
+                Assert.Equal("0123456789", lines[12]);
+            }
+        }
+
         private Task<string> SendRequestAsync(string uri, string upload)
         {
             return SendRequestAsync(uri, new StringContent(upload));
@@ -123,6 +171,51 @@ namespace Microsoft.AspNet.Server.WebListener
                 response.EnsureSuccessStatusCode();
                 return await response.Content.ReadAsStringAsync();
             }
+        }
+
+        private async Task<string> SendSocketRequestAsync(string address)
+        {
+            // Connect with a socket
+            Uri uri = new Uri(address);
+            TcpClient client = new TcpClient();
+            try
+            {
+                await client.ConnectAsync(uri.Host, uri.Port);
+                NetworkStream stream = client.GetStream();
+
+                // Send an HTTP GET request
+                byte[] requestBytes = BuildPostRequest(uri);
+                await stream.WriteAsync(requestBytes, 0, requestBytes.Length);
+                StreamReader reader = new StreamReader(stream);
+                return await reader.ReadToEndAsync();
+            }
+            catch (Exception)
+            {
+                client.Close();
+                throw;
+            }
+        }
+
+        private byte[] BuildPostRequest(Uri uri)
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.Append("POST");
+            builder.Append(" ");
+            builder.Append(uri.PathAndQuery);
+            builder.Append(" HTTP/1.1");
+            builder.AppendLine();
+
+            builder.Append("Host: ");
+            builder.Append(uri.Host);
+            builder.Append(':');
+            builder.Append(uri.Port);
+            builder.AppendLine();
+
+            builder.AppendLine("Connection: close");
+            builder.AppendLine("Content-Length: 10");
+            builder.AppendLine();
+            builder.Append("0123456789");
+            return Encoding.ASCII.GetBytes(builder.ToString());
         }
 
         private class StaggardContent : HttpContent
