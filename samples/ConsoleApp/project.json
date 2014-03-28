@@ -1,0 +1,13 @@
+{
+  "dependencies" : {
+   },
+   "configurations":  {
+     "net45" : {},
+     "k10": {
+       "dependencies": {
+         "System.Runtime": "4.0.20.0",
+         "System.Console": "4.0.0.0"
+       }
+     }
+   }
+ }
