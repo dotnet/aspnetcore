@@ -130,6 +130,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return TagBuilder.CreateSanitizedId(name, IdAttributeDotReplacement);
         }
 
+        /// <inheritdoc />
+        [SuppressMessage("Microsoft.Naming", "CA1719:ParameterNamesShouldNotMatchMemberNames",
+            MessageId = "1#", Justification = "This is a shipped API.")]
+        public virtual HtmlString Name(string name)
+        {
+            var fullName = ViewData.TemplateInfo.GetFullHtmlFieldName(name);
+            return new HtmlString(Encode(fullName));
+        }
+
         public async Task<HtmlString> PartialAsync([NotNull] string partialViewName, object model, ViewDataDictionary viewData)
         {
             using (var writer = new StringWriter(CultureInfo.CurrentCulture))

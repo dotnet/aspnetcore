@@ -4,6 +4,11 @@
     Layout = "/Views/Shared/_Layout.cshtml";
     ViewBag.Title = "Home Page";
     string nullValue = null;
+
+    ViewBag.Anon = new
+    {
+        Address = new { Street = "123 Fake St.", City = "Redmond", State = "WA", Country = "USA", },
+    };
 }
 
 @functions {
@@ -53,6 +58,46 @@
         <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
         <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
     </div>
+</div>
+
+<div class="row">
+    <div style="float: left; border: 5px solid blue;">
+        <table>
+            <tr>
+                <td>
+                    <label class="control-label col-md-2">ForModel</label>
+                </td>
+                <td>
+                    '@Html.NameForModel()'
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label class="control-label col-md-2">Name</label>
+                </td>
+                <td>
+                    '@Html.Name("Name")'
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label class="control-label col-md-2">m.Address</label>
+                </td>
+                <td>
+                    '@Html.NameFor(m => m.Address)'
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label class="control-label col-md-2">Anon.Address.Street</label>
+                </td>
+                <td>
+                    '@Html.Name("Anon.Address.Street")'
+                </td>
+            </tr>
+        </table>
+    </div>
+
     <div style="float: right; border: 5px solid red;">
         @await Component.InvokeAsync("Tags", 15)
     </div>
