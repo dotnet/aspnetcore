@@ -1,36 +1,34 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
-
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Web.Mvc.ExpressionUtil;
-using System.Web.Mvc.Properties;
 
-namespace System.Web.Mvc
+namespace Microsoft.AspNet.Mvc.Rendering.Expressions
 {
     public static class ExpressionHelper
     {
         public static string GetExpressionText(string expression)
         {
+            // If it's exactly "model", then give them an empty string, to replicate the lambda behavior.
             return
-                String.Equals(expression, "model", StringComparison.OrdinalIgnoreCase)
-                    ? String.Empty // If it's exactly "model", then give them an empty string, to replicate the lambda behavior
+                string.Equals(expression, "model", StringComparison.OrdinalIgnoreCase)
+                    ? string.Empty
                     : expression;
         }
 
-        public static string GetExpressionText(LambdaExpression expression)
+        public static string GetExpressionText([NotNull] LambdaExpression expression)
         {
             // Split apart the expression string for property/field accessors to create its name
-            Stack<string> nameParts = new Stack<string>();
-            Expression part = expression.Body;
+            var nameParts = new Stack<string>();
+            var part = expression.Body;
 
             while (part != null)
             {
                 if (part.NodeType == ExpressionType.Call)
                 {
-                    MethodCallExpression methodExpression = (MethodCallExpression)part;
+                    var methodExpression = (MethodCallExpression)part;
 
                     if (!IsSingleArgumentIndexer(methodExpression))
                     {
@@ -46,7 +44,7 @@ namespace System.Web.Mvc
                 }
                 else if (part.NodeType == ExpressionType.ArrayIndex)
                 {
-                    BinaryExpression binaryExpression = (BinaryExpression)part;
+                    var binaryExpression = (BinaryExpression)part;
 
                     nameParts.Push(
                         GetIndexerInvocation(
@@ -57,17 +55,16 @@ namespace System.Web.Mvc
                 }
                 else if (part.NodeType == ExpressionType.MemberAccess)
                 {
-                    MemberExpression memberExpressionPart = (MemberExpression)part;
+                    var memberExpressionPart = (MemberExpression)part;
                     nameParts.Push("." + memberExpressionPart.Member.Name);
                     part = memberExpressionPart.Expression;
                 }
                 else if (part.NodeType == ExpressionType.Parameter)
                 {
-                    // Dev10 Bug #907611
                     // When the expression is parameter based (m => m.Something...), we'll push an empty
                     // string onto the stack and stop evaluating. The extra empty string makes sure that
                     // we don't accidentally cut off too much of m => m.Model.
-                    nameParts.Push(String.Empty);
+                    nameParts.Push(string.Empty);
                     part = null;
                 }
                 else
@@ -77,7 +74,7 @@ namespace System.Web.Mvc
             }
 
             // If it starts with "model", then strip that away
-            if (nameParts.Count > 0 && String.Equals(nameParts.Peek(), ".model", StringComparison.OrdinalIgnoreCase))
+            if (nameParts.Count > 0 && string.Equals(nameParts.Peek(), ".model", StringComparison.OrdinalIgnoreCase))
             {
                 nameParts.Pop();
             }
@@ -87,14 +84,15 @@ namespace System.Web.Mvc
                 return nameParts.Aggregate((left, right) => left + right).TrimStart('.');
             }
 
-            return String.Empty;
+            return string.Empty;
         }
 
-        private static string GetIndexerInvocation(Expression expression, ParameterExpression[] parameters)
+        private static string GetIndexerInvocation([NotNull] Expression expression,
+            [NotNull] ParameterExpression[] parameters)
         {
-            Expression converted = Expression.Convert(expression, typeof(object));
-            ParameterExpression fakeParameter = Expression.Parameter(typeof(object), null);
-            Expression<Func<object, object>> lambda = Expression.Lambda<Func<object, object>>(converted, fakeParameter);
+            var converted = Expression.Convert(expression, typeof(object));
+            var fakeParameter = Expression.Parameter(typeof(object), null);
+            var lambda = Expression.Lambda<Func<object, object>>(converted, fakeParameter);
             Func<object, object> func;
 
             try
@@ -104,30 +102,34 @@ namespace System.Web.Mvc
             catch (InvalidOperationException ex)
             {
                 throw new InvalidOperationException(
-                    String.Format(
-                        CultureInfo.CurrentCulture,
-                        MvcResources.ExpressionHelper_InvalidIndexerExpression,
-                        expression,
-                        parameters[0].Name),
-                    ex);
+                    Resources.FormatExpressionHelper_InvalidIndexerExpression(expression, parameters[0].Name),
+                   ex);
             }
 
             return "[" + Convert.ToString(func(null), CultureInfo.InvariantCulture) + "]";
         }
 
-        internal static bool IsSingleArgumentIndexer(Expression expression)
+        public static bool IsSingleArgumentIndexer(Expression expression)
         {
-            MethodCallExpression methodExpression = expression as MethodCallExpression;
+            var methodExpression = expression as MethodCallExpression;
             if (methodExpression == null || methodExpression.Arguments.Count != 1)
             {
                 return false;
             }
 
-            return methodExpression.Method
-                .DeclaringType
-                .GetDefaultMembers()
-                .OfType<PropertyInfo>()
-                .Any(p => p.GetGetMethod() == methodExpression.Method);
+            // Check whether GetDefaultMembers() (if present in CoreCLR) would return a member of this type. Compiler
+            // names the indexer property, if any, in a generated [DefaultMember] attribute for the containing type.
+            var declaringType = methodExpression.Method.DeclaringType;
+            var defaultMember = declaringType.GetTypeInfo().GetCustomAttribute<DefaultMemberAttribute>(inherit: true);
+            if (defaultMember == null)
+            {
+                return false;
+            }
+
+            // Find default property (the indexer) and confirm its getter is the method in this expression.
+            return declaringType.GetRuntimeProperties().Any(
+                property => (string.Equals(defaultMember.MemberName, property.Name, StringComparison.Ordinal) &&
+                    property.GetMethod == methodExpression.Method));
         }
     }
 }

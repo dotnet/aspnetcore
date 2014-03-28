@@ -132,6 +132,9 @@
   <data name="DynamicViewData_ViewDataNull" xml:space="preserve">
     <value>ViewData value must not be null.</value>
   </data>
+  <data name="ExpressionHelper_InvalidIndexerExpression" xml:space="preserve">
+    <value>The expression compiler was unable to evaluate the indexer expression '{0}' because it references the model parameter '{1}' which is unavailable.</value>
+  </data>
   <data name="HtmlHelper_NotContextualized" xml:space="preserve">
     <value>Must call 'Contextualize' method before using this HtmlHelper instance.</value>
   </data>
