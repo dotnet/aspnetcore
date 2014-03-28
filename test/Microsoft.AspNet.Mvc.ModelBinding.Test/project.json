@@ -7,7 +7,6 @@
     "Microsoft.ComponentModel.DataAnnotations" : "4.0.10.0",
     "Microsoft.AspNet.Mvc.ModelBinding" : "",
     "Newtonsoft.Json": "5.0.8",
-    "TestCommon" : "",
     "Xunit.KRunner": "0.1-alpha-*",
     "xunit.abstractions": "2.0.0-aspnet-*",
     "xunit.assert": "2.0.0-aspnet-*",
@@ -37,7 +36,7 @@
         "System.Runtime.Extensions": "4.0.10.0",
         "System.Runtime.Serialization.Primitives": "4.0.0.0",
         "System.Threading": "4.0.0.0",
-        "System.Threading.Tasks": "4.0.0.0",
+        "System.Threading.Tasks": "4.0.10.0",
         "System.Threading.Thread": "4.0.0.0"
       }
     }
