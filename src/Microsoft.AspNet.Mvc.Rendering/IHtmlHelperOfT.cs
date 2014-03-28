@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
@@ -64,5 +65,24 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="value">object with string representation as HTML markup.</param>
         /// <returns>An <see cref="HtmlString"/> that represents HTML markup.</returns>
         HtmlString Raw(object value);
+
+        
+        /// <summary>
+        /// Returns a partial view in string format.
+        /// </summary>
+        /// <param name="partialViewName">The name of the partial view to render and return.</param>
+        /// <param name="model">A model to pass into the partial view.</param>
+        /// <param name="viewData">A <see cref="ViewDataDictionary"/> to pass into the partial view.</param>
+        /// <returns>A task that represents when rendering of the partial view into a string has completed.</returns>
+        Task<HtmlString> PartialAsync([NotNull] string partialViewName, object model, ViewDataDictionary viewData);
+
+        /// <summary>
+        /// Renders a partial view.
+        /// </summary>
+        /// <param name="partialViewName">The name of the partial view to render.</param>
+        /// <param name="model">A model to pass into the partial view.</param>
+        /// <param name="viewData">A <see cref="ViewDataDictionary"/> to pass into the partial view.</param>
+        /// <returns>A task that represents when rendering has completed.</returns>
+        Task RenderPartialAsync([NotNull] string partialViewName, object model, ViewDataDictionary viewData);
     }
 }

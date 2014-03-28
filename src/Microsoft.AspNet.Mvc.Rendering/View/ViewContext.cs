@@ -13,6 +13,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
         private readonly FormContext _defaultFormContext = new FormContext();
 
         private FormContext _formContext;
+        
+        public ViewContext([NotNull] ViewContext viewContext)
+            : this(viewContext.ServiceProvider, viewContext.HttpContext, viewContext.ViewEngineContext)
+        { }
 
         public ViewContext(IServiceProvider serviceProvider, HttpContext httpContext,
             IDictionary<string, object> viewEngineContext)

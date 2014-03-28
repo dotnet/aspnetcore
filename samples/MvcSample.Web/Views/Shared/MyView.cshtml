@@ -11,6 +11,12 @@
     {
         return "Hello World";
     }
+    
+    public Task RenderHelloWorldPartial(User model)
+    {
+        // Imagine this method was a super complex method that was used as a helper method.
+        return Html.RenderPartialAsync("HelloWorldPartial", model);
+    }
 }
 
 <div class="jumbotron">
@@ -21,6 +27,12 @@
 <div class="row">
     <h3 title="@Model.Name" class="@nullValue">Hello @Model.Name! Happy @Model.Age birthday.</h3>
     <h3>This value was retrieved asynchronously: @(await AsyncValueRetrieval())</h3>
+    <h3>Partial Async: @await Html.PartialAsync("HelloWorldPartial", Model)</h3>
+    <h3>Render Partial Async (Custom model): @{ await RenderHelloWorldPartial(new User()
+                                                {
+                                                    Name="Bob"
+                                                }); 
+                                              }</h3>
 
     <div class="col-md-4">
         <h2>Getting started</h2>

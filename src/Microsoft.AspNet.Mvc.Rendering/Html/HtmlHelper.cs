@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.IO;
 using System.Net;
 using System.Reflection;
-using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.Mvc.Rendering
@@ -21,12 +23,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public static readonly string ValidationSummaryValidCssClassName = "validation-summary-valid";
 
         private ViewContext _viewContext;
+        private IViewEngine _viewEngine;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HtmlHelper"/> class.
         /// </summary>
-        public HtmlHelper()
+        public HtmlHelper(IViewEngine viewEngine)
         {
+            _viewEngine = viewEngine;
+
             // Underscores are fine characters in id's.
             IdAttributeDotReplacement = "_";
         }
@@ -123,6 +128,42 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public string GenerateIdFromName([NotNull] string name)
         {
             return TagBuilder.CreateSanitizedId(name, IdAttributeDotReplacement);
+        }
+
+        public async Task<HtmlString> PartialAsync([NotNull] string partialViewName, object model, ViewDataDictionary viewData)
+        {
+            using (var writer = new StringWriter(CultureInfo.CurrentCulture))
+            {
+                await RenderPartialCoreAsync(partialViewName, model, viewData, writer);
+
+                return new HtmlString(writer.ToString());
+            }
+        }
+
+        public Task RenderPartialAsync([NotNull] string partialViewName, object model, ViewDataDictionary viewData)
+        {
+            return RenderPartialCoreAsync(partialViewName, model, viewData, ViewContext.Writer);
+        }
+
+        protected virtual async Task RenderPartialCoreAsync([NotNull] string partialViewName, 
+                                                               object model, 
+                                                               ViewDataDictionary viewData, 
+                                                               TextWriter writer)
+        {
+            // Determine which ViewData we should use to construct a new ViewData
+            var baseViewData = viewData ?? ViewData;
+
+            var newViewData = new ViewDataDictionary(baseViewData, model);
+
+            var newViewContext = new ViewContext(ViewContext)
+            {
+                ViewData = newViewData,
+                Writer = writer
+            };
+
+            var viewEngineResult = await _viewEngine.FindPartialView(newViewContext.ViewEngineContext, partialViewName);
+
+            await viewEngineResult.View.RenderAsync(newViewContext);
         }
 
         /// <summary>

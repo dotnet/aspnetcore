@@ -138,22 +138,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return string.Format(CultureInfo.CurrentCulture, GetString("ViewData_WrongTModelType"), p0, p1);
         }
 
-        /// <summary>
-        /// The view '{0}' was not found. The following locations were searched:{1}.
-        /// </summary>
-        internal static string ViewEngine_ViewNotFound
-        {
-            get { return GetString("ViewEngine_ViewNotFound"); }
-        }
-
-        /// <summary>
-        /// The view '{0}' was not found. The following locations were searched:{1}.
-        /// </summary>
-        internal static string FormatViewEngine_ViewNotFound(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ViewEngine_ViewNotFound"), p0, p1);
-        }
-
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
