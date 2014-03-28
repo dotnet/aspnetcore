@@ -28,7 +28,34 @@ namespace Microsoft.AspNet.Mvc.Razor
             get { return _viewLocationFormats; }
         }
 
-        public async Task<ViewEngineResult> FindView([NotNull] IDictionary<string, object> context,[NotNull] string viewName)
+        public async Task<ViewEngineResult> FindView([NotNull] IDictionary<string, object> context,
+                                                     [NotNull] string viewName)
+        {
+            var viewEngineResult = await CreateViewEngineResult(context, viewName);
+            var errorMessage = Resources.FormatViewEngine_ViewNotFound(
+                                    viewName,
+                                    ToLocationString(viewEngineResult.SearchedLocations));
+
+            EnsureViewEngineResult(viewEngineResult, viewName, errorMessage);
+
+            return viewEngineResult;
+        }
+
+        public async Task<ViewEngineResult> FindPartialView([NotNull] IDictionary<string, object> context,
+                                                            [NotNull] string partialViewName)
+        {
+            var viewEngineResult = await CreateViewEngineResult(context, partialViewName);
+            var errorMessage = Resources.FormatViewEngine_PartialViewNotFound(
+                                    partialViewName, 
+                                    ToLocationString(viewEngineResult.SearchedLocations));
+
+            EnsureViewEngineResult(viewEngineResult, partialViewName, errorMessage);
+
+            return viewEngineResult;
+        }
+
+        private async Task<ViewEngineResult> CreateViewEngineResult([NotNull] IDictionary<string, object> context,
+                                                                    [NotNull] string viewName)
         {
             var nameRepresentsPath = IsSpecificPath(viewName);
 
@@ -57,6 +84,24 @@ namespace Microsoft.AspNet.Mvc.Razor
 
                 return ViewEngineResult.NotFound(viewName, searchedLocations);
             }
+        }
+
+        private void EnsureViewEngineResult(ViewEngineResult viewEngineResult, string viewName, string errorMessage)
+        {
+            if (!viewEngineResult.Success)
+            {
+                throw new InvalidOperationException(errorMessage);
+            }
+        }
+
+        private string ToLocationString(IEnumerable<string> locations)
+        {
+            if (locations != null)
+            {
+                return Environment.NewLine + string.Join(Environment.NewLine, locations);
+            }
+
+            return string.Empty;
         }
 
         private static bool IsSpecificPath(string name)

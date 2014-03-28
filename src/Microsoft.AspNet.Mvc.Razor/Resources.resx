@@ -126,4 +126,10 @@
   <data name="RenderBodyCannotBeCalled" xml:space="preserve">
     <value>RenderBody can only be called from a layout page.</value>
   </data>
+  <data name="ViewEngine_PartialViewNotFound" xml:space="preserve">
+    <value>The partial view '{0}' was not found. The following locations were searched:{1}</value>
+  </data>
+  <data name="ViewEngine_ViewNotFound" xml:space="preserve">
+    <value>The view '{0}' was not found. The following locations were searched:{1}.</value>
+  </data>
 </root>

@@ -20,7 +20,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             get { return View != null; } 
         }
 
-        public static ViewEngineResult NotFound([NotNull] string viewName, [NotNull] IEnumerable<string> searchedLocations)
+        public static ViewEngineResult NotFound([NotNull] string viewName, 
+                                                [NotNull] IEnumerable<string> searchedLocations)
         {
             return new ViewEngineResult
             {
@@ -36,19 +37,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 View = view,
                 ViewName = viewName,
             };
-        }
-
-        public ViewEngineResult EnsureSuccess()
-        {
-            if (Success)
-            {
-                return this;
-            }
-
-            var locationsText = Environment.NewLine + string.Join(Environment.NewLine, SearchedLocations);
-            throw new InvalidOperationException(Resources.FormatViewEngine_ViewNotFound(
-                ViewName,
-                 locationsText));
         }
     }
 }

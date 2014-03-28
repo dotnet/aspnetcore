@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Mvc
         private async Task<IView> FindView([NotNull] IDictionary<string, object> context, [NotNull] string viewName)
         {
             var result = await _viewEngine.FindView(context, viewName);
-            result.EnsureSuccess();
+
             return result.View;
         }
     }
