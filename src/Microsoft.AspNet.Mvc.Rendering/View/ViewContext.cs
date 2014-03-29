@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNet.Abstractions;
@@ -9,14 +9,34 @@ namespace Microsoft.AspNet.Mvc.Rendering
     {
         private DynamicViewData _viewBag;
 
-        public ViewContext(IServiceProvider serviceProvider, HttpContext httpContext, IDictionary<string, object> viewEngineContext)
+        // We need a default FormContext if the user uses html <form> instead of an MvcForm
+        private readonly FormContext _defaultFormContext = new FormContext();
+
+        private FormContext _formContext;
+
+        public ViewContext(IServiceProvider serviceProvider, HttpContext httpContext,
+            IDictionary<string, object> viewEngineContext)
         {
             ServiceProvider = serviceProvider;
             HttpContext = httpContext;
             ViewEngineContext = viewEngineContext;
+            _formContext = _defaultFormContext;
         }
 
         public IViewComponentHelper Component { get; set; }
+
+        public virtual FormContext FormContext
+        {
+            get
+            {
+                return _formContext;
+            }
+            set
+            {
+                // Never return a null form context, this is important for validation purposes.
+                _formContext = value ?? _defaultFormContext;
+            }
+        }
 
         public HttpContext HttpContext { get; private set; }
 
