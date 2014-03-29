@@ -3,7 +3,7 @@
 #if NET45
 using System;
 using Microsoft.AspNet.Testing;
- using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
 using Moq;
@@ -171,6 +171,119 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             Assert.Equal("Home/Index", path);
         }
 
+        [Fact]
+        public void RouteGenerationRejectsConstraints()
+        {
+            // Arrange
+            var context = CreateVirtualPathContext(new { p1 = "abcd" });
+
+            TemplateRoute r = CreateRoute(
+                "{p1}/{p2}",
+                new RouteValueDictionary(new { p2 = "catchall" }),
+                true,
+                new RouteValueDictionary(new { p2 = "\\d{4}" }));
+
+            // Act
+            var virtualPath = r.GetVirtualPath(context);
+
+            // Assert
+            Assert.False(context.IsBound);
+            Assert.Null(virtualPath);
+        }
+
+        [Fact]
+        public void RouteGenerationAcceptsConstraints()
+        {
+            // Arrange
+            var context = CreateVirtualPathContext(new { p1 = "hello", p2 = "1234" });
+
+            TemplateRoute r = CreateRoute(
+                "{p1}/{p2}",
+                new RouteValueDictionary(new { p2 = "catchall" }),
+                true,
+                new RouteValueDictionary(new { p2 = "\\d{4}" }));
+
+            // Act
+            var virtualPath = r.GetVirtualPath(context);
+
+            // Assert
+            Assert.True(context.IsBound);
+            Assert.NotNull(virtualPath);
+            Assert.Equal("hello/1234", virtualPath);
+        }
+
+        [Fact]
+        public void RouteWithCatchAllRejectsConstraints()
+        {
+            // Arrange
+            var context = CreateVirtualPathContext(new { p1 = "abcd" });
+
+            TemplateRoute r = CreateRoute(
+                "{p1}/{*p2}",
+                new RouteValueDictionary(new { p2 = "catchall" }),
+                true,
+                new RouteValueDictionary(new { p2 = "\\d{4}" }));
+
+            // Act
+            var virtualPath = r.GetVirtualPath(context);
+
+            // Assert
+            Assert.False(context.IsBound);
+            Assert.Null(virtualPath);
+        }
+
+        [Fact]
+        public void RouteWithCatchAllAcceptsConstraints()
+        {
+            // Arrange
+            // Arrange
+            var context = CreateVirtualPathContext(new { p1 = "hello", p2 = "1234" });
+
+            TemplateRoute r = CreateRoute(
+                "{p1}/{*p2}",
+                new RouteValueDictionary(new { p2 = "catchall" }),
+                true,
+                new RouteValueDictionary(new { p2 = "\\d{4}" }));
+
+            // Act
+            var virtualPath = r.GetVirtualPath(context);
+
+            // Assert
+            Assert.True(context.IsBound);
+            Assert.NotNull(virtualPath);
+            Assert.Equal("hello/1234", virtualPath);
+        }
+
+        [Fact]
+        public void GetVirtualPathWithNonParameterConstraintReturnsUrlWithoutQueryString()
+        {
+            // Arrange
+            var context = CreateVirtualPathContext(new { p1 = "hello", p2 = "1234" });
+
+            var target = new Mock<IRouteConstraint>();
+            target.Setup(e => e.Match(It.IsAny<HttpContext>(),
+                                      It.IsAny<IRouter>(),
+                                      It.IsAny<string>(),
+                                      It.IsAny<IDictionary<string, object>>(),
+                                      It.IsAny<RouteDirection>()))
+                .Returns(true)
+                .Verifiable();
+
+            TemplateRoute r = CreateRoute(
+                "{p1}/{p2}",
+                new RouteValueDictionary(new { p2 = "catchall" }),
+                true,
+                new RouteValueDictionary(new { p2 = target.Object }));
+
+            // Act
+            var virtualPath = r.GetVirtualPath(context);
+
+            // Assert
+            Assert.True(context.IsBound);
+            Assert.NotNull(virtualPath);
+            Assert.Equal("hello/1234", virtualPath);
+        }
+
         private static VirtualPathContext CreateVirtualPathContext(object values)
         {
             return CreateVirtualPathContext(new RouteValueDictionary(values), null);
@@ -219,9 +332,9 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
             collection.MapRoute("{controller}/{action}",
                 defaults: null,
-                constraints: new {controller = "a.*", action = mockConstraint});
+                constraints: new { controller = "a.*", action = mockConstraint });
 
-            var constraints = ((TemplateRoute) collection[0]).Constraints;
+            var constraints = ((TemplateRoute)collection[0]).Constraints;
 
             // Assert
             Assert.Equal(2, constraints.Count);
@@ -237,9 +350,9 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             return new TemplateRoute(CreateTarget(accept), template);
         }
 
-        private static TemplateRoute CreateRoute(string template, object defaults, bool accept = true)
+        private static TemplateRoute CreateRoute(string template, object defaults, bool accept = true, IDictionary<string, object> constraints = null)
         {
-            return new TemplateRoute(CreateTarget(accept), template, new RouteValueDictionary(defaults), null);
+            return new TemplateRoute(CreateTarget(accept), template, new RouteValueDictionary(defaults), constraints);
         }
 
         private static IRouter CreateTarget(bool accept = true)

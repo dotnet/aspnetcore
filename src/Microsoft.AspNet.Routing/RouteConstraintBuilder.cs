@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Routing
             {
                 var constraint = kvp.Value as IRouteConstraint;
 
-                if (constraint == null) 
+                if (constraint == null)
                 {
                     var regexPattern = kvp.Value as string;
 
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Routing
                         {
                             throw new InvalidOperationException(
                                 Resources.FormatTemplateRoute_ValidationMustBeStringOrCustomConstraint(
-                                    kvp.Key, routeTemplate, typeof (IRouteConstraint)));
+                                    kvp.Key, routeTemplate, typeof(IRouteConstraint)));
                         }
                         else
                         {

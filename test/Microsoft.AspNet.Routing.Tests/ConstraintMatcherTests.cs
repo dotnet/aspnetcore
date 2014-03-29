@@ -89,6 +89,25 @@ namespace Microsoft.AspNet.Routing.Tests
         }
 
         [Fact]
+        public void ReturnsFalseOnValidAndInvalidConstraintsMixThatMatch()
+        {
+            var constraints = new Dictionary<string, IRouteConstraint>
+            {
+                {"a", new PassConstraint()},
+                {"b", new FailConstraint()}
+            };
+
+            var routeValueDictionary = new RouteValueDictionary(new { a = "value", b = "value" });
+
+            Assert.False(RouteConstraintMatcher.Match(
+                constraints: constraints,
+                routeValues: routeValueDictionary,
+                httpContext: new Mock<HttpContext>().Object,
+                route: new Mock<IRouter>().Object,
+                routeDirection: RouteDirection.IncomingRequest));
+        }
+
+        [Fact]
         public void ReturnsTrueOnNullInput()
         {
             Assert.True(RouteConstraintMatcher.Match(

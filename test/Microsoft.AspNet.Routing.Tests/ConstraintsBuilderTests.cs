@@ -110,6 +110,7 @@ namespace Microsoft.AspNet.Routing.Tests
 
         [Theory]
         [InlineData("abc", "abc", true)]
+        [InlineData("abc", "bbb|abc", true)]
         [InlineData("Abc", "abc", true)]
         [InlineData("Abc ", "abc", false)]
         [InlineData("Abcd", "abc", false)]

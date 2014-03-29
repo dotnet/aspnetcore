@@ -1,4 +1,7 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Globalization;
+using System.Text.RegularExpressions;
+using System.Threading;
 using Xunit;
 
 namespace Microsoft.AspNet.Routing.Tests
@@ -55,6 +58,38 @@ namespace Microsoft.AspNet.Routing.Tests
 
             // Assert
             Assert.False(constraint.EasyMatch("controller", values));
+        }
+
+        [Fact]
+        public void RegexConstraintIsCultureInsensitive()
+        {
+            // Arrange
+            var constraint = new RegexConstraint("^([a-z]+)$");
+            var values = new RouteValueDictionary(new { controller = "\u0130" });
+
+            var currentThread = Thread.CurrentThread;
+            var backupCulture = currentThread.CurrentCulture;
+
+            bool matchInTurkish;
+            bool matchInUsEnglish;
+
+            // Act
+            try
+            {
+                currentThread.CurrentCulture = new CultureInfo("tr-TR"); // Turkish culture
+                matchInTurkish = constraint.EasyMatch("controller", values);
+
+                currentThread.CurrentCulture = new CultureInfo("en-US");
+                matchInUsEnglish = constraint.EasyMatch("controller", values);
+            }
+            finally
+            {
+                currentThread.CurrentCulture = backupCulture;
+            }
+
+            // Assert
+            Assert.False(matchInUsEnglish); // this just verifies the test
+            Assert.False(matchInTurkish);
         }
     }
 }
