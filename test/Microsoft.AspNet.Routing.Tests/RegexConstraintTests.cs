@@ -1,71 +1,73 @@
-﻿using System;
+﻿#if NET45
+using Moq;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Xunit;
+using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.Routing.Tests
 {
     public class RegexConstraintTests
     {
         [Theory]
-        [InlineData("abc", "abc", true)]
-        [InlineData("Abc", "abc", true)]
-        [InlineData("Abc ", "abc", true)]
-        [InlineData("Abcd", "abc", true)]
-        [InlineData("^Abcd", "abc", true)]
-        [InlineData("Abc", " abc", false)]
-        public void RegexConstraintDoesNotPrepend(string routeValue,
-                                                  string constraintValue,
-                                                  bool shouldMatch)
+        [InlineData("abc", "abc", true)]    // simple match
+        [InlineData("Abc", "abc", true)]    // case insensitive match
+        [InlineData("Abc ", "abc", true)]   // Extra space on input match (because we don't add ^({0})$
+        [InlineData("Abcd", "abc", true)]   // Extra char
+        [InlineData("^Abcd", "abc", true)]  // Extra special char
+        [InlineData("Abc", " abc", false)]  // Missing char
+        public void RegexConstraintBuildRegexVerbatimFromInput(string routeValue,
+                                                               string constraintValue,
+                                                               bool shouldMatch)
         {
             // Arrange
             var constraint = new RegexConstraint(constraintValue);
             var values = new RouteValueDictionary(new {controller = routeValue});
 
             // Assert
-            Assert.Equal(shouldMatch, constraint.EasyMatch("controller", values));
+            Assert.Equal(shouldMatch, EasyMatch(constraint, "controller", values));
         }
 
         [Fact]
-        public void RegexConstraintCanTakeARegex_SuccessulMatch()
+        public void RegexConstraint_TakesRegexAsInput_SimpleMatch()
         {
             // Arrange
             var constraint = new RegexConstraint(new Regex("^abc$"));
             var values = new RouteValueDictionary(new { controller = "abc"});
 
             // Assert
-            Assert.True(constraint.EasyMatch("controller", values));
+            Assert.True(EasyMatch(constraint, "controller", values));
         }
 
         [Fact]
-        public void RegexConstraintFailsIfKeyIsNotFound()
-        {
-            // Arrange
-            var constraint = new RegexConstraint(new Regex("^abc$"));
-            var values = new RouteValueDictionary(new { action = "abc" });
-
-            // Assert
-            Assert.False(constraint.EasyMatch("controller", values));
-        }
-
-        [Fact]
-        public void RegexConstraintCanTakeARegex_FailedMatch()
+        public void RegexConstraintConstructedWithRegex_SimpleFailedMatch()
         {
             // Arrange
             var constraint = new RegexConstraint(new Regex("^abc$"));
             var values = new RouteValueDictionary(new { controller = "Abc" });
 
             // Assert
-            Assert.False(constraint.EasyMatch("controller", values));
+            Assert.False(EasyMatch(constraint, "controller", values));
         }
 
         [Fact]
-        public void RegexConstraintIsCultureInsensitive()
+        public void RegexConstraintFailsIfKeyIsNotFoundInRouteValues()
+        {
+            // Arrange
+            var constraint = new RegexConstraint(new Regex("^abc$"));
+            var values = new RouteValueDictionary(new { action = "abc" });
+
+            // Assert
+            Assert.False(EasyMatch(constraint, "controller", values));
+        }
+
+        [Fact]
+        public void RegexConstraintIsCultureInsensitiveWhenConstructredWithString()
         {
             // Arrange
             var constraint = new RegexConstraint("^([a-z]+)$");
-            var values = new RouteValueDictionary(new { controller = "\u0130" });
+            var values = new RouteValueDictionary(new { controller = "\u0130" }); // Turkish upper-case dotted I
 
             var currentThread = Thread.CurrentThread;
             var backupCulture = currentThread.CurrentCulture;
@@ -77,10 +79,10 @@ namespace Microsoft.AspNet.Routing.Tests
             try
             {
                 currentThread.CurrentCulture = new CultureInfo("tr-TR"); // Turkish culture
-                matchInTurkish = constraint.EasyMatch("controller", values);
+                matchInTurkish = EasyMatch(constraint, "controller", values);
 
                 currentThread.CurrentCulture = new CultureInfo("en-US");
-                matchInUsEnglish = constraint.EasyMatch("controller", values);
+                matchInUsEnglish = EasyMatch(constraint, "controller", values);
             }
             finally
             {
@@ -91,5 +93,17 @@ namespace Microsoft.AspNet.Routing.Tests
             Assert.False(matchInUsEnglish); // this just verifies the test
             Assert.False(matchInTurkish);
         }
+
+        private static bool EasyMatch(IRouteConstraint constraint,
+                                      string routeKey,
+                                      RouteValueDictionary values)
+        {
+            return constraint.Match(httpContext: new Mock<HttpContext>().Object,
+                route: new Mock<IRouter>().Object,
+                routeKey: routeKey,
+                values: values,
+                routeDirection: RouteDirection.IncomingRequest);
+        }
     }
 }
+#endif

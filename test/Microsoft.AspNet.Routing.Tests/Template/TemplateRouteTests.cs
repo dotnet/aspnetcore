@@ -179,7 +179,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
             TemplateRoute r = CreateRoute(
                 "{p1}/{p2}",
-                new RouteValueDictionary(new { p2 = "catchall" }),
+                new { p2 = "catchall" },
                 true,
                 new RouteValueDictionary(new { p2 = "\\d{4}" }));
 
@@ -199,7 +199,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
             TemplateRoute r = CreateRoute(
                 "{p1}/{p2}",
-                new RouteValueDictionary(new { p2 = "catchall" }),
+                new { p2 = "catchall" },
                 true,
                 new RouteValueDictionary(new { p2 = "\\d{4}" }));
 
@@ -220,7 +220,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
             TemplateRoute r = CreateRoute(
                 "{p1}/{*p2}",
-                new RouteValueDictionary(new { p2 = "catchall" }),
+                new { p2 = "catchall" },
                 true,
                 new RouteValueDictionary(new { p2 = "\\d{4}" }));
 
@@ -241,7 +241,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
             TemplateRoute r = CreateRoute(
                 "{p1}/{*p2}",
-                new RouteValueDictionary(new { p2 = "catchall" }),
+                new { p2 = "catchall" },
                 true,
                 new RouteValueDictionary(new { p2 = "\\d{4}" }));
 
@@ -271,7 +271,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
             TemplateRoute r = CreateRoute(
                 "{p1}/{p2}",
-                new RouteValueDictionary(new { p2 = "catchall" }),
+                new { p2 = "catchall" },
                 true,
                 new RouteValueDictionary(new { p2 = target.Object }));
 

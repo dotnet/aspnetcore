@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#if NET45
+using System.Collections.Generic;
 using Microsoft.AspNet.Abstractions;
 using Moq;
 using Xunit;
@@ -7,30 +8,6 @@ namespace Microsoft.AspNet.Routing.Tests
 {
     public class ConstraintMatcherTests
     {
-        private class PassConstraint : IRouteConstraint
-        {
-            public bool Match(HttpContext httpContext,
-                              IRouter route,
-                              string routeKey, 
-                              IDictionary<string, object> values,
-                              RouteDirection routeDirection)
-            {
-                return true;
-            }
-        }
-
-        private class FailConstraint : IRouteConstraint
-        {
-            public bool Match(HttpContext httpContext,
-                              IRouter route,
-                              string routeKey,
-                              IDictionary<string, object> values,
-                              RouteDirection routeDirection)
-            {
-                return false;
-            }
-        }
-
         [Fact]
         public void ReturnsTrueOnValidConstraints()
         {
@@ -40,7 +17,26 @@ namespace Microsoft.AspNet.Routing.Tests
                 {"b", new PassConstraint()}
             };
 
-            var routeValueDictionary = new RouteValueDictionary(new {a = "value", b = "value"});
+            var routeValueDictionary = new RouteValueDictionary(new { a = "value", b = "value" });
+
+            Assert.True(RouteConstraintMatcher.Match(
+                constraints: constraints,
+                routeValues: routeValueDictionary,
+                httpContext: new Mock<HttpContext>().Object,
+                route: new Mock<IRouter>().Object,
+                routeDirection: RouteDirection.IncomingRequest));
+        }
+
+        [Fact]
+        public void ConstraintsGetTheRightKey()
+        {
+            var constraints = new Dictionary<string, IRouteConstraint>
+            {
+                {"a", new PassConstraint("a")},
+                {"b", new PassConstraint("b")}
+            };
+
+            var routeValueDictionary = new RouteValueDictionary(new { a = "value", b = "value" });
 
             Assert.True(RouteConstraintMatcher.Match(
                 constraints: constraints,
@@ -117,5 +113,42 @@ namespace Microsoft.AspNet.Routing.Tests
                 route: new Mock<IRouter>().Object,
                 routeDirection: RouteDirection.IncomingRequest));
         }
+
+        private class PassConstraint : IRouteConstraint
+        {
+            private readonly string _expectedKey;
+
+            public PassConstraint(string expectedKey = null)
+            {
+                _expectedKey = expectedKey;
+            }
+
+            public bool Match(HttpContext httpContext,
+                              IRouter route,
+                              string routeKey,
+                              IDictionary<string, object> values,
+                              RouteDirection routeDirection)
+            {
+                if (_expectedKey != null)
+                {
+                    Assert.Equal(_expectedKey, routeKey);
+                }
+
+                return true;
+            }
+        }
+
+        private class FailConstraint : IRouteConstraint
+        {
+            public bool Match(HttpContext httpContext,
+                              IRouter route,
+                              string routeKey,
+                              IDictionary<string, object> values,
+                              RouteDirection routeDirection)
+            {
+                return false;
+            }
+        }
     }
 }
+#endif

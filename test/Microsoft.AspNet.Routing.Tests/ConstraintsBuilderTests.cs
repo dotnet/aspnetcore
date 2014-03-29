@@ -1,6 +1,8 @@
-﻿using System;
+﻿#if NET45
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Testing;
 using Moq;
 using Xunit;
@@ -9,25 +11,6 @@ namespace Microsoft.AspNet.Routing.Tests
 {
     public class ConstraintsBuilderTests
     {
-        public static IEnumerable<object> EmptyAndNullDictionary
-        {
-            get
-            {
-                return new[]
-                {
-                    new Object[]
-                    {
-                        null,
-                    },
-
-                    new Object[]
-                    {
-                        new Dictionary<string, object>(),
-                    },
-                };
-            }
-        }
-
         [Theory]
         [MemberData("EmptyAndNullDictionary")]
         public void ConstraintBuilderReturnsNull_OnNullOrEmptyInput(IDictionary<string, object> input)
@@ -106,15 +89,15 @@ namespace Microsoft.AspNet.Routing.Tests
         }
 
         [Theory]
-        [InlineData("abc", "abc", true)]
-        [InlineData("abc", "bbb|abc", true)]
-        [InlineData("Abc", "abc", true)]
-        [InlineData("Abc ", "abc", false)]
-        [InlineData("Abcd", "abc", false)]
-        [InlineData("Abc", " abc", false)]
-        public void StringConstraintsMatchesWholeValueCaseInsensitively(string routeValue,
-                                                                        string constraintValue,
-                                                                        bool shouldMatch)
+        [InlineData("abc", "abc", true)]      // simple case
+        [InlineData("abc", "bbb|abc", true)]  // Regex or
+        [InlineData("Abc", "abc", true)]      // Case insensitive
+        [InlineData("Abc ", "abc", false)]    // Matches whole (but no trimming)
+        [InlineData("Abcd", "abc", false)]    // Matches whole (additional non whitespace char)
+        [InlineData("Abc", " abc", false)]    // Matches whole (less one char)
+        public void StringConstraintsMatchingScenarios(string routeValue,
+                                                       string constraintValue,
+                                                       bool shouldMatch)
         {
             // Arrange
             var dictionary = new RouteValueDictionary(new { controller = routeValue });
@@ -124,7 +107,32 @@ namespace Microsoft.AspNet.Routing.Tests
             var constraint = constraintDictionary["controller"];
 
             Assert.Equal(shouldMatch,
-                constraint.EasyMatch("controller", dictionary));
+                constraint.Match(
+                    httpContext: new Mock<HttpContext>().Object,
+                    route: new Mock<IRouter>().Object,
+                    routeKey: "controller",
+                    values: dictionary,
+                    routeDirection: RouteDirection.IncomingRequest));
+        }
+
+        public static IEnumerable<object> EmptyAndNullDictionary
+        {
+            get
+            {
+                return new[]
+                {
+                    new Object[]
+                    {
+                        null,
+                    },
+
+                    new Object[]
+                    {
+                        new Dictionary<string, object>(),
+                    },
+                };
+            }
         }
     }
 }
+#endif
