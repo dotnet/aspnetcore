@@ -3,7 +3,6 @@
 using System;
 using System.Security.Claims;
 using System.Security.Principal;
-using Microsoft.AspNet.HttpFeature.Security;
 
 namespace Microsoft.AspNet.Abstractions.Security
 {

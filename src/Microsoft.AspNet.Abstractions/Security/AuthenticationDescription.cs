@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Microsoft.AspNet.HttpFeature.Security;
 
 namespace Microsoft.AspNet.Abstractions.Security
 {
