@@ -45,11 +45,6 @@ namespace Microsoft.AspNet.PipelineCore.Security
 
         public override IEnumerable<AuthenticationDescription> GetAuthenticationTypes()
         {
-            return GetAuthenticationTypes(_ => true);
-        }
-
-        public override IEnumerable<AuthenticationDescription> GetAuthenticationTypes(Func<AuthenticationDescription, bool> predicate)
-        {
             var descriptions = new List<AuthenticationDescription>();
             var handler = HttpAuthentication.Handler;
             if (handler != null)
