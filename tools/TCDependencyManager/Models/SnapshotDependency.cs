@@ -8,10 +8,10 @@ namespace TCDependencyManager
         public int Count { get; set; }
 
         [JsonProperty("snapshot-dependency")]
-        public List<SnapshotDepedency> Dependencies { get; set; }
+        public List<SnapshotDependency> Dependencies { get; set; }
     }
 
-    public class SnapshotDepedency
+    public class SnapshotDependency
     {
         public string Id { get; set; }
 

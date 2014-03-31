@@ -97,12 +97,10 @@ namespace TCDependencyManager
                     Property = new List<NameValuePair>
                     {
                         new NameValuePair("run-build-if-dependency-failed", "true"),
-                        new NameValuePair("take-successful-builds-only", "true"),
-                        new NameValuePair("take-started-build-with-same-revisions", "true")
                     }
                 };
 
-                var snapshotDependency = new SnapshotDepedency
+                var snapshotDependency = new SnapshotDependency
                 {
                     Id = dependencyId,
                     Type = "snapshot_dependency",
