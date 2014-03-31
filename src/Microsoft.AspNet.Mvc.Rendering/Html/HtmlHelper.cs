@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
@@ -30,9 +31,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <summary>
         /// Initializes a new instance of the <see cref="HtmlHelper"/> class.
         /// </summary>
-        public HtmlHelper(IViewEngine viewEngine)
+        public HtmlHelper([NotNull] IViewEngine viewEngine, [NotNull] IModelMetadataProvider metadataProvider)
         {
             _viewEngine = viewEngine;
+            MetadataProvider = metadataProvider;
 
             // Underscores are fine characters in id's.
             IdAttributeDotReplacement = "_";
@@ -74,6 +76,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 return ViewContext.ViewData;
             }
         }
+
+        protected IModelMetadataProvider MetadataProvider { get; private set; }
 
         /// <summary>
         /// Creates a dictionary of HTML attributes from the input object,
@@ -123,6 +127,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public string Encode(object value)
         {
             return value != null ? WebUtility.HtmlEncode(value.ToString()) : string.Empty;
+        }
+
+        /// <inheritdoc />
+        public string FormatValue(object value, string format)
+        {
+            return ViewDataDictionary.FormatValue(value, format);
         }
 
         public string GenerateIdFromName([NotNull] string name)
@@ -283,7 +293,108 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
         }
 
-        public static string GetInputTypeString(InputType inputType)
+        /// <inheritdoc />
+        public HtmlString TextBox(string name, object value, string format, IDictionary<string, object> htmlAttributes)
+        {
+            return GenerateTextBox(metadata: null, name: name, value: value, format: format,
+                htmlAttributes: htmlAttributes);
+        }
+
+        protected string EvalString(string key, string format)
+        {
+            return Convert.ToString(ViewData.Eval(key, format), CultureInfo.CurrentCulture);
+        }
+
+        protected object GetModelStateValue(string key, Type destinationType)
+        {
+            ModelState modelState;
+            if (ViewData.ModelState.TryGetValue(key, out modelState) && modelState.Value != null)
+            {
+                return modelState.Value.ConvertTo(destinationType, culture: null);
+            }
+
+            return null;
+        }
+
+        protected IDictionary<string, object> GetValidationAttributes(string name)
+        {
+            return GetValidationAttributes(name, metadata: null);
+        }
+
+        // Only render attributes if unobtrusive client-side validation is enabled, and then only if we've
+        // never rendered validation for a field with this name in this form. Also, if there's no form context,
+        // then we can't render the attributes (we'd have no <form> to attach them to).
+        protected IDictionary<string, object> GetValidationAttributes(string name, ModelMetadata metadata)
+        {
+            // TODO: Add validation attributes to input helpers.
+            return new Dictionary<string, object>();
+        }
+
+        protected virtual HtmlString GenerateTextBox(ModelMetadata metadata, string name, object value, string format,
+            IDictionary<string, object> htmlAttributes)
+        {
+            return GenerateInput(InputType.Text,
+                metadata,
+                name,
+                value,
+                useViewData: (metadata == null && value == null),
+                isChecked: false,
+                setId: true,
+                isExplicitValue: true,
+                format: format,
+                htmlAttributes: htmlAttributes);
+        }
+
+        protected virtual HtmlString GenerateInput(InputType inputType, ModelMetadata metadata, string name,
+            object value, bool useViewData, bool isChecked, bool setId, bool isExplicitValue, string format,
+            IDictionary<string, object> htmlAttributes)
+        {
+            // Not valid to use TextBoxForModel() in a top-level view; would end up with an unnamed input elements.
+            // But we support the *ForModel() methods in any lower-level template, once HtmlFieldPrefix is non-empty.
+            var fullName = ViewData.TemplateInfo.GetFullHtmlFieldName(name);
+            if (string.IsNullOrEmpty(fullName))
+            {
+                throw new ArgumentException(Resources.ArgumentNullOrEmpty, "name");
+            }
+
+            var tagBuilder = new TagBuilder("input");
+            tagBuilder.MergeAttributes(htmlAttributes);
+            tagBuilder.MergeAttribute("type", GetInputTypeString(inputType));
+            tagBuilder.MergeAttribute("name", fullName, replaceExisting: true);
+
+            var valueParameter = FormatValue(value, format);
+            switch (inputType)
+            {
+                case InputType.Text:
+                default:
+                    var attributeValue = (string)GetModelStateValue(fullName, typeof(string));
+                    if (attributeValue == null)
+                    {
+                        attributeValue = useViewData ? EvalString(fullName, format) : valueParameter;
+                    }
+
+                    tagBuilder.MergeAttribute("value", attributeValue, replaceExisting: isExplicitValue);
+                    break;
+            }
+
+            if (setId)
+            {
+                tagBuilder.GenerateId(fullName, IdAttributeDotReplacement);
+            }
+
+            // If there are any errors for a named field, we add the CSS attribute.
+            ModelState modelState;
+            if (ViewData.ModelState.TryGetValue(fullName, out modelState) && modelState.Errors.Count > 0)
+            {
+                tagBuilder.AddCssClass(ValidationInputCssClassName);
+            }
+
+            tagBuilder.MergeAttributes(GetValidationAttributes(name, metadata));
+
+            return tagBuilder.ToHtmlString(TagRenderMode.SelfClosing);
+        }
+
+        private static string GetInputTypeString(InputType inputType)
         {
             switch (inputType)
             {

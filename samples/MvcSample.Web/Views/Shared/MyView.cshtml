@@ -7,6 +7,7 @@
 
     ViewBag.Anon = new
     {
+        Name = "FirstName LastName",
         Address = new { Street = "123 Fake St.", City = "Redmond", State = "WA", Country = "USA", },
     };
 }
@@ -61,7 +62,7 @@
 </div>
 
 <div class="row">
-    <div style="float: left; border: 5px solid blue;">
+    <div style="float: left; border: 5px solid blue; padding-right: 10px;">
         <table>
             <tr>
                 <td>
@@ -96,6 +97,76 @@
                 </td>
             </tr>
         </table>
+    </div>
+
+    <div style="float: left; border: thick solid lightskyblue; margin-left: 15px; padding-right: 10px">
+        <form action="/Home/Hello" method="post">
+            <table>
+                <tr>
+                    <td>
+                        <label class="control-label col-md-2">Model.Name</label>
+                    </td>
+                    <td>
+                        @Html.TextBox("Name")
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="control-label col-md-2">Model.Address</label>
+                    </td>
+                    <td>
+                        @Html.TextBoxFor(m => m.Address, htmlAttributes: new { @class = "form-control" })
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="control-label col-md-2">Anon.Name</label>
+                    </td>
+                    <td>
+                        @Html.TextBox("Anon.Name")
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="control-label col-md-2">Anon.Address.Street</label>
+                    </td>
+                    <td>
+                        @Html.TextBox("Anon.Address.Street", (object)ViewBag.Anon.Address.Street)
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="control-label col-md-2">Anon.Address.City</label>
+                    </td>
+                    <td>
+                        @Html.TextBox("Anon.Address.City", value: null, format: "{0} (3)")
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="control-label col-md-2">Anon.Address.State</label>
+                    </td>
+                    <td>
+                        @Html.TextBox("Anon.Address.State", value: null, htmlAttributes: new { @class = "form-control" })
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="control-label col-md-2">Anon.Address.Country</label>
+                    </td>
+                    <td>
+                        @Html.TextBox("Anon.Address.Country", value: null, format: "{0} (4)",
+                         htmlAttributes: new { @class = "form-control" })
+                    </td>
+                </tr>
+            </table>
+
+            <div class="form-group">
+                <div class="col-md-2">
+                    <input type="submit" value="Save" class="btn btn-default" />
+                </div>
+            </div>
+        </form>
     </div>
 
     <div style="float: right; border: 5px solid red;">

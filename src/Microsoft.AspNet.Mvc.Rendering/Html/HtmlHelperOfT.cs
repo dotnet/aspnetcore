@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering.Expressions;
 
 namespace Microsoft.AspNet.Mvc.Rendering
@@ -9,8 +12,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <summary>
         /// Initializes a new instance of the <see cref="HtmlHelper{TModel}"/> class.
         /// </summary>
-        public HtmlHelper(IViewEngine viewEngine)
-            : base(viewEngine)
+        public HtmlHelper([NotNull] IViewEngine viewEngine, [NotNull] IModelMetadataProvider metadataProvider)
+            : base(viewEngine, metadataProvider)
         {
         }
 
@@ -45,9 +48,29 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return Name(expressionName);
         }
 
+        /// <inheritdoc />
+        public HtmlString TextBoxFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression,
+            string format, IDictionary<string, object> htmlAttributes)
+        {
+            var metadata = GetModelMetadata(expression);
+            return GenerateTextBox(metadata, GetExpressionName(expression), metadata.Model, format, htmlAttributes);
+        }
+
         protected string GetExpressionName<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression)
         {
             return ExpressionHelper.GetExpressionText(expression);
+        }
+
+        protected ModelMetadata GetModelMetadata<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression)
+        {
+            var metadata = ExpressionMetadataProvider.FromLambdaExpression(expression, ViewData, MetadataProvider);
+            if (metadata == null)
+            {
+                var expressionName = GetExpressionName(expression);
+                throw new InvalidOperationException(Resources.FormatHtmlHelper_NullModelMetadata(expressionName));
+            }
+
+            return metadata;
         }
     }
 }

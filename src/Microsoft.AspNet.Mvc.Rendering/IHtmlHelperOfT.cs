@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -100,6 +101,37 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="viewData">A <see cref="ViewDataDictionary"/> to pass into the partial view.</param>
         /// <returns>A task that represents when rendering has completed.</returns>
         Task RenderPartialAsync([NotNull] string partialViewName, object model, ViewDataDictionary viewData);
+
+        /// <summary>
+        /// Render an input element of type "text".
+        /// </summary>
+        /// <param name="name">
+        /// Rendered element's name. Also use this name to find value in submitted data or view data. Use view data
+        /// only if value is not in submitted data and <paramref name="value"/> is <c>null</c>.
+        /// </param>
+        /// <param name="value">
+        /// If non-<c>null</c>, value to include in the element. Ignore if named value is found in submitted data.
+        /// </param>
+        /// <param name="format"></param>
+        /// <param name="htmlAttributes">
+        /// <see cref="IDictionary{string, object}"/> containing additional HTML attributes.
+        /// </param>
+        /// <returns>New <see cref="HtmlString"/> containing the rendered HTML.</returns>
+        HtmlString TextBox(string name, object value, string format, IDictionary<string, object> htmlAttributes);
+
+        /// <summary>
+        /// Render an input element of type "text".
+        /// </summary>
+        /// <param name="expression">
+        /// An expression that identifies the object that contains the properties to render.
+        /// </param>
+        /// <param name="format"></param>
+        /// <param name="htmlAttributes">
+        /// <see cref="IDictionary{string, object}"/> containing additional HTML attributes.
+        /// </param>
+        /// <returns>New <see cref="HtmlString"/> containing the rendered HTML.</returns>
+        HtmlString TextBoxFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression, string format,
+            IDictionary<string, object> htmlAttributes);
 
         /// <summary>
         /// Returns an unordered list (ul element) of validation messages that are in the <see cref="ModelStateDictionary"/> object.
