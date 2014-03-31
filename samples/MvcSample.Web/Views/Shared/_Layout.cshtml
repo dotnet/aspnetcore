@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title - My ASP.NET Application</title>
     <link rel="stylesheet" href="~/content/bootstrap.min.css" />
+    @RenderSection("header")
 </head>
 <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -36,5 +37,6 @@
             <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
         </footer>
     </div>
+    @RenderSection("footer")
 </body>
 </html>

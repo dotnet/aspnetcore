@@ -135,6 +135,12 @@
   <data name="RenderBodyCannotBeCalled" xml:space="preserve">
     <value>RenderBody can only be called from a layout page.</value>
   </data>
+  <data name="SectionAlreadyDefined" xml:space="preserve">
+    <value>Section '{0}' is already defined.</value>
+  </data>
+  <data name="SectionNotDefined" xml:space="preserve">
+    <value>Section '{0}' is not defined</value>
+  </data>
   <data name="ViewEngine_PartialViewNotFound" xml:space="preserve">
     <value>The partial view '{0}' was not found. The following locations were searched:{1}</value>
   </data>

@@ -107,6 +107,38 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
+        /// Section '{0}' is already defined.
+        /// </summary>
+        internal static string SectionAlreadyDefined
+        {
+            get { return GetString("SectionAlreadyDefined"); }
+        }
+
+        /// <summary>
+        /// Section '{0}' is already defined.
+        /// </summary>
+        internal static string FormatSectionAlreadyDefined(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("SectionAlreadyDefined"), p0);
+        }
+
+        /// <summary>
+        /// Section '{0}' is not defined
+        /// </summary>
+        internal static string SectionNotDefined
+        {
+            get { return GetString("SectionNotDefined"); }
+        }
+
+        /// <summary>
+        /// Section '{0}' is not defined
+        /// </summary>
+        internal static string FormatSectionNotDefined(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("SectionNotDefined"), p0);
+        }
+
+        /// <summary>
         /// The partial view '{0}' was not found. The following locations were searched:{1}
         /// </summary>
         internal static string ViewEngine_PartialViewNotFound

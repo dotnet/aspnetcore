@@ -12,6 +12,29 @@
     };
 }
 
+@section header {
+    <style type="text/css">
+        #qux {
+            display: none;
+        }
+
+        #qux.foo {
+            color: red;
+        }
+    </style>
+}
+
+@section footer {
+    <script src="//ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.0.min.js"></script>
+    <script>
+        $(function () {
+            $("#qux").fadeIn(3000, function () {
+                $(this).addClass("foo")
+            });
+        });
+    </script>
+}
+
 @functions {
     public async Task<string> AsyncValueRetrieval()
     {
@@ -32,7 +55,7 @@
 </div>
 <div class="row">
     <h3 title="@Model.Name" class="@nullValue">Hello @Model.Name! Happy @Model.Age birthday.</h3>
-    <h3>This value was retrieved asynchronously: @(await AsyncValueRetrieval())</h3>
+    <h3 id ="qux">This value was retrieved asynchronously: @(await AsyncValueRetrieval())</h3>
     <h3>Partial Async: @await Html.PartialAsync("HelloWorldPartial", Model)</h3>
     <h3>Render Partial Async (Custom model): @{ await RenderHelloWorldPartial(new User()
                                                 {
