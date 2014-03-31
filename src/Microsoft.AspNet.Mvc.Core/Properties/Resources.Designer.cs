@@ -251,6 +251,22 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
+        /// The value cannot be null or empty.
+        /// </summary>
+        internal static string ArgumentCannotBeNullOrEmpty
+        {
+            get { return GetString("ArgumentCannotBeNullOrEmpty"); }
+        }
+
+        /// <summary>
+        /// The value cannot be null or empty.
+        /// </summary>
+        internal static string FormatArgumentCannotBeNullOrEmpty()
+        {
+            return GetString("ArgumentCannotBeNullOrEmpty");
+        }
+
+        /// <summary>
         /// The '{0}' property of '{1}' must not be null.
         /// </summary>
         internal static string PropertyOfTypeCannotBeNull
@@ -267,7 +283,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// The '{0}' must return a non null '{1}'.
+        /// The '{0}' must return a non-null '{1}'.
         /// </summary>
         internal static string MethodMustReturnNotNullValue
         {
@@ -275,7 +291,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// The '{0}' must return a non null '{1}'.
+        /// The '{0}' must return a non-null '{1}'.
         /// </summary>
         internal static string FormatMethodMustReturnNotNullValue(object p0, object p1)
         {
@@ -287,7 +303,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var value = _resourceManager.GetString(name);
 
             System.Diagnostics.Debug.Assert(value != null);
-    
+
             if (formatterNames != null)
             {
                 for (var i = 0; i < formatterNames.Length; i++)

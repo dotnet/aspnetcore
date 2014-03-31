@@ -1,5 +1,7 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 
@@ -96,6 +98,26 @@ namespace Microsoft.AspNet.Mvc
         public IJsonResult Json(object value)
         {
             return Result.Json(value);
+        }
+
+        public virtual RedirectResult Redirect(string url)
+        {
+            if (string.IsNullOrEmpty(url))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "url");
+            }
+
+            return new RedirectResult(url);
+        }
+
+        public virtual RedirectResult RedirectPermanent(string url)
+        {
+            if (string.IsNullOrEmpty(url))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "url");
+            }
+
+            return new RedirectResult(url, permanent: true);
         }
     }
 }
