@@ -10,6 +10,13 @@ namespace MvcSample.Web
             return View("MyView", User());
         }
 
+        public IActionResult ValidationSummary()
+        {
+            ModelState.AddModelError("something", "Something happened, show up in validation summary.");
+
+            return View("ValidationSummary");
+        }
+
         /// <summary>
         /// Action that shows metadata when model is <c>null</c>.
         /// </summary>

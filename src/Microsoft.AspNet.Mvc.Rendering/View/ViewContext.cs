@@ -16,7 +16,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
         
         public ViewContext([NotNull] ViewContext viewContext)
             : this(viewContext.ServiceProvider, viewContext.HttpContext, viewContext.ViewEngineContext)
-        { }
+        {
+            UnobtrusiveJavaScriptEnabled = viewContext.UnobtrusiveJavaScriptEnabled;
+            ClientValidationEnabled = viewContext.ClientValidationEnabled;
+        }
 
         public ViewContext(IServiceProvider serviceProvider, HttpContext httpContext,
             IDictionary<string, object> viewEngineContext)
@@ -25,6 +28,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             HttpContext = httpContext;
             ViewEngineContext = viewEngineContext;
             _formContext = _defaultFormContext;
+            UnobtrusiveJavaScriptEnabled = true;
+            ClientValidationEnabled = true;
         }
 
         public IViewComponentHelper Component { get; set; }
@@ -47,6 +52,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public IServiceProvider ServiceProvider { get; private set; }
 
         public IUrlHelper Url { get; set; }
+
+        public bool UnobtrusiveJavaScriptEnabled { get; set; }
+
+        public bool ClientValidationEnabled { get; set; }
 
         public dynamic ViewBag
         {

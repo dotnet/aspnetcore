@@ -7,6 +7,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class ModelMetadata
     {
+        public static readonly int DefaultOrder = 10000;
+
         private readonly Type _containerType;
         private readonly Type _modelType;
         private readonly string _propertyName;
@@ -15,6 +17,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private bool _convertEmptyStringToNull = true;
         private object _model;
         private Func<object> _modelAccessor;
+        private int _order = DefaultOrder;
         private IEnumerable<ModelMetadata> _properties;
         private Type _realModelType;
 
@@ -56,6 +59,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         public virtual bool IsReadOnly { get; set; }
+
+        public virtual int Order
+        {
+            get { return _order; }
+            set { _order = value; }
+        }
 
         public object Model
         {

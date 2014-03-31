@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
 
@@ -21,6 +22,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public static readonly string ValidationMessageValidCssClassName = "field-validation-valid";
         public static readonly string ValidationSummaryCssClassName = "validation-summary-errors";
         public static readonly string ValidationSummaryValidCssClassName = "validation-summary-valid";
+
+        private const string HiddenListItem = @"<li style=""display:none""></li>";
 
         private ViewContext _viewContext;
         private IViewEngine _viewEngine;
@@ -173,6 +176,97 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var viewEngineResult = await _viewEngine.FindPartialView(newViewContext.ViewEngineContext, partialViewName);
 
             await viewEngineResult.View.RenderAsync(newViewContext);
+        }
+
+        public virtual HtmlString ValidationSummary(bool excludePropertyErrors, string message, IDictionary<string, object> htmlAttributes)
+        {
+            var formContext = ViewContext.ClientValidationEnabled ? ViewContext.FormContext : null;
+
+            if (ViewData.ModelState.IsValid == true)
+            {
+                if (formContext == null ||
+                    ViewContext.UnobtrusiveJavaScriptEnabled &&
+                    excludePropertyErrors)
+                {
+                    // No client side validation/updates
+                    return HtmlString.Empty;
+                }
+            }
+
+            string messageSpan;
+            if (!string.IsNullOrEmpty(message))
+            {
+                var spanTag = new TagBuilder("span");
+                spanTag.SetInnerText(message);
+                messageSpan = spanTag.ToString(TagRenderMode.Normal) + Environment.NewLine;
+            }
+            else
+            {
+                messageSpan = null;
+            }
+
+            var htmlSummary = new StringBuilder();
+            var modelStates = ValidationHelpers.GetModelStateList(ViewData, excludePropertyErrors);
+
+            foreach (var modelState in modelStates)
+            {
+                foreach (var modelError in modelState.Errors)
+                {
+                    string errorText = ValidationHelpers.GetUserErrorMessageOrDefault(modelError, modelState: null);
+
+                    if (!string.IsNullOrEmpty(errorText))
+                    {
+                        var listItem = new TagBuilder("li");
+                        listItem.SetInnerText(errorText);
+                        htmlSummary.AppendLine(listItem.ToString(TagRenderMode.Normal));
+                    }
+                }
+            }
+
+            if (htmlSummary.Length == 0)
+            {
+                htmlSummary.AppendLine(HiddenListItem);
+            }
+
+            var unorderedList = new TagBuilder("ul")
+            {
+                InnerHtml = htmlSummary.ToString()
+            };
+
+            var divBuilder = new TagBuilder("div");
+            divBuilder.MergeAttributes(htmlAttributes);
+
+            if (ViewData.ModelState.IsValid == true)
+            {
+                divBuilder.AddCssClass(HtmlHelper.ValidationSummaryValidCssClassName);
+            }
+            else
+            {
+                divBuilder.AddCssClass(HtmlHelper.ValidationSummaryCssClassName);
+            }
+
+            divBuilder.InnerHtml = messageSpan + unorderedList.ToString(TagRenderMode.Normal);
+
+            if (formContext != null)
+            {
+                if (ViewContext.UnobtrusiveJavaScriptEnabled)
+                {
+                    if (!excludePropertyErrors)
+                    {
+                        // Only put errors in the validation summary if they're supposed to be included there
+                        divBuilder.MergeAttribute("data-valmsg-summary", "true");
+                    }
+                }
+                else
+                {
+                    // client validation summaries need an ID
+                    divBuilder.GenerateId("validationSummary", IdAttributeDotReplacement);
+                    formContext.ValidationSummaryId = divBuilder.Attributes["id"];
+                    formContext.ReplaceValidationSummary = !excludePropertyErrors;
+                }
+            }
+
+            return divBuilder.ToHtmlString(TagRenderMode.Normal);
         }
 
         /// <summary>

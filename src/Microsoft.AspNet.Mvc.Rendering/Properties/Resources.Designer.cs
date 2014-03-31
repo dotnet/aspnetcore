@@ -75,6 +75,22 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <summary>
+        /// The value '{0}' is invalid.
+        /// </summary>
+        internal static string Common_ValueNotValidForProperty
+        {
+            get { return GetString("Common_ValueNotValidForProperty"); }
+        }
+
+        /// <summary>
+        /// The value '{0}' is invalid.
+        /// </summary>
+        internal static string FormatCommon_ValueNotValidForProperty(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Common_ValueNotValidForProperty"), p0);
+        }
+
+        /// <summary>
         /// ViewData value must not be null.
         /// </summary>
         internal static string DynamicViewData_ViewDataNull
