@@ -1,6 +1,8 @@
 ﻿
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.DependencyInjection;
@@ -20,8 +22,12 @@ namespace Microsoft.AspNet.Mvc
 
         public string GetVirtualPath([NotNull] VirtualPathContext context)
         {
-            // For now just allow any values to target this application.
-            context.IsBound = true;
+            // The contract of this method is to check that the values coming in from the route are valid;
+            // that they match an existing action, setting IsBound = true if the values are OK.
+            var actionSelector = context.Context.RequestServices.GetService<IActionSelector>();
+            context.IsBound = actionSelector.HasValidAction(context);
+
+            // We return null here because we're not responsible for generating the url, the route is.
             return null;
         }
 

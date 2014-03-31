@@ -267,7 +267,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// The '{0}' must return a non null '{1}'.
+        /// The '{0}' must return a non-null '{1}'.
         /// </summary>
         internal static string MethodMustReturnNotNullValue
         {
@@ -275,11 +275,27 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// The '{0}' must return a non null '{1}'.
+        /// The '{0}' must return a non-null '{1}'.
         /// </summary>
         internal static string FormatMethodMustReturnNotNullValue(object p0, object p1)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("MethodMustReturnNotNullValue"), p0, p1);
+        }
+
+        /// <summary>
+        /// The supplied route values are ambiguous and can select multiple sets of actions.
+        /// </summary>
+        internal static string ActionSelector_GetCandidateActionsIsAmbiguous
+        {
+            get { return GetString("ActionSelector_GetCandidateActionsIsAmbiguous"); }
+        }
+
+        /// <summary>
+        /// The supplied route values are ambiguous and can select multiple sets of actions.
+        /// </summary>
+        internal static string FormatActionSelector_GetCandidateActionsIsAmbiguous()
+        {
+            return GetString("ActionSelector_GetCandidateActionsIsAmbiguous");
         }
 
         private static string GetString(string name, params string[] formatterNames)

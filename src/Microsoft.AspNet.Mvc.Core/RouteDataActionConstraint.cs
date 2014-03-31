@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using Microsoft.AspNet.Mvc.Core;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -70,41 +72,60 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        public bool Accept(RequestContext context)
+        public bool Accept([NotNull] IDictionary<string, object> routeValues)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException("context");
-            }
-
-            var routeValues = context.RouteValues;
-
-            if (routeValues == null)
-            {
-                throw new ArgumentException("Need route values", "context");
-            }
-
+            object value;
             switch (KeyHandling)
             {
                 case RouteKeyHandling.AcceptAlways:
                     return true;
-                case RouteKeyHandling.DenyKey:
-                    return !routeValues.ContainsKey(RouteKey);
+
                 case RouteKeyHandling.CatchAll:
                     return routeValues.ContainsKey(RouteKey);
+
+                case RouteKeyHandling.DenyKey:
+                    // Routing considers a null or empty string to also be the lack of a value
+                    if (!routeValues.TryGetValue(RouteKey, out value) || value == null)
+                    {
+                        return true;
+                    }
+
+                    var stringValue = value as string;
+                    if (stringValue != null && stringValue.Length == 0)
+                    {
+                        return true;
+                    }
+
+                    return false;
+
+                case RouteKeyHandling.RequireKey:
+                    if (routeValues.TryGetValue(RouteKey, out value))
+                    {
+                        return Comparer.Equals(value, RouteValue);
+                    }
+                    else
+                    {
+                        return false;
+                    }
+
+                default:
+                    Debug.Fail("Unexpected routeValue");
+                    return false;
+            }
+        }
+
+        public bool Accept([NotNull] RequestContext context)
+        {
+            var routeValues = context.RouteValues;
+            if (routeValues == null)
+            {
+                throw new ArgumentException(Resources.FormatPropertyOfTypeCannotBeNull(
+                        "RouteValues", 
+                        typeof(RequestContext)), 
+                    "context");
             }
 
-            Debug.Assert(KeyHandling == RouteKeyHandling.RequireKey, "Unexpected routeValue");
-
-            object value;
-            if (routeValues.TryGetValue(RouteKey, out value))
-            {
-                return Comparer.Equals(value, RouteValue);
-            }
-            else
-            {
-                return false;
-            }
+            return Accept(routeValues);
         }   
     }
 }

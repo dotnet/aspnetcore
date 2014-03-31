@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Arrange
             var context = CreateHttpContext(appRoot);
             var contextAccessor = CreateActionContext(context);
-            var urlHelper = new UrlHelper(contextAccessor);
+            var urlHelper = CreateUrlHelper(contextAccessor);
 
             // Act
             var path = urlHelper.Content(contentPath);
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Arrange
             var context = CreateHttpContext(appRoot);
             var contextAccessor = CreateActionContext(context);
-            var urlHelper = new UrlHelper(contextAccessor);
+            var urlHelper = CreateUrlHelper(contextAccessor);
 
             // Act
             var path = urlHelper.Content(contentPath);
@@ -74,6 +74,12 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             contextAccessor.SetupGet(c => c.Value)
                            .Returns(actionContext);
             return contextAccessor.Object;
+        }
+
+        private static UrlHelper CreateUrlHelper(IContextAccessor<ActionContext> contextAccessor)
+        {
+            var actionSelector = new Mock<IActionSelector>(MockBehavior.Strict);
+            return new UrlHelper(contextAccessor, actionSelector.Object);
         }
     }
 }

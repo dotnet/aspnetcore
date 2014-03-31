@@ -168,4 +168,7 @@
   <data name="MethodMustReturnNotNullValue" xml:space="preserve">
     <value>The '{0}' must return a non-null '{1}'.</value>
   </data>
+  <data name="ActionSelector_GetCandidateActionsIsAmbiguous" xml:space="preserve">
+    <value>The supplied route values are ambiguous and can select multiple sets of actions.</value>
+  </data>
 </root>
