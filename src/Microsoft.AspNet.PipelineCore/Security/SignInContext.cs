@@ -15,14 +15,18 @@ namespace Microsoft.AspNet.PipelineCore.Security
             }
             User = user;
             Properties = dictionary ?? new Dictionary<string, string>(StringComparer.Ordinal);
+            Acked = new List<string>();
         }
 
         public ClaimsPrincipal User { get; private set; }
 
         public IDictionary<string, string> Properties { get; private set; }
 
+        public IList<string> Acked { get; private set; }
+
         public void Ack(string authenticationType, IDictionary<string, object> description)
         {
+            Acked.Add(authenticationType);
         }
     }
 }

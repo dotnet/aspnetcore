@@ -17,6 +17,8 @@ namespace Microsoft.AspNet.PipelineCore.Security
 {
     public class DefaultAuthenticationManager : AuthenticationManager
     {
+        private static DescriptionDelegate GetAuthenticationTypesDelegate = GetAuthenticationTypesCallback;
+
         private readonly DefaultHttpContext _context;
         private readonly IFeatureCollection _features;
 
@@ -52,8 +54,7 @@ namespace Microsoft.AspNet.PipelineCore.Security
             var handler = HttpAuthentication.Handler;
             if (handler != null)
             {
-                // TODO: static delegate field
-                handler.GetDescriptions(GetAuthenticationTypesCallback, descriptions);
+                handler.GetDescriptions(GetAuthenticationTypesDelegate, descriptions);
             }
             return descriptions;
         }
@@ -71,17 +72,25 @@ namespace Microsoft.AspNet.PipelineCore.Security
 
         public override IEnumerable<AuthenticationResult> Authenticate(IList<string> authenticationTypes)
         {
-            HttpResponseInformation.StatusCode = 401;
+            if (authenticationTypes == null)
+            {
+                throw new ArgumentNullException();
+            }
             var handler = HttpAuthentication.Handler;
             if (handler == null)
             {
-                // TODO: InvalidOperationException? No auth types supported?
-                return new AuthenticationResult[0];
+                throw new InvalidOperationException("No authentication handlers present.");
             }
 
             var authenticateContext = new AuthenticateContext(authenticationTypes);
             handler.Authenticate(authenticateContext);
-            // TODO: Verify all types ack'd
+
+            // Verify all types ack'd
+            IEnumerable<string> leftovers = authenticationTypes.Except(authenticateContext.Acked);
+            if (leftovers.Any())
+            {
+                throw new InvalidOperationException("The following authentication types did not ack: " + string.Join(", ", leftovers));
+            }
 
             return authenticateContext.Results;
         }
@@ -93,17 +102,25 @@ namespace Microsoft.AspNet.PipelineCore.Security
 
         public override async Task<IEnumerable<AuthenticationResult>> AuthenticateAsync(IList<string> authenticationTypes)
         {
-            HttpResponseInformation.StatusCode = 401;
+            if (authenticationTypes == null)
+            {
+                throw new ArgumentNullException();
+            }
             var handler = HttpAuthentication.Handler;
             if (handler == null)
             {
-                // TODO: InvalidOperationException? No auth types supported?
-                return new AuthenticationResult[0];
+                throw new InvalidOperationException("No authentication handlers present.");
             }
 
             var authenticateContext = new AuthenticateContext(authenticationTypes);
             await handler.AuthenticateAsync(authenticateContext);
-            // TODO: Verify all types ack'd
+
+            // Verify all types ack'd
+            IEnumerable<string> leftovers = authenticationTypes.Except(authenticateContext.Acked);
+            if (leftovers.Any())
+            {
+                throw new InvalidOperationException("The following authentication types did not ack: " + string.Join(", ", leftovers));
+            }
 
             return authenticateContext.Results;
         }
@@ -135,17 +152,26 @@ namespace Microsoft.AspNet.PipelineCore.Security
 
         public override void Challenge(IList<string> authenticationTypes, AuthenticationProperties properties)
         {
+            if (authenticationTypes == null)
+            {
+                throw new ArgumentNullException();
+            }
             HttpResponseInformation.StatusCode = 401;
             var handler = HttpAuthentication.Handler;
             if (handler == null)
             {
-                // TODO: InvalidOperationException? No auth types supported? If authTypes.Length > 1?
-                return;
+                throw new InvalidOperationException("No authentication handlers present.");
             }
 
             var challengeContext = new ChallengeContext(authenticationTypes, properties == null ? null : properties.Dictionary);
             handler.Challenge(challengeContext);
-            // TODO: Verify all types ack'd
+
+            // Verify all types ack'd
+            IEnumerable<string> leftovers = authenticationTypes.Except(challengeContext.Acked);
+            if (leftovers.Any())
+            {
+                throw new InvalidOperationException("The following authentication types did not ack: " + string.Join(", ", leftovers));
+            }
         }
 
         public override void SignIn(ClaimsPrincipal user)
@@ -155,17 +181,25 @@ namespace Microsoft.AspNet.PipelineCore.Security
 
         public override void SignIn(ClaimsPrincipal user, AuthenticationProperties properties)
         {
-            HttpResponseInformation.StatusCode = 401;
+            if (user == null)
+            {
+                throw new ArgumentNullException();
+            }
             var handler = HttpAuthentication.Handler;
             if (handler == null)
             {
-                // TODO: InvalidOperationException? No auth types supported?
-                return;
+                throw new InvalidOperationException("No authentication handlers present.");
             }
 
             var signInContext = new SignInContext(user, properties == null ? null : properties.Dictionary);
             handler.SignIn(signInContext);
-            // TODO: Verify all types ack'd
+
+            // Verify all types ack'd
+            IEnumerable<string> leftovers = user.Identities.Select(identity => identity.AuthenticationType).Except(signInContext.Acked);
+            if (leftovers.Any())
+            {
+                throw new InvalidOperationException("The following authentication types did not ack: " + string.Join(", ", leftovers));
+            }
         }
 
         public override void SignOut()
@@ -180,17 +214,25 @@ namespace Microsoft.AspNet.PipelineCore.Security
 
         public override void SignOut(IList<string> authenticationTypes)
         {
-            HttpResponseInformation.StatusCode = 401;
+            if (authenticationTypes == null)
+            {
+                throw new ArgumentNullException();
+            }
             var handler = HttpAuthentication.Handler;
             if (handler == null)
             {
-                // TODO: InvalidOperationException? No auth types supported?
-                return;
+                throw new InvalidOperationException("No authentication handlers present.");
             }
 
             var signOutContext = new SignOutContext(authenticationTypes);
             handler.SignOut(signOutContext);
-            // TODO: Verify all types ack'd
+
+            // Verify all types ack'd
+            IEnumerable<string> leftovers = authenticationTypes.Except(signOutContext.Acked);
+            if (leftovers.Any())
+            {
+                throw new InvalidOperationException("The following authentication types did not ack: " + string.Join(", ", leftovers));
+            }
         }
     }
 }
