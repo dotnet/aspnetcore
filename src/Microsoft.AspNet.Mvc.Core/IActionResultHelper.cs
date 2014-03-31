@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNet.Mvc.Rendering;
+﻿using System.Text;
+using Microsoft.AspNet.Mvc.Rendering;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -6,6 +7,7 @@ namespace Microsoft.AspNet.Mvc
     {
         IActionResult Content(string value);
         IActionResult Content(string value, string contentType);
+        IActionResult Content(string value, string contentType, Encoding contentEncoding);
         IJsonResult Json(object value);
         IActionResult View(string view, ViewDataDictionary viewData);
     }

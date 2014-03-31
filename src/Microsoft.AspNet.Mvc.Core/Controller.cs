@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNet.Abstractions;
+﻿using System.Text;
+using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 
@@ -75,6 +76,26 @@ namespace Microsoft.AspNet.Mvc
             }
 
             return Result.View(view, ViewData);
+        }
+
+        public IActionResult Content(string content)
+        {
+            return Content(content, contentType: null);
+        }
+
+        public IActionResult Content(string content, string contentType)
+        {
+            return Content(content, contentType, contentEncoding: null);
+        }
+
+        public IActionResult Content(string content, string contentType, Encoding contentEncoding)
+        {
+            return Result.Content(content, contentType, contentEncoding);
+        }
+
+        public IJsonResult Json(object value)
+        {
+            return Result.Json(value);
         }
     }
 }
