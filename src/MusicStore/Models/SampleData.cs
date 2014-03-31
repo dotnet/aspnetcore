@@ -36,9 +36,15 @@ namespace MusicStore.Web.Models
         private static void AddOrUpdate<TEntity>(Func<TEntity, object> propertyToMatch, IEnumerable<TEntity> entities)
             where TEntity : class
         {
+            // Query in a separate context so that we can attach existing entities as modified
+            List<TEntity> existingData;
             using (var db = new MusicStoreContext())
             {
-                var existingData = db.Set<TEntity>().ToList();
+                existingData = db.Set<TEntity>().ToList();
+            }
+
+            using (var db = new MusicStoreContext())
+            {
                 foreach (var item in entities)
                 {
                     db.ChangeTracker.Entry(item).State = existingData.Any(g => propertyToMatch(g).Equals(propertyToMatch(item)))
