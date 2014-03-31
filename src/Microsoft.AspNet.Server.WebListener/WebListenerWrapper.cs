@@ -139,7 +139,7 @@ namespace Microsoft.AspNet.Server.WebListener
                     else
                     {
                         // We haven't sent a response yet, try to send a 500 Internal Server Error
-                        requestContext.SetFatalResponse();
+                        SetFatalResponse(requestContext);
                     }
                 }
                 requestContext.Dispose();
@@ -148,8 +148,15 @@ namespace Microsoft.AspNet.Server.WebListener
             {
                 LogHelper.LogException(_logger, "ProcessRequestAsync", ex);
                 requestContext.Abort();
-                requestContext.Dispose();
             }
+        }
+
+        private static void SetFatalResponse(RequestContext context)
+        {
+            context.Response.StatusCode = 500;
+            context.Response.ReasonPhrase = string.Empty;
+            context.Response.Headers.Clear();
+            context.Response.ContentLength = 0;
         }
 
         public void Dispose()

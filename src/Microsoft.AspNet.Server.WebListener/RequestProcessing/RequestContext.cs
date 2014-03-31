@@ -6,9 +6,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Logging;
@@ -17,14 +17,11 @@ namespace Microsoft.AspNet.Server.WebListener
 {
     using OpaqueFunc = Func<IDictionary<string, object>, Task>;
 
-    internal sealed class RequestContext : IDisposable
+    public sealed class RequestContext : IDisposable
     {
-        private static readonly string[] ZeroContentLength = new[] { "0" };
-
         private OwinWebListener _server;
         private Request _request;
         private Response _response;
-        private CancellationTokenSource _cts;
         private NativeRequestContext _memoryBlob;
         private OpaqueFunc _opaqueCallback;
         private bool _disposed;
@@ -38,11 +35,10 @@ namespace Microsoft.AspNet.Server.WebListener
             _memoryBlob = memoryBlob;
             _request = new Request(this, _memoryBlob);
             _response = new Response(this);
-            _cts = new CancellationTokenSource();
             _request.ReleasePins();
         }
 
-        internal Request Request
+        public Request Request
         {
             get
             {
@@ -50,7 +46,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        internal Response Response
+        public Response Response
         {
             get
             {
@@ -58,7 +54,12 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        internal CancellationToken DisconnectToken
+        public IPrincipal User
+        {
+            get { return _request.User; }
+        }
+
+        public CancellationToken DisconnectToken
         {
             get
             {
@@ -146,32 +147,20 @@ namespace Microsoft.AspNet.Server.WebListener
             finally
             {
                 _request.Dispose();
-                _cts.Dispose();
             }
         }
 
-        internal void Abort()
+        public void Abort()
         {
+            // May be called from Dispose() code path, don't check _disposed.
             // TODO: Verbose log
             _disposed = true;
-            try
+            if (_disconnectRegistration.HasValue)
             {
-                _cts.Cancel();
-            }
-            catch (ObjectDisposedException)
-            {
-            }
-            catch (AggregateException)
-            {
+                _disconnectRegistration.Value.Dispose();
             }
             ForceCancelRequest(RequestQueueHandle, _request.RequestId);
             _request.Dispose();
-            _cts.Dispose();
-        }
-
-        internal UnsafeNclNativeMethods.HttpApi.HTTP_VERB GetKnownMethod()
-        {
-            return UnsafeNclNativeMethods.HttpApi.GetKnownVerb(Request.RequestBuffer, Request.OriginalBlobAddress);
         }
 
         // This is only called while processing incoming requests.  We don't have to worry about cancelling 
@@ -255,14 +244,6 @@ namespace Microsoft.AspNet.Server.WebListener
             opaqueEnv[Constants.OpaqueStreamKey] = new OpaqueStream(Request.Body, Response.Body);
 
             return opaqueEnv;
-        }
-
-        internal void SetFatalResponse()
-        {
-            Response.StatusCode = 500;
-            Response.ReasonPhrase = string.Empty;
-            Response.Headers.Clear();
-            Response.Headers.Add(HttpKnownHeaderNames.ContentLength, ZeroContentLength);
         }
     }
 }

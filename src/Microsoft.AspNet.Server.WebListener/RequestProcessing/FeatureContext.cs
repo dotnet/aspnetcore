@@ -163,7 +163,19 @@ namespace Microsoft.AspNet.Server.WebListener
             {
                 if (_httpProtocolVersion == null)
                 {
-                    _httpProtocolVersion = Request.Protocol;
+                    if (Request.ProtocolVersion.Major == 1)
+                    {
+                        if (Request.ProtocolVersion.Minor == 1)
+                        {
+                            _httpProtocolVersion = "HTTP/1.1";
+                        }
+                        else if (Request.ProtocolVersion.Minor == 0)
+                        {
+                            _httpProtocolVersion = "HTTP/1.0";
+                        }
+                    }
+
+                    _httpProtocolVersion = "HTTP/" + Request.ProtocolVersion.ToString(2);
                 }
                 return _httpProtocolVersion;
             }

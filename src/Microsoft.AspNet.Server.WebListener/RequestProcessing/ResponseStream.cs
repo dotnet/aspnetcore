@@ -195,14 +195,14 @@ namespace Microsoft.AspNet.Server.WebListener
             }
             if (_leftToWrite == long.MinValue)
             {
-                UnsafeNclNativeMethods.HttpApi.HTTP_VERB method = _requestContext.GetKnownMethod();
+                UnsafeNclNativeMethods.HttpApi.HTTP_VERB method = _requestContext.Request.GetKnownMethod();
                 if (method == UnsafeNclNativeMethods.HttpApi.HTTP_VERB.HttpVerbHEAD)
                 {
                     _leftToWrite = 0;
                 }
-                else if (_requestContext.Response.EntitySendFormat == EntitySendFormat.ContentLength)
+                else if (_requestContext.Response.BoundaryType == BoundaryType.ContentLength)
                 {
-                    _leftToWrite = _requestContext.Response.ContentLength64;
+                    _leftToWrite = _requestContext.Response.CalculatedLength;
                 }
                 else
                 {

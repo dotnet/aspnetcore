@@ -1,55 +1,69 @@
 
 using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNet.Server.WebListener;
 
-using AppFunc = System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
-
-public class Program
+namespace HelloWorld
 {
-    public static void Main(string[] args)
+    public class Program
     {
-        using (CreateServer(new AppFunc(HelloWorldApp)))
+        public static void Main(string[] args)
         {
-            Console.WriteLine("Running, press enter to exit...");
-            Console.ReadLine();
+            using (OwinWebListener listener = new OwinWebListener())
+            {
+                listener.UrlPrefixes.Add(UrlPrefix.Create("http://localhost:8080"));
+                listener.Start();
+
+                Console.WriteLine("Running...");
+                while (true)
+                {
+                    RequestContext context = listener.GetContextAsync().Result;
+                    Console.WriteLine("Accepted");
+
+                    // Context:
+                    // context.User;
+                    // context.DisconnectToken
+                    // context.Dispose()
+                    // context.Abort();
+
+                    // Request
+                    // context.Request.ProtocolVersion
+                    // context.Request.IsLocal
+                    // context.Request.Headers // TODO: Header helpers?
+                    // context.Request.Method
+                    // context.Request.Body
+                    // Content-Length - long?
+                    // Content-Type - string
+                    // IsSecureConnection
+                    // HasEntityBody
+
+                    // TODO: Request fields
+                    // Content-Encoding - Encoding
+                    // Host
+                    // Client certs - GetCertAsync, CertErrors
+                    // Cookies
+                    // KeepAlive
+                    // QueryString (parsed)
+                    // RequestTraceIdentifier
+                    // RawUrl
+                    // URI
+                    // IsWebSocketRequest
+                    // LocalEndpoint vs LocalIP & LocalPort
+                    // RemoteEndpoint vs RemoteIP & RemotePort
+                    // AcceptTypes string[]
+                    // ServiceName
+                    // TransportContext
+
+                    // Response
+                    byte[] bytes = Encoding.ASCII.GetBytes("Hello World: " + DateTime.Now);
+
+                    context.Response.ContentLength = bytes.Length;
+                    context.Response.ContentType = "text/plain";
+
+                    context.Response.Body.Write(bytes, 0, bytes.Length);
+                    context.Dispose();
+                }
+            }
         }
-    }
-
-    private static IDisposable CreateServer(AppFunc app)
-    {
-        IDictionary<string, object> properties = new Dictionary<string, object>();
-        IList<IDictionary<string, object>> addresses = new List<IDictionary<string, object>>();
-        properties["host.Addresses"] = addresses;
-
-        IDictionary<string, object> address = new Dictionary<string, object>();
-        addresses.Add(address);
-
-        address["scheme"] = "http";
-        address["host"] = "localhost";
-        address["port"] = "8080";
-        address["path"] = string.Empty;
-
-        return OwinServerFactory.Create(app, properties);
-    }
-
-    public static Task HelloWorldApp(IDictionary<string, object> environment)
-    {
-            string responseText = "Hello World";
-            byte[] responseBytes = Encoding.UTF8.GetBytes(responseText);
-
-            // See http://owin.org/spec/owin-1.0.0.html for standard environment keys.
-            Stream responseStream = (Stream)environment["owin.ResponseBody"];
-            IDictionary<string, string[]> responseHeaders =
-                (IDictionary<string, string[]>)environment["owin.ResponseHeaders"];
-
-            responseHeaders["Content-Length"] = new string[] { responseBytes.Length.ToString(CultureInfo.InvariantCulture) };
-            responseHeaders["Content-Type"] = new string[] { "text/plain" };
-
-            return responseStream.WriteAsync(responseBytes, 0, responseBytes.Length);
     }
 }

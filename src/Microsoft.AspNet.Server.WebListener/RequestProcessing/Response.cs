@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -15,8 +16,10 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
-    internal sealed unsafe class Response : IDisposable
+    public sealed unsafe class Response
     {
+        private static readonly string[] ZeroContentLength = new[] { "0" };
+
         private ResponseState _responseState;
         private IDictionary<string, string[]> _headers;
         private string _reasonPhrase;
@@ -99,7 +102,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        internal ResponseStream Body
+        public Stream Body
         {
             get
             {
@@ -136,14 +139,6 @@ namespace Microsoft.AspNet.Server.WebListener
             return true;
         }
 
-        internal EntitySendFormat EntitySendFormat
-        {
-            get
-            {
-                return (EntitySendFormat)_boundaryType;
-            }
-        }
-
         public IDictionary<string, string[]> Headers
         {
             get { return _headers; }
@@ -157,11 +152,78 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        internal long ContentLength64
+        internal long CalculatedLength
         {
             get
             {
                 return _contentLength;
+            }
+        }
+
+        // Header accessors
+        public long? ContentLength
+        {
+            get
+            {
+                string contentLengthString = Headers.Get(HttpKnownHeaderNames.ContentLength);
+                long contentLength;
+                if (!string.IsNullOrWhiteSpace(contentLengthString))
+                {
+                    contentLengthString = contentLengthString.Trim();
+                    if (string.Equals("0", contentLengthString, StringComparison.Ordinal))
+                    {
+                        return 0;
+                    }
+                    else if (long.TryParse(contentLengthString, NumberStyles.None, CultureInfo.InvariantCulture.NumberFormat, out contentLength))
+                    {
+                        return contentLength;
+                    }
+                }
+                return null;
+            }
+            set
+            {
+                CheckResponseStarted();
+                if (!value.HasValue)
+                {
+                    Headers.Remove(HttpKnownHeaderNames.ContentLength);
+                }
+                else
+                {
+                    if (value.Value < 0)
+                    {
+                        throw new ArgumentOutOfRangeException("value", value.Value, "Cannot be negative.");
+                    }
+
+                    if (value.Value == 0)
+                    {
+                        Headers[HttpKnownHeaderNames.ContentLength] = ZeroContentLength;
+                    }
+                    else
+                    {
+                        Headers[HttpKnownHeaderNames.ContentLength] = new[] { value.Value.ToString(CultureInfo.InvariantCulture) };
+                    }
+                }
+            }
+        }
+
+        public string ContentType
+        {
+            get
+            {
+                return Headers.Get(HttpKnownHeaderNames.ContentLength);
+            }
+            set
+            {
+                CheckResponseStarted();
+                if (string.IsNullOrEmpty(value))
+                {
+                    Headers.Remove(HttpKnownHeaderNames.ContentType);
+                }
+                else
+                {
+                    Headers[HttpKnownHeaderNames.ContentType] = new[] { value };
+                }
             }
         }
 
@@ -203,24 +265,17 @@ namespace Microsoft.AspNet.Server.WebListener
             return Request.ProtocolVersion;
         }
 
-        public void Dispose()
+        // should only be called from RequestContext
+        internal void Dispose()
         {
-            Dispose(true);
-        }
-
-        private void Dispose(bool disposing)
-        {
-            if (disposing)
+            if (_responseState >= ResponseState.Closed)
             {
-                if (_responseState >= ResponseState.Closed)
-                {
-                    return;
-                }
-                // TODO: Verbose log
-                EnsureResponseStream();
-                _nativeStream.Dispose();
-                _responseState = ResponseState.Closed;
+                return;
             }
+            // TODO: Verbose log
+            EnsureResponseStream();
+            _nativeStream.Dispose();
+            _responseState = ResponseState.Closed;
         }
 
         // old API, now private, and helper methods
@@ -434,7 +489,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }
 
             // Content-Length takes priority
-            string contentLengthString = Headers.Get(HttpKnownHeaderNames.ContentLength);
+            long? contentLength = ContentLength;
             string transferEncodingString = Headers.Get(HttpKnownHeaderNames.TransferEncoding);
 
             if (responseVersion == Constants.V1_0 && !string.IsNullOrEmpty(transferEncodingString)
@@ -445,26 +500,13 @@ namespace Microsoft.AspNet.Server.WebListener
                 transferEncodingString = null;
             }
 
-            if (!string.IsNullOrWhiteSpace(contentLengthString))
+            if (contentLength.HasValue)
             {
-                contentLengthString = contentLengthString.Trim();
-                if (string.Equals("0", contentLengthString, StringComparison.Ordinal))
+                _contentLength = contentLength.Value;
+                _boundaryType = BoundaryType.ContentLength;
+                if (_contentLength == 0)
                 {
-                    _boundaryType = BoundaryType.ContentLength;
-                    _contentLength = 0;
                     flags = UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.NONE;
-                }
-                else if (long.TryParse(contentLengthString, NumberStyles.None, CultureInfo.InvariantCulture.NumberFormat, out _contentLength))
-                {
-                    _boundaryType = BoundaryType.ContentLength;
-                    if (_contentLength == 0)
-                    {
-                        flags = UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.NONE;
-                    }
-                }
-                else
-                {
-                    _boundaryType = BoundaryType.Invalid;
                 }
             }
             else if (!string.IsNullOrWhiteSpace(transferEncodingString)
@@ -509,7 +551,6 @@ namespace Microsoft.AspNet.Server.WebListener
             }
 
             // Also, Keep-Alive vs Connection Close
-
             if (!keepAlive)
             {
                 if (!closeSet)

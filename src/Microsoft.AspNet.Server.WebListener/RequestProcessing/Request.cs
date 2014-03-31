@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
-    internal sealed class Request : IDisposable
+    public sealed class Request
     {
         private RequestContext _requestContext;
         private NativeRequestContext _nativeRequestContext;
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Server.WebListener
 
         private IDictionary<string, string[]> _headers;
         private BoundaryType _contentBoundaryType;
-        private long _contentLength;
+        private long? _contentLength;
         private Stream _nativeStream;
 
         private SocketAddress _localEndPoint;
@@ -202,32 +202,30 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        // TODO: Move this to the constructor, that's where it will be called.
-        internal long ContentLength64
+        public long? ContentLength
         {
             get
             {
                 if (_contentBoundaryType == BoundaryType.None)
                 {
                     string transferEncoding = Headers.Get(HttpKnownHeaderNames.TransferEncoding) ?? string.Empty;
-                    if ("chunked".Equals(transferEncoding.Trim(), StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals("chunked", transferEncoding.Trim(), StringComparison.OrdinalIgnoreCase))
                     {
                         _contentBoundaryType = BoundaryType.Chunked;
-                        _contentLength = -1;
                     }
                     else
                     {
-                        _contentLength = 0;
-                        _contentBoundaryType = BoundaryType.ContentLength;
                         string length = Headers.Get(HttpKnownHeaderNames.ContentLength) ?? string.Empty;
-                        if (length != null)
+                        long value;
+                        if (long.TryParse(length.Trim(), NumberStyles.None,
+                            CultureInfo.InvariantCulture.NumberFormat, out value))
                         {
-                            if (!long.TryParse(length.Trim(), NumberStyles.None,
-                                CultureInfo.InvariantCulture.NumberFormat, out _contentLength))
-                            {
-                                _contentLength = 0;
-                                _contentBoundaryType = BoundaryType.Invalid;
-                            }
+                            _contentBoundaryType = BoundaryType.ContentLength;
+                            _contentLength = value;
+                        }
+                        else
+                        {
+                            _contentBoundaryType = BoundaryType.Invalid;
                         }
                     }
                 }
@@ -252,7 +250,6 @@ namespace Microsoft.AspNet.Server.WebListener
             {
                 if (_nativeStream == null)
                 {
-                    // TODO: Move this to the constructor (or a lazy Env dictionary)
                     _nativeStream = HasEntityBody ? new RequestStream(RequestContext) : Stream.Null;
                 }
                 return _nativeStream;
@@ -281,7 +278,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        internal bool IsSecureConnection
+        public bool IsSecureConnection
         {
             get
             {
@@ -297,7 +294,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
         */
-        internal Version ProtocolVersion
+        public Version ProtocolVersion
         {
             get
             {
@@ -305,34 +302,13 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        public string Protocol
+        public bool HasEntityBody
         {
             get
             {
-                if (_httpVersion.Major == 1)
-                {
-                    if (_httpVersion.Minor == 1)
-                    {
-                        return "HTTP/1.1";
-                    }
-                    else if (_httpVersion.Minor == 0)
-                    {
-                        return "HTTP/1.0";
-                    }
-                }
-
-                return "HTTP/" + _httpVersion.ToString(2);
-            }
-        }
-
-        // TODO: Move this to the constructor
-        internal bool HasEntityBody
-        {
-            get
-            {
-                // accessing the ContentLength property delay creates m_BoundaryType
-                return (ContentLength64 > 0 && _contentBoundaryType == BoundaryType.ContentLength) ||
-                    _contentBoundaryType == BoundaryType.Chunked || _contentBoundaryType == BoundaryType.Multipart;
+                // accessing the ContentLength property delay creates _contentBoundaryType
+                return (ContentLength.HasValue && ContentLength.Value > 0 && _contentBoundaryType == BoundaryType.ContentLength)
+                    || _contentBoundaryType == BoundaryType.Chunked;
             }
         }
 
@@ -418,6 +394,14 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
+        public string ContentType
+        {
+            get
+            {
+                return Headers.Get(HttpKnownHeaderNames.ContentLength);
+            }
+        }
+
         internal IPrincipal User
         {
             get { return _user; }
@@ -441,6 +425,11 @@ namespace Microsoft.AspNet.Server.WebListener
 #else
             return null;
 #endif
+        }
+
+        internal UnsafeNclNativeMethods.HttpApi.HTTP_VERB GetKnownMethod()
+        {
+            return UnsafeNclNativeMethods.HttpApi.GetKnownVerb(RequestBuffer, OriginalBlobAddress);
         }
 
 #if NET45
@@ -500,7 +489,7 @@ namespace Microsoft.AspNet.Server.WebListener
         }
 
         // should only be called from RequestContext
-        public void Dispose()
+        internal void Dispose()
         {
             // TODO: Verbose log
             _isDisposed = true;

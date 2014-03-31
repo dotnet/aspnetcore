@@ -8,11 +8,9 @@ namespace Microsoft.AspNet.Server.WebListener
 {
     internal enum BoundaryType
     {
-        ContentLength = 0, // Content-Length: XXX
+        None = 0,
         Chunked = 1, // Transfer-Encoding: chunked
-        Raw = 2, // the app is responsible for sending the correct headers and body encoding
-        Multipart = 3,
-        None = 4,
-        Invalid = 5,
+        ContentLength = 2, // Content-Length: XXX
+        Invalid = 3,
     }
 }

@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Server.WebListener
         // The native request queue
         private long? _requestQueueLength;
 
-        internal OwinWebListener()
+        public OwinWebListener()
         {
             if (!UnsafeNclNativeMethods.HttpApi.Supported)
             {
@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        internal bool IsListening
+        public bool IsListening
         {
             get
             {
@@ -332,7 +332,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        internal void Start()
+        public void Start()
         {
             CheckDisposed();
 
@@ -639,7 +639,7 @@ namespace Microsoft.AspNet.Server.WebListener
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposed by callback")]
-        internal Task<RequestContext> GetContextAsync()
+        public Task<RequestContext> GetContextAsync()
         {
             AsyncAcceptContext asyncResult = null;
             try
