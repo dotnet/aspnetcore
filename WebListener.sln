@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Security.W
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Server.WebListener.FunctionalTests.net45", "test\Microsoft.AspNet.Server.WebListener.FunctionalTests\Microsoft.AspNet.Server.WebListener.FunctionalTests.net45.csproj", "{E7841BDA-EEE0-42D8-8E09-48F021B1934E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SelfHostServer.k10", "samples\SelfHostServer\SelfHostServer.k10.csproj", "{990662B2-A857-4DD6-85F3-F8517ACAAB13}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -75,6 +77,10 @@ Global
 		{E7841BDA-EEE0-42D8-8E09-48F021B1934E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E7841BDA-EEE0-42D8-8E09-48F021B1934E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E7841BDA-EEE0-42D8-8E09-48F021B1934E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{990662B2-A857-4DD6-85F3-F8517ACAAB13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{990662B2-A857-4DD6-85F3-F8517ACAAB13}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{990662B2-A857-4DD6-85F3-F8517ACAAB13}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{990662B2-A857-4DD6-85F3-F8517ACAAB13}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -90,5 +96,6 @@ Global
 		{8B4EF749-251D-4222-AD18-DE5A1E7D321A} = {99D5E5F3-88F5-4CCF-8D8C-717C8925DF09}
 		{3EC418D5-C8FD-47AA-BFED-F524358EC3DD} = {E183C826-1360-4DFF-9994-F33CED5C8525}
 		{E7841BDA-EEE0-42D8-8E09-48F021B1934E} = {E183C826-1360-4DFF-9994-F33CED5C8525}
+		{990662B2-A857-4DD6-85F3-F8517ACAAB13} = {3A1E31E3-2794-4CA3-B8E2-253E96BDE514}
 	EndGlobalSection
 EndGlobal
