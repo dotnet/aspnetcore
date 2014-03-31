@@ -139,6 +139,22 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <summary>
+        /// Templates can be used only with field access, property access, single-dimension array index, or single-parameter custom indexer expressions.
+        /// </summary>
+        internal static string TemplateHelpers_TemplateLimitations
+        {
+            get { return GetString("TemplateHelpers_TemplateLimitations"); }
+        }
+
+        /// <summary>
+        /// Templates can be used only with field access, property access, single-dimension array index, or single-parameter custom indexer expressions.
+        /// </summary>
+        internal static string FormatTemplateHelpers_TemplateLimitations()
+        {
+            return GetString("TemplateHelpers_TemplateLimitations");
+        }
+
+        /// <summary>
         /// The model item passed is null, but this ViewDataDictionary instance requires a non-null model item of type '{0}'.
         /// </summary>
         internal static string ViewData_ModelCannotBeNull

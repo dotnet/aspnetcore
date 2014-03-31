@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.Rendering.Expressions;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
@@ -123,6 +125,45 @@ namespace Microsoft.AspNet.Mvc.Rendering
             get { return _data.Values; }
         }
         #endregion
+
+        public object Eval(string expression)
+        {
+            var info = GetViewDataInfo(expression);
+            return (info != null) ? info.Value : null;
+        }
+
+        public string Eval(string expression, string format)
+        {
+            var value = Eval(expression);
+            return FormatValue(value, format);
+        }
+
+        public static string FormatValue(object value, string format)
+        {
+            if (value == null)
+            {
+                return string.Empty;
+            }
+
+            if (string.IsNullOrEmpty(format))
+            {
+                return Convert.ToString(value, CultureInfo.CurrentCulture);
+            }
+            else
+            {
+                return string.Format(CultureInfo.CurrentCulture, format, value);
+            }
+        }
+
+        public ViewDataInfo GetViewDataInfo(string expression)
+        {
+            if (string.IsNullOrEmpty(expression))
+            {
+                throw new ArgumentException(Resources.ArgumentNullOrEmpty, "expression");
+            }
+
+            return ViewDataEvaluator.Eval(this, expression);
+        }
 
         // This method will execute before the derived type's instance constructor executes. Derived types must
         // be aware of this and should plan accordingly. For example, the logic in SetModel() should be simple
