@@ -9,6 +9,7 @@ using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.Razor.Compilation;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Security.Authorization;
+using Microsoft.AspNet.Security.DataProtection;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -78,6 +79,9 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Transient<IViewComponentHelper, DefaultViewComponentHelper>();
 
             yield return describe.Transient<IAuthorizationService, DefaultAuthorizationService>();
+            yield return describe.Singleton<IClaimUidExtractor, DefaultClaimUidExtractor>();
+            yield return describe.Singleton<AntiForgery, AntiForgery>();
+            yield return describe.Singleton<IAntiForgeryAdditionalDataProvider, DefaultAntiForgeryAdditionalDataProvider>(); 
 
             yield return
                describe.Describe(

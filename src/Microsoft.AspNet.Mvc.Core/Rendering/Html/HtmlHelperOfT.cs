@@ -15,8 +15,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public HtmlHelper(
             [NotNull] IViewEngine viewEngine, 
             [NotNull] IModelMetadataProvider metadataProvider,
-            [NotNull] IUrlHelper urlHelper)
-             : base(viewEngine, metadataProvider, urlHelper)
+            [NotNull] IUrlHelper urlHelper,
+            [NotNull] AntiForgery antiForgeryInstance)
+             : base(viewEngine, metadataProvider, urlHelper, antiForgeryInstance)
         {
         }
 

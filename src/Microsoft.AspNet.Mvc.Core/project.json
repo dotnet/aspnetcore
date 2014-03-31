@@ -11,7 +11,8 @@
     "Microsoft.AspNet.Security": "0.1-alpha-*",
     "Common": "",
     "Microsoft.AspNet.Mvc.ModelBinding": "",
-    "Microsoft.Net.Runtime.Interfaces":  "0.1-alpha-*"
+    "Microsoft.Net.Runtime.Interfaces":  "0.1-alpha-*",
+    "Microsoft.AspNet.Security.DataProtection" : "0.1-alpha-*"
   },
   "configurations": {
     "net45": {},
@@ -37,6 +38,9 @@
         "System.Runtime": "4.0.20.0",
         "System.Runtime.Extensions": "4.0.10.0",
         "System.Runtime.InteropServices": "4.0.20.0",
+        "System.Security.Cryptography": "4.0.0.0",
+        "System.Security.Cryptography.HashAlgorithms.SHA2": "4.0.0.0",
+        "System.Security.Principal": "4.0.0.0",
         "System.Text.Encoding": "4.0.20.0",
         "System.Threading": "4.0.0.0",
         "System.Threading.Tasks": "4.0.10.0"

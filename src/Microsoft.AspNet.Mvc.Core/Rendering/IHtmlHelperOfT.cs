@@ -61,7 +61,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string fragment,
             object routeValues,
             object htmlAttributes);
-        
+
+        /// <summary>
+        /// Generates a hidden form field (anti-forgery token) that is validated when the form is submitted.
+        /// </summary>
+        /// <returns>
+        /// The generated form field (anti-forgery token).
+        /// </returns>
+        HtmlString AntiForgeryToken();
 
         /// <summary>
         /// Writes an opening <form> tag to the response. When the user submits the form,

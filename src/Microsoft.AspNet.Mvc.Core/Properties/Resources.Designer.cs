@@ -11,6 +11,54 @@ namespace Microsoft.AspNet.Mvc.Core
             = new ResourceManager("Microsoft.AspNet.Mvc.Core.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// The provided identity of type '{0}' is marked IsAuthenticated = true but does not have a value for Name. By default, the anti-forgery system requires that all authenticated identities have a unique Name. If it is not possible to provide a unique Name for this identity, consider extending IAdditionalDataProvider by overriding the DefaultAdditionalDataProvider or a custom type that can provide some form of unique identifier for the current user.
+        /// </summary>
+        internal static string TokenValidator_AuthenticatedUserWithoutUsername
+        {
+            get { return GetString("TokenValidator_AuthenticatedUserWithoutUsername"); }
+        }
+
+        /// <summary>
+        /// The provided identity of type '{0}' is marked IsAuthenticated = true but does not have a value for Name. By default, the anti-forgery system requires that all authenticated identities have a unique Name. If it is not possible to provide a unique Name for this identity, consider extending IAdditionalDataProvider by overriding the DefaultAdditionalDataProvider or a custom type that can provide some form of unique identifier for the current user.
+        /// </summary>
+        internal static string FormatTokenValidator_AuthenticatedUserWithoutUsername(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TokenValidator_AuthenticatedUserWithoutUsername"), p0);
+        }
+
+        /// <summary>
+        /// A claim of type '{0}' was not present on the provided ClaimsIdentity.
+        /// </summary>
+        internal static string ClaimUidExtractor_ClaimNotPresent
+        {
+            get { return GetString("ClaimUidExtractor_ClaimNotPresent"); }
+        }
+
+        /// <summary>
+        /// A claim of type '{0}' was not present on the provided ClaimsIdentity.
+        /// </summary>
+        internal static string FormatClaimUidExtractor_ClaimNotPresent(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ClaimUidExtractor_ClaimNotPresent"), p0);
+        }
+
+        /// <summary>
+        /// A claim of type 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier' or 'http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider' was not present on the provided ClaimsIdentity. To enable anti-forgery token support with claims-based authentication, please verify that the configured claims provider is providing both of these claims on the ClaimsIdentity instances it generates. If the configured claims provider instead uses a different claim type as a unique identifier, it can be configured by setting the static property AntiForgeryConfig.UniqueClaimTypeIdentifier.
+        /// </summary>
+        internal static string ClaimUidExtractor_DefaultClaimsNotPresent
+        {
+            get { return GetString("ClaimUidExtractor_DefaultClaimsNotPresent"); }
+        }
+
+        /// <summary>
+        /// A claim of type 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier' or 'http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider' was not present on the provided ClaimsIdentity. To enable anti-forgery token support with claims-based authentication, please verify that the configured claims provider is providing both of these claims on the ClaimsIdentity instances it generates. If the configured claims provider instead uses a different claim type as a unique identifier, it can be configured by setting the static property AntiForgeryConfig.UniqueClaimTypeIdentifier.
+        /// </summary>
+        internal static string FormatClaimUidExtractor_DefaultClaimsNotPresent()
+        {
+            return GetString("ClaimUidExtractor_DefaultClaimsNotPresent");
+        }
+
+        /// <summary>
         /// The method '{0}' on type '{1}' returned an instance of '{2}'. Make sure to call Unwrap on the returned value to avoid unobserved faulted Task.
         /// </summary>
         internal static string ActionExecutor_WrappedTaskInstance
@@ -40,6 +88,150 @@ namespace Microsoft.AspNet.Mvc.Core
         internal static string FormatActionExecutor_UnexpectedTaskInstance(object p0, object p1)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("ActionExecutor_UnexpectedTaskInstance"), p0, p1);
+        }
+
+        /// <summary>
+        /// The provided anti-forgery token failed a custom data check.
+        /// </summary>
+        internal static string AntiForgeryToken_AdditionalDataCheckFailed
+        {
+            get { return GetString("AntiForgeryToken_AdditionalDataCheckFailed"); }
+        }
+
+        /// <summary>
+        /// The provided anti-forgery token failed a custom data check.
+        /// </summary>
+        internal static string FormatAntiForgeryToken_AdditionalDataCheckFailed()
+        {
+            return GetString("AntiForgeryToken_AdditionalDataCheckFailed");
+        }
+
+        /// <summary>
+        /// The provided anti-forgery token was meant for a different claims-based user than the current user.
+        /// </summary>
+        internal static string AntiForgeryToken_ClaimUidMismatch
+        {
+            get { return GetString("AntiForgeryToken_ClaimUidMismatch"); }
+        }
+
+        /// <summary>
+        /// The provided anti-forgery token was meant for a different claims-based user than the current user.
+        /// </summary>
+        internal static string FormatAntiForgeryToken_ClaimUidMismatch()
+        {
+            return GetString("AntiForgeryToken_ClaimUidMismatch");
+        }
+
+        /// <summary>
+        /// The required anti-forgery cookie "{0}" is not present.
+        /// </summary>
+        internal static string AntiForgeryToken_CookieMissing
+        {
+            get { return GetString("AntiForgeryToken_CookieMissing"); }
+        }
+
+        /// <summary>
+        /// The required anti-forgery cookie "{0}" is not present.
+        /// </summary>
+        internal static string FormatAntiForgeryToken_CookieMissing(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("AntiForgeryToken_CookieMissing"), p0);
+        }
+
+        /// <summary>
+        /// The anti-forgery token could not be decrypted. If this application is hosted by a Web Farm or cluster, ensure that all machines are running the same version of ASP.NET Web Pages and that the &lt;machineKey&gt; configuration specifies explicit encryption and validation keys. AutoGenerate cannot be used in a cluster.
+        /// </summary>
+        internal static string AntiForgeryToken_DeserializationFailed
+        {
+            get { return GetString("AntiForgeryToken_DeserializationFailed"); }
+        }
+
+        /// <summary>
+        /// The anti-forgery token could not be decrypted. If this application is hosted by a Web Farm or cluster, ensure that all machines are running the same version of ASP.NET Web Pages and that the &lt;machineKey&gt; configuration specifies explicit encryption and validation keys. AutoGenerate cannot be used in a cluster.
+        /// </summary>
+        internal static string FormatAntiForgeryToken_DeserializationFailed()
+        {
+            return GetString("AntiForgeryToken_DeserializationFailed");
+        }
+
+        /// <summary>
+        /// The required anti-forgery form field "{0}" is not present.
+        /// </summary>
+        internal static string AntiForgeryToken_FormFieldMissing
+        {
+            get { return GetString("AntiForgeryToken_FormFieldMissing"); }
+        }
+
+        /// <summary>
+        /// The required anti-forgery form field "{0}" is not present.
+        /// </summary>
+        internal static string FormatAntiForgeryToken_FormFieldMissing(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("AntiForgeryToken_FormFieldMissing"), p0);
+        }
+
+        /// <summary>
+        /// The anti-forgery cookie token and form field token do not match.
+        /// </summary>
+        internal static string AntiForgeryToken_SecurityTokenMismatch
+        {
+            get { return GetString("AntiForgeryToken_SecurityTokenMismatch"); }
+        }
+
+        /// <summary>
+        /// The anti-forgery cookie token and form field token do not match.
+        /// </summary>
+        internal static string FormatAntiForgeryToken_SecurityTokenMismatch()
+        {
+            return GetString("AntiForgeryToken_SecurityTokenMismatch");
+        }
+
+        /// <summary>
+        /// Validation of the provided anti-forgery token failed. The cookie "{0}" and the form field "{1}" were swapped.
+        /// </summary>
+        internal static string AntiForgeryToken_TokensSwapped
+        {
+            get { return GetString("AntiForgeryToken_TokensSwapped"); }
+        }
+
+        /// <summary>
+        /// Validation of the provided anti-forgery token failed. The cookie "{0}" and the form field "{1}" were swapped.
+        /// </summary>
+        internal static string FormatAntiForgeryToken_TokensSwapped(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("AntiForgeryToken_TokensSwapped"), p0, p1);
+        }
+
+        /// <summary>
+        /// The provided anti-forgery token was meant for user "{0}", but the current user is "{1}".
+        /// </summary>
+        internal static string AntiForgeryToken_UsernameMismatch
+        {
+            get { return GetString("AntiForgeryToken_UsernameMismatch"); }
+        }
+
+        /// <summary>
+        /// The provided anti-forgery token was meant for user "{0}", but the current user is "{1}".
+        /// </summary>
+        internal static string FormatAntiForgeryToken_UsernameMismatch(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("AntiForgeryToken_UsernameMismatch"), p0, p1);
+        }
+
+        /// <summary>
+        /// The anti-forgery system has the configuration value AntiForgeryConfig.RequireSsl = true, but the current request is not an SSL request.
+        /// </summary>
+        internal static string AntiForgeryWorker_RequireSSL
+        {
+            get { return GetString("AntiForgeryWorker_RequireSSL"); }
+        }
+
+        /// <summary>
+        /// The anti-forgery system has the configuration value AntiForgeryConfig.RequireSsl = true, but the current request is not an SSL request.
+        /// </summary>
+        internal static string FormatAntiForgeryWorker_RequireSSL()
+        {
+            return GetString("AntiForgeryWorker_RequireSSL");
         }
 
         /// <summary>

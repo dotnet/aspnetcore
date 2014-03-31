@@ -30,6 +30,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         private readonly IUrlHelper _urlHelper;
         private readonly IViewEngine _viewEngine;
+        private readonly AntiForgery _antiForgeryInstance;
 
         private ViewContext _viewContext;
 
@@ -39,11 +40,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public HtmlHelper(
             [NotNull] IViewEngine viewEngine, 
             [NotNull] IModelMetadataProvider metadataProvider,
-            [NotNull] IUrlHelper urlHelper)
+            [NotNull] IUrlHelper urlHelper, 
+            [NotNull] AntiForgery antiForgeryInstance)
         {
             _viewEngine = viewEngine;
             MetadataProvider = metadataProvider;
             _urlHelper = urlHelper;
+            _antiForgeryInstance = antiForgeryInstance;
 
             // Underscores are fine characters in id's.
             IdAttributeDotReplacement = "_";
@@ -156,6 +159,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public virtual void Contextualize([NotNull] ViewContext viewContext)
         {
             ViewContext = viewContext;
+        }
+
+        public HtmlString AntiForgeryToken()
+        {
+            return _antiForgeryInstance.GetHtml(ViewContext.HttpContext);
         }
 
         public MvcForm BeginForm(string actionName, string controllerName, object routeValues, FormMethod method,
