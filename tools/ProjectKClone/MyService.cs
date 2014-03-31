@@ -6,6 +6,7 @@ using System.Net;
 using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualBasic.Logging;
 using NuGet;
 
 namespace NuGetClone
@@ -32,6 +33,17 @@ namespace NuGetClone
             {
                 _targetDirectory = @"c:\projectk-cache";
             }
+
+            var fileTraceListener = new FileLogTraceListener
+            {
+                AutoFlush = true,
+                Location = LogFileLocation.Custom,
+                CustomLocation = _targetDirectory,
+                BaseFileName = "ProjectKClone",
+                TraceOutputOptions = TraceOptions.DateTime,
+                LogFileCreationSchedule = LogFileCreationScheduleOption.Weekly
+            };
+            Trace.Listeners.Add(fileTraceListener);
         }
 
         public void Run(object state)
@@ -42,7 +54,7 @@ namespace NuGetClone
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(ex.Message);
+                Trace.WriteLine(String.Format("{0}: ERROR {1}", DateTime.Now, ex));
             }
         }
 
@@ -61,27 +73,29 @@ namespace NuGetClone
             var packages = remoteRepo.GetPackages()
                                      .Where(p => p.IsAbsoluteLatestVersion)
                                      .ToList();
-            
-            Parallel.ForEach(packages, package =>
-            {
-                // Some packages are updated without revving the version. We'll only opt not to re-download
-                // a package if an identical version does not exist on disk.
-                var existingPackage = targetRepo.FindPackage(package.Id, package.Version);
-                var dataServicePackage = (DataServicePackage)package;
-                if (existingPackage == null ||
-                    !existingPackage.GetHash(dataServicePackage.PackageHashAlgorithm).Equals(dataServicePackage.PackageHash, StringComparison.Ordinal))
-                {
-                    PurgeOldVersions(targetRepo, package);
+            Parallel.ForEach(packages,
+                             new ParallelOptions { MaxDegreeOfParallelism = 4 },
+                             package =>
+                             {
+                                 // Some packages are updated without revving the version. We'll only opt not to re-download
+                                 // a package if an identical version does not exist on disk.
+                                 var existingPackage = targetRepo.FindPackage(package.Id, package.Version);
+                                 var dataServicePackage = (DataServicePackage)package;
+                                 if (existingPackage == null ||
+                                     !existingPackage.GetHash(dataServicePackage.PackageHashAlgorithm).Equals(dataServicePackage.PackageHash, StringComparison.Ordinal))
+                                 {
+                                     Trace.WriteLine(string.Format("{0}: Adding package {1}", DateTime.Now, package.GetFullName()));
+                                     var packagePath = GetPackagePath(package);
 
-                    var packagePath = GetPackagePath(package);
+                                     using (var input = package.GetStream())
+                                     using (var output = File.Create(packagePath))
+                                     {
+                                         input.CopyTo(output);
+                                     }
 
-                    using (var input = package.GetStream())
-                    using (var output = File.Create(packagePath))
-                    {
-                        input.CopyTo(output);
-                    }
-                }
-            });
+                                     PurgeOldVersions(targetRepo, package);
+                                 }
+                             });
         }
 
         private string GetPackagePath(IPackage package)
@@ -91,11 +105,12 @@ namespace NuGetClone
 
         private void PurgeOldVersions(LocalPackageRepository targetRepo, IPackage package)
         {
-            foreach (var oldPackage in targetRepo.FindPackagesById(package.Id).Where(p => p.Version <= package.Version))
+            foreach (var oldPackage in targetRepo.FindPackagesById(package.Id).Where(p => p.Version < package.Version))
             {
                 try
                 {
                     var path = GetPackagePath(oldPackage);
+                    Trace.WriteLine(string.Format("Deleting package {0}", oldPackage.GetFullName()));
                     File.Delete(path);
                 }
                 catch
