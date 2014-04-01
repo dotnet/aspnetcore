@@ -1,12 +1,10 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc;
+﻿using Microsoft.AspNet.Mvc;
 
 namespace MvcSample.Web.Filters
 {
     public class AgeEnhancerAttribute : ActionFilterAttribute
     {
-        public async override Task Invoke(ActionFilterContext context, Func<Task> next)
+        public override void OnActionExecuting(ActionExecutingContext context)
         {
             object age = null;
 
@@ -28,8 +26,6 @@ namespace MvcSample.Web.Filters
                     context.ActionArguments["age"] = intAge;
                 }
             }
-
-            await next();
         }
     }
 }

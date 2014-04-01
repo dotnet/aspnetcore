@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.Filters;
 using MvcSample.Web.Models;
 
 namespace MvcSample.Web.Filters
 {
-    public class InspectResultPageAttribute : ActionResultFilterAttribute
+    public class InspectResultPageAttribute : ActionFilterAttribute
     {
-        public async override Task Invoke(ActionResultFilterContext context, Func<Task> next)
+        public override async Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
         {
-            var viewResult = context.ActionResult as ViewResult;
+            var viewResult = context.Result as ViewResult;
 
             if (viewResult != null)
             {

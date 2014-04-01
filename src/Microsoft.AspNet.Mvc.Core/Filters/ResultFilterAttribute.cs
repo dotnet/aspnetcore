@@ -4,26 +4,9 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNet.Mvc
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
-    public abstract class ActionFilterAttribute : Attribute, IActionFilter, IAsyncActionFilter, IResultFilter, IAsyncResultFilter, IOrderedFilter
+    public abstract class ResultFilterAttribute : Attribute, IResultFilter, IAsyncResultFilter, IOrderedFilter
     {
         public int Order { get; set; }
-
-        public virtual void OnActionExecuting([NotNull] ActionExecutingContext context)
-        {
-        }
-
-        public virtual void OnActionExecuted([NotNull] ActionExecutedContext context)
-        {
-        }
-
-        public virtual async Task OnActionExecutionAsync([NotNull] ActionExecutingContext context, [NotNull] ActionExecutionDelegate next)
-        {
-            OnActionExecuting(context);
-            if (context.Result == null)
-            {
-                OnActionExecuted(await next());
-            }
-        }
 
         public virtual void OnResultExecuting([NotNull] ResultExecutingContext context)
         {
@@ -36,7 +19,7 @@ namespace Microsoft.AspNet.Mvc
         public virtual async Task OnResultExecutionAsync([NotNull] ResultExecutingContext context, [NotNull] ResultExecutionDelegate next)
         {
             OnResultExecuting(context);
-            if (!context.Cancel)
+            if (context.Result == null)
             {
                 OnResultExecuted(await next());
             }

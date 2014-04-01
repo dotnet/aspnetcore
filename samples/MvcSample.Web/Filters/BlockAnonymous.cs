@@ -1,19 +1,15 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc;
+﻿using Microsoft.AspNet.Mvc;
 
 namespace MvcSample.Web.Filters
 {
     public class BlockAnonymous : AuthorizationFilterAttribute
     {
-        public override async Task Invoke(AuthorizationFilterContext context, Func<Task> next)
+        public override void OnAuthorization(AuthorizationContext context)
         {
-            if (!context.HasAllowAnonymous())
+            if (!HasAllowAnonymous(context))
             {
-                context.Fail();
+                context.Result = new HttpStatusCodeResult(401);
             }
-
-            await next();
         }
     }
 }

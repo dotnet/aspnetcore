@@ -554,12 +554,44 @@ namespace Microsoft.AspNet.Mvc.Core
             return GetString("NoRoutesMatched");
         }
 
+        /// <summary>
+        /// If an {0} provides a result value by setting the {1} property of {2} to a non-null value, then the it should not call the next filter by invoking {3}.
+        /// </summary>
+        internal static string AsyncActionFilter_InvalidShortCircuit
+        {
+            get { return GetString("AsyncActionFilter_InvalidShortCircuit"); }
+        }
+
+        /// <summary>
+        /// If an {0} provides a result value by setting the {1} property of {2} to a non-null value, then the it should not call the next filter by invoking {3}.
+        /// </summary>
+        internal static string FormatAsyncActionFilter_InvalidShortCircuit(object p0, object p1, object p2, object p3)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("AsyncActionFilter_InvalidShortCircuit"), p0, p1, p2, p3);
+        }
+
+        /// <summary>
+        /// If an {0} cancels execution by setting the {1} property of {2} to 'true', then the it should not call the next filter by invoking {3}.
+        /// </summary>
+        internal static string AsyncResultFilter_InvalidShortCircuit
+        {
+            get { return GetString("AsyncResultFilter_InvalidShortCircuit"); }
+        }
+
+        /// <summary>
+        /// If an {0} cancels execution by setting the {1} property of {2} to 'true', then the it should not call the next filter by invoking {3}.
+        /// </summary>
+        internal static string FormatAsyncResultFilter_InvalidShortCircuit(object p0, object p1, object p2, object p3)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("AsyncResultFilter_InvalidShortCircuit"), p0, p1, p2, p3);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
 
             System.Diagnostics.Debug.Assert(value != null);
-    
+
             if (formatterNames != null)
             {
                 for (var i = 0; i < formatterNames.Length; i++)

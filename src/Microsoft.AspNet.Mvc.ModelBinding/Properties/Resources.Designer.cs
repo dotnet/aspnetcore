@@ -383,7 +383,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var value = _resourceManager.GetString(name);
 
             System.Diagnostics.Debug.Assert(value != null);
-    
+
             if (formatterNames != null)
             {
                 for (var i = 0; i < formatterNames.Length; i++)

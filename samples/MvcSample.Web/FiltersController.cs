@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNet.Mvc;
+﻿using System;
+using Microsoft.AspNet.Mvc;
 using MvcSample.Web.Filters;
 using MvcSample.Web.Models;
 
@@ -19,6 +20,7 @@ namespace MvcSample.Web
         [ServiceFilter(typeof(PassThroughAttribute))]
         [AllowAnonymous]
         [AgeEnhancer]
+        [Delay(500)]
         public IActionResult Index(int age, string userName)
         {
             if (!string.IsNullOrEmpty(userName))
@@ -34,6 +36,12 @@ namespace MvcSample.Web
         public IActionResult Blocked(int age, string userName)
         {
             return Index(age, userName);
+        }
+
+        [ErrorMessages, AllowAnonymous]
+        public IActionResult Crash(string message)
+        {
+            throw new Exception(message);
         }
     }
 }

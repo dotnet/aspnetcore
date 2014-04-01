@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.Filters;
 
 namespace MvcSample.Web
 {
     public class PassThroughAttribute : AuthorizationFilterAttribute
     {
-        public async override Task Invoke(AuthorizationFilterContext context, Func<Task> next)
+        #pragma warning disable 1998
+        public override async Task OnAuthorizationAsync(AuthorizationContext context)
         {
-            await next();
         }
+        #pragma warning restore 1998
     }
 }

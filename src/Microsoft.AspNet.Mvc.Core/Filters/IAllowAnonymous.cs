@@ -1,4 +1,4 @@
-﻿namespace Microsoft.AspNet.Mvc.Filters
+﻿namespace Microsoft.AspNet.Mvc
 {
     public interface IAllowAnonymous : IFilter
     {

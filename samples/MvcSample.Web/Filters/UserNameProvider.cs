@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc;
+﻿using Microsoft.AspNet.Mvc;
 
 namespace MvcSample.Web.Filters
 {
@@ -9,7 +7,7 @@ namespace MvcSample.Web.Filters
         private static readonly string[] _userNames = new[] { "Jon", "David", "Goliath" };
         private static int _index;
 
-        public override async Task Invoke(ActionFilterContext context, Func<Task> next)
+        public override void OnActionExecuting(ActionExecutingContext context)
         {
             object originalUserName = null;
 
@@ -21,8 +19,6 @@ namespace MvcSample.Web.Filters
             {
                 context.ActionArguments["userName"] = _userNames[(_index++)%3];
             }
-
-            await next();
         }
     }
 }

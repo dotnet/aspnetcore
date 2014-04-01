@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNet.Mvc.Filters;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public interface IExceptionFilter : IFilter<ExceptionFilterContext>
+    public interface IExceptionFilter : IFilter
     {
+        void OnActionExecuted([NotNull] ExceptionContext context);
     }
 }

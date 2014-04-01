@@ -2,7 +2,7 @@
 {
     public class FilterDescriptor
     {
-        public FilterDescriptor([NotNull]IFilter filter, int filterScope)
+        public FilterDescriptor([NotNull] IFilter filter, int filterScope)
         {
             Filter = filter;
             Scope = filterScope;

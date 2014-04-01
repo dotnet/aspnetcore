@@ -31,6 +31,7 @@
     <Compile Include="DefaultControllerAssemblyProviderTests.cs" />
     <Compile Include="DefaultControllerFactoryTest.cs" />
     <Compile Include="PropertyHelperTest.cs" />
+    <Compile Include="ReflectedActionInvokerTest.cs" />
     <Compile Include="Rendering\HtmlAttributePropertyHelperTest.cs" />
     <Compile Include="Rendering\ViewContextTests.cs" />
     <Compile Include="Rendering\ViewDataOfTTest.cs" />

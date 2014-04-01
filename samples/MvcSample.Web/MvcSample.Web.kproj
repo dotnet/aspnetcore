@@ -47,6 +47,8 @@
     <Compile Include="FiltersController.cs" />
     <Compile Include="Filters\AgeEnhancerFilterAttribute.cs" />
     <Compile Include="Filters\BlockAnonymous.cs" />
+    <Compile Include="Filters\DelayAttribute.cs" />
+    <Compile Include="Filters\ErrorMessagesAttribute.cs" />
     <Compile Include="Filters\InspectResultPageAttribute.cs" />
     <Compile Include="Filters\PassThroughAttribute.cs" />
     <Compile Include="Filters\UserNameProvider.cs" />

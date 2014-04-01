@@ -1,19 +1,17 @@
 ﻿using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Mvc.Filters
+namespace Microsoft.AspNet.Mvc
 {
-    public class FilterContext
+    public abstract class FilterContext : ActionContext
     {
-        public FilterContext([NotNull] ActionContext actionContext, [NotNull] IReadOnlyList<FilterItem> filterItems)
+        public FilterContext(
+            [NotNull] ActionContext actionContext, 
+            [NotNull] IList<IFilter> filters) 
+            : base(actionContext)
         {
-            ActionContext = actionContext;
-            FilterItems = filterItems;
+            Filters = filters;
         }
 
-        public ActionContext ActionContext { get; private set; }
-        public IReadOnlyList<FilterItem> FilterItems { get; private set; }
-
-        // Result
-        public virtual IActionResult ActionResult { get; set; }
+        public virtual IList<IFilter> Filters { get; private set; }
     }
 }
