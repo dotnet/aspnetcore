@@ -5,7 +5,7 @@ namespace Microsoft.AspNet.HttpFeature.Security
 {
     public interface ISignInContext
     {
-        ClaimsPrincipal User { get; }
+        IList<ClaimsIdentity> Identities { get; }
         IDictionary<string, string> Properties { get; }
 
         void Ack(string authenticationType, IDictionary<string, object> description);

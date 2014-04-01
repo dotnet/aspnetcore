@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Abstractions.Security
         /// Initializes a new instance of the <see cref="AuthenticationProperties"/> class
         /// </summary>
         public AuthenticationProperties()
-            : this(null)
+            : this(dictionary: null)
         {
         }
 

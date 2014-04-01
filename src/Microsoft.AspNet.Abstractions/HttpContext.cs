@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions.Security;
 
 namespace Microsoft.AspNet.Abstractions
@@ -10,8 +12,6 @@ namespace Microsoft.AspNet.Abstractions
         public abstract HttpRequest Request { get; }
 
         public abstract HttpResponse Response { get; }
-
-        public abstract AuthenticationManager Authentication { get; }
 
         public abstract ClaimsPrincipal User { get; set; }
         
@@ -36,5 +36,21 @@ namespace Microsoft.AspNet.Abstractions
         {
             SetFeature(typeof(T), instance);
         }
+
+        public abstract IEnumerable<AuthenticationDescription> GetAuthenticationTypes();
+
+        public virtual AuthenticationResult Authenticate(string authenticationType)
+        {
+            return Authenticate(new[] { authenticationType }).SingleOrDefault();
+        }
+
+        public abstract IEnumerable<AuthenticationResult> Authenticate(IList<string> authenticationTypes);
+
+        public virtual async Task<AuthenticationResult> AuthenticateAsync(string authenticationType)
+        {
+            return (await AuthenticateAsync(new[] { authenticationType })).SingleOrDefault();
+        }
+
+        public abstract Task<IEnumerable<AuthenticationResult>> AuthenticateAsync(IList<string> authenticationTypes);
     }
 }

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Abstractions.Security;
 using Microsoft.AspNet.FeatureModel;
@@ -14,11 +16,10 @@ namespace Microsoft.AspNet.PipelineCore
     {
         private readonly HttpRequest _request;
         private readonly HttpResponse _response;
-        private readonly AuthenticationManager _authentication;
 
         private FeatureReference<ICanHasItems> _canHasItems;
         private FeatureReference<ICanHasServiceProviders> _canHasServiceProviders;
-        private FeatureReference<IHttpAuthentication> _auth;
+        private FeatureReference<IHttpAuthentication> _authentication;
         private IFeatureCollection _features;
 
         public DefaultHttpContext(IFeatureCollection features)
@@ -26,11 +27,10 @@ namespace Microsoft.AspNet.PipelineCore
             _features = features;
             _request = new DefaultHttpRequest(this, features);
             _response = new DefaultHttpResponse(this, features);
-            _authentication = new DefaultAuthenticationManager(this, features);
 
             _canHasItems = FeatureReference<ICanHasItems>.Default;
             _canHasServiceProviders = FeatureReference<ICanHasServiceProviders>.Default;
-            _auth = FeatureReference<IHttpAuthentication>.Default;
+            _authentication = FeatureReference<IHttpAuthentication>.Default;
         }
 
         ICanHasItems CanHasItems
@@ -45,14 +45,12 @@ namespace Microsoft.AspNet.PipelineCore
 
         private IHttpAuthentication HttpAuthentication
         {
-            get { return _auth.Fetch(_features) ?? _auth.Update(_features, new DefaultHttpAuthentication()); }
+            get { return _authentication.Fetch(_features) ?? _authentication.Update(_features, new DefaultHttpAuthentication()); }
         }
 
         public override HttpRequest Request { get { return _request; } }
 
         public override HttpResponse Response { get { return _response; } }
-
-        public override AuthenticationManager Authentication { get { return _authentication; } }
 
         public override ClaimsPrincipal User
         {
@@ -94,6 +92,77 @@ namespace Microsoft.AspNet.PipelineCore
         public override void SetFeature(Type type, object instance)
         {
             _features[type] = instance;
+        }
+
+        // TODO: Use context, not a delegate, like all the other APIs
+        private static DescriptionDelegate GetAuthenticationTypesDelegate = GetAuthenticationTypesCallback;
+
+        public override IEnumerable<AuthenticationDescription> GetAuthenticationTypes()
+        {
+            // TODO: Use context, not a delegate, like all the other APIs
+            var descriptions = new List<AuthenticationDescription>();
+            var handler = HttpAuthentication.Handler;
+            if (handler != null)
+            {
+                handler.GetDescriptions(GetAuthenticationTypesDelegate, descriptions);
+            }
+            return descriptions;
+        }
+
+        private static void GetAuthenticationTypesCallback(IDictionary<string, object> description, object state)
+        {
+            var localDescriptions = (List<AuthenticationDescription>)state;
+            localDescriptions.Add(new AuthenticationDescription(description));
+        }
+
+        public override IEnumerable<AuthenticationResult> Authenticate(IList<string> authenticationTypes)
+        {
+            if (authenticationTypes == null)
+            {
+                throw new ArgumentNullException();
+            }
+            var handler = HttpAuthentication.Handler;
+            if (handler == null)
+            {
+                throw new InvalidOperationException("No authentication handlers present.");
+            }
+
+            var authenticateContext = new AuthenticateContext(authenticationTypes);
+            handler.Authenticate(authenticateContext);
+
+            // Verify all types ack'd
+            IEnumerable<string> leftovers = authenticationTypes.Except(authenticateContext.Acked);
+            if (leftovers.Any())
+            {
+                throw new InvalidOperationException("The following authentication types did not ack: " + string.Join(", ", leftovers));
+            }
+
+            return authenticateContext.Results;
+        }
+
+        public override async Task<IEnumerable<AuthenticationResult>> AuthenticateAsync(IList<string> authenticationTypes)
+        {
+            if (authenticationTypes == null)
+            {
+                throw new ArgumentNullException();
+            }
+            var handler = HttpAuthentication.Handler;
+            if (handler == null)
+            {
+                throw new InvalidOperationException("No authentication handlers present.");
+            }
+
+            var authenticateContext = new AuthenticateContext(authenticationTypes);
+            await handler.AuthenticateAsync(authenticateContext);
+
+            // Verify all types ack'd
+            IEnumerable<string> leftovers = authenticationTypes.Except(authenticateContext.Acked);
+            if (leftovers.Any())
+            {
+                throw new InvalidOperationException("The following authentication types did not ack: " + string.Join(", ", leftovers));
+            }
+
+            return authenticateContext.Results;
         }
     }
 }

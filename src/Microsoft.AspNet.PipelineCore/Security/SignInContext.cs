@@ -7,18 +7,18 @@ namespace Microsoft.AspNet.PipelineCore.Security
 {
     public class SignInContext : ISignInContext
     {
-        public SignInContext(ClaimsPrincipal user, IDictionary<string, string> dictionary)
+        public SignInContext(IList<ClaimsIdentity> identities, IDictionary<string, string> dictionary)
         {
-            if (user == null)
+            if (identities == null)
             {
-                throw new ArgumentNullException("user");
+                throw new ArgumentNullException("identities");
             }
-            User = user;
+            Identities = identities;
             Properties = dictionary ?? new Dictionary<string, string>(StringComparer.Ordinal);
             Acked = new List<string>();
         }
 
-        public ClaimsPrincipal User { get; private set; }
+        public IList<ClaimsIdentity> Identities { get; private set; }
 
         public IDictionary<string, string> Properties { get; private set; }
 
