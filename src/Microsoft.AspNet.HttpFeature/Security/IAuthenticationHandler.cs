@@ -3,13 +3,11 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.HttpFeature.Security
 {
-    public delegate void DescriptionDelegate(IDictionary<string, object> description, object state);
-
     public interface IAuthenticationHandler
     {
-        void GetDescriptions(DescriptionDelegate callback, object state);
+        void GetDescriptions(IAuthTypeContext context);
 
-        void Authenticate(IAuthenticateContext context); // TODO: (maybe?)
+        void Authenticate(IAuthenticateContext context);
         Task AuthenticateAsync(IAuthenticateContext context);
 
         void Challenge(IChallengeContext context);

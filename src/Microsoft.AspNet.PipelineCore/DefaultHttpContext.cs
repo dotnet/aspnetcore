@@ -94,25 +94,17 @@ namespace Microsoft.AspNet.PipelineCore
             _features[type] = instance;
         }
 
-        // TODO: Use context, not a delegate, like all the other APIs
-        private static DescriptionDelegate GetAuthenticationTypesDelegate = GetAuthenticationTypesCallback;
-
         public override IEnumerable<AuthenticationDescription> GetAuthenticationTypes()
         {
-            // TODO: Use context, not a delegate, like all the other APIs
-            var descriptions = new List<AuthenticationDescription>();
             var handler = HttpAuthentication.Handler;
-            if (handler != null)
+            if (handler == null)
             {
-                handler.GetDescriptions(GetAuthenticationTypesDelegate, descriptions);
+                return new AuthenticationDescription[0];
             }
-            return descriptions;
-        }
 
-        private static void GetAuthenticationTypesCallback(IDictionary<string, object> description, object state)
-        {
-            var localDescriptions = (List<AuthenticationDescription>)state;
-            localDescriptions.Add(new AuthenticationDescription(description));
+            var authTypeContext = new AuthTypeContext();
+            handler.GetDescriptions(authTypeContext);
+            return authTypeContext.Results;
         }
 
         public override IEnumerable<AuthenticationResult> Authenticate(IList<string> authenticationTypes)
