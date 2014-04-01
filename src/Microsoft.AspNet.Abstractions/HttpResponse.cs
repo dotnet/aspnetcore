@@ -23,7 +23,12 @@ namespace Microsoft.AspNet.Abstractions
 
         public abstract void OnSendingHeaders(Action<object> callback, object state);
 
-        public abstract void Redirect(string location);
+        public virtual void Redirect(string location)
+        {
+            Redirect(location, permanent: false);
+        }
+
+        public abstract void Redirect(string location, bool permanent);
 
         public abstract Task WriteAsync(string data);
 

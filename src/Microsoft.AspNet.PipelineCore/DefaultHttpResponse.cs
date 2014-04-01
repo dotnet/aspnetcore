@@ -107,9 +107,17 @@ namespace Microsoft.AspNet.PipelineCore
             HttpResponseInformation.OnSendingHeaders(callback, state);
         }
 
-        public override void Redirect(string location)
+        public override void Redirect(string location, bool permanent)
         {
-            HttpResponseInformation.StatusCode = 302;
+            if (permanent)
+            {
+                HttpResponseInformation.StatusCode = 301;
+            }
+            else
+            {
+                HttpResponseInformation.StatusCode = 302;
+            }
+
             Headers.Set(Constants.Headers.Location, location);
         }
 
