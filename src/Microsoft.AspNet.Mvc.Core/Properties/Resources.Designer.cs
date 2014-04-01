@@ -201,7 +201,7 @@ namespace Microsoft.AspNet.Mvc.Core
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_InvalidReturnValue"), p0, p1, p2);
         }
-        
+
         /// <summary>
         /// Replacing the action context is not supported.
         /// </summary>
@@ -232,6 +232,54 @@ namespace Microsoft.AspNet.Mvc.Core
         internal static string FormatActionInvokerFactory_CouldNotCreateInvoker(object p0)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("ActionInvokerFactory_CouldNotCreateInvoker"), p0);
+        }
+
+        /// <summary>
+        /// The action descriptor must be of type '{0}'.
+        /// </summary>
+        internal static string DefaultControllerFactory_ActionDescriptorMustBeReflected
+        {
+            get { return GetString("DefaultControllerFactory_ActionDescriptorMustBeReflected"); }
+        }
+
+        /// <summary>
+        /// The action descriptor must be of type '{0}'.
+        /// </summary>
+        internal static string FormatDefaultControllerFactory_ActionDescriptorMustBeReflected(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("DefaultControllerFactory_ActionDescriptorMustBeReflected"), p0);
+        }
+
+        /// <summary>
+        /// The '{0}' property of '{1}' must not be null.
+        /// </summary>
+        internal static string PropertyOfTypeCannotBeNull
+        {
+            get { return GetString("PropertyOfTypeCannotBeNull"); }
+        }
+
+        /// <summary>
+        /// The '{0}' property of '{1}' must not be null.
+        /// </summary>
+        internal static string FormatPropertyOfTypeCannotBeNull(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("PropertyOfTypeCannotBeNull"), p0, p1);
+        }
+
+        /// <summary>
+        /// The '{0}' must return a non null '{1}'.
+        /// </summary>
+        internal static string MethodMustReturnNotNullValue
+        {
+            get { return GetString("MethodMustReturnNotNullValue"); }
+        }
+
+        /// <summary>
+        /// The '{0}' must return a non null '{1}'.
+        /// </summary>
+        internal static string FormatMethodMustReturnNotNullValue(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("MethodMustReturnNotNullValue"), p0, p1);
         }
 
         private static string GetString(string name, params string[] formatterNames)

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.DependencyInjection;
+using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.ModelBinding;
 
@@ -21,12 +23,12 @@ namespace Microsoft.AspNet.Mvc
         private readonly List<IActionFilter> _actionFilters = new List<IActionFilter>();
         private readonly List<IActionResultFilter> _actionResultFilters = new List<IActionResultFilter>();
 
-        public ReflectedActionInvoker(ActionContext actionContext,
-                                      ReflectedActionDescriptor descriptor,
-                                      IActionResultFactory actionResultFactory,
-                                      IControllerFactory controllerFactory,
-                                      IActionBindingContextProvider bindingContextProvider,
-                                      INestedProviderManager<FilterProviderContext> filterProvider)
+        public ReflectedActionInvoker([NotNull] ActionContext actionContext,
+                                      [NotNull] ReflectedActionDescriptor descriptor,
+                                      [NotNull] IActionResultFactory actionResultFactory,
+                                      [NotNull] IControllerFactory controllerFactory,
+                                      [NotNull] IActionBindingContextProvider bindingContextProvider,
+                                      [NotNull] INestedProviderManager<FilterProviderContext> filterProvider)
         {
             _actionContext = actionContext;
             _descriptor = descriptor;
@@ -34,6 +36,14 @@ namespace Microsoft.AspNet.Mvc
             _controllerFactory = controllerFactory;
             _bindingProvider = bindingContextProvider;
             _filterProvider = filterProvider;
+
+            if (descriptor.MethodInfo == null)
+            {
+                throw new ArgumentException(
+                    Resources.FormatPropertyOfTypeCannotBeNull(typeof(ReflectedActionDescriptor),
+                                                               "MethodInfo"),
+                    "descriptor");
+            }
         }
 
         public async Task InvokeActionAsync()
@@ -54,66 +64,55 @@ namespace Microsoft.AspNet.Mvc
 
             if (controller == null)
             {
-                // TODO: See if these return 404s should turn into 500s
-                actionResult = new HttpStatusCodeResult(404);
+                throw new InvalidOperationException(
+                    Resources.FormatMethodMustReturnNotNullValue(typeof(IControllerFactory),
+                                                                 "controller"));
             }
-            else
-            {
-                var method = _descriptor.MethodInfo;
 
-                if (method == null)
+            if (_authorizationFilters.Count > 0)
+            {
+                var authZEndPoint = new AuthorizationFilterEndPoint();
+                _authorizationFilters.Add(authZEndPoint);
+
+                var authZContext = new AuthorizationFilterContext(_actionContext, filterMetaItems);
+                var authZPipeline = new FilterPipelineBuilder<AuthorizationFilterContext>(_authorizationFilters, authZContext);
+
+                await authZPipeline.InvokeAsync();
+
+                if (authZContext.ActionResult == null &&
+                    !authZContext.HasFailed &&
+                    authZEndPoint.EndPointCalled)
                 {
-                    // TODO: See if these return 404s should turn into 500s
-                    actionResult = new HttpStatusCodeResult(404);
+                    actionResult = null;
                 }
                 else
                 {
-                    if (_authorizationFilters.Count > 0)
-                    {
-                        var authZEndPoint = new AuthorizationFilterEndPoint();
-                        _authorizationFilters.Add(authZEndPoint);
-
-                        var authZContext = new AuthorizationFilterContext(_actionContext, filterMetaItems);
-                        var authZPipeline = new FilterPipelineBuilder<AuthorizationFilterContext>(_authorizationFilters, authZContext);
-
-                        await authZPipeline.InvokeAsync();
-
-                        if (authZContext.ActionResult == null &&
-                            !authZContext.HasFailed &&
-                            authZEndPoint.EndPointCalled)
-                        {
-                            actionResult = null;
-                        }
-                        else
-                        {
-                            // User cleaned out the result but we failed or short circuited the end point.
-                            actionResult = authZContext.ActionResult ?? new HttpStatusCodeResult(401);
-                        }
-                    }
-                    else
-                    {
-                        actionResult = null;
-                    }
-
-                    if (actionResult == null)
-                    {
-                        var parameterValues = await GetParameterValues(_actionContext.ModelState);
-
-                        var actionFilterContext = new ActionFilterContext(_actionContext,
-                                                                          filterMetaItems,
-                                                                          parameterValues);
-
-                        var actionEndPoint = new ReflectedActionFilterEndPoint(_actionResultFactory, controller);
-
-                        _actionFilters.Add(actionEndPoint);
-                        var actionFilterPipeline = new FilterPipelineBuilder<ActionFilterContext>(_actionFilters,
-                            actionFilterContext);
-
-                        await actionFilterPipeline.InvokeAsync();
-
-                        actionResult = actionFilterContext.ActionResult;
-                    }
+                    // User cleaned out the result but we failed or short circuited the end point.
+                    actionResult = authZContext.ActionResult ?? new HttpStatusCodeResult(401);
                 }
+            }
+            else
+            {
+                actionResult = null;
+            }
+
+            if (actionResult == null)
+            {
+                var parameterValues = await GetParameterValues(_actionContext.ModelState);
+
+                var actionFilterContext = new ActionFilterContext(_actionContext,
+                                                                  filterMetaItems,
+                                                                  parameterValues);
+
+                var actionEndPoint = new ReflectedActionFilterEndPoint(_actionResultFactory, controller);
+
+                _actionFilters.Add(actionEndPoint);
+                var actionFilterPipeline = new FilterPipelineBuilder<ActionFilterContext>(_actionFilters,
+                    actionFilterContext);
+
+                await actionFilterPipeline.InvokeAsync();
+
+                actionResult = actionFilterContext.ActionResult;
             }
 
             var actionResultFilterContext = new ActionResultFilterContext(_actionContext, filterMetaItems, actionResult);

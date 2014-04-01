@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Reflection;
 using Microsoft.AspNet.DependencyInjection;
+using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 
@@ -22,23 +22,18 @@ namespace Microsoft.AspNet.Mvc
             var actionDescriptor = actionContext.ActionDescriptor as ReflectedActionDescriptor;
             if (actionDescriptor == null)
             {
-                return null;
+                throw new ArgumentException(
+                    Resources.FormatDefaultControllerFactory_ActionDescriptorMustBeReflected(
+                        typeof(ReflectedActionDescriptor)),
+                    "actionContext");
             }
 
-            try
-            {
-                var controller = _activator.CreateInstance(_serviceProvider, actionDescriptor.ControllerDescriptor.ControllerTypeInfo.AsType());
+            var controller = _activator.CreateInstance(_serviceProvider, actionDescriptor.ControllerDescriptor.ControllerTypeInfo.AsType());
 
-                // TODO: How do we feed the controller with context (need DI improvements)
-                InitializeController(controller, actionContext);
+            // TODO: How do we feed the controller with context (need DI improvements)
+            InitializeController(controller, actionContext);
 
-                return controller;
-            } // TODO: Should we not catch it here?
-            catch (ReflectionTypeLoadException)
-            {
-            }
-
-            return null;
+            return controller;
         }
 
         public void ReleaseController(object controller)

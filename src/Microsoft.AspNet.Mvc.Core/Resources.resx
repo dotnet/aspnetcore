@@ -159,4 +159,13 @@
   <data name="ActionInvokerFactory_CouldNotCreateInvoker" xml:space="preserve">
     <value>An action invoker could not be created for action '{0}'.</value>
   </data>
+  <data name="DefaultControllerFactory_ActionDescriptorMustBeReflected" xml:space="preserve">
+    <value>The action descriptor must be of type '{0}'.</value>
+  </data>
+  <data name="PropertyOfTypeCannotBeNull" xml:space="preserve">
+    <value>The '{0}' property of '{1}' must not be null.</value>
+  </data>
+  <data name="MethodMustReturnNotNullValue" xml:space="preserve">
+    <value>The '{0}' must return a non null '{1}'.</value>
+  </data>
 </root>
