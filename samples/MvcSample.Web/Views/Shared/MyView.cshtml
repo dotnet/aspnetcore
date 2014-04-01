@@ -71,6 +71,9 @@
                 <td>
                     '@Html.NameForModel()'
                 </td>
+                <td>
+                    '@Html.ValueForModel()'
+                </td>
             </tr>
             <tr>
                 <td>
@@ -78,6 +81,9 @@
                 </td>
                 <td>
                     '@Html.Name("Name")'
+                </td>
+                <td>
+                    '@Html.Value("Name")'
                 </td>
             </tr>
             <tr>
@@ -87,6 +93,9 @@
                 <td>
                     '@Html.NameFor(m => m.Address)'
                 </td>
+                <td>
+                    '@Html.ValueFor(m => m.Address)'
+                </td>
             </tr>
             <tr>
                 <td>
@@ -94,6 +103,9 @@
                 </td>
                 <td>
                     '@Html.Name("Anon.Address.Street")'
+                </td>
+                <td>
+                    '@Html.Value("Anon.Address.Street")'
                 </td>
             </tr>
         </table>

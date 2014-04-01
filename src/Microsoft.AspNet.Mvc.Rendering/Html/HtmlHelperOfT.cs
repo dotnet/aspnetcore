@@ -72,5 +72,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             return metadata;
         }
+
+        public HtmlString ValueFor<TProperty>(Expression<Func<TModel, TProperty>> expression, string format)
+        {
+            var metadata = GetModelMetadata(expression);
+            return GenerateValue(ExpressionHelper.GetExpressionText(expression), metadata.Model, format, useViewData: false);
+        }
     }
 }

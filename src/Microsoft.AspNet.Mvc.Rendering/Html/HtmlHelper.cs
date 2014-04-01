@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.Rendering.Expressions;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
@@ -300,6 +301,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 htmlAttributes: htmlAttributes);
         }
 
+        public HtmlString Value([NotNull] string name, string format)
+        {
+            return GenerateValue(name, value: null, format: format, useViewData: true);
+        }
+
         protected string EvalString(string key, string format)
         {
             return Convert.ToString(ViewData.Eval(key, format), CultureInfo.CurrentCulture);
@@ -393,6 +399,42 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             return tagBuilder.ToHtmlString(TagRenderMode.SelfClosing);
         }
+
+
+        protected virtual HtmlString GenerateValue(string name, object value, string format, bool useViewData)
+        {
+            var fullName = ViewContext.ViewData.TemplateInfo.GetFullHtmlFieldName(name);
+            var attemptedValue = (string)GetModelStateValue(fullName, typeof(string));
+
+            string resolvedValue;
+            if (attemptedValue != null)
+            {
+                // case 1: if ModelState has a value then it's already formatted so ignore format string
+                resolvedValue = attemptedValue;
+            }
+            else if (useViewData)
+            {
+                if (name.Length == 0)
+                {
+                    // case 2(a): format the value from ModelMetadata for the current model
+                    var metadata = ViewData.ModelMetadata;
+                    resolvedValue = FormatValue(metadata.Model, format);
+                }
+                else
+                {
+                    // case 2(b): format the value from ViewData
+                    resolvedValue = EvalString(name, format);
+                }
+            }
+            else
+            {
+                // case 3: format the explicit value from ModelMetadata
+                resolvedValue = FormatValue(value, format);
+            }
+
+            return new HtmlString(Encode(resolvedValue));
+        }
+
 
         private static string GetInputTypeString(InputType inputType)
         {

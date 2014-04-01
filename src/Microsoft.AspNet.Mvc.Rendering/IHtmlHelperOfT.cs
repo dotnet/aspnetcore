@@ -130,7 +130,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </param>
         /// <returns>New <see cref="HtmlString"/> containing the rendered HTML.</returns>
         HtmlString TextBoxFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression, string format,
-                                         IDictionary<string, object> htmlAttributes);
+            IDictionary<string, object> htmlAttributes);
 
         /// <summary>
         /// Returns an unordered list (ul element) of validation messages that are in the
@@ -144,5 +144,21 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </returns>
         HtmlString ValidationSummary(bool excludePropertyErrors, string message,
                                      IDictionary<string, object> htmlAttributes);
+
+        /// <summary>
+        /// Returns the model value for the given expression <paramref name="name"/>.
+        /// </summary>
+        /// <param name="name">Name of an expression, relative to the current model.</param>
+        /// <param name="format">The optional format string to apply to the value.</param>
+        /// <returns>An <see cref="HtmlString"/> that represents HTML markup.</returns>
+        HtmlString Value([NotNull] string name, string format);
+
+        /// <summary>
+        /// Returns the model value for the given expression <paramref name="expression"/>.
+        /// </summary>
+        /// <param name="expression">An expression, relative to the current model.</param>
+        /// <param name="format">The optional format string to apply to the value.</param>
+        /// <returns>An <see cref="HtmlString"/> that represents HTML markup.</returns>
+        HtmlString ValueFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression, string format);
     }
 }
