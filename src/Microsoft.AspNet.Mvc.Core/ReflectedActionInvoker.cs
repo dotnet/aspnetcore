@@ -49,6 +49,26 @@ namespace Microsoft.AspNet.Mvc
         public async Task InvokeActionAsync()
         {
             IActionResult actionResult;
+
+            var filterMetaItems = GetAndArrangeFilters();
+
+            var controller = _controllerFactory.CreateController(_actionContext);
+
+            if (controller == null)
+            {
+                throw new InvalidOperationException(
+                    Resources.FormatMethodMustReturnNotNullValue(typeof(IControllerFactory),
+                                                                 "controller"));
+            }
+
+            actionResult = await RunAuthorizationFilters(filterMetaItems) ??
+                           await RunActionFiltersAndActions(filterMetaItems, controller);
+
+            await RunActionResultFilters(actionResult, filterMetaItems);
+        }
+
+        private FilterItem[] GetAndArrangeFilters()
+        {
             var filterProviderContext =
                 new FilterProviderContext(_descriptor,
                                           _descriptor.
@@ -60,15 +80,11 @@ namespace Microsoft.AspNet.Mvc
 
             PreArrangeFiltersInPipeline(filterProviderContext);
 
-            var controller = _controllerFactory.CreateController(_actionContext);
+            return filterMetaItems;
+        }
 
-            if (controller == null)
-            {
-                throw new InvalidOperationException(
-                    Resources.FormatMethodMustReturnNotNullValue(typeof(IControllerFactory),
-                                                                 "controller"));
-            }
-
+        private async Task<IActionResult> RunAuthorizationFilters(FilterItem[] filterMetaItems)
+        {
             if (_authorizationFilters.Count > 0)
             {
                 var authZEndPoint = new AuthorizationFilterEndPoint();
@@ -81,47 +97,14 @@ namespace Microsoft.AspNet.Mvc
 
                 if (authZContext.ActionResult == null &&
                     !authZContext.HasFailed &&
-                    authZEndPoint.EndPointCalled)
-                {
-                    actionResult = null;
-                }
-                else
+                    authZEndPoint.WasEndPointCalled)
                 {
                     // User cleaned out the result but we failed or short circuited the end point.
-                    actionResult = authZContext.ActionResult ?? new HttpStatusCodeResult(401);
+                    return authZContext.ActionResult ?? new HttpStatusCodeResult(401);
                 }
             }
-            else
-            {
-                actionResult = null;
-            }
 
-            if (actionResult == null)
-            {
-                var parameterValues = await GetParameterValues(_actionContext.ModelState);
-
-                var actionFilterContext = new ActionFilterContext(_actionContext,
-                                                                  filterMetaItems,
-                                                                  parameterValues);
-
-                var actionEndPoint = new ReflectedActionFilterEndPoint(_actionResultFactory, controller);
-
-                _actionFilters.Add(actionEndPoint);
-                var actionFilterPipeline = new FilterPipelineBuilder<ActionFilterContext>(_actionFilters,
-                    actionFilterContext);
-
-                await actionFilterPipeline.InvokeAsync();
-
-                actionResult = actionFilterContext.ActionResult;
-            }
-
-            var actionResultFilterContext = new ActionResultFilterContext(_actionContext, filterMetaItems, actionResult);
-            var actionResultFilterEndPoint = new ActionResultFilterEndPoint();
-            _actionResultFilters.Add(actionResultFilterEndPoint);
-
-            var actionResultPipeline = new FilterPipelineBuilder<ActionResultFilterContext>(_actionResultFilters, actionResultFilterContext);
-
-            await actionResultPipeline.InvokeAsync();
+            return null;
         }
 
         private async Task<IDictionary<string, object>> GetParameterValues(ModelStateDictionary modelState)
@@ -174,6 +157,37 @@ namespace Microsoft.AspNet.Mvc
             }
 
             return parameterValues;
+        }
+
+        private async Task<IActionResult> RunActionFiltersAndActions(FilterItem[] filterMetaItems, object controller)
+        {
+            var parameterValues = await GetParameterValues(_actionContext.ModelState);
+
+            var actionFilterContext = new ActionFilterContext(_actionContext,
+                                                              filterMetaItems,
+                                                              parameterValues);
+
+            var actionEndPoint = new ReflectedActionFilterEndPoint(_actionResultFactory, controller);
+
+            _actionFilters.Add(actionEndPoint);
+            var actionFilterPipeline = new FilterPipelineBuilder<ActionFilterContext>(_actionFilters,
+                                                                                      actionFilterContext);
+
+            await actionFilterPipeline.InvokeAsync();
+
+            return actionFilterContext.ActionResult;
+        }
+
+        private async Task RunActionResultFilters(IActionResult actionResult, FilterItem[] filterMetaItems)
+        {
+            var actionResultFilterContext = new ActionResultFilterContext(_actionContext, filterMetaItems, actionResult);
+            var actionResultFilterEndPoint = new ActionResultFilterEndPoint();
+            _actionResultFilters.Add(actionResultFilterEndPoint);
+
+            var actionResultPipeline = new FilterPipelineBuilder<ActionResultFilterContext>(_actionResultFilters,
+                                                                                            actionResultFilterContext);
+
+            await actionResultPipeline.InvokeAsync();
         }
 
         private void PreArrangeFiltersInPipeline(FilterProviderContext context)

@@ -166,6 +166,6 @@
     <value>The '{0}' property of '{1}' must not be null.</value>
   </data>
   <data name="MethodMustReturnNotNullValue" xml:space="preserve">
-    <value>The '{0}' must return a non null '{1}'.</value>
+    <value>The '{0}' must return a non-null '{1}'.</value>
   </data>
 </root>
