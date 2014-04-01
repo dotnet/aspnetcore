@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Mvc
                 throw new InvalidOperationException("HttpActionDescriptor_NoConverterForGenericParamterTypeExists");
             }
 
-            if (declaredReturnType.IsAssignableFrom(typeof(void)) || actionReturnValue == null)
+            if (declaredReturnType == typeof(void) || actionReturnValue == null)
             {
                 return new NoContentResult();
             }
