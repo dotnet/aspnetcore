@@ -90,14 +90,14 @@ __o = Foo(item => new Template((__razor_template_writer) => {
 
 #line default
 #line hidden
-            DefineSection("Footer", () => {
+            DefineSection("Footer", new Template((__razor_template_writer) => {
 #line 1 "------------------------------------------"
 __o = bar;
 
 #line default
 #line hidden
             }
-            );
+            ));
         }
     }
 }

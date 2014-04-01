@@ -20,15 +20,15 @@ namespace TestOutput
 #line hidden
 
             WriteLiteral("\r\n\r\n<div>This is in the Body>\r\n\r\n");
-            DefineSection("Section2", () => {
-                WriteLiteral("\r\n    <div>This is in Section 2</div>\r\n");
+            DefineSection("Section2", new Template((__razor_template_writer) => {
+                WriteLiteralTo(__razor_template_writer, "\r\n    <div>This is in Section 2</div>\r\n");
             }
-            );
+            ));
             WriteLiteral("\r\n");
-            DefineSection("Section1", () => {
-                WriteLiteral("\r\n    <div>This is in Section 1</div>\r\n");
+            DefineSection("Section1", new Template((__razor_template_writer) => {
+                WriteLiteralTo(__razor_template_writer, "\r\n    <div>This is in Section 1</div>\r\n");
             }
-            );
+            ));
         }
     }
 }

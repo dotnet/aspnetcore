@@ -102,11 +102,11 @@ namespace TestOutput
 #line hidden
 
             WriteLiteral("\r\n\r\n");
-            DefineSection("Foo", () => {
-                WriteLiteral("\r\n    <a");
-                WriteAttribute("href", Tuple.Create(" href=\"", 500), Tuple.Create("\"", 512), Tuple.Create(Tuple.Create("", 507), Tuple.Create<System.Object, System.Int32>(Href("~/Foo"), 507), false));
-                WriteLiteral(">Foo</a>\r\n    <a");
-                WriteAttribute("href", Tuple.Create(" href=\"", 529), Tuple.Create("\"", 558), Tuple.Create(Tuple.Create("", 536), Tuple.Create<System.Object, System.Int32>(Href("~/Products/"), 536), false), 
+            DefineSection("Foo", new Template((__razor_template_writer) => {
+                WriteLiteralTo(__razor_template_writer, "\r\n    <a");
+                WriteAttributeTo(__razor_template_writer, "href", Tuple.Create(" href=\"", 500), Tuple.Create("\"", 512), Tuple.Create(Tuple.Create("", 507), Tuple.Create<System.Object, System.Int32>(Href("~/Foo"), 507), false));
+                WriteLiteralTo(__razor_template_writer, ">Foo</a>\r\n    <a");
+                WriteAttributeTo(__razor_template_writer, "href", Tuple.Create(" href=\"", 529), Tuple.Create("\"", 558), Tuple.Create(Tuple.Create("", 536), Tuple.Create<System.Object, System.Int32>(Href("~/Products/"), 536), false), 
                 Tuple.Create(Tuple.Create("", 547), Tuple.Create<System.Object, System.Int32>(
 #line 17 "ResolveUrl.cshtml"
                          product.id
@@ -114,8 +114,8 @@ namespace TestOutput
 #line default
 #line hidden
                 , 547), false));
-                WriteLiteral(">");
-                Write(
+                WriteLiteralTo(__razor_template_writer, ">");
+                WriteTo(__razor_template_writer, 
 #line 17 "ResolveUrl.cshtml"
                                       product.Name
 
@@ -123,8 +123,8 @@ namespace TestOutput
 #line hidden
                 );
 
-                WriteLiteral("</a>\r\n    <a");
-                WriteAttribute("href", Tuple.Create(" href=\"", 585), Tuple.Create("\"", 621), Tuple.Create(Tuple.Create("", 592), Tuple.Create<System.Object, System.Int32>(Href("~/Products/"), 592), false), 
+                WriteLiteralTo(__razor_template_writer, "</a>\r\n    <a");
+                WriteAttributeTo(__razor_template_writer, "href", Tuple.Create(" href=\"", 585), Tuple.Create("\"", 621), Tuple.Create(Tuple.Create("", 592), Tuple.Create<System.Object, System.Int32>(Href("~/Products/"), 592), false), 
                 Tuple.Create(Tuple.Create("", 603), Tuple.Create<System.Object, System.Int32>(
 #line 18 "ResolveUrl.cshtml"
                          product.id
@@ -132,8 +132,8 @@ namespace TestOutput
 #line default
 #line hidden
                 , 603), false), Tuple.Create(Tuple.Create("", 614), Tuple.Create("/Detail", 614), true));
-                WriteLiteral(">Details</a>\r\n    <a");
-                WriteAttribute("href", Tuple.Create(" href=\"", 642), Tuple.Create("\"", 697), Tuple.Create(Tuple.Create("", 649), Tuple.Create<System.Object, System.Int32>(Href("~/A+Really(Crazy),Url.Is:This/"), 649), false), 
+                WriteLiteralTo(__razor_template_writer, ">Details</a>\r\n    <a");
+                WriteAttributeTo(__razor_template_writer, "href", Tuple.Create(" href=\"", 642), Tuple.Create("\"", 697), Tuple.Create(Tuple.Create("", 649), Tuple.Create<System.Object, System.Int32>(Href("~/A+Really(Crazy),Url.Is:This/"), 649), false), 
                 Tuple.Create(Tuple.Create("", 679), Tuple.Create<System.Object, System.Int32>(
 #line 19 "ResolveUrl.cshtml"
                                             product.id
@@ -141,9 +141,9 @@ namespace TestOutput
 #line default
 #line hidden
                 , 679), false), Tuple.Create(Tuple.Create("", 690), Tuple.Create("/Detail", 690), true));
-                WriteLiteral(">Crazy Url!</a>\r\n");
+                WriteLiteralTo(__razor_template_writer, ">Crazy Url!</a>\r\n");
             }
-            );
+            ));
         }
     }
 }

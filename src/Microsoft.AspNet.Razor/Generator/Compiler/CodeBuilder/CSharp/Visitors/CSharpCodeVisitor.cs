@@ -272,13 +272,19 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         {
             Writer.WriteStartMethodInvocation(Context.Host.GeneratedClassContext.DefineSectionMethodName)
                    .WriteStringLiteral(chunk.Name)
-                   .WriteParameterSeparator();
+                   .WriteParameterSeparator()
+                   .WriteStartNewObject(Context.Host.GeneratedClassContext.TemplateTypeName);
 
-            using (Writer.BuildLambda(false))
+            var currentTargetWriterName = Context.TargetWriterName;
+            Context.TargetWriterName = TemplateWriterName;
+            
+            using (Writer.BuildLambda(endLine: false, parameterNames: TemplateWriterName))
             {
                 Accept(chunk.Children);
             }
-
+            Context.TargetWriterName = currentTargetWriterName;
+            
+            Writer.WriteEndMethodInvocation(endLine: false);
             Writer.WriteEndMethodInvocation();
         }
 
