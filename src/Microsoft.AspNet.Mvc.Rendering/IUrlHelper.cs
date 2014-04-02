@@ -5,5 +5,7 @@
         string Action(string action, string controller, object values);
 
         string Route(object values);
+
+        string Content(string contentPath);
     }
 }

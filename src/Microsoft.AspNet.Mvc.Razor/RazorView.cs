@@ -219,6 +219,11 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
+        public virtual string Href([NotNull] string contentPath)
+        {
+            return Url.Content(contentPath);
+        }
+
         private void WritePositionTaggedLiteral(TextWriter writer, string value, int position)
         {
             WriteLiteralTo(writer, value);

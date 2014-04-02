@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Mvc.Rendering;
@@ -50,5 +51,21 @@ namespace Microsoft.AspNet.Mvc
             // The intent is to use full URLs by default.
             return _httpContext.Request.PathBase + path;
         }
+
+        public string Content([NotNull] string contentPath)
+        {
+            return GenerateClientUrl(_httpContext.Request.PathBase, contentPath);
+        }
+
+        private static string GenerateClientUrl([NotNull] PathString applicationPath, 
+                                                [NotNull] string path)
+        {
+            if (path.StartsWith("~/", StringComparison.Ordinal))
+            {
+                var segment = new PathString(path.Substring(1));
+                return applicationPath.Add(segment).Value;
+            }
+            return path;
+        } 
     }
 }
