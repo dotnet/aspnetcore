@@ -175,6 +175,23 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                            additionalViewData);
         }
 
+        public virtual HtmlString DisplayForModel(string templateName,
+                                                  string htmlFieldName,
+                                                  object additionalViewData)
+        {
+            var templateBuilder = new TemplateBuilder(ViewContext,
+                                                      ViewData,
+                                                      ViewData.ModelMetadata,
+                                                      htmlFieldName,
+                                                      templateName,
+                                                      readOnly: true,
+                                                      additionalViewData: additionalViewData);
+
+            var templateResult = templateBuilder.Build();
+
+            return new HtmlString(templateResult);
+        }
+
         /// <inheritdoc />
         public virtual HtmlString Name(string name)
         {

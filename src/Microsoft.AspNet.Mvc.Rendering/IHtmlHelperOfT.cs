@@ -74,6 +74,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                                      object additionalViewData);
 
         /// <summary>
+        /// Returns HTML markup for each property in the model, using the specified template, an HTML field ID, and additional view data.
+        /// </summary>
+        /// <param name="templateName">The name of the template that is used to render the object.</param>
+        /// <param name="htmlFieldName">A string that is used to disambiguate the names of HTML input elements that are rendered for properties that have the same name.</param>
+        /// <param name="additionalViewData">An anonymous object that can contain additional view data that will be merged into the <see cref="ViewDataDictionary{TModel}"/> instance that is created for the template.</param>
+        /// <returns>The HTML markup for each property in the model.</returns>
+        HtmlString DisplayForModel(string templateName, string htmlFieldName, object additionalViewData);
+
+        /// <summary>
         /// Converts the value of the specified object to an HTML-encoded string.
         /// </summary>
         /// <param name="value">The object to encode.</param>
