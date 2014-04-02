@@ -188,6 +188,22 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <summary>
+        /// Unable to locate an appropriate template for type {0}.
+        /// </summary>
+        internal static string TemplateHelpers_NoTemplate
+        {
+            get { return GetString("TemplateHelpers_NoTemplate"); }
+        }
+
+        /// <summary>
+        /// Unable to locate an appropriate template for type {0}.
+        /// </summary>
+        internal static string FormatTemplateHelpers_NoTemplate(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TemplateHelpers_NoTemplate"), p0);
+        }
+
+        /// <summary>
         /// The model item passed is null, but this ViewDataDictionary instance requires a non-null model item of type '{0}'.
         /// </summary>
         internal static string ViewData_ModelCannotBeNull

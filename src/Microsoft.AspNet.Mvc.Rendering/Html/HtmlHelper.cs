@@ -41,6 +41,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             IdAttributeDotReplacement = "_";
         }
 
+        public IModelMetadataProvider MetadataProvider { get; private set; }
+
         public string IdAttributeDotReplacement { get; set; }
 
         public HttpContext HttpContext { get; private set; }
@@ -81,7 +83,43 @@ namespace Microsoft.AspNet.Mvc.Rendering
         protected IModelMetadataProvider MetadataProvider { get; private set; }
 
         /// <summary>
-        /// Creates a dictionary of HTML attributes from the input object,
+        /// Creates a dictionary from an object, by adding each public instance property as a key with its associated 
+        /// value to the dictionary. It will expose public properties from derived types as well. This is typically used
+        /// with objects of an anonymous type.
+        /// </summary>
+        /// <example>
+        /// <c>new { property_name = "value" }</c> will translate to the entry <c>{ "property_name" , "value" }</c>
+        /// in the resulting dictionary.
+        /// </example>
+        /// <param name="obj">The object to be converted.</param>
+        /// <returns>The created dictionary of property names and property values.</returns>
+        public static IDictionary<string, object> ObjectToDictionary(object obj)
+        {
+            IDictionary<string, object> result;
+            var valuesAsDictionary = obj as IDictionary<string, object>;
+            if (valuesAsDictionary != null)
+            {
+                result = new Dictionary<string, object>(valuesAsDictionary, StringComparer.OrdinalIgnoreCase);
+            }
+            else
+            {
+                result = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
+                if (obj != null)
+                {
+                    foreach (var prop in obj.GetType().GetRuntimeProperties())
+                    {
+                        var value = prop.GetValue(obj);
+                        result.Add(prop.Name, value);
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Creates a dictionary of HTML attributes from the input object, 
         /// translating underscores to dashes.
         /// <example>
         /// new { data_name="value" } will translate to the entry { "data-name" , "value" }
@@ -92,27 +130,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A dictionary that represents HTML attributes.</returns>
         public static IDictionary<string, object> AnonymousObjectToHtmlAttributes(object htmlAttributes)
         {
-            Dictionary<string, object> result;
-            var valuesAsDictionary = htmlAttributes as IDictionary<string, object>;
-            if (valuesAsDictionary != null)
-            {
-                result = new Dictionary<string, object>(valuesAsDictionary, StringComparer.OrdinalIgnoreCase);
-            }
-            else
-            {
-                result = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-
-                if (htmlAttributes != null)
-                {
-                    foreach (var prop in htmlAttributes.GetType().GetRuntimeProperties())
-                    {
-                        var value = prop.GetValue(htmlAttributes);
-                        result.Add(prop.Name, value);
-                    }
-                }
-            }
-
-            return result;
+            // NOTE: This should be doing more than just returning a generic conversion from obj -> dict
+            // Once GitHub #80 has been completed this will do more than be a call through.
+            return ObjectToDictionary(htmlAttributes);
         }
 
         public virtual void Contextualize([NotNull] ViewContext viewContext)

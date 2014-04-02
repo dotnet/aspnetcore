@@ -147,6 +147,9 @@
   <data name="TemplateHelpers_TemplateLimitations" xml:space="preserve">
     <value>Templates can be used only with field access, property access, single-dimension array index, or single-parameter custom indexer expressions.</value>
   </data>
+  <data name="TemplateHelpers_NoTemplate" xml:space="preserve">
+    <value>Unable to locate an appropriate template for type {0}.</value>
+  </data>
   <data name="ViewData_ModelCannotBeNull" xml:space="preserve">
     <value>The model item passed is null, but this ViewDataDictionary instance requires a non-null model item of type '{0}'.</value>
   </data>

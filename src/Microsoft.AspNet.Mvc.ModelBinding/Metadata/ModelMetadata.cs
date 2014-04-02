@@ -46,7 +46,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             set { _convertEmptyStringToNull = value; }
         }
 
+        public virtual string DataTypeName { get; set; }
+
         public virtual string Description { get; set; }
+
+        public virtual string DisplayFormatString { get; set; }
+
+        public virtual string EditFormatString { get; set; }
 
         public virtual bool IsComplexType
         {
@@ -91,6 +97,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             get { return _modelType; }
         }
 
+        public virtual string NullDisplayText { get; set; }
+
         public virtual IEnumerable<ModelMetadata> Properties
         {
             get
@@ -111,9 +119,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         protected IModelMetadataProvider Provider { get; set; }
 
         /// <returns>
-        /// Gets TModel if ModelType is Nullable(TModel), ModelType otherwise.
+        /// Gets TModel if ModelType is Nullable{TModel}, ModelType otherwise.
         /// </returns>
-        internal Type RealModelType
+        public Type RealModelType
         {
             get
             {
@@ -132,6 +140,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return _realModelType;
             }
         }
+
+        public virtual string TemplateHint { get; set; }
 
         internal EfficientTypePropertyKey<Type, string> CacheKey
         {
