@@ -175,6 +175,24 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                            additionalViewData);
         }
 
+        public virtual HtmlString DisplayFor<TModel, TValue>(Expression<Func<TModel, TValue>> expression,
+                                                             string templateName,
+                                                             string htmlFieldName,
+                                                             object additionalViewData)
+        {
+            var templateBuilder = new TemplateBuilder(ViewContext,
+                                                      ViewData,
+                                                      ExpressionMetadataProvider.FromLambdaExpression(expression, (ViewDataDictionary<TModel>)ViewData, MetadataProvider),
+                                                      htmlFieldName ?? ExpressionHelper.GetExpressionText(expression),
+                                                      templateName,
+                                                      readOnly: true,
+                                                      additionalViewData: additionalViewData);
+
+            var templateResult = templateBuilder.Build();
+
+            return new HtmlString(templateResult);
+        }
+
         /// <inheritdoc />
         public virtual HtmlString Name(string name)
         {
