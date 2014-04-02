@@ -136,10 +136,10 @@ namespace Microsoft.AspNet.PipelineCore
             handler.Challenge(challengeContext);
 
             // Verify all types ack'd
-            IEnumerable<string> leftovers = authenticationTypes.Except(challengeContext.Acked);
+            IEnumerable<string> leftovers = authenticationTypes.Except(challengeContext.Accepted);
             if (leftovers.Any())
             {
-                throw new InvalidOperationException("The following authentication types did not ack: " + string.Join(", ", leftovers));
+                throw new InvalidOperationException("The following authentication types were not accepted: " + string.Join(", ", leftovers));
             }
         }
 
@@ -159,10 +159,10 @@ namespace Microsoft.AspNet.PipelineCore
             handler.SignIn(signInContext);
 
             // Verify all types ack'd
-            IEnumerable<string> leftovers = identities.Select(identity => identity.AuthenticationType).Except(signInContext.Acked);
+            IEnumerable<string> leftovers = identities.Select(identity => identity.AuthenticationType).Except(signInContext.Accepted);
             if (leftovers.Any())
             {
-                throw new InvalidOperationException("The following authentication types did not ack: " + string.Join(", ", leftovers));
+                throw new InvalidOperationException("The following authentication types were not accepted: " + string.Join(", ", leftovers));
             }
         }
 
@@ -182,10 +182,10 @@ namespace Microsoft.AspNet.PipelineCore
             handler.SignOut(signOutContext);
 
             // Verify all types ack'd
-            IEnumerable<string> leftovers = authenticationTypes.Except(signOutContext.Acked);
+            IEnumerable<string> leftovers = authenticationTypes.Except(signOutContext.Accepted);
             if (leftovers.Any())
             {
-                throw new InvalidOperationException("The following authentication types did not ack: " + string.Join(", ", leftovers));
+                throw new InvalidOperationException("The following authentication types were not accepted: " + string.Join(", ", leftovers));
             }
         }
     }

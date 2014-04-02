@@ -4,6 +4,6 @@ namespace Microsoft.AspNet.HttpFeature.Security
 {
     public interface IAuthTypeContext
     {
-        void Ack(IDictionary<string,object> description);
+        void Accept(IDictionary<string,object> description);
     }
 }

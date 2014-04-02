@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.PipelineCore.Security
 
         public IList<AuthenticationDescription> Results { get; private set; }
                 
-        public void Ack(IDictionary<string, object> description)
+        public void Accept(IDictionary<string, object> description)
         {
             Results.Add(new AuthenticationDescription(description));
         }

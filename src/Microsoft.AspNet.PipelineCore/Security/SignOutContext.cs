@@ -13,16 +13,16 @@ namespace Microsoft.AspNet.PipelineCore.Security
                 throw new ArgumentNullException("authenticationTypes");
             }
             AuthenticationTypes = authenticationTypes;
-            Acked = new List<string>();
+            Accepted = new List<string>();
         }
 
         public IList<string> AuthenticationTypes { get; private set; }
 
-        public IList<string> Acked { get; private set; }
+        public IList<string> Accepted { get; private set; }
 
-        public void Ack(string authenticationType, IDictionary<string, object> description)
+        public void Accept(string authenticationType, IDictionary<string, object> description)
         {
-            Acked.Add(authenticationType);
+            Accepted.Add(authenticationType);
         }
     }
 }

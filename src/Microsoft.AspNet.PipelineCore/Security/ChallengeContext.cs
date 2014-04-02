@@ -17,18 +17,18 @@ namespace Microsoft.AspNet.PipelineCore.Security
             }
             AuthenticationTypes = authenticationTypes;
             Properties = properties ?? new Dictionary<string, string>(StringComparer.Ordinal);
-            Acked = new List<string>();
+            Accepted = new List<string>();
         }
 
         public IList<string> AuthenticationTypes { get; private set; }
 
         public IDictionary<string, string> Properties { get; private set; }
 
-        public IList<string> Acked { get; private set; }
+        public IList<string> Accepted { get; private set; }
         
-        public void Ack(string authenticationType, IDictionary<string, object> description)
+        public void Accept(string authenticationType, IDictionary<string, object> description)
         {
-            Acked.Add(authenticationType);
+            Accepted.Add(authenticationType);
         }
     }
 }

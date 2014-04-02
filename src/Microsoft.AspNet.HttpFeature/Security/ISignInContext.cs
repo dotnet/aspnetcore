@@ -8,6 +8,6 @@ namespace Microsoft.AspNet.HttpFeature.Security
         IList<ClaimsIdentity> Identities { get; }
         IDictionary<string, string> Properties { get; }
 
-        void Ack(string authenticationType, IDictionary<string, object> description);
+        void Accept(string authenticationType, IDictionary<string, object> description);
     }
 }

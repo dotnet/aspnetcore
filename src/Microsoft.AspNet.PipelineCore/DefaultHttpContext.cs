@@ -123,10 +123,10 @@ namespace Microsoft.AspNet.PipelineCore
             handler.Authenticate(authenticateContext);
 
             // Verify all types ack'd
-            IEnumerable<string> leftovers = authenticationTypes.Except(authenticateContext.Acked);
+            IEnumerable<string> leftovers = authenticationTypes.Except(authenticateContext.Accepted);
             if (leftovers.Any())
             {
-                throw new InvalidOperationException("The following authentication types did not ack: " + string.Join(", ", leftovers));
+                throw new InvalidOperationException("The following authentication types were not accepted: " + string.Join(", ", leftovers));
             }
 
             return authenticateContext.Results;
@@ -148,10 +148,10 @@ namespace Microsoft.AspNet.PipelineCore
             await handler.AuthenticateAsync(authenticateContext);
 
             // Verify all types ack'd
-            IEnumerable<string> leftovers = authenticationTypes.Except(authenticateContext.Acked);
+            IEnumerable<string> leftovers = authenticationTypes.Except(authenticateContext.Accepted);
             if (leftovers.Any())
             {
-                throw new InvalidOperationException("The following authentication types did not ack: " + string.Join(", ", leftovers));
+                throw new InvalidOperationException("The following authentication types were not accepted: " + string.Join(", ", leftovers));
             }
 
             return authenticateContext.Results;

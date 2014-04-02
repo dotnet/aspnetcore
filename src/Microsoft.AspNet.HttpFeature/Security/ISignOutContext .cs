@@ -6,6 +6,6 @@ namespace Microsoft.AspNet.HttpFeature.Security
     {
         IList<string> AuthenticationTypes { get; }
 
-        void Ack(string authenticationType, IDictionary<string, object> description);
+        void Accept(string authenticationType, IDictionary<string, object> description);
     }
 }

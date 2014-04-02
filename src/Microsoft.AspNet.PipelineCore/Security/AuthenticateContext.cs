@@ -19,25 +19,25 @@ namespace Microsoft.AspNet.PipelineCore.Security
             }
             AuthenticationTypes = authenticationTypes;
             Results = new List<AuthenticationResult>();
-            Acked = new List<string>();
+            Accepted = new List<string>();
         }
 
         public IList<string> AuthenticationTypes { get; private set; }
 
         public IList<AuthenticationResult> Results { get; private set; }
 
-        public IList<string> Acked { get; private set; }
+        public IList<string> Accepted { get; private set; }
 
         public void Authenticated(ClaimsIdentity identity, IDictionary<string, string> properties, IDictionary<string, object> description)
         {
             var descrip = new AuthenticationDescription(description);
-            Acked.Add(descrip.AuthenticationType);
+            Accepted.Add(descrip.AuthenticationType); // may not match identity.AuthType
             Results.Add(new AuthenticationResult(identity, new AuthenticationProperties(properties), descrip));
         }
 
         public void NotAuthenticated(string authenticationType, IDictionary<string, string> properties, IDictionary<string, object> description)
         {
-            Acked.Add(authenticationType);
+            Accepted.Add(authenticationType);
         }
     }
 }
