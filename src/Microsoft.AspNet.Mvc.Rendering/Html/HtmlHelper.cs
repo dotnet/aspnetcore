@@ -180,7 +180,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 Writer = writer
             };
 
-            var viewEngineResult = await _viewEngine.FindPartialView(newViewContext.ViewEngineContext, partialViewName);
+            var viewEngineResult = _viewEngine.FindPartialView(newViewContext.ViewEngineContext, partialViewName);
 
             await viewEngineResult.View.RenderAsync(newViewContext);
         }

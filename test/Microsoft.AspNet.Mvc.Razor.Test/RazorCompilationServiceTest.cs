@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
 using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.Generator.Compiler;
@@ -31,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                 .Verifiable();
             var compiler = new Mock<ICompilationService>();
             compiler.Setup(c => c.Compile(It.IsAny<string>()))
-                    .Returns(Task.FromResult(CompilationResult.Successful("", typeof(RazorCompilationServiceTest))));
+                    .Returns(CompilationResult.Successful("", typeof(RazorCompilationServiceTest)));
 
             var razorService = new RazorCompilationService(env.Object, compiler.Object, host.Object);
             var fileInfo = new Mock<IFileInfo>();
@@ -39,7 +34,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             fileInfo.Setup(f => f.CreateReadStream()).Returns(Stream.Null);
 
             // Act
-            razorService.CompileCore(fileInfo.Object).Wait();
+            razorService.CompileCore(fileInfo.Object);
 
             // Assert
             host.Verify();

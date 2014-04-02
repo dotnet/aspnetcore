@@ -19,14 +19,14 @@ namespace Microsoft.AspNet.Mvc
             _viewEngine = viewEngine;
         }
 
-        public string ViewName {get; set; }
+        public string ViewName { get; set; }
 
         public ViewDataDictionary ViewData { get; set; }
 
         public async Task ExecuteResultAsync([NotNull] ActionContext context)
         {
             var viewName = ViewName ?? context.ActionDescriptor.Name;
-            var view = await FindView(context.RouteValues, viewName);
+            var view = FindView(context.RouteValues, viewName);
 
             using (view as IDisposable)
             {
@@ -39,10 +39,9 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        private async Task<IView> FindView([NotNull] IDictionary<string, object> context,[NotNull] string viewName)
+        private IView FindView([NotNull] IDictionary<string, object> context, [NotNull] string viewName)
         {
-            var result = await _viewEngine.FindView(context, viewName);
-
+            var result = _viewEngine.FindView(context, viewName);
             return result.View;
         }
 

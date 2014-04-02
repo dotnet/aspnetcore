@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         private async Task RenderLayoutAsync(ViewContext context, string bodyContent)
         {
             var virtualPathFactory = context.ServiceProvider.GetService<IVirtualPathViewFactory>();
-            var layoutView = (RazorView)(await virtualPathFactory.CreateInstance(Layout));
+            var layoutView = (RazorView)virtualPathFactory.CreateInstance(Layout);
 
             if (layoutView == null)
             {

@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             _libraryManager = libraryManager;
         }
 
-        public Task<CompilationResult> Compile(string content)
+        public CompilationResult Compile(string content)
         {
             var syntaxTrees = new[] { CSharpSyntaxTree.ParseText(content) };
             var targetFramework = _environment.TargetFramework;
@@ -51,14 +51,14 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 
                         var messages = result.Diagnostics.Where(IsError).Select(d => GetCompilationMessage(formatter, d)).ToList();
 
-                        return Task.FromResult(CompilationResult.Failed(content, messages));
+                        return CompilationResult.Failed(content, messages);
                     }
 
                     var type = _loader.LoadBytes(ms.ToArray(), pdb.ToArray())
                                        .GetExportedTypes()
                                        .First();
 
-                    return Task.FromResult(CompilationResult.Successful(String.Empty, type));
+                    return CompilationResult.Successful(String.Empty, type);
                 }
             }
         }

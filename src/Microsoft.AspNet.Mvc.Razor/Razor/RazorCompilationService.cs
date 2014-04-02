@@ -2,7 +2,6 @@
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.Razor;
 using Microsoft.Net.Runtime;
@@ -27,13 +26,13 @@ namespace Microsoft.AspNet.Mvc.Razor
             _appRoot = EnsureTrailingSlash(environment.ApplicationBasePath);
         }
 
-        public Task<CompilationResult> Compile([NotNull]IFileInfo file)
+        public CompilationResult Compile([NotNull]IFileInfo file)
         {
             return _cache.GetOrAdd(file, () => CompileCore(file));
         }
 
         // TODO: Make this internal
-        public async Task<CompilationResult> CompileCore(IFileInfo file)
+        public CompilationResult CompileCore(IFileInfo file)
         {
             GeneratorResults results;
             using (Stream inputStream = file.CreateReadStream())
@@ -49,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 throw new CompilationFailedException(messages, results.GeneratedCode);
             }
 
-            return await _baseCompilationService.Compile(results.GeneratedCode);
+            return _baseCompilationService.Compile(results.GeneratedCode);
         }
 
         private static string EnsureTrailingSlash([NotNull]string path)

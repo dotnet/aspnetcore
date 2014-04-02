@@ -19,12 +19,12 @@ namespace Microsoft.AspNet.Mvc.Razor
             _compilationService = compilationService;
         }
 
-        public async Task<IView> CreateInstance([NotNull]string virtualPath)
+        public IView CreateInstance([NotNull]string virtualPath)
         {
             IFileInfo fileInfo;
             if (_fileSystem.TryGetFileInfo(virtualPath, out fileInfo))
             {
-                CompilationResult result = await _compilationService.Compile(fileInfo);
+                CompilationResult result = _compilationService.Compile(fileInfo);
                 return (IView)Activator.CreateInstance(result.CompiledType);
             }
 

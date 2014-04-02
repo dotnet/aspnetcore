@@ -28,10 +28,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             get { return _viewLocationFormats; }
         }
 
-        public async Task<ViewEngineResult> FindView([NotNull] IDictionary<string, object> context,
-                                                     [NotNull] string viewName)
+        public ViewEngineResult FindView([NotNull] IDictionary<string, object> context,
+                                         [NotNull] string viewName)
         {
-            var viewEngineResult = await CreateViewEngineResult(context, viewName);
+            var viewEngineResult = CreateViewEngineResult(context, viewName);
             var errorMessage = Resources.FormatViewEngine_ViewNotFound(
                                     viewName,
                                     ToLocationString(viewEngineResult.SearchedLocations));
@@ -41,10 +41,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             return viewEngineResult;
         }
 
-        public async Task<ViewEngineResult> FindPartialView([NotNull] IDictionary<string, object> context,
-                                                            [NotNull] string partialViewName)
+        public ViewEngineResult FindPartialView([NotNull] IDictionary<string, object> context,
+                                                [NotNull] string partialViewName)
         {
-            var viewEngineResult = await CreateViewEngineResult(context, partialViewName);
+            var viewEngineResult = CreateViewEngineResult(context, partialViewName);
             var errorMessage = Resources.FormatViewEngine_PartialViewNotFound(
                                     partialViewName, 
                                     ToLocationString(viewEngineResult.SearchedLocations));
@@ -54,14 +54,14 @@ namespace Microsoft.AspNet.Mvc.Razor
             return viewEngineResult;
         }
 
-        private async Task<ViewEngineResult> CreateViewEngineResult([NotNull] IDictionary<string, object> context,
-                                                                    [NotNull] string viewName)
+        private ViewEngineResult CreateViewEngineResult([NotNull] IDictionary<string, object> context,
+                                                        [NotNull] string viewName)
         {
             var nameRepresentsPath = IsSpecificPath(viewName);
 
             if (nameRepresentsPath)
             {
-                var view = await _virtualPathFactory.CreateInstance(viewName);
+                var view = _virtualPathFactory.CreateInstance(viewName);
                 return view != null ? ViewEngineResult.Found(viewName, view) :
                                       ViewEngineResult.NotFound(viewName, new[] { viewName });
             }
@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 for (int i = 0; i < _viewLocationFormats.Length; i++)
                 {
                     var path = String.Format(CultureInfo.InvariantCulture, _viewLocationFormats[i], viewName, controllerName, areaName);
-                    IView view = await _virtualPathFactory.CreateInstance(path);
+                    IView view = _virtualPathFactory.CreateInstance(path);
                     if (view != null)
                     {
                         return ViewEngineResult.Found(viewName, view);

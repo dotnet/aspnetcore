@@ -1,10 +1,9 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNet.FileSystems;
+﻿using Microsoft.AspNet.FileSystems;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
     public interface IRazorCompilationService
     {
-        Task<CompilationResult> Compile(IFileInfo fileInfo);
+        CompilationResult Compile(IFileInfo fileInfo);
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Threading.Tasks;
 using Microsoft.AspNet.FileSystems;
 
 namespace Microsoft.AspNet.Mvc.Razor
@@ -14,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             _cache = new ConcurrentDictionary<string, Type>(StringComparer.OrdinalIgnoreCase);
         }
 
-        public async Task<CompilationResult> GetOrAdd(IFileInfo file, Func<Task<CompilationResult>> compile)
+        public CompilationResult GetOrAdd(IFileInfo file, Func<CompilationResult> compile)
         {
             // Generate a content id
             string contentId = file.PhysicalPath + '|' + file.LastModified.Ticks;
@@ -22,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             Type compiledType;
             if (!_cache.TryGetValue(contentId, out compiledType))
             {
-                CompilationResult result = await compile();
+                CompilationResult result = compile();
                 _cache.TryAdd(contentId, result.CompiledType);
 
                 return result;

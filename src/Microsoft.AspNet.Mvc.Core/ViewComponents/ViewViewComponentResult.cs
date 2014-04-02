@@ -68,17 +68,16 @@ namespace Microsoft.AspNet.Mvc
                     _viewName);
             }
 
-            var view = await FindView(context.ViewContext.ViewEngineContext, qualifiedViewName);
+            var view = FindView(context.ViewContext.ViewEngineContext, qualifiedViewName);
             using (view as IDisposable)
             {
                 await view.RenderAsync(childViewContext);
             }
         }
 
-        private async Task<IView> FindView([NotNull] IDictionary<string, object> context, [NotNull] string viewName)
+        private IView FindView([NotNull] IDictionary<string, object> context, [NotNull] string viewName)
         {
-            var result = await _viewEngine.FindView(context, viewName);
-
+            var result = _viewEngine.FindView(context, viewName);
             return result.View;
         }
     }
