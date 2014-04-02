@@ -54,10 +54,10 @@ namespace Microsoft.AspNet.Security.Infrastructure
         /// Find response sign-in details for a specific authentication middleware
         /// </summary>
         /// <param name="authenticationType">The authentication type to look for</param>
-        public static bool LookupSignIn(ClaimsPrincipal user, string authenticationType, out ClaimsIdentity identity)
+        public static bool LookupSignIn(IList<ClaimsIdentity> identities, string authenticationType, out ClaimsIdentity identity)
         {
             identity = null;
-            foreach (var claimsIdentity in user.Identities)
+            foreach (var claimsIdentity in identities)
             {
                 if (string.Equals(authenticationType, claimsIdentity.AuthenticationType, StringComparison.Ordinal))
                 {

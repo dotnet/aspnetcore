@@ -31,11 +31,11 @@
         "System.Resources.ResourceManager": "4.0.0.0",
         "System.Runtime": "4.0.20.0",
         "System.Runtime.Extensions": "4.0.10.0",
-        "System.Runtime.InteropServices": "4.0.10.0",
+        "System.Runtime.InteropServices": "4.0.20.0",
         "System.Security.Claims": "0.1-alpha-*",
         "System.Security.Principal" : "4.0.0.0",
         "System.Threading": "4.0.0.0",
-        "System.Threading.Tasks": "4.0.0.0"
+        "System.Threading.Tasks": "4.0.10.0"
       }
     }
   }

@@ -121,12 +121,13 @@ namespace Microsoft.AspNet.Security.Infrastructure
             return Task.FromResult<bool>(false);
         }
 
-        public virtual void GetDescriptions(DescriptionDelegate callback, object state)
+        public virtual void GetDescriptions(IAuthTypeContext authTypeContext)
         {
-            callback(BaseOptions.Description.Dictionary, state);
+            authTypeContext.Accept(BaseOptions.Description.Dictionary);
+
             if (PriorHandler != null)
             {
-                PriorHandler.GetDescriptions(callback, state);
+                PriorHandler.GetDescriptions(authTypeContext);
             }
         }
 
@@ -266,11 +267,11 @@ namespace Microsoft.AspNet.Security.Infrastructure
         public virtual void SignIn(ISignInContext context)
         {
             ClaimsIdentity identity;
-            if (SecurityHelper.LookupSignIn(context.User, BaseOptions.AuthenticationType, out identity))
+            if (SecurityHelper.LookupSignIn(context.Identities, BaseOptions.AuthenticationType, out identity))
             {
                 SignInIdentityContext = new SignInIdentityContext(identity, new AuthenticationProperties(context.Properties));
                 SignOutContext = null;
-                context.Ack(BaseOptions.AuthenticationType, BaseOptions.Description.Dictionary);
+                context.Accept(BaseOptions.AuthenticationType, BaseOptions.Description.Dictionary);
             }
 
             if (PriorHandler != null)
@@ -285,7 +286,7 @@ namespace Microsoft.AspNet.Security.Infrastructure
             {
                 SignInIdentityContext = null;
                 SignOutContext = context;
-                context.Ack(BaseOptions.AuthenticationType, BaseOptions.Description.Dictionary);
+                context.Accept(BaseOptions.AuthenticationType, BaseOptions.Description.Dictionary);
             }
 
             if (PriorHandler != null)
@@ -299,7 +300,7 @@ namespace Microsoft.AspNet.Security.Infrastructure
             if (SecurityHelper.LookupChallenge(context.AuthenticationTypes, BaseOptions.AuthenticationType, BaseOptions.AuthenticationMode))
             {
                 ChallengeContext = context;
-                context.Ack(BaseOptions.AuthenticationType, BaseOptions.Description.Dictionary);
+                context.Accept(BaseOptions.AuthenticationType, BaseOptions.Description.Dictionary);
             }
 
             if (PriorHandler != null)
