@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             if (string.IsNullOrEmpty(tagName))
             {
-                throw new ArgumentException(Resources.FormatArgumentNullOrEmpty("tagName"));
+                throw new ArgumentException(Resources.ArgumentNullOrEmpty, "tagName");
             }
 
             TagName = tagName;
@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             if (string.IsNullOrEmpty(key))
             {
-                throw new ArgumentException(Resources.FormatArgumentNullOrEmpty("key"));
+                throw new ArgumentException(Resources.ArgumentNullOrEmpty, "key");
             }
 
             if (replaceExisting || !Attributes.ContainsKey(key))

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
@@ -15,9 +14,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         public string ViewName { get; private set; }
 
-        public bool Success 
-        { 
-            get { return View != null; } 
+        public bool Success
+        {
+            get { return View != null; }
         }
 
         public static ViewEngineResult NotFound([NotNull] string viewName, 

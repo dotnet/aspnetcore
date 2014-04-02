@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             _defaultModelMetadata = MetadataProvider.GetMetadataForType(null, typeof(TModel));
         }
-        
+
         public ViewDataDictionary([NotNull] IModelMetadataProvider metadataProvider,
             [NotNull] ModelStateDictionary modelState)
             : base(metadataProvider, modelState)
@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             // IsCompatibleObject verifies if the value is either an instance of TModel or (if value is null) that
             // TModel is a nullable type.
-            bool castWillSucceed = typeof(TModel).IsCompatibleWith(value);
+            var castWillSucceed = typeof(TModel).IsCompatibleWith(value);
 
             if (castWillSucceed)
             {

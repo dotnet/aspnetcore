@@ -7,7 +7,8 @@ namespace Microsoft.AspNet.Mvc
 {
     public class ViewComponentContext
     {
-        public ViewComponentContext([NotNull] TypeInfo componentType, [NotNull] ViewContext viewContext, [NotNull] TextWriter writer)
+        public ViewComponentContext([NotNull] TypeInfo componentType, [NotNull] ViewContext viewContext,
+            [NotNull] TextWriter writer)
         {
             ComponentType = componentType;
             ViewContext = viewContext;

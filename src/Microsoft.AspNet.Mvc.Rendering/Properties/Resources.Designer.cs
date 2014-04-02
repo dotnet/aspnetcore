@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             = new ResourceManager("Microsoft.AspNet.Mvc.Rendering.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// The argument '{0}' is null or empty.
+        /// The argument must not be null or empty.
         /// </summary>
         internal static string ArgumentNullOrEmpty
         {
@@ -19,11 +19,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <summary>
-        /// The argument '{0}' is null or empty.
+        /// The argument must not be null or empty.
         /// </summary>
-        internal static string FormatArgumentNullOrEmpty(object p0)
+        internal static string FormatArgumentNullOrEmpty()
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ArgumentNullOrEmpty"), p0);
+            return GetString("ArgumentNullOrEmpty");
         }
 
         /// <summary>

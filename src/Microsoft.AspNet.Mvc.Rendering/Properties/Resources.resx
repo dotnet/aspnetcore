@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ArgumentNullOrEmpty" xml:space="preserve">
-    <value>The argument '{0}' is null or empty.</value>
+    <value>The argument must not be null or empty.</value>
   </data>
   <data name="ArgumentPropertyNull" xml:space="preserve">
     <value>Property '{0}' must not be null.</value>

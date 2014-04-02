@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
-
-using System;
+﻿using System;
 using System.Linq;
 using System.Reflection;
 
@@ -94,7 +92,7 @@ namespace Microsoft.AspNet.Mvc
 
         public static bool HasStringConverter([NotNull] this Type type)
         {
-            TypeInfo typeInfo = type.GetTypeInfo();
+            var typeInfo = type.GetTypeInfo();
             if (typeInfo.IsPrimitive || type == typeof(string))
             {
                 return true;
@@ -110,13 +108,13 @@ namespace Microsoft.AspNet.Mvc
 
         public static Type[] GetTypeArgumentsIfMatch([NotNull] Type closedType, Type matchingOpenType)
         {
-            TypeInfo closedTypeInfo = closedType.GetTypeInfo();
+            var closedTypeInfo = closedType.GetTypeInfo();
             if (!closedTypeInfo.IsGenericType)
             {
                 return null;
             }
 
-            Type openType = closedType.GetGenericTypeDefinition();
+            var openType = closedType.GetGenericTypeDefinition();
             return (matchingOpenType == openType) ? closedTypeInfo.GenericTypeArguments : null;
         }
     }

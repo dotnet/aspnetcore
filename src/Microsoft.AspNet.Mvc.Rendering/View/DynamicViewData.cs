@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             get
             {
-                ViewDataDictionary viewData = _viewDataFunc();
+                var viewData = _viewDataFunc();
                 if (viewData == null)
                 {
                     throw new InvalidOperationException(Resources.DynamicViewData_ViewDataNull);

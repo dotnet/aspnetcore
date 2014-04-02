@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
             {
                 throw new InvalidOperationException(
                     Resources.FormatExpressionHelper_InvalidIndexerExpression(expression, parameters[0].Name),
-                   ex);
+                    ex);
             }
 
             return "[" + Convert.ToString(func(null), CultureInfo.InvariantCulture) + "]";

@@ -10,7 +10,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <typeparam name="T">The <see cref="Type"/> of the model.</typeparam>
         /// <param name="htmlHelper">The <see cref="HtmlHelper"/> instance that this method extends.</param>
         /// <param name="partialViewName">The name of the partial view to render.</param>
-        /// <returns>A <see cref="Task{T}"/> that represents when rendering to the <see cref="HtmlString"/> has completed.</returns>
+        /// <returns>
+        /// A <see cref="Task{T}"/> that represents when rendering to the <see cref="HtmlString"/> has completed.
+        /// </returns>
         public static Task<HtmlString> PartialAsync<T>(this IHtmlHelper<T> htmlHelper, [NotNull] string partialViewName)
         {
             return htmlHelper.PartialAsync(partialViewName, htmlHelper.ViewData.Model, viewData: null);
@@ -22,9 +24,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <typeparam name="T">The <see cref="Type"/> of the model.</typeparam>
         /// <param name="htmlHelper">The <see cref="HtmlHelper"/> instance that this method extends.</param>
         /// <param name="partialViewName">The name of the partial view to render.</param>
-        /// <param name="viewData">The <see cref="ViewDataDictionary"/> that is provided to the partial view that will be rendered.</param>
-        /// <returns>A <see cref="Task{T}"/> that represents when rendering to the <see cref="HtmlString"/> has completed.</returns>
-        public static Task<HtmlString> PartialAsync<T>(this IHtmlHelper<T> htmlHelper, [NotNull] string partialViewName, ViewDataDictionary viewData)
+        /// <param name="viewData">
+        /// The <see cref="ViewDataDictionary"/> that is provided to the partial view that will be rendered.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task{T}"/> that represents when rendering to the <see cref="HtmlString"/> has completed.
+        /// </returns>
+        public static Task<HtmlString> PartialAsync<T>(this IHtmlHelper<T> htmlHelper, [NotNull] string partialViewName,
+            ViewDataDictionary viewData)
         {
             return htmlHelper.PartialAsync(partialViewName, htmlHelper.ViewData.Model, viewData: viewData);
         }
@@ -36,8 +43,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="htmlHelper">The <see cref="HtmlHelper"/> instance that this method extends.</param>
         /// <param name="partialViewName">The name of the partial view to render.</param>
         /// <param name="model">The model to provide to the partial view that will be rendered.</param>
-        /// <returns>A <see cref="Task{T}"/> that represents when rendering to the <see cref="HtmlString"/> has completed.</returns>
-        public static Task<HtmlString> PartialAsync<T>(this IHtmlHelper<T> htmlHelper, [NotNull] string partialViewName, object model)
+        /// <returns>
+        /// A <see cref="Task{T}"/> that represents when rendering to the <see cref="HtmlString"/> has completed.
+        /// </returns>
+        public static Task<HtmlString> PartialAsync<T>(this IHtmlHelper<T> htmlHelper, [NotNull] string partialViewName,
+            object model)
         {
             return htmlHelper.PartialAsync(partialViewName, model, viewData: null);
         }
