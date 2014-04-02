@@ -1,10 +1,12 @@
-﻿@functions {
+﻿@using System.Globalization
+
+@functions {
     private bool? Value {
         get {
             if (ViewData.Model == null) {
                 return null;
             }
-            return Convert.ToBoolean(ViewData.Model, System.Globalization.CultureInfo.InvariantCulture);
+            return Convert.ToBoolean(ViewData.Model, CultureInfo.InvariantCulture);
         }
     }
 }

@@ -204,6 +204,12 @@
         </form>
     </div>
 
+    <div style="float: left; border: 5px solid red;">
+        @await Component.InvokeAsync("Tags", 15)
+    </div>
+</div>
+
+<div class="row">
     <div style="float: left; border: 5px solid green;">
         <table>
             <tr>
@@ -255,9 +261,5 @@
                 </td>
             </tr>
         </table>
-    </div>
-
-    <div style="float: right; border: 5px solid red;">
-        @await Component.InvokeAsync("Tags", 15)
     </div>
 </div>

@@ -162,22 +162,17 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return TagBuilder.CreateSanitizedId(name, IdAttributeDotReplacement);
         }
 
-        public virtual HtmlString Display(string expression,
+        public HtmlString Display(string expression,
                                           string templateName,
                                           string htmlFieldName,
                                           object additionalViewData)
         {
-            var templateBuilder = new TemplateBuilder(ViewContext,
-                                                      ViewData,
-                                                      ExpressionMetadataProvider.FromStringExpression(expression, ViewData, MetadataProvider),
-                                                      htmlFieldName ?? ExpressionHelper.GetExpressionText(expression),
-                                                      templateName,
-                                                      readOnly: true,
-                                                      additionalViewData: additionalViewData);
+            var metadata = ExpressionMetadataProvider.FromStringExpression(expression, ViewData, MetadataProvider);
 
-            var templateResult = templateBuilder.Build();
-
-            return new HtmlString(templateResult);
+            return GenerateDisplay(metadata,
+                                           htmlFieldName ?? ExpressionHelper.GetExpressionText(expression),
+                                           templateName,
+                                           additionalViewData);
         }
 
         /// <inheritdoc />
@@ -201,6 +196,25 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public Task RenderPartialAsync([NotNull] string partialViewName, object model, ViewDataDictionary viewData)
         {
             return RenderPartialCoreAsync(partialViewName, model, viewData, ViewContext.Writer);
+        }
+
+        protected virtual HtmlString GenerateDisplay(ModelMetadata metadata,
+                                             string htmlFieldName,
+                                             string templateName,
+                                             object additionalViewData)
+        {
+            var templateBuilder = new TemplateBuilder(_viewEngine,
+                                                      ViewContext,
+                                                      ViewData,
+                                                      metadata,
+                                                      templateName,
+                                                      templateName,
+                                                      readOnly: true,
+                                                      additionalViewData: additionalViewData);
+
+            var templateResult = templateBuilder.Build();
+
+            return new HtmlString(templateResult);
         }
 
         protected virtual async Task RenderPartialCoreAsync([NotNull] string partialViewName,
