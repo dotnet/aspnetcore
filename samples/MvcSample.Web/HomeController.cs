@@ -75,7 +75,16 @@ namespace MvcSample.Web
             User user = new User()
             {
                 Name = "My name",
-                Address = "My address"
+                Address = "My address",
+                Alive = true,
+                Age = 13,
+                GPA = 13.37M,
+                Dependent = new User()
+                {
+                    Name = "Dependents name",
+                    Address = "Dependents address",
+                    Alive = false,
+                },
             };
 
             return user;

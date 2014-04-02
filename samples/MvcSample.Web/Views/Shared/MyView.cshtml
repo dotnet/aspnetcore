@@ -204,6 +204,59 @@
         </form>
     </div>
 
+    <div style="float: left; border: 5px solid green;">
+        <table>
+            <tr>
+                <td>
+                    <label class="control-label col-md-2">Display Name</label>
+                </td>
+                <td>
+                    '@Html.Display("Name")'
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label class="control-label col-md-2">Display Dependent.Name</label>
+                </td>
+                <td>
+                    '@Html.Display("Dependent.Name")'
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label class="control-label col-md-2">Display Alive</label>
+                </td>
+                <td>
+                    '@Html.Display("Alive")'
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label class="control-label col-md-2">Display Dependent.Alive</label>
+                </td>
+                <td>
+                    '@Html.Display("Dependent.Alive")'
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label class="control-label col-md-2">Display Age</label>
+                </td>
+                <td>
+                    '@Html.Display("Age")'
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label class="control-label col-md-2">Display GPA</label>
+                </td>
+                <td>
+                    '@Html.Display("GPA")'
+                </td>
+            </tr>
+        </table>
+    </div>
+
     <div style="float: right; border: 5px solid red;">
         @await Component.InvokeAsync("Tags", 15)
     </div>

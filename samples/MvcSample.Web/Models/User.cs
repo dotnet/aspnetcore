@@ -9,5 +9,8 @@ namespace MvcSample.Web.Models
         public string Name { get; set; }
         public string Address { get; set; }
         public int Age { get; set; }
+        public decimal GPA { get; set; }
+        public User Dependent { get; set; }
+        public bool Alive { get; set; }
     }
 }
