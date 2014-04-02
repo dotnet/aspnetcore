@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Identity
 {
@@ -11,7 +12,8 @@ namespace Microsoft.AspNet.Identity
         ///     This method should send the message
         /// </summary>
         /// <param name="message"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task Send(IdentityMessage message);
+        Task Send(IdentityMessage message, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

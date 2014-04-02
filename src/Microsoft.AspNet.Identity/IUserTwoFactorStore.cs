@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Identity
 {
@@ -14,14 +15,16 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="user"></param>
         /// <param name="enabled"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task SetTwoFactorEnabled(TUser user, bool enabled);
+        Task SetTwoFactorEnabled(TUser user, bool enabled, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Returns whether two factor is enabled for the user
         /// </summary>
         /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<bool> GetTwoFactorEnabled(TUser user);
+        Task<bool> GetTwoFactorEnabled(TUser user, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

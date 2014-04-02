@@ -1,5 +1,7 @@
 using System;
+using System.Globalization;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Identity
@@ -57,7 +59,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="authenticationType"></param>
         /// <returns></returns>
         public virtual async Task<ClaimsIdentity> Create(UserManager<TUser, TKey> manager, TUser user,
-            string authenticationType)
+            string authenticationType, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (manager == null)
             {
@@ -68,15 +70,15 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("user");
             }
             var id = new ClaimsIdentity(authenticationType, UserNameClaimType, RoleClaimType);
-            id.AddClaim(new Claim(UserIdClaimType, ConvertIdToString(user.Id), ClaimValueTypes.String));
+            id.AddClaim(new Claim(UserIdClaimType, Convert.ToString(user.Id, CultureInfo.InvariantCulture), ClaimValueTypes.String));
             id.AddClaim(new Claim(UserNameClaimType, user.UserName, ClaimValueTypes.String));
             if (manager.SupportsUserSecurityStamp)
             {
-                id.AddClaim(new Claim(SecurityStampClaimType, await manager.GetSecurityStamp(user.Id)));
+                id.AddClaim(new Claim(SecurityStampClaimType, await manager.GetSecurityStamp(user.Id, cancellationToken)));
             }
             if (manager.SupportsUserRole)
             {
-                var roles = await manager.GetRoles(user.Id);
+                var roles = await manager.GetRoles(user.Id, cancellationToken);
                 foreach (var roleName in roles)
                 {
                     id.AddClaim(new Claim(RoleClaimType, roleName, ClaimValueTypes.String));
@@ -84,23 +86,9 @@ namespace Microsoft.AspNet.Identity
             }
             if (manager.SupportsUserClaim)
             {
-                id.AddClaims(await manager.GetClaims(user.Id));
+                id.AddClaims(await manager.GetClaims(user.Id, cancellationToken));
             }
             return id;
-        }
-
-        /// <summary>
-        ///     Convert the key to a string, by default just calls .ToString()
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public virtual string ConvertIdToString(TKey key)
-        {
-            if (key == null || key.Equals(default(TKey)))
-            {
-                return null;
-            }
-            return key.ToString();
         }
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Identity
@@ -40,8 +41,9 @@ namespace Microsoft.AspNet.Identity
         ///     Ensures that the string is of the required length and meets the configured requirements
         /// </summary>
         /// <param name="item"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task<IdentityResult> Validate(string item)
+        public virtual Task<IdentityResult> Validate(string item, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (item == null)
             {

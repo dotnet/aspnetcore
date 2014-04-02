@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Identity
@@ -17,7 +18,8 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="manager"></param>
         /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<IdentityResult> Validate(UserManager<TUser, TKey> manager, TUser user);
+        Task<IdentityResult> Validate(UserManager<TUser, TKey> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Identity
@@ -19,7 +20,8 @@ namespace Microsoft.AspNet.Identity
         /// <param name="manager"></param>
         /// <param name="user"></param>
         /// <param name="authenticationType"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<ClaimsIdentity> Create(UserManager<TUser, TKey> manager, TUser user, string authenticationType);
+        Task<ClaimsIdentity> Create(UserManager<TUser, TKey> manager, TUser user, string authenticationType, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

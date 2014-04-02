@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Identity
 {
@@ -14,14 +15,16 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="user"></param>
         /// <param name="stamp"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task SetSecurityStamp(TUser user, string stamp);
+        Task SetSecurityStamp(TUser user, string stamp, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Get the user security stamp
         /// </summary>
         /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<string> GetSecurityStamp(TUser user);
+        Task<string> GetSecurityStamp(TUser user, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

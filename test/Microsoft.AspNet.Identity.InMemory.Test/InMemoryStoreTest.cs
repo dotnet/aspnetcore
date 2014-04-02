@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Testing;
 using Xunit;
@@ -388,23 +389,23 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         private class StaticTokenProvider : IUserTokenProvider<InMemoryUser, string>
         {
             public Task<string> Generate(string purpose, UserManager<InMemoryUser, string> manager,
-                InMemoryUser user)
+                InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(MakeToken(purpose, user));
             }
 
             public Task<bool> Validate(string purpose, string token, UserManager<InMemoryUser, string> manager,
-                InMemoryUser user)
+                InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(token == MakeToken(purpose, user));
             }
 
-            public Task Notify(string token, UserManager<InMemoryUser, string> manager, InMemoryUser user)
+            public Task Notify(string token, UserManager<InMemoryUser, string> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task<bool> IsValidProviderForUser(UserManager<InMemoryUser, string> manager, InMemoryUser user)
+            public Task<bool> IsValidProviderForUser(UserManager<InMemoryUser, string> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(true);
             }
@@ -719,17 +720,17 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         {
             public const string ErrorMessage = "I'm Bad.";
 
-            public Task<IdentityResult> Validate(string password)
+            public Task<IdentityResult> Validate(string password, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(IdentityResult.Failed(ErrorMessage));
             }
 
-            public Task<IdentityResult> Validate(RoleManager<InMemoryRole, string> manager, InMemoryRole role)
+            public Task<IdentityResult> Validate(RoleManager<InMemoryRole, string> manager, InMemoryRole role, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(IdentityResult.Failed(ErrorMessage));
             }
 
-            public Task<IdentityResult> Validate(UserManager<InMemoryUser, string> manager, InMemoryUser user)
+            public Task<IdentityResult> Validate(UserManager<InMemoryUser, string> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(IdentityResult.Failed(ErrorMessage));
             }
@@ -1092,23 +1093,23 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
 
         private class EmailTokenProvider : IUserTokenProvider<InMemoryUser, string>
         {
-            public Task<string> Generate(string purpose, UserManager<InMemoryUser, string> manager, InMemoryUser user)
+            public Task<string> Generate(string purpose, UserManager<InMemoryUser, string> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(MakeToken(purpose));
             }
 
             public Task<bool> Validate(string purpose, string token, UserManager<InMemoryUser, string> manager,
-                InMemoryUser user)
+                InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(token == MakeToken(purpose));
             }
 
-            public Task Notify(string token, UserManager<InMemoryUser, string> manager, InMemoryUser user)
+            public Task Notify(string token, UserManager<InMemoryUser, string> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return manager.SendEmail(user.Id, token, token);
             }
 
-            public async Task<bool> IsValidProviderForUser(UserManager<InMemoryUser, string> manager, InMemoryUser user)
+            public async Task<bool> IsValidProviderForUser(UserManager<InMemoryUser, string> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return !string.IsNullOrEmpty(await manager.GetEmail(user.Id));
             }
@@ -1121,23 +1122,23 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
 
         private class SmsTokenProvider : IUserTokenProvider<InMemoryUser, string>
         {
-            public Task<string> Generate(string purpose, UserManager<InMemoryUser, string> manager, InMemoryUser user)
+            public Task<string> Generate(string purpose, UserManager<InMemoryUser, string> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(MakeToken(purpose));
             }
 
             public Task<bool> Validate(string purpose, string token, UserManager<InMemoryUser, string> manager,
-                InMemoryUser user)
+                InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(token == MakeToken(purpose));
             }
 
-            public Task Notify(string token, UserManager<InMemoryUser, string> manager, InMemoryUser user)
+            public Task Notify(string token, UserManager<InMemoryUser, string> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return manager.SendSms(user.Id, token);
             }
 
-            public async Task<bool> IsValidProviderForUser(UserManager<InMemoryUser, string> manager, InMemoryUser user)
+            public async Task<bool> IsValidProviderForUser(UserManager<InMemoryUser, string> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return !string.IsNullOrEmpty(await manager.GetPhoneNumber(user.Id));
             }
@@ -1419,7 +1420,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         {
             public IdentityMessage Message { get; set; }
 
-            public Task Send(IdentityMessage message)
+            public Task Send(IdentityMessage message, CancellationToken cancellationToken = default(CancellationToken))
             {
                 Message = message;
                 return Task.FromResult(0);

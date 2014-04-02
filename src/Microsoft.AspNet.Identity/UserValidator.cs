@@ -1,3 +1,4 @@
+using System.Threading;
 #if NET45
 using System.Net.Mail;
 #endif
@@ -41,8 +42,9 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="manager"></param>
         /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> Validate(UserManager<TUser, TKey> manager, TUser user)
+        public virtual async Task<IdentityResult> Validate(UserManager<TUser, TKey> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (manager == null)
             {

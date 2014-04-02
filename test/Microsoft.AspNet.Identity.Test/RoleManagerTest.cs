@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -57,27 +58,27 @@ namespace Microsoft.AspNet.Identity.Test
 
         private class NotImplementedStore : IRoleStore<TestRole, string>
         {
-            public Task Create(TestRole role)
+            public Task Create(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task Update(TestRole role)
+            public Task Update(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task Delete(TestRole role)
+            public Task Delete(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<TestRole> FindById(string roleId)
+            public Task<TestRole> FindById(string roleId, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<TestRole> FindByName(string roleName)
+            public Task<TestRole> FindByName(string roleName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }

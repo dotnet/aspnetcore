@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Identity
@@ -15,23 +16,26 @@ namespace Microsoft.AspNet.Identity
         ///     Returns the claims for the user with the issuer set
         /// </summary>
         /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<IList<Claim>> GetClaims(TUser user);
+        Task<IList<Claim>> GetClaims(TUser user, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Add a new user claim
         /// </summary>
         /// <param name="user"></param>
         /// <param name="claim"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task AddClaim(TUser user, Claim claim);
+        Task AddClaim(TUser user, Claim claim, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Remove a user claim
         /// </summary>
         /// <param name="user"></param>
         /// <param name="claim"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task RemoveClaim(TUser user, Claim claim);
+        Task RemoveClaim(TUser user, Claim claim, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

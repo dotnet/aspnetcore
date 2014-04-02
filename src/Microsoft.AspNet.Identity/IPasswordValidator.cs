@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Identity
@@ -11,6 +12,6 @@ namespace Microsoft.AspNet.Identity
         ///     Validate the item
         /// </summary>
         /// <returns></returns>
-        Task<IdentityResult> Validate(string password);
+        Task<IdentityResult> Validate(string password, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

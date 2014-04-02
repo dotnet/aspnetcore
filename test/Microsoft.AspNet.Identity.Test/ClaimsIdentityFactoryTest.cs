@@ -1,5 +1,9 @@
 using System;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.Test
@@ -19,29 +23,49 @@ namespace Microsoft.AspNet.Identity.Test
                 async () => await factory.Create(manager, new TestUser(), null));
         }
 
-        [Fact]
-        public void ConvertIdToStringWithDefaultStringReturnsNull()
+ #if NET45
+        //TODO: Mock fails in K (this works fine in net45)
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        public async Task EnsureClaimsIdentityHasExpectedClaims(bool supportRoles, bool supportClaims)
         {
+            // Setup
+            var userManager = new Mock<UserManager<TestUser, string>>();
+            var user = new TestUser { UserName = "Foo" };
+            userManager.Setup(m => m.SupportsUserRole).Returns(supportRoles);
+            userManager.Setup(m => m.SupportsUserClaim).Returns(supportClaims);
+            var roleClaims = new[] { "Admin", "Local" }; 
+            userManager.Setup(m => m.GetRoles(user.Id, CancellationToken.None)).ReturnsAsync(roleClaims);
+            var userClaims = new[] { new Claim("Whatever", "Value"), new Claim("Whatever2", "Value2") };
+            userManager.Setup(m => m.GetClaims(user.Id, CancellationToken.None)).ReturnsAsync(userClaims);
+
+            const string authType = "Microsoft.AspNet.Identity";
             var factory = new ClaimsIdentityFactory<TestUser, string>();
-            Assert.Null(factory.ConvertIdToString(default(string)));
-        }
 
-        [Fact]
-        public void ConvertIdToStringWithDefaultIntReturnsNull()
-        {
-            var factory = new ClaimsIdentityFactory<TestUser<int>, int>();
-            Assert.Null(factory.ConvertIdToString(default(int)));
-        }
+            // Act
+            var identity = await factory.Create(userManager.Object, user, authType);
 
-        [Fact]
-        public void ConvertIdToStringWithDefaultGuidReturnsNull()
-        {
-            var factory = new ClaimsIdentityFactory<TestUser<Guid>, Guid>();
-            Assert.Null(factory.ConvertIdToString(default(Guid)));
+            // Assert
+            Assert.NotNull(identity);
+            Assert.Equal(authType, identity.AuthenticationType);
+            var claims = identity.Claims;
+            Assert.NotNull(claims);
+            Assert.True(
+                claims.Any(c => c.Type == factory.UserNameClaimType && c.Value == user.UserName));
+            Assert.True(claims.Any(c => c.Type == factory.UserIdClaimType && c.Value == user.Id));
+            Assert.Equal(supportRoles, claims.Any(c => c.Type == factory.RoleClaimType && c.Value == "Admin"));
+            Assert.Equal(supportRoles, claims.Any(c => c.Type == factory.RoleClaimType && c.Value == "Local"));
+            foreach (var cl in userClaims)
+            {
+                Assert.Equal(supportClaims, claims.Any(c => c.Type == cl.Type && c.Value == cl.Value));
+            }
         }
+#endif
 
-        // TODO: Need Mock (test in InMemory for now)
-        //[Fact]
+       //[Fact]
         //public async Task ClaimsIdentityTest()
         //{
         //    var db = UnitTestHelper.CreateDefaultDb();

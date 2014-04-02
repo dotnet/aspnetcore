@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Identity
@@ -14,35 +15,40 @@ namespace Microsoft.AspNet.Identity
         ///     Insert a new user
         /// </summary>
         /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task Create(TUser user);
+        Task Create(TUser user, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Update a user
         /// </summary>
         /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task Update(TUser user);
+        Task Update(TUser user, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Delete a user
         /// </summary>
         /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task Delete(TUser user);
+        Task Delete(TUser user, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Finds a user
         /// </summary>
         /// <param name="userId"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<TUser> FindById(TKey userId);
+        Task<TUser> FindById(TKey userId, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Find a user by name
         /// </summary>
         /// <param name="userName"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<TUser> FindByName(string userName);
+        Task<TUser> FindByName(string userName, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

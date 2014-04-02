@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Identity
@@ -14,8 +15,9 @@ namespace Microsoft.AspNet.Identity
         /// <param name="purpose"></param>
         /// <param name="manager"></param>
         /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<string> Generate(string purpose, UserManager<TUser, TKey> manager, TUser user);
+        Task<string> Generate(string purpose, UserManager<TUser, TKey> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Validate and unprotect a token, returns null if invalid
@@ -24,8 +26,9 @@ namespace Microsoft.AspNet.Identity
         /// <param name="token"></param>
         /// <param name="manager"></param>
         /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<bool> Validate(string purpose, string token, UserManager<TUser, TKey> manager, TUser user);
+        Task<bool> Validate(string purpose, string token, UserManager<TUser, TKey> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Notifies the user that a token has been generated, i.e. via email or sms, or can no-op
@@ -33,15 +36,17 @@ namespace Microsoft.AspNet.Identity
         /// <param name="token"></param>
         /// <param name="manager"></param>
         /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task Notify(string token, UserManager<TUser, TKey> manager, TUser user);
+        Task Notify(string token, UserManager<TUser, TKey> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Returns true if provider can be used for this user, i.e. could require a user to have an email
         /// </summary>
         /// <param name="manager"></param>
         /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<bool> IsValidProviderForUser(UserManager<TUser, TKey> manager, TUser user);
+        Task<bool> IsValidProviderForUser(UserManager<TUser, TKey> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Identity
@@ -15,52 +16,59 @@ namespace Microsoft.AspNet.Identity
         ///     not locked out.
         /// </summary>
         /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<DateTimeOffset> GetLockoutEndDate(TUser user);
+        Task<DateTimeOffset> GetLockoutEndDate(TUser user, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Locks a user out until the specified end date (set to a past date, to unlock a user)
         /// </summary>
         /// <param name="user"></param>
         /// <param name="lockoutEnd"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task SetLockoutEndDate(TUser user, DateTimeOffset lockoutEnd);
+        Task SetLockoutEndDate(TUser user, DateTimeOffset lockoutEnd, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Used to record when an attempt to access the user has failed
         /// </summary>
         /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<int> IncrementAccessFailedCount(TUser user);
+        Task<int> IncrementAccessFailedCount(TUser user, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Used to reset the account access count, typically after the account is successfully accessed
         /// </summary>
         /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task ResetAccessFailedCount(TUser user);
+        Task ResetAccessFailedCount(TUser user, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Returns the current number of failed access attempts.  This number usually will be reset whenever the password is
         ///     verified or the account is locked out.
         /// </summary>
         /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<int> GetAccessFailedCount(TUser user);
+        Task<int> GetAccessFailedCount(TUser user, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Returns whether the user can be locked out.
         /// </summary>
         /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<bool> GetLockoutEnabled(TUser user);
+        Task<bool> GetLockoutEnabled(TUser user, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Sets whether the user can be locked out.
         /// </summary>
         /// <param name="user"></param>
         /// <param name="enabled"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task SetLockoutEnabled(TUser user, bool enabled);
+        Task SetLockoutEnabled(TUser user, bool enabled, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Identity
@@ -19,8 +20,9 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="manager"></param>
         /// <param name="role"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> Validate(RoleManager<TRole, TKey> manager, TRole role)
+        public virtual async Task<IdentityResult> Validate(RoleManager<TRole, TKey> manager, TRole role, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (manager == null)
             {
