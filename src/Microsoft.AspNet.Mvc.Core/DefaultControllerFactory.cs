@@ -30,7 +30,6 @@ namespace Microsoft.AspNet.Mvc
 
             var controller = _activator.CreateInstance(_serviceProvider, actionDescriptor.ControllerDescriptor.ControllerTypeInfo.AsType());
 
-            // TODO: How do we feed the controller with context (need DI improvements)
             InitializeController(controller, actionContext);
 
             return controller;
@@ -38,6 +37,12 @@ namespace Microsoft.AspNet.Mvc
 
         public void ReleaseController(object controller)
         {
+            var disposableController = controller as IDisposable;
+
+            if (disposableController != null)
+            {
+                disposableController.Dispose();
+            }
         }
 
         private void InitializeController(object controller, ActionContext actionContext)

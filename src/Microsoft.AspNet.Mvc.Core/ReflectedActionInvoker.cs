@@ -48,8 +48,6 @@ namespace Microsoft.AspNet.Mvc
 
         public async Task InvokeActionAsync()
         {
-            IActionResult actionResult;
-
             var filterMetaItems = GetAndArrangeFilters();
 
             var controller = _controllerFactory.CreateController(_actionContext);
@@ -61,10 +59,17 @@ namespace Microsoft.AspNet.Mvc
                                                                  "controller"));
             }
 
-            actionResult = await RunAuthorizationFilters(filterMetaItems) ??
-                           await RunActionFiltersAndActions(filterMetaItems, controller);
+            try
+            {
+                var actionResult = await RunAuthorizationFilters(filterMetaItems) ??
+                               await RunActionFiltersAndActions(filterMetaItems, controller);
 
-            await RunActionResultFilters(actionResult, filterMetaItems);
+                await RunActionResultFilters(actionResult, filterMetaItems);
+            }
+            finally 
+            {
+                _controllerFactory.ReleaseController(controller);
+            }
         }
 
         private FilterItem[] GetAndArrangeFilters()
