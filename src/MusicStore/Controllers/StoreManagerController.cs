@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
-
-using Microsoft.AspNet.Mvc;
+﻿using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Data.Entity;
 using MusicStore.Models;
@@ -49,32 +47,31 @@ namespace MusicStore.Controllers
         //
         // GET: /StoreManager/Create
 
-        //public IActionResult Create()
-        //{
-        //    ViewBag.GenreId = new SelectList(db.Genres, "GenreId", "Name");
-        //    ViewBag.ArtistId = new SelectList(db.Artists, "ArtistId", "Name");
-        //    return View();
-        //}
+        public IActionResult Create()
+        {
+            //ViewBag.GenreId = new SelectList(db.Genres, "GenreId", "Name");
+            //ViewBag.ArtistId = new SelectList(db.Artists, "ArtistId", "Name");
+            return View();
+        }
 
-        //Bug: ModelState.IsValid not available
-        //Bug: RedirectToAction() not available
         //Bug: SelectList not available
         // POST: /StoreManager/Create
-
         //[HttpPost]
-        //public IActionResult Create(Album album)
-        //{
-        //    if (ModelState.IsValid)
-        //    {
-        //        db.Albums.Add(album);
-        //        db.SaveChanges();
-        //        return RedirectToAction("Index");
-        //    }
+        public IActionResult Create(Album album)
+        {
+            if (ModelState.IsValid == true)
+            {
+                db.Albums.Add(album);
+                db.SaveChanges();
+                //Bug: RedirectToAction() not available
+                //return RedirectToAction("Index");
+                return View();
+            }
 
-        //    ViewBag.GenreId = new SelectList(db.Genres, "GenreId", "Name", album.GenreId);
-        //    ViewBag.ArtistId = new SelectList(db.Artists, "ArtistId", "Name", album.ArtistId);
-        //    return View(album);
-        //}
+            //ViewBag.GenreId = new SelectList(db.Genres, "GenreId", "Name", album.GenreId);
+            //ViewBag.ArtistId = new SelectList(db.Artists, "ArtistId", "Name", album.ArtistId);
+            return View(album);
+        }
 
         //
         // GET: /StoreManager/Edit/5
@@ -100,13 +97,13 @@ namespace MusicStore.Controllers
         //[HttpPost]
         public IActionResult Edit(Album album)
         {
-            //Bug: ModelState.IsValid missing
-            //if (ModelState.IsValid)
+            if (ModelState.IsValid == true)
             {
                 db.ChangeTracker.Entry(album).State = EntityState.Modified;
                 db.SaveChanges();
                 //Bug: Missing RedirectToAction helper
                 //return RedirectToAction("Index");
+                return View();
             }
             //ViewBag.GenreId = new SelectList(db.Genres, "GenreId", "Name", album.GenreId);
             //ViewBag.ArtistId = new SelectList(db.Artists, "ArtistId", "Name", album.ArtistId);

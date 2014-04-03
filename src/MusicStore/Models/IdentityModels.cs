@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
-
-using Microsoft.AspNet.Identity.InMemory;
+﻿using Microsoft.AspNet.Identity.InMemory;
 
 namespace MusicStore.Models
 {

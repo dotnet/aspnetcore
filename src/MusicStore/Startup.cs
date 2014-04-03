@@ -1,11 +1,10 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
-
-using Microsoft.AspNet;
+﻿using Microsoft.AspNet;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.ConfigurationModel;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.DependencyInjection.Fallback;
 using Microsoft.AspNet.DependencyInjection.NestedProviders;
+using Microsoft.AspNet.RequestContainer;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.InMemory;
@@ -22,11 +21,13 @@ public class Startup
     {
         CreateAdminUser();
 
+        //ErrorPageOptions.ShowAll to be used only at development time. Not recommended for production. 
         app.UseErrorPage(ErrorPageOptions.ShowAll);
 
         app.UseFileServer();
 
         var serviceProvider = MvcServices.GetDefaultServices().BuildServiceProvider(app.ServiceProvider);
+        app.UseContainer(serviceProvider);
 
         var routes = new RouteCollection()
         {

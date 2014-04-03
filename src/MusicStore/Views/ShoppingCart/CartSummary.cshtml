@@ -1,4 +1,9 @@
-﻿@if (ViewBag.CartCount > 0)
+﻿@{
+    //Bug: Need to have a way to specify an application level layout page
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+
+@if (ViewBag.CartCount > 0)
 {
     <li>
         <a href="@Url.Action("Index", "ShoppingCart")" title="@ViewBag.CartSummary">

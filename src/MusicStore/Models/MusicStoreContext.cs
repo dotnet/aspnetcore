@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
-
-using Microsoft.Data.Entity;
+﻿using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Metadata;
 using Microsoft.Data.InMemory;
 using Microsoft.Data.SqlServer;
@@ -13,7 +11,7 @@ namespace MusicStore.Models
         public EntitySet<Artist> Artists { get; set; }
         public EntitySet<Order> Orders { get; set; }
         public EntitySet<Genre> Genres { get; set; }
-        public EntitySet<CartItem> Carts { get; set; }
+        public EntitySet<CartItem> CartItems { get; set; }
         public EntitySet<OrderDetail> OrderDetails { get; set; }
 
         protected override void OnConfiguring(EntityConfigurationBuilder builder)

@@ -1,7 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
-
-using Microsoft.AspNet.Abstractions;
-using Microsoft.AspNet.Mvc;
+﻿using Microsoft.AspNet.Abstractions;
 using Microsoft.Data.Entity;
 using System;
 using System.Collections.Generic;
@@ -18,8 +15,6 @@ namespace MusicStore.Models
         {
             _db = db;
         }
-
-        public const string CartSessionKey = "CartId";
 
         public static ShoppingCart GetCart(MusicStoreContext db, HttpContext context)
         {
@@ -38,15 +33,15 @@ namespace MusicStore.Models
         public void AddToCart(Album album)
         {
             // Get the matching cart and album instances
-            var cartItem = _db.Carts.SingleOrDefault(
+            var cartItem = _db.CartItems.SingleOrDefault(
                 c => c.CartId == ShoppingCartId
                 && c.AlbumId == album.AlbumId);
 
             if (cartItem == null)
             {
                 // TODO [EF] Swap to store generated key once we support identity pattern
-                var nextCartItemId = _db.Carts.Any()
-                    ? _db.Carts.Max(c => c.CartItemId) + 1
+                var nextCartItemId = _db.CartItems.Any()
+                    ? _db.CartItems.Max(c => c.CartItemId) + 1
                     : 1;
 
                 // Create a new cart item if no cart item exists
@@ -59,7 +54,7 @@ namespace MusicStore.Models
                     DateCreated = DateTime.Now
                 };
 
-                _db.Carts.Add(cartItem);
+                _db.CartItems.Add(cartItem);
             }
             else
             {
@@ -67,14 +62,14 @@ namespace MusicStore.Models
                 cartItem.Count++;
 
                 // TODO [EF] Remove this line once change detection is available
-                _db.ChangeTracker.Entry(cartItem).State = Microsoft.Data.Entity.EntityState.Modified;
+                _db.ChangeTracker.Entry(cartItem).State = EntityState.Modified;
             }
         }
 
         public int RemoveFromCart(int id)
         {
             // Get the cart
-            var cartItem = _db.Carts.Single(
+            var cartItem = _db.CartItems.Single(
                 cart => cart.CartId == ShoppingCartId
                 && cart.CartItemId == id);
 
@@ -93,7 +88,7 @@ namespace MusicStore.Models
                 }
                 else
                 {
-                    _db.Carts.Remove(cartItem);
+                    _db.CartItems.Remove(cartItem);
                 }
 
             }
@@ -103,7 +98,7 @@ namespace MusicStore.Models
 
         public void EmptyCart()
         {
-            var cartItems = _db.Carts.Where(cart => cart.CartId == ShoppingCartId);
+            var cartItems = _db.CartItems.Where(cart => cart.CartId == ShoppingCartId);
 
             foreach (var cartItem in cartItems)
             {
@@ -115,13 +110,13 @@ namespace MusicStore.Models
 
         public List<CartItem> GetCartItems()
         {
-            return _db.Carts.Where(cart => cart.CartId == ShoppingCartId).ToList();
+            return _db.CartItems.Where(cart => cart.CartId == ShoppingCartId).ToList();
         }
 
         public int GetCount()
         {
             // Get the count of each item in the cart and sum them up
-            int? count = (from cartItems in _db.Carts
+            int? count = (from cartItems in _db.CartItems
                           where cartItems.CartId == ShoppingCartId
                           select (int?)cartItems.Count).Sum();
 
@@ -137,7 +132,7 @@ namespace MusicStore.Models
 
             // TODO Collapse to a single query once EF supports querying related data
             decimal total = 0;
-            foreach (var item in _db.Carts.Where(c => c.CartId == ShoppingCartId))
+            foreach (var item in _db.CartItems.Where(c => c.CartId == ShoppingCartId))
             {
                 var album = _db.Albums.Single(a => a.AlbumId == item.AlbumId);
                 total += item.Count * album.Price;
@@ -194,38 +189,23 @@ namespace MusicStore.Models
         // We're using HttpContextBase to allow access to cookies.
         public string GetCartId(HttpContext context)
         {
-            //Bug: Session not in scope. But we should substitute this with cookies when available.
-            //if (context.Session[CartSessionKey] == null)
-            //{
-            //    if (!string.IsNullOrWhiteSpace(context.User.Identity.Name))
-            //    {
-            //        context.Session[CartSessionKey] = context.User.Identity.Name;
-            //    }
-            //    else
-            //    {
-            //        // Generate a new random GUID using System.Guid class
-            //        Guid tempCartId = Guid.NewGuid();
+            var sessionCookie = context.Request.Cookies.Get("Session");
+            string cartId = null;
 
-            //        // Send tempCartId back to client as a cookie
-            //        context.Session[CartSessionKey] = tempCartId.ToString();
-            //    }
-            //}
-
-            //return context.Session[CartSessionKey].ToString();
-            return string.Empty;
-        }
-
-        // When a user has logged in, migrate their shopping cart to
-        // be associated with their username
-        public void MigrateCart(string userName)
-        {
-            var shoppingCart = _db.Carts.Where(c => c.CartId == ShoppingCartId);
-
-            foreach (CartItem item in shoppingCart)
+            if (string.IsNullOrWhiteSpace(sessionCookie))
             {
-                item.CartId = userName;
+                //A GUID to hold the cartId. 
+                cartId = Guid.NewGuid().ToString();
+
+                // Send cart Id as a cookie to the client.
+                context.Response.Cookies.Append("Session", cartId);
+            }
+            else
+            {
+                cartId = sessionCookie;
             }
 
+            return cartId;
         }
     }
 }

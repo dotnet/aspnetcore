@@ -11,5 +11,3 @@ rmdir /S /Q %APP_PATH%\Properties
 del %APP_PATH%\*.csproj
 del %APP_PATH%\*.v12.suo
 del %APP_PATH%\*.csproj.user
-del src\PlaceHolder\*.csproj
-rmdir /S /Q src\PlaceHolder\bin

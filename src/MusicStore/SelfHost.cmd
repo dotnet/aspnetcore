@@ -1,3 +1,6 @@
+REM run on k10 by default. Assign it to an empty value to run on desktop CLR. 
+SET TARGET_FRAMEWORK=k10
+
 REM Selfhost does not need this bin folder
 rmdir /S /Q bin
 

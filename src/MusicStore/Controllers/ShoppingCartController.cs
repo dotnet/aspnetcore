@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
-
-using Microsoft.AspNet.Mvc;
+﻿using Microsoft.AspNet.Mvc;
 using MusicStore.Models;
 using MusicStore.ViewModels;
 using System.Linq;
@@ -64,7 +62,7 @@ namespace MusicStore.Controllers
 
             // Get the name of the album to display confirmation
             // TODO [EF] Turn into one query once query of related data is enabled
-            int albumId = db.Carts.Single(item => item.CartItemId == id).AlbumId;
+            int albumId = db.CartItems.Single(item => item.CartItemId == id).AlbumId;
             string albumName = db.Albums.Single(a => a.AlbumId == albumId).Title;
 
             // Remove from cart

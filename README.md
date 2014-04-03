@@ -2,10 +2,9 @@
 
 ### Run the application:
 1. Run build.cmd to restore all the necessary packages and generate project files
-2. Open a command prompt and cd \src\MusicStore\
+2. Open a command prompt and cd \src\<AppFolder>\
 3. [Helios]:
-	4. Execute CopyAspNetLoader.cmd to copy the AspNet.Loader.dll to the bin directory
-	5. Helios.cmd to launch the app on IISExpress.
+	4. Helios.cmd to launch the app on IISExpress.
 4. [SelfHost]:
 	5. Run Selfhost.cmd (This runs k web) (Note: If your changes to C# files are not picked up in successive builds - try deleting the bin and obj folder)
 5. [CustomHost]:
@@ -24,5 +23,5 @@
 2. This is a captured snapshot of build numbers which worked for this application. This LKG will be captured once in a while. 
 
 ### Note:
-1. By default this script starts the application at http://localhost:5001/. Modify Run.cmd if you would like to change the url
+1. By default the scripts will start the application at http://localhost:5001/. Modify the scripts to change the url. 
 2. Use Visual studio only for editing & intellisense. Don't try to build or run the app from Visual studio.

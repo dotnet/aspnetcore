@@ -1,5 +1,7 @@
 ﻿@model IEnumerable<MusicStore.Models.Genre>
     @{
+        //Bug: Need to have a way to specify an application level layout page
+        Layout = "/Views/Shared/_Layout.cshtml";
         ViewBag.Title = "Store";
     }
     <h3>Browse Genres</h3>
