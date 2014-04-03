@@ -26,28 +26,37 @@ namespace Microsoft.AspNet
             {
                 throw new ArgumentNullException("app");
             }
-            /*
+
             // TODO: Extension methods for this?
-            var loggerFactory = (ILoggerFactory)app.ServiceProvider.GetService(typeof(ILoggerFactory));
+            var loggerFactory = (ILoggerFactory)app.ServiceProvider.GetService(typeof(ILoggerFactory)) ?? new NullLoggerFactory();
             ILogger logger = loggerFactory.Create(typeof(CookieAuthenticationMiddleware).FullName);
-            */
-            ILogger logger = null;
 
             if (options.TicketDataFormat == null)
             {
-                /* TODO: Add DPP extensions
                 IDataProtector dataProtector = app.CreateDataProtector(
                     typeof(CookieAuthenticationMiddleware).FullName,
                     options.AuthenticationType, "v1");
-                */
-                var dataProtectionProvider = (IDataProtectionProvider)app.ServiceProvider.GetService(typeof(IDataProtectionProvider));
-                IDataProtector dataProtector = dataProtectionProvider.CreateProtector(string.Join(";", typeof(CookieAuthenticationMiddleware).FullName, options.AuthenticationType, "v1"));
                 options.TicketDataFormat = new TicketDataFormat(dataProtector);
             }
 
-            app.Use(next => new CookieAuthenticationMiddleware(next, logger, options).Invoke);
-            // TODO: ? app.UseStageMarker(PipelineStage.Authenticate);
-            return app;
+            return app.Use(next => new CookieAuthenticationMiddleware(next, logger, options).Invoke);
+        }
+
+        // TODO: Temp workaround until the host reliably provides logging.
+        private class NullLoggerFactory : ILoggerFactory
+        {
+            public ILogger Create(string name)
+            {
+                return new NullLongger();
+            }
+        }
+
+        private class NullLongger : ILogger
+        {
+            public bool WriteCore(TraceType eventType, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+            {
+                return false;
+            }
         }
     }
 }

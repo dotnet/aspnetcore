@@ -27,11 +27,10 @@ namespace Microsoft.AspNet.Security.Cookies
 
         public CookieAuthenticationHandler(ILogger logger)
         {
-            /*
             if (logger == null)
             {
                 throw new ArgumentNullException("logger");
-            }*/
+            }
             _logger = logger;
         }
 
@@ -53,7 +52,7 @@ namespace Microsoft.AspNet.Security.Cookies
 
             if (ticket == null)
             {
-                // TODO: _logger.WriteWarning(@"Unprotect ticket failed");
+                _logger.WriteWarning(@"Unprotect ticket failed");
                 return null;
             }
 

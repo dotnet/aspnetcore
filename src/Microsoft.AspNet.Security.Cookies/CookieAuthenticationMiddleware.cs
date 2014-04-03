@@ -23,11 +23,11 @@ namespace Microsoft.AspNet.Security.Cookies
             if (String.IsNullOrEmpty(Options.CookieName))
             {
                 Options.CookieName = CookieAuthenticationDefaults.CookiePrefix + Options.AuthenticationType;
-            }/*
+            }
             if (logger == null)
             {
                 throw new ArgumentNullException("logger");
-            }*/
+            }
             _logger = logger;
         }
 

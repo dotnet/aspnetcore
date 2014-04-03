@@ -15,9 +15,6 @@ namespace CookieSample
     {
         public void Configuration(IBuilder app)
         {
-            Console.WriteLine("Attach");
-            Console.ReadKey();
-
             app.UseCookieAuthentication(new CookieAuthenticationOptions()
                 {
 

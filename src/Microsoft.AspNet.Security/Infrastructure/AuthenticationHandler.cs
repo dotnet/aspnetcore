@@ -21,9 +21,8 @@ namespace Microsoft.AspNet.Security.Infrastructure
     /// </summary>
     public abstract class AuthenticationHandler : IAuthenticationHandler
     {
-#if NET45
-        private static readonly RNGCryptoServiceProvider Random = new RNGCryptoServiceProvider();
-#endif
+        private static readonly RNGCryptoServiceProvider CryptoRandom = new RNGCryptoServiceProvider();
+
         private Task<AuthenticationTicket> _authenticate;
         private bool _authenticateInitialized;
         private object _authenticateSyncLock;
@@ -333,11 +332,7 @@ namespace Microsoft.AspNet.Security.Infrastructure
             string correlationKey = Constants.CorrelationPrefix + BaseOptions.AuthenticationType;
 
             var nonceBytes = new byte[32];
-#if NET45
-            Random.GetBytes(nonceBytes);
-#else
-            Microsoft.AspNet.Security.DataProtection.CryptRand.FillBuffer(new ArraySegment<byte>(nonceBytes));
-#endif
+            CryptoRandom.GetBytes(nonceBytes);
             string correlationId = TextEncodings.Base64Url.Encode(nonceBytes);
 
             var cookieOptions = new CookieOptions
