@@ -282,6 +282,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             Assert.True(context.IsBound);
             Assert.NotNull(virtualPath);
             Assert.Equal("hello/1234", virtualPath);
+
+            target.VerifyAll();
         }
 
         [Fact]
