@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Mvc.Rendering
@@ -131,15 +130,19 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </param>
         /// <returns>New <see cref="HtmlString"/> containing the rendered HTML.</returns>
         HtmlString TextBoxFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression, string format,
-            IDictionary<string, object> htmlAttributes);
+                                         IDictionary<string, object> htmlAttributes);
 
         /// <summary>
-        /// Returns an unordered list (ul element) of validation messages that are in the <see cref="ModelStateDictionary"/> object.
+        /// Returns an unordered list (ul element) of validation messages that are in the
+        /// <see cref="ModelStateDictionary"/> object.
         /// </summary>
-        /// <param name="excludePropertyErrors">true to have the summary display model-level errors only, or false to have the summary display all errors.</param>
+        /// <param name="excludePropertyErrors">true to have the summary display model-level errors only, or false to
+        /// have the summary display all errors.</param>
         /// <param name="message">The message to display with the validation summary.</param>
         /// <param name="htmlAttributes">A dictionary that contains the HTML attributes for the element.</param>
-        /// <returns>An <see cref="HtmlString"/> that contains an unordered list (ul element) of validation messages.</returns>
-        HtmlString ValidationSummary(bool excludePropertyErrors, string message, IDictionary<string, object> htmlAttributes);
+        /// <returns>An <see cref="HtmlString"/> that contains an unordered list (ul element) of validation messages.
+        /// </returns>
+        HtmlString ValidationSummary(bool excludePropertyErrors, string message,
+                                     IDictionary<string, object> htmlAttributes);
     }
 }
