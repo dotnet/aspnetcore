@@ -9,7 +9,6 @@
     "Microsoft.AspNet.Mvc.Core" : "",
     "Microsoft.AspNet.Mvc.ModelBinding" : "",
     "Microsoft.AspNet.Mvc.Rendering" : "",
-    "Microsoft.AspNet.Mvc.Razor.Host" : "",
     "Microsoft.CodeAnalysis.Common" : "0.7-beta-*",
     "Microsoft.CodeAnalysis.CSharp" : "0.7-beta-*",
     "System.Reflection.Metadata.Ecma335": "0.7-beta-*",

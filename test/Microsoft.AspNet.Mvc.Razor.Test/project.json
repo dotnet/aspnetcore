@@ -4,7 +4,6 @@
     "Microsoft.AspNet.FileSystems": "0.1-alpha-*",
     "Microsoft.AspNet.Razor": "0.1-alpha-*",
     "Microsoft.AspNet.Mvc.Razor" : "",
-    "Microsoft.AspNet.Mvc.Razor.Host" : "",
     "Microsoft.AspNet.Testing" : "0.1-alpha-*",
     "Xunit.KRunner": "0.1-alpha-*",
     "xunit.abstractions": "2.0.0-aspnet-*",

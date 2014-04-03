@@ -123,6 +123,15 @@
   <data name="LayoutCannotBeLocated" xml:space="preserve">
     <value>The layout view '{0}' could not be located.</value>
   </data>
+  <data name="MvcRazorCodeParser_CannotHaveModelAndInheritsKeyword" xml:space="preserve">
+    <value>The 'inherits' keyword is not allowed when a '{0}' keyword is used.</value>
+  </data>
+  <data name="MvcRazorCodeParser_ModelKeywordMustBeFollowedByTypeName" xml:space="preserve">
+    <value>The '{0}' keyword must be followed by a type name on the same line.</value>
+  </data>
+  <data name="MvcRazorCodeParser_OnlyOneModelStatementIsAllowed" xml:space="preserve">
+    <value>Only one '{0}' statement is allowed in a file.</value>
+  </data>
   <data name="RenderBodyCannotBeCalled" xml:space="preserve">
     <value>RenderBody can only be called from a layout page.</value>
   </data>

@@ -43,6 +43,54 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
+        /// The 'inherits' keyword is not allowed when a '{0}' keyword is used.
+        /// </summary>
+        internal static string MvcRazorCodeParser_CannotHaveModelAndInheritsKeyword
+        {
+            get { return GetString("MvcRazorCodeParser_CannotHaveModelAndInheritsKeyword"); }
+        }
+
+        /// <summary>
+        /// The 'inherits' keyword is not allowed when a '{0}' keyword is used.
+        /// </summary>
+        internal static string FormatMvcRazorCodeParser_CannotHaveModelAndInheritsKeyword(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("MvcRazorCodeParser_CannotHaveModelAndInheritsKeyword"), p0);
+        }
+
+        /// <summary>
+        /// The '{0}' keyword must be followed by a type name on the same line.
+        /// </summary>
+        internal static string MvcRazorCodeParser_ModelKeywordMustBeFollowedByTypeName
+        {
+            get { return GetString("MvcRazorCodeParser_ModelKeywordMustBeFollowedByTypeName"); }
+        }
+
+        /// <summary>
+        /// The '{0}' keyword must be followed by a type name on the same line.
+        /// </summary>
+        internal static string FormatMvcRazorCodeParser_ModelKeywordMustBeFollowedByTypeName(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("MvcRazorCodeParser_ModelKeywordMustBeFollowedByTypeName"), p0);
+        }
+
+        /// <summary>
+        /// Only one '{0}' statement is allowed in a file.
+        /// </summary>
+        internal static string MvcRazorCodeParser_OnlyOneModelStatementIsAllowed
+        {
+            get { return GetString("MvcRazorCodeParser_OnlyOneModelStatementIsAllowed"); }
+        }
+
+        /// <summary>
+        /// Only one '{0}' statement is allowed in a file.
+        /// </summary>
+        internal static string FormatMvcRazorCodeParser_OnlyOneModelStatementIsAllowed(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("MvcRazorCodeParser_OnlyOneModelStatementIsAllowed"), p0);
+        }
+
+        /// <summary>
         /// RenderBody can only be called from a layout page.
         /// </summary>
         internal static string RenderBodyCannotBeCalled
