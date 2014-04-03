@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
+using System.Globalization;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Mvc.Rendering;
@@ -20,7 +22,7 @@ namespace Microsoft.AspNet.Mvc
             _ambientValues = contextAccessor.Value.RouteValues;
         }
 
-        public string Action(string action, string controller, object values)
+        public string Action(string action, string controller, object values, string protocol, string host, string fragment)
         {
             var valuesDictionary = values as IDictionary<string, object>;
             if (valuesDictionary == null)
@@ -42,22 +44,44 @@ namespace Microsoft.AspNet.Mvc
                 valuesDictionary["controller"] = controller;
             }
 
-            return RouteCore(valuesDictionary);
+            var path = RouteCore(valuesDictionary);
+            if (path == null)
+            {
+                return null;
+            }
+
+            return GenerateUrl(protocol, host, path, fragment);
         }
 
-        public string Route(object values)
+        public string RouteUrl(object values, string protocol, string host, string fragment)
         {
-            return RouteCore(new RouteValueDictionary(values));
+            var path = RouteCore(new RouteValueDictionary(values));
+            if (path == null)
+            {
+                return null;
+            }
+
+            return GenerateUrl(protocol, host, path, fragment);
         }
 
         private string RouteCore(IDictionary<string, object> values)
         {
             var context = new VirtualPathContext(_httpContext, _ambientValues, values);
+
             var path = _router.GetVirtualPath(context);
 
-            // We need to add the host part in here, currently blocked on http abstractions support. 
-            // The intent is to use full URLs by default.
-            return _httpContext.Request.PathBase + path;
+            // See Routing Issue#31
+            PathString pathString;
+            if (path.Length > 0 && !path.StartsWith("/", StringComparison.Ordinal))
+            {
+                pathString = new PathString("/" + path);
+            }
+            else
+            {
+                pathString = new PathString(path);
+            }
+
+            return _httpContext.Request.PathBase.Add(pathString).Value;
         }
 
         public string Content([NotNull] string contentPath)
@@ -75,5 +99,26 @@ namespace Microsoft.AspNet.Mvc
             }
             return path;
         } 
+
+        private string GenerateUrl(string protocol, string host, string path, string fragment)
+        {
+            Contract.Assert(path != null);
+
+            var url = path;
+            if (!string.IsNullOrEmpty(fragment))
+            {
+                url = url + "#" + fragment;
+            }
+
+            if (!string.IsNullOrEmpty(protocol) || !string.IsNullOrEmpty(host))
+            {
+                protocol = string.IsNullOrEmpty(protocol) ? "http" : protocol;
+                host = string.IsNullOrEmpty(host) ? _httpContext.Request.Host.Value : host;
+
+                url = protocol + "://" + host + url;
+            }
+
+            return url;
+        }
     }
 }

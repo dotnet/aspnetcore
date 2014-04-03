@@ -18,7 +18,7 @@ namespace MvcSample.Web
 
         public string Get()
         {
-            return Url.Route(new { controller = "Home", action = "Details" });
+            return Url.RouteUrl(new { controller = "Home", action = "Details" }, protocol: "http", host: null, fragment: "CoolBeans!");
         }
 
         public string Link1()

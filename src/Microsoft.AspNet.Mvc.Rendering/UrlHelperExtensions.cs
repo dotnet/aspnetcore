@@ -1,25 +1,72 @@
-﻿namespace Microsoft.AspNet.Mvc.Rendering
+﻿namespace Microsoft.AspNet.Mvc
 {
     public static class UrlHelperExtensions
     {
-        public static string Action([NotNull] this IUrlHelper generator)
+        public static string Action([NotNull] this IUrlHelper helper)
         {
-            return generator.Action(action: null, controller: null, values: null);
+            return helper.Action(
+                action: null, 
+                controller: null, 
+                values: null, 
+                protocol: null, 
+                host: null, 
+                fragment: null);
         }
 
-        public static string Action([NotNull] this IUrlHelper generator, string action)
+        public static string Action([NotNull] this IUrlHelper helper, string action)
         {
-            return generator.Action(action: action, controller: null, values: null);
+            return helper.Action(action, controller: null, values: null, protocol: null, host: null, fragment: null);
         }
 
-        public static string Action([NotNull] this IUrlHelper generator, string action, object values)
+        public static string Action([NotNull] this IUrlHelper helper, string action, object values)
         {
-            return generator.Action(action: action, controller: null, values: values);
+            return helper.Action(action, controller: null, values: values, protocol: null, host: null, fragment: null);
         }
 
-        public static string Action([NotNull] this IUrlHelper generator, string action, string controller)
+        public static string Action([NotNull] this IUrlHelper helper, string action, string controller)
         {
-            return generator.Action(action: action, controller: controller, values: null);
+            return helper.Action(action, controller, values: null, protocol: null, host: null, fragment: null);
+        }
+
+        public static string Action([NotNull] this IUrlHelper helper, string action, string controller, object values)
+        {
+            return helper.Action(action, controller, values, protocol: null, host: null, fragment: null);
+        }
+
+        public static string Action(
+            [NotNull] this IUrlHelper helper, 
+            string action, 
+            string controller, 
+            object values, 
+            string protocol)
+        {
+            return helper.Action(action, controller, values, protocol, host: null, fragment: null);
+        }
+
+        public static string Action(
+            [NotNull] this IUrlHelper helper, 
+            string action, 
+            string controller, 
+            object values, 
+            string protocol, 
+            string host)
+        {
+            return helper.Action(action, controller, values, protocol, host, fragment: null);
+        }
+
+        public static string RouteUrl([NotNull] this IUrlHelper helper, object values)
+        {
+            return helper.RouteUrl(values, protocol: null, host: null, fragment: null);
+        }
+
+        public static string RouteUrl([NotNull] this IUrlHelper helper, object values, string protocol)
+        {
+            return helper.RouteUrl(values, protocol, host: null, fragment: null);
+        }
+
+        public static string RouteUrl([NotNull] this IUrlHelper helper, object values, string protocol, string host)
+        {
+            return helper.RouteUrl(values, protocol, host, fragment: null);
         }
     }
 }
