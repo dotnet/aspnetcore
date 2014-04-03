@@ -1,23 +1,34 @@
 {
   "version": "0.1-alpha-*",
   "dependencies": {
-    "Microsoft.AspNet.ConfigurationModel": "0.1-alpha-*",
+    "Microsoft.Bcl.Immutable": "1.1.18-beta-*",
     "Microsoft.AspNet.DependencyInjection": "0.1-alpha-*",
+    "Microsoft.AspNet.ConfigurationModel": "0.1-alpha-*",
     "Microsoft.AspNet.Identity": "0.1-alpha-*",
+    "Microsoft.AspNet.Identity.Entity": "0.1-alpha-*",
+    "Microsoft.AspNet.DependencyInjection": "0.1-alpha-*",
     "Microsoft.AspNet.Logging": "0.1-alpha-*",
+    "Microsoft.AspNet.Security.DataProtection": "0.1-alpha-*",
+    "Microsoft.AspNet.Testing": "0.1-alpha-*",
     "Microsoft.Data.Entity": "0.1-alpha-*",
+    "Microsoft.Data.InMemory": "0.1-alpha-*",
     "Microsoft.Data.Relational": "0.1-alpha-*",
     "Microsoft.Data.SqlServer": "0.1-pre-*",
-    "Microsoft.Data.InMemory": "0.1-alpha-*",
-    "System.Security.Claims" : "0.1-alpha-*"
+    "System.Security.Claims": "0.1-alpha-*",
+    "Xunit.KRunner": "0.1-alpha-*",
+    "xunit.abstractions": "2.0.0-aspnet-*",
+    "xunit.assert": "2.0.0-aspnet-*",
+    "xunit.core": "2.0.0-aspnet-*",
+    "xunit.execution": "2.0.0-aspnet-*"
   },
   "configurations": {
     "net45": {
       "dependencies": {
         "System.Runtime": "",
-        "System.Collections": ""
+        "System.Collections": "",
+        "System.Data": ""
       }
-	},
+    },
     "k10": {
       "dependencies": {
         "System.Collections": "4.0.0.0",
@@ -37,5 +48,7 @@
         "System.Threading.Tasks": "4.0.10.0"
       }
     }
+  },
+  "commands": {
   }
 }

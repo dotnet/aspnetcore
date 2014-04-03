@@ -6,17 +6,18 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Identity.InMemory
 {
-    public class InMemoryRoleStore : IQueryableRoleStore<InMemoryRole, string>
-    {
-        private readonly Dictionary<string, InMemoryRole> _roles = new Dictionary<string, InMemoryRole>();
+    public class InMemoryRoleStore<TRole> : IQueryableRoleStore<TRole, string> where TRole : class,IRole<string>
 
-        public Task Create(InMemoryRole role, CancellationToken cancellationToken = default(CancellationToken))
+    {
+        private readonly Dictionary<string, TRole> _roles = new Dictionary<string, TRole>();
+
+        public Task Create(TRole role, CancellationToken cancellationToken = default(CancellationToken))
         {
             _roles[role.Id] = role;
             return Task.FromResult(0);
         }
 
-        public Task Delete(InMemoryRole role, CancellationToken cancellationToken = default(CancellationToken))
+        public Task Delete(TRole role, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (role == null || !_roles.ContainsKey(role.Id))
             {
@@ -26,22 +27,22 @@ namespace Microsoft.AspNet.Identity.InMemory
             return Task.FromResult(0);
         }
 
-        public Task Update(InMemoryRole role, CancellationToken cancellationToken = default(CancellationToken))
+        public Task Update(TRole role, CancellationToken cancellationToken = default(CancellationToken))
         {
             _roles[role.Id] = role;
             return Task.FromResult(0);
         }
 
-        public Task<InMemoryRole> FindById(string roleId, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<TRole> FindById(string roleId, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (_roles.ContainsKey(roleId))
             {
                 return Task.FromResult(_roles[roleId]);
             }
-            return Task.FromResult<InMemoryRole>(null);
+            return Task.FromResult<TRole>(null);
         }
 
-        public Task<InMemoryRole> FindByName(string roleName, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<TRole> FindByName(string roleName, CancellationToken cancellationToken = default(CancellationToken))
         {
             return
                 Task.FromResult(
@@ -52,7 +53,7 @@ namespace Microsoft.AspNet.Identity.InMemory
         {
         }
 
-        public IQueryable<InMemoryRole> Roles
+        public IQueryable<TRole> Roles
         {
             get { return _roles.Values.AsQueryable(); }
         }

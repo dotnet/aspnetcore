@@ -17,6 +17,7 @@
         "System.Globalization": "4.0.10.0",
         "System.Linq": "4.0.0.0",
         "System.Linq.Expressions": "4.0.0.0",
+        "System.Linq.Queryable": "4.0.0.0",
         "System.Reflection": "4.0.10.0",
         "System.Resources.ResourceManager": "4.0.0.0",
         "System.Runtime": "4.0.20.0",
