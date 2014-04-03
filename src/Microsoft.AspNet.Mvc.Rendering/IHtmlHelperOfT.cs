@@ -52,19 +52,26 @@ namespace Microsoft.AspNet.Mvc.Rendering
                            object additionalViewData);
 
         /// <summary>
-        /// Returns HTML markup for each property in the object that is represented by the specified expression, using the template, an HTML field ID, and additional view data.
+        /// Returns HTML markup for each property in the object that is represented by the specified expression, using the 
+        /// template, an HTML field ID, and additional view data.
         /// </summary>
         /// <typeparam name="TDisplayModel">The type of the model.</typeparam>
         /// <typeparam name="TValue">The type of the value.</typeparam>
         /// <param name="expression">An expression that identifies the object that contains the properties to display.</param>
         /// <param name="templateName">The name of the template that is used to render the object.</param>
-        /// <param name="htmlFieldName">A string that is used to disambiguate the names of HTML input elements that are rendered for properties that have the same name.</param>
-        /// <param name="additionalViewData">An anonymous object that can contain additional view data that will be merged into the <see cref="ViewDataDictionary{TModel}"/> instance that is created for the template.</param>
+        /// <param name="htmlFieldName">
+        /// A string that is used to disambiguate the names of HTML input elements that are rendered for properties that have 
+        /// the same name.
+        /// </param>
+        /// <param name="additionalViewData">
+        /// An anonymous object or dictionary that can contain additional view data that will be merged into the 
+        /// <see cref="ViewDataDictionary{TModel}"/> instance that is created for the template.
+        /// </param>
         /// <returns>The HTML markup for each property in the object that is represented by the expression.</returns>
-        HtmlString DisplayFor<TDisplayModel, TValue>(Expression<Func<TDisplayModel, TValue>> expression,
-                                              string templateName,
-                                              string htmlFieldName,
-                                              object additionalViewData);
+        HtmlString DisplayFor<TValue>(Expression<Func<TModel, TValue>> expression,
+                                                     string templateName,
+                                                     string htmlFieldName,
+                                                     object additionalViewData);
 
         /// <summary>
         /// Converts the value of the specified object to an HTML-encoded string.

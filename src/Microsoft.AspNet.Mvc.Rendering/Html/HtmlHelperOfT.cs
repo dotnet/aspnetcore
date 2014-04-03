@@ -41,6 +41,22 @@ namespace Microsoft.AspNet.Mvc.Rendering
             base.Contextualize(viewContext);
         }
 
+
+        public HtmlString DisplayFor<TValue>([NotNull] Expression<Func<TModel, TValue>> expression,
+                                             string templateName,
+                                             string htmlFieldName,
+                                             object additionalViewData)
+        {
+            var metadata = ExpressionMetadataProvider.FromLambdaExpression(expression,
+                                                                           ViewData, 
+                                                                           MetadataProvider);
+
+            return GenerateDisplay(metadata,
+                                   htmlFieldName ?? ExpressionHelper.GetExpressionText(expression),
+                                   templateName,
+                                   additionalViewData);
+        }
+
         /// <inheritdoc />
         public HtmlString NameFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression)
         {

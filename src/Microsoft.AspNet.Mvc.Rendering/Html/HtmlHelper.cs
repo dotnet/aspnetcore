@@ -175,24 +175,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                            additionalViewData);
         }
 
-        public virtual HtmlString DisplayFor<TModel, TValue>(Expression<Func<TModel, TValue>> expression,
-                                                             string templateName,
-                                                             string htmlFieldName,
-                                                             object additionalViewData)
-        {
-            var templateBuilder = new TemplateBuilder(ViewContext,
-                                                      ViewData,
-                                                      ExpressionMetadataProvider.FromLambdaExpression(expression, (ViewDataDictionary<TModel>)ViewData, MetadataProvider),
-                                                      htmlFieldName ?? ExpressionHelper.GetExpressionText(expression),
-                                                      templateName,
-                                                      readOnly: true,
-                                                      additionalViewData: additionalViewData);
-
-            var templateResult = templateBuilder.Build();
-
-            return new HtmlString(templateResult);
-        }
-
         /// <inheritdoc />
         public virtual HtmlString Name(string name)
         {
@@ -217,9 +199,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         protected virtual HtmlString GenerateDisplay(ModelMetadata metadata,
-                                             string htmlFieldName,
-                                             string templateName,
-                                             object additionalViewData)
+                                                     string htmlFieldName,
+                                                     string templateName,
+                                                     object additionalViewData)
         {
             var templateBuilder = new TemplateBuilder(_viewEngine,
                                                       ViewContext,
