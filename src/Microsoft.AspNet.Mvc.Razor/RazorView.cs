@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 {
     public abstract class RazorView : IView
     {
-        public IViewComponentHelper Component 
+        public IViewComponentHelper Component
         {
             get { return Context == null ? null : Context.Component; }
         }
@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         protected TextWriter Output { get; set; }
 
-        public IUrlHelper Url 
+        public IUrlHelper Url
         {
             get { return Context == null ? null : Context.Url; }
         }
@@ -94,15 +94,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         public abstract Task ExecuteAsync();
-
-        public void DefineSection(string name, HelperResult action)
-        {
-            if (SectionWriters.ContainsKey(name))
-            {
-                throw new InvalidOperationException(Resources.FormatSectionAlreadyDefined(name));
-            }
-            SectionWriters[name] = action;
-        }
 
         public virtual void Write(object value)
         {
@@ -259,15 +250,25 @@ namespace Microsoft.AspNet.Mvc.Razor
             return new HtmlString(BodyContent);
         }
 
-        public HelperResult RenderSection(string name)
+        public void DefineSection(string name, HelperResult action)
         {
-            return RenderSection(name, required: false);
+            if (SectionWriters.ContainsKey(name))
+            {
+                throw new InvalidOperationException(Resources.FormatSectionAlreadyDefined(name));
+            }
+            SectionWriters[name] = action;
         }
 
-        public HelperResult RenderSection(string name, bool required)
+        public HelperResult RenderSection([NotNull] string name)
+        {
+            return RenderSection(name, required: true);
+        }
+
+        public HelperResult RenderSection([NotNull] string name, bool required)
         {
             HelperResult action;
-            if (PreviousSectionWriters.TryGetValue(name, out action))
+            if (PreviousSectionWriters != null &&
+                PreviousSectionWriters.TryGetValue(name, out action))
             {
                 return action;
             }

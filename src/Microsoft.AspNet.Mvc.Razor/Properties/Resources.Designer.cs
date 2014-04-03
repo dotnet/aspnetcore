@@ -123,7 +123,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
-        /// Section '{0}' is not defined
+        /// Section '{0}' is not defined.
         /// </summary>
         internal static string SectionNotDefined
         {
@@ -131,7 +131,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
-        /// Section '{0}' is not defined
+        /// Section '{0}' is not defined.
         /// </summary>
         internal static string FormatSectionNotDefined(object p0)
         {
