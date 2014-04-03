@@ -127,6 +127,15 @@ namespace Microsoft.AspNet.Abstractions
         /// <returns>The combined PathString value</returns>
         public PathString Add(PathString other)
         {
+            if (HasValue && 
+                other.HasValue && 
+                Value[Value.Length - 1] == '/')
+            {
+                // If the path string has a trailing slash and the other string has a leading slash, we need
+                // to trim one of them.
+                return new PathString(Value + other.Value.Substring(1));
+            }
+
             return new PathString(Value + other.Value);
         }
 

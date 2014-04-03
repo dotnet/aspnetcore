@@ -37,6 +37,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.FeatureMod
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.PipelineCore.Tests.net45", "test\Microsoft.AspNet.PipelineCore.Tests\Microsoft.AspNet.PipelineCore.Tests.net45.csproj", "{00A03235-B248-4079-A7EE-4F77AB3A84E4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Abstractions.Tests.net45", "test\Microsoft.AspNet.Abstractions.Tests\Microsoft.AspNet.Abstractions.Tests.net45.csproj", "{EE4DFB8C-FDD8-4A6E-97B7-AE6E663EE5D0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,6 +93,10 @@ Global
 		{00A03235-B248-4079-A7EE-4F77AB3A84E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{00A03235-B248-4079-A7EE-4F77AB3A84E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{00A03235-B248-4079-A7EE-4F77AB3A84E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE4DFB8C-FDD8-4A6E-97B7-AE6E663EE5D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE4DFB8C-FDD8-4A6E-97B7-AE6E663EE5D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE4DFB8C-FDD8-4A6E-97B7-AE6E663EE5D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE4DFB8C-FDD8-4A6E-97B7-AE6E663EE5D0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -111,5 +117,6 @@ Global
 		{04077455-D4A2-43AF-ABA2-E68968856E17} = {F31FF137-390C-49BF-A3BD-7C6ED3597C21}
 		{4C82EE1A-9B93-4374-91E0-75476AABF5CD} = {04077455-D4A2-43AF-ABA2-E68968856E17}
 		{00A03235-B248-4079-A7EE-4F77AB3A84E4} = {04077455-D4A2-43AF-ABA2-E68968856E17}
+		{EE4DFB8C-FDD8-4A6E-97B7-AE6E663EE5D0} = {04077455-D4A2-43AF-ABA2-E68968856E17}
 	EndGlobalSection
 EndGlobal
