@@ -259,6 +259,12 @@ namespace Microsoft.AspNet.Mvc.Razor
             SectionWriters[name] = action;
         }
 
+        public bool IsSectionDefined([NotNull] string name)
+        {
+            EnsureMethodCanBeInvoked("IsSectionDefined");
+            return PreviousSectionWriters.ContainsKey(name);
+        }
+
         public HelperResult RenderSection([NotNull] string name)
         {
             return RenderSection(name, required: true);
@@ -266,9 +272,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         public HelperResult RenderSection([NotNull] string name, bool required)
         {
+            EnsureMethodCanBeInvoked("RenderSection");
+
             HelperResult action;
-            if (PreviousSectionWriters != null &&
-                PreviousSectionWriters.TryGetValue(name, out action))
+            if (PreviousSectionWriters.TryGetValue(name, out action))
             {
                 return action;
             }
@@ -281,6 +288,14 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 // If the section is optional and not found, then don't do anything.
                 return null;
+            }
+        }
+
+        private void EnsureMethodCanBeInvoked(string methodName)
+        {
+            if (PreviousSectionWriters == null)
+            {
+                throw new InvalidOperationException(Resources.FormatView_MethodCannotBeCalled(methodName));
             }
         }
     }

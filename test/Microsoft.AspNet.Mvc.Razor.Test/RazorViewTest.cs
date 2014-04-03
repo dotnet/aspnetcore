@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Testing;
 using Moq;
 using Xunit;
 
@@ -57,6 +58,25 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         }
 
         [Fact]
+        public async Task RenderSection_ThrowsIfNoPreviousPage()
+        {
+            // Arrange
+            Exception ex = null;
+            var view = CreateView(v =>
+            {
+                ex = Assert.Throws<InvalidOperationException>(() => v.RenderSection("bar"));
+            });
+            var viewContext = CreateViewContext(layoutView: null);
+
+            // Act
+            await view.RenderAsync(viewContext);
+
+            // Assert
+            Assert.Equal("The method 'RenderSection' cannot be invoked by this view.",
+                         ex.Message);
+        }
+
+        [Fact]
         public async Task RenderSection_ThrowsIfRequiredSectionIsNotFound()
         {
             // Arrange
@@ -80,7 +100,63 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             // Assert
             Assert.Equal("Section 'bar' is not defined.", ex.Message);
         }
-        
+
+        [Fact]
+        public void IsSectionDefined_ThrowsIfNoPreviousExecutingPage()
+        {
+            // Arrange
+            var view = CreateView(v => { });
+            var viewContext = CreateViewContext(layoutView: null);
+
+            // Act and Assert
+            ExceptionAssert.Throws<InvalidOperationException>(() => view.IsSectionDefined("foo"),
+                "The method 'IsSectionDefined' cannot be invoked by this view.");
+        }
+
+        [Fact]
+        public async Task IsSectionDefined_ReturnsFalseIfSectionNotDefined()
+        {
+            // Arrange
+            bool? actual = null;
+            var view = CreateView(v =>
+            {
+                v.DefineSection("baz", new HelperResult(writer => { }));
+                v.Layout = LayoutPath;
+            });
+            var layoutView = CreateView(v =>
+            {
+                actual = v.IsSectionDefined("foo");
+            });
+
+            // Act
+            await view.RenderAsync(CreateViewContext(layoutView));
+
+            // Assert
+            Assert.Equal(false, actual);
+        }
+
+        [Fact]
+        public async Task IsSectionDefined_ReturnsTrueIfSectionDefined()
+        {
+            // Arrange
+            bool? actual = null;
+            var view = CreateView(v =>
+            {
+                v.DefineSection("foo", new HelperResult(writer => { }));
+                v.Layout = LayoutPath;
+            });
+            var layoutView = CreateView(v =>
+            {
+                actual = v.IsSectionDefined("foo");
+            });
+
+            // Act
+            await view.RenderAsync(CreateViewContext(layoutView));
+
+            // Assert
+            Assert.Equal(true, actual);
+        }
+
         public static RazorView CreateView(Action<RazorView> executeAction)
         {
             var view = new Mock<RazorView> { CallBase = true };

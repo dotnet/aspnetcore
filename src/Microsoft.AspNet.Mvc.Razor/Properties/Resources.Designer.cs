@@ -170,6 +170,22 @@ namespace Microsoft.AspNet.Mvc.Razor
             return string.Format(CultureInfo.CurrentCulture, GetString("ViewEngine_ViewNotFound"), p0, p1);
         }
 
+        /// <summary>
+        /// The method '{0}' cannot be invoked by this view.
+        /// </summary>
+        internal static string View_MethodCannotBeCalled
+        {
+            get { return GetString("View_MethodCannotBeCalled"); }
+        }
+
+        /// <summary>
+        /// The method '{0}' cannot be invoked by this view.
+        /// </summary>
+        internal static string FormatView_MethodCannotBeCalled(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("View_MethodCannotBeCalled"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
