@@ -82,7 +82,7 @@ public class Startup
         string _role = "Administrator";
 
         var userManager = new UserManager<ApplicationUser, string>(new InMemoryUserStore<ApplicationUser>());
-        var roleManager = new RoleManager<InMemoryRole>(new InMemoryRoleStore());
+        var roleManager = new RoleManager<InMemoryRole>(new InMemoryRoleStore<InMemoryRole>());
 
         var role = new InMemoryRole(_role);
         var result = await roleManager.RoleExists(_role);
