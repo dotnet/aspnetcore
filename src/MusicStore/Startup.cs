@@ -96,7 +96,7 @@ public class Startup
         {
             user = new ApplicationUser { UserName = _username };
             await userManager.CreateAsync(user, _password);
-            await userManager.AddToRoleAsync(user.Id, _role);
+            await userManager.AddToRoleAsync(user, _role);
         }
     }
 }
