@@ -36,11 +36,11 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.Throws<ArgumentNullException>("store",
                 () => new RoleManager<TestRole>(null));
             var manager = new RoleManager<TestRole>(new NotImplementedStore());
-            await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await manager.Create(null));
-            await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await manager.Update(null));
-            await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await manager.Delete(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await manager.CreateAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await manager.UpdateAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await manager.DeleteAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("roleName", async () => await manager.FindByName(null));
-            await Assert.ThrowsAsync<ArgumentNullException>("roleName", async () => await manager.RoleExists(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("roleName", async () => await manager.RoleExistsAsync(null));
         }
 
         [Fact]
@@ -48,47 +48,47 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var manager = new RoleManager<TestRole>(new NoopRoleStore());
             manager.Dispose();
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindById(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByIdAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByName(null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RoleExists(null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.Create(null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.Update(null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.Delete(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RoleExistsAsync(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.CreateAsync(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.UpdateAsync(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.DeleteAsync(null));
         }
 
         private class NotImplementedStore : IRoleStore<TestRole>
         {
-            public Task Create(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
+            public Task CreateAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task Update(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
+            public Task UpdateAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task Delete(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
+            public Task DeleteAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<string> GetRoleId(TestRole role, CancellationToken cancellationToken = new CancellationToken())
+            public Task<string> GetRoleIdAsync(TestRole role, CancellationToken cancellationToken = new CancellationToken())
             {
                 throw new NotImplementedException();
             }
 
-            public Task<string> GetRoleName(TestRole role, CancellationToken cancellationToken = new CancellationToken())
+            public Task<string> GetRoleNameAsync(TestRole role, CancellationToken cancellationToken = new CancellationToken())
             {
                 throw new NotImplementedException();
             }
 
-            public Task<TestRole> FindById(string roleId, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<TestRole> FindByIdAsync(string roleId, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<TestRole> FindByName(string roleName, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<TestRole> FindByNameAsync(string roleName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }

@@ -14,6 +14,6 @@ namespace Microsoft.AspNet.Identity
         /// <param name="message"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task Send(IdentityMessage message, CancellationToken cancellationToken = default(CancellationToken));
+        Task SendAsync(IdentityMessage message, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

@@ -12,12 +12,12 @@ namespace Microsoft.AspNet.Identity
     public interface IRoleValidator<TRole> where TRole : class
     {
         /// <summary>
-        ///     Validate the user
+        ///     ValidateAsync the user
         /// </summary>
         /// <param name="role"></param>
         /// <param name="manager"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<IdentityResult> Validate(RoleManager<TRole> manager, TRole role, CancellationToken cancellationToken = default(CancellationToken));
+        Task<IdentityResult> ValidateAsync(RoleManager<TRole> manager, TRole role, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

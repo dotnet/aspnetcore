@@ -38,14 +38,14 @@ namespace Microsoft.AspNet.Identity.Test
             // Setup
             var store = new Mock<IUserStore<TestUser>>();
             var user = new TestUser { UserName = "Foo" };
-            store.Setup(s => s.Create(user, CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
+            store.Setup(s => s.CreateAsync(user, CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
             var validator = new Mock<UserValidator<TestUser>>();
             var userManager = new UserManager<TestUser>(store.Object);
-            validator.Setup(v => v.Validate(userManager, user, CancellationToken.None)).Returns(Task.FromResult(IdentityResult.Success)).Verifiable();
+            validator.Setup(v => v.ValidateAsync(userManager, user, CancellationToken.None)).Returns(Task.FromResult(IdentityResult.Success)).Verifiable();
             userManager.UserValidator = validator.Object;
 
             // Act
-            var result = await userManager.Create(user);
+            var result = await userManager.CreateAsync(user);
 
             // Assert
             Assert.True(result.Succeeded);
@@ -58,11 +58,11 @@ namespace Microsoft.AspNet.Identity.Test
             // Setup
             var store = new Mock<IUserStore<TestUser>>();
             var user = new TestUser { UserName = "Foo" };
-            store.Setup(s => s.Delete(user, CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
+            store.Setup(s => s.DeleteAsync(user, CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
             var userManager = new UserManager<TestUser>(store.Object);
 
             // Act
-            var result = await userManager.Delete(user);
+            var result = await userManager.DeleteAsync(user);
 
             // Assert
             Assert.True(result.Succeeded);
@@ -75,14 +75,34 @@ namespace Microsoft.AspNet.Identity.Test
             // Setup
             var store = new Mock<IUserStore<TestUser>>();
             var user = new TestUser { UserName = "Foo" };
-            store.Setup(s => s.Update(user, CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
+            store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
             var validator = new Mock<UserValidator<TestUser>>();
             var userManager = new UserManager<TestUser>(store.Object);
-            validator.Setup(v => v.Validate(userManager, user, CancellationToken.None)).Returns(Task.FromResult(IdentityResult.Success)).Verifiable();
+            validator.Setup(v => v.ValidateAsync(userManager, user, CancellationToken.None)).Returns(Task.FromResult(IdentityResult.Success)).Verifiable();
             userManager.UserValidator = validator.Object;
 
             // Act
-            var result = await userManager.Update(user);
+            var result = await userManager.UpdateAsync(user);
+
+            // Assert
+            Assert.True(result.Succeeded);
+            store.VerifyAll();
+        }
+
+        [Fact]
+        public async Task SetUserNameCallsStore()
+        {
+            // Setup
+            var store = new Mock<IUserStore<TestUser>>();
+            var user = new TestUser();
+            store.Setup(s => s.SetUserNameAsync(user, It.IsAny<string>(), CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
+            var validator = new Mock<UserValidator<TestUser>>();
+            var userManager = new UserManager<TestUser>(store.Object);
+            validator.Setup(v => v.ValidateAsync(userManager, user, CancellationToken.None)).Returns(Task.FromResult(IdentityResult.Success)).Verifiable();
+            userManager.UserValidator = validator.Object;
+
+            // Act
+            var result = await userManager.SetUserName(user, "foo");
 
             // Assert
             Assert.True(result.Succeeded);
@@ -95,11 +115,11 @@ namespace Microsoft.AspNet.Identity.Test
             // Setup
             var store = new Mock<IUserStore<TestUser>>();
             var user = new TestUser { UserName = "Foo" };
-            store.Setup(s => s.FindById(user.Id, CancellationToken.None)).Returns(Task.FromResult(user)).Verifiable();
+            store.Setup(s => s.FindByIdAsync(user.Id, CancellationToken.None)).Returns(Task.FromResult(user)).Verifiable();
             var userManager = new UserManager<TestUser>(store.Object);
 
             // Act
-            var result = await userManager.FindById(user.Id);
+            var result = await userManager.FindByIdAsync(user.Id);
 
             // Assert
             Assert.Equal(user, result);
@@ -112,11 +132,11 @@ namespace Microsoft.AspNet.Identity.Test
             // Setup
             var store = new Mock<IUserStore<TestUser>>();
             var user = new TestUser {UserName="Foo"};
-            store.Setup(s => s.FindByName(user.UserName, CancellationToken.None)).Returns(Task.FromResult(user)).Verifiable();
+            store.Setup(s => s.FindByNameAsync(user.UserName, CancellationToken.None)).Returns(Task.FromResult(user)).Verifiable();
             var userManager = new UserManager<TestUser>(store.Object);
 
             // Act
-            var result = await userManager.FindByName(user.UserName);
+            var result = await userManager.FindByNameAsync(user.UserName);
 
             // Assert
             Assert.Equal(user, result);
@@ -129,14 +149,14 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task CheckPasswordWithNullUserReturnsFalse()
         {
             var manager = new UserManager<TestUser>(new EmptyStore());
-            Assert.False(await manager.CheckPassword(null, "whatevs"));
+            Assert.False(await manager.CheckPasswordAsync(null, "whatevs"));
         }
 
         [Fact]
         public async Task FindWithUnknownUserAndPasswordReturnsNull()
         {
             var manager = new UserManager<TestUser>(new EmptyStore());
-            Assert.Null(await manager.Find("bogus", "whatevs"));
+            Assert.Null(await manager.FindByUserNamePassword("bogus", "whatevs"));
         }
 
         [Fact]
@@ -152,11 +172,11 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var manager = new UserManager<TestUser>(new NoopUserStore());
             Assert.False(manager.SupportsUserEmail);
-            await Assert.ThrowsAsync<NotSupportedException>(() => manager.FindByEmail(null));
-            await Assert.ThrowsAsync<NotSupportedException>(() => manager.SetEmail(null, null));
-            await Assert.ThrowsAsync<NotSupportedException>(() => manager.GetEmail(null));
-            await Assert.ThrowsAsync<NotSupportedException>(() => manager.IsEmailConfirmed(null));
-            await Assert.ThrowsAsync<NotSupportedException>(() => manager.ConfirmEmail(null, null));
+            await Assert.ThrowsAsync<NotSupportedException>(() => manager.FindByEmailAsync(null));
+            await Assert.ThrowsAsync<NotSupportedException>(() => manager.SetEmailAsync(null, null));
+            await Assert.ThrowsAsync<NotSupportedException>(() => manager.GetEmailAsync(null));
+            await Assert.ThrowsAsync<NotSupportedException>(() => manager.IsEmailConfirmedAsync(null));
+            await Assert.ThrowsAsync<NotSupportedException>(() => manager.ConfirmEmailAsync(null, null));
         }
 
         [Fact]
@@ -164,9 +184,9 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var manager = new UserManager<TestUser>(new NoopUserStore());
             Assert.False(manager.SupportsUserPhoneNumber);
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.SetPhoneNumber(null, null));
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.SetPhoneNumber(null, null));
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetPhoneNumber(null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.SetPhoneNumberAsync(null, null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.SetPhoneNumberAsync(null, null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetPhoneNumberAsync(null));
         }
 
         [Fact]
@@ -174,9 +194,9 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var manager = new UserManager<TestUser>(new NoopUserStore());
             await Assert.ThrowsAsync<NotSupportedException>(
-                async () => await manager.GenerateUserToken(null, null));
+                async () => await manager.GenerateUserTokenAsync(null, null));
             await Assert.ThrowsAsync<NotSupportedException>(
-                async () => await manager.VerifyUserToken(null, null, null));
+                async () => await manager.VerifyUserTokenAsync(null, null, null));
         }
 
         [Fact]
@@ -184,12 +204,12 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var manager = new UserManager<TestUser>(new NoopUserStore());
             Assert.False(manager.SupportsUserPassword);
-            await Assert.ThrowsAsync<NotSupportedException>(() => manager.Create(null, null));
-            await Assert.ThrowsAsync<NotSupportedException>(() => manager.ChangePassword(null, null, null));
-            await Assert.ThrowsAsync<NotSupportedException>(() => manager.AddPassword(null, null));
-            await Assert.ThrowsAsync<NotSupportedException>(() => manager.RemovePassword(null));
-            await Assert.ThrowsAsync<NotSupportedException>(() => manager.CheckPassword(null, null));
-            await Assert.ThrowsAsync<NotSupportedException>(() => manager.HasPassword(null));
+            await Assert.ThrowsAsync<NotSupportedException>(() => manager.CreateAsync(null, null));
+            await Assert.ThrowsAsync<NotSupportedException>(() => manager.ChangePasswordAsync(null, null, null));
+            await Assert.ThrowsAsync<NotSupportedException>(() => manager.AddPasswordAsync(null, null));
+            await Assert.ThrowsAsync<NotSupportedException>(() => manager.RemovePasswordAsync(null));
+            await Assert.ThrowsAsync<NotSupportedException>(() => manager.CheckPasswordAsync(null, null));
+            await Assert.ThrowsAsync<NotSupportedException>(() => manager.HasPasswordAsync(null));
         }
 
         [Fact]
@@ -197,14 +217,14 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var manager = new UserManager<TestUser>(new NoopUserStore());
             Assert.False(manager.SupportsUserSecurityStamp);
-            await Assert.ThrowsAsync<NotSupportedException>(() => manager.UpdateSecurityStamp("bogus"));
-            await Assert.ThrowsAsync<NotSupportedException>(() => manager.GetSecurityStamp("bogus"));
+            await Assert.ThrowsAsync<NotSupportedException>(() => manager.UpdateSecurityStampAsync(null));
+            await Assert.ThrowsAsync<NotSupportedException>(() => manager.GetSecurityStampAsync(null));
             await
                 Assert.ThrowsAsync<NotSupportedException>(
-                    () => manager.VerifyChangePhoneNumberToken("bogus", "1", "111-111-1111"));
+                    () => manager.VerifyChangePhoneNumberTokenAsync(null, "1", "111-111-1111"));
             await
                 Assert.ThrowsAsync<NotSupportedException>(
-                    () => manager.GenerateChangePhoneNumberToken("bogus", "111-111-1111"));
+                    () => manager.GenerateChangePhoneNumberToken(null, "111-111-1111"));
         }
 
         [Fact]
@@ -212,10 +232,10 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var manager = new UserManager<TestUser>(new NoopUserStore());
             Assert.False(manager.SupportsUserLogin);
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.AddLogin("bogus", null));
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.RemoveLogin("bogus", null));
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetLogins("bogus"));
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.Find(null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.AddLogin(null, null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.RemoveLogin(null, null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetLogins(null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.FindByLoginAsync(null));
         }
 
         [Fact]
@@ -223,9 +243,9 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var manager = new UserManager<TestUser>(new NoopUserStore());
             Assert.False(manager.SupportsUserClaim);
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.AddClaim("bogus", null));
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.RemoveClaim("bogus", null));
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetClaims("bogus"));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.AddClaimAsync(null, null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.RemoveClaimAsync(null, null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetClaimsAsync(null));
         }
 
         [Fact]
@@ -233,9 +253,9 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var manager = new UserManager<TestUser>(new NoopUserStore());
             Assert.False(manager.SupportsUserTwoFactor);
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetTwoFactorEnabled("bogus"));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetTwoFactorEnabled(null));
             await
-                Assert.ThrowsAsync<NotSupportedException>(async () => await manager.SetTwoFactorEnabled("bogus", true));
+                Assert.ThrowsAsync<NotSupportedException>(async () => await manager.SetTwoFactorEnabledAsync(null, true));
         }
 
         [Fact]
@@ -243,12 +263,12 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var manager = new UserManager<TestUser>(new NoopUserStore());
             Assert.False(manager.SupportsUserLockout);
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetLockoutEnabled("bogus"));
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.SetLockoutEnabled("bogus", true));
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.AccessFailed("bogus"));
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.IsLockedOut("bogus"));
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.ResetAccessFailedCount("bogus"));
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetAccessFailedCount("bogus"));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetLockoutEnabledAsync(null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.SetLockoutEnabledAsync(null, true));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.AccessFailedAsync(null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.IsLockedOutAsync(null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.ResetAccessFailedCountAsync(null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetAccessFailedCountAsync(null));
         }
 
         [Fact]
@@ -256,10 +276,10 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var manager = new UserManager<TestUser>(new NoopUserStore());
             Assert.False(manager.SupportsUserRole);
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.AddToRole("bogus", null));
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetRoles("bogus"));
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.RemoveFromRole("bogus", null));
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.IsInRole("bogus", "bogus"));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.AddToRoleAsync(null, "bogus"));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetRolesAsync(null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.RemoveFromRoleAsync(null, "bogus"));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.IsInRoleAsync(null, "bogus"));
         }
 
         [Fact]
@@ -278,7 +298,7 @@ namespace Microsoft.AspNet.Identity.Test
             {
                 PasswordValidator = new BadPasswordValidtor()
             };
-            IdentityResultAssert.IsFailure(await manager.Create(new TestUser(), "password"),
+            IdentityResultAssert.IsFailure(await manager.CreateAsync(new TestUser(), "password"),
                 BadPasswordValidtor.ErrorMessage);
         }
 
@@ -295,20 +315,20 @@ namespace Microsoft.AspNet.Identity.Test
             await
                 Assert.ThrowsAsync<ArgumentNullException>("user",
                     async () => await manager.CreateIdentity(null, "whatever"));
-            await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await manager.Create(null));
-            await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await manager.Create(null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await manager.CreateAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await manager.CreateAsync(null, null));
             await
                 Assert.ThrowsAsync<ArgumentNullException>("password",
-                    async () => await manager.Create(new TestUser(), null));
-            await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await manager.Update(null));
-            await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await manager.Delete(null));
-            await Assert.ThrowsAsync<ArgumentNullException>("claim", async () => await manager.AddClaim("bogus", null));
-            await Assert.ThrowsAsync<ArgumentNullException>("userName", async () => await manager.FindByName(null));
-            await Assert.ThrowsAsync<ArgumentNullException>("userName", async () => await manager.Find(null, null));
-            await Assert.ThrowsAsync<ArgumentNullException>("login", async () => await manager.AddLogin("bogus", null));
+                    async () => await manager.CreateAsync(new TestUser(), null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await manager.UpdateAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await manager.DeleteAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("claim", async () => await manager.AddClaimAsync(null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("userName", async () => await manager.FindByNameAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("userName", async () => await manager.FindByUserNamePassword(null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("login", async () => await manager.AddLogin(null, null));
             await
-                Assert.ThrowsAsync<ArgumentNullException>("login", async () => await manager.RemoveLogin("bogus", null));
-            await Assert.ThrowsAsync<ArgumentNullException>("email", async () => await manager.FindByEmail(null));
+                Assert.ThrowsAsync<ArgumentNullException>("login", async () => await manager.RemoveLogin(null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("email", async () => await manager.FindByEmailAsync(null));
             Assert.Throws<ArgumentNullException>("twoFactorProvider",
                 () => manager.RegisterTwoFactorProvider(null, null));
             Assert.Throws<ArgumentNullException>("provider", () => manager.RegisterTwoFactorProvider("bogus", null));
@@ -321,93 +341,92 @@ namespace Microsoft.AspNet.Identity.Test
             {
                 UserTokenProvider = new NoOpTokenProvider()
             };
-            const string error = "UserId not found.";
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.AddClaim(null, new Claim("a", "b")), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.AddLogin(null, new UserLoginInfo("", "")), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.AddPassword(null, null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.AddToRole(null, null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.ChangePassword(null, null, null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.GetClaims(null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.GetLogins(null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.GetRoles(null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.IsInRole(null, null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.RemoveClaim(null, new Claim("a", "b")), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.RemoveLogin(null, new UserLoginInfo("", "")), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.RemovePassword(null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.RemoveFromRole(null, null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.UpdateSecurityStamp(null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.GetSecurityStamp(null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.HasPassword(null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.GeneratePasswordResetToken(null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.ResetPassword(null, null, null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.IsEmailConfirmed(null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.GenerateEmailConfirmationToken(null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.ConfirmEmail(null, null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.GetEmail(null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.SetEmail(null, null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.IsPhoneNumberConfirmed(null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.ChangePhoneNumber(null, null, null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.VerifyChangePhoneNumberToken(null, null, null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.GetPhoneNumber(null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.SetPhoneNumber(null, null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.GetTwoFactorEnabled(null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.SetTwoFactorEnabled(null, true), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.GenerateTwoFactorToken(null, null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.VerifyTwoFactorToken(null, null, null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.NotifyTwoFactorToken(null, null, null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.GetValidTwoFactorProviders(null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.VerifyUserToken(null, null, null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.AccessFailed(null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.ResetAccessFailedCount(null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.GetAccessFailedCount(null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.GetLockoutEnabled(null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.SetLockoutEnabled(null, false), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.SetLockoutEndDate(null, DateTimeOffset.UtcNow), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.GetLockoutEndDate(null), error);
-            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await manager.IsLockedOut(null), error);
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.AddClaimAsync(null, new Claim("a", "b")));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.AddLogin(null, new UserLoginInfo("", "")));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.AddPasswordAsync(null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.AddToRoleAsync(null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.ChangePasswordAsync(null, null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.GetClaimsAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.GetLogins(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.GetRolesAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.IsInRoleAsync(null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.RemoveClaimAsync(null, new Claim("a", "b")));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.RemoveLogin(null, new UserLoginInfo("", "")));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.RemovePasswordAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.RemoveFromRoleAsync(null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.UpdateSecurityStampAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.GetSecurityStampAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.HasPasswordAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.GeneratePasswordResetTokenAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.ResetPassword(null, null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.IsEmailConfirmedAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.GenerateEmailConfirmationTokenAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.ConfirmEmailAsync(null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.GetEmailAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.SetEmailAsync(null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.IsPhoneNumberConfirmedAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.ChangePhoneNumberAsync(null, null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.VerifyChangePhoneNumberTokenAsync(null, null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.GetPhoneNumberAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.SetPhoneNumberAsync(null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.GetTwoFactorEnabled(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.SetTwoFactorEnabledAsync(null, true));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.GenerateTwoFactorTokenAsync(null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.VerifyTwoFactorTokenAsync(null, null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.NotifyTwoFactorTokenAsync(null, null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.GetValidTwoFactorProviders(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.VerifyUserTokenAsync(null, null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.AccessFailedAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.ResetAccessFailedCountAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.GetAccessFailedCountAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.GetLockoutEnabledAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.SetLockoutEnabledAsync(null, false));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.SetLockoutEndDate(null, DateTimeOffset.UtcNow));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.GetLockoutEndDate(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.IsLockedOutAsync(null));
         }
 
         [Fact]
@@ -416,43 +435,43 @@ namespace Microsoft.AspNet.Identity.Test
             var manager = new UserManager<TestUser>(new NoopUserStore());
             manager.Dispose();
             Assert.Throws<ObjectDisposedException>(() => manager.ClaimsIdentityFactory);
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.AddClaim("bogus", null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.AddLogin("bogus", null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.AddPassword("bogus", null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.AddToRole("bogus", null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.ChangePassword("bogus", null, null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GetClaims("bogus"));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GetLogins("bogus"));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GetRoles("bogus"));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.IsInRole("bogus", null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemoveClaim("bogus", null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemoveLogin("bogus", null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemovePassword("bogus"));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemoveFromRole("bogus", null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemoveClaim("bogus", null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.Find("bogus", null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.Find(null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindById(null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByName(null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.Create(null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.Create(null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.AddClaimAsync(null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.AddLogin(null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.AddPasswordAsync(null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.AddToRoleAsync(null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.ChangePasswordAsync(null, null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GetClaimsAsync(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GetLogins(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GetRolesAsync(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.IsInRoleAsync(null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemoveClaimAsync(null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemoveLogin(null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemovePasswordAsync(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemoveFromRoleAsync(null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemoveClaimAsync(null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByUserNamePassword(null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByLoginAsync(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByIdAsync(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByNameAsync(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.CreateAsync(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.CreateAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.CreateIdentity(null, null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.Update(null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.Delete(null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.UpdateSecurityStamp(null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GetSecurityStamp(null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GeneratePasswordResetToken(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.UpdateAsync(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.DeleteAsync(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.UpdateSecurityStampAsync(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GetSecurityStampAsync(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GeneratePasswordResetTokenAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.ResetPassword(null, null, null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GenerateEmailConfirmationToken(null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.IsEmailConfirmed(null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.ConfirmEmail(null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GenerateEmailConfirmationTokenAsync(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.IsEmailConfirmedAsync(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.ConfirmEmailAsync(null, null));
         }
 
         private class BadPasswordValidtor : IPasswordValidator
         {
             public const string ErrorMessage = "I'm Bad.";
 
-            public Task<IdentityResult> Validate(string password, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> ValidateAsync(string password, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(IdentityResult.Failed(ErrorMessage));
             }
@@ -469,97 +488,97 @@ namespace Microsoft.AspNet.Identity.Test
             IUserRoleStore<TestUser>,
             IUserSecurityStampStore<TestUser>
         {
-            public Task<IList<Claim>> GetClaims(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IList<Claim>> GetClaimsAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult<IList<Claim>>(new List<Claim>());
             }
 
-            public Task AddClaim(TestUser user, Claim claim, CancellationToken cancellationToken = default(CancellationToken))
+            public Task AddClaimAsync(TestUser user, Claim claim, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task RemoveClaim(TestUser user, Claim claim, CancellationToken cancellationToken = default(CancellationToken))
+            public Task RemoveClaimAsync(TestUser user, Claim claim, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task SetEmail(TestUser user, string email, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetEmailAsync(TestUser user, string email, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task<string> GetEmail(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GetEmailAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult("");
             }
 
-            public Task<bool> GetEmailConfirmed(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> GetEmailConfirmedAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(false);
             }
 
-            public Task SetEmailConfirmed(TestUser user, bool confirmed, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetEmailConfirmedAsync(TestUser user, bool confirmed, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task<TestUser> FindByEmail(string email, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<TestUser> FindByEmailAsync(string email, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult<TestUser>(null);
             }
 
-            public Task<DateTimeOffset> GetLockoutEndDate(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<DateTimeOffset> GetLockoutEndDateAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(DateTimeOffset.MinValue);
             }
 
-            public Task SetLockoutEndDate(TestUser user, DateTimeOffset lockoutEnd, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetLockoutEndDateAsync(TestUser user, DateTimeOffset lockoutEnd, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task<int> IncrementAccessFailedCount(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<int> IncrementAccessFailedCountAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task ResetAccessFailedCount(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task ResetAccessFailedCountAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task<int> GetAccessFailedCount(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<int> GetAccessFailedCountAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task<bool> GetLockoutEnabled(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> GetLockoutEnabledAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(false);
             }
 
-            public Task SetLockoutEnabled(TestUser user, bool enabled, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetLockoutEnabledAsync(TestUser user, bool enabled, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task AddLogin(TestUser user, UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
+            public Task AddLoginAsync(TestUser user, UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task RemoveLogin(TestUser user, UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
+            public Task RemoveLoginAsync(TestUser user, UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task<IList<UserLoginInfo>> GetLogins(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IList<UserLoginInfo>> GetLoginsAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult<IList<UserLoginInfo>>(new List<UserLoginInfo>());
             }
 
-            public Task<TestUser> Find(UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<TestUser> FindByLoginAsync(UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult<TestUser>(null);
             }
@@ -568,112 +587,117 @@ namespace Microsoft.AspNet.Identity.Test
             {
             }
 
-            public Task Create(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetUserNameAsync(TestUser user, string userName, CancellationToken cancellationToken = new CancellationToken())
             {
                 return Task.FromResult(0);
             }
 
-            public Task Update(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task CreateAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task Delete(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task UpdateAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task<TestUser> FindById(string userId, CancellationToken cancellationToken = default(CancellationToken))
+            public Task DeleteAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                return Task.FromResult(0);
+            }
+
+            public Task<TestUser> FindByIdAsync(string userId, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult<TestUser>(null);
             }
 
-            public Task<TestUser> FindByName(string userName, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<TestUser> FindByNameAsync(string userName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult<TestUser>(null);
             }
 
-            public Task SetPasswordHash(TestUser user, string passwordHash, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetPasswordHashAsync(TestUser user, string passwordHash, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task<string> GetPasswordHash(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GetPasswordHashAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult<string>(null);
             }
 
-            public Task<bool> HasPassword(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> HasPasswordAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(false);
             }
 
-            public Task SetPhoneNumber(TestUser user, string phoneNumber, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetPhoneNumberAsync(TestUser user, string phoneNumber, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task<string> GetPhoneNumber(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GetPhoneNumberAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult("");
             }
 
-            public Task<bool> GetPhoneNumberConfirmed(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> GetPhoneNumberConfirmedAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(false);
             }
 
-            public Task SetPhoneNumberConfirmed(TestUser user, bool confirmed, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetPhoneNumberConfirmedAsync(TestUser user, bool confirmed, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task AddToRole(TestUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken))
+            public Task AddToRoleAsync(TestUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task RemoveFromRole(TestUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken))
+            public Task RemoveFromRoleAsync(TestUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task<IList<string>> GetRoles(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IList<string>> GetRolesAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult<IList<string>>(new List<string>());
             }
 
-            public Task<bool> IsInRole(TestUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> IsInRoleAsync(TestUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(false);
             }
 
-            public Task SetSecurityStamp(TestUser user, string stamp, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetSecurityStampAsync(TestUser user, string stamp, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task<string> GetSecurityStamp(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GetSecurityStampAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult("");
             }
 
-            public Task SetTwoFactorEnabled(TestUser user, bool enabled, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetTwoFactorEnabledAsync(TestUser user, bool enabled, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task<bool> GetTwoFactorEnabled(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> GetTwoFactorEnabledAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(false);
             }
 
-            public Task<string> GetUserId(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GetUserIdAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult<string>(null);
             }
 
-            public Task<string> GetUserName(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GetUserNameAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult<string>(null);
             }
@@ -681,23 +705,23 @@ namespace Microsoft.AspNet.Identity.Test
 
         private class NoOpTokenProvider : IUserTokenProvider<TestUser>
         {
-            public Task<string> Generate(string purpose, UserManager<TestUser> manager, TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GenerateAsync(string purpose, UserManager<TestUser> manager, TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult("Test");
             }
 
-            public Task<bool> Validate(string purpose, string token, UserManager<TestUser> manager,
+            public Task<bool> ValidateAsync(string purpose, string token, UserManager<TestUser> manager,
                 TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(true);
             }
 
-            public Task Notify(string token, UserManager<TestUser> manager, TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task NotifyAsync(string token, UserManager<TestUser> manager, TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task<bool> IsValidProviderForUser(UserManager<TestUser> manager, TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> IsValidProviderForUserAsync(UserManager<TestUser> manager, TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(true);
             }
@@ -712,97 +736,97 @@ namespace Microsoft.AspNet.Identity.Test
             IUserLockoutStore<TestUser>,
             IUserTwoFactorStore<TestUser>
         {
-            public Task<IList<Claim>> GetClaims(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IList<Claim>> GetClaimsAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task AddClaim(TestUser user, Claim claim, CancellationToken cancellationToken = default(CancellationToken))
+            public Task AddClaimAsync(TestUser user, Claim claim, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task RemoveClaim(TestUser user, Claim claim, CancellationToken cancellationToken = default(CancellationToken))
+            public Task RemoveClaimAsync(TestUser user, Claim claim, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task SetEmail(TestUser user, string email, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetEmailAsync(TestUser user, string email, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<string> GetEmail(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GetEmailAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<bool> GetEmailConfirmed(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> GetEmailConfirmedAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task SetEmailConfirmed(TestUser user, bool confirmed, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetEmailConfirmedAsync(TestUser user, bool confirmed, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<TestUser> FindByEmail(string email, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<TestUser> FindByEmailAsync(string email, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<DateTimeOffset> GetLockoutEndDate(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<DateTimeOffset> GetLockoutEndDateAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task SetLockoutEndDate(TestUser user, DateTimeOffset lockoutEnd, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetLockoutEndDateAsync(TestUser user, DateTimeOffset lockoutEnd, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<int> IncrementAccessFailedCount(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<int> IncrementAccessFailedCountAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task ResetAccessFailedCount(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task ResetAccessFailedCountAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<int> GetAccessFailedCount(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<int> GetAccessFailedCountAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<bool> GetLockoutEnabled(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> GetLockoutEnabledAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task SetLockoutEnabled(TestUser user, bool enabled, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetLockoutEnabledAsync(TestUser user, bool enabled, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task AddLogin(TestUser user, UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
+            public Task AddLoginAsync(TestUser user, UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task RemoveLogin(TestUser user, UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
+            public Task RemoveLoginAsync(TestUser user, UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<IList<UserLoginInfo>> GetLogins(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IList<UserLoginInfo>> GetLoginsAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<TestUser> Find(UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<TestUser> FindByLoginAsync(UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
@@ -812,82 +836,87 @@ namespace Microsoft.AspNet.Identity.Test
                 throw new NotImplementedException();
             }
 
-            public Task<string> GetUserId(TestUser user, CancellationToken cancellationToken = new CancellationToken())
+            public Task<string> GetUserIdAsync(TestUser user, CancellationToken cancellationToken = new CancellationToken())
             {
                 throw new NotImplementedException();
             }
 
-            public Task<string> GetUserName(TestUser user, CancellationToken cancellationToken = new CancellationToken())
+            public Task<string> GetUserNameAsync(TestUser user, CancellationToken cancellationToken = new CancellationToken())
             {
                 throw new NotImplementedException();
             }
 
-            public Task Create(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetUserNameAsync(TestUser user, string userName, CancellationToken cancellationToken = new CancellationToken())
             {
                 throw new NotImplementedException();
             }
 
-            public Task Update(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task CreateAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task Delete(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task UpdateAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<TestUser> FindById(string userId, CancellationToken cancellationToken = default(CancellationToken))
+            public Task DeleteAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<TestUser> FindByName(string userName, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<TestUser> FindByIdAsync(string userId, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task SetPasswordHash(TestUser user, string passwordHash, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<TestUser> FindByNameAsync(string userName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<string> GetPasswordHash(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetPasswordHashAsync(TestUser user, string passwordHash, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<bool> HasPassword(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GetPasswordHashAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task SetPhoneNumber(TestUser user, string phoneNumber, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> HasPasswordAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<string> GetPhoneNumber(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetPhoneNumberAsync(TestUser user, string phoneNumber, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<bool> GetPhoneNumberConfirmed(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GetPhoneNumberAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task SetPhoneNumberConfirmed(TestUser user, bool confirmed, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> GetPhoneNumberConfirmedAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task SetTwoFactorEnabled(TestUser user, bool enabled, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetPhoneNumberConfirmedAsync(TestUser user, bool confirmed, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<bool> GetTwoFactorEnabled(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetTwoFactorEnabledAsync(TestUser user, bool enabled, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<bool> GetTwoFactorEnabledAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }

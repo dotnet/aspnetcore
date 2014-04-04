@@ -13,13 +13,13 @@ namespace Microsoft.AspNet.Identity
         where TUser : class
     {
         /// <summary>
-        ///     Create a ClaimsIdentity from an user using a UserManager
+        ///     CreateAsync a ClaimsIdentity from an user using a UserManager
         /// </summary>
         /// <param name="manager"></param>
         /// <param name="user"></param>
         /// <param name="authenticationType"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<ClaimsIdentity> Create(UserManager<TUser> manager, TUser user, string authenticationType, CancellationToken cancellationToken = default(CancellationToken));
+        Task<ClaimsIdentity> CreateAsync(UserManager<TUser> manager, TUser user, string authenticationType, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

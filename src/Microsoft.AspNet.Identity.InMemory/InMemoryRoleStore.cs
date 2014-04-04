@@ -11,13 +11,13 @@ namespace Microsoft.AspNet.Identity.InMemory
     {
         private readonly Dictionary<string, TRole> _roles = new Dictionary<string, TRole>();
 
-        public Task Create(TRole role, CancellationToken cancellationToken = default(CancellationToken))
+        public Task CreateAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
         {
             _roles[role.Id] = role;
             return Task.FromResult(0);
         }
 
-        public Task Delete(TRole role, CancellationToken cancellationToken = default(CancellationToken))
+        public Task DeleteAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (role == null || !_roles.ContainsKey(role.Id))
             {
@@ -27,23 +27,23 @@ namespace Microsoft.AspNet.Identity.InMemory
             return Task.FromResult(0);
         }
 
-        public Task<string> GetRoleId(TRole role, CancellationToken cancellationToken = new CancellationToken())
+        public Task<string> GetRoleIdAsync(TRole role, CancellationToken cancellationToken = new CancellationToken())
         {
             return Task.FromResult(role.Id);
         }
 
-        public Task<string> GetRoleName(TRole role, CancellationToken cancellationToken = new CancellationToken())
+        public Task<string> GetRoleNameAsync(TRole role, CancellationToken cancellationToken = new CancellationToken())
         {
             return Task.FromResult(role.Name);
         }
 
-        public Task Update(TRole role, CancellationToken cancellationToken = default(CancellationToken))
+        public Task UpdateAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
         {
             _roles[role.Id] = role;
             return Task.FromResult(0);
         }
 
-        public Task<TRole> FindById(string roleId, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<TRole> FindByIdAsync(string roleId, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (_roles.ContainsKey(roleId))
             {
@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Identity.InMemory
             return Task.FromResult<TRole>(null);
         }
 
-        public Task<TRole> FindByName(string roleName, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<TRole> FindByNameAsync(string roleName, CancellationToken cancellationToken = default(CancellationToken))
         {
             return
                 Task.FromResult(

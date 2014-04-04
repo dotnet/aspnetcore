@@ -17,10 +17,10 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<string> Generate(string purpose, UserManager<TUser> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken));
+        Task<string> GenerateAsync(string purpose, UserManager<TUser> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        ///     Validate and unprotect a token, returns null if invalid
+        ///     ValidateAsync and unprotect a token, returns null if invalid
         /// </summary>
         /// <param name="purpose"></param>
         /// <param name="token"></param>
@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<bool> Validate(string purpose, string token, UserManager<TUser> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken));
+        Task<bool> ValidateAsync(string purpose, string token, UserManager<TUser> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Notifies the user that a token has been generated, i.e. via email or sms, or can no-op
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task Notify(string token, UserManager<TUser> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken));
+        Task NotifyAsync(string token, UserManager<TUser> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Returns true if provider can be used for this user, i.e. could require a user to have an email
@@ -47,6 +47,6 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<bool> IsValidProviderForUser(UserManager<TUser> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken));
+        Task<bool> IsValidProviderForUserAsync(UserManager<TUser> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

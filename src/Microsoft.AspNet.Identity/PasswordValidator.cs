@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="item"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task<IdentityResult> Validate(string item, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<IdentityResult> ValidateAsync(string item, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (item == null)
             {

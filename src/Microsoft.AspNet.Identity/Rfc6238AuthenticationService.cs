@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Identity
             var timestepAsBytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder((long) timestepNumber));
             var hash = hashAlgorithm.ComputeHash(ApplyModifier(timestepAsBytes, modifier));
 
-            // Generate DT string
+            // GenerateAsync DT string
             var offset = hash[hash.Length - 1] & 0xf;
             Debug.Assert(offset + 4 < hash.Length);
             var binaryCode = (hash[offset] & 0x7f) << 24

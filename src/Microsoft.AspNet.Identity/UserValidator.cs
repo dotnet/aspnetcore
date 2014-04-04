@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> Validate(UserManager<TUser> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (manager == null)
             {
@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.Identity
 
         private async Task ValidateUserName(UserManager<TUser> manager, TUser user, ICollection<string> errors)
         {
-            var userName = await manager.GetUserName(user);
+            var userName = await manager.GetUserNameAsync(user);
             if (string.IsNullOrWhiteSpace(userName))
             {
                 errors.Add(String.Format(CultureInfo.CurrentCulture, Resources.PropertyTooShort, "UserName"));
@@ -116,8 +116,8 @@ namespace Microsoft.AspNet.Identity
             }
             else
             {
-                var owner = await manager.FindByName(userName);
-                if (owner != null && !string.Equals(await manager.GetUserId(owner), await manager.GetUserId(user)))
+                var owner = await manager.FindByNameAsync(userName);
+                if (owner != null && !string.Equals(await manager.GetUserIdAsync(owner), await manager.GetUserIdAsync(user)))
                 {
                     errors.Add(String.Format(CultureInfo.CurrentCulture, Resources.DuplicateName, userName));
                 }
@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.Identity
         // make sure email is not empty, valid, and unique
         private static async Task ValidateEmail(UserManager<TUser> manager, TUser user, List<string> errors)
         {
-            var email = await manager.GetEmailStore().GetEmail(user);
+            var email = await manager.GetEmailAsync(user);
             if (string.IsNullOrWhiteSpace(email))
             {
                 errors.Add(String.Format(CultureInfo.CurrentCulture, Resources.PropertyTooShort, "Email"));
@@ -144,8 +144,8 @@ namespace Microsoft.AspNet.Identity
                 return;
             }
 #endif
-            var owner = await manager.FindByEmail(email);
-            if (owner != null && !string.Equals(await manager.GetUserId(owner), await manager.GetUserId(user)))
+            var owner = await manager.FindByEmailAsync(email);
+            if (owner != null && !string.Equals(await manager.GetUserIdAsync(owner), await manager.GetUserIdAsync(user)))
             {
                 errors.Add(String.Format(CultureInfo.CurrentCulture, Resources.DuplicateEmail, email));
             }

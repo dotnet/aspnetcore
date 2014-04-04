@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<string> GetUserId(TUser user, CancellationToken cancellationToken = default(CancellationToken));
+        Task<string> GetUserIdAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Returns the user's name
@@ -25,7 +25,16 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<string> GetUserName(TUser user, CancellationToken cancellationToken = default(CancellationToken));
+        Task<string> GetUserNameAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        ///     Set the user name
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="userName"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task SetUserNameAsync(TUser user, string userName, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Insert a new user
@@ -33,23 +42,23 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task Create(TUser user, CancellationToken cancellationToken = default(CancellationToken));
+        Task CreateAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        ///     Update a user
+        ///     UpdateAsync a user
         /// </summary>
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task Update(TUser user, CancellationToken cancellationToken = default(CancellationToken));
+        Task UpdateAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        ///     Delete a user
+        ///     DeleteAsync a user
         /// </summary>
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task Delete(TUser user, CancellationToken cancellationToken = default(CancellationToken));
+        Task DeleteAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Finds a user
@@ -57,7 +66,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="userId"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<TUser> FindById(string userId, CancellationToken cancellationToken = default(CancellationToken));
+        Task<TUser> FindByIdAsync(string userId, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Returns the user associated with this name
@@ -65,7 +74,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="name"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<TUser> FindByName(string name, CancellationToken cancellationToken = default(CancellationToken));
+        Task<TUser> FindByNameAsync(string name, CancellationToken cancellationToken = default(CancellationToken));
 
     }
 }

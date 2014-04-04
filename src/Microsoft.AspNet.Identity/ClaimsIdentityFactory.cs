@@ -50,14 +50,14 @@ namespace Microsoft.AspNet.Identity
         public string SecurityStampClaimType { get; set; }
 
         /// <summary>
-        ///     Create a ClaimsIdentity from a user
+        ///     CreateAsync a ClaimsIdentity from a user
         /// </summary>
         /// <param name="manager"></param>
         /// <param name="user"></param>
         /// <param name="authenticationType"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<ClaimsIdentity> Create(UserManager<TUser> manager, TUser user,
+        public virtual async Task<ClaimsIdentity> CreateAsync(UserManager<TUser> manager, TUser user,
             string authenticationType, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (manager == null)
@@ -68,18 +68,18 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            var userId = await manager.GetUserId(user, cancellationToken);
-            var userName = await manager.GetUserName(user, cancellationToken);
+            var userId = await manager.GetUserIdAsync(user, cancellationToken);
+            var userName = await manager.GetUserNameAsync(user, cancellationToken);
             var id = new ClaimsIdentity(authenticationType, UserNameClaimType, RoleClaimType);
             id.AddClaim(new Claim(UserIdClaimType, userId));
             id.AddClaim(new Claim(UserNameClaimType, userName, ClaimValueTypes.String));
             if (manager.SupportsUserSecurityStamp)
             {
-                id.AddClaim(new Claim(SecurityStampClaimType, await manager.GetSecurityStamp(userId, cancellationToken)));
+                id.AddClaim(new Claim(SecurityStampClaimType, await manager.GetSecurityStampAsync(user, cancellationToken)));
             }
             if (manager.SupportsUserRole)
             {
-                var roles = await manager.GetRoles(userId, cancellationToken);
+                var roles = await manager.GetRolesAsync(user, cancellationToken);
                 foreach (var roleName in roles)
                 {
                     id.AddClaim(new Claim(RoleClaimType, roleName, ClaimValueTypes.String));
@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Identity
             }
             if (manager.SupportsUserClaim)
             {
-                id.AddClaims(await manager.GetClaims(userId, cancellationToken));
+                id.AddClaims(await manager.GetClaimsAsync(user, cancellationToken));
             }
             return id;
         }

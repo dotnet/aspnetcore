@@ -9,9 +9,9 @@ namespace Microsoft.AspNet.Identity
     public interface IPasswordValidator
     {
         /// <summary>
-        ///     Validate the item
+        ///     ValidateAsync the item
         /// </summary>
         /// <returns></returns>
-        Task<IdentityResult> Validate(string password, CancellationToken cancellationToken = default(CancellationToken));
+        Task<IdentityResult> ValidateAsync(string password, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

@@ -15,8 +15,8 @@ namespace Microsoft.AspNet.Identity.Test
 
             // Act
             // Assert
-            await Assert.ThrowsAsync<ArgumentNullException>("manager", async () => await validator.Validate(null, null));
-            await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await validator.Validate(manager, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("manager", async () => await validator.ValidateAsync(null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await validator.ValidateAsync(manager, null));
         }
 
         [Theory]
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Identity.Test
             var user = new TestRole {Name = input};
 
             // Act
-            var result = await validator.Validate(manager, user);
+            var result = await validator.ValidateAsync(manager, user);
 
             // Assert
             IdentityResultAssert.IsFailure(result, "Name cannot be null or empty.");

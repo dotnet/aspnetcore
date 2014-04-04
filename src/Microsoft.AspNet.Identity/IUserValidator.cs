@@ -11,12 +11,12 @@ namespace Microsoft.AspNet.Identity
     public interface IUserValidator<TUser> where TUser : class
     {
         /// <summary>
-        ///     Validate the user
+        ///     ValidateAsync the user
         /// </summary>
         /// <param name="manager"></param>
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<IdentityResult> Validate(UserManager<TUser> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken));
+        Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

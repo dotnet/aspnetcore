@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="roleName"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task AddToRole(TUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken));
+        Task AddToRoleAsync(TUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Removes the role for the user
@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="roleName"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task RemoveFromRole(TUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken));
+        Task RemoveFromRoleAsync(TUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Returns the roles for this user
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<IList<string>> GetRoles(TUser user, CancellationToken cancellationToken = default(CancellationToken));
+        Task<IList<string>> GetRolesAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Returns true if a user is in a role
@@ -43,6 +43,6 @@ namespace Microsoft.AspNet.Identity
         /// <param name="roleName"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<bool> IsInRole(TUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken));
+        Task<bool> IsInRoleAsync(TUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

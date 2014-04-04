@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="role"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> Validate(RoleManager<TRole> manager, TRole role, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> ValidateAsync(RoleManager<TRole> manager, TRole role, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (manager == null)
             {
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Identity
         private static async Task ValidateRoleName(RoleManager<TRole> manager, TRole role,
             ICollection<string> errors)
         {
-            var roleName = await manager.GetRoleName(role);
+            var roleName = await manager.GetRoleNameAsync(role);
             if (string.IsNullOrWhiteSpace(roleName))
             {
                 errors.Add(String.Format(CultureInfo.CurrentCulture, Resources.PropertyTooShort, "Name"));

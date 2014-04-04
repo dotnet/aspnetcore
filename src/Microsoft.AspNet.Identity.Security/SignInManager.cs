@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Identity.Security
         public HttpContext Context { get; set; }
 
 
-        public virtual async Task<ClaimsIdentity> CreateUserIdentity(TUser user)
+        public virtual async Task<ClaimsIdentity> CreateUserIdentityAsync(TUser user)
         {
             if (UserManager == null)
             {
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Identity.Security
             }
 
             // TODO: all the two factor logic/external/rememberBrowser
-            var userIdentity = await CreateUserIdentity(user);
+            var userIdentity = await CreateUserIdentityAsync(user);
             Context.Response.SignIn(userIdentity, new AuthenticationProperties { IsPersistent = isPersistent });
         }
 
@@ -49,18 +49,18 @@ namespace Microsoft.AspNet.Identity.Security
         //        return false;
         //    }
 
-        //    var token = await UserManager.GenerateTwoFactorToken(userId, provider);
+        //    var token = await UserManager.GenerateTwoFactorTokenAsync(userId, provider);
         //    // See IdentityConfig.cs to plug in Email/SMS services to actually send the code
-        //    await UserManager.NotifyTwoFactorToken(userId, provider, token);
+        //    await UserManager.NotifyTwoFactorTokenAsync(userId, provider, token);
         //    return true;
         //}
 
         //public Task<TKey> GetVerifiedUserId()
         //{
         //    //var result = await AuthenticationManager.Authenticate(DefaultAuthenticationTypes.TwoFactorCookie);
-        //    //if (result != null && result.Identity != null && !String.IsNullOrEmpty(result.Identity.GetUserId()))
+        //    //if (result != null && result.Identity != null && !String.IsNullOrEmpty(result.Identity.GetUserIdAsync()))
         //    //{
-        //    //    return result.Identity.GetUserId();
+        //    //    return result.Identity.GetUserIdAsync();
         //    //}
         //    return Task.FromResult(default(TKey));
         //}
@@ -77,35 +77,35 @@ namespace Microsoft.AspNet.Identity.Security
         //    {
         //        return SignInStatus.Failure;
         //    }
-        //    var user = await UserManager.FindById(userId);
+        //    var user = await UserManager.FindByIdAsync(userId);
         //    if (user == null)
         //    {
         //        return SignInStatus.Failure;
         //    }
-        //    if (await UserManager.IsLockedOut(user.Id))
+        //    if (await UserManager.IsLockedOutAsync(user.Id))
         //    {
         //        return SignInStatus.LockedOut;
         //    }
-        //    if (await UserManager.VerifyTwoFactorToken(user.Id, provider, code))
+        //    if (await UserManager.VerifyTwoFactorTokenAsync(user.Id, provider, code))
         //    {
         //        // When token is verified correctly, clear the access failed count used for lockout
-        //        await UserManager.ResetAccessFailedCount(user.Id);
+        //        await UserManager.ResetAccessFailedCountAsync(user.Id);
         //        await SignIn(user, isPersistent, rememberBrowser);
         //        return SignInStatus.Success;
         //    }
         //    // If the token is incorrect, record the failure which also may cause the user to be locked out
-        //    await UserManager.AccessFailed(user.Id);
+        //    await UserManager.AccessFailedAsync(user.Id);
         //    return SignInStatus.Failure;
         //}
 
         //public async Task<SignInStatus> ExternalSignIn(ExternalLoginInfo loginInfo, bool isPersistent)
         //{
-        //    var user = await UserManager.Find(loginInfo.Login);
+        //    var user = await UserManager.FindByLoginAsync(loginInfo.Login);
         //    if (user == null)
         //    {
         //        return SignInStatus.Failure;
         //    }
-        //    if (await UserManager.IsLockedOut(user.Id))
+        //    if (await UserManager.IsLockedOutAsync(user.Id))
         //    {
         //        return SignInStatus.LockedOut;
         //    }
@@ -114,11 +114,11 @@ namespace Microsoft.AspNet.Identity.Security
 
         //private async Task<SignInStatus> SignInOrTwoFactor(TUser user, bool isPersistent)
         //{
-        //    if (await UserManager.GetTwoFactorEnabled(user.Id))
+        //    if (await UserManager.GetTwoFactorEnabledAsync(user.Id))
         //        //&& !await AuthenticationManager.TwoFactorBrowserRemembered(user.Id))
         //    {
         //        //var identity = new ClaimsIdentity(DefaultAuthenticationTypes.TwoFactorCookie);
-        //        //identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
+        //        //identity.AddClaimAsync(new Claim(ClaimTypes.NameIdentifier, user.Id));
         //        //AuthenticationManager.SignIn(identity);
         //        return SignInStatus.RequiresTwoFactorAuthentication;
         //    }
@@ -126,24 +126,22 @@ namespace Microsoft.AspNet.Identity.Security
         //    return SignInStatus.Success;
         //}
 
-        public virtual async Task<SignInStatus> PasswordSignIn(string userName, string password, bool isPersistent, bool shouldLockout)
+        public virtual async Task<SignInStatus> PasswordSignInAsync(string userName, string password, bool isPersistent, bool shouldLockout)
         {
             if (UserManager == null)
             {
                 return SignInStatus.Failure;
             }
-            var user = await UserManager.FindByName(userName);
+            var user = await UserManager.FindByNameAsync(userName);
             if (user == null)
             {
                 return SignInStatus.Failure;
             }
-            // TODO: overloads taking TUser?
-            var userId = await UserManager.GetUserId(user);
-            if (await UserManager.IsLockedOut(userId))
+            if (await UserManager.IsLockedOutAsync(user))
             {
                 return SignInStatus.LockedOut;
             }
-            if (await UserManager.CheckPassword(user, password))
+            if (await UserManager.CheckPasswordAsync(user, password))
             {
                 await SignIn(user, isPersistent, false);
                 return SignInStatus.Success;
@@ -152,8 +150,8 @@ namespace Microsoft.AspNet.Identity.Security
             if (shouldLockout)
             {
                 // If lockout is requested, increment access failed count which might lock out the user
-                await UserManager.AccessFailed(userId);
-                if (await UserManager.IsLockedOut(userId))
+                await UserManager.AccessFailedAsync(user);
+                if (await UserManager.IsLockedOutAsync(user))
                 {
                     return SignInStatus.LockedOut;
                 }

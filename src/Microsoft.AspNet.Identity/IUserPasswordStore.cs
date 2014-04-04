@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="passwordHash"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task SetPasswordHash(TUser user, string passwordHash, CancellationToken cancellationToken = default(CancellationToken));
+        Task SetPasswordHashAsync(TUser user, string passwordHash, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Get the user password hash
@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<string> GetPasswordHash(TUser user, CancellationToken cancellationToken = default(CancellationToken));
+        Task<string> GetPasswordHashAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Returns true if a user has a password set
@@ -32,6 +32,6 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<bool> HasPassword(TUser user, CancellationToken cancellationToken = default(CancellationToken));
+        Task<bool> HasPasswordAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

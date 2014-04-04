@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Identity.Test
 
             // Act
             // Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => validator.Validate(null));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => validator.ValidateAsync(null));
         }
 
 
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             const string error = "Passwords must be at least 6 characters.";
             var valid = new PasswordValidator {RequiredLength = 6};
-            IdentityResultAssert.IsFailure(await valid.Validate(input), error);
+            IdentityResultAssert.IsFailure(await valid.ValidateAsync(input), error);
         }
 
         [Theory]
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task SuccessIfLongEnoughTests(string input)
         {
             var valid = new PasswordValidator {RequiredLength = 6};
-            IdentityResultAssert.IsSuccess(await valid.Validate(input));
+            IdentityResultAssert.IsSuccess(await valid.ValidateAsync(input));
         }
 
         [Theory]
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task FailsWithoutRequiredNonAlphanumericTests(string input)
         {
             var valid = new PasswordValidator {RequireNonLetterOrDigit = true};
-            IdentityResultAssert.IsFailure(await valid.Validate(input),
+            IdentityResultAssert.IsFailure(await valid.ValidateAsync(input),
                 "Passwords must have at least one non letter or digit character.");
         }
 
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task SucceedsWithRequiredNonAlphanumericTests(string input)
         {
             var valid = new PasswordValidator {RequireNonLetterOrDigit = true};
-            IdentityResultAssert.IsSuccess(await valid.Validate(input));
+            IdentityResultAssert.IsSuccess(await valid.ValidateAsync(input));
         }
 
         [Theory]
@@ -115,11 +115,11 @@ namespace Microsoft.AspNet.Identity.Test
             }
             if (errors.Count == 0)
             {
-                IdentityResultAssert.IsSuccess(await valid.Validate(input));
+                IdentityResultAssert.IsSuccess(await valid.ValidateAsync(input));
             }
             else
             {
-                IdentityResultAssert.IsFailure(await valid.Validate(input), string.Join(" ", errors));
+                IdentityResultAssert.IsFailure(await valid.ValidateAsync(input), string.Join(" ", errors));
             }
         }
     }
