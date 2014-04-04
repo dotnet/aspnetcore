@@ -100,9 +100,9 @@ namespace Microsoft.AspNet.Mvc
 
                 await authZPipeline.InvokeAsync();
 
-                if (authZContext.ActionResult == null &&
-                    !authZContext.HasFailed &&
-                    authZEndPoint.WasEndPointCalled)
+                if (authZContext.ActionResult != null ||
+                    authZContext.HasFailed ||
+                    !authZEndPoint.WasEndPointCalled)
                 {
                     // User cleaned out the result but we failed or short circuited the end point.
                     return authZContext.ActionResult ?? new HttpStatusCodeResult(401);
