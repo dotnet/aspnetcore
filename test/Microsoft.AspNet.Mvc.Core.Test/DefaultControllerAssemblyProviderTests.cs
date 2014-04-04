@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var provider = new DefaultControllerAssemblyProvider(manager.Object);
 
             // Act
-            var candidates = provider.GetCandiateLibraries();
+            var candidates = provider.GetCandidateLibraries();
 
             // Assert
             Assert.Equal(new[] { "SomeRandomAssembly" }, candidates.Select(a => a.Name));
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var provider = new DefaultControllerAssemblyProvider(manager.Object);
 
             // Act
-            var candidates = provider.GetCandiateLibraries();
+            var candidates = provider.GetCandidateLibraries();
 
             // Assert
             Assert.Equal(new[] { "Baz", "Foo", "Bar" }, candidates.Select(a => a.Name));

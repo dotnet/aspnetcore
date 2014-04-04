@@ -29,11 +29,11 @@ namespace Microsoft.AspNet.Mvc
         {
             get
             {
-                return GetCandiateLibraries().Select(Load);
+                return GetCandidateLibraries().Select(Load);
             }
         }
 
-        internal IEnumerable<ILibraryInformation> GetCandiateLibraries()
+        internal IEnumerable<ILibraryInformation> GetCandidateLibraries()
         {
             // GetReferencingLibraries returns the transitive closure of referencing assemblies
             // for a given assembly. In our case, we'll gather all assemblies that reference
