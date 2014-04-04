@@ -133,13 +133,22 @@
     <value>Only one '{0}' statement is allowed in a file.</value>
   </data>
   <data name="RenderBodyCannotBeCalled" xml:space="preserve">
-    <value>RenderBody can only be called from a layout page.</value>
+    <value>{0} can only be called from a layout page.</value>
+  </data>
+  <data name="RenderBodyNotCalled" xml:space="preserve">
+    <value>{0} must be called from a layout page.</value>
   </data>
   <data name="SectionAlreadyDefined" xml:space="preserve">
     <value>Section '{0}' is already defined.</value>
   </data>
+  <data name="SectionAlreadyRendered" xml:space="preserve">
+    <value>{0} has already been called for the section named '{1}'.</value>
+  </data>
   <data name="SectionNotDefined" xml:space="preserve">
     <value>Section '{0}' is not defined.</value>
+  </data>
+  <data name="SectionsNotRendered" xml:space="preserve">
+    <value>The following sections have been defined but have not been rendered: '{0}'.</value>
   </data>
   <data name="ViewEngine_PartialViewNotFound" xml:space="preserve">
     <value>The partial view '{0}' was not found. The following locations were searched:{1}</value>

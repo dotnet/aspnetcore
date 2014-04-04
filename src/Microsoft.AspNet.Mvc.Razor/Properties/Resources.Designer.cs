@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
-        /// RenderBody can only be called from a layout page.
+        /// {0} can only be called from a layout page.
         /// </summary>
         internal static string RenderBodyCannotBeCalled
         {
@@ -99,11 +99,27 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
-        /// RenderBody can only be called from a layout page.
+        /// {0} can only be called from a layout page.
         /// </summary>
-        internal static string FormatRenderBodyCannotBeCalled()
+        internal static string FormatRenderBodyCannotBeCalled(object p0)
         {
-            return GetString("RenderBodyCannotBeCalled");
+            return string.Format(CultureInfo.CurrentCulture, GetString("RenderBodyCannotBeCalled"), p0);
+        }
+
+        /// <summary>
+        /// {0} must be called from a layout page.
+        /// </summary>
+        internal static string RenderBodyNotCalled
+        {
+            get { return GetString("RenderBodyNotCalled"); }
+        }
+
+        /// <summary>
+        /// {0} must be called from a layout page.
+        /// </summary>
+        internal static string FormatRenderBodyNotCalled(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("RenderBodyNotCalled"), p0);
         }
 
         /// <summary>
@@ -123,6 +139,22 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
+        /// {0} has already been called for the section named '{1}'.
+        /// </summary>
+        internal static string SectionAlreadyRendered
+        {
+            get { return GetString("SectionAlreadyRendered"); }
+        }
+
+        /// <summary>
+        /// {0} has already been called for the section named '{1}'.
+        /// </summary>
+        internal static string FormatSectionAlreadyRendered(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("SectionAlreadyRendered"), p0, p1);
+        }
+
+        /// <summary>
         /// Section '{0}' is not defined.
         /// </summary>
         internal static string SectionNotDefined
@@ -136,6 +168,22 @@ namespace Microsoft.AspNet.Mvc.Razor
         internal static string FormatSectionNotDefined(object p0)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("SectionNotDefined"), p0);
+        }
+
+        /// <summary>
+        /// The following sections have been defined but have not been rendered: '{0}'.
+        /// </summary>
+        internal static string SectionsNotRendered
+        {
+            get { return GetString("SectionsNotRendered"); }
+        }
+
+        /// <summary>
+        /// The following sections have been defined but have not been rendered: '{0}'.
+        /// </summary>
+        internal static string FormatSectionsNotRendered(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("SectionsNotRendered"), p0);
         }
 
         /// <summary>
