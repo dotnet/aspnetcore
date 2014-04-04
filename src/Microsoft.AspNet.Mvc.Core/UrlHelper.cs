@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc
                 valuesDictionary["controller"] = controller;
             }
 
-            var path = RouteCore(valuesDictionary);
+            var path = GeneratePathFromRoute(valuesDictionary);
             if (path == null)
             {
                 return null;
@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Mvc
 
         public string RouteUrl(object values, string protocol, string host, string fragment)
         {
-            var path = RouteCore(new RouteValueDictionary(values));
+            var path = GeneratePathFromRoute(new RouteValueDictionary(values));
             if (path == null)
             {
                 return null;
@@ -64,24 +64,19 @@ namespace Microsoft.AspNet.Mvc
             return GenerateUrl(protocol, host, path, fragment);
         }
 
-        private string RouteCore(IDictionary<string, object> values)
+        private string GeneratePathFromRoute(IDictionary<string, object> values)
         {
             var context = new VirtualPathContext(_httpContext, _ambientValues, values);
 
             var path = _router.GetVirtualPath(context);
 
             // See Routing Issue#31
-            PathString pathString;
             if (path.Length > 0 && !path.StartsWith("/", StringComparison.Ordinal))
             {
-                pathString = new PathString("/" + path);
-            }
-            else
-            {
-                pathString = new PathString(path);
+                path = "/" + path;
             }
 
-            return _httpContext.Request.PathBase.Add(pathString).Value;
+            return _httpContext.Request.PathBase.Add(new PathString(path)).Value;
         }
 
         public string Content([NotNull] string contentPath)
@@ -102,23 +97,35 @@ namespace Microsoft.AspNet.Mvc
 
         private string GenerateUrl(string protocol, string host, string path, string fragment)
         {
+            // We should have a robust and centrallized version of this code. See HttpAbstractions#28
+
             Contract.Assert(path != null);
 
             var url = path;
             if (!string.IsNullOrEmpty(fragment))
             {
-                url = url + "#" + fragment;
+                url += "#" + fragment;
             }
 
-            if (!string.IsNullOrEmpty(protocol) || !string.IsNullOrEmpty(host))
+            if (string.IsNullOrEmpty(protocol) && string.IsNullOrEmpty(host))
+            {
+                // We're returning a partial url (just path + query + fragment), but we still want it
+                // to be rooted.
+                if (!url.StartsWith("/", StringComparison.Ordinal))
+                {
+                    url = "/" + url;
+                }
+
+                return url;
+            }
+            else
             {
                 protocol = string.IsNullOrEmpty(protocol) ? "http" : protocol;
                 host = string.IsNullOrEmpty(host) ? _httpContext.Request.Host.Value : host;
 
                 url = protocol + "://" + host + url;
+                return url;
             }
-
-            return url;
         }
     }
 }
