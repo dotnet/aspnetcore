@@ -4,7 +4,7 @@ using System.Security.Claims;
 
 namespace Microsoft.AspNet.Identity.InMemory
 {
-    public class InMemoryUser : IUser<string>
+    public class InMemoryUser
     {
         private readonly IList<Claim> _claims;
         private readonly IList<UserLoginInfo> _logins;

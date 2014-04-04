@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         {
             var manager = CreateManager();
             var user = new InMemoryUser("UpdateBlocked") {Email = email};
-            manager.UserValidator = new UserValidator<InMemoryUser, string> {RequireUniqueEmail = true};
+            manager.UserValidator = new UserValidator<InMemoryUser> {RequireUniqueEmail = true};
             IdentityResultAssert.IsFailure(await manager.Create(user), "Email cannot be null or empty.");
         }
 
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         {
             var manager = CreateManager();
             var user = new InMemoryUser("UpdateBlocked") {Email = email};
-            manager.UserValidator = new UserValidator<InMemoryUser, string> {RequireUniqueEmail = true};
+            manager.UserValidator = new UserValidator<InMemoryUser> {RequireUniqueEmail = true};
             IdentityResultAssert.IsFailure(await manager.Create(user), "Email '" + email + "' is invalid.");
         }
 #endif
@@ -272,7 +272,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task AddDupeEmailFallsWhenUniqueEmailRequired()
         {
             var manager = CreateManager();
-            manager.UserValidator = new UserValidator<InMemoryUser, string> {RequireUniqueEmail = true};
+            manager.UserValidator = new UserValidator<InMemoryUser> {RequireUniqueEmail = true};
             var user = new InMemoryUser("dupe") {Email = "yup@yup.com"};
             var user2 = new InMemoryUser("dupeEmail") {Email = "yup@yup.com"};
             IdentityResultAssert.IsSuccess(await manager.Create(user));
@@ -361,7 +361,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             }
 
             var identity = await manager.CreateIdentity(user, "test");
-            var claimsFactory = manager.ClaimsIdentityFactory as ClaimsIdentityFactory<InMemoryUser, string>;
+            var claimsFactory = manager.ClaimsIdentityFactory as ClaimsIdentityFactory<InMemoryUser>;
             Assert.NotNull(claimsFactory);
             var claims = identity.Claims;
             Assert.NotNull(claims);
@@ -386,31 +386,31 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         }
 
         // TODO: No token provider implementations yet
-        private class StaticTokenProvider : IUserTokenProvider<InMemoryUser, string>
+        private class StaticTokenProvider : IUserTokenProvider<InMemoryUser>
         {
-            public Task<string> Generate(string purpose, UserManager<InMemoryUser, string> manager,
+            public Task<string> Generate(string purpose, UserManager<InMemoryUser> manager,
                 InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(MakeToken(purpose, user));
             }
 
-            public Task<bool> Validate(string purpose, string token, UserManager<InMemoryUser, string> manager,
+            public Task<bool> Validate(string purpose, string token, UserManager<InMemoryUser> manager,
                 InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(token == MakeToken(purpose, user));
             }
 
-            public Task Notify(string token, UserManager<InMemoryUser, string> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task Notify(string token, UserManager<InMemoryUser> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task<bool> IsValidProviderForUser(UserManager<InMemoryUser, string> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> IsValidProviderForUser(UserManager<InMemoryUser> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(true);
             }
 
-            private static string MakeToken(string purpose, IUser<string> user)
+            private static string MakeToken(string purpose, InMemoryUser user)
             {
                 return string.Join(":", user.Id, purpose, "ImmaToken");
             }
@@ -715,7 +715,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             Assert.True(await manager.RoleExists(role.Name));
         }
 
-        private class AlwaysBadValidator : IUserValidator<InMemoryUser, string>, IRoleValidator<InMemoryRole, string>,
+        private class AlwaysBadValidator : IUserValidator<InMemoryUser>, IRoleValidator<InMemoryRole>,
             IPasswordValidator
         {
             public const string ErrorMessage = "I'm Bad.";
@@ -725,12 +725,12 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
                 return Task.FromResult(IdentityResult.Failed(ErrorMessage));
             }
 
-            public Task<IdentityResult> Validate(RoleManager<InMemoryRole, string> manager, InMemoryRole role, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> Validate(RoleManager<InMemoryRole> manager, InMemoryRole role, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(IdentityResult.Failed(ErrorMessage));
             }
 
-            public Task<IdentityResult> Validate(UserManager<InMemoryUser, string> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> Validate(UserManager<InMemoryUser> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(IdentityResult.Failed(ErrorMessage));
             }
@@ -1091,25 +1091,25 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             Assert.False(await manager.VerifyChangePhoneNumberToken(user.Id, token1, num2));
         }
 
-        private class EmailTokenProvider : IUserTokenProvider<InMemoryUser, string>
+        private class EmailTokenProvider : IUserTokenProvider<InMemoryUser>
         {
-            public Task<string> Generate(string purpose, UserManager<InMemoryUser, string> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> Generate(string purpose, UserManager<InMemoryUser> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(MakeToken(purpose));
             }
 
-            public Task<bool> Validate(string purpose, string token, UserManager<InMemoryUser, string> manager,
+            public Task<bool> Validate(string purpose, string token, UserManager<InMemoryUser> manager,
                 InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(token == MakeToken(purpose));
             }
 
-            public Task Notify(string token, UserManager<InMemoryUser, string> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task Notify(string token, UserManager<InMemoryUser> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return manager.SendEmail(user.Id, token, token);
             }
 
-            public async Task<bool> IsValidProviderForUser(UserManager<InMemoryUser, string> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public async Task<bool> IsValidProviderForUser(UserManager<InMemoryUser> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return !string.IsNullOrEmpty(await manager.GetEmail(user.Id));
             }
@@ -1120,27 +1120,27 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             }
         }
 
-        private class SmsTokenProvider : IUserTokenProvider<InMemoryUser, string>
+        private class SmsTokenProvider : IUserTokenProvider<InMemoryUser>
         {
-            public Task<string> Generate(string purpose, UserManager<InMemoryUser, string> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> Generate(string purpose, UserManager<InMemoryUser> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(MakeToken(purpose));
             }
 
-            public Task<bool> Validate(string purpose, string token, UserManager<InMemoryUser, string> manager,
+            public Task<bool> Validate(string purpose, string token, UserManager<InMemoryUser> manager,
                 InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(token == MakeToken(purpose));
             }
 
-            public Task Notify(string token, UserManager<InMemoryUser, string> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task Notify(string token, UserManager<InMemoryUser> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
-                return manager.SendSms(user.Id, token);
+                return manager.SendSms(user.Id, token, cancellationToken);
             }
 
-            public async Task<bool> IsValidProviderForUser(UserManager<InMemoryUser, string> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public async Task<bool> IsValidProviderForUser(UserManager<InMemoryUser> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
-                return !string.IsNullOrEmpty(await manager.GetPhoneNumber(user.Id));
+                return !string.IsNullOrEmpty(await manager.GetPhoneNumber(user.Id, cancellationToken));
             }
 
             private static string MakeToken(string purpose)
@@ -1406,9 +1406,9 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             Assert.False(await manager.VerifyTwoFactorToken(user.Id, factorId, "bogus"));
         }
 
-        private static UserManager<InMemoryUser, string> CreateManager()
+        private static UserManager<InMemoryUser> CreateManager()
         {
-            return new UserManager<InMemoryUser, string>(new InMemoryUserStore<InMemoryUser>());
+            return new UserManager<InMemoryUser>(new InMemoryUserStore<InMemoryUser>());
         }
 
         private static RoleManager<InMemoryRole> CreateRoleManager()

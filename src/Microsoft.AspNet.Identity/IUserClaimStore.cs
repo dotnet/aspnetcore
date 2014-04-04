@@ -9,8 +9,7 @@ namespace Microsoft.AspNet.Identity
     ///     Stores user specific claims
     /// </summary>
     /// <typeparam name="TUser"></typeparam>
-    /// <typeparam name="TKey"></typeparam>
-    public interface IUserClaimStore<TUser, in TKey> : IUserStore<TUser, TKey> where TUser : class, IUser<TKey>
+    public interface IUserClaimStore<TUser> : IUserStore<TUser> where TUser : class
     {
         /// <summary>
         ///     Returns the claims for the user with the issuer set

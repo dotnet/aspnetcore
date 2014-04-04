@@ -9,26 +9,7 @@ namespace Microsoft.AspNet.Identity
     ///     Exposes role related api which will automatically save changes to the RoleStore
     /// </summary>
     /// <typeparam name="TRole"></typeparam>
-    public class RoleManager<TRole> : RoleManager<TRole, string> where TRole : class, IRole<string>
-    {
-        /// <summary>
-        ///     Constructor
-        /// </summary>
-        /// <param name="store"></param>
-        public RoleManager(IRoleStore<TRole, string> store)
-            : base(store)
-        {
-        }
-    }
-
-    /// <summary>
-    ///     Exposes role related api which will automatically save changes to the RoleStore
-    /// </summary>
-    /// <typeparam name="TRole"></typeparam>
-    /// <typeparam name="TKey"></typeparam>
-    public class RoleManager<TRole, TKey> : IDisposable
-        where TRole : class, IRole<TKey>
-        where TKey : IEquatable<TKey>
+    public class RoleManager<TRole> : IDisposable where TRole : class
     {
         private bool _disposed;
 
@@ -36,25 +17,25 @@ namespace Microsoft.AspNet.Identity
         ///     Constructor
         /// </summary>
         /// <param name="store">The IRoleStore is responsible for commiting changes via the UpdateAsync/CreateAsync methods</param>
-        public RoleManager(IRoleStore<TRole, TKey> store)
+        public RoleManager(IRoleStore<TRole> store)
         {
             if (store == null)
             {
                 throw new ArgumentNullException("store");
             }
             Store = store;
-            RoleValidator = new RoleValidator<TRole, TKey>();
+            RoleValidator = new RoleValidator<TRole>();
         }
 
         /// <summary>
         ///     Persistence abstraction that the Manager operates against
         /// </summary>
-        protected IRoleStore<TRole, TKey> Store { get; private set; }
+        protected IRoleStore<TRole> Store { get; private set; }
 
         /// <summary>
         ///     Used to validate roles before persisting changes
         /// </summary>
-        public IRoleValidator<TRole, TKey> RoleValidator { get; set; }
+        public IRoleValidator<TRole> RoleValidator { get; set; }
 
         /// <summary>
         ///     Returns an IQueryable of roles if the store is an IQueryableRoleStore
@@ -63,7 +44,7 @@ namespace Microsoft.AspNet.Identity
         {
             get
             {
-                var queryableStore = Store as IQueryableRoleStore<TRole, TKey>;
+                var queryableStore = Store as IQueryableRoleStore<TRole>;
                 if (queryableStore == null)
                 {
                     throw new NotSupportedException(Resources.StoreNotIQueryableRoleStore);
@@ -80,7 +61,7 @@ namespace Microsoft.AspNet.Identity
             get
             {
                 ThrowIfDisposed();
-                return Store is IQueryableRoleStore<TRole, TKey>;
+                return Store is IQueryableRoleStore<TRole>;
             }
         }
 
@@ -185,10 +166,34 @@ namespace Microsoft.AspNet.Identity
         /// <param name="roleId"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<TRole> FindById(TKey roleId, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<TRole> FindById(string roleId, CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
             return await Store.FindById(roleId, cancellationToken);
+        }
+
+        /// <summary>
+        /// Return the name of the role
+        /// </summary>
+        /// <param name="role"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public virtual async Task<string> GetRoleName(TRole role, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            ThrowIfDisposed();
+            return await Store.GetRoleName(role, cancellationToken);
+        }
+
+        /// <summary>
+        /// Return the role id for a role
+        /// </summary>
+        /// <param name="role"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public virtual async Task<string> GetRoleId(TRole role, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            ThrowIfDisposed();
+            return await Store.GetRoleId(role, cancellationToken);
         }
 
         /// <summary>

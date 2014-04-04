@@ -7,8 +7,7 @@ namespace Microsoft.AspNet.Identity
     ///     Stores a user's password hash
     /// </summary>
     /// <typeparam name="TUser"></typeparam>
-    /// <typeparam name="TKey"></typeparam>
-    public interface IUserPasswordStore<TUser, in TKey> : IUserStore<TUser, TKey> where TUser : class, IUser<TKey>
+    public interface IUserPasswordStore<TUser> : IUserStore<TUser> where TUser : class
     {
         /// <summary>
         ///     Set the user password hash

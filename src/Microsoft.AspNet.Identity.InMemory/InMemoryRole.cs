@@ -2,7 +2,7 @@ using System;
 
 namespace Microsoft.AspNet.Identity.InMemory
 {
-    public class InMemoryRole : IRole<string>
+    public class InMemoryRole
     {
         public InMemoryRole(string roleName)
         {

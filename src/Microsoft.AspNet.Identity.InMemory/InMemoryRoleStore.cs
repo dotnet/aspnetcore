@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Identity.InMemory
 {
-    public class InMemoryRoleStore<TRole> : IQueryableRoleStore<TRole, string> where TRole : class,IRole<string>
+    public class InMemoryRoleStore<TRole> : IQueryableRoleStore<TRole> where TRole : InMemoryRole
 
     {
         private readonly Dictionary<string, TRole> _roles = new Dictionary<string, TRole>();
@@ -25,6 +25,16 @@ namespace Microsoft.AspNet.Identity.InMemory
             }
             _roles.Remove(role.Id);
             return Task.FromResult(0);
+        }
+
+        public Task<string> GetRoleId(TRole role, CancellationToken cancellationToken = new CancellationToken())
+        {
+            return Task.FromResult(role.Id);
+        }
+
+        public Task<string> GetRoleName(TRole role, CancellationToken cancellationToken = new CancellationToken())
+        {
+            return Task.FromResult(role.Name);
         }
 
         public Task Update(TRole role, CancellationToken cancellationToken = default(CancellationToken))

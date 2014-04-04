@@ -14,10 +14,7 @@ namespace Microsoft.AspNet.Identity
     ///     Validates users before they are saved
     /// </summary>
     /// <typeparam name="TUser"></typeparam>
-    /// <typeparam name="TKey"></typeparam>
-    public class UserValidator<TUser, TKey> : IUserValidator<TUser, TKey>
-        where TUser : class, IUser<TKey>
-        where TKey : IEquatable<TKey>
+    public class UserValidator<TUser> : IUserValidator<TUser> where TUser : class
     {
         /// <summary>
         ///     Constructor
@@ -44,7 +41,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> Validate(UserManager<TUser, TKey> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> Validate(UserManager<TUser> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (manager == null)
             {
@@ -105,29 +102,30 @@ namespace Microsoft.AspNet.Identity
             return IsUpper(c) || IsLower(c) || IsDigit(c) || c == '@' || c == '_' || c == '.';
         }
 
-        private async Task ValidateUserName(UserManager<TUser, TKey> manager, TUser user, ICollection<string> errors)
+        private async Task ValidateUserName(UserManager<TUser> manager, TUser user, ICollection<string> errors)
         {
-            if (string.IsNullOrWhiteSpace(user.UserName))
+            var userName = await manager.GetUserName(user);
+            if (string.IsNullOrWhiteSpace(userName))
             {
                 errors.Add(String.Format(CultureInfo.CurrentCulture, Resources.PropertyTooShort, "UserName"));
             }
-            else if (AllowOnlyAlphanumericUserNames && !user.UserName.All(IsAlphaNumeric))
+            else if (AllowOnlyAlphanumericUserNames && !userName.All(IsAlphaNumeric))
             {
                 // If any characters are not letters or digits, its an illegal user name
-                errors.Add(String.Format(CultureInfo.CurrentCulture, Resources.InvalidUserName, user.UserName));
+                errors.Add(String.Format(CultureInfo.CurrentCulture, Resources.InvalidUserName, userName));
             }
             else
             {
-                var owner = await manager.FindByName(user.UserName);
-                if (owner != null && !EqualityComparer<TKey>.Default.Equals(owner.Id, user.Id))
+                var owner = await manager.FindByName(userName);
+                if (owner != null && !string.Equals(await manager.GetUserId(owner), await manager.GetUserId(user)))
                 {
-                    errors.Add(String.Format(CultureInfo.CurrentCulture, Resources.DuplicateName, user.UserName));
+                    errors.Add(String.Format(CultureInfo.CurrentCulture, Resources.DuplicateName, userName));
                 }
             }
         }
 
         // make sure email is not empty, valid, and unique
-        private static async Task ValidateEmail(UserManager<TUser, TKey> manager, TUser user, List<string> errors)
+        private static async Task ValidateEmail(UserManager<TUser> manager, TUser user, List<string> errors)
         {
             var email = await manager.GetEmailStore().GetEmail(user);
             if (string.IsNullOrWhiteSpace(email))
@@ -147,7 +145,7 @@ namespace Microsoft.AspNet.Identity
             }
 #endif
             var owner = await manager.FindByEmail(email);
-            if (owner != null && !EqualityComparer<TKey>.Default.Equals(owner.Id, user.Id))
+            if (owner != null && !string.Equals(await manager.GetUserId(owner), await manager.GetUserId(user)))
             {
                 errors.Add(String.Format(CultureInfo.CurrentCulture, Resources.DuplicateEmail, email));
             }

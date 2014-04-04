@@ -8,8 +8,8 @@ using Microsoft.Data.Entity;
 namespace Microsoft.AspNet.Identity.Entity
 {
     public class RoleStore<TRole, TKey> : 
-        IQueryableRoleStore<TRole, TKey>
-        where TRole : class,IRole<TKey>
+        IQueryableRoleStore<TRole>
+        where TRole : IdentityRole
         where TKey : IEquatable<TKey>
     {
         private bool _disposed;
@@ -80,17 +80,34 @@ namespace Microsoft.AspNet.Identity.Entity
             await SaveChanges(cancellationToken);
         }
 
+        public Task<string> GetRoleId(TRole role, CancellationToken cancellationToken = new CancellationToken())
+        {
+            return Task.FromResult(role.Id);
+        }
+
+        public Task<string> GetRoleName(TRole role, CancellationToken cancellationToken = new CancellationToken())
+        {
+            return Task.FromResult(role.Name);
+        }
+
+
+        public virtual TKey ConvertId(string userId)
+        {
+            return (TKey)Convert.ChangeType(userId, typeof(TKey));
+        }
+
         /// <summary>
         ///     Find a role by id
         /// </summary>
         /// <param name="id"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task<TRole> FindById(TKey id, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<TRole> FindById(string id, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            return Roles.SingleOrDefaultAsync(r => r.Id.Equals(id), cancellationToken);
+            var roleId = ConvertId(id);
+            return Roles.SingleOrDefaultAsync(r => r.Id.Equals(roleId), cancellationToken);
             //return GetRoleAggregate(u => u.Id.Equals(id));
         }
 

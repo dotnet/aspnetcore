@@ -8,8 +8,7 @@ namespace Microsoft.AspNet.Identity
     ///     Interface that maps users to login providers, i.e. Google, Facebook, Twitter, Microsoft
     /// </summary>
     /// <typeparam name="TUser"></typeparam>
-    /// <typeparam name="TKey"></typeparam>
-    public interface IUserLoginStore<TUser, in TKey> : IUserStore<TUser, TKey> where TUser : class, IUser<TKey>
+    public interface IUserLoginStore<TUser> : IUserStore<TUser> where TUser : class
     {
         /// <summary>
         ///     Adds a user login with the specified provider and key

@@ -9,9 +9,7 @@ namespace Microsoft.AspNet.Identity
     /// </summary>
     /// <typeparam name="TRole"></typeparam>
     /// <typeparam name="TKey"></typeparam>
-    public interface IRoleValidator<TRole, TKey>
-        where TRole : class, IRole<TKey>
-        where TKey : IEquatable<TKey>
+    public interface IRoleValidator<TRole> where TRole : class
     {
         /// <summary>
         ///     Validate the user
@@ -20,6 +18,6 @@ namespace Microsoft.AspNet.Identity
         /// <param name="manager"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<IdentityResult> Validate(RoleManager<TRole, TKey> manager, TRole role, CancellationToken cancellationToken = default(CancellationToken));
+        Task<IdentityResult> Validate(RoleManager<TRole> manager, TRole role, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

@@ -7,8 +7,7 @@ namespace Microsoft.AspNet.Identity
     ///     Stores a user's phoneNumber
     /// </summary>
     /// <typeparam name="TUser"></typeparam>
-    /// <typeparam name="TKey"></typeparam>
-    public interface IUserPhoneNumberStore<TUser, in TKey> : IUserStore<TUser, TKey> where TUser : class, IUser<TKey>
+    public interface IUserPhoneNumberStore<TUser> : IUserStore<TUser> where TUser : class
     {
         /// <summary>
         ///     Set the user PhoneNumber

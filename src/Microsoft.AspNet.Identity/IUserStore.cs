@@ -9,8 +9,24 @@ namespace Microsoft.AspNet.Identity
     /// </summary>
     /// <typeparam name="TUser"></typeparam>
     /// <typeparam name="TKey"></typeparam>
-    public interface IUserStore<TUser, in TKey> : IDisposable where TUser : class, IUser<TKey>
+    public interface IUserStore<TUser> : IDisposable where TUser : class
     {
+        /// <summary>
+        ///     Returns the user id for a user
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<string> GetUserId(TUser user, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Returns the user's name
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<string> GetUserName(TUser user, CancellationToken cancellationToken = default(CancellationToken));
+
         /// <summary>
         ///     Insert a new user
         /// </summary>
@@ -41,14 +57,15 @@ namespace Microsoft.AspNet.Identity
         /// <param name="userId"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<TUser> FindById(TKey userId, CancellationToken cancellationToken = default(CancellationToken));
+        Task<TUser> FindById(string userId, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        ///     Find a user by name
+        ///     Returns the user associated with this name
         /// </summary>
-        /// <param name="userName"></param>
+        /// <param name="name"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<TUser> FindByName(string userName, CancellationToken cancellationToken = default(CancellationToken));
+        Task<TUser> FindByName(string name, CancellationToken cancellationToken = default(CancellationToken));
+
     }
 }

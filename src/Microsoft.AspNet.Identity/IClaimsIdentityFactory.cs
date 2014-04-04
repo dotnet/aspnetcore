@@ -9,10 +9,8 @@ namespace Microsoft.AspNet.Identity
     ///     Interface for creating a ClaimsIdentity from an IUser
     /// </summary>
     /// <typeparam name="TUser"></typeparam>
-    /// <typeparam name="TKey"></typeparam>
-    public interface IClaimsIdentityFactory<TUser, TKey>
-        where TUser : class, IUser<TKey>
-        where TKey : IEquatable<TKey>
+    public interface IClaimsIdentityFactory<TUser>
+        where TUser : class
     {
         /// <summary>
         ///     Create a ClaimsIdentity from an user using a UserManager
@@ -22,6 +20,6 @@ namespace Microsoft.AspNet.Identity
         /// <param name="authenticationType"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<ClaimsIdentity> Create(UserManager<TUser, TKey> manager, TUser user, string authenticationType, CancellationToken cancellationToken = default(CancellationToken));
+        Task<ClaimsIdentity> Create(UserManager<TUser> manager, TUser user, string authenticationType, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

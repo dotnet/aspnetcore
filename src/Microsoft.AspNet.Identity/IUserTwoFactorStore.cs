@@ -7,8 +7,7 @@ namespace Microsoft.AspNet.Identity
     ///     Stores whether two factor is enabled for a user
     /// </summary>
     /// <typeparam name="TUser"></typeparam>
-    /// <typeparam name="TKey"></typeparam>
-    public interface IUserTwoFactorStore<TUser, in TKey> : IUserStore<TUser, TKey> where TUser : class, IUser<TKey>
+    public interface IUserTwoFactorStore<TUser> : IUserStore<TUser> where TUser : class
     {
         /// <summary>
         ///     Sets whether two factor is enabled for the user

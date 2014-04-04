@@ -8,10 +8,7 @@ namespace Microsoft.AspNet.Identity
     ///     Used to validate a user
     /// </summary>
     /// <typeparam name="TUser"></typeparam>
-    /// <typeparam name="TKey"></typeparam>
-    public interface IUserValidator<TUser, TKey>
-        where TUser : class, IUser<TKey>
-        where TKey : IEquatable<TKey>
+    public interface IUserValidator<TUser> where TUser : class
     {
         /// <summary>
         ///     Validate the user
@@ -20,6 +17,6 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<IdentityResult> Validate(UserManager<TUser, TKey> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken));
+        Task<IdentityResult> Validate(UserManager<TUser> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

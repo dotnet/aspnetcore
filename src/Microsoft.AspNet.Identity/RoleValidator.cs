@@ -10,10 +10,7 @@ namespace Microsoft.AspNet.Identity
     ///     Validates roles before they are saved
     /// </summary>
     /// <typeparam name="TRole"></typeparam>
-    /// <typeparam name="TKey"></typeparam>
-    public class RoleValidator<TRole, TKey> : IRoleValidator<TRole, TKey>
-        where TRole : class, IRole<TKey>
-        where TKey : IEquatable<TKey>
+    public class RoleValidator<TRole> : IRoleValidator<TRole> where TRole : class
     {
         /// <summary>
         ///     Validates a role before saving
@@ -22,7 +19,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="role"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> Validate(RoleManager<TRole, TKey> manager, TRole role, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> Validate(RoleManager<TRole> manager, TRole role, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (manager == null)
             {
@@ -41,19 +38,20 @@ namespace Microsoft.AspNet.Identity
             return IdentityResult.Success;
         }
 
-        private static async Task ValidateRoleName(RoleManager<TRole, TKey> manager, TRole role,
+        private static async Task ValidateRoleName(RoleManager<TRole> manager, TRole role,
             ICollection<string> errors)
         {
-            if (string.IsNullOrWhiteSpace(role.Name))
+            var roleName = await manager.GetRoleName(role);
+            if (string.IsNullOrWhiteSpace(roleName))
             {
                 errors.Add(String.Format(CultureInfo.CurrentCulture, Resources.PropertyTooShort, "Name"));
             }
             else
             {
-                var owner = await manager.FindByName(role.Name);
-                if (owner != null && !EqualityComparer<TKey>.Default.Equals(owner.Id, role.Id))
+                var owner = await manager.FindByName(roleName);
+                if (owner != null && !string.Equals(await manager.GetRoleId(owner), await manager.GetRoleId(role)))
                 {
-                    errors.Add(String.Format(CultureInfo.CurrentCulture, Resources.DuplicateName, role.Name));
+                    errors.Add(String.Format(CultureInfo.CurrentCulture, Resources.DuplicateName, roleName));
                 }
             }
         }

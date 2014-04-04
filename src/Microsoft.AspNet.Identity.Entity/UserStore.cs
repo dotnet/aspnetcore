@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Claims;
@@ -16,16 +17,16 @@ namespace Microsoft.AspNet.Identity.Entity
     }
 
     public class UserStore<TUser, TRole, TKey, TUserLogin, TUserRole, TUserClaim> :
-        IUserLoginStore<TUser, TKey>,
-        IUserClaimStore<TUser, TKey>,
-        IUserRoleStore<TUser, TKey>,
-        IUserPasswordStore<TUser, TKey>,
-        IUserSecurityStampStore<TUser, TKey>,
-        IQueryableUserStore<TUser, TKey>,
-        IUserEmailStore<TUser, TKey>,
-        IUserPhoneNumberStore<TUser, TKey>,
-        IUserTwoFactorStore<TUser, TKey>,
-        IUserLockoutStore<TUser, TKey>
+        IUserLoginStore<TUser>,
+        IUserClaimStore<TUser>,
+        IUserRoleStore<TUser>,
+        IUserPasswordStore<TUser>,
+        IUserSecurityStampStore<TUser>,
+        IQueryableUserStore<TUser>,
+        IUserEmailStore<TUser>,
+        IUserPhoneNumberStore<TUser>,
+        IUserTwoFactorStore<TUser>,
+        IUserLockoutStore<TUser>
         where TKey : IEquatable<TKey>
         where TUser : IdentityUser<TKey, TUserLogin, TUserRole, TUserClaim>
         where TRole : IdentityRole<TKey, TUserRole>
@@ -65,6 +66,16 @@ namespace Microsoft.AspNet.Identity.Entity
                 //.Include(u => u.Logins)
         }
 
+        public Task<string> GetUserId(TUser user, CancellationToken cancellationToken = new CancellationToken())
+        {
+            return Task.FromResult(Convert.ToString(user.Id, CultureInfo.InvariantCulture));
+        }
+
+        public Task<string> GetUserName(TUser user, CancellationToken cancellationToken = new CancellationToken())
+        {
+            return Task.FromResult(user.UserName);
+        }
+
         public async virtual Task Create(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -101,17 +112,23 @@ namespace Microsoft.AspNet.Identity.Entity
             await SaveChanges(cancellationToken);
         }
 
+        public virtual TKey ConvertUserId(string userId)
+        {
+            return (TKey)Convert.ChangeType(userId, typeof(TKey));
+        }
+
         /// <summary>
         ///     Find a user by id
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task<TUser> FindById(TKey userId, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<TUser> FindById(string userId, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            return Users.SingleOrDefaultAsync(u => u.Id.Equals(userId), cancellationToken);
+            var id = ConvertUserId(userId);
+            return Users.SingleOrDefaultAsync(u => u.Id.Equals(id), cancellationToken);
             // TODO: return GetUserAggregate(u => u.Id.Equals(userId), cancellationToken);
         }
 

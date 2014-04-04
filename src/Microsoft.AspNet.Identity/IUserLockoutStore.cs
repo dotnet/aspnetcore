@@ -8,8 +8,7 @@ namespace Microsoft.AspNet.Identity
     ///     Stores information which can be used to implement account lockout, including access failures and lockout status
     /// </summary>
     /// <typeparam name="TUser"></typeparam>
-    /// <typeparam name="TKey"></typeparam>
-    public interface IUserLockoutStore<TUser, in TKey> : IUserStore<TUser, TKey> where TUser : class, IUser<TKey>
+    public interface IUserLockoutStore<TUser> : IUserStore<TUser> where TUser : class
     {
         /// <summary>
         ///     Returns the DateTimeOffset that represents the end of a user's lockout, any time in the past should be considered

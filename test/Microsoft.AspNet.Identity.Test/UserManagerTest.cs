@@ -13,9 +13,9 @@ namespace Microsoft.AspNet.Identity.Test
 {
     public class UserManagerTest
     {
-        private class TestManager : UserManager<TestUser, string>
+        private class TestManager : UserManager<TestUser>
         {
-            public IUserStore<TestUser, string> StorePublic { get { return base.Store; } }
+            public IUserStore<TestUser> StorePublic { get { return base.Store; } }
 
             public TestManager(IServiceProvider provider) : base(provider) { }
         }
@@ -36,11 +36,11 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task CreateCallsStore()
         {
             // Setup
-            var store = new Mock<IUserStore<TestUser, string>>();
+            var store = new Mock<IUserStore<TestUser>>();
             var user = new TestUser { UserName = "Foo" };
             store.Setup(s => s.Create(user, CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
-            var validator = new Mock<UserValidator<TestUser, string>>();
-            var userManager = new UserManager<TestUser, string>(store.Object);
+            var validator = new Mock<UserValidator<TestUser>>();
+            var userManager = new UserManager<TestUser>(store.Object);
             validator.Setup(v => v.Validate(userManager, user, CancellationToken.None)).Returns(Task.FromResult(IdentityResult.Success)).Verifiable();
             userManager.UserValidator = validator.Object;
 
@@ -56,10 +56,10 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task DeleteCallsStore()
         {
             // Setup
-            var store = new Mock<IUserStore<TestUser, string>>();
+            var store = new Mock<IUserStore<TestUser>>();
             var user = new TestUser { UserName = "Foo" };
             store.Setup(s => s.Delete(user, CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
-            var userManager = new UserManager<TestUser, string>(store.Object);
+            var userManager = new UserManager<TestUser>(store.Object);
 
             // Act
             var result = await userManager.Delete(user);
@@ -73,11 +73,11 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task UpdateCallsStore()
         {
             // Setup
-            var store = new Mock<IUserStore<TestUser, string>>();
+            var store = new Mock<IUserStore<TestUser>>();
             var user = new TestUser { UserName = "Foo" };
             store.Setup(s => s.Update(user, CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
-            var validator = new Mock<UserValidator<TestUser, string>>();
-            var userManager = new UserManager<TestUser, string>(store.Object);
+            var validator = new Mock<UserValidator<TestUser>>();
+            var userManager = new UserManager<TestUser>(store.Object);
             validator.Setup(v => v.Validate(userManager, user, CancellationToken.None)).Returns(Task.FromResult(IdentityResult.Success)).Verifiable();
             userManager.UserValidator = validator.Object;
 
@@ -93,10 +93,10 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task FindByIdCallsStore()
         {
             // Setup
-            var store = new Mock<IUserStore<TestUser, string>>();
+            var store = new Mock<IUserStore<TestUser>>();
             var user = new TestUser { UserName = "Foo" };
             store.Setup(s => s.FindById(user.Id, CancellationToken.None)).Returns(Task.FromResult(user)).Verifiable();
-            var userManager = new UserManager<TestUser, string>(store.Object);
+            var userManager = new UserManager<TestUser>(store.Object);
 
             // Act
             var result = await userManager.FindById(user.Id);
@@ -110,10 +110,10 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task FindByNameCallsStore()
         {
             // Setup
-            var store = new Mock<IUserStore<TestUser, string>>();
+            var store = new Mock<IUserStore<TestUser>>();
             var user = new TestUser {UserName="Foo"};
             store.Setup(s => s.FindByName(user.UserName, CancellationToken.None)).Returns(Task.FromResult(user)).Verifiable();
-            var userManager = new UserManager<TestUser, string>(store.Object);
+            var userManager = new UserManager<TestUser>(store.Object);
 
             // Act
             var result = await userManager.FindByName(user.UserName);
@@ -128,21 +128,21 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public async Task CheckPasswordWithNullUserReturnsFalse()
         {
-            var manager = new UserManager<TestUser, string>(new EmptyStore());
+            var manager = new UserManager<TestUser>(new EmptyStore());
             Assert.False(await manager.CheckPassword(null, "whatevs"));
         }
 
         [Fact]
         public async Task FindWithUnknownUserAndPasswordReturnsNull()
         {
-            var manager = new UserManager<TestUser, string>(new EmptyStore());
+            var manager = new UserManager<TestUser>(new EmptyStore());
             Assert.Null(await manager.Find("bogus", "whatevs"));
         }
 
         [Fact]
         public void UsersQueryableFailWhenStoreNotImplemented()
         {
-            var manager = new UserManager<TestUser, string>(new NoopUserStore());
+            var manager = new UserManager<TestUser>(new NoopUserStore());
             Assert.False(manager.SupportsQueryableUsers);
             Assert.Throws<NotSupportedException>(() => manager.Users.Count());
         }
@@ -150,7 +150,7 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public async Task UsersEmailMethodsFailWhenStoreNotImplemented()
         {
-            var manager = new UserManager<TestUser, string>(new NoopUserStore());
+            var manager = new UserManager<TestUser>(new NoopUserStore());
             Assert.False(manager.SupportsUserEmail);
             await Assert.ThrowsAsync<NotSupportedException>(() => manager.FindByEmail(null));
             await Assert.ThrowsAsync<NotSupportedException>(() => manager.SetEmail(null, null));
@@ -162,7 +162,7 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public async Task UsersPhoneNumberMethodsFailWhenStoreNotImplemented()
         {
-            var manager = new UserManager<TestUser, string>(new NoopUserStore());
+            var manager = new UserManager<TestUser>(new NoopUserStore());
             Assert.False(manager.SupportsUserPhoneNumber);
             await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.SetPhoneNumber(null, null));
             await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.SetPhoneNumber(null, null));
@@ -172,7 +172,7 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public async Task TokenMethodsThrowWithNoTokenProvider()
         {
-            var manager = new UserManager<TestUser, string>(new NoopUserStore());
+            var manager = new UserManager<TestUser>(new NoopUserStore());
             await Assert.ThrowsAsync<NotSupportedException>(
                 async () => await manager.GenerateUserToken(null, null));
             await Assert.ThrowsAsync<NotSupportedException>(
@@ -182,7 +182,7 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public async Task PasswordMethodsFailWhenStoreNotImplemented()
         {
-            var manager = new UserManager<TestUser, string>(new NoopUserStore());
+            var manager = new UserManager<TestUser>(new NoopUserStore());
             Assert.False(manager.SupportsUserPassword);
             await Assert.ThrowsAsync<NotSupportedException>(() => manager.Create(null, null));
             await Assert.ThrowsAsync<NotSupportedException>(() => manager.ChangePassword(null, null, null));
@@ -195,7 +195,7 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public async Task SecurityStampMethodsFailWhenStoreNotImplemented()
         {
-            var manager = new UserManager<TestUser, string>(new NoopUserStore());
+            var manager = new UserManager<TestUser>(new NoopUserStore());
             Assert.False(manager.SupportsUserSecurityStamp);
             await Assert.ThrowsAsync<NotSupportedException>(() => manager.UpdateSecurityStamp("bogus"));
             await Assert.ThrowsAsync<NotSupportedException>(() => manager.GetSecurityStamp("bogus"));
@@ -210,7 +210,7 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public async Task LoginMethodsFailWhenStoreNotImplemented()
         {
-            var manager = new UserManager<TestUser, string>(new NoopUserStore());
+            var manager = new UserManager<TestUser>(new NoopUserStore());
             Assert.False(manager.SupportsUserLogin);
             await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.AddLogin("bogus", null));
             await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.RemoveLogin("bogus", null));
@@ -221,7 +221,7 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public async Task ClaimMethodsFailWhenStoreNotImplemented()
         {
-            var manager = new UserManager<TestUser, string>(new NoopUserStore());
+            var manager = new UserManager<TestUser>(new NoopUserStore());
             Assert.False(manager.SupportsUserClaim);
             await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.AddClaim("bogus", null));
             await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.RemoveClaim("bogus", null));
@@ -231,7 +231,7 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public async Task TwoFactorStoreMethodsFailWhenStoreNotImplemented()
         {
-            var manager = new UserManager<TestUser, string>(new NoopUserStore());
+            var manager = new UserManager<TestUser>(new NoopUserStore());
             Assert.False(manager.SupportsUserTwoFactor);
             await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetTwoFactorEnabled("bogus"));
             await
@@ -241,7 +241,7 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public async Task LockoutStoreMethodsFailWhenStoreNotImplemented()
         {
-            var manager = new UserManager<TestUser, string>(new NoopUserStore());
+            var manager = new UserManager<TestUser>(new NoopUserStore());
             Assert.False(manager.SupportsUserLockout);
             await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetLockoutEnabled("bogus"));
             await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.SetLockoutEnabled("bogus", true));
@@ -254,7 +254,7 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public async Task RoleMethodsFailWhenStoreNotImplemented()
         {
-            var manager = new UserManager<TestUser, string>(new NoopUserStore());
+            var manager = new UserManager<TestUser>(new NoopUserStore());
             Assert.False(manager.SupportsUserRole);
             await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.AddToRole("bogus", null));
             await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetRoles("bogus"));
@@ -265,7 +265,7 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public void DisposeAfterDisposeDoesNotThrow()
         {
-            var manager = new UserManager<TestUser, string>(new NoopUserStore());
+            var manager = new UserManager<TestUser>(new NoopUserStore());
             manager.Dispose();
             manager.Dispose();
         }
@@ -274,7 +274,7 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task PasswordValidatorBlocksCreate()
         {
             // TODO: Can switch to Mock eventually
-            var manager = new UserManager<TestUser, string>(new EmptyStore())
+            var manager = new UserManager<TestUser>(new EmptyStore())
             {
                 PasswordValidator = new BadPasswordValidtor()
             };
@@ -286,10 +286,10 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task ManagerPublicNullChecks()
         {
             Assert.Throws<ArgumentNullException>("store",
-                () => new UserManager<TestUser, string>((IUserStore<TestUser, string>) null));
+                () => new UserManager<TestUser>((IUserStore<TestUser>) null));
             Assert.Throws<ArgumentNullException>("serviceProvider",
-                () => new UserManager<TestUser, string>((IServiceProvider)null));
-            var manager = new UserManager<TestUser, string>(new NotImplementedStore());
+                () => new UserManager<TestUser>((IServiceProvider)null));
+            var manager = new UserManager<TestUser>(new NotImplementedStore());
             Assert.Throws<ArgumentNullException>(() => manager.ClaimsIdentityFactory = null);
             Assert.Throws<ArgumentNullException>(() => manager.PasswordHasher = null);
             await
@@ -317,7 +317,7 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public async Task MethodsFailWithUnknownUserTest()
         {
-            var manager = new UserManager<TestUser, string>(new EmptyStore())
+            var manager = new UserManager<TestUser>(new EmptyStore())
             {
                 UserTokenProvider = new NoOpTokenProvider()
             };
@@ -413,7 +413,7 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public async Task MethodsThrowWhenDisposedTest()
         {
-            var manager = new UserManager<TestUser, string>(new NoopUserStore());
+            var manager = new UserManager<TestUser>(new NoopUserStore());
             manager.Dispose();
             Assert.Throws<ObjectDisposedException>(() => manager.ClaimsIdentityFactory);
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.AddClaim("bogus", null));
@@ -459,15 +459,15 @@ namespace Microsoft.AspNet.Identity.Test
         }
 
         private class EmptyStore :
-            IUserPasswordStore<TestUser, string>,
-            IUserClaimStore<TestUser, string>,
-            IUserLoginStore<TestUser, string>,
-            IUserEmailStore<TestUser, string>,
-            IUserPhoneNumberStore<TestUser, string>,
-            IUserLockoutStore<TestUser, string>,
-            IUserTwoFactorStore<TestUser, string>,
-            IUserRoleStore<TestUser, string>,
-            IUserSecurityStampStore<TestUser, string>
+            IUserPasswordStore<TestUser>,
+            IUserClaimStore<TestUser>,
+            IUserLoginStore<TestUser>,
+            IUserEmailStore<TestUser>,
+            IUserPhoneNumberStore<TestUser>,
+            IUserLockoutStore<TestUser>,
+            IUserTwoFactorStore<TestUser>,
+            IUserRoleStore<TestUser>,
+            IUserSecurityStampStore<TestUser>
         {
             public Task<IList<Claim>> GetClaims(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
@@ -667,40 +667,50 @@ namespace Microsoft.AspNet.Identity.Test
             {
                 return Task.FromResult(false);
             }
+
+            public Task<string> GetUserId(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                return Task.FromResult<string>(null);
+            }
+
+            public Task<string> GetUserName(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                return Task.FromResult<string>(null);
+            }
         }
 
-        private class NoOpTokenProvider : IUserTokenProvider<TestUser, string>
+        private class NoOpTokenProvider : IUserTokenProvider<TestUser>
         {
-            public Task<string> Generate(string purpose, UserManager<TestUser, string> manager, TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> Generate(string purpose, UserManager<TestUser> manager, TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult("Test");
             }
 
-            public Task<bool> Validate(string purpose, string token, UserManager<TestUser, string> manager,
+            public Task<bool> Validate(string purpose, string token, UserManager<TestUser> manager,
                 TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(true);
             }
 
-            public Task Notify(string token, UserManager<TestUser, string> manager, TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task Notify(string token, UserManager<TestUser> manager, TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task<bool> IsValidProviderForUser(UserManager<TestUser, string> manager, TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> IsValidProviderForUser(UserManager<TestUser> manager, TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(true);
             }
         }
 
         private class NotImplementedStore :
-            IUserPasswordStore<TestUser, string>,
-            IUserClaimStore<TestUser, string>,
-            IUserLoginStore<TestUser, string>,
-            IUserEmailStore<TestUser, string>,
-            IUserPhoneNumberStore<TestUser, string>,
-            IUserLockoutStore<TestUser, string>,
-            IUserTwoFactorStore<TestUser, string>
+            IUserPasswordStore<TestUser>,
+            IUserClaimStore<TestUser>,
+            IUserLoginStore<TestUser>,
+            IUserEmailStore<TestUser>,
+            IUserPhoneNumberStore<TestUser>,
+            IUserLockoutStore<TestUser>,
+            IUserTwoFactorStore<TestUser>
         {
             public Task<IList<Claim>> GetClaims(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
@@ -798,6 +808,16 @@ namespace Microsoft.AspNet.Identity.Test
             }
 
             public void Dispose()
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<string> GetUserId(TestUser user, CancellationToken cancellationToken = new CancellationToken())
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<string> GetUserName(TestUser user, CancellationToken cancellationToken = new CancellationToken())
             {
                 throw new NotImplementedException();
             }

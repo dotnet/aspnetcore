@@ -7,8 +7,7 @@ namespace Microsoft.AspNet.Identity
     ///     Stores a user's email
     /// </summary>
     /// <typeparam name="TUser"></typeparam>
-    /// <typeparam name="TKey"></typeparam>
-    public interface IUserEmailStore<TUser, in TKey> : IUserStore<TUser, TKey> where TUser : class, IUser<TKey>
+    public interface IUserEmailStore<TUser> : IUserStore<TUser> where TUser : class
     {
         /// <summary>
         ///     Set the user email

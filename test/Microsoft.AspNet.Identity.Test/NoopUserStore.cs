@@ -3,8 +3,18 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Identity.Test
 {
-    public class NoopUserStore : IUserStore<TestUser, string>
+    public class NoopUserStore : IUserStore<TestUser>
     {
+        public Task<string> GetUserId(TestUser user, CancellationToken cancellationToken = new CancellationToken())
+        {
+            return Task.FromResult(user.Id);
+        }
+
+        public Task<string> GetUserName(TestUser user, CancellationToken cancellationToken = new CancellationToken())
+        {
+            return Task.FromResult(user.UserName);
+        }
+
         public Task Create(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Task.FromResult(0);

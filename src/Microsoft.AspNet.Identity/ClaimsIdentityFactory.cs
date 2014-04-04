@@ -10,10 +10,8 @@ namespace Microsoft.AspNet.Identity
     ///     Creates a ClaimsIdentity from a User
     /// </summary>
     /// <typeparam name="TUser"></typeparam>
-    /// <typeparam name="TKey"></typeparam>
-    public class ClaimsIdentityFactory<TUser, TKey> : IClaimsIdentityFactory<TUser, TKey>
-        where TUser : class, IUser<TKey>
-        where TKey : IEquatable<TKey>
+    public class ClaimsIdentityFactory<TUser> : IClaimsIdentityFactory<TUser>
+        where TUser : class
     {
         /// <summary>
         ///     ClaimType used for the security stamp by default
@@ -57,8 +55,9 @@ namespace Microsoft.AspNet.Identity
         /// <param name="manager"></param>
         /// <param name="user"></param>
         /// <param name="authenticationType"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<ClaimsIdentity> Create(UserManager<TUser, TKey> manager, TUser user,
+        public virtual async Task<ClaimsIdentity> Create(UserManager<TUser> manager, TUser user,
             string authenticationType, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (manager == null)
@@ -69,16 +68,18 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
+            var userId = await manager.GetUserId(user, cancellationToken);
+            var userName = await manager.GetUserName(user, cancellationToken);
             var id = new ClaimsIdentity(authenticationType, UserNameClaimType, RoleClaimType);
-            id.AddClaim(new Claim(UserIdClaimType, Convert.ToString(user.Id, CultureInfo.InvariantCulture), ClaimValueTypes.String));
-            id.AddClaim(new Claim(UserNameClaimType, user.UserName, ClaimValueTypes.String));
+            id.AddClaim(new Claim(UserIdClaimType, userId));
+            id.AddClaim(new Claim(UserNameClaimType, userName, ClaimValueTypes.String));
             if (manager.SupportsUserSecurityStamp)
             {
-                id.AddClaim(new Claim(SecurityStampClaimType, await manager.GetSecurityStamp(user.Id, cancellationToken)));
+                id.AddClaim(new Claim(SecurityStampClaimType, await manager.GetSecurityStamp(userId, cancellationToken)));
             }
             if (manager.SupportsUserRole)
             {
-                var roles = await manager.GetRoles(user.Id, cancellationToken);
+                var roles = await manager.GetRoles(userId, cancellationToken);
                 foreach (var roleName in roles)
                 {
                     id.AddClaim(new Claim(RoleClaimType, roleName, ClaimValueTypes.String));
@@ -86,7 +87,7 @@ namespace Microsoft.AspNet.Identity
             }
             if (manager.SupportsUserClaim)
             {
-                id.AddClaims(await manager.GetClaims(user.Id, cancellationToken));
+                id.AddClaims(await manager.GetClaims(userId, cancellationToken));
             }
             return id;
         }

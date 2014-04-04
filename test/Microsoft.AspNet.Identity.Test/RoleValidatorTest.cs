@@ -10,8 +10,8 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task ValidateThrowsWithNull()
         {
             // Setup
-            var manager = new RoleManager<TestRole, string>(new NoopRoleStore());
-            var validator = new RoleValidator<TestRole, string>();
+            var manager = new RoleManager<TestRole>(new NoopRoleStore());
+            var validator = new RoleValidator<TestRole>();
 
             // Act
             // Assert
@@ -25,8 +25,8 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task ValidateFailsWithTooShortRoleName(string input)
         {
             // Setup
-            var manager = new RoleManager<TestRole, string>(new NoopRoleStore());
-            var validator = new RoleValidator<TestRole, string>();
+            var manager = new RoleManager<TestRole>(new NoopRoleStore());
+            var validator = new RoleValidator<TestRole>();
             var user = new TestRole {Name = input};
 
             // Act

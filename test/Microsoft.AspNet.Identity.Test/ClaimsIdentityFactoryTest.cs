@@ -13,8 +13,8 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public async Task CreateIdentityNullChecks()
         {
-            var factory = new ClaimsIdentityFactory<TestUser, string>();
-            var manager = new UserManager<TestUser, string>(new NoopUserStore());
+            var factory = new ClaimsIdentityFactory<TestUser>();
+            var manager = new UserManager<TestUser>(new NoopUserStore());
             await Assert.ThrowsAsync<ArgumentNullException>("manager",
                 async () => await factory.Create(null, null, "whatever"));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
@@ -33,17 +33,19 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task EnsureClaimsIdentityHasExpectedClaims(bool supportRoles, bool supportClaims)
         {
             // Setup
-            var userManager = new Mock<UserManager<TestUser, string>>();
+            var userManager = new Mock<UserManager<TestUser>>();
             var user = new TestUser { UserName = "Foo" };
             userManager.Setup(m => m.SupportsUserRole).Returns(supportRoles);
             userManager.Setup(m => m.SupportsUserClaim).Returns(supportClaims);
+            userManager.Setup(m => m.GetUserId(user, CancellationToken.None)).ReturnsAsync(user.Id);
+            userManager.Setup(m => m.GetUserName(user, CancellationToken.None)).ReturnsAsync(user.UserName);
             var roleClaims = new[] { "Admin", "Local" }; 
             userManager.Setup(m => m.GetRoles(user.Id, CancellationToken.None)).ReturnsAsync(roleClaims);
             var userClaims = new[] { new Claim("Whatever", "Value"), new Claim("Whatever2", "Value2") };
             userManager.Setup(m => m.GetClaims(user.Id, CancellationToken.None)).ReturnsAsync(userClaims);
 
             const string authType = "Microsoft.AspNet.Identity";
-            var factory = new ClaimsIdentityFactory<TestUser, string>();
+            var factory = new ClaimsIdentityFactory<TestUser>();
 
             // Act
             var identity = await factory.Create(userManager.Object, user, authType);

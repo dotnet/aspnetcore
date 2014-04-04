@@ -6,16 +6,7 @@ namespace Microsoft.AspNet.Identity
     ///     Interface that exposes an IQueryable roles
     /// </summary>
     /// <typeparam name="TRole"></typeparam>
-    public interface IQueryableRoleStore<TRole> : IQueryableRoleStore<TRole, string> where TRole : IRole<string>
-    {
-    }
-
-    /// <summary>
-    ///     Interface that exposes an IQueryable roles
-    /// </summary>
-    /// <typeparam name="TRole"></typeparam>
-    /// <typeparam name="TKey"></typeparam>
-    public interface IQueryableRoleStore<TRole, in TKey> : IRoleStore<TRole, TKey> where TRole : IRole<TKey>
+    public interface IQueryableRoleStore<TRole> : IRoleStore<TRole> where TRole : class
     {
         /// <summary>
         ///     IQueryable users

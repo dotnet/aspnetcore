@@ -7,8 +7,7 @@ namespace Microsoft.AspNet.Identity
     ///     Stores a user's security stamp
     /// </summary>
     /// <typeparam name="TUser"></typeparam>
-    /// <typeparam name="TKey"></typeparam>
-    public interface IUserSecurityStampStore<TUser, in TKey> : IUserStore<TUser, TKey> where TUser : class, IUser<TKey>
+    public interface IUserSecurityStampStore<TUser> : IUserStore<TUser> where TUser : class
     {
         /// <summary>
         ///     Set the security stamp for the user

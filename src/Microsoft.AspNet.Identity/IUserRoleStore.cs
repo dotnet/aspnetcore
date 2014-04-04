@@ -8,8 +8,7 @@ namespace Microsoft.AspNet.Identity
     ///     Interface that maps users to their roles
     /// </summary>
     /// <typeparam name="TUser"></typeparam>
-    /// <typeparam name="TKey"></typeparam>
-    public interface IUserRoleStore<TUser, in TKey> : IUserStore<TUser, TKey> where TUser : class, IUser<TKey>
+    public interface IUserRoleStore<TUser> : IUserStore<TUser> where TUser : class
     {
         /// <summary>
         ///     Adds a user to role

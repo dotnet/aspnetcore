@@ -7,9 +7,7 @@ using Microsoft.AspNet.Abstractions.Security;
 
 namespace Microsoft.AspNet.Identity.Security
 {
-    public class SignInManager<TUser, TKey>
-        where TUser : class, IUser<TKey>
-        where TKey : IEquatable<TKey>
+    public class SignInManager<TUser> where TUser : class
     {
         private string _authType;
         public string AuthenticationType
@@ -18,7 +16,7 @@ namespace Microsoft.AspNet.Identity.Security
             set { _authType = value; }
         }
 
-        public UserManager<TUser, TKey> UserManager { get; set; }
+        public UserManager<TUser> UserManager { get; set; }
         public HttpContext Context { get; set; }
 
 
@@ -139,7 +137,9 @@ namespace Microsoft.AspNet.Identity.Security
             {
                 return SignInStatus.Failure;
             }
-            if (await UserManager.IsLockedOut(user.Id))
+            // TODO: overloads taking TUser?
+            var userId = await UserManager.GetUserId(user);
+            if (await UserManager.IsLockedOut(userId))
             {
                 return SignInStatus.LockedOut;
             }
@@ -152,8 +152,8 @@ namespace Microsoft.AspNet.Identity.Security
             if (shouldLockout)
             {
                 // If lockout is requested, increment access failed count which might lock out the user
-                await UserManager.AccessFailed(user.Id);
-                if (await UserManager.IsLockedOut(user.Id))
+                await UserManager.AccessFailed(userId);
+                if (await UserManager.IsLockedOut(userId))
                 {
                     return SignInStatus.LockedOut;
                 }

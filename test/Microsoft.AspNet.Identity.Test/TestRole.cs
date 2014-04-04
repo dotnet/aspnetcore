@@ -1,6 +1,6 @@
 namespace Microsoft.AspNet.Identity.Test
 {
-    public class TestRole : IRole<string>
+    public class TestRole
     {
         public string Id { get; private set; }
         public string Name { get; set; }

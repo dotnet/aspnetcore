@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Identity.Entity
         }
     }
 
-    public class IdentityUser<TKey, TLogin, TRole, TClaim> : IUser<TKey>
+    public class IdentityUser<TKey, TLogin, TRole, TClaim>
         where TLogin : IdentityUserLogin<TKey>
         where TRole : IdentityUserRole<TKey>
         where TClaim : IdentityUserClaim<TKey>

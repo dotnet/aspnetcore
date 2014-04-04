@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Identity.Entity
     /// </summary>
     /// <typeparam name="TKey"></typeparam>
     /// <typeparam name="TUserRole"></typeparam>
-    public class IdentityRole<TKey, TUserRole> : IRole<TKey> 
+    public class IdentityRole<TKey, TUserRole> 
         where TUserRole : IdentityUserRole<TKey>
         where TKey : IEquatable<TKey>
     {

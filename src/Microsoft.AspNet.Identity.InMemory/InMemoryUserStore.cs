@@ -8,16 +8,16 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNet.Identity.InMemory
 {
     public class InMemoryUserStore<TUser> :
-        IUserLoginStore<TUser, string>,
-        IUserRoleStore<TUser, string>,
-        IUserClaimStore<TUser, string>,
-        IUserPasswordStore<TUser, string>,
-        IUserSecurityStampStore<TUser, string>,
-        IUserEmailStore<TUser, string>,
-        IUserLockoutStore<TUser, string>,
-        IUserPhoneNumberStore<TUser, string>,
-        IQueryableUserStore<TUser, string>,
-        IUserTwoFactorStore<TUser, string>
+        IUserLoginStore<TUser>,
+        IUserRoleStore<TUser>,
+        IUserClaimStore<TUser>,
+        IUserPasswordStore<TUser>,
+        IUserSecurityStampStore<TUser>,
+        IUserEmailStore<TUser>,
+        IUserLockoutStore<TUser>,
+        IUserPhoneNumberStore<TUser>,
+        IQueryableUserStore<TUser>,
+        IUserTwoFactorStore<TUser>
         where TUser : InMemoryUser
     {
         private readonly Dictionary<UserLoginInfo, TUser> _logins =
@@ -147,6 +147,16 @@ namespace Microsoft.AspNet.Identity.InMemory
                 return Task.FromResult(_logins[login]);
             }
             return Task.FromResult<TUser>(null);
+        }
+
+        public Task<string> GetUserId(TUser user, CancellationToken cancellationToken = new CancellationToken())
+        {
+            return Task.FromResult(user.Id);
+        }
+
+        public Task<string> GetUserName(TUser user, CancellationToken cancellationToken = new CancellationToken())
+        {
+            return Task.FromResult(user.UserName);
         }
 
         public Task Create(TUser user, CancellationToken cancellationToken = default(CancellationToken))
