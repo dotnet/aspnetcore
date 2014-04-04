@@ -68,7 +68,7 @@
         <p>
             Go to our cool travel reservation system.
         </p>
-        <p><a class="btn btn-default" href="@Url.Action("Fly", "Flight", new { area = "Travel" })">Reserve Now</a></p>
+        <p>@Html.ActionLink("Reserve Now", "Fly", "Flight", new { area = "Travel" }, new { @class = "btn btn-default" })</p>
     </div>
     <div class="col-md-4">
         <h2>Get more libraries</h2>

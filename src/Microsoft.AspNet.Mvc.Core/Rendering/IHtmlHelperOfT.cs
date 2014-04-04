@@ -32,6 +32,38 @@ namespace Microsoft.AspNet.Mvc.Rendering
         ViewDataDictionary<TModel> ViewData { get; }
 
         /// <summary>
+        /// Returns an anchor element (a element) that contains a url path to the specified action.
+        /// </summary>
+        /// <param name="linkText">The inner text of the anchor element.</param>
+        /// <param name="actionName">The name of the action.</param>
+        /// <param name="controllerName">The name of the controller.</param>
+        /// <param name="protocol">The protocol for the URL, such as &quot;http&quot; or &quot;https&quot;.</param>
+        /// <param name="hostname">The host name for the URL.</param>
+        /// <param name="fragment">The URL fragment name (the anchor name).</param>
+        /// <param name="routeValues">
+        /// An object that contains the parameters for a route. The parameters are retrieved through reflection by 
+        /// examining the properties of the object. This object is typically created using object initializer syntax. 
+        /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the route parameters.
+        /// </param>
+        /// <param name="htmlAttributes">
+        /// An object that contains the HTML attributes to set for the element. Alternatively, an 
+        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>
+        /// An anchor element (a element).
+        /// </returns>
+        HtmlString ActionLink(
+            [NotNull] string linkText,
+            string actionName,
+            string controllerName,
+            string protocol,
+            string hostname,
+            string fragment,
+            object routeValues,
+            object htmlAttributes);
+        
+
+        /// <summary>
         /// Writes an opening <form> tag to the response. When the user submits the form,
         /// the request will be processed by an action method.
         /// </summary>

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq.Expressions;
 using System.Net;
 using System.Reflection;
 using System.Text;
@@ -87,6 +86,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         protected IModelMetadataProvider MetadataProvider { get; private set; }
+
+        public HtmlString ActionLink(
+            [NotNull] string linkText, 
+            string actionName, 
+            string controllerName, 
+            string protocol, 
+            string hostname, 
+            string fragment, 
+            object routeValues, 
+            object htmlAttributes)
+        {
+            var url = _urlHelper.Action(actionName, controllerName, routeValues);
+            return GenerateLink(linkText, url, HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes));
+        }
 
         /// <summary>
         /// Creates a dictionary from an object, by adding each public instance property as a key with its associated 
@@ -481,6 +494,22 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
 
             return theForm;
+        }
+
+        protected virtual HtmlString GenerateLink(
+            [NotNull] string linkText,
+            [NotNull] string url,
+            IDictionary<string, object> htmlAttributes)
+        {
+            var tagBuilder = new TagBuilder("a")
+            {
+                InnerHtml = WebUtility.HtmlEncode(linkText),
+            };
+
+            tagBuilder.MergeAttributes(htmlAttributes);
+            tagBuilder.MergeAttribute("href", url);
+
+            return tagBuilder.ToHtmlString(TagRenderMode.Normal);
         }
 
         protected virtual HtmlString GenerateTextBox(ModelMetadata metadata, string name, object value, string format,
