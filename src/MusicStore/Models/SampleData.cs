@@ -1,13 +1,12 @@
-﻿using Microsoft.Data.Entity;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Data.Entity;
+using Microsoft.Data.Migrations;
+using Microsoft.Data.Relational;
 using Microsoft.Data.SqlServer;
 using MusicStore.Models;
-using System;
-using System.Collections.Generic;
-#if NET45
-using System.Data.Common;
-using System.Data.SqlClient;
-#endif
-using System.Linq;
 
 namespace MusicStore.Web.Models
 {
@@ -15,21 +14,41 @@ namespace MusicStore.Web.Models
     {
         const string imgUrl = "~/Images/placeholder.png";
 
-        public static void InitializeMusicStoreDatabase()
+        public static async Task InitializeMusicStoreDatabaseAsync()
         {
-            CreateDatabaseIfNotExists();
+            using (var db = new MusicStoreContext())
+            {
+                // TODO [EF] Swap to use top level API when available
+                var sqlServerDataStore = db.Configuration.DataStore as SqlServerDataStore;
+                if (sqlServerDataStore != null)
+                {
+                    var creator = new SqlServerDataStoreCreator(sqlServerDataStore, new ModelDiffer(), new SqlServerMigrationOperationSqlGenerator(), new SqlStatementExecutor());
+                    if (!await creator.ExistsAsync())
+                    {
+                        await creator.CreateAsync(db.Model);
+                        await InsertTestData();
+                    }
+                }
+                else
+                {
+                    await InsertTestData();
+                }
+            }
+        }
 
+        private static async Task InsertTestData()
+        {
             var genres = GetGenres();
             var artists = GetArtists();
             var albums = GetAlbums(imgUrl, genres, artists);
 
-            AddOrUpdate(g => g.GenreId, genres);
-            AddOrUpdate(a => a.ArtistId, artists);
-            AddOrUpdate(a => a.AlbumId, albums);
+            await AddOrUpdateAsync(g => g.GenreId, genres);
+            await AddOrUpdateAsync(a => a.ArtistId, artists);
+            await AddOrUpdateAsync(a => a.AlbumId, albums);
         }
 
         // TODO [EF] This may be replaced by a first class mechanism in EF
-        private static void AddOrUpdate<TEntity>(Func<TEntity, object> propertyToMatch, IEnumerable<TEntity> entities)
+        private static async Task AddOrUpdateAsync<TEntity>(Func<TEntity, object> propertyToMatch, IEnumerable<TEntity> entities)
             where TEntity : class
         {
             // Query in a separate context so that we can attach existing entities as modified
@@ -48,7 +67,7 @@ namespace MusicStore.Web.Models
                         : EntityState.Added;
                 }
 
-                db.SaveChanges();
+                await db.SaveChangesAsync();
             }
         }
 
@@ -881,99 +900,6 @@ namespace MusicStore.Web.Models
             }
 
             return genres;
-        }
-
-        // TODO [EF] Remove when database creation is supported by EF
-        private static void CreateDatabaseIfNotExists()
-        {
-            // TODO [EF] Remove when SQL Client is available for K10
-            using (var db = new MusicStoreContext())
-            {
-                var sql = db.Configuration.DataStore as SqlServerDataStore;
-                if (sql != null)
-                {
-#if NET45
-                    var builder = new DbConnectionStringBuilder { ConnectionString = sql.ConnectionString };
-                    var targetDatabase = builder["Database"].ToString();
-
-                    // Connect to master, check if database exists, and create if not
-                    builder.Add("Database", "master");
-                    using (var masterConnection = new SqlConnection(builder.ConnectionString))
-                    {
-                        masterConnection.Open();
-
-                        var masterCommand = masterConnection.CreateCommand();
-                        masterCommand.CommandText = "SELECT COUNT(*) FROM sys.databases WHERE [name]=N'" + targetDatabase + "'";
-                        if ((int?)masterCommand.ExecuteScalar() < 1)
-                        {
-                            masterCommand.CommandText = "CREATE DATABASE [" + targetDatabase + "]";
-                            masterCommand.ExecuteNonQuery();
-
-                            using (var musicStoreConnection = new SqlConnection(sql.ConnectionString))
-                            {
-                                musicStoreConnection.Open();
-                                var musicStoreCommand = musicStoreConnection.CreateCommand();
-                                musicStoreCommand.CommandText = @"
-CREATE TABLE [dbo].[Album](
-	[AlbumId] [int] NOT NULL,
-	[GenreId] [int] NOT NULL,
-	[ArtistId] [int] NOT NULL,
-	[Title] [nvarchar](160) NOT NULL,
-	[Price] [numeric](18, 2) NOT NULL,
-	[AlbumArtUrl] [nvarchar](1024) NULL
-) 
-
-CREATE TABLE [dbo].[Artist](
-	[ArtistId] [int] NOT NULL,
-	[Name] [nvarchar](max) NOT NULL
-) 
-
-CREATE TABLE [dbo].[CartItem](
-	[CartItemId] [int] NOT NULL,
-	[CartId] [nvarchar](max) NOT NULL,
-	[AlbumId] [int] NOT NULL,
-	[Count] [int] NOT NULL,
-	[DateCreated] [datetime] NOT NULL
-) 
-
-CREATE TABLE [dbo].[Genre](
-	[GenreId] [int] NOT NULL,
-	[Name] [nvarchar](max) NOT NULL,
-	[Description] [nvarchar](max) NULL
-) 
-
-CREATE TABLE [dbo].[Order](
-	[OrderId] [int] NOT NULL,
-	[OrderDate] [datetime] NOT NULL,
-	[Username] [nvarchar](max) NOT NULL,
-	[FirstName] [nvarchar](160) NOT NULL,
-	[LastName] [nvarchar](160) NOT NULL,
-	[Address] [nvarchar](70) NOT NULL,
-	[City] [nvarchar](40) NOT NULL,
-	[State] [nvarchar](40) NOT NULL,
-	[PostalCode] [nvarchar](10) NOT NULL,
-	[Country] [nvarchar](40) NOT NULL,
-	[Phone] [nvarchar](24) NOT NULL,
-	[Email] [nvarchar](max) NOT NULL,
-	[Total] [decimal](18, 2) NOT NULL
-)
-
-CREATE TABLE [dbo].[OrderDetail](
-	[OrderDetailId] [int] NOT NULL,
-	[OrderId] [int] NOT NULL,
-	[AlbumId] [int] NOT NULL,
-	[Quantity] [int] NOT NULL,
-	[UnitPrice] [decimal](18, 2) NOT NULL
-) ";
-                                musicStoreCommand.ExecuteNonQuery();
-                            }
-                        }
-                    }
-#else
-                    throw new NotSupportedException("SQL Server is not yet supported when running against K10.");
-#endif
-                }
-            }
         }
     }
 }

@@ -23,6 +23,7 @@
         "Microsoft.Data.Relational": "0.1-alpha-*",
         "Microsoft.Data.SqlServer": "0.1-pre-*",
         "Microsoft.Data.InMemory": "0.1-alpha-*",
+        "Microsoft.Data.Migrations": "0.1-alpha-*",
         "Microsoft.AspNet.Diagnostics": "0.1-alpha-*",
         "Microsoft.AspNet.Hosting": "0.1-alpha-*",
         "Microsoft.AspNet.Server.WebListener": "0.1-alpha-*",

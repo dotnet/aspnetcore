@@ -47,7 +47,7 @@ public class Startup
 
         app.UseRouter(routes);
 
-        SampleData.InitializeMusicStoreDatabase();
+        SampleData.InitializeMusicStoreDatabaseAsync().Wait();
     }
 
     private async void CreateAdminUser()
