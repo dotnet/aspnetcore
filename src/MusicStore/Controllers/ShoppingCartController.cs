@@ -84,9 +84,7 @@ namespace MusicStore.Controllers
                 DeleteId = id
             };
 
-            //Bug: Missing helper
-            //return Json(results);
-            return new JsonResult(results);
+            return Json(results);
         }
     }
 }

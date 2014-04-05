@@ -82,22 +82,22 @@ public class Startup
         string _password = "YouShouldChangeThisPassword"; // configuration.Get("DefaultAdminPassword");
         string _role = "Administrator";
 
-        var userManager = new UserManager<ApplicationUser, string>(new InMemoryUserStore<ApplicationUser>());
-        var roleManager = new RoleManager<InMemoryRole>(new InMemoryRoleStore());
+        var userManager = new UserManager<ApplicationUser>(new InMemoryUserStore<ApplicationUser>());
+        var roleManager = new RoleManager<InMemoryRole>(new InMemoryRoleStore<InMemoryRole>());
 
         var role = new InMemoryRole(_role);
-        var result = await roleManager.RoleExists(_role);
+        var result = await roleManager.RoleExistsAsync(_role);
         if (result == false)
         {
-            await roleManager.Create(role);
+            await roleManager.CreateAsync(role);
         }
 
-        var user = await userManager.FindByName(_username);
+        var user = await userManager.FindByNameAsync(_username);
         if (user == null)
         {
             user = new ApplicationUser { UserName = _username };
-            await userManager.Create(user, _password);
-            await userManager.AddToRole(user.Id, _role);
+            await userManager.CreateAsync(user, _password);
+            await userManager.AddToRoleAsync(user, _role);
         }
     }
 }

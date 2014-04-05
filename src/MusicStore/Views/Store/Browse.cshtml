@@ -8,7 +8,7 @@
     <h3>
         <em>@Model.Name</em> Albums
     </h3>
-
+    
     <ul id="album-list" class="list-unstyled">
         @foreach (var album in Model.Albums)
         {
@@ -16,9 +16,7 @@
                 <a href="@Url.Action("Details", new { id = album.AlbumId })">
                     @if (!string.IsNullOrEmpty(album.AlbumArtUrl))
                     {
-                        @*Bug: Url helpers not implemented yet*@
-                        @*<img alt="@album.Title" src="@Url.Content(@album.AlbumArtUrl)" />*@
-                        <img alt="@album.Title" src="@album.AlbumArtUrl" />
+                        <img alt="@album.Title" src="@Url.Content(@album.AlbumArtUrl)" />
                     }
                     <h5 class="control-label">@album.Title</h5>
                 </a>

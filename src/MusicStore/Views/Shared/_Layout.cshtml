@@ -8,9 +8,9 @@
     @*Bug: No Style and Script helpers yet. Manually including the script files*@
     @*@Styles.Render("~/Content/css")
         @Scripts.Render("~/bundles/modernizr")*@
-    <link rel="stylesheet" href="/Content/bootstrap.min.css" />
-    <link rel="stylesheet" href="/Content/Site.css" />
-    <script type="text/javascript" src="/Scripts/modernizr-2.6.2.js"></script>
+    <link rel="stylesheet" href="~/Content/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/Content/Site.css" />
+    <script type="text/javascript" src="~/Scripts/modernizr-2.6.2.js"></script>
 </head>
 <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -23,17 +23,17 @@
                 </button>
                 @*Bug: no Html helpers yet*@
                 @*@Html.ActionLink("ASP.NET MVC Music Store", "Index", "Home", null, new { @class = "navbar-brand" })*@
-                <a class="navbar-brand" href="/">ASP.NET MVC Music Store</a>
+                <a class="navbar-brand" href="~/">ASP.NET MVC Music Store</a>
             </div>
             @*Bug: HtmlHelpers missing*@
-            @*<div class="navbar-collapse collapse">
-                    <ul class="nav navbar-nav">
-                        <li>@Html.ActionLink("Home", "Index", "Home")</li>
-                        @Html.Action("GenreMenu", "Store")
-                        @Html.Action("CartSummary", "ShoppingCart")
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                        @*<li>@Html.ActionLink("Home", "Index", "Home")</li>*@
+                        @await Component.InvokeAsync("GenreMenu")
+@*                        @Html.Action("CartSummary", "ShoppingCart")*@
                     </ul>
-                    @Html.Partial("_LoginPartial")
-                </div>*@
+                @await Html.PartialAsync("_LoginPartial")
+            </div>
         </div>
     </div>
     <div class="container body-content">
@@ -51,8 +51,8 @@
         @Scripts.Render("~/bundles/bootstrap")
         @RenderSection("scripts", required: false)*@
 
-    <script src="/Scripts/jquery-1.10.2.js"></script>
-    <script src="/Scripts/bootstrap.js"></script>
-    <script src="/Scripts/respond.js"></script>
+    <script src="~/Scripts/jquery-1.10.2.js"></script>
+    <script src="~/Scripts/bootstrap.js"></script>
+    <script src="~/Scripts/respond.js"></script>
 </body>
 </html>

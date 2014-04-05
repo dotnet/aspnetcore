@@ -9,9 +9,7 @@
 <h2>@Model.Title</h2>
 
 <p>
-    @*Bug: Url helpers not implemented yet*@
-    @*<img alt="@Model.Title" src="@Url.Content(@Model.AlbumArtUrl)" />*@
-    <img alt="@Model.Title" src="@Model.AlbumArtUrl" />
+    <img alt="@Model.Title" src="@Url.Content(@Model.AlbumArtUrl)" />
 </p>
 
 <div id="album-details">
@@ -25,8 +23,7 @@
     </p>
     <p>
         <em>Price:</em>
-        @*Bug: HTML helpers not implemented yet*@
-        @*@Html.DisplayFor(model => model.Price)*@
+        @Html.ValueFor(model => model.Price)
     </p>
     <p class="button">
         @*Bug: HTML helpers not implemented yet*@

@@ -36,25 +36,11 @@ namespace MusicStore.Controllers
         {
             var album = db.Albums.Single(a => a.AlbumId == id);
 
+            // TODO [EF] We don't query related data as yet. We have to populate this until we do automatically.
+            album.Genre = db.Genres.Single(g => g.GenreId == album.GenreId);
+            album.Artist = db.Artists.Single(a => a.ArtistId == album.ArtistId);
+
             return View(album);
-        }
-
-        ///Bug: Missing [ChildActionOnly] attribute
-        //[ChildActionOnly]
-        public IActionResult GenreMenu()
-        {
-            // TODO [EF] We don't query related data as yet, so the OrderByDescending isn't doing anything
-            var genres = db.Genres
-                .OrderByDescending(
-                    g => g.Albums.Sum(
-                    a => a.OrderDetails.Sum(
-                    od => od.Quantity)))
-                .Take(9)
-                .ToList();
-
-            //Bug: Missing PartialView method.
-            //return PartialView(genres);
-            return View();
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿@*Bug: Dependent on Htmlhelpers*@
-@model IEnumerable<mvcmusicstore.models.album>
+﻿@model IEnumerable<MusicStore.Models.Album>
 
     @helper Truncate(string input, int length)
 {
@@ -22,21 +21,26 @@
     <h2>Index</h2>
 
     <p>
-        @Html.ActionLink("Create New", "Create")
+        @*@Html.ActionLink("Create New", "Create")*@
     </p>
     <table class="table">
+        @*Bug: Html.NameFor does not contain an overload taking in IEnumerable<Tmodel>*@
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Genre.Name)
+                @*@Html.NameFor(model => model.Genre.Name)*@
+                @Html.NameFor(model => model.FirstOrDefault().Genre.Name)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Artist.Name)
+                @*@Html.NameFor(model => model.Artist.Name)*@
+                @Html.NameFor(model => model.FirstOrDefault().Artist.Name)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Title)
+                @*@Html.NameFor(model => model.Title)*@
+                @Html.NameFor(model => model.FirstOrDefault().Title)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Price)
+                @*@Html.NameFor(model => model.Price)*@
+                @Html.NameFor(model => model.FirstOrDefault().Price)
             </th>
             <th></th>
         </tr>
@@ -45,7 +49,7 @@
         {
             <tr>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Genre.Name)
+                    @Html.ValueFor(modelItem => item.Genre.Name)
                 </td>
                 <td>
                     @Truncate(item.Artist.Name, 25)
@@ -54,13 +58,13 @@
                     @Truncate(item.Title, 25)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Price)
+                    @Html.ValueFor(modelItem => item.Price)
                 </td>
-                <td>
+                @*<td>
                     @Html.ActionLink("Edit", "Edit", new { id = item.AlbumId }) |
                     @Html.ActionLink("Details", "Details", new { id = item.AlbumId }) |
                     @Html.ActionLink("Delete", "Delete", new { id = item.AlbumId })
-                </td>
+                </td>*@
             </tr>
         }
 

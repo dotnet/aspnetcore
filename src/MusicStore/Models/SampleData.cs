@@ -13,9 +13,7 @@ namespace MusicStore.Web.Models
 {
     public static class SampleData
     {
-        //Bug: Currently a ~ in the url results in an razor exception: https://github.com/aspnet/WebFx/issues/66
-        //const string imgUrl = "~/Images/placeholder.png";
-        const string imgUrl = "/Images/placeholder.png";
+        const string imgUrl = "~/Images/placeholder.png";
 
         public static void InitializeMusicStoreDatabase()
         {

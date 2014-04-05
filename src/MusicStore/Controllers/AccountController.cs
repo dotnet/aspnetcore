@@ -17,16 +17,16 @@ namespace MusicStore.Controllers
         public AccountController()
             //Bug: No EF yet - using an in memory store
             //: this(new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext())))
-            : this(new UserManager<ApplicationUser, string>(new InMemoryUserStore<ApplicationUser>()))
+            : this(new UserManager<ApplicationUser>(new InMemoryUserStore<ApplicationUser>()))
         {
         }
 
-        public AccountController(UserManager<ApplicationUser, string> userManager)
+        public AccountController(UserManager<ApplicationUser> userManager)
         {
             UserManager = userManager;
         }
 
-        public UserManager<ApplicationUser, string> UserManager { get; private set; }
+        public UserManager<ApplicationUser> UserManager { get; private set; }
 
         //
         // GET: /Account/Login
@@ -47,7 +47,7 @@ namespace MusicStore.Controllers
         {
             if (ModelState.IsValid == true)
             {
-                var user = await UserManager.Find(model.UserName, model.Password);
+                var user = await UserManager.FindByUserNamePassword(model.UserName, model.Password);
                 if (user != null)
                 {
                     await SignIn(user, model.RememberMe);
@@ -82,7 +82,7 @@ namespace MusicStore.Controllers
             if (ModelState.IsValid == true)
             {
                 var user = new ApplicationUser() { UserName = model.UserName };
-                var result = await UserManager.Create(user, model.Password);
+                var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
                     await SignIn(user, isPersistent: false);
@@ -108,7 +108,8 @@ namespace MusicStore.Controllers
         {
 
             ManageMessageId? message = null;
-            IdentityResult result = await UserManager.RemoveLogin(this.Context.User.Identity.GetUserId(), new UserLoginInfo(loginProvider, providerKey));
+            var user = new ApplicationUser() { UserName = this.Context.User.Identity.GetUserId() };
+            IdentityResult result = await UserManager.RemoveLogin(user, new UserLoginInfo(loginProvider, providerKey));
             if (result.Succeeded)
             {
                 message = ManageMessageId.RemoveLoginSuccess;
@@ -155,7 +156,8 @@ namespace MusicStore.Controllers
             {
                 if (ModelState.IsValid == true)
                 {
-                    IdentityResult result = await UserManager.ChangePassword(this.Context.User.Identity.GetUserId(), model.OldPassword, model.NewPassword);
+                    var user = new ApplicationUser() { UserName = this.Context.User.Identity.GetUserId() };
+                    IdentityResult result = await UserManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
                     if (result.Succeeded)
                     {
                         //Bug: No helper method
@@ -181,7 +183,8 @@ namespace MusicStore.Controllers
 
                 if (ModelState.IsValid == true)
                 {
-                    IdentityResult result = await UserManager.AddPassword(this.Context.User.Identity.GetUserId(), model.NewPassword);
+                    var user = new ApplicationUser() { UserName = this.Context.User.Identity.GetUserId() };
+                    IdentityResult result = await UserManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
                     if (result.Succeeded)
                     {
                         //Bug: No helper method
@@ -224,7 +227,7 @@ namespace MusicStore.Controllers
             }
 
             // Sign in the user with this external login provider if the user already has a login
-            var user = await UserManager.Find(loginInfo.Login);
+            var user = await UserManager.FindByLoginAsync(loginInfo.Login);
             if (user != null)
             {
                 await SignIn(user, isPersistent: false);
@@ -261,7 +264,8 @@ namespace MusicStore.Controllers
                 //return RedirectToAction("Manage", new { Message = ManageMessageId.Error });
                 return View();
             }
-            var result = await UserManager.AddLogin(this.Context.User.Identity.GetUserId(), loginInfo.Login);
+            var user = new ApplicationUser() { UserName = this.Context.User.Identity.GetUserId()};
+            var result = await UserManager.AddLogin(user, loginInfo.Login);
             if (result.Succeeded)
             {
                 //Bug: No helper method
@@ -298,10 +302,10 @@ namespace MusicStore.Controllers
                 }
 
                 var user = new ApplicationUser() { UserName = model.UserName };
-                var result = await UserManager.Create(user);
+                var result = await UserManager.CreateAsync(user);
                 if (result.Succeeded)
                 {
-                    result = await UserManager.AddLogin(user.Id, info.Login);
+                    result = await UserManager.AddLogin(user, info.Login);
                     if (result.Succeeded)
                     {
                         await SignIn(user, isPersistent: false);
@@ -340,7 +344,8 @@ namespace MusicStore.Controllers
         //[ChildActionOnly]
         public async Task<IActionResult> RemoveAccountList()
         {
-            var linkedAccounts = await UserManager.GetLogins(this.Context.User.Identity.GetUserId());
+            var user = new ApplicationUser() { UserName = this.Context.User.Identity.GetUserId() };
+            var linkedAccounts = await UserManager.GetLogins(user);
             ViewBag.ShowRemoveButton = await HasPassword() || linkedAccounts.Count > 1;
             //Bug: We dont have partial views yet
             //return (IActionResult)PartialView("_RemoveAccountPartial", linkedAccounts);
@@ -380,7 +385,7 @@ namespace MusicStore.Controllers
 
         private async Task<bool> HasPassword()
         {
-            var user = await UserManager.FindById(this.Context.User.Identity.GetUserId());
+            var user = await UserManager.FindByIdAsync(this.Context.User.Identity.GetUserId());
             if (user != null)
             {
                 return user.PasswordHash != null;

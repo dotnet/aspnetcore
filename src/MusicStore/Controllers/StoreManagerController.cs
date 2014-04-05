@@ -34,12 +34,17 @@ namespace MusicStore.Controllers
         public IActionResult Details(int id = 0)
         {
             Album album = db.Albums.Single(a => a.AlbumId == id);
+            
             if (album == null)
             {
                 //Bug: Need method HttpNotFound() on Controller
                 //return HttpNotFound();
                 return new HttpStatusCodeResult(404);
             }
+
+            // TODO [EF] We don't query related data as yet. We have to populate this until we do automatically.
+            album.Genre = db.Genres.Single(g => g.GenreId == album.GenreId);
+            album.Artist = db.Artists.Single(a => a.ArtistId == album.ArtistId);
             return View(album);
         }
 

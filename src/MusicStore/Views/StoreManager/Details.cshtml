@@ -1,5 +1,4 @@
-﻿@*Bug: Dependent on Htmlhelpers*@
-@model MvcMusicStore.Models.Album
+﻿@model MusicStore.Models.Album
 
 @{
     //Bug: Need to have a way to specify an application level layout page
@@ -14,48 +13,49 @@
     <hr />
     <dl class="dl-horizontal">
         <dt>
-            @Html.DisplayNameFor(model => model.Artist.Name)
+            @Html.NameFor(model => model.Artist.Name)
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.Artist.Name)
+            @Html.ValueFor(model => model.Artist.Name)
         </dd>
 
         <dt>
-            @Html.DisplayNameFor(model => model.Genre.Name)
+            @Html.NameFor(model => model.Genre.Name)
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.Genre.Name)
+            @Html.ValueFor(model => model.Genre.Name)
         </dd>
 
         <dt>
-            @Html.DisplayNameFor(model => model.Title)
+            @Html.NameFor(model => model.Title)
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.Title)
+            @Html.ValueFor(model => model.Title)
         </dd>
 
         <dt>
-            @Html.DisplayNameFor(model => model.Price)
+            @Html.NameFor(model => model.Price)
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.Price)
+            @Html.ValueFor(model => model.Price)
         </dd>
 
         <dt>
-            @Html.DisplayNameFor(model => model.AlbumArtUrl)
+            @Html.NameFor(model => model.AlbumArtUrl)
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.AlbumArtUrl)
+            @Html.ValueFor(model => model.AlbumArtUrl)
         </dd>
 
     </dl>
 </div>
-<p>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.AlbumId }) |
-    @Html.ActionLink("Back to List", "Index")
-</p>
+@*Bug: Need HtmlHelpers*@
+@*<p>
+        @Html.ActionLink("Edit", "Edit", new { id = Model.AlbumId }) |
+        @Html.ActionLink("Back to List", "Index")
+    </p>*@

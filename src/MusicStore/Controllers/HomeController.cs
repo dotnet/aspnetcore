@@ -3,7 +3,7 @@ using MusicStore.Models;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MvcMusicStore.Controllers
+namespace MusicStore.Controllers
 {
     public class HomeController : Controller
     {
