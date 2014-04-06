@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 var fullViewName = modeViewPath + "/" + viewName;
 
                 // Forcing synchronous behavior so users don't have to await templates.
-                var viewEngineResult = _viewEngine.FindPartialView(_viewContext.ViewEngineContext, fullViewName).Result;
+                var viewEngineResult = _viewEngine.FindPartialView(_viewContext.ViewEngineContext, fullViewName);
                 if (viewEngineResult.Success)
                 {
                     using (var writer = new StringWriter(CultureInfo.InvariantCulture))
@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             else if (!metadata.IsComplexType)
             {
                 // IsEnum is false for the Enum class itself
-                if (fieldType.IsEnum)
+                if (fieldType.IsEnum())
                 {
                     // Same as fieldType.BaseType.Name in this case
                     yield return "Enum";
@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
                 yield return "String";
             }
-            else if (fieldType.IsInterface)
+            else if (fieldType.IsInterface())
             {
                 if (typeof(IEnumerable).IsAssignableFrom(fieldType))
                 {
@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
                 while (true)
                 {
-                    fieldType = fieldType.BaseType;
+                    fieldType = fieldType.BaseType();
                     if (fieldType == null)
                     {
                         break;

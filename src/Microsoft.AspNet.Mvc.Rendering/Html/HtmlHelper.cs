@@ -42,8 +42,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
             IdAttributeDotReplacement = "_";
         }
 
-        public IModelMetadataProvider MetadataProvider { get; private set; }
-
         public string IdAttributeDotReplacement { get; set; }
 
         public HttpContext HttpContext { get; private set; }

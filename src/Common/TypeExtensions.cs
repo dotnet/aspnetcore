@@ -36,6 +36,11 @@ namespace Microsoft.AspNet.Mvc
         }
 #endif
 
+        public static Type BaseType([NotNull] this Type type)
+        {
+            return type.GetTypeInfo().BaseType;
+        }
+
         public static Type ExtractGenericInterface([NotNull] this Type queryType, Type interfaceType)
         {
             Func<Type, bool> matchesInterface = t => t.IsGenericType() && t.GetGenericTypeDefinition() == interfaceType;
@@ -58,6 +63,11 @@ namespace Microsoft.AspNet.Mvc
             return type.GetTypeInfo().IsAssignableFrom(c.GetTypeInfo());
         }
 #endif
+
+        public static bool IsEnum([NotNull] this Type type)
+        {
+            return type.GetTypeInfo().IsEnum;
+        }
 
         public static bool IsGenericType([NotNull] this Type type)
         {
