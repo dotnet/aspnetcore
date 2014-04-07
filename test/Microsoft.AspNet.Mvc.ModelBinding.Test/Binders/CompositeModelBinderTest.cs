@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Microsoft.AspNet.DependencyInjection;
 using Moq;
 using Xunit;
 
@@ -52,7 +53,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             // Assert
             Assert.True(isBound);
             Assert.Equal(42, bindingContext.Model);
-            
+
             Assert.True(validationCalled);
             Assert.Equal(true, bindingContext.ModelState.IsValid);
         }
@@ -158,10 +159,116 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Null(bindingContext.Model);
         }
 
-        private class SimpleModel
+        [Fact]
+        public void BindModel_WithDefaultBinders_BindsSimpleType()
+        {
+            // Arrange
+            var binder = CreateBinderWithDefaults();
+
+            var valueProvider = new SimpleValueProvider
+            {
+                { "firstName", "firstName-value"},
+                { "lastName", "lastName-value"}
+            };
+            var bindingContext = CreateBindingContext(binder, valueProvider, typeof(SimplePropertiesModel));
+
+            // Act
+            var isBound = binder.BindModel(bindingContext);
+
+            // Assert
+            Assert.True(isBound);
+            var model = Assert.IsType<SimplePropertiesModel>(bindingContext.Model);
+            Assert.Equal("firstName-value", model.FirstName);
+            Assert.Equal("lastName-value", model.LastName);
+        }
+
+        [Fact]
+        public void BindModel_WithDefaultBinders_BindsComplexType()
+        {
+            // Arrange
+            var binder = CreateBinderWithDefaults();
+
+            var valueProvider = new SimpleValueProvider
+            {
+                { "firstName", "firstName-value"},
+                { "lastName", "lastName-value"},
+                { "friends[0].firstName", "first-friend"},
+                { "friends[0].age", "40"},
+                { "friends[0].friends[0].firstname", "nested friend"},
+                { "friends[1].firstName", "some other"},
+                { "friends[1].lastName", "name"},
+            };
+            var bindingContext = CreateBindingContext(binder, valueProvider, typeof(Person));
+
+            // Act
+            var isBound = binder.BindModel(bindingContext);
+
+            // Assert
+            Assert.True(isBound);
+            var model = Assert.IsType<Person>(bindingContext.Model);
+            Assert.Equal("firstName-value", model.FirstName);
+            Assert.Equal("lastName-value", model.LastName);
+            Assert.Equal(2, model.Friends.Count);
+            Assert.Equal("first-friend", model.Friends[0].FirstName);
+            Assert.Equal(40, model.Friends[0].Age);
+            var nestedFriend = Assert.Single(model.Friends[0].Friends);
+            Assert.Equal("nested friend", nestedFriend.FirstName);
+            Assert.Equal("some other", model.Friends[1].FirstName);
+            Assert.Equal("name", model.Friends[1].LastName);
+        }
+
+        private static ModelBindingContext CreateBindingContext(IModelBinder binder,
+                                                                IValueProvider valueProvider,
+                                                                Type type)
+        {
+            var metadataProvider = new DataAnnotationsModelMetadataProvider();
+            var bindingContext = new ModelBindingContext
+            {
+                ModelBinder = binder,
+                FallbackToEmptyPrefix = true,
+                MetadataProvider = metadataProvider,
+                ModelMetadata = metadataProvider.GetMetadataForType(null, type),
+                ModelState = new ModelStateDictionary(),
+                ValueProvider = valueProvider,
+                ValidatorProviders = Enumerable.Empty<IModelValidatorProvider>()
+            };
+            return bindingContext;
+        }
+
+        private static CompositeModelBinder CreateBinderWithDefaults()
+        {
+            var serviceProvider = Mock.Of<IServiceProvider>();
+            var typeActivator = new Mock<ITypeActivator>();
+            typeActivator
+                .Setup(t => t.CreateInstance(serviceProvider, It.IsAny<Type>(), It.IsAny<object[]>()))
+                .Returns((IServiceProvider sp, Type t, object[] args) => Activator.CreateInstance(t));
+            var binders = new IModelBinder[] 
+            { 
+                new TypeMatchModelBinder(),
+                new GenericModelBinder(serviceProvider, typeActivator.Object),
+                new ComplexModelDtoModelBinder(),
+                new TypeConverterModelBinder(),
+                new MutableObjectModelBinder()
+            };
+            var binder = new CompositeModelBinder(binders);
+            return binder;
+        }
+
+        private class SimplePropertiesModel
         {
             public string FirstName { get; set; }
             public string LastName { get; set; }
+        }
+
+        private sealed class Person
+        {
+            public string FirstName { get; set; }
+
+            public string LastName { get; set; }
+
+            public int Age { get; set; }
+
+            public List<Person> Friends { get; set; }
         }
 
         private class SimpleValueProvider : Dictionary<string, object>, IValueProvider
