@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Mvc
             var path = _router.GetVirtualPath(context);
 
             // See Routing Issue#31
-            if (path.Length > 0 && !path.StartsWith("/", StringComparison.Ordinal))
+            if (path.Length > 0 && path[0] != '/')
             {
                 path = "/" + path;
             }
