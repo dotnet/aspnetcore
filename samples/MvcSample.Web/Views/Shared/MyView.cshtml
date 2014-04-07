@@ -134,8 +134,15 @@
         </table>
     </div>
 
-    <div style="float: left; border: thick solid lightskyblue; margin-left: 15px; padding-right: 10px">
-        <form action="/Home/Hello" method="post">
+    <div style="float: right; border: 5px solid red;">
+        @await Component.InvokeAsync("Tags", 15)
+    </div>
+</div>
+
+<div class="row">
+    <div style="float: left; border: thick solid lightskyblue; margin-bottom: 10px; margin-top: -180px; padding-right: 10px">
+        @using (Html.BeginForm(controllerName: "Home", actionName: "Hello", method: FormMethod.Post))
+        {
             <table>
                 <tr>
                     <td>
@@ -153,6 +160,16 @@
                         @Html.TextBoxFor(m => m.Address, htmlAttributes: new { @class = "form-control" })
                     </td>
                 </tr>
+                <tr>
+                    <td>
+                        <input type="submit" value="Save" class="btn btn-default" />
+                    </td>
+                    <td></td>
+                </tr>
+            </table>
+        }
+        @{ Html.BeginForm(method: FormMethod.Post, htmlAttributes: new { someAttribute = "some value", }); }
+            <table>
                 <tr>
                     <td>
                         <label class="control-label col-md-2">Anon.Name</label>
@@ -191,21 +208,17 @@
                     </td>
                     <td>
                         @Html.TextBox("Anon.Address.Country", value: null, format: "{0} (4)",
-                         htmlAttributes: new { @class = "form-control" })
+                                      htmlAttributes: new { @class = "form-control" })
                     </td>
                 </tr>
+                <tr>
+                    <td>
+                        <input type="submit" value="Save" class="btn btn-default" />
+                    </td>
+                    <td></td>
+                </tr>
             </table>
-
-            <div class="form-group">
-                <div class="col-md-2">
-                    <input type="submit" value="Save" class="btn btn-default" />
-                </div>
-            </div>
-        </form>
-    </div>
-
-    <div style="float: left; border: 5px solid red;">
-        @await Component.InvokeAsync("Tags", 15)
+        @{ Html.EndForm(); }
     </div>
 </div>
 
@@ -318,5 +331,4 @@
     <div style="float: left; border: 5px solid green;">
         @Html.DisplayForModel()
     </div>
-
 </div>

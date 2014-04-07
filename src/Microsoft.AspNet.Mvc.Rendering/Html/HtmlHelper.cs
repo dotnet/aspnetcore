@@ -139,6 +139,29 @@ namespace Microsoft.AspNet.Mvc.Rendering
             ViewContext = viewContext;
         }
 
+        public MvcForm BeginForm(string actionName, string controllerName, object routeValues, FormMethod method,
+                                 object htmlAttributes)
+        {
+            // Only need a dictionary if htmlAttributes is non-null. TagBuilder.MergeAttributes() is fine with null.
+            IDictionary<string, object> htmlAttributeDictionary = null;
+            if (htmlAttributes != null)
+            {
+                htmlAttributeDictionary = htmlAttributes as IDictionary<string, object>;
+                if (htmlAttributeDictionary == null)
+                {
+                    htmlAttributeDictionary = HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes);
+                }
+            }
+
+            return GenerateForm(actionName, controllerName, routeValues, method, htmlAttributeDictionary);
+        }
+
+        public void EndForm()
+        {
+            var mvcForm = CreateForm();
+            mvcForm.EndForm();
+        }
+
         public string Encode(string value)
         {
             return (!string.IsNullOrEmpty(value)) ? WebUtility.HtmlEncode(value) : string.Empty;
@@ -149,7 +172,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return value != null ? WebUtility.HtmlEncode(value.ToString()) : string.Empty;
         }
 
-        /// <inheritdoc />
         public string FormatValue(object value, string format)
         {
             return ViewDataDictionary.FormatValue(value, format);
@@ -183,7 +205,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                    additionalViewData);
         }
 
-        /// <inheritdoc />
         public virtual HtmlString Name(string name)
         {
             var fullName = ViewData.TemplateInfo.GetFullHtmlFieldName(name);
@@ -355,7 +376,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
         }
 
-        /// <inheritdoc />
         public HtmlString TextBox(string name, object value, string format, IDictionary<string, object> htmlAttributes)
         {
             return GenerateTextBox(metadata: null, name: name, value: value, format: format,
@@ -365,6 +385,16 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public HtmlString Value([NotNull] string name, string format)
         {
             return GenerateValue(name, value: null, format: format, useViewData: true);
+        }
+
+        /// <summary>
+        /// Override this method to return an <see cref="MvcForm"/> subclass. That subclass may change
+        /// <see cref="EndForm()"/> behavior.
+        /// </summary>
+        /// <returns>A new <see cref="MvcForm"/> instance.</returns>
+        protected virtual MvcForm CreateForm()
+        {
+            return new MvcForm(ViewContext);
         }
 
         protected string EvalString(string key, string format)
@@ -395,6 +425,56 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             // TODO: Add validation attributes to input helpers.
             return new Dictionary<string, object>();
+        }
+
+        /// <summary>
+        /// Writes an opening <form> tag to the response. When the user submits the form,
+        /// the request will be processed by an action method.
+        /// </summary>
+        /// <param name="actionName">The name of the action method.</param>
+        /// <param name="controllerName">The name of the controller.</param>
+        /// <param name="routeValues">An object that contains the parameters for a route. The parameters are retrieved
+        /// through reflection by examining the properties of the object. This object is typically created using object
+        /// initializer syntax. Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the
+        /// route parameters.</param>
+        /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
+        /// <param name="htmlAttributes">An <see cref="IDictionary{string, object}"/> instance containing HTML
+        /// attributes to set for the element.</param>
+        /// <returns>An <see cref="MvcForm"/> instance which emits the closing {form} tag when disposed.</returns>
+        protected virtual MvcForm GenerateForm(string actionName, string controllerName, object routeValues,
+                                               FormMethod method, IDictionary<string, object> htmlAttributes)
+        {
+            var urlHelper = ViewContext.Url;
+            var formAction = urlHelper.Action(action: actionName, controller: controllerName, values: routeValues);
+
+            var tagBuilder = new TagBuilder("form");
+            tagBuilder.MergeAttributes(htmlAttributes);
+
+            // action is implicitly generated, so htmlAttributes take precedence.
+            tagBuilder.MergeAttribute("action", formAction);
+
+            // method is an explicit parameter, so it takes precedence over the htmlAttributes.
+            tagBuilder.MergeAttribute("method", HtmlHelper.GetFormMethodString(method), replaceExisting: true);
+
+            var traditionalJavascriptEnabled = ViewContext.ClientValidationEnabled &&
+                                               !ViewContext.UnobtrusiveJavaScriptEnabled;
+            if (traditionalJavascriptEnabled)
+            {
+                // TODO revive ViewContext.FormIdGenerator(), WebFx-199
+                // forms must have an ID for client validation
+                var formName = "form" + new Guid().ToString();
+                tagBuilder.GenerateId(formName, IdAttributeDotReplacement);
+            }
+
+            ViewContext.Writer.Write(tagBuilder.ToString(TagRenderMode.StartTag));
+            var theForm = CreateForm();
+
+            if (traditionalJavascriptEnabled)
+            {
+                ViewContext.FormContext.FormId = tagBuilder.Attributes["id"];
+            }
+
+            return theForm;
         }
 
         protected virtual HtmlString GenerateTextBox(ModelMetadata metadata, string name, object value, string format,

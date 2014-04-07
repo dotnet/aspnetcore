@@ -22,7 +22,15 @@ namespace Microsoft.AspNet.Mvc
 
         public string Action(string action, string controller, object values)
         {
-            var valuesDictionary = new RouteValueDictionary(values);
+            var valuesDictionary = values as IDictionary<string, object>;
+            if (valuesDictionary == null)
+            {
+                valuesDictionary = new RouteValueDictionary(values);
+            }
+            else
+            {
+                valuesDictionary = new RouteValueDictionary(valuesDictionary);
+            }
 
             if (action != null)
             {
