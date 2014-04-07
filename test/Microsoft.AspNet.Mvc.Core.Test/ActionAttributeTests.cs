@@ -108,6 +108,64 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             Assert.Equal("Index", result.Name);
         }
 
+        [Theory]
+        [InlineData("GET")]
+        [InlineData("PUT")]
+        [InlineData("POST")]
+        [InlineData("DELETE")]
+        [InlineData("PATCH")]
+        public async Task ActionNameAttribute_ActionGetsExposedViaActionName_UnreachableByConvention(string verb)
+        {
+            // Arrange
+            var requestContext = new RequestContext(
+                                        GetHttpContext(verb),
+                                        new Dictionary<string, object>
+                                            {
+                                                { "controller", "ActionName" },
+                                                { "action", "RPCMethodWithHttpGet" }
+                                            });
+
+            // Act
+            var result = await InvokeActionSelector(requestContext);
+
+            // Assert
+            Assert.Equal(null, result);
+        }
+
+        [Theory]
+        [InlineData("GET", "CustomActionName_Verb")]
+        [InlineData("PUT", "CustomActionName_Verb")]
+        [InlineData("POST", "CustomActionName_Verb")]
+        [InlineData("DELETE", "CustomActionName_Verb")]
+        [InlineData("PATCH", "CustomActionName_Verb")]
+        [InlineData("GET", "CustomActionName_DefaultMethod")]
+        [InlineData("PUT", "CustomActionName_DefaultMethod")]
+        [InlineData("POST", "CustomActionName_DefaultMethod")]
+        [InlineData("DELETE", "CustomActionName_DefaultMethod")]
+        [InlineData("PATCH", "CustomActionName_DefaultMethod")]
+        [InlineData("GET", "CustomActionName_RpcMethod")]
+        [InlineData("PUT", "CustomActionName_RpcMethod")]
+        [InlineData("POST", "CustomActionName_RpcMethod")]
+        [InlineData("DELETE", "CustomActionName_RpcMethod")]
+        [InlineData("PATCH", "CustomActionName_RpcMethod")]
+        public async Task ActionNameAttribute_DifferentActionName_UsesActionNameFromActionNameAttribute(string verb, string actionName)
+        {
+            // Arrange
+            var requestContext = new RequestContext(
+                                        GetHttpContext(verb),
+                                        new Dictionary<string, object>
+                                            {
+                                                { "controller", "ActionName" },
+                                                { "action", actionName }
+                                            });
+
+            // Act
+            var result = await InvokeActionSelector(requestContext);
+
+            // Assert
+            Assert.Equal(actionName, result.Name);
+        }
+
         private async Task<ActionDescriptor> InvokeActionSelector(RequestContext context)
         {
             return await InvokeActionSelector(context, _actionDiscoveryConventions);
@@ -176,6 +234,24 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // InvalidMethod ( since its private)
             private void Post()
             { }
+        }
+
+        private class ActionNameController
+        {
+            [ActionName("CustomActionName_Verb")]
+            public void Put()
+            {
+            }
+
+            [ActionName("CustomActionName_DefaultMethod")]
+            public void Index()
+            {
+            }
+
+            [ActionName("CustomActionName_RpcMethod")]
+            public void RPCMethodWithHttpGet()
+            {
+            }
         }
 
         private class HttpMethodAttributeTests_RestOnlyController

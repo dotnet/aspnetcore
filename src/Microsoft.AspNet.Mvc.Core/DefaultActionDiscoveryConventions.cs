@@ -104,38 +104,43 @@ namespace Microsoft.AspNet.Mvc
         private bool HasCustomAttributes(MethodInfo methodInfo)
         {
             var actionAttributes = GetActionCustomAttributes(methodInfo);
-            return actionAttributes.HttpMethodProviderAttributes.Any();
+            return actionAttributes.Any();
         }
 
         private ActionAttributes GetActionCustomAttributes(MethodInfo methodInfo)
         {
-            var httpMethodConstraints = methodInfo.GetCustomAttributes().OfType<IActionHttpMethodProvider>();
+            var attributes = methodInfo.GetCustomAttributes();
+            var actionNameAttribute = attributes.OfType<ActionNameAttribute>().FirstOrDefault();
+            var httpMethodConstraints = attributes.OfType<IActionHttpMethodProvider>();
             return new ActionAttributes()
             {
-                HttpMethodProviderAttributes = httpMethodConstraints
+                HttpMethodProviderAttributes = httpMethodConstraints,
+                ActionNameAttribute = actionNameAttribute
             };
         }
 
         private IEnumerable<ActionInfo> GetActionsForMethodsWithCustomAttributes(MethodInfo methodInfo)
         {
-            var httpMethodConstraints = GetActionCustomAttributes(methodInfo).HttpMethodProviderAttributes;
-            if (!httpMethodConstraints.Any())
+            var actionAttributes = GetActionCustomAttributes(methodInfo);
+            if (!actionAttributes.Any())
             {
+                // If the action is not decorated with any of the attributes, 
+                // it would be handled by convention.
                 yield break;
             }
 
-            var httpMethods = httpMethodConstraints.SelectMany(x => x.HttpMethods).Distinct().ToArray();
-            if (httpMethods.Any())
+            var actionNameAttribute = actionAttributes.ActionNameAttribute;
+            var actionName = actionNameAttribute != null ? actionNameAttribute.Name : methodInfo.Name;
+
+            var httpMethodProviders = actionAttributes.HttpMethodProviderAttributes;
+            var httpMethods = httpMethodProviders.SelectMany(x => x.HttpMethods).Distinct().ToArray();
+
+            yield return new ActionInfo()
             {
-                // Any method which does not follow convention and does not have
-                // an explicit NoAction attribute is exposed as a method with action name.
-                yield return new ActionInfo()
-                {
-                    HttpMethods = httpMethods,
-                    ActionName = methodInfo.Name,
-                    RequireActionNameMatch = true
-                };
-            }
+                HttpMethods = httpMethods,
+                ActionName = actionName,
+                RequireActionNameMatch = true
+            };
         }
 
         private IEnumerable<ActionInfo> GetActionsForMethodsWithoutCustomAttributes(MethodInfo methodInfo, TypeInfo controllerTypeInfo)
@@ -201,7 +206,13 @@ namespace Microsoft.AspNet.Mvc
 
         private class ActionAttributes
         {
-            public IEnumerable<IActionHttpMethodProvider> HttpMethodProviderAttributes { get; set; } 
+            public IEnumerable<IActionHttpMethodProvider> HttpMethodProviderAttributes { get; set; }
+            public ActionNameAttribute ActionNameAttribute { get; set; }
+
+            public bool Any()
+            {
+                return ActionNameAttribute != null || HttpMethodProviderAttributes.Any();
+            }
         }
     }
 }
