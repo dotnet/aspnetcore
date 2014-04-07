@@ -8,7 +8,6 @@
     "Microsoft.AspNet.Routing": "0.1-alpha-*",
     "Microsoft.AspNet.Testing": "0.1-alpha-*",
     "Microsoft.AspNet.Mvc.ModelBinding": "",
-    "Microsoft.AspNet.Mvc.Rendering": "",
     "Microsoft.AspNet.Routing": "0.1-alpha-*",
     "Microsoft.AspNet.DependencyInjection" : "0.1-alpha-*",
     "Microsoft.AspNet.Abstractions" : "0.1-alpha-*",

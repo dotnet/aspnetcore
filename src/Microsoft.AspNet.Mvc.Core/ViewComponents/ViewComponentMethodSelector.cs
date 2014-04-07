@@ -2,8 +2,9 @@
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.Core;
 
-namespace Microsoft.AspNet.Mvc.Core.ViewComponents
+namespace Microsoft.AspNet.Mvc
 {
     public static class ViewComponentMethodSelector
     {

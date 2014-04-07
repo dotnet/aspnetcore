@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
+using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering.Expressions;
 
@@ -24,7 +25,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             if (viewContext.ViewData == null)
             {
-                throw new ArgumentException(Resources.FormatArgumentPropertyNull("ViewData"), "viewContext");
+                throw new ArgumentException(Resources.FormatPropertyOfTypeCannotBeNull(
+                        "ViewData",
+                        typeof(ViewContext)), 
+                    "viewContext");
             }
 
             ViewData = viewContext.ViewData as ViewDataDictionary<TModel>;

@@ -1,7 +1,8 @@
 ﻿
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.Rendering;
 
-namespace Microsoft.AspNet.Mvc.Rendering
+namespace Microsoft.AspNet.Mvc
 {
     public static class ViewComponentHelperExtensions
     {

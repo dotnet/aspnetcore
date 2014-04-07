@@ -6,17 +6,19 @@
     "Microsoft.AspNet.Abstractions": "0.1-alpha-*",
     "Microsoft.AspNet.Routing": "0.1-alpha-*",
     "Common": "",
-    "Microsoft.AspNet.Mvc.ModelBinding": "",
-    "Microsoft.AspNet.Mvc.Rendering": ""
+    "Microsoft.AspNet.Mvc.ModelBinding": ""
   },
   "configurations": {
     "net45": {},
     "k10": {
       "dependencies": {
+        "Microsoft.CSharp": "4.0.0.0",
         "System.Collections": "4.0.0.0",
+        "System.Collections.Concurrent": "4.0.0.0",
         "System.ComponentModel": "4.0.0.0",
         "System.Diagnostics.Contracts": "4.0.0.0",
         "System.Diagnostics.Debug": "4.0.10.0",
+        "System.Diagnostics.Tools": "4.0.0.0",
         "System.Dynamic.Runtime": "4.0.0.0",
         "System.Globalization": "4.0.10.0",
         "System.IO": "4.0.0.0",
@@ -31,6 +33,7 @@
         "System.Runtime.Extensions": "4.0.10.0",
         "System.Runtime.InteropServices": "4.0.20.0",
         "System.Text.Encoding": "4.0.20.0",
+        "System.Threading": "4.0.0.0",
         "System.Threading.Tasks": "4.0.10.0"
       }
     }

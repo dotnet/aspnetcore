@@ -10,8 +10,7 @@
     "Common": "",
     "Microsoft.AspNet.Mvc.Core": "",
     "Microsoft.AspNet.Mvc.Razor": "",
-    "Microsoft.AspNet.Mvc.ModelBinding": "",
-    "Microsoft.AspNet.Mvc.Rendering": ""
+    "Microsoft.AspNet.Mvc.ModelBinding": ""
   },
   "configurations": {
     "net45": {},

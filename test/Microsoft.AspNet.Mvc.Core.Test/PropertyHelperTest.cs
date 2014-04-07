@@ -2,7 +2,7 @@
 using System.Reflection;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Rendering
+namespace Microsoft.AspNet.Mvc
 {
     public class PropertyHelperTest
     {

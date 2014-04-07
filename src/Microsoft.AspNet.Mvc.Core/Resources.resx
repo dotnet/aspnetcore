@@ -171,4 +171,40 @@
   <data name="ActionSelector_GetCandidateActionsIsAmbiguous" xml:space="preserve">
     <value>The supplied route values are ambiguous and can select multiple sets of actions.</value>
   </data>
+  <data name="ArgumentNullOrEmpty" xml:space="preserve">
+    <value>The argument must not be null or empty.</value>
+  </data>
+  <data name="ArgumentPropertyUnexpectedType" xml:space="preserve">
+    <value>Property '{0}' is of type '{1}', but this method requires a value of type '{2}'.</value>
+  </data>
+  <data name="Common_PartialViewNotFound" xml:space="preserve">
+    <value>The partial view '{0}' was not found or no view engine supports the searched locations. The following locations were searched:{1}</value>
+  </data>
+  <data name="Common_ValueNotValidForProperty" xml:space="preserve">
+    <value>The value '{0}' is invalid.</value>
+  </data>
+  <data name="DynamicViewData_ViewDataNull" xml:space="preserve">
+    <value>ViewData value must not be null.</value>
+  </data>
+  <data name="ExpressionHelper_InvalidIndexerExpression" xml:space="preserve">
+    <value>The expression compiler was unable to evaluate the indexer expression '{0}' because it references the model parameter '{1}' which is unavailable.</value>
+  </data>
+  <data name="HtmlHelper_NullModelMetadata" xml:space="preserve">
+    <value>The IModelMetadataProvider was unable to provide metadata for expression '{0}'.</value>
+  </data>
+  <data name="HtmlHelper_NotContextualized" xml:space="preserve">
+    <value>Must call 'Contextualize' method before using this HtmlHelper instance.</value>
+  </data>
+  <data name="TemplateHelpers_TemplateLimitations" xml:space="preserve">
+    <value>Templates can be used only with field access, property access, single-dimension array index, or single-parameter custom indexer expressions.</value>
+  </data>
+  <data name="TemplateHelpers_NoTemplate" xml:space="preserve">
+    <value>Unable to locate an appropriate template for type {0}.</value>
+  </data>
+  <data name="ViewData_ModelCannotBeNull" xml:space="preserve">
+    <value>The model item passed is null, but this ViewDataDictionary instance requires a non-null model item of type '{0}'.</value>
+  </data>
+  <data name="ViewData_WrongTModelType" xml:space="preserve">
+    <value>The model item passed into the ViewDataDictionary is of type '{0}', but this ViewDataDictionary instance requires a model item of type '{1}'.</value>
+  </data>
 </root>

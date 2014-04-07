@@ -12,8 +12,7 @@
     "Microsoft.AspNet.Mvc.ModelBinding": "",
     "Microsoft.AspNet.Mvc.Core": "",
     "Microsoft.AspNet.Mvc": "",
-    "Microsoft.AspNet.Mvc.Razor": "",
-    "Microsoft.AspNet.Mvc.Rendering": ""
+    "Microsoft.AspNet.Mvc.Razor": ""
   },
   "commands": { "web": "Microsoft.AspNet.Hosting server.name=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001" },
   "configurations": {
