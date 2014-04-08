@@ -32,7 +32,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
         private readonly IViewEngine _viewEngine;
 
         private ViewContext _viewContext;
-        
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HtmlHelper"/> class.
