@@ -28,10 +28,10 @@
             @*Bug: HtmlHelpers missing*@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                        @*<li>@Html.ActionLink("Home", "Index", "Home")</li>*@
-                        @await Component.InvokeAsync("GenreMenu")
-@*                        @Html.Action("CartSummary", "ShoppingCart")*@
-                    </ul>
+                    @*<li>@Html.ActionLink("Home", "Index", "Home")</li>*@
+                    @await Component.InvokeAsync("GenreMenu")
+                    @*                        @Html.Action("CartSummary", "ShoppingCart")*@
+                </ul>
                 @await Html.PartialAsync("_LoginPartial")
             </div>
         </div>
@@ -48,11 +48,10 @@
 
     @*Bug: No script helpers yet*@
     @*@Scripts.Render("~/bundles/jquery")
-        @Scripts.Render("~/bundles/bootstrap")
-        @RenderSection("scripts", required: false)*@
-
+        @Scripts.Render("~/bundles/bootstrap")*@
     <script src="~/Scripts/jquery-1.10.2.js"></script>
     <script src="~/Scripts/bootstrap.js"></script>
     <script src="~/Scripts/respond.js"></script>
+    @RenderSection("scripts", required: false)
 </body>
 </html>
