@@ -299,6 +299,22 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
+        /// Cannot convert value '{0}' to enum type '{1}'.
+        /// </summary>
+        internal static string ValueProviderResult_CannotConvertEnum
+        {
+            get { return GetString("ValueProviderResult_CannotConvertEnum"); }
+        }
+
+        /// <summary>
+        /// Cannot convert value '{0}' to enum type '{1}'.
+        /// </summary>
+        internal static string FormatValueProviderResult_CannotConvertEnum(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ValueProviderResult_CannotConvertEnum"), p0, p1);
+        }
+
+        /// <summary>
         /// The parameter conversion from type '{0}' to type '{1}' failed. See the inner exception for more information.
         /// </summary>
         internal static string ValueProviderResult_ConversionThrew

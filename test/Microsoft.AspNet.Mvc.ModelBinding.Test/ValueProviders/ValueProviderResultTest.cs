@@ -1,7 +1,9 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding.Test
+namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class ValueProviderResultTest
     {
@@ -23,6 +25,382 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var convertedValue = valueProviderResult.ConvertTo(typeof(int));
 
             Assert.Equal(0, convertedValue);
+        }
+
+        [Fact]
+        public void ConvertToCanConvertArraysToSingleElements()
+        {
+            // Arrange
+            var vpr = new ValueProviderResult(new int[] { 1, 20, 42 }, "", CultureInfo.InvariantCulture);
+
+            // Act
+            var converted = (string)vpr.ConvertTo(typeof(string));
+
+            // Assert
+            Assert.Equal("1", converted);
+        }
+
+        [Fact]
+        public void ConvertToCanConvertSingleElementsToArrays()
+        {
+            // Arrange
+            var vpr = new ValueProviderResult(42, "", CultureInfo.InvariantCulture);
+
+            // Act
+            var converted = (string[])vpr.ConvertTo(typeof(string[]));
+
+            // Assert
+            Assert.NotNull(converted);
+            var result = Assert.Single(converted);
+            Assert.Equal("42", result);
+        }
+
+        [Fact]
+        public void ConvertToCanConvertSingleElementsToSingleElements()
+        {
+            // Arrange
+            var vpr = new ValueProviderResult(42, "", CultureInfo.InvariantCulture);
+
+            // Act
+            var converted = (string)vpr.ConvertTo(typeof(string));
+
+            // Assert
+            Assert.NotNull(converted);
+            Assert.Equal("42", converted);
+        }
+
+        [Fact]
+        public void ConvertingNullStringToNullableIntReturnsNull()
+        {
+            // Arrange
+            object original = null;
+            var vpr = new ValueProviderResult(original, "", CultureInfo.InvariantCulture);
+
+            // Act
+            var returned = (int?)vpr.ConvertTo(typeof(int?));
+
+            // Assert
+            Assert.Equal(returned, null);
+        }
+
+        [Fact]
+        public void ConvertingWhiteSpaceStringToNullableIntReturnsNull()
+        {
+            // Arrange
+            var original = " ";
+            var vpr = new ValueProviderResult(original, "", CultureInfo.InvariantCulture);
+
+            // Act
+            var returned = (int?)vpr.ConvertTo(typeof(int?));
+
+            // Assert
+            Assert.Equal(returned, null);
+        }
+
+        [Fact]
+        public void ConvertToReturnsNullIfArrayElementValueIsNull()
+        {
+            // Arrange
+            var vpr = new ValueProviderResult(new string[] { null }, null, CultureInfo.InvariantCulture);
+
+            // Act
+            var outValue = vpr.ConvertTo(typeof(int));
+
+            // Assert
+            Assert.Null(outValue);
+        }
+
+        [Fact]
+        public void ConvertToReturnsNullIfTryingToConvertEmptyArrayToSingleElement()
+        {
+            // Arrange
+            var vpr = new ValueProviderResult(new int[0], "", CultureInfo.InvariantCulture);
+
+            // Act
+            var outValue = vpr.ConvertTo(typeof(int));
+
+            // Assert
+            Assert.Null(outValue);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(" \t \r\n ")]
+        public void ConvertToReturnsNullIfTrimmedValueIsEmptyString(object value)
+        {
+            // Arrange
+            var vpr = new ValueProviderResult(value, null, CultureInfo.InvariantCulture);
+
+            // Act
+            var outValue = vpr.ConvertTo(typeof(int));
+
+            // Assert
+            Assert.Null(outValue);
+        }
+
+        [Fact]
+        public void ConvertToReturnsNullIfTrimmedValueIsEmptyString()
+        {
+            // Arrange
+            var vpr = new ValueProviderResult(rawValue: null, attemptedValue: null, culture: CultureInfo.InvariantCulture);
+
+            // Act
+            var outValue = vpr.ConvertTo(typeof(int[]));
+
+            // Assert
+            Assert.Null(outValue);
+        }
+
+        [Fact]
+        public void ConvertToReturnsValueIfArrayElementIsIntegerAndDestinationTypeIsEnum()
+        {
+            // Arrange
+            var vpr = new ValueProviderResult(new object[] { 1 }, null, CultureInfo.InvariantCulture);
+
+            // Act
+            var outValue = vpr.ConvertTo(typeof(MyEnum));
+
+            // Assert
+            Assert.Equal(outValue, MyEnum.Value1);
+        }
+
+        [Fact]
+        public void ConvertToReturnsValueIfArrayElementIsStringValueAndDestinationTypeIsEnum()
+        {
+            // Arrange
+            var vpr = new ValueProviderResult(new object[] { "1" }, null, CultureInfo.InvariantCulture);
+
+            // Act
+            var outValue = vpr.ConvertTo(typeof(MyEnum));
+
+            // Assert
+            Assert.Equal(outValue, MyEnum.Value1);
+        }
+
+        [Fact]
+        public void ConvertToReturnsValueIfArrayElementIsStringKeyAndDestinationTypeIsEnum()
+        {
+            // Arrange
+            var vpr = new ValueProviderResult(new object[] { "Value1" }, null, CultureInfo.InvariantCulture);
+
+            // Act
+            var outValue = vpr.ConvertTo(typeof(MyEnum));
+
+            // Assert
+            Assert.Equal(outValue, MyEnum.Value1);
+        }
+
+        [Fact]
+        public void ConvertToReturnsValueIfElementIsStringAndDestinationIsNullableInteger()
+        {
+            // Arrange
+            var vpr = new ValueProviderResult("12", null, CultureInfo.InvariantCulture);
+
+            // Act
+            var outValue = vpr.ConvertTo(typeof(int?));
+
+            // Assert
+            Assert.Equal(12, outValue);
+        }
+
+        [Fact]
+        public void ConvertToReturnsValueIfElementIsStringAndDestinationIsNullableDouble()
+        {
+            // Arrange
+            var vpr = new ValueProviderResult("12.5", null, CultureInfo.InvariantCulture);
+
+            // Act
+            var outValue = vpr.ConvertTo(typeof(double?));
+
+            // Assert
+            Assert.Equal(12.5, outValue);
+        }
+
+        [Fact]
+        public void ConvertToReturnsValueIfElementIsDecimalAndDestinationIsNullableInteger()
+        {
+            // Arrange
+            var vpr = new ValueProviderResult(12M, null, CultureInfo.InvariantCulture);
+
+            // Act
+            var outValue = vpr.ConvertTo(typeof(int?));
+
+            // Assert
+            Assert.Equal(12, outValue);
+        }
+
+        [Fact]
+        public void ConvertToReturnsValueIfElementIsDecimalAndDestinationIsNullableDouble()
+        {
+            // Arrange
+            var vpr = new ValueProviderResult(12.5M, null, CultureInfo.InvariantCulture);
+
+            // Act
+            var outValue = vpr.ConvertTo(typeof(double?));
+
+            // Assert
+            Assert.Equal(12.5, outValue);
+        }
+
+        [Fact]
+        public void ConvertToReturnsValueIfElementIsDecimalDoubleAndDestinationIsNullableInteger()
+        {
+            // Arrange
+            var vpr = new ValueProviderResult(12.5M, null, CultureInfo.InvariantCulture);
+
+            // Act
+            var outValue = vpr.ConvertTo(typeof(int?));
+
+            // Assert
+            Assert.Equal(12, outValue);
+        }
+
+        [Fact]
+        public void ConvertToReturnsValueIfElementIsDecimalDoubleAndDestinationIsNullableLong()
+        {
+            // Arrange
+            var vpr = new ValueProviderResult(12.5M, null, CultureInfo.InvariantCulture);
+
+            // Act
+            var outValue = vpr.ConvertTo(typeof(long?));
+
+            // Assert
+            Assert.Equal(12L, outValue);
+        }
+
+        [Fact]
+        public void ConvertToReturnsValueIfArrayElementInstanceOfDestinationType()
+        {
+            // Arrange
+            var vpr = new ValueProviderResult(new object[] { "some string" }, null, CultureInfo.InvariantCulture);
+
+            // Act
+            var outValue = vpr.ConvertTo(typeof(string));
+
+            // Assert
+            Assert.Equal("some string", outValue);
+        }
+
+        [Theory]
+        [InlineData(new object[] { new[] { 1, 0 }})]
+        [InlineData(new object[] { new[] {"Value1", "Value0" }})]
+        public void ConvertTo_ConvertsEnumArrays(object value)
+        {
+            // Arrange
+            var vpr = new ValueProviderResult(value, null, CultureInfo.InvariantCulture);
+
+            // Act
+            var outValue = (MyEnum[])vpr.ConvertTo(typeof(MyEnum[]));
+
+            // Assert
+            Assert.Equal(2, outValue.Length);
+            Assert.Equal(MyEnum.Value1, outValue[0]);
+            Assert.Equal(MyEnum.Value0, outValue[1]);
+        }
+
+        [Fact]
+        public void ConvertToReturnsValueIfInstanceOfDestinationType()
+        {
+            // Arrange
+            var original = new[] { "some string" };
+            var vpr = new ValueProviderResult(original, null, CultureInfo.InvariantCulture);
+
+            // Act
+            var outValue = vpr.ConvertTo(typeof(string[]));
+
+            // Assert
+            Assert.Same(original, outValue);
+        }
+
+        [Theory]
+        [InlineData(typeof(int), typeof(FormatException))]
+        [InlineData(typeof(double?), typeof(FormatException))]
+        [InlineData(typeof(MyEnum?), typeof(ArgumentException))]
+        public void ConvertToThrowsIfConverterThrows(Type destinationType, Type exceptionType)
+        {
+            // Arrange
+            var vpr = new ValueProviderResult("this-is-not-a-valid-value", null, CultureInfo.InvariantCulture);
+
+            // Act & Assert
+            Assert.Throws(exceptionType, () => vpr.ConvertTo(destinationType));
+        }
+
+        [Fact]
+        public void ConvertToThrowsIfNoConverterExists()
+        {
+            // Arrange
+            var vpr = new ValueProviderResult("x", null, CultureInfo.InvariantCulture);
+            var destinationType = typeof(MyClassWithoutConverter);
+
+            // Act & Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => vpr.ConvertTo(destinationType));
+            Assert.Equal("The parameter conversion from type 'System.String' to type " +
+                        "'Microsoft.AspNet.Mvc.ModelBinding.ValueProviderResultTest+MyClassWithoutConverter' " +
+                        "failed because no type converter can convert between these types.",
+                         ex.Message);
+        }
+
+        [Fact]
+        public void ConvertToUsesProvidedCulture()
+        {
+            // Arrange
+            var original = "12,5";
+            var vpr = new ValueProviderResult(original, null, new CultureInfo("en-GB"));
+            var frCulture = new CultureInfo("fr-FR");
+
+            // Act
+            var cultureResult = (decimal)vpr.ConvertTo(typeof(decimal), frCulture);
+            var result = (decimal)vpr.ConvertTo(typeof(decimal));
+
+            // Assert
+            Assert.Equal(12.5M, cultureResult);
+            Assert.Equal(125, result);
+        }
+
+        [Fact]
+        public void CulturePropertyDefaultsToInvariantCulture()
+        {
+            // Arrange
+            var result = new ValueProviderResult(null, null, null);
+
+            // Act & assert
+            Assert.Same(CultureInfo.InvariantCulture, result.Culture);
+        }
+
+        [Theory]
+        [MemberData("IntrinsicConversionData")]
+        public void ConvertToCanConvertIntrinsics<T>(object initialValue, T expectedValue)
+        {
+            // Arrange
+            var result = new ValueProviderResult(initialValue, "", CultureInfo.InvariantCulture);
+
+            // Act & Assert
+            Assert.Equal(expectedValue, result.ConvertTo(typeof(T)));
+        }
+
+        public static IEnumerable<object[]> IntrinsicConversionData
+        {
+            get
+            {
+                yield return new object[] { 42, 42M };
+                yield return new object[] { 42, 42L };
+                yield return new object[] { 42, (float)42.0 };
+                yield return new object[] { 42, (double)42.0 };
+                yield return new object[] { 42M, 42 };
+                yield return new object[] { 42L, 42 };
+                yield return new object[] { (float)42.0, 42 };
+                yield return new object[] { (double)42.0, 42 };
+            }
+        }
+
+        private class MyClassWithoutConverter
+        {
+        }
+
+        private enum MyEnum
+        {
+            Value0 = 0,
+            Value1 = 1
         }
     }
 }

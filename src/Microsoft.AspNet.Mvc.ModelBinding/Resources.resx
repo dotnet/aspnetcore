@@ -171,6 +171,9 @@
   <data name="Validation_ValueNotFound" xml:space="preserve">
     <value>A value is required but was not present in the request.</value>
   </data>
+  <data name="ValueProviderResult_CannotConvertEnum" xml:space="preserve">
+    <value>Cannot convert value '{0}' to enum type '{1}'.</value>
+  </data>
   <data name="ValueProviderResult_ConversionThrew" xml:space="preserve">
     <value>The parameter conversion from type '{0}' to type '{1}' failed. See the inner exception for more information.</value>
   </data>

@@ -71,6 +71,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return value;
             }
 
+            // In case of a Nullable object, we try again with its underlying type.
+            var underlyingType = Nullable.GetUnderlyingType(destinationType);
+            if (underlyingType != null)
+            {
+                destinationType = underlyingType;
+            }
+
             // if this is a user-input value but the user didn't type anything, return no value
             var valueAsString = value as string;
 
@@ -79,56 +86,63 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return null;
             }
 
+            if (destinationType == typeof(string))
+            {
+                return Convert.ToString(value, culture);
+            }
+
             if (destinationType == typeof(int))
             {
-                return Convert.ToInt32(value);
+                return Convert.ToInt32(value, culture);
             }
-            else if (destinationType == typeof(bool))
+
+            if (destinationType == typeof(long))
             {
-                return Boolean.Parse(value.ToString());
+                return Convert.ToInt64(value, culture);
             }
-            else if (destinationType == typeof(string))
+
+            if (destinationType == typeof(float))
             {
-                return Convert.ToString(value);
+                return Convert.ToSingle(value, culture);
             }
-            string message = Resources.FormatValueProviderResult_NoConverterExists(value.GetType(), destinationType);
+
+            if (destinationType == typeof(double))
+            {
+                return Convert.ToDouble(value, culture);
+            }
+
+            if (destinationType == typeof(decimal))
+            {
+                return Convert.ToDecimal(value, culture);
+            }
+            
+            if (destinationType == typeof(bool))
+            {
+                return Convert.ToBoolean(value, culture);
+            }
+
+            if (destinationType.GetTypeInfo().IsEnum)
+            {
+                // EnumConverter cannot convert integer, so we verify manually
+                if ((value is int))
+                {
+                    if (Enum.IsDefined(destinationType, value))
+                    {
+                        return Enum.ToObject(destinationType, (int)value);
+                    }
+                    
+                    throw new FormatException(
+                        Resources.FormatValueProviderResult_CannotConvertEnum(value, 
+                                                                              destinationType));
+                }
+                else
+                {
+                    return Enum.Parse(destinationType, valueAsString);
+                }
+            }
+
+            var message = Resources.FormatValueProviderResult_NoConverterExists(value.GetType(), destinationType);
             throw new InvalidOperationException(message);
-
-            // TODO: Revive once we get TypeConverters
-            //TypeConverter converter = TypeDescriptor.GetConverter(destinationType);
-            //bool canConvertFrom = converter.CanConvertFrom(value.GetType());
-            //if (!canConvertFrom)
-            //{
-            //    converter = TypeDescriptor.GetConverter(value.GetType());
-            //}
-            //if (!(canConvertFrom || converter.CanConvertTo(destinationType)))
-            //{
-            //    // EnumConverter cannot convert integer, so we verify manually
-            //    if (destinationType.GetTypeInfo().IsEnum && value is int)
-            //    {
-            //        return Enum.ToObject(destinationType, (int)value);
-            //    }
-
-            //    // In case of a Nullable object, we try again with its underlying type.
-            //    Type underlyingType = Nullable.GetUnderlyingType(destinationType);
-            //    if (underlyingType != null)
-            //    {
-            //        return ConvertSimpleType(culture, value, underlyingType);
-            //    }
-
-            //    throw Error.InvalidOperation(Resources.ValueProviderResult_NoConverterExists, value.GetType(), destinationType);
-            //}
-
-            //try
-            //{
-            //    return canConvertFrom
-            //               ? converter.ConvertFrom(null, culture, value)
-            //               : converter.ConvertTo(null, culture, value, destinationType);
-            //}
-            //catch (Exception ex)
-            //{
-            //    throw Error.InvalidOperation(ex, Resources.ValueProviderResult_ConversionThrew, value.GetType(), destinationType);
-            //}
         }
 
         private static object UnwrapPossibleArrayType(CultureInfo culture, object value, Type destinationType)
