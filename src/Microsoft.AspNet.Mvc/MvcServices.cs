@@ -74,6 +74,7 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Transient<IViewComponentInvokerFactory, DefaultViewComponentInvokerFactory>();
             yield return describe.Transient<INestedProvider<ViewComponentInvokerProviderContext>, DefaultViewComponentInvokerProvider>();
             yield return describe.Transient<IViewComponentResultHelper, DefaultViewComponentResultHelper>();
+            yield return describe.Transient<IViewComponentHelper, DefaultViewComponentHelper>();
 
             yield return
                describe.Describe(

@@ -15,21 +15,13 @@ namespace Microsoft.AspNet.Mvc.Razor
         private readonly HashSet<string> _renderedSections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private bool _renderedBody;
 
-        public IViewComponentHelper Component
-        {
-            get { return Context == null ? null : Context.Component; }
-        }
-
         public ViewContext Context { get; set; }
 
         public string Layout { get; set; }
 
         protected TextWriter Output { get; set; }
 
-        public IUrlHelper Url
-        {
-            get { return Context == null ? null : Context.Url; }
-        }
+        public IUrlHelper Url { get; private set; }
 
         public dynamic ViewBag
         {
@@ -49,6 +41,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             SectionWriters = new Dictionary<string, HelperResult>(StringComparer.OrdinalIgnoreCase);
             Context = context;
+
+            Url = context.ServiceProvider.GetService<IUrlHelper>();
 
             var contentBuilder = new StringBuilder(1024);
             using (var bodyWriter = new StringWriter(contentBuilder))

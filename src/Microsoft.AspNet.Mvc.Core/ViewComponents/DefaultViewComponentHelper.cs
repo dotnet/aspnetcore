@@ -8,19 +8,22 @@ using Microsoft.AspNet.Mvc.Rendering;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class DefaultViewComponentHelper : IViewComponentHelper
+    public class DefaultViewComponentHelper : IViewComponentHelper, ICanHasViewContext
     {
         private readonly IViewComponentInvokerFactory _invokerFactory;
         private readonly IViewComponentSelector _selector;
-        private readonly ViewContext _viewContext;
+        private ViewContext _viewContext;
 
         public DefaultViewComponentHelper(
             [NotNull] IViewComponentSelector selector,
-            [NotNull] IViewComponentInvokerFactory invokerFactory,
-            [NotNull] ViewContext viewContext)
+            [NotNull] IViewComponentInvokerFactory invokerFactory)
         {
             _selector = selector;
             _invokerFactory = invokerFactory;
+        }
+
+        public void Contextualize([NotNull] ViewContext viewContext)
+        {
             _viewContext = viewContext;
         }
 

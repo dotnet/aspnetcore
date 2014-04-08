@@ -36,8 +36,6 @@ namespace Microsoft.AspNet.Mvc
                 context.ViewContext.HttpContext,
                 context.ViewContext.ViewEngineContext)
             {
-                Component = context.ViewContext.Component,
-                Url = context.ViewContext.Url,
                 ViewData = _viewData ?? context.ViewContext.ViewData,
                 Writer = context.Writer,
             };

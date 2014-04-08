@@ -51,15 +51,9 @@ namespace Microsoft.AspNet.Mvc
 
             var viewContext = new ViewContext(_serviceProvider, actionContext.HttpContext, actionContext.RouteValues)
             {
-                Url = urlHelper,
                 ViewData = ViewData,
                 Writer = writer,
             };
-
-            viewContext.Component = new DefaultViewComponentHelper(
-                _serviceProvider.GetService<IViewComponentSelector>(),
-                _serviceProvider.GetService<IViewComponentInvokerFactory>(),
-                viewContext);
 
             return viewContext;
         }

@@ -28,16 +28,23 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         private const string HiddenListItem = @"<li style=""display:none""></li>";
 
+        private readonly IUrlHelper _urlHelper;
+        private readonly IViewEngine _viewEngine;
+
         private ViewContext _viewContext;
-        private IViewEngine _viewEngine;
+        
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HtmlHelper"/> class.
         /// </summary>
-        public HtmlHelper([NotNull] IViewEngine viewEngine, [NotNull] IModelMetadataProvider metadataProvider)
+        public HtmlHelper(
+            [NotNull] IViewEngine viewEngine, 
+            [NotNull] IModelMetadataProvider metadataProvider,
+            [NotNull] IUrlHelper urlHelper)
         {
             _viewEngine = viewEngine;
             MetadataProvider = metadataProvider;
+            _urlHelper = urlHelper;
 
             // Underscores are fine characters in id's.
             IdAttributeDotReplacement = "_";
@@ -445,8 +452,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         protected virtual MvcForm GenerateForm(string actionName, string controllerName, object routeValues,
                                                FormMethod method, IDictionary<string, object> htmlAttributes)
         {
-            var urlHelper = ViewContext.Url;
-            var formAction = urlHelper.Action(action: actionName, controller: controllerName, values: routeValues);
+            var formAction = _urlHelper.Action(action: actionName, controller: controllerName, values: routeValues);
 
             var tagBuilder = new TagBuilder("form");
             tagBuilder.MergeAttributes(htmlAttributes);

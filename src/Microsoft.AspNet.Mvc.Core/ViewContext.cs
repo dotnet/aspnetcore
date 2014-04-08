@@ -33,8 +33,6 @@ namespace Microsoft.AspNet.Mvc
             ClientValidationEnabled = true;
         }
 
-        public IViewComponentHelper Component { get; set; }
-
         public virtual FormContext FormContext
         {
             get
@@ -51,8 +49,6 @@ namespace Microsoft.AspNet.Mvc
         public HttpContext HttpContext { get; private set; }
 
         public IServiceProvider ServiceProvider { get; private set; }
-
-        public IUrlHelper Url { get; set; }
 
         public bool UnobtrusiveJavaScriptEnabled { get; set; }
 

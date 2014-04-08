@@ -13,8 +13,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <summary>
         /// Initializes a new instance of the <see cref="HtmlHelper{TModel}"/> class.
         /// </summary>
-        public HtmlHelper([NotNull] IViewEngine viewEngine, [NotNull] IModelMetadataProvider metadataProvider)
-             : base(viewEngine, metadataProvider)
+        public HtmlHelper(
+            [NotNull] IViewEngine viewEngine, 
+            [NotNull] IModelMetadataProvider metadataProvider,
+            [NotNull] IUrlHelper urlHelper)
+             : base(viewEngine, metadataProvider, urlHelper)
         {
         }
 

@@ -18,6 +18,8 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         public ViewDataDictionary<TModel> ViewData { get; private set; }
 
+        public IViewComponentHelper Component { get; private set; }
+
         public IHtmlHelper<TModel> Html { get; set; }
 
         public override Task RenderAsync([NotNull] ViewContext context)
@@ -49,6 +51,14 @@ namespace Microsoft.AspNet.Mvc.Razor
             Html = context.ServiceProvider.GetService<IHtmlHelper<TModel>>();
 
             var contextable = Html as ICanHasViewContext;
+            if (contextable != null)
+            {
+                contextable.Contextualize(context);
+            }
+
+            Component = context.ServiceProvider.GetService<IViewComponentHelper>();
+
+            contextable = Component as ICanHasViewContext;
             if (contextable != null)
             {
                 contextable.Contextualize(context);
