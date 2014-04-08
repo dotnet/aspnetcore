@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="__ToolsVersion__" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.Props" Condition="'$(VSToolsPath)' != ''" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>68a1f0e1-ecce-46d1-b20f-c43ee5b097de</ProjectGuid>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
+  </PropertyGroup>
+  <PropertyGroup>
+    <SchemaVersion>2.0</SchemaVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="Project.json" />
+    <Content Include="Resources.resx" />
+    <Content Include="Views\DiagnosticsPage.cshtml" />
+    <Content Include="Views\DiagnosticsPage.tt" />
+    <Content Include="Views\ErrorPage.cshtml" />
+    <Content Include="Views\ErrorPage.css" />
+    <Content Include="Views\ErrorPage.js" />
+    <Content Include="Views\ErrorPage.tt" />
+    <Content Include="Views\WelcomePage.cshtml" />
+    <Content Include="Views\WelcomePage.tt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Constants.cs" />
+    <Compile Include="DiagnosticsPageExtensions.cs" />
+    <Compile Include="DiagnosticsPageMiddleware.cs" />
+    <Compile Include="DiagnosticsPageOptions.cs" />
+    <Compile Include="ErrorPageExtensions.cs" />
+    <Compile Include="ErrorPageMiddleware.cs" />
+    <Compile Include="ErrorPageOptions.cs" />
+    <Compile Include="Resources.Designer.cs" />
+    <Compile Include="Views\BaseView.cs" />
+    <Compile Include="Views\DiagnosticsPage.cs" />
+    <Compile Include="Views\ErrorDetails.cs" />
+    <Compile Include="Views\ErrorPage.cs" />
+    <Compile Include="Views\ErrorPageModel.cs" />
+    <Compile Include="Views\StackFrame.cs" />
+    <Compile Include="Views\WelcomePage.cs" />
+    <Compile Include="WelcomePageExtensions.cs" />
+    <Compile Include="WelcomePageMiddleware.cs" />
+    <Compile Include="WelcomePageOptions.cs" />
+  </ItemGroup>
+  <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />
+</Project>

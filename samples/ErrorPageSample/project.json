@@ -1,6 +1,7 @@
 {
   "version": "0.1-alpha-*",
   "dependencies": {
+    "Helios" :  "0.1-alpha-*",
     "Microsoft.AspNet.Diagnostics": "",
     "Microsoft.AspNet.HttpFeature": "0.1-alpha-*",
     "Microsoft.AspNet.Abstractions": "0.1-alpha-*",
@@ -27,7 +28,8 @@
         "System.Runtime.Extensions": "4.0.10.0",
         "System.Runtime.InteropServices": "4.0.20.0",
         "System.Text.Encoding": "4.0.20.0",
-        "System.Threading.Tasks": "4.0.10.0"
+        "System.Threading.Tasks": "4.0.10.0",
+        "System.Security.Claims":  "0.1-alpha-*"
       }
     }
   }
