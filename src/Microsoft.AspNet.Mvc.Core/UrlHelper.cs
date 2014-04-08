@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Globalization;
-using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.DependencyInjection;

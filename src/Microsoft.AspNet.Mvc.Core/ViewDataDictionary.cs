@@ -4,9 +4,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.Rendering.Expressions;
 
-namespace Microsoft.AspNet.Mvc.Rendering
+namespace Microsoft.AspNet.Mvc
 {
     public class ViewDataDictionary : IDictionary<string, object>
     {

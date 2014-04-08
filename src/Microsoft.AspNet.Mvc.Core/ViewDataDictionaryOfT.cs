@@ -2,7 +2,7 @@ using System;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 
-namespace Microsoft.AspNet.Mvc.Rendering
+namespace Microsoft.AspNet.Mvc
 {
     public class ViewDataDictionary<TModel> : ViewDataDictionary
     {
