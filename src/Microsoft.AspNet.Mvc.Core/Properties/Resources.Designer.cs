@@ -315,22 +315,6 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// The argument must not be null or empty.
-        /// </summary>
-        internal static string ArgumentNullOrEmpty
-        {
-            get { return GetString("ArgumentNullOrEmpty"); }
-        }
-
-        /// <summary>
-        /// The argument must not be null or empty.
-        /// </summary>
-        internal static string FormatArgumentNullOrEmpty()
-        {
-            return GetString("ArgumentNullOrEmpty");
-        }
-
-        /// <summary>
         /// Property '{0}' is of type '{1}', but this method requires a value of type '{2}'.
         /// </summary>
         internal static string ArgumentPropertyUnexpectedType
@@ -511,7 +495,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var value = _resourceManager.GetString(name);
 
             System.Diagnostics.Debug.Assert(value != null);
-
+    
             if (formatterNames != null)
             {
                 for (var i = 0; i < formatterNames.Length; i++)

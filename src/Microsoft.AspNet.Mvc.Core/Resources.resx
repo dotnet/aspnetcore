@@ -174,9 +174,6 @@
   <data name="ActionSelector_GetCandidateActionsIsAmbiguous" xml:space="preserve">
     <value>The supplied route values are ambiguous and can select multiple sets of actions.</value>
   </data>
-  <data name="ArgumentNullOrEmpty" xml:space="preserve">
-    <value>The argument must not be null or empty.</value>
-  </data>
   <data name="ArgumentPropertyUnexpectedType" xml:space="preserve">
     <value>Property '{0}' is of type '{1}', but this method requires a value of type '{2}'.</value>
   </data>

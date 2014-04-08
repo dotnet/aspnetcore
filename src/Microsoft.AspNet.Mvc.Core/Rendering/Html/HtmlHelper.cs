@@ -502,7 +502,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var fullName = ViewData.TemplateInfo.GetFullHtmlFieldName(name);
             if (string.IsNullOrEmpty(fullName))
             {
-                throw new ArgumentException(Resources.ArgumentNullOrEmpty, "name");
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "name");
             }
 
             var tagBuilder = new TagBuilder("input");

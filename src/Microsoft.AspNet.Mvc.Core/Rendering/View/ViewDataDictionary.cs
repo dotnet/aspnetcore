@@ -160,7 +160,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             if (string.IsNullOrEmpty(expression))
             {
-                throw new ArgumentException(Resources.ArgumentNullOrEmpty, "expression");
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "expression");
             }
 
             return ViewDataEvaluator.Eval(this, expression);

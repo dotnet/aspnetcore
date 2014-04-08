@@ -11,19 +11,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             = new ResourceManager("Microsoft.AspNet.Mvc.ModelBinding.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// The argument '{0}' is null or empty.
+        /// The value cannot be null or empty.
         /// </summary>
-        internal static string ArgumentNullOrEmpty
+        internal static string ArgumentCannotBeNullOrEmpty
         {
-            get { return GetString("ArgumentNullOrEmpty"); }
+            get { return GetString("ArgumentCannotBeNullOrEmpty"); }
         }
 
         /// <summary>
-        /// The argument '{0}' is null or empty.
+        /// The value cannot be null or empty.
         /// </summary>
-        internal static string FormatArgumentNullOrEmpty(object p0)
+        internal static string FormatArgumentCannotBeNullOrEmpty()
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ArgumentNullOrEmpty"), p0);
+            return GetString("ArgumentCannotBeNullOrEmpty");
         }
 
         /// <summary>

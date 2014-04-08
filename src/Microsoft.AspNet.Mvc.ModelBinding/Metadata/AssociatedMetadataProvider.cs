@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             if (string.IsNullOrEmpty(propertyName))
             {
-                throw new ArgumentException(Resources.FormatArgumentNullOrEmpty("propertyName"), "propertyName");
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "propertyName");
             }
 
             var typeInfo = GetTypeInformation(containerType);

@@ -83,11 +83,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test.Binders
             ExceptionAssert.ThrowsArgument(
                 () => provider.GetMetadataForProperty(modelAccessor: null, containerType: typeof(object), propertyName: null),
                 "propertyName",
-                "The argument 'propertyName' is null or empty.");
+                "The value cannot be null or empty.");
             ExceptionAssert.ThrowsArgument(
                 () => provider.GetMetadataForProperty(modelAccessor: null, containerType: typeof(object), propertyName: String.Empty),
                 "propertyName",
-                "The argument 'propertyName' is null or empty.");
+                "The value cannot be null or empty.");
         }
 
         [Fact]
