@@ -2,7 +2,7 @@
 
 using Microsoft.AspNet.Abstractions;
 
-namespace Microsoft.AspNet.Security.Provider
+namespace Microsoft.AspNet.Security.Notifications
 {
     public abstract class EndpointContext : BaseContext
     {

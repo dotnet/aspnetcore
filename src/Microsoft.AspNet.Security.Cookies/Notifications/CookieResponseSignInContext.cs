@@ -3,7 +3,7 @@
 using System.Security.Claims;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Abstractions.Security;
-using Microsoft.AspNet.Security.Provider;
+using Microsoft.AspNet.Security.Notifications;
 
 namespace Microsoft.AspNet.Security.Cookies
 {

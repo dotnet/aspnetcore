@@ -18,12 +18,8 @@ namespace Microsoft.AspNet.Security.Infrastructure
         /// Add an additional ClaimsIdentity to the ClaimsPrincipal
         /// </summary>
         /// <param name="identity"></param>
-        public static void AddUserIdentity(this HttpContext context, IIdentity identity)
+        public static void AddUserIdentity([NotNull] HttpContext context, [NotNull] IIdentity identity)
         {
-            if (identity == null)
-            {
-                throw new ArgumentNullException("identity");
-            }
             var newClaimsPrincipal = new ClaimsPrincipal(identity);
 
             ClaimsPrincipal existingPrincipal = context.User;

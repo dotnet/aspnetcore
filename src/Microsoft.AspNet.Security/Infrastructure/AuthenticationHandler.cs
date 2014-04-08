@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Security.Infrastructure
                 AuthenticationTicket ticket = await AuthenticateAsync();
                 if (ticket != null && ticket.Identity != null)
                 {
-                    Context.AddUserIdentity(ticket.Identity);
+                    SecurityHelper.AddUserIdentity(Context, ticket.Identity);
                 }
             }
         }
@@ -322,13 +322,8 @@ namespace Microsoft.AspNet.Security.Infrastructure
             return Task.FromResult(0);
         }
 
-        protected void GenerateCorrelationId(AuthenticationProperties properties)
+        protected void GenerateCorrelationId([NotNull] AuthenticationProperties properties)
         {
-            if (properties == null)
-            {
-                throw new ArgumentNullException("properties");
-            }
-
             string correlationKey = Constants.CorrelationPrefix + BaseOptions.AuthenticationType;
 
             var nonceBytes = new byte[32];
@@ -349,13 +344,8 @@ namespace Microsoft.AspNet.Security.Infrastructure
         [SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters",
             MessageId = "Microsoft.Owin.Logging.LoggerExtensions.WriteWarning(Microsoft.Owin.Logging.ILogger,System.String,System.String[])",
             Justification = "Logging is not Localized")]
-        protected bool ValidateCorrelationId(AuthenticationProperties properties, ILogger logger)
+        protected bool ValidateCorrelationId([NotNull] AuthenticationProperties properties, [NotNull] ILogger logger)
         {
-            if (properties == null)
-            {
-                throw new ArgumentNullException("properties");
-            }
-
             string correlationKey = Constants.CorrelationPrefix + BaseOptions.AuthenticationType;
 
             string correlationCookie = Request.Cookies[correlationKey];

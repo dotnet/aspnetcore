@@ -7,7 +7,7 @@ using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Abstractions.Security;
 using Microsoft.AspNet.HttpFeature.Security;
 using Microsoft.AspNet.Security.Infrastructure;
-using Microsoft.AspNet.Security.Provider;
+using Microsoft.AspNet.Security.Notifications;
 
 namespace Microsoft.AspNet.Security.Cookies
 {
@@ -22,14 +22,9 @@ namespace Microsoft.AspNet.Security.Cookies
         /// <param name="context"></param>
         /// <param name="ticket">Contains the initial values for identity and extra data</param>
         /// <param name="options"></param>
-        public CookieValidateIdentityContext(HttpContext context, AuthenticationTicket ticket, CookieAuthenticationOptions options)
+        public CookieValidateIdentityContext([NotNull] HttpContext context, [NotNull] AuthenticationTicket ticket, [NotNull] CookieAuthenticationOptions options)
             : base(context, options)
         {
-            if (ticket == null)
-            {
-                throw new ArgumentNullException("ticket");
-            }
-
             Identity = ticket.Identity;
             Properties = ticket.Properties;
         }

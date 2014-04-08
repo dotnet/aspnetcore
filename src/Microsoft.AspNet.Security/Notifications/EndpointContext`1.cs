@@ -2,7 +2,7 @@
 
 using Microsoft.AspNet.Abstractions;
 
-namespace Microsoft.AspNet.Security.Provider
+namespace Microsoft.AspNet.Security.Notifications
 {
     /// <summary>
     /// Base class used for certain event contexts

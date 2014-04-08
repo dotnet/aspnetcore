@@ -5,7 +5,7 @@ using System.Security.Claims;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Abstractions.Security;
 
-namespace Microsoft.AspNet.Security.Provider
+namespace Microsoft.AspNet.Security.Notifications
 {
     public abstract class ReturnEndpointContext : EndpointContext
     {

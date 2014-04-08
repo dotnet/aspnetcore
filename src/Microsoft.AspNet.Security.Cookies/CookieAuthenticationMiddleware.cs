@@ -13,22 +13,25 @@ namespace Microsoft.AspNet.Security.Cookies
     {
         private readonly ILogger _logger;
 
-        public CookieAuthenticationMiddleware(RequestDelegate next, ILogger logger, CookieAuthenticationOptions options)
+        public CookieAuthenticationMiddleware(RequestDelegate next, IDataProtectionProvider dataProtectionProvider, ILoggerFactory loggerFactory, CookieAuthenticationOptions options)
             : base(next, options)
         {
-            if (Options.Provider == null)
+            if (Options.Notifications == null)
             {
-                Options.Provider = new CookieAuthenticationProvider();
+                Options.Notifications = new CookieAuthenticationNotifications();
             }
             if (String.IsNullOrEmpty(Options.CookieName))
             {
                 Options.CookieName = CookieAuthenticationDefaults.CookiePrefix + Options.AuthenticationType;
             }
-            if (logger == null)
+            if (options.TicketDataFormat == null)
             {
-                throw new ArgumentNullException("logger");
+                IDataProtector dataProtector = DataProtectionHelpers.CreateDataProtector(dataProtectionProvider,
+                    typeof(CookieAuthenticationMiddleware).FullName, options.AuthenticationType, "v1");
+                options.TicketDataFormat = new TicketDataFormat(dataProtector);
             }
-            _logger = logger;
+
+            _logger = loggerFactory.Create(typeof(CookieAuthenticationMiddleware).FullName);
         }
 
         protected override AuthenticationHandler<CookieAuthenticationOptions> CreateHandler()

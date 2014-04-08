@@ -5,16 +5,10 @@ using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.Security.DataProtection
 {
-    public static class BuilderExtensions
+    public static class DataProtectionHelpers
     {
-        public static IDataProtector CreateDataProtector(this IBuilder app, params string[] purposes)
+        public static IDataProtector CreateDataProtector(IDataProtectionProvider dataProtectionProvider, params string[] purposes)
         {
-            if (app == null)
-            {
-                throw new ArgumentNullException("app");
-            }
-
-            var dataProtectionProvider = (IDataProtectionProvider)app.ServiceProvider.GetService(typeof(IDataProtectionProvider));
             if (dataProtectionProvider == null)
             {
                 dataProtectionProvider = DataProtectionProvider.CreateFromDpapi();

@@ -10,13 +10,8 @@ namespace Microsoft.AspNet.Security.Infrastructure
     {
         private readonly RequestDelegate _next;
 
-        protected AuthenticationMiddleware(RequestDelegate next, TOptions options)
+        protected AuthenticationMiddleware([NotNull] RequestDelegate next, [NotNull] TOptions options)
         {
-            if (options == null)
-            {
-                throw new ArgumentNullException("options");
-            }
-
             Options = options;
             _next = next;
         }

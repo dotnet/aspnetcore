@@ -2,7 +2,7 @@
 
 using System;
 using Microsoft.AspNet.Abstractions;
-using Microsoft.AspNet.Security.Provider;
+using Microsoft.AspNet.Security.Notifications;
 
 namespace Microsoft.AspNet.Security.Infrastructure
 {
@@ -11,18 +11,11 @@ namespace Microsoft.AspNet.Security.Infrastructure
         private readonly ISecureDataFormat<AuthenticationTicket> _secureDataFormat;
 
         public AuthenticationTokenReceiveContext(
-            HttpContext context,
-            ISecureDataFormat<AuthenticationTicket> secureDataFormat,
-            string token) : base(context)
+            [NotNull] HttpContext context,
+            [NotNull] ISecureDataFormat<AuthenticationTicket> secureDataFormat,
+            [NotNull] string token)
+            : base(context)
         {
-            if (secureDataFormat == null)
-            {
-                throw new ArgumentNullException("secureDataFormat");
-            }
-            if (token == null)
-            {
-                throw new ArgumentNullException("token");
-            }
             _secureDataFormat = secureDataFormat;
             Token = token;
         }
@@ -36,12 +29,8 @@ namespace Microsoft.AspNet.Security.Infrastructure
             Ticket = _secureDataFormat.Unprotect(protectedData);
         }
 
-        public void SetTicket(AuthenticationTicket ticket)
+        public void SetTicket([NotNull] AuthenticationTicket ticket)
         {
-            if (ticket == null)
-            {
-                throw new ArgumentNullException("ticket");
-            }
             Ticket = ticket;
         }
     }

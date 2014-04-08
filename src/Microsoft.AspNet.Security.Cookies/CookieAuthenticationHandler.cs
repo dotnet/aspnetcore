@@ -25,12 +25,8 @@ namespace Microsoft.AspNet.Security.Cookies
         private DateTimeOffset _renewIssuedUtc;
         private DateTimeOffset _renewExpiresUtc;
 
-        public CookieAuthenticationHandler(ILogger logger)
+        public CookieAuthenticationHandler([NotNull] ILogger logger)
         {
-            if (logger == null)
-            {
-                throw new ArgumentNullException("logger");
-            }
             _logger = logger;
         }
 
@@ -81,7 +77,7 @@ namespace Microsoft.AspNet.Security.Cookies
 
             var context = new CookieValidateIdentityContext(Context, ticket, Options);
 
-            await Options.Provider.ValidateIdentity(context);
+            await Options.Notifications.ValidateIdentity(context);
 
             return new AuthenticationTicket(context.Identity, context.Properties);
         }
@@ -131,7 +127,7 @@ namespace Microsoft.AspNet.Security.Cookies
                     context.Properties.IssuedUtc = issuedUtc;
                     context.Properties.ExpiresUtc = expiresUtc;
 
-                    Options.Provider.ResponseSignIn(context);
+                    Options.Notifications.ResponseSignIn(context);
 
                     if (context.Properties.IsPersistent)
                     {
@@ -153,7 +149,7 @@ namespace Microsoft.AspNet.Security.Cookies
                         Options,
                         cookieOptions);
                     
-                    Options.Provider.ResponseSignOut(context);
+                    Options.Notifications.ResponseSignOut(context);
 
                     Response.Cookies.Delete(
                         Options.CookieName,
@@ -202,7 +198,7 @@ namespace Microsoft.AspNet.Security.Cookies
                         && IsHostRelative(redirectUri))
                     {
                         var redirectContext = new CookieApplyRedirectContext(Context, Options, redirectUri);
-                        Options.Provider.ApplyRedirect(redirectContext);
+                        Options.Notifications.ApplyRedirect(redirectContext);
                     }
                 }
             }
@@ -242,7 +238,7 @@ namespace Microsoft.AspNet.Security.Cookies
                 new QueryString(Options.ReturnUrlParameter, currentUri);
 
             var redirectContext = new CookieApplyRedirectContext(Context, Options, loginUri);
-            Options.Provider.ApplyRedirect(redirectContext);
+            Options.Notifications.ApplyRedirect(redirectContext);
         }
     }
 }

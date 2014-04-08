@@ -1,13 +1,11 @@
 using System;
-using System.Linq;
 using System.Security.Claims;
 using Microsoft.AspNet;
 using Microsoft.AspNet.Abstractions;
-using Microsoft.AspNet.Abstractions.Security;
-using Microsoft.AspNet.HttpFeature.Security;
-using Microsoft.AspNet.Security;
+using Microsoft.AspNet.DependencyInjection;
+using Microsoft.AspNet.DependencyInjection.Fallback;
+using Microsoft.AspNet.Logging;
 using Microsoft.AspNet.Security.Cookies;
-using Microsoft.AspNet.Security.Infrastructure;
 
 namespace CookieSample
 {
@@ -15,6 +13,11 @@ namespace CookieSample
     {
         public void Configuration(IBuilder app)
         {
+            // TODO: Move to host.
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddInstance<ILoggerFactory>(new NullLoggerFactory());
+            app.ServiceProvider = serviceCollection.BuildServiceProvider(app.ServiceProvider);
+
             app.UseCookieAuthentication(new CookieAuthenticationOptions()
                 {
 
@@ -34,6 +37,24 @@ namespace CookieSample
                 context.Response.ContentType = "text/plain";
                 await context.Response.WriteAsync("Hello old timer");
             });
+        }
+
+        // TODO: Temp workaround until the host reliably provides logging.
+        // If ILoggerFactory is never guaranteed, move this fallback into Microsoft.AspNet.Logging.
+        private class NullLoggerFactory : ILoggerFactory
+        {
+            public ILogger Create(string name)
+            {
+                return new NullLongger();
+            }
+        }
+
+        private class NullLongger : ILogger
+        {
+            public bool WriteCore(TraceType eventType, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+            {
+                return false;
+            }
         }
     }
 }

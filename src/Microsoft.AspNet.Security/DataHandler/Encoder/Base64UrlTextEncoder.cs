@@ -6,23 +6,13 @@ namespace Microsoft.AspNet.Security.DataHandler.Encoder
 {
     public class Base64UrlTextEncoder : ITextEncoder
     {
-        public string Encode(byte[] data)
+        public string Encode([NotNull] byte[] data)
         {
-            if (data == null)
-            {
-                throw new ArgumentNullException("data");
-            }
-
             return Convert.ToBase64String(data).TrimEnd('=').Replace('+', '-').Replace('/', '_');
         }
 
-        public byte[] Decode(string text)
+        public byte[] Decode([NotNull] string text)
         {
-            if (text == null)
-            {
-                throw new ArgumentNullException("text");
-            }
-
             return Convert.FromBase64String(Pad(text.Replace('-', '+').Replace('_', '/')));
         }
 

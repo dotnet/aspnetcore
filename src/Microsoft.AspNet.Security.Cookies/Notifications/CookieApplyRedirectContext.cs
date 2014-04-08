@@ -2,7 +2,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNet.Abstractions;
-using Microsoft.AspNet.Security.Provider;
+using Microsoft.AspNet.Security.Notifications;
 
 namespace Microsoft.AspNet.Security.Cookies
 {

@@ -44,17 +44,8 @@ namespace Microsoft.AspNet.Security.DataHandler.Serializer
             }
         }
 
-        public static void Write(BinaryWriter writer, AuthenticationTicket model)
+        public static void Write([NotNull] BinaryWriter writer, [NotNull] AuthenticationTicket model)
         {
-            if (writer == null)
-            {
-                throw new ArgumentNullException("writer");
-            }
-            if (model == null)
-            {
-                throw new ArgumentNullException("model");
-            }
-
             writer.Write(FormatVersion);
             ClaimsIdentity identity = model.Identity;
             writer.Write(identity.AuthenticationType);
@@ -72,13 +63,8 @@ namespace Microsoft.AspNet.Security.DataHandler.Serializer
             PropertiesSerializer.Write(writer, model.Properties);
         }
 
-        public static AuthenticationTicket Read(BinaryReader reader)
+        public static AuthenticationTicket Read([NotNull] BinaryReader reader)
         {
-            if (reader == null)
-            {
-                throw new ArgumentNullException("reader");
-            }
-
             if (reader.ReadInt32() != FormatVersion)
             {
                 return null;

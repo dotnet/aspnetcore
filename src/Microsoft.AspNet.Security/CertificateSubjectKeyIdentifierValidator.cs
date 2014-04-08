@@ -18,13 +18,8 @@ namespace Microsoft.AspNet.Security
         /// Initializes a new instance of the <see cref="CertificateSubjectKeyIdentifierValidator"/> class.
         /// </summary>
         /// <param name="validSubjectKeyIdentifiers">A set of subject key identifiers which are valid for an HTTPS request.</param>
-        public CertificateSubjectKeyIdentifierValidator(IEnumerable<string> validSubjectKeyIdentifiers)
+        public CertificateSubjectKeyIdentifierValidator([NotNull] IEnumerable<string> validSubjectKeyIdentifiers)
         {
-            if (validSubjectKeyIdentifiers == null)
-            {
-                throw new ArgumentNullException("validSubjectKeyIdentifiers");
-            }
-
             _validSubjectKeyIdentifiers = new HashSet<string>(validSubjectKeyIdentifiers, StringComparer.OrdinalIgnoreCase);
 
             if (_validSubjectKeyIdentifiers.Count == 0)
@@ -41,16 +36,11 @@ namespace Microsoft.AspNet.Security
         /// <param name="chain">The chain of certificate authorities associated with the remote certificate.</param>
         /// <param name="sslPolicyErrors">One or more errors associated with the remote certificate.</param>
         /// <returns>A Boolean value that determines whether the specified certificate is accepted for authentication.</returns>
-        public bool Validate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        public bool Validate(object sender, X509Certificate certificate, [NotNull] X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
             if (sslPolicyErrors != SslPolicyErrors.None)
             {
                 return false;
-            }
-
-            if (chain == null)
-            {
-                throw new ArgumentNullException("chain");
             }
 
             if (chain.ChainElements.Count < 2)

@@ -6,16 +6,16 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNet.Security.Cookies
 {
     /// <summary>
-    /// This default implementation of the ICookieAuthenticationProvider may be used if the 
+    /// This default implementation of the ICookieAuthenticationNotifications may be used if the 
     /// application only needs to override a few of the interface methods. This may be used as a base class
     /// or may be instantiated directly.
     /// </summary>
-    public class CookieAuthenticationProvider : ICookieAuthenticationProvider
+    public class CookieAuthenticationNotifications : ICookieAuthenticationNotifications
     {
         /// <summary>
-        /// Create a new instance of the default provider.
+        /// Create a new instance of the default notifications.
         /// </summary>
-        public CookieAuthenticationProvider()
+        public CookieAuthenticationNotifications()
         {
             OnValidateIdentity = context => Task.FromResult(0);
             OnResponseSignIn = context => { };

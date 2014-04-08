@@ -2,22 +2,16 @@
 
 using Microsoft.AspNet.Abstractions;
 
-namespace Microsoft.AspNet.Security.Provider
+namespace Microsoft.AspNet.Security.Notifications
 {
-    /// <summary>
-    /// Base class used for certain event contexts
-    /// </summary>
-    public abstract class BaseContext<TOptions>
+    public abstract class BaseContext
     {
-        protected BaseContext(HttpContext context, TOptions options)
+        protected BaseContext(HttpContext context)
         {
             HttpContext = context;
-            Options = options;
         }
 
         public HttpContext HttpContext { get; private set; }
-
-        public TOptions Options { get; private set; }
 
         public HttpRequest Request
         {
