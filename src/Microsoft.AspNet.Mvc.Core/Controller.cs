@@ -119,5 +119,59 @@ namespace Microsoft.AspNet.Mvc
 
             return new RedirectResult(url, permanent: true);
         }
+
+        public RedirectToActionResult RedirectToAction(string actionName)
+        {
+            return RedirectToAction(actionName, routeValues: null);
+        }
+
+        public RedirectToActionResult RedirectToAction(string actionName, object routeValues)
+        {
+            return RedirectToAction(actionName, controllerName: null, routeValues: routeValues);
+        }
+
+        public RedirectToActionResult RedirectToAction(string actionName, string controllerName)
+        {
+            return RedirectToAction(actionName, controllerName, routeValues: null);
+        }
+
+        public RedirectToActionResult RedirectToAction(string actionName, string controllerName,
+                                        object routeValues)
+        {
+            return new RedirectToActionResult(Url, actionName, controllerName, 
+                                                TypeHelper.ObjectToDictionary(routeValues));
+        }
+
+        public RedirectToActionResult RedirectToActionPermanent(string actionName)
+        {
+            return RedirectToActionPermanent(actionName, routeValues: null);
+        }
+
+        public RedirectToActionResult RedirectToActionPermanent(string actionName, object routeValues)
+        {
+            return RedirectToActionPermanent(actionName, controllerName: null, routeValues: routeValues);
+        }
+
+        public RedirectToActionResult RedirectToActionPermanent(string actionName, string controllerName)
+        {
+            return RedirectToActionPermanent(actionName, controllerName, routeValues: null);
+        }
+
+        public RedirectToActionResult RedirectToActionPermanent(string actionName, string controllerName,
+                                        object routeValues)
+        {
+            return new RedirectToActionResult(Url, actionName, controllerName, 
+                                                TypeHelper.ObjectToDictionary(routeValues), permanent: true);
+        }
+
+        public RedirectToRouteResult RedirectToRoute(object routeValues)
+        {
+            return new RedirectToRouteResult(Url, TypeHelper.ObjectToDictionary(routeValues));
+        }
+
+        public RedirectToRouteResult RedirectToRoutePermanent(object routeValues)
+        {
+            return new RedirectToRouteResult(Url, TypeHelper.ObjectToDictionary(routeValues), permanent: true);
+        }
     }
 }

@@ -538,6 +538,22 @@ namespace Microsoft.AspNet.Mvc.Core
             return string.Format(CultureInfo.CurrentCulture, GetString("ViewData_WrongTModelType"), p0, p1);
         }
 
+        /// <summary>
+        /// No route matches the supplied values.
+        /// </summary>
+        internal static string NoRoutesMatched
+        {
+            get { return GetString("NoRoutesMatched"); }
+        }
+
+        /// <summary>
+        /// No route matches the supplied values.
+        /// </summary>
+        internal static string FormatNoRoutesMatched()
+        {
+            return GetString("NoRoutesMatched");
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

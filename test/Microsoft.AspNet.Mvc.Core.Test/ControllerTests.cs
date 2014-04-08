@@ -1,6 +1,7 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
 using Xunit;
 
@@ -82,6 +83,183 @@ namespace Microsoft.AspNet.Mvc.Core
             // Act & Assert
             ExceptionAssert.ThrowsArgument(
                 () => controller.RedirectPermanent(url: url), "url", "The value cannot be null or empty");
+        }
+
+        [Fact]
+        public void RedirectToAction_Temporary_Returns_SameAction()
+        {
+            // Arrange
+            var controller = new Controller();
+
+            // Act
+            var resultTemporary = controller.RedirectToAction("SampleAction");
+
+            // Assert
+            Assert.False(resultTemporary.Permanent);
+            Assert.Equal("SampleAction", resultTemporary.ActionName);
+        }
+
+        [Fact]
+        public void RedirectToAction_Permanent_Returns_SameAction()
+        {
+            // Arrange
+            var controller = new Controller();
+
+            // Act
+            var resultPermanent = controller.RedirectToActionPermanent("SampleAction");
+
+            // Assert
+            Assert.True(resultPermanent.Permanent);
+            Assert.Equal("SampleAction", resultPermanent.ActionName);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("SampleController")]
+        public void RedirectToAction_Temporary_Returns_SameController(string controllerName)
+        {
+            // Arrange
+            var controller = new Controller();
+
+            // Act
+            var resultTemporary = controller.RedirectToAction("SampleAction", controllerName);
+
+            // Assert
+            Assert.False(resultTemporary.Permanent);
+            Assert.Equal("SampleAction", resultTemporary.ActionName);
+            Assert.Equal(controllerName, resultTemporary.ControllerName);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("SampleController")]
+        public void RedirectToAction_Permanent_Returns_SameController(string controllerName)
+        {
+            // Arrange
+            var controller = new Controller();
+
+            // Act
+            var resultPermanent = controller.RedirectToActionPermanent("SampleAction", controllerName);
+
+            // Assert
+            Assert.True(resultPermanent.Permanent);
+            Assert.Equal("SampleAction", resultPermanent.ActionName);
+            Assert.Equal(controllerName, resultPermanent.ControllerName);
+        }
+
+        [Theory]
+        [MemberData("RedirectTestData")]
+        public void RedirectToAction_Temporary_Returns_SameActionControllerAndRouteValues(object routeValues)
+        {
+            // Arrange
+            var controller = new Controller();
+
+            // Act
+            var resultTemporary = controller.RedirectToAction("SampleAction", "SampleController", routeValues);
+
+            // Assert
+            Assert.False(resultTemporary.Permanent);
+            Assert.Equal("SampleAction", resultTemporary.ActionName);
+            Assert.Equal("SampleController", resultTemporary.ControllerName);
+            Assert.Equal(TypeHelper.ObjectToDictionary(routeValues), resultTemporary.RouteValues);
+        }
+
+        [Theory]
+        [MemberData("RedirectTestData")]
+        public void RedirectToAction_Permanent_Returns_SameActionControllerAndRouteValues(object routeValues)
+        {
+            // Arrange
+            var controller = new Controller();
+
+            // Act
+            var resultPermanent = controller.RedirectToActionPermanent("SampleAction", "SampleController", routeValues);
+
+            // Assert
+            Assert.True(resultPermanent.Permanent);
+            Assert.Equal("SampleAction", resultPermanent.ActionName);
+            Assert.Equal("SampleController", resultPermanent.ControllerName);
+            Assert.Equal(TypeHelper.ObjectToDictionary(routeValues), resultPermanent.RouteValues);
+        }
+
+        [Theory]
+        [MemberData("RedirectTestData")]
+        public void RedirectToAction_Temporary_Returns_SameActionAndRouteValues(object routeValues)
+        {
+            // Arrange
+            var controller = new Controller();
+
+            // Act
+            var resultTemporary = controller.RedirectToAction(actionName: null, routeValues: routeValues);
+
+            // Assert
+            Assert.False(resultTemporary.Permanent);
+            Assert.Null(resultTemporary.ActionName);
+            Assert.Equal(TypeHelper.ObjectToDictionary(routeValues), resultTemporary.RouteValues);
+        }
+
+        [Theory]
+        [MemberData("RedirectTestData")]
+        public void RedirectToAction_Permanent_Returns_SameActionAndRouteValues(object routeValues)
+        {
+            // Arrange
+            var controller = new Controller();
+
+            // Act
+            var resultPermanent = controller.RedirectToActionPermanent(null, routeValues);
+
+            // Assert
+            Assert.True(resultPermanent.Permanent);
+            Assert.Null(resultPermanent.ActionName);
+            Assert.Equal(TypeHelper.ObjectToDictionary(routeValues), resultPermanent.RouteValues);
+        }
+
+        [Theory]
+        [MemberData("RedirectTestData")]
+        public void RedirectToRoute_Temporary_Returns_SameRouteValues(object routeValues)
+        {
+            // Arrange
+            var controller = new Controller();
+
+            // Act
+            var resultTemporary = controller.RedirectToRoute(routeValues);
+
+            // Assert
+            Assert.False(resultTemporary.Permanent);
+            Assert.Equal(TypeHelper.ObjectToDictionary(routeValues), resultTemporary.RouteValues);
+        }
+
+        [Theory]
+        [MemberData("RedirectTestData")]
+        public void RedirectToRoute_Permanent_Returns_SameRouteValues(object routeValues)
+        {
+            // Arrange
+            var controller = new Controller();
+
+            // Act
+            var resultPermanent = controller.RedirectToRoutePermanent(routeValues);
+
+            // Assert
+            Assert.True(resultPermanent.Permanent);
+            Assert.Equal(TypeHelper.ObjectToDictionary(routeValues), resultPermanent.RouteValues);
+        }
+
+        public static IEnumerable<object[]> RedirectTestData
+        {
+            get
+            {
+                yield return new object[] { null };
+                yield return
+                    new object[] {
+                        new Dictionary<string, string>() { { "hello", "world" } }
+                    };
+                yield return
+                    new object[] {
+                        new RouteValueDictionary(new Dictionary<string, string>() { 
+                                                        { "test", "case" }, { "sample", "route" } })
+                    };
+            }
         }
     }
 }

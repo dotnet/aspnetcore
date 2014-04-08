@@ -216,4 +216,7 @@
   <data name="ViewData_WrongTModelType" xml:space="preserve">
     <value>The model item passed into the ViewDataDictionary is of type '{0}', but this ViewDataDictionary instance requires a model item of type '{1}'.</value>
   </data>
+  <data name="NoRoutesMatched" xml:space="preserve">
+    <value>No route matches the supplied values.</value>
+  </data>
 </root>
