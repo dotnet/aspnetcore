@@ -24,9 +24,8 @@ namespace MusicStore.Controllers
         //
         // POST: /Checkout/AddressAndPayment
 
-        //Bug: Http verbs not available. 
         //Bug: Using direct model binding until we have TryUpdateModel available.
-        //[HttpPost]
+        [HttpPost]
         //public IActionResult AddressAndPayment(FormCollection values)
         public async Task<IActionResult> AddressAndPayment(Order order)
         {

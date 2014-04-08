@@ -61,7 +61,7 @@ namespace MusicStore.Controllers
 
         //Bug: SelectList not available
         // POST: /StoreManager/Create
-        //[HttpPost]
+        [HttpPost]
         public IActionResult Create(Album album)
         {
             if (ModelState.IsValid == true)
@@ -98,8 +98,7 @@ namespace MusicStore.Controllers
 
         //
         // POST: /StoreManager/Edit/5
-        //Bug: Http actions not available
-        //[HttpPost]
+        [HttpPost]
         public IActionResult Edit(Album album)
         {
             if (ModelState.IsValid == true)
@@ -131,8 +130,9 @@ namespace MusicStore.Controllers
 
         //
         // POST: /StoreManager/Delete/5
-        //Bug: Missing HTTP verb & action name. ActionName out of scope for alpha - So fixing the name of method in code
+        //Bug: ActionName out of scope for alpha - So fixing the name of method in code
         //[HttpPost, ActionName("Delete")]
+        [HttpPost]
         //TODO: How to have an action with same name 'Delete'??
         public IActionResult DeleteConfirmed(int id)
         {

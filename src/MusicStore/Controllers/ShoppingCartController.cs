@@ -53,8 +53,7 @@ namespace MusicStore.Controllers
         //
         // AJAX: /ShoppingCart/RemoveFromCart/5
 
-        //Bug: Missing HTTP verb attribute
-        //[HttpPost]
+        [HttpPost]
         public IActionResult RemoveFromCart(int id)
         {
             // Retrieve the current user's shopping cart

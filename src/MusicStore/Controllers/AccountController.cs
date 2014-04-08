@@ -39,8 +39,7 @@ namespace MusicStore.Controllers
 
         //
         // POST: /Account/Login
-        //Bug: HTTP verb attribs not available
-        //[HttpPost]
+        [HttpPost]
         [AllowAnonymous]
         //[ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model, string returnUrl)
@@ -73,8 +72,7 @@ namespace MusicStore.Controllers
 
         //
         // POST: /Account/Register
-        //Bug: Missing verb attributes
-        //[HttpPost]
+        [HttpPost]
         [AllowAnonymous]
         //[ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
@@ -101,8 +99,7 @@ namespace MusicStore.Controllers
 
         //
         // POST: /Account/Disassociate
-        //Bug: HTTP verbs
-        //[HttpPost]
+        [HttpPost]
         //[ValidateAntiForgeryToken]
         public async Task<IActionResult> Disassociate(string loginProvider, string providerKey)
         {
@@ -142,8 +139,7 @@ namespace MusicStore.Controllers
 
         //
         // POST: /Account/Manage
-        //Bug: No verb attributes
-        //[HttpPost]
+        [HttpPost]
         //[ValidateAntiForgeryToken]
         public async Task<IActionResult> Manage(ManageUserViewModel model)
         {
@@ -203,8 +199,7 @@ namespace MusicStore.Controllers
 
         //
         // POST: /Account/ExternalLogin
-        //Bug: No verb attributes
-        //[HttpPost]
+        [HttpPost]
         [AllowAnonymous]
         //[ValidateAntiForgeryToken]
         public IActionResult ExternalLogin(string provider, string returnUrl)
@@ -244,8 +239,7 @@ namespace MusicStore.Controllers
 
         //
         // POST: /Account/LinkLogin
-        //Bug: No HTTP verbs
-        //[HttpPost]
+        [HttpPost]
         //[ValidateAntiForgeryToken]
         public IActionResult LinkLogin(string provider)
         {
@@ -279,8 +273,7 @@ namespace MusicStore.Controllers
 
         //
         // POST: /Account/ExternalLoginConfirmation
-        //Bug: No HTTP verbs
-        //[HttpPost]
+        [HttpPost]
         [AllowAnonymous]
         //[ValidateAntiForgeryToken]
         public async Task<IActionResult> ExternalLoginConfirmation(ExternalLoginConfirmationViewModel model, string returnUrl)
@@ -321,8 +314,7 @@ namespace MusicStore.Controllers
 
         //
         // POST: /Account/LogOff
-        //Bug: No HTTP verbs
-        //[HttpPost]
+        [HttpPost]
         //[ValidateAntiForgeryToken]
         public IActionResult LogOff()
         {
