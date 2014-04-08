@@ -251,6 +251,22 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
+        /// The value cannot be null or empty.
+        /// </summary>
+        internal static string ArgumentCannotBeNullOrEmpty
+        {
+            get { return GetString("ArgumentCannotBeNullOrEmpty"); }
+        }
+
+        /// <summary>
+        /// The value cannot be null or empty.
+        /// </summary>
+        internal static string FormatArgumentCannotBeNullOrEmpty()
+        {
+            return GetString("ArgumentCannotBeNullOrEmpty");
+        }
+
+        /// <summary>
         /// The '{0}' property of '{1}' must not be null.
         /// </summary>
         internal static string PropertyOfTypeCannotBeNull
@@ -495,7 +511,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var value = _resourceManager.GetString(name);
 
             System.Diagnostics.Debug.Assert(value != null);
-    
+
             if (formatterNames != null)
             {
                 for (var i = 0; i < formatterNames.Length; i++)

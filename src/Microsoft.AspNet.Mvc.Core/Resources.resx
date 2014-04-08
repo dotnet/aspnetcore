@@ -162,6 +162,9 @@
   <data name="DefaultControllerFactory_ActionDescriptorMustBeReflected" xml:space="preserve">
     <value>The action descriptor must be of type '{0}'.</value>
   </data>
+  <data name="ArgumentCannotBeNullOrEmpty" xml:space="preserve">
+    <value>The value cannot be null or empty.</value>
+  </data>
   <data name="PropertyOfTypeCannotBeNull" xml:space="preserve">
     <value>The '{0}' property of '{1}' must not be null.</value>
   </data>
