@@ -24,7 +24,6 @@
     <Compile Include="FeatureObject.cs" />
     <Compile Include="IFeatureCollection.cs" />
     <Compile Include="Implementation\Converter.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>

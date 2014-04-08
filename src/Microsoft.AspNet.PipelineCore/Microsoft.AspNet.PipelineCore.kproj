@@ -44,7 +44,6 @@
     <Compile Include="Infrastructure\Constants.cs" />
     <Compile Include="Infrastructure\FeatureReference.cs" />
     <Compile Include="Infrastructure\ParsingHelpers.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Security\AuthenticateContext.cs" />
     <Compile Include="Security\AuthTypeContext.cs" />
     <Compile Include="Security\ChallengeContext.cs" />

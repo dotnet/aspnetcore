@@ -32,7 +32,6 @@
     <Compile Include="IResponseCookies.cs" />
     <Compile Include="IServerInformation.cs" />
     <Compile Include="PathString.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueryString.cs" />
     <Compile Include="RequestDelegate.cs" />
     <Compile Include="Security\AuthenticateResult.cs" />

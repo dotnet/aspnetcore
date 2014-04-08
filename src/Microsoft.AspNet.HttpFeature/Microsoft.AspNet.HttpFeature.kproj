@@ -28,7 +28,6 @@
     <Compile Include="IHttpSendFile.cs" />
     <Compile Include="IHttpTransportLayerSecurity.cs" />
     <Compile Include="IHttpWebSocketAccept.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Security\IAuthenticateContext.cs" />
     <Compile Include="Security\IAuthenticationHandler.cs" />
     <Compile Include="Security\IAuthTypeContext.cs" />
