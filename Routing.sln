@@ -1,66 +1,66 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+VisualStudioVersion = 12.0.30327.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Routing.net45", "src\Microsoft.AspNet.Routing\Microsoft.AspNet.Routing.net45.csproj", "{16537084-C16D-4885-B90F-18BAC218F85B}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0E966C37-7334-4D96-AAF6-9F49FBD166E3}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Routing.k10", "src\Microsoft.AspNet.Routing\Microsoft.AspNet.Routing.k10.csproj", "{1366B89C-F603-4088-B313-FA053C51BAC6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{C3ADD55B-B9C7-4061-8AD4-6A70D1AE3B2E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{95359B4B-4C85-4B44-A75B-0621905C4CF6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Routing.Tests.net45", "test\Microsoft.AspNet.Routing.Tests\Microsoft.AspNet.Routing.Tests.net45.csproj", "{3775A966-0876-45C3-A67F-0E544BC48D55}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Routing", "src\Microsoft.AspNet.Routing\Microsoft.AspNet.Routing.kproj", "{1EE54D32-6CED-4206-ACF5-3DC1DD39D228}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoutingSample.Web.net45", "samples\RoutingSample.Web\RoutingSample.Web.net45.csproj", "{976D31DB-FF19-49FC-A993-D61514BBE968}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Routing.Tests", "test\Microsoft.AspNet.Routing.Tests\Microsoft.AspNet.Routing.Tests.kproj", "{636D79ED-7B32-487C-BDA5-D2A1AAA97371}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Routing.Tests.k10", "test\Microsoft.AspNet.Routing.Tests\Microsoft.AspNet.Routing.Tests.k10.csproj", "{83E74560-2C7F-415E-A324-BB31D41E2466}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoutingSample.Web.k10", "samples\RoutingSample.Web\RoutingSample.Web.k10.csproj", "{AB84AD9C-77B7-465F-990A-4E3FEE1E5025}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RoutingSample.Web", "samples\RoutingSample.Web\RoutingSample.Web.kproj", "{DB94E647-C73A-4F52-A126-AA7544CCF33B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
+		Debug|x86 = Debug|x86
 		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{16537084-C16D-4885-B90F-18BAC218F85B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{16537084-C16D-4885-B90F-18BAC218F85B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{16537084-C16D-4885-B90F-18BAC218F85B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{16537084-C16D-4885-B90F-18BAC218F85B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1366B89C-F603-4088-B313-FA053C51BAC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1366B89C-F603-4088-B313-FA053C51BAC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1366B89C-F603-4088-B313-FA053C51BAC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1366B89C-F603-4088-B313-FA053C51BAC6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3775A966-0876-45C3-A67F-0E544BC48D55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3775A966-0876-45C3-A67F-0E544BC48D55}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3775A966-0876-45C3-A67F-0E544BC48D55}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3775A966-0876-45C3-A67F-0E544BC48D55}.Release|Any CPU.Build.0 = Release|Any CPU
-		{976D31DB-FF19-49FC-A993-D61514BBE968}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{976D31DB-FF19-49FC-A993-D61514BBE968}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{976D31DB-FF19-49FC-A993-D61514BBE968}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{976D31DB-FF19-49FC-A993-D61514BBE968}.Release|Any CPU.Build.0 = Release|Any CPU
-		{83E74560-2C7F-415E-A324-BB31D41E2466}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{83E74560-2C7F-415E-A324-BB31D41E2466}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{83E74560-2C7F-415E-A324-BB31D41E2466}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{83E74560-2C7F-415E-A324-BB31D41E2466}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AB84AD9C-77B7-465F-990A-4E3FEE1E5025}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AB84AD9C-77B7-465F-990A-4E3FEE1E5025}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AB84AD9C-77B7-465F-990A-4E3FEE1E5025}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AB84AD9C-77B7-465F-990A-4E3FEE1E5025}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1EE54D32-6CED-4206-ACF5-3DC1DD39D228}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{1EE54D32-6CED-4206-ACF5-3DC1DD39D228}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{1EE54D32-6CED-4206-ACF5-3DC1DD39D228}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{1EE54D32-6CED-4206-ACF5-3DC1DD39D228}.Debug|x86.ActiveCfg = Debug|x86
+		{1EE54D32-6CED-4206-ACF5-3DC1DD39D228}.Debug|x86.Build.0 = Debug|x86
+		{1EE54D32-6CED-4206-ACF5-3DC1DD39D228}.Release|Any CPU.ActiveCfg = Release|x86
+		{1EE54D32-6CED-4206-ACF5-3DC1DD39D228}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{1EE54D32-6CED-4206-ACF5-3DC1DD39D228}.Release|Mixed Platforms.Build.0 = Release|x86
+		{1EE54D32-6CED-4206-ACF5-3DC1DD39D228}.Release|x86.ActiveCfg = Release|x86
+		{1EE54D32-6CED-4206-ACF5-3DC1DD39D228}.Release|x86.Build.0 = Release|x86
+		{636D79ED-7B32-487C-BDA5-D2A1AAA97371}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{636D79ED-7B32-487C-BDA5-D2A1AAA97371}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{636D79ED-7B32-487C-BDA5-D2A1AAA97371}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{636D79ED-7B32-487C-BDA5-D2A1AAA97371}.Debug|x86.ActiveCfg = Debug|x86
+		{636D79ED-7B32-487C-BDA5-D2A1AAA97371}.Debug|x86.Build.0 = Debug|x86
+		{636D79ED-7B32-487C-BDA5-D2A1AAA97371}.Release|Any CPU.ActiveCfg = Release|x86
+		{636D79ED-7B32-487C-BDA5-D2A1AAA97371}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{636D79ED-7B32-487C-BDA5-D2A1AAA97371}.Release|Mixed Platforms.Build.0 = Release|x86
+		{636D79ED-7B32-487C-BDA5-D2A1AAA97371}.Release|x86.ActiveCfg = Release|x86
+		{636D79ED-7B32-487C-BDA5-D2A1AAA97371}.Release|x86.Build.0 = Release|x86
+		{DB94E647-C73A-4F52-A126-AA7544CCF33B}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{DB94E647-C73A-4F52-A126-AA7544CCF33B}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{DB94E647-C73A-4F52-A126-AA7544CCF33B}.Debug|x86.ActiveCfg = Debug|x86
+		{DB94E647-C73A-4F52-A126-AA7544CCF33B}.Debug|x86.Build.0 = Debug|x86
+		{DB94E647-C73A-4F52-A126-AA7544CCF33B}.Release|Any CPU.ActiveCfg = Release|x86
+		{DB94E647-C73A-4F52-A126-AA7544CCF33B}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{DB94E647-C73A-4F52-A126-AA7544CCF33B}.Release|Mixed Platforms.Build.0 = Release|x86
+		{DB94E647-C73A-4F52-A126-AA7544CCF33B}.Release|x86.ActiveCfg = Release|x86
+		{DB94E647-C73A-4F52-A126-AA7544CCF33B}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{16537084-C16D-4885-B90F-18BAC218F85B} = {0E966C37-7334-4D96-AAF6-9F49FBD166E3}
-		{1366B89C-F603-4088-B313-FA053C51BAC6} = {0E966C37-7334-4D96-AAF6-9F49FBD166E3}
-		{976D31DB-FF19-49FC-A993-D61514BBE968} = {C3ADD55B-B9C7-4061-8AD4-6A70D1AE3B2E}
-		{AB84AD9C-77B7-465F-990A-4E3FEE1E5025} = {C3ADD55B-B9C7-4061-8AD4-6A70D1AE3B2E}
-		{3775A966-0876-45C3-A67F-0E544BC48D55} = {95359B4B-4C85-4B44-A75B-0621905C4CF6}
-		{83E74560-2C7F-415E-A324-BB31D41E2466} = {95359B4B-4C85-4B44-A75B-0621905C4CF6}
+		{1EE54D32-6CED-4206-ACF5-3DC1DD39D228} = {0E966C37-7334-4D96-AAF6-9F49FBD166E3}
+		{636D79ED-7B32-487C-BDA5-D2A1AAA97371} = {95359B4B-4C85-4B44-A75B-0621905C4CF6}
+		{DB94E647-C73A-4F52-A126-AA7544CCF33B} = {C3ADD55B-B9C7-4061-8AD4-6A70D1AE3B2E}
 	EndGlobalSection
 EndGlobal
