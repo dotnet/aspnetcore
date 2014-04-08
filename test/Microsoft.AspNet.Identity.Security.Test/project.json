@@ -4,8 +4,8 @@
     "Microsoft.AspNet.Abstractions" : "0.1-alpha-*",
     "Microsoft.AspNet.ConfigurationModel" : "0.1-alpha-*",
     "Microsoft.AspNet.DependencyInjection" : "0.1-alpha-*",
-    "Microsoft.AspNet.Identity" : "0.1-alpha-*",
-    "Microsoft.AspNet.Identity.Security" : "0.1-alpha-*",
+    "Microsoft.AspNet.Identity" : "",
+    "Microsoft.AspNet.Identity.Security" : "",
     "Microsoft.AspNet.Testing" : "0.1-alpha-*",
     "System.Security.Claims" : "0.1-alpha-*",
     "Xunit.KRunner": "0.1-alpha-*",
@@ -20,25 +20,6 @@
         "Moq" : "4.2.1312.1622",
         "System.Runtime": "",
         "System.Collections": ""
-      }
-    },
-    "k10": {
-      "dependencies": {
-        "System.Collections": "4.0.0.0",
-        "System.Collections.Concurrent": "4.0.0.0",
-        "System.ComponentModel": "4.0.0.0",
-        "System.Console": "4.0.0.0",
-        "System.Diagnostics.Debug": "4.0.10.0",
-        "System.Globalization": "4.0.10.0",
-        "System.Linq": "4.0.0.0",
-        "System.Linq.Expressions": "4.0.0.0",
-        "System.Reflection": "4.0.10.0",
-        "System.Reflection.Extensions": "4.0.0.0",
-        "System.Resources.ResourceManager": "4.0.0.0",
-        "System.Runtime": "4.0.20.0",
-        "System.Runtime.Extensions": "4.0.10.0",
-        "System.Threading": "4.0.0.0",
-        "System.Threading.Tasks": "4.0.10.0"
       }
     }
   },
