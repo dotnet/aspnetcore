@@ -1,10 +1,22 @@
-#What is this?
+#ASP.NET vNext Preview
 
-The Preview repository is a place for the ASP.NET Insiders to log issues and discuss ASP.NET vNext with the product team.
+In the next version of ASP.NET we are working with multiple teams around Microsoft to create a lean, composable .NET stack that provides a familiar and modern framework for web and cloud scenarios.
+
+The Preview repository is a place for the ASP.NET Insiders to log issues and discuss ASP.NET vNext with the product team. It contains some samples and some documentation in the [wiki](https://github.com/aspnet/Preview).
 
 The samples provided are designed to show some of the features of the new framework as well as setting up a sandbox for you to try out new drops of functionality as they come out. The NuGet.config file in the repo points to a private MyGet feed that has all the packages being developed. The feed is updated every time a full build succeeds.
 
-**The K.cmd file in the root of this repo is designed to be able to be put in your path. It will probe various locations relative to your current directory to find the KRuntime that it should use. All the steps after this will assume you've done this, so that you can just type ```K Run``` from anywhere. If you choose not to then add the appropriate number of folder traversals (..\\) before each K command.**
+#Getting Started
+
+* Clone repository
+* Optionally add the repo directory to your path, see the note below.
+* Open a command prompt and navigate to the repository
+* Run GetLatestRuntime.cmd. This will download the SDK you will use to run your applications.
+* Navigate to samples\HelloConsole
+* Run ```K run```
+* You should see some compiler output and a message saying "Hello World"
+
+**The K.cmd file in the root of this repo is designed to be able to be put in your path. It will probe various locations relative to your current directory to find the k tools that it should use. All the steps after this will assume you've done this, so that you can just type ```K Run``` from anywhere. If you choose not to then add the appropriate number of folder traversals (..\\) before each K command.**
 
 #Samples
 
@@ -16,19 +28,13 @@ These samples, in this repo, are just basic starting points for you to experimen
 + HelloWeb. This is a minimal startup class that shows welcome page and static file middleware. This is mostly for you to run through the steps in the readme and make sure you have everything setup and working correctly.
 + HelloWebFx. This sample is a basic MVC app. It is not designed to show all the functionality of the new web stack, but to give you a starting point to play with features.
 
-##Feature Samples
+##[Feature Samples](https://github.com/aspnet/Entropy)
 The Entropy repo contains samples of specific features in isolation. Each directory contains just enough code to show an aspect of a feature.
 
 ##Application Samples
-MVC Music Store and BugTracker application are both being ported. Each of these have their own repository that you can look at as they are working. 
+MVC Music Store and [BugTracker](https://github.com/aspnet/BugTracker) application are both being ported. Each of these have their own repository that you can look at as they are working. 
 
 #Running the samples
-
-##Bootstrapping the runtime
-Before you can use the runtime commands to launch your application, you need to have the runtime commands. To do this there is a GetRuntime.cmd file in the root of the repository.
-
-1. Run ```GetRuntime.cmd```
-2. This should use NuGet.exe to get the runtime from MyGet and put it in a packages folder. One of the things currently containined in the runtime is a modified version of NuGet.exe that you should use for everything other than getting the runtime itself.
 
 ##Running HelloWeb
 
@@ -59,3 +65,7 @@ By default when running the applications you are running against Desktop CLR (4.
 #Core CLR Packages
 
 Currently the BCL is split into some fairly fine grained packages, which was one of the goals of this effort. However, the packages that exist today do not necessarily represent the list of packages that we will end up with. We are still experimenting with what makes sense to be a package and what the experience should be.
+
+#Feedback
+
+You can log issues in this repo in order to start discussions, ask questions, make suggestions, etc.
