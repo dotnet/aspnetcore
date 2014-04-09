@@ -15,5 +15,4 @@ md .nuget
 copy %CACHED_NUGET% .nuget\nuget.exe > nul
 
 :restore
-IF EXIST packages\KoreBuild goto run
 .nuget\NuGet.exe install ProjectK -o packages -nocache -pre
