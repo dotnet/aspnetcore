@@ -162,12 +162,6 @@
     <Compile Include="RouteConstraintAttribute.cs" />
     <Compile Include="RouteDataActionConstraint.cs" />
     <Compile Include="RouteKeyHandling.cs" />
-    <Compile Include="Services\AssemblyNeutralAttribute.cs" />
-    <Compile Include="Services\ILibraryExport.cs" />
-    <Compile Include="Services\ILibraryInformation.cs" />
-    <Compile Include="Services\ILibraryManager.cs" />
-    <Compile Include="Services\IMetadataReference.cs" />
-    <Compile Include="Services\ISourceReference.cs" />
     <Compile Include="TemplateInfo.cs" />
     <Compile Include="UrlHelper.cs" />
     <Compile Include="UrlHelperExtensions.cs" />

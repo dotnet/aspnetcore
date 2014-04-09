@@ -40,9 +40,6 @@
     <Compile Include="RazorViewOfT.cs" />
     <Compile Include="Razor\IRazorCompilationService.cs" />
     <Compile Include="Razor\RazorCompilationService.cs" />
-    <Compile Include="Services\IApplicationEnvironment.cs" />
-    <Compile Include="Services\IAssemblyLoaderEngine.cs" />
-    <Compile Include="Services\IMetadataFileReference.cs" />
     <Compile Include="Services\IRoslynMetadataReference.cs" />
     <Compile Include="ViewEngine\IVirtualPathViewFactory.cs" />
     <Compile Include="ViewEngine\RazorViewEngine.cs" />

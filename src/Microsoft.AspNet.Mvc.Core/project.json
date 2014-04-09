@@ -6,7 +6,8 @@
     "Microsoft.AspNet.Abstractions": "0.1-alpha-*",
     "Microsoft.AspNet.Routing": "0.1-alpha-*",
     "Common": "",
-    "Microsoft.AspNet.Mvc.ModelBinding": ""
+    "Microsoft.AspNet.Mvc.ModelBinding": "",
+    "Microsoft.Net.Runtime.Interfaces":  "0.1-alpha-*"
   },
   "configurations": {
     "net45": {},
