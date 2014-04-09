@@ -47,7 +47,16 @@ namespace Microsoft.AspNet.Mvc.Rendering
             base.Contextualize(viewContext);
         }
 
+        /// <inheritdoc />
+        public HtmlString CheckBoxFor([NotNull] Expression<Func<TModel, bool>> expression,
+            object htmlAttributes)
+        {
+            var metadata = GetModelMetadata(expression);
+            return GenerateCheckBox(metadata, GetExpressionName(expression), isChecked: null,
+                htmlAttributes: htmlAttributes);
+        }
 
+        /// <inheritdoc />
         public HtmlString DisplayFor<TValue>([NotNull] Expression<Func<TModel, TValue>> expression,
                                              string templateName,
                                              string htmlFieldName,
@@ -64,10 +73,37 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
+        public HtmlString HiddenFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression,
+            object htmlAttributes)
+        {
+            var metadata = GetModelMetadata(expression);
+            return GenerateHidden(metadata, GetExpressionName(expression), metadata.Model, useViewData: false,
+                htmlAttributes: htmlAttributes);
+        }
+
+        /// <inheritdoc />
         public HtmlString NameFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression)
         {
             var expressionName = GetExpressionName(expression);
             return Name(expressionName);
+        }
+
+        /// <inheritdoc />
+        public HtmlString PasswordFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression,
+            object htmlAttributes)
+        {
+            var metadata = GetModelMetadata(expression);
+            return GeneratePassword(metadata, GetExpressionName(expression), value: null,
+                htmlAttributes: htmlAttributes);
+        }
+
+        /// <inheritdoc />
+        public HtmlString RadioButtonFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression,
+            object value, object htmlAttributes)
+        {
+            var metadata = GetModelMetadata(expression);
+            return GenerateRadioButton(metadata, GetExpressionName(expression), value, isChecked: null,
+                htmlAttributes: htmlAttributes);
         }
 
         /// <inheritdoc />
@@ -95,10 +131,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return metadata;
         }
 
+        /// <inheritdoc />
         public HtmlString ValueFor<TProperty>(Expression<Func<TModel, TProperty>> expression, string format)
         {
             var metadata = GetModelMetadata(expression);
-            return GenerateValue(ExpressionHelper.GetExpressionText(expression), metadata.Model, format, useViewData: false);
+            return GenerateValue(ExpressionHelper.GetExpressionText(expression), metadata.Model, format,
+                useViewData: false);
         }
     }
 }

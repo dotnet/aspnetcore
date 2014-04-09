@@ -87,6 +87,37 @@ namespace Microsoft.AspNet.Mvc.Rendering
         void EndForm();
 
         /// <summary>
+        /// Render an input element of type "checkbox" with value "true" and an input element of type "hidden" with
+        /// value "false".
+        /// </summary>
+        /// <param name="name">
+        /// Rendered element's name. Also use this name to find value in submitted data or view data. Use view data
+        /// only if value is not in submitted data and <paramref name="value"/> is <c>null</c>.
+        /// </param>
+        /// <param name="isChecked">
+        /// If <c>true</c>, checkbox is initially checked. Ignore if named value is found in submitted data. Finally
+        /// fall back to an existing "checked" value in <paramref name="htmlAttributes"/>.
+        /// </param>
+        /// <param name="htmlAttributes">An object that contains the HTML attributes to set for the element.
+        /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>New <see cref="HtmlString"/> containing the rendered HTML.</returns>
+        HtmlString CheckBox(string name, bool? isChecked, object htmlAttributes);
+
+        /// <summary>
+        /// Render an input element of type "checkbox" with value "true" and an input element of type "hidden" with
+        /// value "false".
+        /// </summary>
+        /// <param name="expression">
+        /// An expression that identifies the object that contains the properties to render.
+        /// </param>
+        /// <param name="htmlAttributes">An object that contains the HTML attributes to set for the element.
+        /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>New <see cref="HtmlString"/> containing the rendered HTML.</returns>
+        HtmlString CheckBoxFor([NotNull] Expression<Func<TModel, bool>> expression, object htmlAttributes);
+
+        /// <summary>
         /// Returns HTML markup for each property in the object that is represented by the expression, using the specified 
         /// template, HTML field ID, and additional view data.
         /// </summary>
@@ -159,11 +190,48 @@ namespace Microsoft.AspNet.Mvc.Rendering
         string Encode(string value);
 
         /// <summary>
+        /// Formats the value.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="format">The format string.</param>
+        /// <returns>The formatted value.</returns>
+        string FormatValue(object value, string format);
+
+        /// <summary>
         /// Creates an HTML element ID using the specified element name.
         /// </summary>
         /// <param name="name">The name of the HTML element.</param>
         /// <returns>The ID of the HTML element.</returns>
         string GenerateIdFromName(string name);
+
+        /// <summary>
+        /// Render an input element of type "hidden".
+        /// </summary>
+        /// <param name="name">
+        /// Rendered element's name. Also use this name to find value in submitted data or view data. Use view data
+        /// only if value is not in submitted data and <paramref name="value"/> is <c>null</c>.
+        /// </param>
+        /// <param name="value">
+        /// If non-<c>null</c>, value to include in the element. Ignore if named value is found in submitted data.
+        /// </param>
+        /// <param name="htmlAttributes">An object that contains the HTML attributes to set for the element.
+        /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>New <see cref="HtmlString"/> containing the rendered HTML.</returns>
+        HtmlString Hidden(string name, object value, object htmlAttributes);
+
+        /// <summary>
+        /// Render an input element of type "hidden".
+        /// </summary>
+        /// <param name="expression">
+        /// An expression that identifies the object that contains the properties to render.
+        /// </param>
+        /// <param name="htmlAttributes">An object that contains the HTML attributes to set for the element.
+        /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>New <see cref="HtmlString"/> containing the rendered HTML.</returns>
+        HtmlString HiddenFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression,
+            object htmlAttributes);
 
         /// <summary>
         /// Gets the full HTML field name for the given expression <paramref name="name"/>.
@@ -179,6 +247,76 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="expression">An expression, relative to the current model.</param>
         /// <returns>An <see cref="HtmlString"/> that represents HTML markup.</returns>
         HtmlString NameFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression);
+
+        /// <summary>
+        /// Render an input element of type "password".
+        /// </summary>
+        /// <param name="name">
+        /// Rendered element's name. Also use this name to find value in view data. Use view data
+        /// only if value is not in submitted data and <paramref name="value"/> is <c>null</c>.
+        /// </param>
+        /// <param name="value">
+        /// If non-<c>null</c>, value to include in the element.
+        /// </param>
+        /// <param name="htmlAttributes">An object that contains the HTML attributes to set for the element.
+        /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>New <see cref="HtmlString"/> containing the rendered HTML.</returns>
+        HtmlString Password(string name, object value, object htmlAttributes);
+
+        /// <summary>
+        /// Render an input element of type "password".
+        /// </summary>
+        /// <param name="expression">
+        /// An expression that identifies the object that contains the properties to render.
+        /// </param>
+        /// <param name="htmlAttributes">An object that contains the HTML attributes to set for the element.
+        /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>New <see cref="HtmlString"/> containing the rendered HTML.</returns>
+        HtmlString PasswordFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression,
+            object htmlAttributes);
+
+        /// <summary>
+        /// Render an input element of type "radio".
+        /// </summary>
+        /// <param name="name">
+        /// Rendered element's name. Also use this name to find value in submitted data or view data. Use view data
+        /// only if value is not in submitted data and <paramref name="value"/> is <c>null</c>.
+        /// </param>
+        /// <param name="value">
+        /// If non-<c>null</c>, value to include in the element. May be <c>null</c> only if
+        /// <paramref name="isChecked"/> is also <c>null</c>. Also compared to value in submitted data or view data to
+        /// determine <paramref name="isChecked"/> if that parameter is <c>null</c>. Ignore if named value is found in
+        /// submitted data.
+        /// </param>
+        /// <param name="isChecked">
+        /// If <c>true</c>, radio button is initially selected. Ignore if named value is found in submitted data. Fall
+        /// back to comparing <paramref name="value"/> with view data if this parameter is <c>null</c>. Finally
+        /// fall back to an existing "checked" value in <paramref name="htmlAttributes"/>.
+        /// </param>
+        /// <param name="htmlAttributes">An object that contains the HTML attributes to set for the element.
+        /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>New <see cref="HtmlString"/> containing the rendered HTML.</returns>
+        HtmlString RadioButton(string name, object value, bool? isChecked, object htmlAttributes);
+
+        /// <summary>
+        /// Render an input element of type "radio".
+        /// </summary>
+        /// <param name="expression">
+        /// An expression that identifies the object that contains the properties to render.
+        /// </param>
+        /// <param name="value">
+        /// If non-<c>null</c>, value to compare with current expression value to determine whether radio button is
+        /// checked.
+        /// </param>
+        /// <param name="htmlAttributes">An object that contains the HTML attributes to set for the element.
+        /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>New <see cref="HtmlString"/> containing the rendered HTML.</returns>
+        HtmlString RadioButtonFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression, object value,
+            object htmlAttributes);
 
         /// <summary>
         /// Wraps HTML markup in an <see cref="HtmlString"/>, which will enable HTML markup to be

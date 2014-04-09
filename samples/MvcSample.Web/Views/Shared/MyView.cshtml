@@ -141,6 +141,7 @@
     <div style="float: left; border: thick solid lightskyblue; margin-bottom: 10px; margin-top: -180px; padding-right: 10px">
         @using (Html.BeginForm(controllerName: "Home", actionName: "Hello", method: FormMethod.Post))
         {
+            @Html.HiddenFor(m => m.Age)
             <table>
                 <tr>
                     <td>
@@ -160,13 +161,44 @@
                 </tr>
                 <tr>
                     <td>
-                        <input type="submit" value="Save" class="btn btn-default" />
+                        <label class="control-label col-md-2">Model.Alive</label>
+                    </td>
+                    <td>
+                        @Html.CheckBox("Alive")
+                        or
+                        @Html.RadioButton("Alive", value: false) False
+                        @Html.RadioButton("Alive", value: true) True
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="control-label col-md-2">Model.Dependent.Alive</label>
+                    </td>
+                    <td>
+                        @Html.CheckBoxFor(m => m.Dependent.Alive)
+                        or
+                        @Html.RadioButtonFor(m => m.Dependent.Alive, value: false) False
+                        @Html.RadioButtonFor(m => m.Dependent.Alive, value: true) True
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="control-label col-md-2">Model.Password</label>
+                    </td>
+                    <td>
+                        @Html.PasswordFor(m => m.Password, htmlAttributes: new { @class = "form-control" })
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="submit" value="Save" class="btn btn-default" style="margin-left: 10px" />
                     </td>
                     <td></td>
                 </tr>
             </table>
         }
         @{ Html.BeginForm(method: FormMethod.Post, htmlAttributes: new { someAttribute = "some value", }); }
+            @Html.Hidden("Anon.Id")
             <table>
                 <tr>
                     <td>
@@ -211,7 +243,15 @@
                 </tr>
                 <tr>
                     <td>
-                        <input type="submit" value="Save" class="btn btn-default" />
+                        <label class="control-label col-md-2">Password</label>
+                    </td>
+                    <td>
+                        @Html.Password("Password", "some string")
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="submit" value="Save" class="btn btn-default" style="margin-left: 10px" />
                     </td>
                     <td></td>
                 </tr>
@@ -273,7 +313,7 @@
             </tr>
         </table>
     </div>
-    <div style="float: left; border: 5px solid green;">
+    <div style="float: left; border: 5px solid green; margin-left: 10px; margin-bottom: 10px; ">
         <table>
             <tr>
                 <td>

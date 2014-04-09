@@ -12,5 +12,6 @@ namespace MvcSample.Web.Models
         public decimal GPA { get; set; }
         public User Dependent { get; set; }
         public bool Alive { get; set; }
+        public string Password { get; set; }
     }
 }

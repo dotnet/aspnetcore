@@ -1,12 +1,92 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
     public static class HtmlHelperInputExtensions
     {
+        public static HtmlString CheckBox<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name)
+        {
+            return htmlHelper.CheckBox(name, isChecked: null, htmlAttributes: null);
+        }
+
+        public static HtmlString CheckBox<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name,
+            bool isChecked)
+        {
+            return htmlHelper.CheckBox(name, isChecked, htmlAttributes: null);
+        }
+
+        public static HtmlString CheckBox<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name,
+            object htmlAttributes)
+        {
+            return htmlHelper.CheckBox(name, isChecked: null, htmlAttributes: htmlAttributes);
+        }
+
+        public static HtmlString CheckBoxFor<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper,
+            [NotNull] Expression<Func<TModel, bool>> expression)
+        {
+            return htmlHelper.CheckBoxFor(expression, htmlAttributes: null);
+        }
+
+        public static HtmlString Hidden<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name)
+        {
+            return htmlHelper.Hidden(name, value: null, htmlAttributes: null);
+        }
+
+        public static HtmlString Hidden<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name,
+            object value)
+        {
+            return htmlHelper.Hidden(name, value, htmlAttributes: null);
+        }
+
+        public static HtmlString HiddenFor<TModel, TProperty>([NotNull] this IHtmlHelper<TModel> htmlHelper,
+            [NotNull] Expression<Func<TModel, TProperty>> expression)
+        {
+            return htmlHelper.HiddenFor(expression, htmlAttributes: null);
+        }
+
+        public static HtmlString Password<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name)
+        {
+            return htmlHelper.Password(name, value: null, htmlAttributes: null);
+        }
+
+        public static HtmlString Password<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name,
+            object value)
+        {
+            return htmlHelper.Password(name, value, htmlAttributes: null);
+        }
+
+        public static HtmlString PasswordFor<TModel, TProperty>([NotNull] this IHtmlHelper<TModel> htmlHelper,
+            [NotNull] Expression<Func<TModel, TProperty>> expression)
+        {
+            return htmlHelper.PasswordFor(expression, htmlAttributes: null);
+        }
+
+        public static HtmlString RadioButton<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name,
+            object value)
+        {
+            return htmlHelper.RadioButton(name, value, isChecked: null, htmlAttributes: null);
+        }
+
+        public static HtmlString RadioButton<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name,
+            object value, object htmlAttributes)
+        {
+            return htmlHelper.RadioButton(name, value, isChecked: null, htmlAttributes: htmlAttributes);
+        }
+
+        public static HtmlString RadioButton<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name,
+            object value, bool isChecked)
+        {
+            return htmlHelper.RadioButton(name, value, isChecked, htmlAttributes: null);
+        }
+
+        public static HtmlString RadioButtonFor<TModel, TProperty>([NotNull] this IHtmlHelper<TModel> htmlHelper,
+            [NotNull] Expression<Func<TModel, TProperty>> expression, object value)
+        {
+            return htmlHelper.RadioButtonFor(expression, value, htmlAttributes: null);
+        }
+
         public static HtmlString TextBox<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name)
         {
             return TextBox(htmlHelper, name, value: null);

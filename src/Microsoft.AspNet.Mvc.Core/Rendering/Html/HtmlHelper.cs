@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering.Expressions;
@@ -49,8 +49,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         public string IdAttributeDotReplacement { get; set; }
-
-        public HttpContext HttpContext { get; private set; }
 
         public ViewContext ViewContext
         {
@@ -182,6 +180,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
             mvcForm.EndForm();
         }
 
+        public HtmlString CheckBox(string name, bool? isChecked, object htmlAttributes)
+        {
+            return GenerateCheckBox(metadata: null, name: name, isChecked: isChecked, htmlAttributes: htmlAttributes);
+        }
+
         public string Encode(string value)
         {
             return (!string.IsNullOrEmpty(value)) ? WebUtility.HtmlEncode(value) : string.Empty;
@@ -223,6 +226,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                    htmlFieldName,
                                    templateName,
                                    additionalViewData);
+        }
+
+        public HtmlString Hidden(string name, object value, object htmlAttributes)
+        {
+            return GenerateHidden(metadata: null, name: name, value: value, useViewData: (value == null),
+                htmlAttributes: htmlAttributes);
         }
 
         public virtual HtmlString Name(string name)
@@ -285,6 +294,17 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var viewEngineResult = _viewEngine.FindPartialView(newViewContext.ViewEngineContext, partialViewName);
 
             await viewEngineResult.View.RenderAsync(newViewContext);
+        }
+
+        public HtmlString Password(string name, object value, object htmlAttributes)
+        {
+            return GeneratePassword(metadata: null, name: name, value: value, htmlAttributes: htmlAttributes);
+        }
+
+        public HtmlString RadioButton(string name, object value, bool? isChecked, object htmlAttributes)
+        {
+            return GenerateRadioButton(metadata: null, name: name, value: value, isChecked: isChecked,
+                htmlAttributes: htmlAttributes);
         }
 
         public virtual HtmlString ValidationSummary(bool excludePropertyErrors, string message, IDictionary<string, object> htmlAttributes)
@@ -417,6 +437,16 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return new MvcForm(ViewContext);
         }
 
+        protected bool EvalBoolean(string key)
+        {
+            return Convert.ToBoolean(ViewData.Eval(key), CultureInfo.InvariantCulture);
+        }
+
+        protected string EvalString(string key)
+        {
+            return Convert.ToString(ViewData.Eval(key), CultureInfo.CurrentCulture);
+        }
+
         protected string EvalString(string key, string format)
         {
             return Convert.ToString(ViewData.Eval(key, format), CultureInfo.CurrentCulture);
@@ -445,6 +475,54 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             // TODO: Add validation attributes to input helpers.
             return new Dictionary<string, object>();
+        }
+
+        protected virtual HtmlString GenerateCheckBox(ModelMetadata metadata, string name, bool? isChecked,
+            object htmlAttributes)
+        {
+            if (metadata != null)
+            {
+                // CheckBoxFor() case. That API does not support passing isChecked directly.
+                Contract.Assert(!isChecked.HasValue);
+
+                if (metadata.Model != null)
+                {
+                    bool modelChecked;
+                    if (Boolean.TryParse(metadata.Model.ToString(), out modelChecked))
+                    {
+                        isChecked = modelChecked;
+                    }
+                }
+            }
+
+            // Only need a dictionary if htmlAttributes is non-null. TagBuilder.MergeAttributes() is fine with null.
+            IDictionary<string, object> htmlAttributeDictionary = null;
+            if (htmlAttributes != null)
+            {
+                htmlAttributeDictionary = htmlAttributes as IDictionary<string, object>;
+                if (htmlAttributeDictionary == null)
+                {
+                    htmlAttributeDictionary = AnonymousObjectToHtmlAttributes(htmlAttributes);
+                }
+            }
+
+            var explicitValue = isChecked.HasValue;
+            if (explicitValue && htmlAttributeDictionary != null)
+            {
+                // Explicit value must override dictionary
+                htmlAttributeDictionary.Remove("checked");
+            }
+
+            return GenerateInput(InputType.CheckBox,
+                metadata,
+                name,
+                value: "true",
+                useViewData: !explicitValue,
+                isChecked: isChecked ?? false,
+                setId: true,
+                isExplicitValue: false,
+                format: null,
+                htmlAttributes: htmlAttributeDictionary);
         }
 
         /// <summary>
@@ -496,6 +574,38 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return theForm;
         }
 
+        protected virtual HtmlString GenerateHidden(ModelMetadata metadata, string name, object value, bool useViewData,
+            object htmlAttributes)
+        {
+            // Only need a dictionary if htmlAttributes is non-null. TagBuilder.MergeAttributes() is fine with null.
+            IDictionary<string, object> htmlAttributeDictionary = null;
+            if (htmlAttributes != null)
+            {
+                htmlAttributeDictionary = htmlAttributes as IDictionary<string, object>;
+                if (htmlAttributeDictionary == null)
+                {
+                    htmlAttributeDictionary = AnonymousObjectToHtmlAttributes(htmlAttributes);
+                }
+            }
+
+            var byteArrayValue = value as byte[];
+            if (byteArrayValue != null)
+            {
+                value = Convert.ToBase64String(byteArrayValue);
+            }
+
+            return GenerateInput(InputType.Hidden,
+                metadata,
+                name,
+                value,
+                useViewData,
+                isChecked: false,
+                setId: true,
+                isExplicitValue: true,
+                format: null,
+                htmlAttributes: htmlAttributeDictionary);
+        }
+
         protected virtual HtmlString GenerateLink(
             [NotNull] string linkText,
             [NotNull] string url,
@@ -510,6 +620,99 @@ namespace Microsoft.AspNet.Mvc.Rendering
             tagBuilder.MergeAttribute("href", url);
 
             return tagBuilder.ToHtmlString(TagRenderMode.Normal);
+        }
+
+        protected virtual HtmlString GeneratePassword(ModelMetadata metadata, string name, object value,
+            object htmlAttributes)
+        {
+            // Only need a dictionary if htmlAttributes is non-null. TagBuilder.MergeAttributes() is fine with null.
+            IDictionary<string, object> htmlAttributeDictionary = null;
+            if (htmlAttributes != null)
+            {
+                htmlAttributeDictionary = htmlAttributes as IDictionary<string, object>;
+                if (htmlAttributeDictionary == null)
+                {
+                    htmlAttributeDictionary = AnonymousObjectToHtmlAttributes(htmlAttributes);
+                }
+            }
+
+            return GenerateInput(InputType.Password,
+                metadata,
+                name,
+                value,
+                useViewData: false,
+                isChecked: false,
+                setId: true,
+                isExplicitValue: true,
+                format: null,
+                htmlAttributes: htmlAttributeDictionary);
+        }
+
+        protected virtual HtmlString GenerateRadioButton(ModelMetadata metadata, string name, object value,
+            bool? isChecked, object htmlAttributes)
+        {
+            // Only need a dictionary if htmlAttributes is non-null. TagBuilder.MergeAttributes() is fine with null.
+            IDictionary<string, object> htmlAttributeDictionary = null;
+            if (htmlAttributes != null)
+            {
+                htmlAttributeDictionary = htmlAttributes as IDictionary<string, object>;
+                if (htmlAttributeDictionary == null)
+                {
+                    htmlAttributeDictionary = AnonymousObjectToHtmlAttributes(htmlAttributes);
+                }
+            }
+
+            if (metadata == null)
+            {
+                // RadioButton() case. Do not override checked attribute if isChecked is implicit.
+                if (!isChecked.HasValue &&
+                    (htmlAttributeDictionary == null || !htmlAttributeDictionary.ContainsKey("checked")))
+                {
+                    // Note value may be null if isChecked is non-null.
+                    if (value == null)
+                    {
+                        throw new ArgumentNullException("value");
+                    }
+
+                    // isChecked not provided nor found in the given attributes; fall back to view data.
+                    var valueString = Convert.ToString(value, CultureInfo.CurrentCulture);
+                    isChecked = !string.IsNullOrEmpty(name) &&
+                        string.Equals(EvalString(name), valueString, StringComparison.OrdinalIgnoreCase);
+                }
+            }
+            else
+            {
+                // RadioButtonFor() case. That API does not support passing isChecked directly.
+                Contract.Assert(!isChecked.HasValue);
+                if (value == null)
+                {
+                    // Need a value to determine isChecked.
+                    throw new ArgumentNullException("value");
+                }
+
+                var model = metadata.Model;
+                var valueString = Convert.ToString(value, CultureInfo.CurrentCulture);
+                isChecked = model != null &&
+                    string.Equals(model.ToString(), valueString, StringComparison.OrdinalIgnoreCase);
+            }
+
+            var explicitValue = isChecked.HasValue;
+            if (explicitValue && htmlAttributeDictionary != null)
+            {
+                // Explicit value must override dictionary
+                htmlAttributeDictionary.Remove("checked");
+            }
+
+            return GenerateInput(InputType.Radio,
+                metadata,
+                name,
+                value,
+                useViewData: false,
+                isChecked: isChecked ?? false,
+                setId: true,
+                isExplicitValue: true,
+                format: null,
+                htmlAttributes: htmlAttributeDictionary);
         }
 
         protected virtual HtmlString GenerateTextBox(ModelMetadata metadata, string name, object value, string format,
@@ -531,8 +734,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
             object value, bool useViewData, bool isChecked, bool setId, bool isExplicitValue, string format,
             IDictionary<string, object> htmlAttributes)
         {
-            // Not valid to use TextBoxForModel() in a top-level view; would end up with an unnamed input elements.
-            // But we support the *ForModel() methods in any lower-level template, once HtmlFieldPrefix is non-empty.
+            // Not valid to use TextBoxForModel() and so on in a top-level view; would end up with an unnamed input
+            // elements. But we support the *ForModel() methods in any lower-level template, once HtmlFieldPrefix is
+            // non-empty.
             var fullName = ViewData.TemplateInfo.GetFullHtmlFieldName(name);
             if (string.IsNullOrEmpty(fullName))
             {
@@ -545,8 +749,51 @@ namespace Microsoft.AspNet.Mvc.Rendering
             tagBuilder.MergeAttribute("name", fullName, replaceExisting: true);
 
             var valueParameter = FormatValue(value, format);
+            var usedModelState = false;
             switch (inputType)
             {
+                case InputType.CheckBox:
+                    var modelStateWasChecked = GetModelStateValue(fullName, typeof(bool)) as bool?;
+                    if (modelStateWasChecked.HasValue)
+                    {
+                        isChecked = modelStateWasChecked.Value;
+                        usedModelState = true;
+                    }
+
+                    goto case InputType.Radio;
+
+                case InputType.Radio:
+                    if (!usedModelState)
+                    {
+                        var modelStateValue = GetModelStateValue(fullName, typeof(string)) as string;
+                        if (modelStateValue != null)
+                        {
+                            isChecked = string.Equals(modelStateValue, valueParameter, StringComparison.Ordinal);
+                            usedModelState = true;
+                        }
+                    }
+
+                    if (!usedModelState && useViewData)
+                    {
+                        isChecked = EvalBoolean(fullName);
+                    }
+
+                    if (isChecked)
+                    {
+                        tagBuilder.MergeAttribute("checked", "checked");
+                    }
+
+                    tagBuilder.MergeAttribute("value", valueParameter, isExplicitValue);
+                    break;
+
+                case InputType.Password:
+                    if (value != null)
+                    {
+                        tagBuilder.MergeAttribute("value", valueParameter, isExplicitValue);
+                    }
+
+                    break;
+
                 case InputType.Text:
                 default:
                     var attributeValue = (string)GetModelStateValue(fullName, typeof(string));
@@ -572,6 +819,23 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
 
             tagBuilder.MergeAttributes(GetValidationAttributes(name, metadata));
+
+            if (inputType == InputType.CheckBox)
+            {
+                // Generate an additional <input type="hidden".../> for checkboxes. This
+                // addresses scenarios where unchecked checkboxes are not sent in the request.
+                // Sending a hidden input makes it possible to know that the checkbox was present
+                // on the page when the request was submitted.
+                var inputItemBuilder = new StringBuilder();
+                inputItemBuilder.Append(tagBuilder.ToString(TagRenderMode.SelfClosing));
+
+                var hiddenInput = new TagBuilder("input");
+                hiddenInput.MergeAttribute("type", GetInputTypeString(InputType.Hidden));
+                hiddenInput.MergeAttribute("name", fullName);
+                hiddenInput.MergeAttribute("value", "false");
+                inputItemBuilder.Append(hiddenInput.ToString(TagRenderMode.SelfClosing));
+                return new HtmlString(inputItemBuilder.ToString());
+            }
 
             return tagBuilder.ToHtmlString(TagRenderMode.SelfClosing);
         }
@@ -610,7 +874,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             return new HtmlString(Encode(resolvedValue));
         }
-
 
         private static string GetInputTypeString(InputType inputType)
         {
