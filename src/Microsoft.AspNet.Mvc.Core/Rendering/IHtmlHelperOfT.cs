@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         ViewDataDictionary<TModel> ViewData { get; }
 
         /// <summary>
-        /// Returns an anchor element (a element) that contains a url path to the specified action.
+        /// Returns an anchor element (a element) that contains a URL path to the specified action.
         /// </summary>
         /// <param name="linkText">The inner text of the anchor element.</param>
         /// <param name="actionName">The name of the action.</param>
