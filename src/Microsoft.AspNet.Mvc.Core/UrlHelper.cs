@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Linq;
+using System.Linq.Expressions;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Mvc.Rendering;
@@ -27,15 +28,7 @@ namespace Microsoft.AspNet.Mvc
 
         public string Action(string action, string controller, object values, string protocol, string host, string fragment)
         {
-            var valuesDictionary = values as IDictionary<string, object>;
-            if (valuesDictionary == null)
-            {
-                valuesDictionary = new RouteValueDictionary(values);
-            }
-            else
-            {
-                valuesDictionary = new RouteValueDictionary(valuesDictionary);
-            }
+            var valuesDictionary = TypeHelper.ObjectToDictionary(values);
 
             if (action != null)
             {
@@ -76,7 +69,9 @@ namespace Microsoft.AspNet.Mvc
 
         public string RouteUrl(object values, string protocol, string host, string fragment)
         {
-            var path = GeneratePathFromRoute(new RouteValueDictionary(values));
+            var valuesDictionary = TypeHelper.ObjectToDictionary(values);
+
+            var path = GeneratePathFromRoute(valuesDictionary);
             if (path == null)
             {
                 return null;

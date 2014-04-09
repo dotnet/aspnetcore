@@ -103,6 +103,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Creates a dictionary from an object, by adding each public instance property as a key with its associated 
         /// value to the dictionary. It will expose public properties from derived types as well. This is typically used
         /// with objects of an anonymous type.
+        /// 
+        /// If the object is already an <see cref="IDictionary{string, object}"/> instance, then it is
+        /// returned as-is.
         /// </summary>
         /// <example>
         /// <c>new { property_name = "value" }</c> will translate to the entry <c>{ "property_name" , "value" }</c>
@@ -112,32 +115,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>The created dictionary of property names and property values.</returns>
         public static IDictionary<string, object> ObjectToDictionary(object obj)
         {
-            IDictionary<string, object> result;
-            var valuesAsDictionary = obj as IDictionary<string, object>;
-            if (valuesAsDictionary != null)
-            {
-                result = new Dictionary<string, object>(valuesAsDictionary, StringComparer.OrdinalIgnoreCase);
-            }
-            else
-            {
-                result = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-
-                if (obj != null)
-                {
-                    foreach (var prop in obj.GetType().GetRuntimeProperties())
-                    {
-                        var value = prop.GetValue(obj);
-                        result.Add(prop.Name, value);
-                    }
-                }
-            }
-
-            return result;
+            return TypeHelper.ObjectToDictionary(obj);
         }
 
         /// <summary>
         /// Creates a dictionary of HTML attributes from the input object, 
-        /// translating underscores to dashes.
+        /// translating underscores to dashes in each public instance property.
+        /// 
+        /// If the object is already an <see cref="IDictionary{string, object}"/> instance, then it is
+        /// returned as-is.
         /// <example>
         /// new { data_name="value" } will translate to the entry { "data-name" , "value" }
         /// in the resulting dictionary.
@@ -147,9 +133,23 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A dictionary that represents HTML attributes.</returns>
         public static IDictionary<string, object> AnonymousObjectToHtmlAttributes(object htmlAttributes)
         {
-            // NOTE: This should be doing more than just returning a generic conversion from obj -> dict
-            // Once GitHub #80 has been completed this will do more than be a call through.
-            return ObjectToDictionary(htmlAttributes);
+            var dictionary = htmlAttributes as IDictionary<string, object>;
+            if (dictionary != null)
+            {
+                return new Dictionary<string, object>(dictionary, StringComparer.OrdinalIgnoreCase);
+            }
+
+            dictionary = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
+            if (htmlAttributes != null)
+            {
+                foreach (var helper in HtmlAttributePropertyHelper.GetProperties(htmlAttributes))
+                {
+                    dictionary.Add(helper.Name, helper.GetValue(htmlAttributes));
+                }
+            }
+
+            return dictionary;
         }
 
         public virtual void Contextualize([NotNull] ViewContext viewContext)
@@ -164,11 +164,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             IDictionary<string, object> htmlAttributeDictionary = null;
             if (htmlAttributes != null)
             {
-                htmlAttributeDictionary = htmlAttributes as IDictionary<string, object>;
-                if (htmlAttributeDictionary == null)
-                {
-                    htmlAttributeDictionary = HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes);
-                }
+                htmlAttributeDictionary = HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes);
             }
 
             return GenerateForm(actionName, controllerName, routeValues, method, htmlAttributeDictionary);

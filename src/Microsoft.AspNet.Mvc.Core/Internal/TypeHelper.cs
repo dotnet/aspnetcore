@@ -31,13 +31,22 @@ namespace Microsoft.AspNet.Mvc
         /// <summary>
         /// Given an object, adds each instance property with a public get method as a key and its 
         /// associated value to a dictionary.
+        /// 
+        /// If the object is already an <see cref="IDictionary{string, object}"/> instance, then a copy
+        /// is returned.
         /// </summary>
         //
         // The implementation of PropertyHelper will cache the property accessors per-type. This is
         // faster when the the same type is used multiple times with ObjectToDictionary.
         public static IDictionary<string, object> ObjectToDictionary(object value)
         {
-            var dictionary = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            var dictionary = value as IDictionary<string, object>;
+            if (dictionary != null)
+            {
+                return new Dictionary<string, object>(dictionary, StringComparer.OrdinalIgnoreCase);
+            }
+
+            dictionary = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
             if (value != null)
             {
