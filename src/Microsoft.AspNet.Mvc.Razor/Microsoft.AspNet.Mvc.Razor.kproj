@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="__ToolsVersion__" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.Props" Condition="'$(VSToolsPath)' != ''" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>314e9ad6-2ffc-4a92-a8ad-510658c64f1e</ProjectGuid>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
+  </PropertyGroup>
+  <PropertyGroup>
+    <SchemaVersion>2.0</SchemaVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="Project.json" />
+    <Content Include="Resources.resx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AttributeValue.cs" />
+    <Compile Include="Compilation\CompilationFailedException.cs" />
+    <Compile Include="Compilation\CompilationMessage.cs" />
+    <Compile Include="Compilation\CompilationResult.cs" />
+    <Compile Include="Compilation\CompilerCache.cs" />
+    <Compile Include="Compilation\ICompilationService.cs" />
+    <Compile Include="Compilation\RoslynCompilationService.cs" />
+    <Compile Include="Extensions\DictionaryExtensions.cs" />
+    <Compile Include="HelperResult.cs" />
+    <Compile Include="IMvcRazorHost.cs" />
+    <Compile Include="MvcRazorCodeParser.cs" />
+    <Compile Include="MvcRazorHost.cs" />
+    <Compile Include="PositionTagged.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs" />
+    <Compile Include="RazorView.cs" />
+    <Compile Include="RazorViewOfT.cs" />
+    <Compile Include="Razor\IRazorCompilationService.cs" />
+    <Compile Include="Razor\RazorCompilationService.cs" />
+    <Compile Include="Services\IApplicationEnvironment.cs" />
+    <Compile Include="Services\IAssemblyLoaderEngine.cs" />
+    <Compile Include="Services\IMetadataFileReference.cs" />
+    <Compile Include="Services\IRoslynMetadataReference.cs" />
+    <Compile Include="ViewEngine\IVirtualPathViewFactory.cs" />
+    <Compile Include="ViewEngine\RazorViewEngine.cs" />
+    <Compile Include="ViewEngine\VirtualPathViewFactory.cs" />
+  </ItemGroup>
+  <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />
+</Project>

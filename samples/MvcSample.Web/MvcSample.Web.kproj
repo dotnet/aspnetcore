@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="__ToolsVersion__" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.Props" Condition="'$(VSToolsPath)' != ''" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>fbb2b86e-972b-4185-9ff2-62cab5f8388f</ProjectGuid>
+    <OutputType>Web</OutputType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
+  </PropertyGroup>
+  <PropertyGroup>
+    <SchemaVersion>2.0</SchemaVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+    <DevelopmentServerPort>57394</DevelopmentServerPort>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="Areas\Travel\Views\Flight\Fly.cshtml" />
+    <Content Include="Content\bootstrap.min.css" />
+    <Content Include="Project.json" />
+    <Content Include="Views\Home\Create.cshtml" />
+    <Content Include="Views\Home\Test.cshtml" />
+    <Content Include="Views\Home\ValidationSummary.cshtml" />
+    <Content Include="Views\Link\Details.cshtml" />
+    <Content Include="Views\Shared\Components\Tags\Default.cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\Boolean.cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\Decimal.cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\Int32.cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\String.cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\User.cshtml" />
+    <Content Include="Views\Shared\HelloWorldPartial.cshtml" />
+    <Content Include="Views\Shared\MyView.cshtml" />
+    <Content Include="Views\Shared\_Layout.cshtml" />
+    <Content Include="web.config" />
+    <Content Include="web.Debug.config" />
+    <Content Include="web.Release.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Areas\Travel\Controllers\Flight.cs" />
+    <Compile Include="Areas\Travel\Controllers\HomeController.cs" />
+    <Compile Include="Components\TagCloud.cs" />
+    <Compile Include="FiltersController.cs" />
+    <Compile Include="Filters\AgeEnhancerFilterAttribute.cs" />
+    <Compile Include="Filters\BlockAnonymous.cs" />
+    <Compile Include="Filters\InspectResultPageAttribute.cs" />
+    <Compile Include="Filters\PassThroughAttribute.cs" />
+    <Compile Include="Filters\UserNameProvider.cs" />
+    <Compile Include="Home2Controller.cs" />
+    <Compile Include="HomeController.cs" />
+    <Compile Include="LinkController.cs" />
+    <Compile Include="Models\User.cs" />
+    <Compile Include="OverloadController.cs" />
+    <Compile Include="SimplePocoController.cs" />
+    <Compile Include="SimpleRest.cs" />
+    <Compile Include="Startup.cs" />
+    <Compile Include="ViewMetadata.cs" />
+  </ItemGroup>
+  <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />
+</Project>

@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="__ToolsVersion__" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.Props" Condition="'$(VSToolsPath)' != ''" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>3b8dc0c0-6c55-4034-ad96-de1000928e6b</ProjectGuid>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
+  </PropertyGroup>
+  <PropertyGroup>
+    <SchemaVersion>2.0</SchemaVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="Project.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Binders\ArrayModelBinderTest.cs" />
+    <Compile Include="Binders\CollectionModelBinderTest.cs" />
+    <Compile Include="Binders\ComplexModelDtoResultTest.cs" />
+    <Compile Include="Binders\ComplexModelDtoTest.cs" />
+    <Compile Include="Binders\CompositeModelBinderTest.cs" />
+    <Compile Include="Binders\DictionaryModelBinderTest.cs" />
+    <Compile Include="Binders\KeyValuePairModelBinderTest.cs" />
+    <Compile Include="Binders\ModelBindingContextTest.cs" />
+    <Compile Include="Binders\MutableObjectModelBinderTest.cs" />
+    <Compile Include="Binders\TypeConverterModelBinderTest.cs" />
+    <Compile Include="Formatters\JsonInputFormatterTest.cs" />
+    <Compile Include="Internal\TypeExtensionTests.cs" />
+    <Compile Include="Metadata\AssociatedMetadataProviderTest.cs" />
+    <Compile Include="Metadata\ModelMetadataTest.cs" />
+    <Compile Include="ModelBindingContextTest.cs" />
+    <Compile Include="Utils\SimpleHttpValueProvider.cs" />
+    <Compile Include="Validation\AssociatedValidatorProviderTest.cs" />
+    <Compile Include="Validation\DataAnnotationsModelValidatorProviderTest.cs" />
+    <Compile Include="Validation\DataAnnotationsModelValidatorTest.cs" />
+    <Compile Include="Validation\DataMemberModelValidatorProviderTest.cs" />
+    <Compile Include="Validation\ErrorModelValidatorTest.cs" />
+    <Compile Include="Validation\InvalidModelValidatorProviderTest.cs" />
+    <Compile Include="Validation\ModelStateDictionaryTest.cs" />
+    <Compile Include="Validation\ModelValidationNodeTest.cs" />
+    <Compile Include="ValueProviders\FormValueProviderFactoryTests.cs" />
+    <Compile Include="ValueProviders\QueryStringValueProviderFactoryTest.cs" />
+    <Compile Include="ValueProviders\ReadableStringCollectionValueProviderTests.cs" />
+    <Compile Include="ValueProviders\ValueProviderResultTest.cs" />
+  </ItemGroup>
+  <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />
+</Project>

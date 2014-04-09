@@ -1,0 +1,202 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="__ToolsVersion__" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.Props" Condition="'$(VSToolsPath)' != ''" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>c48da9d7-acb5-4408-aa79-27ecb60a67ef</ProjectGuid>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
+  </PropertyGroup>
+  <PropertyGroup>
+    <SchemaVersion>2.0</SchemaVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="Project.json" />
+    <Content Include="Resources.resx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AcceptVerbsAttribute.cs" />
+    <Compile Include="ActionContext.cs" />
+    <Compile Include="ActionConvention.cs" />
+    <Compile Include="ActionDescriptor.cs" />
+    <Compile Include="ActionDescriptorProviderContext.cs" />
+    <Compile Include="ActionInvokerFactory.cs" />
+    <Compile Include="ActionInvokerProviderContext.cs" />
+    <Compile Include="ActionMethodSelectorAttribute.cs" />
+    <Compile Include="ActionResultFactory.cs" />
+    <Compile Include="ActionResultHelper.cs" />
+    <Compile Include="ActionResults\ContentResult.cs" />
+    <Compile Include="ActionResults\EmptyResult.cs" />
+    <Compile Include="ActionResults\HttpStatusCodeResult.cs" />
+    <Compile Include="ActionResults\IJsonResult.cs" />
+    <Compile Include="ActionResults\JsonResult.cs" />
+    <Compile Include="ActionResults\NoContentResult.cs" />
+    <Compile Include="ActionResults\RedirectResult.cs" />
+    <Compile Include="ActionResults\ViewResult.cs" />
+    <Compile Include="Areas\AreaAttribute.cs" />
+    <Compile Include="Areas\ReflectedRouteConstraintsActionDescriptorProvider.cs" />
+    <Compile Include="BodyParameterInfo.cs" />
+    <Compile Include="Controller.cs" />
+    <Compile Include="ControllerDescriptor.cs" />
+    <Compile Include="DefaultActionDiscoveryConventions.cs" />
+    <Compile Include="DefaultActionSelector.cs" />
+    <Compile Include="DefaultControllerAssemblyProvider.cs" />
+    <Compile Include="DefaultControllerDescriptorFactory.cs" />
+    <Compile Include="DefaultControllerFactory.cs" />
+    <Compile Include="DefaultParameterDescriptorFactory.cs" />
+    <Compile Include="Extensions\FilterContextExtensions.cs" />
+    <Compile Include="Extensions\IEnumerableExtensions.cs" />
+    <Compile Include="Filters\ActionFilterAttribute.cs" />
+    <Compile Include="Filters\ActionFilterContext.cs" />
+    <Compile Include="Filters\ActionFilterEndPoint.cs" />
+    <Compile Include="Filters\ActionResultFilterAttribute.cs" />
+    <Compile Include="Filters\ActionResultFilterContext.cs" />
+    <Compile Include="Filters\ActionResultFilterEndPoint.cs" />
+    <Compile Include="Filters\AllowAnonymousAttribute.cs" />
+    <Compile Include="Filters\AuthorizationFilterAttribute.cs" />
+    <Compile Include="Filters\AuthorizationFilterContext.cs" />
+    <Compile Include="Filters\AuthorizationFilterEndPoint.cs" />
+    <Compile Include="Filters\DefaultFilterProvider.cs" />
+    <Compile Include="Filters\ExceptionFilterAttribute.cs" />
+    <Compile Include="Filters\ExceptionFilterContext.cs" />
+    <Compile Include="Filters\FilterContext.cs" />
+    <Compile Include="Filters\FilterDescriptor.cs" />
+    <Compile Include="Filters\FilterDescriptorOrderComparer.cs" />
+    <Compile Include="Filters\FilterItem.cs" />
+    <Compile Include="Filters\FilterPipelineBuilder.cs" />
+    <Compile Include="Filters\FilterProviderContext.cs" />
+    <Compile Include="Filters\FilterScope.cs" />
+    <Compile Include="Filters\IActionFilter.cs" />
+    <Compile Include="Filters\IActionResultFilter.cs" />
+    <Compile Include="Filters\IAllowAnonymous.cs" />
+    <Compile Include="Filters\IAuthorizationFilter.cs" />
+    <Compile Include="Filters\IExceptionFilter.cs" />
+    <Compile Include="Filters\IFilter.cs" />
+    <Compile Include="Filters\IFilterContainer.cs" />
+    <Compile Include="Filters\IFilterOfTContext.cs" />
+    <Compile Include="Filters\IOrderedFilter.cs" />
+    <Compile Include="Filters\IServiceFilter.cs" />
+    <Compile Include="Filters\ITypeFilter.cs" />
+    <Compile Include="Filters\ServiceFilterAttribute.cs" />
+    <Compile Include="FormContext.cs" />
+    <Compile Include="HttpDeleteAttribute.cs" />
+    <Compile Include="HttpGetAttribute.cs" />
+    <Compile Include="HttpMethodConstraint.cs" />
+    <Compile Include="HttpPatchAttribute.cs" />
+    <Compile Include="HttpPostAttribute.cs" />
+    <Compile Include="HttpPutAttribute.cs" />
+    <Compile Include="IActionConstraint.cs" />
+    <Compile Include="IActionDescriptorProvider.cs" />
+    <Compile Include="IActionDiscoveryConventions.cs" />
+    <Compile Include="IActionInvoker.cs" />
+    <Compile Include="IActionInvokerFactory.cs" />
+    <Compile Include="IActionInvokerProvider.cs" />
+    <Compile Include="IActionResult.cs" />
+    <Compile Include="IActionResultFactory.cs" />
+    <Compile Include="IActionResultHelper.cs" />
+    <Compile Include="IActionSelector.cs" />
+    <Compile Include="IControllerAssemblyProvider.cs" />
+    <Compile Include="IControllerDescriptorFactory.cs" />
+    <Compile Include="IControllerFactory.cs" />
+    <Compile Include="Injector.cs" />
+    <Compile Include="Internal\PropertyHelper.cs" />
+    <Compile Include="Internal\TypeHelper.cs" />
+    <Compile Include="IParameterDescriptorFactory.cs" />
+    <Compile Include="IUrlHelper.cs" />
+    <Compile Include="JsonOutputFormatter.cs" />
+    <Compile Include="MvcApplication.cs" />
+    <Compile Include="ParameterBindingInfo.cs" />
+    <Compile Include="ParameterBinding\ActionBindingContext.cs" />
+    <Compile Include="ParameterBinding\DefaultActionBindingContextProvider.cs" />
+    <Compile Include="ParameterBinding\FromBodyAttribute.cs" />
+    <Compile Include="ParameterBinding\IActionBindingContextProvider.cs" />
+    <Compile Include="ParameterDescriptor.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs" />
+    <Compile Include="ReflectedActionDescriptor.cs" />
+    <Compile Include="ReflectedActionDescriptorProvider.cs" />
+    <Compile Include="ReflectedActionExecutor.cs" />
+    <Compile Include="ReflectedActionInvoker.cs" />
+    <Compile Include="ReflectedActionInvokerProvider.cs" />
+    <Compile Include="Rendering\DisplayExtensions.cs" />
+    <Compile Include="Rendering\DisplayForExtensions.cs" />
+    <Compile Include="Rendering\DisplayForModelExtensions.cs" />
+    <Compile Include="Rendering\DynamicViewData.cs" />
+    <Compile Include="Rendering\Expressions\CachedExpressionCompiler.cs" />
+    <Compile Include="Rendering\Expressions\ExpressionHelper.cs" />
+    <Compile Include="Rendering\Expressions\ExpressionMetadataProvider.cs" />
+    <Compile Include="Rendering\Expressions\TryGetValueDelegate.cs" />
+    <Compile Include="Rendering\Expressions\TryGetValueProvider.cs" />
+    <Compile Include="Rendering\Expressions\ViewDataEvaluator.cs" />
+    <Compile Include="Rendering\Expressions\ViewDataInfo.cs" />
+    <Compile Include="Rendering\FormMethod.cs" />
+    <Compile Include="Rendering\HtmlAttributePropertyHelper.cs" />
+    <Compile Include="Rendering\HtmlHelperFormExtensions.cs" />
+    <Compile Include="Rendering\HtmlHelperInputExtensions.cs" />
+    <Compile Include="Rendering\HtmlHelperNameExtensions.cs" />
+    <Compile Include="Rendering\HtmlHelperValueExtensions.cs" />
+    <Compile Include="Rendering\HtmlString.cs" />
+    <Compile Include="Rendering\Html\HtmlHelper.cs" />
+    <Compile Include="Rendering\Html\HtmlHelperOfT.cs" />
+    <Compile Include="Rendering\Html\InputType.cs" />
+    <Compile Include="Rendering\Html\TagBuilder.cs" />
+    <Compile Include="Rendering\Html\TagRenderMode.cs" />
+    <Compile Include="Rendering\Html\TemplateBuilder.cs" />
+    <Compile Include="Rendering\Html\TemplateRenderer.cs" />
+    <Compile Include="Rendering\Html\ValidationHelpers.cs" />
+    <Compile Include="Rendering\ICanHasViewContext.cs" />
+    <Compile Include="Rendering\IHtmlHelperOfT.cs" />
+    <Compile Include="Rendering\IView.cs" />
+    <Compile Include="Rendering\IViewEngine.cs" />
+    <Compile Include="Rendering\MvcForm.cs" />
+    <Compile Include="Rendering\PartialAsyncExtensions.cs" />
+    <Compile Include="Rendering\RenderPartialAsyncExtensions.cs" />
+    <Compile Include="Rendering\ValidationExtensions.cs" />
+    <Compile Include="Rendering\ViewEngineResult.cs" />
+    <Compile Include="RouteConstraintAttribute.cs" />
+    <Compile Include="RouteDataActionConstraint.cs" />
+    <Compile Include="RouteKeyHandling.cs" />
+    <Compile Include="Services\AssemblyNeutralAttribute.cs" />
+    <Compile Include="Services\ILibraryExport.cs" />
+    <Compile Include="Services\ILibraryInformation.cs" />
+    <Compile Include="Services\ILibraryManager.cs" />
+    <Compile Include="Services\IMetadataReference.cs" />
+    <Compile Include="Services\ISourceReference.cs" />
+    <Compile Include="TemplateInfo.cs" />
+    <Compile Include="UrlHelper.cs" />
+    <Compile Include="UrlHelperExtensions.cs" />
+    <Compile Include="ViewComponents\ContentViewComponentResult.cs" />
+    <Compile Include="ViewComponents\DefaultViewComponentHelper.cs" />
+    <Compile Include="ViewComponents\DefaultViewComponentInvoker.cs" />
+    <Compile Include="ViewComponents\DefaultViewComponentInvokerFactory.cs" />
+    <Compile Include="ViewComponents\DefaultViewComponentInvokerProvider.cs" />
+    <Compile Include="ViewComponents\DefaultViewComponentResultHelper.cs" />
+    <Compile Include="ViewComponents\DefaultViewComponentSelector.cs" />
+    <Compile Include="ViewComponents\IViewComponentHelper.cs" />
+    <Compile Include="ViewComponents\IViewComponentInvoker.cs" />
+    <Compile Include="ViewComponents\IViewComponentInvokerFactory.cs" />
+    <Compile Include="ViewComponents\IViewComponentInvokerProvider.cs" />
+    <Compile Include="ViewComponents\IViewComponentResult.cs" />
+    <Compile Include="ViewComponents\IViewComponentResultHelper.cs" />
+    <Compile Include="ViewComponents\IViewComponentSelector.cs" />
+    <Compile Include="ViewComponents\JsonViewComponentResult.cs" />
+    <Compile Include="ViewComponents\ViewComponent.cs" />
+    <Compile Include="ViewComponents\ViewComponentAttribute.cs" />
+    <Compile Include="ViewComponents\ViewComponentContext.cs" />
+    <Compile Include="ViewComponents\ViewComponentConventions.cs" />
+    <Compile Include="ViewComponents\ViewComponentHelperExtensions.cs" />
+    <Compile Include="ViewComponents\ViewComponentInvokerProviderContext.cs" />
+    <Compile Include="ViewComponents\ViewComponentMethodSelector.cs" />
+    <Compile Include="ViewComponents\ViewViewComponentResult.cs" />
+    <Compile Include="ViewContext.cs" />
+    <Compile Include="ViewDataDictionary.cs" />
+    <Compile Include="ViewDataDictionaryOfT.cs" />
+  </ItemGroup>
+  <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />
+</Project>
