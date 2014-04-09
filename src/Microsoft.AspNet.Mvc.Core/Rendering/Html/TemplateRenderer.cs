@@ -44,20 +44,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 var fullViewName = modeViewPath + "/" + viewName;
 
                 // Forcing synchronous behavior so users don't have to await templates.
-                var viewEngineResult = _viewEngine.FindPartialView(_viewContext.ViewEngineContext, fullViewName);
+                var viewEngineResult = _viewEngine.FindPartialView(_viewContext.RouteValues, fullViewName);
                 if (viewEngineResult.Success)
                 {
                     using (var writer = new StringWriter(CultureInfo.InvariantCulture))
                     {
                         // Forcing synchronous behavior so users don't have to await templates.
                         // TODO: Pass through TempData once implemented.
-                        viewEngineResult.View.RenderAsync(new ViewContext(_viewContext)
+                        var view = viewEngineResult.View;
+                        using (view as IDisposable)
                         {
-                            ViewData = _viewData,
-                            Writer = writer,
-                        }).Wait();
-
-                        return writer.ToString();
+                            var viewContext = new ViewContext(_viewContext, viewEngineResult.View, _viewData, writer);
+                            viewEngineResult.View.RenderAsync(viewContext).Wait();
+                            return writer.ToString();
+                        }
                     }
                 }
 

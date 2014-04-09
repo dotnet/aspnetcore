@@ -31,15 +31,6 @@ namespace Microsoft.AspNet.Mvc
 
         public async Task ExecuteAsync([NotNull] ViewComponentContext context)
         {
-            var childViewContext = new ViewContext(
-                context.ViewContext.ServiceProvider,
-                context.ViewContext.HttpContext,
-                context.ViewContext.ViewEngineContext)
-            {
-                ViewData = _viewData ?? context.ViewContext.ViewData,
-                Writer = context.Writer,
-            };
-
             string qualifiedViewName;
             if (_viewName.Length > 0 && _viewName[0] == '/')
             {
@@ -66,7 +57,14 @@ namespace Microsoft.AspNet.Mvc
                     _viewName);
             }
 
-            var view = FindView(context.ViewContext.ViewEngineContext, qualifiedViewName);
+            var view = FindView(context.ViewContext.RouteValues, qualifiedViewName);
+
+            var childViewContext = new ViewContext(
+                context.ViewContext,
+                view,
+                _viewData ?? context.ViewContext.ViewData,
+                context.Writer);
+
             using (view as IDisposable)
             {
                 await view.RenderAsync(childViewContext);

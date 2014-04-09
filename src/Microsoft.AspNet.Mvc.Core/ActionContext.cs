@@ -7,6 +7,12 @@ namespace Microsoft.AspNet.Mvc
 {
     public class ActionContext
     {
+        public ActionContext([NotNull] ActionContext actionContext)
+            : this(actionContext.HttpContext, actionContext.Router, actionContext.RouteValues, actionContext.ActionDescriptor)
+        {
+            ModelState = actionContext.ModelState;
+        }
+
         public ActionContext(HttpContext httpContext, IRouter router, IDictionary<string, object> routeValues, ActionDescriptor actionDescriptor)
         {
             HttpContext = httpContext;

@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 }
                 else
                 {
-                    var metadataProvider = context.ServiceProvider.GetService<IModelMetadataProvider>();
+                    var metadataProvider = context.HttpContext.RequestServices.GetService<IModelMetadataProvider>();
                     ViewData = new ViewDataDictionary<TModel>(metadataProvider);
                 }
 
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private void InitHelpers(ViewContext context)
         {
-            Html = context.ServiceProvider.GetService<IHtmlHelper<TModel>>();
+            Html = context.HttpContext.RequestServices.GetService<IHtmlHelper<TModel>>();
 
             var contextable = Html as ICanHasViewContext;
             if (contextable != null)

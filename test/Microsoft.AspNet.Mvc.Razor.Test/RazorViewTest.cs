@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Testing;
 using Moq;
@@ -295,10 +296,16 @@ Layout end
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider.Setup(f => f.GetService(typeof(IVirtualPathViewFactory)))
                             .Returns(viewFactory.Object);
-            return new ViewContext(serviceProvider.Object, httpContext: null, viewEngineContext: null)
-            {
-                Writer = new StringWriter()
-            };
+
+            var httpContext = new Mock<HttpContext>();
+            httpContext.SetupGet(c => c.RequestServices).Returns(serviceProvider.Object);
+            
+            var actionContext = new ActionContext(httpContext.Object, null, null, null);
+            return new ViewContext(
+                actionContext,
+                layoutView,
+                null,
+                new StringWriter());
         }
 
         public abstract class TestableRazorView : RazorView

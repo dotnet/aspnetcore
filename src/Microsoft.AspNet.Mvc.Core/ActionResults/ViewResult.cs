@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Mvc
                 context.HttpContext.Response.ContentType = "text/html";
                 using (var writer = new StreamWriter(context.HttpContext.Response.Body, Encoding.UTF8, 1024, leaveOpen: true))
                 {
-                    var viewContext = CreateViewContext(context, writer);
+                    var viewContext = new ViewContext(context, view, ViewData, writer);
                     await view.RenderAsync(viewContext);
                 }
             }
@@ -43,19 +43,6 @@ namespace Microsoft.AspNet.Mvc
         {
             var result = _viewEngine.FindView(context, viewName);
             return result.View;
-        }
-
-        private ViewContext CreateViewContext([NotNull] ActionContext actionContext, [NotNull] TextWriter writer)
-        {
-            var urlHelper = _serviceProvider.GetService<IUrlHelper>();
-
-            var viewContext = new ViewContext(_serviceProvider, actionContext.HttpContext, actionContext.RouteValues)
-            {
-                ViewData = ViewData,
-                Writer = writer,
-            };
-
-            return viewContext;
         }
     }
 }

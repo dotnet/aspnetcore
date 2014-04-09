@@ -6,7 +6,7 @@ using Microsoft.AspNet.Mvc.Rendering;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class ViewContext
+    public class ViewContext : ActionContext
     {
         private DynamicViewData _viewBag;
 
@@ -14,23 +14,37 @@ namespace Microsoft.AspNet.Mvc
         private readonly FormContext _defaultFormContext = new FormContext();
 
         private FormContext _formContext;
-        
-        public ViewContext([NotNull] ViewContext viewContext)
-            : this(viewContext.ServiceProvider, viewContext.HttpContext, viewContext.ViewEngineContext)
-        {
-            UnobtrusiveJavaScriptEnabled = viewContext.UnobtrusiveJavaScriptEnabled;
-            ClientValidationEnabled = viewContext.ClientValidationEnabled;
-        }
 
-        public ViewContext(IServiceProvider serviceProvider, HttpContext httpContext,
-            IDictionary<string, object> viewEngineContext)
+        public ViewContext(
+            [NotNull] ActionContext actionContext,
+            [NotNull] IView view,
+            [NotNull] ViewDataDictionary viewData,
+            [NotNull] TextWriter writer)
+            : base(actionContext)
         {
-            ServiceProvider = serviceProvider;
-            HttpContext = httpContext;
-            ViewEngineContext = viewEngineContext;
+            View = view;
+            ViewData = viewData;
+            Writer = writer;
+
             _formContext = _defaultFormContext;
             UnobtrusiveJavaScriptEnabled = true;
             ClientValidationEnabled = true;
+        }
+
+        public ViewContext(
+            [NotNull] ViewContext viewContext,
+            [NotNull] IView view,
+            [NotNull] ViewDataDictionary viewData,
+            [NotNull] TextWriter writer)
+            : base(viewContext)
+        {
+            _formContext = viewContext.FormContext;
+            UnobtrusiveJavaScriptEnabled = viewContext.UnobtrusiveJavaScriptEnabled;
+            ClientValidationEnabled = viewContext.ClientValidationEnabled;
+
+            View = view;
+            ViewData = viewData;
+            Writer = writer;
         }
 
         public virtual FormContext FormContext
@@ -45,10 +59,6 @@ namespace Microsoft.AspNet.Mvc
                 _formContext = value ?? _defaultFormContext;
             }
         }
-
-        public HttpContext HttpContext { get; private set; }
-
-        public IServiceProvider ServiceProvider { get; private set; }
 
         public bool UnobtrusiveJavaScriptEnabled { get; set; }
 
@@ -67,9 +77,9 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        public ViewDataDictionary ViewData { get; set; }
+        public IView View { get; set; }
 
-        public IDictionary<string, object> ViewEngineContext { get; private set; }
+        public ViewDataDictionary ViewData { get; set; }
 
         public TextWriter Writer { get; set; }
     }

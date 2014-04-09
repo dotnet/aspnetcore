@@ -86,9 +86,9 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             Contract.Assert(Context != null);
 
-            Url = Context.ServiceProvider.GetService<IUrlHelper>();
+            Url = Context.HttpContext.RequestServices.GetService<IUrlHelper>();
 
-            Component = Context.ServiceProvider.GetService<IViewComponentHelper>();
+            Component = Context.HttpContext.RequestServices.GetService<IViewComponentHelper>();
 
             var contextable = Component as ICanHasViewContext;
             if (contextable != null)
@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private async Task RenderLayoutAsync(ViewContext context, string bodyContent)
         {
-            var virtualPathFactory = context.ServiceProvider.GetService<IVirtualPathViewFactory>();
+            var virtualPathFactory = context.HttpContext.RequestServices.GetService<IVirtualPathViewFactory>();
             var layoutView = (RazorView)virtualPathFactory.CreateInstance(Layout);
 
             if (layoutView == null)
