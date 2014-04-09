@@ -51,9 +51,9 @@
                 "System.Diagnostics.Debug": "4.0.10.0",
                 "System.Diagnostics.Tools": "4.0.0.0",
                 "Microsoft.ComponentModel.DataAnnotations": "4.0.10.0",
-				"System.Reflection": "4.0.10.0",
-				"System.Reflection.Extensions": "4.0.0.0",
-				"System.IO": "4.0.0.0"
+                "System.Reflection": "4.0.10.0",
+                "System.Reflection.Extensions": "4.0.0.0",
+                "System.IO": "4.0.0.0"
             }
         }
     }

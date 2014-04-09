@@ -26,8 +26,7 @@
         @Html.ValueFor(model => model.Price)
     </p>
     <p class="button">
-        @*Bug: HTML helpers not implemented yet*@
-        @*@Html.ActionLink("Add to cart", "AddToCart",
-            "ShoppingCart", new { id = Model.AlbumId }, "")*@
+        @Html.ActionLink("Add to cart", "AddToCart",
+        "ShoppingCart", new { id = Model.AlbumId })
     </p>
 </div>

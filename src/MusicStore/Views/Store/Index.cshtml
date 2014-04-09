@@ -12,8 +12,6 @@
     <ul class="list-group">
         @foreach (var genre in Model)
         {
-            //Bug: Html helpers ActionLink is not implemented still
-            @*<li class="list-group-item">@Html.ActionLink(genre.Name, "Browse", new { genre = genre.Name })</li>*@
-	    <li class="list-group-item"><a href="@Url.Action("Browse", "Store", new { genre = genre.Name })">@genre.Name</a></li>
+            <li class="list-group-item">@Html.ActionLink(genre.Name, "Browse", new { genre = genre.Name })</li>
         }
     </ul>

@@ -41,7 +41,7 @@
     <em>Review</em> your cart:
 </h3>
 <p class="button">
-    @*@Html.ActionLink("Checkout >>", "AddressAndPayment", "Checkout")*@
+    @Html.ActionLink("Checkout >>", "AddressAndPayment", "Checkout")
 </p>
 <div id="update-message">
 </div>
@@ -62,8 +62,8 @@
     {
         <tr id="row-@item.CartItemId">
             <td>
-                @*@Html.ActionLink(item.Album.Title,
-                    "Details", "Store", new { id = item.AlbumId }, null)*@
+                @Html.ActionLink(item.Album.Title,
+                    "Details", "Store", new { id = item.AlbumId }, null)
             </td>
             <td>
                 @item.Album.Price

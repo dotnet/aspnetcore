@@ -21,7 +21,7 @@
     <h2>Index</h2>
 
     <p>
-        @*@Html.ActionLink("Create New", "Create")*@
+        @Html.ActionLink("Create New", "Create")
     </p>
     <table class="table">
         @*Bug: Html.NameFor does not contain an overload taking in IEnumerable<Tmodel>*@
@@ -60,11 +60,11 @@
                 <td>
                     @Html.ValueFor(modelItem => item.Price)
                 </td>
-                @*<td>
+                <td>
                     @Html.ActionLink("Edit", "Edit", new { id = item.AlbumId }) |
                     @Html.ActionLink("Details", "Details", new { id = item.AlbumId }) |
                     @Html.ActionLink("Delete", "Delete", new { id = item.AlbumId })
-                </td>*@
+                </td>
             </tr>
         }
 

@@ -5,20 +5,15 @@
         <ul class="dropdown-menu">
             @foreach (var genre in Model)
             {
-                @*<li>
-                        @Html.ActionLink(genre.Name,
+                <li>
+                    @Html.ActionLink(genre.Name,
                         "Browse", "Store",
                         new { Genre = genre.Name }, null)
-                    </li>*@
-
-                <li>
-                    <a href="@Url.Action("Browse", "Store", new { Genre = genre.Name })">@genre.Name</a>
                 </li>
             }
             <li class="divider"></li>
             <li>
-                @*@Html.ActionLink("More...", "Index", "Store")*@
-                <a href="@Url.Action("Index", "Store")">More...</a>
+                @Html.ActionLink("More...", "Index", "Store")
             </li>
     </li>
     </ul>
