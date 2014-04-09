@@ -15,6 +15,8 @@ using MusicStore.Models;
 using MusicStore.Web.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 
 public class Startup
 {
@@ -52,8 +54,8 @@ public class Startup
     {
         var configuration = new Configuration();
         configuration.AddEnvironmentVariables(); //If configuration flows through environment we should pick that first
-        configuration.AddJsonFile("Config.json");
-        
+        configuration.AddJsonFile(Path.Combine(GetApplicationBasePath(), "Config.json"));
+
         string _username = configuration.Get("DefaultAdminUsername");
         string _password = configuration.Get("DefaultAdminPassword");
         string _role = "Administrator";
@@ -75,5 +77,29 @@ public class Startup
             await userManager.CreateAsync(user, _password);
             await userManager.AddToRoleAsync(user, _role);
         }
+    }
+
+    //To find the application base path at runtime. 
+    private static string GetApplicationBasePath()
+    {
+#if NET45
+            var applicationBase = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
+#else // CORECLR_TODO: ApplicationBase
+        var appDomainType = typeof(object)
+                                .GetTypeInfo()
+                                .Assembly
+                                .GetType("System.AppDomain");
+
+        var currentAppDomainProperty = appDomainType.GetRuntimeProperty("CurrentDomain");
+
+        var currentAppDomain = currentAppDomainProperty.GetValue(null);
+
+        var getDataMethod = appDomainType
+            .GetRuntimeMethod("GetData", new[] { typeof(string) });
+
+        string applicationBase = (string)getDataMethod.Invoke(currentAppDomain, new object[] { "APPBASE" });
+#endif
+
+        return applicationBase;
     }
 }
