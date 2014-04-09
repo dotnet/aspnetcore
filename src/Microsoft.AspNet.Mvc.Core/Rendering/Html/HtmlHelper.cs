@@ -588,6 +588,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 }
             }
 
+            // Special-case opaque values and arbitrary binary data.
             var byteArrayValue = value as byte[];
             if (byteArrayValue != null)
             {
