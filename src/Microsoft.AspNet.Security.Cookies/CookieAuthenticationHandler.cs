@@ -219,7 +219,13 @@ namespace Microsoft.AspNet.Security.Cookies
 
         protected override void ApplyResponseChallenge()
         {
-            if (Response.StatusCode != 401 || !Options.LoginPath.HasValue || ChallengeContext == null)
+            if (Response.StatusCode != 401 || !Options.LoginPath.HasValue )
+            {
+                return;
+            }
+
+            // Active middleware should redirect on 401 even if there wasn't an explicit challenge.
+            if (ChallengeContext == null && Options.AuthenticationMode == AuthenticationMode.Passive)
             {
                 return;
             }
