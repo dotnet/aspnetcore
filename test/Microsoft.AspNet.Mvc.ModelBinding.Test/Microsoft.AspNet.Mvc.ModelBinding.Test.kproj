@@ -50,8 +50,5 @@
     <Compile Include="ValueProviders\ReadableStringCollectionValueProviderTests.cs" />
     <Compile Include="ValueProviders\ValueProviderResultTest.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
   <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
