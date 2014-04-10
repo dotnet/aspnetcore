@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30408.0
+VisualStudioVersion = 12.0.30410.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{DAAE4C74-D06F-4874-A166-33305D2643CE}"
 EndProject
@@ -26,6 +26,8 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Core.Test", "test\Microsoft.AspNet.Mvc.Core.Test\Microsoft.AspNet.Mvc.Core.Test.kproj", "{A8AA326E-8EE8-4F11-B750-23028E0949D7}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MvcSample.Web", "samples\MvcSample.Web\MvcSample.Web.kproj", "{FBB2B86E-972B-4185-9FF2-62CAB5F8388F}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Razor.Host", "src\Microsoft.AspNet.Mvc.Razor.Host\Microsoft.AspNet.Mvc.Razor.Host.kproj", "{520B3AA4-363A-497C-8C15-80423C5AFC85}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -127,6 +129,16 @@ Global
 		{FBB2B86E-972B-4185-9FF2-62CAB5F8388F}.Release|Mixed Platforms.Build.0 = Release|x86
 		{FBB2B86E-972B-4185-9FF2-62CAB5F8388F}.Release|x86.ActiveCfg = Release|x86
 		{FBB2B86E-972B-4185-9FF2-62CAB5F8388F}.Release|x86.Build.0 = Release|x86
+		{520B3AA4-363A-497C-8C15-80423C5AFC85}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{520B3AA4-363A-497C-8C15-80423C5AFC85}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{520B3AA4-363A-497C-8C15-80423C5AFC85}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{520B3AA4-363A-497C-8C15-80423C5AFC85}.Debug|x86.ActiveCfg = Debug|x86
+		{520B3AA4-363A-497C-8C15-80423C5AFC85}.Debug|x86.Build.0 = Debug|x86
+		{520B3AA4-363A-497C-8C15-80423C5AFC85}.Release|Any CPU.ActiveCfg = Release|x86
+		{520B3AA4-363A-497C-8C15-80423C5AFC85}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{520B3AA4-363A-497C-8C15-80423C5AFC85}.Release|Mixed Platforms.Build.0 = Release|x86
+		{520B3AA4-363A-497C-8C15-80423C5AFC85}.Release|x86.ActiveCfg = Release|x86
+		{520B3AA4-363A-497C-8C15-80423C5AFC85}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -141,5 +153,6 @@ Global
 		{3F6E355E-4869-41D9-943B-D54771221A7F} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
 		{A8AA326E-8EE8-4F11-B750-23028E0949D7} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
 		{FBB2B86E-972B-4185-9FF2-62CAB5F8388F} = {DAAE4C74-D06F-4874-A166-33305D2643CE}
+		{520B3AA4-363A-497C-8C15-80423C5AFC85} = {32285FA4-6B46-4D6B-A840-2B13E4C8B58E}
 	EndGlobalSection
 EndGlobal

@@ -3,6 +3,7 @@ using System.Globalization;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Text;
+using Microsoft.AspNet.Mvc.Razor.Host;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {

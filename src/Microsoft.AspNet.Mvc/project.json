@@ -10,6 +10,7 @@
     "Common": "",
     "Microsoft.AspNet.Mvc.Core": "",
     "Microsoft.AspNet.Mvc.Razor": "",
+    "Microsoft.AspNet.Mvc.Razor.Host": "",
     "Microsoft.AspNet.Mvc.ModelBinding": ""
   },
   "configurations": {

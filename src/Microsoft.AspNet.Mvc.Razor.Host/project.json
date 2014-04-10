@@ -7,7 +7,6 @@
     "Microsoft.AspNet.Razor": "0.1-alpha-*",
     "Common": "",
     "Microsoft.AspNet.Mvc.Core" : "",
-    "Microsoft.AspNet.Mvc.Razor.Host" : "",
     "Microsoft.AspNet.Mvc.ModelBinding" : "",
     "Microsoft.CodeAnalysis.Common" : "0.7-beta-*",
     "Microsoft.CodeAnalysis.CSharp" : "0.7-beta-*",
