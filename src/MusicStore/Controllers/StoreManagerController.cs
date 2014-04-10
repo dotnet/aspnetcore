@@ -130,10 +130,7 @@ namespace MusicStore.Controllers
 
         //
         // POST: /StoreManager/Delete/5
-        //Bug: ActionName out of scope for alpha - So fixing the name of method in code
-        //[HttpPost, ActionName("Delete")]
-        [HttpPost]
-        //TODO: How to have an action with same name 'Delete'??
+        [HttpPost, ActionName("Delete")]
         public IActionResult DeleteConfirmed(int id)
         {
             Album album = db.Albums.Single(a => a.AlbumId == id);
