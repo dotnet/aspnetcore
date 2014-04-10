@@ -224,6 +224,18 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                    templateName,
                                    additionalViewData);
         }
+        
+        public HtmlString DisplayName(string expression)
+        {
+            var modelMetadata = string.IsNullOrEmpty(expression) ?
+                                           ViewData.ModelMetadata :
+                                           ExpressionMetadataProvider.FromStringExpression(
+                                                                               expression,
+                                                                               ViewData,
+                                                                               MetadataProvider);
+            return GenerateDisplayName(modelMetadata, expression);
+        }
+
 
         public HtmlString DropDownList(string name, IEnumerable<SelectListItem> selectList, string optionLabel,
             object htmlAttributes)
@@ -240,6 +252,22 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             return GenerateHidden(metadata: null, name: name, value: value, useViewData: (value == null),
                 htmlAttributes: htmlAttributes);
+        }
+        
+
+        public HtmlString Label(string expression, string labelText, object htmlAttributes)
+        {
+            var modelMetadata = string.IsNullOrEmpty(expression)?
+                                            ViewData.ModelMetadata :
+                                            ExpressionMetadataProvider.FromStringExpression(
+                                                                                expression,
+                                                                                ViewData,
+                                                                                MetadataProvider);
+            return GenerateLabel(
+                            modelMetadata,
+                            expression,
+                            labelText,
+                            htmlAttributes);
         }
 
         public virtual HtmlString Name(string name)
@@ -543,6 +571,23 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 format: null,
                 htmlAttributes: htmlAttributeDictionary);
         }
+        
+        protected virtual HtmlString GenerateDisplayName([NotNull] ModelMetadata metadata, string htmlFieldName)
+        {
+            // We don't call ModelMetadata.GetDisplayName here because 
+            // we want to fall back to the field name rather than the ModelType.
+            // This is similar to how the GenerateLabel get the text of a label.
+            // TODO: This needs to be updated after ModelMetadata has a DisplayName property
+            var resolvedDisplayName = metadata.PropertyName;
+            if (resolvedDisplayName == null)
+            {
+                resolvedDisplayName = string.IsNullOrEmpty(htmlFieldName) ? 
+                                                                    string.Empty :
+                                                                    htmlFieldName.Split('.').Last();
+            }
+            
+            return new HtmlString(Encode(resolvedDisplayName));
+        }
 
         protected HtmlString GenerateDropDown(ModelMetadata metadata, string expression,
             IEnumerable<SelectListItem> selectList, string optionLabel, object htmlAttributes)
@@ -631,6 +676,36 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 isExplicitValue: true,
                 format: null,
                 htmlAttributes: htmlAttributeDictionary);
+        }
+        
+        protected virtual HtmlString GenerateLabel([NotNull] ModelMetadata metadata, 
+                                                    string htmlFieldName,
+                                                    string labelText,
+                                                    object htmlAttributes)
+        {
+            // TODO: This needs to be updated after ModelMetadata has a DisplayName property
+            string resolvedLabelText = labelText ?? metadata.PropertyName;
+            if (resolvedLabelText == null)
+            {
+                resolvedLabelText = string.IsNullOrEmpty(htmlFieldName) ? 
+                                                                    string.Empty :
+                                                                    htmlFieldName.Split('.').Last();
+            }
+
+            if (string.IsNullOrEmpty(resolvedLabelText))
+            {
+                return HtmlString.Empty;
+            }
+
+            TagBuilder tag = new TagBuilder("label");
+            tag.Attributes.Add(
+                            "for",
+                            TagBuilder.CreateSanitizedId(
+                                        ViewData.TemplateInfo.GetFullHtmlFieldName(htmlFieldName),
+                                        IdAttributeDotReplacement));
+            tag.SetInnerText(resolvedLabelText);
+            tag.MergeAttributes(AnonymousObjectToHtmlAttributes(htmlAttributes), replaceExisting: true);
+            return tag.ToHtmlString(TagRenderMode.Normal);
         }
 
         protected virtual HtmlString GenerateLink(

@@ -141,7 +141,9 @@
     <Compile Include="Rendering\HtmlHelperDisplayExtensions.cs" />
     <Compile Include="Rendering\HtmlHelperFormExtensions.cs" />
     <Compile Include="Rendering\HtmlHelperInputExtensions.cs" />
+    <Compile Include="Rendering\HtmlHelperLabelExtensions.cs" />
     <Compile Include="Rendering\HtmlHelperLinkExtensions.cs" />
+    <Compile Include="Rendering\HtmlHelperDisplayNameExtensions.cs" />
     <Compile Include="Rendering\HtmlHelperNameExtensions.cs" />
     <Compile Include="Rendering\HtmlHelperPartialExtensions.cs" />
     <Compile Include="Rendering\HtmlHelperSelectExtensions.cs" />
