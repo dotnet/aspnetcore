@@ -29,6 +29,7 @@
     <Compile Include="ActionInvokerFactory.cs" />
     <Compile Include="ActionInvokerProviderContext.cs" />
     <Compile Include="ActionMethodSelectorAttribute.cs" />
+    <Compile Include="ActionNameAttribute.cs" />
     <Compile Include="ActionResultFactory.cs" />
     <Compile Include="ActionResultHelper.cs" />
     <Compile Include="ActionResults\ContentResult.cs" />
