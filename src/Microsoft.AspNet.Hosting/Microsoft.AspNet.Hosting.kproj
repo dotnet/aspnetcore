@@ -20,7 +20,6 @@
     <Content Include="Project.json" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AssemblyNeutralAttribute.cs" />
     <Compile Include="Builder\BuilderFactory.cs" />
     <Compile Include="Builder\HttpContextFactory.cs" />
     <Compile Include="Builder\IBuilderFactory.cs" />
@@ -28,7 +27,6 @@
     <Compile Include="HostingContext.cs" />
     <Compile Include="HostingEngine.cs" />
     <Compile Include="HostingServices.cs" />
-    <Compile Include="IApplicationEnvironment.cs" />
     <Compile Include="IHostingEngine.cs" />
     <Compile Include="PipelineInstance.cs" />
     <Compile Include="Program.cs" />
