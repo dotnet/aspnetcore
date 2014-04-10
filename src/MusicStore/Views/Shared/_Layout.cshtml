@@ -27,8 +27,7 @@
                 <ul class="nav navbar-nav">
                     <li>@Html.ActionLink("Home", "Index", "Home")</li>
                     @await Component.InvokeAsync("GenreMenu")
-                    @*Bug: HtmlHelper missing*@
-                    @*@Html.Action("CartSummary", "ShoppingCart")*@
+                    @*@await Component.InvokeAsync("CartSummary")*@
                 </ul>
                 @await Html.PartialAsync("_LoginPartial")
             </div>
