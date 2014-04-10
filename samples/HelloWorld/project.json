@@ -12,8 +12,7 @@
             "System.Globalization": "4.0.10.0",
             "System.IO" : "4.0.0.0",
             "System.Runtime" : "4.0.20.0",
-            "System.Threading.Tasks": "4.0.10.0",
-            "System.Text.Encoding": "4.0.20.0"
+            "System.Threading.Tasks": "4.0.10.0"
         }
     }
   }
