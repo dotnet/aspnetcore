@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
         {
             if (bindingContext.ModelMetadata == null)
             {
-                throw new ArgumentException("bindingContext", Resources.ModelBinderUtil_ModelMetadataCannotBeNull);
+                throw new ArgumentException(Resources.ModelBinderUtil_ModelMetadataCannotBeNull, "bindingContext");
             }
         }
 
