@@ -86,7 +86,8 @@ namespace Microsoft.AspNet.Mvc
 
                 // The SpecialName bit is set to flag members that are treated in a special way by some compilers 
                 // (such as property accessors and operator overloading methods).
-                !method.IsSpecialName;
+                !method.IsSpecialName &&
+                !method.IsDefined(typeof(NonActionAttribute));
         }
 
         public virtual IEnumerable<string> GetSupportedHttpMethods(MethodInfo methodInfo)

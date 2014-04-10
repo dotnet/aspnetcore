@@ -5,6 +5,7 @@ using Microsoft.AspNet.DependencyInjection.NestedProviders;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Xunit;
@@ -106,6 +107,26 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             // Assert
             Assert.Equal("Index", result.Name);
+        }
+
+        [Theory]
+        [InlineData("Put")]
+        [InlineData("RPCMethod")]
+        [InlineData("RPCMethodWithHttpGet")]
+        public async Task NonActionAttribute_ActionNotReachable(string actionName)
+        {
+            // Arrange
+            var actionDescriptorProvider = GetActionDescriptorProvider(_actionDiscoveryConventions);
+
+            // Act
+            var result = actionDescriptorProvider.GetDescriptors()
+                                                 .Select(x => x as ReflectedActionDescriptor)
+                                                 .FirstOrDefault(
+                                                            x=> x.ControllerName == "NonAction" &&
+                                                                x.Name == actionName);
+
+            // Assert
+            Assert.Null(result);
         }
 
         [Theory]
@@ -219,6 +240,25 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         }
 
         #region Controller Classes
+
+        private class NonActionController
+        {
+            [NonAction]
+            public void Put()
+            {
+            }
+
+            [NonAction]
+            public void RPCMethod()
+            {
+            }
+
+            [NonAction]
+            [HttpGet]
+            public void RPCMethodWithHttpGet()
+            {
+            }
+        }
 
         private class HttpMethodAttributeTests_DefaultMethodValidationController
         {
