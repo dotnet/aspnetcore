@@ -17,12 +17,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using Microsoft.Net.Runtime;
 
 public class Startup
 {
     public void Configuration(IBuilder app)
     {
-        CreateAdminUser();
+        CreateAdminUser(app.ServiceProvider);
 
         //ErrorPageOptions.ShowAll to be used only at development time. Not recommended for production. 
         app.UseErrorPage(ErrorPageOptions.ShowAll);
@@ -50,11 +51,13 @@ public class Startup
         SampleData.InitializeMusicStoreDatabaseAsync().Wait();
     }
 
-    private async void CreateAdminUser()
+    private async void CreateAdminUser(IServiceProvider serviceProvider)
     {
+        var applicationEnvironment = serviceProvider.GetService<IApplicationEnvironment>();
+
         var configuration = new Configuration();
         configuration.AddEnvironmentVariables(); //If configuration flows through environment we should pick that first
-        configuration.AddJsonFile(Path.Combine(GetApplicationBasePath(), "Config.json"));
+        configuration.AddJsonFile(Path.Combine(applicationEnvironment.ApplicationBasePath, "Config.json"));
 
         string _username = configuration.Get("DefaultAdminUsername");
         string _password = configuration.Get("DefaultAdminPassword");
@@ -77,29 +80,5 @@ public class Startup
             await userManager.CreateAsync(user, _password);
             await userManager.AddToRoleAsync(user, _role);
         }
-    }
-
-    //To find the application base path at runtime. 
-    private static string GetApplicationBasePath()
-    {
-#if NET45
-            var applicationBase = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
-#else // CORECLR_TODO: ApplicationBase
-        var appDomainType = typeof(object)
-                                .GetTypeInfo()
-                                .Assembly
-                                .GetType("System.AppDomain");
-
-        var currentAppDomainProperty = appDomainType.GetRuntimeProperty("CurrentDomain");
-
-        var currentAppDomain = currentAppDomainProperty.GetValue(null);
-
-        var getDataMethod = appDomainType
-            .GetRuntimeMethod("GetData", new[] { typeof(string) });
-
-        string applicationBase = (string)getDataMethod.Invoke(currentAppDomain, new object[] { "APPBASE" });
-#endif
-
-        return applicationBase;
     }
 }
