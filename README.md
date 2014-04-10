@@ -2,7 +2,7 @@
 
 In the next version of ASP.NET we are working with multiple teams around Microsoft to create a lean, composable .NET stack that provides a familiar and modern framework for web and cloud scenarios.
 
-The Preview repository is a place for the ASP.NET Insiders to log issues and discuss ASP.NET vNext with the product team. It contains some samples and some documentation in the [wiki](https://github.com/aspnet/Preview).
+The Preview repository is a place for the ASP.NET Insiders to log issues and discuss ASP.NET vNext with the product team. It contains some samples and some documentation in the [wiki](https://github.com/aspnet/Preview/wiki).
 
 The samples provided are designed to show some of the features of the new framework as well as setting up a sandbox for you to try out new drops of functionality as they come out. The NuGet.config file in the repo points to a private MyGet feed that has all the packages being developed. The feed is updated every time a full build succeeds.
 
