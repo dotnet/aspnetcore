@@ -1,5 +1,4 @@
-﻿#if NET45
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -57,4 +56,3 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
     }
 }
-#endif

@@ -33,11 +33,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private static Dictionary<Type, DataAnnotationsModelValidationFactory> AttributeFactories =
             new Dictionary<Type, DataAnnotationsModelValidationFactory>();
 
-#if NET45
         // Factories for IValidatableObject models
         private static DataAnnotationsValidatableObjectAdapterFactory DefaultValidatableFactory =
             () => new ValidatableObjectAdapter();
-#endif
 
         private static Dictionary<Type, DataAnnotationsValidatableObjectAdapterFactory> ValidatableFactories =
             new Dictionary<Type, DataAnnotationsValidatableObjectAdapterFactory>();
@@ -63,7 +61,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 results.Add(factory(attribute));
             }
 
-#if NET45
             // Produce a validator if the type supports IValidatableObject
             if (typeof(IValidatableObject).IsAssignableFrom(metadata.ModelType))
             {
@@ -74,7 +71,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 }
                 results.Add(factory());
             }
-#endif
 
             return results;
         }
