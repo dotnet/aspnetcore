@@ -6,7 +6,6 @@ namespace Microsoft.AspNet.Identity
     ///     Interface that exposes an IQueryable users
     /// </summary>
     /// <typeparam name="TUser"></typeparam>
-    /// <typeparam name="TKey"></typeparam>
     public interface IQueryableUserStore<TUser> : IUserStore<TUser> where TUser : class
     {
         /// <summary>

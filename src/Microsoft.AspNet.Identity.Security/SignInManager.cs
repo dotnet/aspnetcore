@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Abstractions.Security;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Abstractions;
-using Microsoft.AspNet.Abstractions.Security;
 
 namespace Microsoft.AspNet.Identity.Security
 {
@@ -26,10 +24,10 @@ namespace Microsoft.AspNet.Identity.Security
             {
                 return null;
             }
-            return await UserManager.CreateIdentity(user, AuthenticationType);
+            return await UserManager.CreateIdentityAsync(user, AuthenticationType);
         }
 
-        public virtual async Task SignIn(TUser user, bool isPersistent, bool rememberBrowser)
+        public virtual async Task SignInAsync(TUser user, bool isPersistent, bool rememberBrowser)
         {
             if (Context == null)
             {
@@ -143,7 +141,7 @@ namespace Microsoft.AspNet.Identity.Security
             }
             if (await UserManager.CheckPasswordAsync(user, password))
             {
-                await SignIn(user, isPersistent, false);
+                await SignInAsync(user, isPersistent, false);
                 return SignInStatus.Success;
                 //TODO: return await SignInOrTwoFactor(user, isPersistent);
             }

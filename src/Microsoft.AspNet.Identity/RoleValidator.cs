@@ -48,8 +48,8 @@ namespace Microsoft.AspNet.Identity
             }
             else
             {
-                var owner = await manager.FindByName(roleName);
-                if (owner != null && !string.Equals(await manager.GetRoleId(owner), await manager.GetRoleId(role)))
+                var owner = await manager.FindByNameAsync(roleName);
+                if (owner != null && !string.Equals(await manager.GetRoleIdAsync(owner), await manager.GetRoleIdAsync(role)))
                 {
                     errors.Add(String.Format(CultureInfo.CurrentCulture, Resources.DuplicateName, roleName));
                 }

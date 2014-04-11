@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Microsoft.AspNet.Identity.Entity
+namespace Microsoft.AspNet.Identity
 {
     public class IdentityUserRole : IdentityUserRole<string> { }
 
@@ -10,6 +10,13 @@ namespace Microsoft.AspNet.Identity.Entity
     /// <typeparam name="TKey"></typeparam>
     public class IdentityUserRole<TKey> where TKey : IEquatable<TKey>
     {
+        // TODO: Remove
+        public virtual string Id
+        {
+            get;
+            set;
+        }
+
         /// <summary>
         ///     UserId for the user that is in the role
         /// </summary>

@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Identity.Entity
 {
     public class RoleStore<TRole, TKey> : 
         IQueryableRoleStore<TRole>
-        where TRole : IdentityRole
+        where TRole : EntityRole
         where TKey : IEquatable<TKey>
     {
         private bool _disposed;
@@ -41,7 +41,8 @@ namespace Microsoft.AspNet.Identity.Entity
 
         public virtual Task<TRole> GetRoleAggregate(Expression<Func<TRole, bool>> filter, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return Roles.SingleOrDefaultAsync(filter, cancellationToken);
+            // TODO: return Roles.SingleOrDefaultAsync(filter, cancellationToken);
+            return Task.FromResult(Roles.SingleOrDefault(filter));
         }
 
         public async virtual Task CreateAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
@@ -82,12 +83,36 @@ namespace Microsoft.AspNet.Identity.Entity
 
         public Task<string> GetRoleIdAsync(TRole role, CancellationToken cancellationToken = new CancellationToken())
         {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+            if (role == null)
+            {
+                throw new ArgumentNullException("role");
+            }
             return Task.FromResult(role.Id);
         }
 
         public Task<string> GetRoleNameAsync(TRole role, CancellationToken cancellationToken = new CancellationToken())
         {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+            if (role == null)
+            {
+                throw new ArgumentNullException("role");
+            }
             return Task.FromResult(role.Name);
+        }
+
+        public Task SetRoleNameAsync(TRole role, string roleName, CancellationToken cancellationToken = new CancellationToken())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+            if (role == null)
+            {
+                throw new ArgumentNullException("role");
+            }
+            role.Name = roleName;
+            return Task.FromResult(0);
         }
 
 
@@ -97,7 +122,7 @@ namespace Microsoft.AspNet.Identity.Entity
         }
 
         /// <summary>
-        ///     FindByLoginAsync a role by id
+        ///     Find a role by id
         /// </summary>
         /// <param name="id"></param>
         /// <param name="cancellationToken"></param>
@@ -107,12 +132,11 @@ namespace Microsoft.AspNet.Identity.Entity
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
             var roleId = ConvertId(id);
-            return Roles.SingleOrDefaultAsync(r => r.Id.Equals(roleId), cancellationToken);
-            //return GetRoleAggregate(u => u.Id.Equals(id));
+            return GetRoleAggregate(u => u.Id.Equals(roleId), cancellationToken);
         }
 
         /// <summary>
-        ///     FindByLoginAsync a role by name
+        ///     Find a role by name
         /// </summary>
         /// <param name="name"></param>
         /// <param name="cancellationToken"></param>
@@ -121,8 +145,7 @@ namespace Microsoft.AspNet.Identity.Entity
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            return Roles.SingleOrDefaultAsync(r => r.Name.ToUpper() == name.ToUpper(), cancellationToken);
-            //return GetRoleAggregate(u => u.Name.ToUpper() == name.ToUpper());
+            return GetRoleAggregate(u => u.Name.ToUpper() == name.ToUpper(), cancellationToken);
         }
 
         private void ThrowIfDisposed()

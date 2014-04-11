@@ -22,6 +22,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IdentityResultAssert.cs" />
+    <Compile Include="RoleStoreTest.cs" />
+    <Compile Include="TestIdentityFactory.cs" />
     <Compile Include="UserStoreTest.cs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />

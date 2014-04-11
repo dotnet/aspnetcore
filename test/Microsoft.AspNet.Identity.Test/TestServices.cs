@@ -1,8 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using Microsoft.AspNet.DependencyInjection;
-using Microsoft.AspNet.DependencyInjection.Fallback;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Identity.Test
 {

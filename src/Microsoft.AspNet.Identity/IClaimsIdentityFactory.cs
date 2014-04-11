@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNet.Identity
 {
     /// <summary>
-    ///     Interface for creating a ClaimsIdentity from an IUser
+    ///     Interface for creating a ClaimsIdentity from an user
     /// </summary>
     /// <typeparam name="TUser"></typeparam>
     public interface IClaimsIdentityFactory<TUser>
         where TUser : class
     {
         /// <summary>
-        ///     CreateAsync a ClaimsIdentity from an user using a UserManager
+        ///     Create a ClaimsIdentity from an user using a UserManager
         /// </summary>
         /// <param name="manager"></param>
         /// <param name="user"></param>

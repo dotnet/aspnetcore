@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task CanDeleteUser()
         {
             var manager = CreateManager();
-            var user = new InMemoryUser("DeleteAsync");
+            var user = new IdentityUser("DeleteAsync");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             IdentityResultAssert.IsSuccess(await manager.DeleteAsync(user));
             Assert.Null(await manager.FindByIdAsync(user.Id));
@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task CanUpdateUserName()
         {
             var manager = CreateManager();
-            var user = new InMemoryUser("UpdateAsync");
+            var user = new IdentityUser("UpdateAsync");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             Assert.Null(await manager.FindByNameAsync("New"));
             user.UserName = "New";
@@ -34,10 +34,31 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         }
 
         [Fact]
+        public async Task CanSetUserName()
+        {
+            var manager = CreateManager();
+            var user = new IdentityUser("UpdateAsync");
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+            Assert.Null(await manager.FindByNameAsync("New"));
+            IdentityResultAssert.IsSuccess(await manager.SetUserNameAsync(user, "New"));
+            Assert.NotNull(await manager.FindByNameAsync("New"));
+            Assert.Null(await manager.FindByNameAsync("UpdateAsync"));
+        }
+
+        [Fact]
+        public async Task CanFindById()
+        {
+            var manager = CreateManager();
+            var user = new IdentityUser("FindByid");
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+            Assert.NotNull(await manager.FindByIdAsync(user.Id));
+        }
+
+        [Fact]
         public async Task UserValidatorCanBlockCreate()
         {
             var manager = CreateManager();
-            var user = new InMemoryUser("CreateBlocked");
+            var user = new IdentityUser("CreateBlocked");
             manager.UserValidator = new AlwaysBadValidator();
             IdentityResultAssert.IsFailure(await manager.CreateAsync(user), AlwaysBadValidator.ErrorMessage);
         }
@@ -46,7 +67,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task UserValidatorCanBlockUpdate()
         {
             var manager = CreateManager();
-            var user = new InMemoryUser("UpdateBlocked");
+            var user = new IdentityUser("UpdateBlocked");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             manager.UserValidator = new AlwaysBadValidator();
             IdentityResultAssert.IsFailure(await manager.UpdateAsync(user), AlwaysBadValidator.ErrorMessage);
@@ -58,8 +79,8 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task UserValidatorBlocksShortEmailsWhenRequiresUniqueEmail(string email)
         {
             var manager = CreateManager();
-            var user = new InMemoryUser("UpdateBlocked") {Email = email};
-            manager.UserValidator = new UserValidator<InMemoryUser> {RequireUniqueEmail = true};
+            var user = new IdentityUser("UpdateBlocked") {Email = email};
+            manager.UserValidator = new UserValidator<IdentityUser> {RequireUniqueEmail = true};
             IdentityResultAssert.IsFailure(await manager.CreateAsync(user), "Email cannot be null or empty.");
         }
 
@@ -70,8 +91,8 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task UserValidatorBlocksInvalidEmailsWhenRequiresUniqueEmail(string email)
         {
             var manager = CreateManager();
-            var user = new InMemoryUser("UpdateBlocked") {Email = email};
-            manager.UserValidator = new UserValidator<InMemoryUser> {RequireUniqueEmail = true};
+            var user = new IdentityUser("UpdateBlocked") {Email = email};
+            manager.UserValidator = new UserValidator<IdentityUser> {RequireUniqueEmail = true};
             IdentityResultAssert.IsFailure(await manager.CreateAsync(user), "Email '" + email + "' is invalid.");
         }
 #endif
@@ -80,7 +101,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task PasswordValidatorCanBlockAddPassword()
         {
             var manager = CreateManager();
-            var user = new InMemoryUser("AddPasswordBlocked");
+            var user = new IdentityUser("AddPasswordBlocked");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             manager.PasswordValidator = new AlwaysBadValidator();
             IdentityResultAssert.IsFailure(await manager.AddPasswordAsync(user, "password"),
@@ -91,7 +112,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task PasswordValidatorCanBlockChangePassword()
         {
             var manager = CreateManager();
-            var user = new InMemoryUser("ChangePasswordBlocked");
+            var user = new IdentityUser("ChangePasswordBlocked");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, "password"));
             manager.PasswordValidator = new AlwaysBadValidator();
             IdentityResultAssert.IsFailure(await manager.ChangePasswordAsync(user, "password", "new"),
@@ -102,11 +123,11 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task CanCreateUserNoPassword()
         {
             var manager = CreateManager();
-            IdentityResultAssert.IsSuccess(await manager.CreateAsync(new InMemoryUser("CreateUserTest")));
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(new IdentityUser("CreateUserTest")));
             var user = await manager.FindByNameAsync("CreateUserTest");
             Assert.NotNull(user);
             Assert.Null(user.PasswordHash);
-            var logins = await manager.GetLogins(user);
+            var logins = await manager.GetLoginsAsync(user);
             Assert.NotNull(logins);
             Assert.Equal(0, logins.Count());
         }
@@ -118,11 +139,11 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             const string userName = "CreateExternalUserTest";
             const string provider = "ZzAuth";
             const string providerKey = "HaoKey";
-            IdentityResultAssert.IsSuccess(await manager.CreateAsync(new InMemoryUser(userName)));
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(new IdentityUser(userName)));
             var user = await manager.FindByNameAsync(userName);
             var login = new UserLoginInfo(provider, providerKey);
-            IdentityResultAssert.IsSuccess(await manager.AddLogin(user, login));
-            var logins = await manager.GetLogins(user);
+            IdentityResultAssert.IsSuccess(await manager.AddLoginAsync(user, login));
+            var logins = await manager.GetLoginsAsync(user);
             Assert.NotNull(logins);
             Assert.Equal(1, logins.Count());
             Assert.Equal(provider, logins.First().LoginProvider);
@@ -134,24 +155,24 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         {
             var manager = CreateManager();
             var login = new UserLoginInfo("Provider", "key");
-            var user = new InMemoryUser("CreateUserLoginAddPasswordTest");
+            var user = new IdentityUser("CreateUserLoginAddPasswordTest");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
-            IdentityResultAssert.IsSuccess(await manager.AddLogin(user, login));
+            IdentityResultAssert.IsSuccess(await manager.AddLoginAsync(user, login));
             Assert.False(await manager.HasPasswordAsync(user));
             IdentityResultAssert.IsSuccess(await manager.AddPasswordAsync(user, "password"));
             Assert.True(await manager.HasPasswordAsync(user));
-            var logins = await manager.GetLogins(user);
+            var logins = await manager.GetLoginsAsync(user);
             Assert.NotNull(logins);
             Assert.Equal(1, logins.Count());
             Assert.Equal(user, await manager.FindByLoginAsync(login));
-            Assert.Equal(user, await manager.FindByUserNamePassword(user.UserName, "password"));
+            Assert.Equal(user, await manager.FindByUserNamePasswordAsync(user.UserName, "password"));
         }
 
         [Fact]
         public async Task AddPasswordFailsIfAlreadyHave()
         {
             var manager = CreateManager();
-            var user = new InMemoryUser("CannotAddAnotherPassword");
+            var user = new IdentityUser("CannotAddAnotherPassword");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, "Password"));
             Assert.True(await manager.HasPasswordAsync(user));
             IdentityResultAssert.IsFailure(await manager.AddPasswordAsync(user, "password"),
@@ -162,22 +183,22 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task CanCreateUserAddRemoveLogin()
         {
             var manager = CreateManager();
-            var user = new InMemoryUser("CreateUserAddRemoveLoginTest");
+            var user = new IdentityUser("CreateUserAddRemoveLoginTest");
             var login = new UserLoginInfo("Provider", "key");
             var result = await manager.CreateAsync(user);
             Assert.NotNull(user);
             IdentityResultAssert.IsSuccess(result);
-            IdentityResultAssert.IsSuccess(await manager.AddLogin(user, login));
+            IdentityResultAssert.IsSuccess(await manager.AddLoginAsync(user, login));
             Assert.Equal(user, await manager.FindByLoginAsync(login));
-            var logins = await manager.GetLogins(user);
+            var logins = await manager.GetLoginsAsync(user);
             Assert.NotNull(logins);
             Assert.Equal(1, logins.Count());
             Assert.Equal(login.LoginProvider, logins.Last().LoginProvider);
             Assert.Equal(login.ProviderKey, logins.Last().ProviderKey);
             var stamp = user.SecurityStamp;
-            IdentityResultAssert.IsSuccess(await manager.RemoveLogin(user, login));
+            IdentityResultAssert.IsSuccess(await manager.RemoveLoginAsync(user, login));
             Assert.Null(await manager.FindByLoginAsync(login));
-            logins = await manager.GetLogins(user);
+            logins = await manager.GetLoginsAsync(user);
             Assert.NotNull(logins);
             Assert.Equal(0, logins.Count());
             Assert.NotEqual(stamp, user.SecurityStamp);
@@ -187,7 +208,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task CanRemovePassword()
         {
             var manager = CreateManager();
-            var user = new InMemoryUser("RemovePasswordTest");
+            var user = new IdentityUser("RemovePasswordTest");
             const string password = "password";
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, password));
             var stamp = user.SecurityStamp;
@@ -202,15 +223,15 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task CanChangePassword()
         {
             var manager = CreateManager();
-            var user = new InMemoryUser("ChangePasswordTest");
+            var user = new IdentityUser("ChangePasswordTest");
             const string password = "password";
             const string newPassword = "newpassword";
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, password));
             var stamp = user.SecurityStamp;
             Assert.NotNull(stamp);
             IdentityResultAssert.IsSuccess(await manager.ChangePasswordAsync(user, password, newPassword));
-            Assert.Null(await manager.FindByUserNamePassword(user.UserName, password));
-            Assert.Equal(user, await manager.FindByUserNamePassword(user.UserName, newPassword));
+            Assert.Null(await manager.FindByUserNamePasswordAsync(user.UserName, password));
+            Assert.Equal(user, await manager.FindByUserNamePasswordAsync(user.UserName, newPassword));
             Assert.NotEqual(stamp, user.SecurityStamp);
         }
 
@@ -218,7 +239,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task CanAddRemoveUserClaim()
         {
             var manager = CreateManager();
-            var user = new InMemoryUser("ClaimsAddRemove");
+            var user = new IdentityUser("ClaimsAddRemove");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             Claim[] claims = {new Claim("c", "v"), new Claim("c2", "v2"), new Claim("c2", "v3")};
             foreach (Claim c in claims)
@@ -242,7 +263,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task ChangePasswordFallsIfPasswordWrong()
         {
             var manager = CreateManager();
-            var user = new InMemoryUser("user");
+            var user = new IdentityUser("user");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, "password"));
             var result = await manager.ChangePasswordAsync(user, "bogus", "newpassword");
             IdentityResultAssert.IsFailure(result, "Incorrect password.");
@@ -252,8 +273,8 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task AddDupeUserNameFails()
         {
             var manager = CreateManager();
-            var user = new InMemoryUser("dupe");
-            var user2 = new InMemoryUser("dupe");
+            var user = new IdentityUser("dupe");
+            var user2 = new IdentityUser("dupe");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             IdentityResultAssert.IsFailure(await manager.CreateAsync(user2), "Name dupe is already taken.");
         }
@@ -262,8 +283,8 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task AddDupeEmailAllowedByDefault()
         {
             var manager = CreateManager();
-            var user = new InMemoryUser("dupe") {Email = "yup@yup.com"};
-            var user2 = new InMemoryUser("dupeEmail") {Email = "yup@yup.com"};
+            var user = new IdentityUser("dupe") {Email = "yup@yup.com"};
+            var user2 = new IdentityUser("dupeEmail") {Email = "yup@yup.com"};
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user2));
         }
@@ -272,9 +293,9 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task AddDupeEmailFallsWhenUniqueEmailRequired()
         {
             var manager = CreateManager();
-            manager.UserValidator = new UserValidator<InMemoryUser> {RequireUniqueEmail = true};
-            var user = new InMemoryUser("dupe") {Email = "yup@yup.com"};
-            var user2 = new InMemoryUser("dupeEmail") {Email = "yup@yup.com"};
+            manager.UserValidator = new UserValidator<IdentityUser> {RequireUniqueEmail = true};
+            var user = new IdentityUser("dupe") {Email = "yup@yup.com"};
+            var user2 = new IdentityUser("dupeEmail") {Email = "yup@yup.com"};
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             IdentityResultAssert.IsFailure(await manager.CreateAsync(user2), "Email 'yup@yup.com' is already taken.");
         }
@@ -283,7 +304,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task UpdateSecurityStampActuallyChanges()
         {
             var manager = CreateManager();
-            var user = new InMemoryUser("stampMe");
+            var user = new IdentityUser("stampMe");
             Assert.Null(user.SecurityStamp);
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             var stamp = user.SecurityStamp;
@@ -296,11 +317,11 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task AddDupeLoginFails()
         {
             var manager = CreateManager();
-            var user = new InMemoryUser("DupeLogin");
+            var user = new IdentityUser("DupeLogin");
             var login = new UserLoginInfo("provder", "key");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
-            IdentityResultAssert.IsSuccess(await manager.AddLogin(user, login));
-            var result = await manager.AddLogin(user, login);
+            IdentityResultAssert.IsSuccess(await manager.AddLoginAsync(user, login));
+            var result = await manager.AddLoginAsync(user, login);
             IdentityResultAssert.IsFailure(result, "A user with that external login already exists.");
         }
 
@@ -311,7 +332,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             var manager = CreateManager();
             const string userName = "EmailTest";
             const string email = "email@test.com";
-            var user = new InMemoryUser(userName) {Email = email};
+            var user = new IdentityUser(userName) {Email = email};
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             var fetch = await manager.FindByEmailAsync(email);
             Assert.Equal(user, fetch);
@@ -323,11 +344,11 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             var mgr = CreateManager();
             var users = new[]
             {
-                new InMemoryUser("user1"),
-                new InMemoryUser("user2"),
-                new InMemoryUser("user3")
+                new IdentityUser("user1"),
+                new IdentityUser("user2"),
+                new IdentityUser("user3")
             };
-            foreach (InMemoryUser u in users)
+            foreach (IdentityUser u in users)
             {
                 IdentityResultAssert.IsSuccess(await mgr.CreateAsync(u));
             }
@@ -344,10 +365,10 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         {
             var manager = CreateManager();
             var role = CreateRoleManager();
-            var user = new InMemoryUser("Hao");
+            var user = new IdentityUser("Hao");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
-            IdentityResultAssert.IsSuccess(await role.CreateAsync(new InMemoryRole("Admin")));
-            IdentityResultAssert.IsSuccess(await role.CreateAsync(new InMemoryRole("Local")));
+            IdentityResultAssert.IsSuccess(await role.CreateAsync(new IdentityRole("Admin")));
+            IdentityResultAssert.IsSuccess(await role.CreateAsync(new IdentityRole("Local")));
             IdentityResultAssert.IsSuccess(await manager.AddToRoleAsync(user, "Admin"));
             IdentityResultAssert.IsSuccess(await manager.AddToRoleAsync(user, "Local"));
             Claim[] userClaims =
@@ -360,10 +381,10 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
                 IdentityResultAssert.IsSuccess(await manager.AddClaimAsync(user, c));
             }
 
-            var identity = await manager.CreateIdentity(user, "test");
-            var claimsFactory = manager.ClaimsIdentityFactory as ClaimsIdentityFactory<InMemoryUser>;
+            var identity = await manager.CreateIdentityAsync(user, "test");
+            var claimsFactory = (ClaimsIdentityFactory<IdentityUser>)manager.ClaimsIdentityFactory;
             Assert.NotNull(claimsFactory);
-            var claims = identity.Claims;
+            var claims = identity.Claims.ToList();
             Assert.NotNull(claims);
             Assert.True(
                 claims.Any(c => c.Type == claimsFactory.UserNameClaimType && c.Value == user.UserName));
@@ -380,37 +401,37 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task ConfirmEmailFalseByDefaultTest()
         {
             var manager = CreateManager();
-            var user = new InMemoryUser("test");
+            var user = new IdentityUser("test");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             Assert.False(await manager.IsEmailConfirmedAsync(user));
         }
 
         // TODO: No token provider implementations yet
-        private class StaticTokenProvider : IUserTokenProvider<InMemoryUser>
+        private class StaticTokenProvider : IUserTokenProvider<IdentityUser>
         {
-            public Task<string> GenerateAsync(string purpose, UserManager<InMemoryUser> manager,
-                InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GenerateAsync(string purpose, UserManager<IdentityUser> manager,
+                IdentityUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(MakeToken(purpose, user));
             }
 
-            public Task<bool> ValidateAsync(string purpose, string token, UserManager<InMemoryUser> manager,
-                InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> ValidateAsync(string purpose, string token, UserManager<IdentityUser> manager,
+                IdentityUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(token == MakeToken(purpose, user));
             }
 
-            public Task NotifyAsync(string token, UserManager<InMemoryUser> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task NotifyAsync(string token, UserManager<IdentityUser> manager, IdentityUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task<bool> IsValidProviderForUserAsync(UserManager<InMemoryUser> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> IsValidProviderForUserAsync(UserManager<IdentityUser> manager, IdentityUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(true);
             }
 
-            private static string MakeToken(string purpose, InMemoryUser user)
+            private static string MakeToken(string purpose, IdentityUser user)
             {
                 return string.Join(":", user.Id, purpose, "ImmaToken");
             }
@@ -421,7 +442,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         {
             var manager = CreateManager();
             manager.UserTokenProvider = new StaticTokenProvider();
-            var user = new InMemoryUser("ResetPasswordTest");
+            var user = new IdentityUser("ResetPasswordTest");
             const string password = "password";
             const string newPassword = "newpassword";
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, password));
@@ -430,8 +451,8 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             var token = await manager.GeneratePasswordResetTokenAsync(user);
             Assert.NotNull(token);
             IdentityResultAssert.IsSuccess(await manager.ResetPassword(user, token, newPassword));
-            Assert.Null(await manager.FindByUserNamePassword(user.UserName, password));
-            Assert.Equal(user, await manager.FindByUserNamePassword(user.UserName, newPassword));
+            Assert.Null(await manager.FindByUserNamePasswordAsync(user.UserName, password));
+            Assert.Equal(user, await manager.FindByUserNamePasswordAsync(user.UserName, newPassword));
             Assert.NotEqual(stamp, user.SecurityStamp);
         }
 
@@ -440,7 +461,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         {
             var manager = CreateManager();
             manager.UserTokenProvider = new StaticTokenProvider();
-            var user = new InMemoryUser("ResetPasswordTest");
+            var user = new IdentityUser("ResetPasswordTest");
             const string password = "password";
             const string newPassword = "newpassword";
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, password));
@@ -451,8 +472,8 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             manager.PasswordValidator = new AlwaysBadValidator();
             IdentityResultAssert.IsFailure(await manager.ResetPassword(user, token, newPassword),
                 AlwaysBadValidator.ErrorMessage);
-            Assert.NotNull(await manager.FindByUserNamePassword(user.UserName, password));
-            Assert.Equal(user, await manager.FindByUserNamePassword(user.UserName, password));
+            Assert.NotNull(await manager.FindByUserNamePasswordAsync(user.UserName, password));
+            Assert.Equal(user, await manager.FindByUserNamePasswordAsync(user.UserName, password));
             Assert.Equal(stamp, user.SecurityStamp);
         }
 
@@ -461,15 +482,15 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         {
             var manager = CreateManager();
             manager.UserTokenProvider = new StaticTokenProvider();
-            var user = new InMemoryUser("ResetPasswordTest");
+            var user = new IdentityUser("ResetPasswordTest");
             const string password = "password";
             const string newPassword = "newpassword";
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, password));
             var stamp = user.SecurityStamp;
             Assert.NotNull(stamp);
             IdentityResultAssert.IsFailure(await manager.ResetPassword(user, "bogus", newPassword), "Invalid token.");
-            Assert.NotNull(await manager.FindByUserNamePassword(user.UserName, password));
-            Assert.Equal(user, await manager.FindByUserNamePassword(user.UserName, password));
+            Assert.NotNull(await manager.FindByUserNamePasswordAsync(user.UserName, password));
+            Assert.Equal(user, await manager.FindByUserNamePasswordAsync(user.UserName, password));
             Assert.Equal(stamp, user.SecurityStamp);
         }
 
@@ -478,8 +499,8 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         {
             var manager = CreateManager();
             manager.UserTokenProvider = new StaticTokenProvider();
-            var user = new InMemoryUser("UserTokenTest");
-            var user2 = new InMemoryUser("UserTokenTest2");
+            var user = new IdentityUser("UserTokenTest");
+            var user2 = new IdentityUser("UserTokenTest2");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user2));
             var token = await manager.GenerateUserTokenAsync("test", user);
@@ -494,7 +515,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         {
             var manager = CreateManager();
             manager.UserTokenProvider = new StaticTokenProvider();
-            var user = new InMemoryUser("test");
+            var user = new IdentityUser("test");
             Assert.False(user.EmailConfirmed);
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             var token = await manager.GenerateEmailConfirmationTokenAsync(user);
@@ -510,7 +531,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         {
             var manager = CreateManager();
             manager.UserTokenProvider = new StaticTokenProvider();
-            var user = new InMemoryUser("test");
+            var user = new IdentityUser("test");
             Assert.False(user.EmailConfirmed);
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             IdentityResultAssert.IsFailure(await manager.ConfirmEmailAsync(user, "bogus"), "Invalid token.");
@@ -522,7 +543,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         //public async Task ConfirmTokenFailsAfterPasswordChange()
         //{
         //    var manager = CreateManager();
-        //    var user = new InMemoryUser("test");
+        //    var user = new IdentityUser("test");
         //    Assert.False(user.EmailConfirmed);
         //    IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, "password"));
         //    var token = await manager.GenerateEmailConfirmationTokenAsync(user);
@@ -540,14 +561,14 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             var mgr = CreateManager();
             mgr.DefaultAccountLockoutTimeSpan = TimeSpan.FromHours(1);
             mgr.UserLockoutEnabledByDefault = true;
-            var user = new InMemoryUser("fastLockout");
+            var user = new IdentityUser("fastLockout");
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.True(await mgr.GetLockoutEnabledAsync(user));
             Assert.True(user.LockoutEnabled);
             Assert.False(await mgr.IsLockedOutAsync(user));
             IdentityResultAssert.IsSuccess(await mgr.AccessFailedAsync(user));
             Assert.True(await mgr.IsLockedOutAsync(user));
-            Assert.True(await mgr.GetLockoutEndDate(user) > DateTimeOffset.UtcNow.AddMinutes(55));
+            Assert.True(await mgr.GetLockoutEndDateAsync(user) > DateTimeOffset.UtcNow.AddMinutes(55));
             Assert.Equal(0, await mgr.GetAccessFailedCountAsync(user));
         }
 
@@ -558,18 +579,18 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             mgr.DefaultAccountLockoutTimeSpan = TimeSpan.FromHours(1);
             mgr.UserLockoutEnabledByDefault = true;
             mgr.MaxFailedAccessAttemptsBeforeLockout = 2;
-            var user = new InMemoryUser("twoFailureLockout");
+            var user = new IdentityUser("twoFailureLockout");
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.True(await mgr.GetLockoutEnabledAsync(user));
             Assert.True(user.LockoutEnabled);
             Assert.False(await mgr.IsLockedOutAsync(user));
             IdentityResultAssert.IsSuccess(await mgr.AccessFailedAsync(user));
             Assert.False(await mgr.IsLockedOutAsync(user));
-            Assert.False(await mgr.GetLockoutEndDate(user) > DateTimeOffset.UtcNow.AddMinutes(55));
+            Assert.False(await mgr.GetLockoutEndDateAsync(user) > DateTimeOffset.UtcNow.AddMinutes(55));
             Assert.Equal(1, await mgr.GetAccessFailedCountAsync(user));
             IdentityResultAssert.IsSuccess(await mgr.AccessFailedAsync(user));
             Assert.True(await mgr.IsLockedOutAsync(user));
-            Assert.True(await mgr.GetLockoutEndDate(user) > DateTimeOffset.UtcNow.AddMinutes(55));
+            Assert.True(await mgr.GetLockoutEndDateAsync(user) > DateTimeOffset.UtcNow.AddMinutes(55));
             Assert.Equal(0, await mgr.GetAccessFailedCountAsync(user));
         }
 
@@ -580,22 +601,22 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             mgr.DefaultAccountLockoutTimeSpan = TimeSpan.FromHours(1);
             mgr.UserLockoutEnabledByDefault = true;
             mgr.MaxFailedAccessAttemptsBeforeLockout = 2;
-            var user = new InMemoryUser("resetLockout");
+            var user = new IdentityUser("resetLockout");
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.True(await mgr.GetLockoutEnabledAsync(user));
             Assert.True(user.LockoutEnabled);
             Assert.False(await mgr.IsLockedOutAsync(user));
             IdentityResultAssert.IsSuccess(await mgr.AccessFailedAsync(user));
             Assert.False(await mgr.IsLockedOutAsync(user));
-            Assert.False(await mgr.GetLockoutEndDate(user) > DateTimeOffset.UtcNow.AddMinutes(55));
+            Assert.False(await mgr.GetLockoutEndDateAsync(user) > DateTimeOffset.UtcNow.AddMinutes(55));
             Assert.Equal(1, await mgr.GetAccessFailedCountAsync(user));
             IdentityResultAssert.IsSuccess(await mgr.ResetAccessFailedCountAsync(user));
             Assert.Equal(0, await mgr.GetAccessFailedCountAsync(user));
             Assert.False(await mgr.IsLockedOutAsync(user));
-            Assert.False(await mgr.GetLockoutEndDate(user) > DateTimeOffset.UtcNow.AddMinutes(55));
+            Assert.False(await mgr.GetLockoutEndDateAsync(user) > DateTimeOffset.UtcNow.AddMinutes(55));
             IdentityResultAssert.IsSuccess(await mgr.AccessFailedAsync(user));
             Assert.False(await mgr.IsLockedOutAsync(user));
-            Assert.False(await mgr.GetLockoutEndDate(user) > DateTimeOffset.UtcNow.AddMinutes(55));
+            Assert.False(await mgr.GetLockoutEndDateAsync(user) > DateTimeOffset.UtcNow.AddMinutes(55));
             Assert.Equal(1, await mgr.GetAccessFailedCountAsync(user));
         }
 
@@ -605,7 +626,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             var mgr = CreateManager();
             mgr.DefaultAccountLockoutTimeSpan = TimeSpan.FromHours(1);
             mgr.MaxFailedAccessAttemptsBeforeLockout = 2;
-            var user = new InMemoryUser("manualLockout");
+            var user = new IdentityUser("manualLockout");
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.False(await mgr.GetLockoutEnabledAsync(user));
             Assert.False(user.LockoutEnabled);
@@ -615,11 +636,11 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             Assert.False(await mgr.IsLockedOutAsync(user));
             IdentityResultAssert.IsSuccess(await mgr.AccessFailedAsync(user));
             Assert.False(await mgr.IsLockedOutAsync(user));
-            Assert.False(await mgr.GetLockoutEndDate(user) > DateTimeOffset.UtcNow.AddMinutes(55));
+            Assert.False(await mgr.GetLockoutEndDateAsync(user) > DateTimeOffset.UtcNow.AddMinutes(55));
             Assert.Equal(1, await mgr.GetAccessFailedCountAsync(user));
             IdentityResultAssert.IsSuccess(await mgr.AccessFailedAsync(user));
             Assert.True(await mgr.IsLockedOutAsync(user));
-            Assert.True(await mgr.GetLockoutEndDate(user) > DateTimeOffset.UtcNow.AddMinutes(55));
+            Assert.True(await mgr.GetLockoutEndDateAsync(user) > DateTimeOffset.UtcNow.AddMinutes(55));
             Assert.Equal(0, await mgr.GetAccessFailedCountAsync(user));
         }
 
@@ -628,13 +649,13 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         {
             var mgr = CreateManager();
             mgr.UserLockoutEnabledByDefault = true;
-            var user = new InMemoryUser("LockoutTest");
+            var user = new IdentityUser("LockoutTest");
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.True(await mgr.GetLockoutEnabledAsync(user));
             Assert.True(user.LockoutEnabled);
-            IdentityResultAssert.IsSuccess(await mgr.SetLockoutEndDate(user, new DateTimeOffset()));
+            IdentityResultAssert.IsSuccess(await mgr.SetLockoutEndDateAsync(user, new DateTimeOffset()));
             Assert.False(await mgr.IsLockedOutAsync(user));
-            Assert.Equal(new DateTimeOffset(), await mgr.GetLockoutEndDate(user));
+            Assert.Equal(new DateTimeOffset(), await mgr.GetLockoutEndDateAsync(user));
             Assert.Equal(new DateTimeOffset(), user.LockoutEnd);
         }
 
@@ -642,11 +663,11 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task LockoutFailsIfNotEnabled()
         {
             var mgr = CreateManager();
-            var user = new InMemoryUser("LockoutNotEnabledTest");
+            var user = new IdentityUser("LockoutNotEnabledTest");
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.False(await mgr.GetLockoutEnabledAsync(user));
             Assert.False(user.LockoutEnabled);
-            IdentityResultAssert.IsFailure(await mgr.SetLockoutEndDate(user, new DateTimeOffset()),
+            IdentityResultAssert.IsFailure(await mgr.SetLockoutEndDateAsync(user, new DateTimeOffset()),
                 "Lockout is not enabled for this user.");
             Assert.False(await mgr.IsLockedOutAsync(user));
         }
@@ -656,7 +677,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         {
             var mgr = CreateManager();
             mgr.UserLockoutEnabledByDefault = true;
-            var user = new InMemoryUser("LockoutUtcNowTest") {LockoutEnd = DateTimeOffset.UtcNow.AddSeconds(-1)};
+            var user = new IdentityUser("LockoutUtcNowTest") {LockoutEnd = DateTimeOffset.UtcNow.AddSeconds(-1)};
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.True(await mgr.GetLockoutEnabledAsync(user));
             Assert.True(user.LockoutEnabled);
@@ -668,11 +689,11 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         {
             var mgr = CreateManager();
             mgr.UserLockoutEnabledByDefault = true;
-            var user = new InMemoryUser("LockoutUtcNowTest");
+            var user = new IdentityUser("LockoutUtcNowTest");
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.True(await mgr.GetLockoutEnabledAsync(user));
             Assert.True(user.LockoutEnabled);
-            IdentityResultAssert.IsSuccess(await mgr.SetLockoutEndDate(user, DateTimeOffset.UtcNow.AddSeconds(-1)));
+            IdentityResultAssert.IsSuccess(await mgr.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddSeconds(-1)));
             Assert.False(await mgr.IsLockedOutAsync(user));
         }
 
@@ -681,7 +702,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         {
             var mgr = CreateManager();
             mgr.UserLockoutEnabledByDefault = true;
-            var user = new InMemoryUser("LockoutUtcNowTest") {LockoutEnd = DateTimeOffset.UtcNow.AddMinutes(5)};
+            var user = new IdentityUser("LockoutUtcNowTest") {LockoutEnd = DateTimeOffset.UtcNow.AddMinutes(5)};
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.True(await mgr.GetLockoutEnabledAsync(user));
             Assert.True(user.LockoutEnabled);
@@ -693,14 +714,14 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         {
             var mgr = CreateManager();
             mgr.UserLockoutEnabledByDefault = true;
-            var user = new InMemoryUser("LockoutTest");
+            var user = new IdentityUser("LockoutTest");
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.True(await mgr.GetLockoutEnabledAsync(user));
             Assert.True(user.LockoutEnabled);
             var lockoutEnd = new DateTimeOffset(DateTime.Now.AddMinutes(30).ToLocalTime());
-            IdentityResultAssert.IsSuccess(await mgr.SetLockoutEndDate(user, lockoutEnd));
+            IdentityResultAssert.IsSuccess(await mgr.SetLockoutEndDateAsync(user, lockoutEnd));
             Assert.True(await mgr.IsLockedOutAsync(user));
-            var end = await mgr.GetLockoutEndDate(user);
+            var end = await mgr.GetLockoutEndDateAsync(user);
             Assert.Equal(lockoutEnd, end);
         }
 
@@ -709,13 +730,13 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task CanCreateRoleTest()
         {
             var manager = CreateRoleManager();
-            var role = new InMemoryRole("create");
+            var role = new IdentityRole("create");
             Assert.False(await manager.RoleExistsAsync(role.Name));
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(role));
             Assert.True(await manager.RoleExistsAsync(role.Name));
         }
 
-        private class AlwaysBadValidator : IUserValidator<InMemoryUser>, IRoleValidator<InMemoryRole>,
+        private class AlwaysBadValidator : IUserValidator<IdentityUser>, IRoleValidator<IdentityRole>,
             IPasswordValidator
         {
             public const string ErrorMessage = "I'm Bad.";
@@ -725,12 +746,12 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
                 return Task.FromResult(IdentityResult.Failed(ErrorMessage));
             }
 
-            public Task<IdentityResult> ValidateAsync(RoleManager<InMemoryRole> manager, InMemoryRole role, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> ValidateAsync(RoleManager<IdentityRole> manager, IdentityRole role, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(IdentityResult.Failed(ErrorMessage));
             }
 
-            public Task<IdentityResult> ValidateAsync(UserManager<InMemoryUser> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> ValidateAsync(UserManager<IdentityUser> manager, IdentityUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(IdentityResult.Failed(ErrorMessage));
             }
@@ -741,7 +762,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         {
             var manager = CreateRoleManager();
             manager.RoleValidator = new AlwaysBadValidator();
-            IdentityResultAssert.IsFailure(await manager.CreateAsync(new InMemoryRole("blocked")),
+            IdentityResultAssert.IsFailure(await manager.CreateAsync(new IdentityRole("blocked")),
                 AlwaysBadValidator.ErrorMessage);
         }
 
@@ -749,7 +770,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task BadValidatorBlocksRoleUpdate()
         {
             var manager = CreateRoleManager();
-            var role = new InMemoryRole("poorguy");
+            var role = new IdentityRole("poorguy");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(role));
             var error = AlwaysBadValidator.ErrorMessage;
             manager.RoleValidator = new AlwaysBadValidator();
@@ -760,7 +781,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task CanDeleteRoleTest()
         {
             var manager = CreateRoleManager();
-            var role = new InMemoryRole("delete");
+            var role = new IdentityRole("delete");
             Assert.False(await manager.RoleExistsAsync(role.Name));
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(role));
             IdentityResultAssert.IsSuccess(await manager.DeleteAsync(role));
@@ -771,7 +792,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task CanRoleFindByIdTest()
         {
             var manager = CreateRoleManager();
-            var role = new InMemoryRole("FindByIdAsync");
+            var role = new IdentityRole("FindByIdAsync");
             Assert.Null(await manager.FindByIdAsync(role.Id));
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(role));
             Assert.Equal(role, await manager.FindByIdAsync(role.Id));
@@ -781,35 +802,35 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task CanRoleFindByName()
         {
             var manager = CreateRoleManager();
-            var role = new InMemoryRole("FindByNameAsync");
-            Assert.Null(await manager.FindByName(role.Name));
+            var role = new IdentityRole("FindByNameAsync");
+            Assert.Null(await manager.FindByNameAsync(role.Name));
             Assert.False(await manager.RoleExistsAsync(role.Name));
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(role));
-            Assert.Equal(role, await manager.FindByName(role.Name));
+            Assert.Equal(role, await manager.FindByNameAsync(role.Name));
         }
 
         [Fact]
         public async Task CanUpdateRoleNameTest()
         {
             var manager = CreateRoleManager();
-            var role = new InMemoryRole("update");
+            var role = new IdentityRole("update");
             Assert.False(await manager.RoleExistsAsync(role.Name));
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(role));
             Assert.True(await manager.RoleExistsAsync(role.Name));
             role.Name = "Changed";
             IdentityResultAssert.IsSuccess(await manager.UpdateAsync(role));
             Assert.False(await manager.RoleExistsAsync("update"));
-            Assert.Equal(role, await manager.FindByName(role.Name));
+            Assert.Equal(role, await manager.FindByNameAsync(role.Name));
         }
 
         [Fact]
         public async Task CanQuerableRolesTest()
         {
             var manager = CreateRoleManager();
-            InMemoryRole[] roles =
+            IdentityRole[] roles =
             {
-                new InMemoryRole("r1"), new InMemoryRole("r2"), new InMemoryRole("r3"),
-                new InMemoryRole("r4")
+                new IdentityRole("r1"), new IdentityRole("r2"), new IdentityRole("r3"),
+                new IdentityRole("r4")
             };
             foreach (var r in roles)
             {
@@ -826,10 +847,10 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         //    // Need fail if not empty?
         //    var userMgr = CreateManager();
         //    var roleMgr = CreateRoleManager();
-        //    var role = new InMemoryRole("deleteNonEmpty");
+        //    var role = new IdentityRole("deleteNonEmpty");
         //    Assert.False(await roleMgr.RoleExistsAsync(role.Name));
         //    IdentityResultAssert.IsSuccess(await roleMgr.CreateAsync(role));
-        //    var user = new InMemoryUser("t");
+        //    var user = new IdentityUser("t");
         //    IdentityResultAssert.IsSuccess(await userMgr.CreateAsync(user));
         //    IdentityResultAssert.IsSuccess(await userMgr.AddToRoleAsync(user, role.Name));
         //    IdentityResultAssert.IsSuccess(await roleMgr.DeleteAsync(role));
@@ -848,10 +869,10 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         ////    // Need fail if not empty?
         ////    var userMgr = CreateManager();
         ////    var roleMgr = CreateRoleManager();
-        ////    var role = new InMemoryRole("deleteNonEmpty");
+        ////    var role = new IdentityRole("deleteNonEmpty");
         ////    Assert.False(await roleMgr.RoleExistsAsync(role.Name));
         ////    IdentityResultAssert.IsSuccess(await roleMgr.CreateAsync(role));
-        ////    var user = new InMemoryUser("t");
+        ////    var user = new IdentityUser("t");
         ////    IdentityResultAssert.IsSuccess(await userMgr.CreateAsync(user));
         ////    IdentityResultAssert.IsSuccess(await userMgr.AddToRoleAsync(user, role.Name));
         ////    IdentityResultAssert.IsSuccess(await userMgr.DeleteAsync(user));
@@ -862,11 +883,11 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task CreateRoleFailsIfExists()
         {
             var manager = CreateRoleManager();
-            var role = new InMemoryRole("dupeRole");
+            var role = new IdentityRole("dupeRole");
             Assert.False(await manager.RoleExistsAsync(role.Name));
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(role));
             Assert.True(await manager.RoleExistsAsync(role.Name));
-            var role2 = new InMemoryRole("dupeRole");
+            var role2 = new IdentityRole("dupeRole");
             IdentityResultAssert.IsFailure(await manager.CreateAsync(role2));
         }
 
@@ -875,12 +896,12 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         {
             var manager = CreateManager();
             var roleManager = CreateRoleManager();
-            var role = new InMemoryRole("addUserTest");
+            var role = new IdentityRole("addUserTest");
             IdentityResultAssert.IsSuccess(await roleManager.CreateAsync(role));
-            InMemoryUser[] users =
+            IdentityUser[] users =
             {
-                new InMemoryUser("1"), new InMemoryUser("2"), new InMemoryUser("3"),
-                new InMemoryUser("4")
+                new IdentityUser("1"), new IdentityUser("2"), new IdentityUser("3"),
+                new IdentityUser("4")
             };
             foreach (var u in users)
             {
@@ -895,15 +916,15 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         {
             var userManager = CreateManager();
             var roleManager = CreateRoleManager();
-            InMemoryUser[] users =
+            IdentityUser[] users =
             {
-                new InMemoryUser("u1"), new InMemoryUser("u2"), new InMemoryUser("u3"),
-                new InMemoryUser("u4")
+                new IdentityUser("u1"), new IdentityUser("u2"), new IdentityUser("u3"),
+                new IdentityUser("u4")
             };
-            InMemoryRole[] roles =
+            IdentityRole[] roles =
             {
-                new InMemoryRole("r1"), new InMemoryRole("r2"), new InMemoryRole("r3"),
-                new InMemoryRole("r4")
+                new IdentityRole("r1"), new IdentityRole("r2"), new IdentityRole("r3"),
+                new IdentityRole("r4")
             };
             foreach (var u in users)
             {
@@ -936,12 +957,12 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         {
             var userManager = CreateManager();
             var roleManager = CreateRoleManager();
-            var user = new InMemoryUser("MultiRoleUser");
+            var user = new IdentityUser("MultiRoleUser");
             IdentityResultAssert.IsSuccess(await userManager.CreateAsync(user));
-            InMemoryRole[] roles =
+            IdentityRole[] roles =
             {
-                new InMemoryRole("r1"), new InMemoryRole("r2"), new InMemoryRole("r3"),
-                new InMemoryRole("r4")
+                new IdentityRole("r1"), new IdentityRole("r2"), new IdentityRole("r3"),
+                new IdentityRole("r4")
             };
             foreach (var r in roles)
             {
@@ -958,16 +979,16 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         {
             var userManager = CreateManager();
             var roleManager = CreateRoleManager();
-            InMemoryUser[] users =
+            IdentityUser[] users =
             {
-                new InMemoryUser("1"), new InMemoryUser("2"), new InMemoryUser("3"),
-                new InMemoryUser("4")
+                new IdentityUser("1"), new IdentityUser("2"), new IdentityUser("3"),
+                new IdentityUser("4")
             };
             foreach (var u in users)
             {
                 IdentityResultAssert.IsSuccess(await userManager.CreateAsync(u));
             }
-            var r = new InMemoryRole("r1");
+            var r = new IdentityRole("r1");
             IdentityResultAssert.IsSuccess(await roleManager.CreateAsync(r));
             foreach (var u in users)
             {
@@ -986,8 +1007,8 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         {
             var userMgr = CreateManager();
             var roleMgr = CreateRoleManager();
-            var role = new InMemoryRole("addUserDupeTest");
-            var user = new InMemoryUser("user1");
+            var role = new IdentityRole("addUserDupeTest");
+            var user = new IdentityUser("user1");
             IdentityResultAssert.IsSuccess(await userMgr.CreateAsync(user));
             IdentityResultAssert.IsSuccess(await roleMgr.CreateAsync(role));
             var result = await userMgr.RemoveFromRoleAsync(user, role.Name);
@@ -999,8 +1020,8 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         {
             var userMgr = CreateManager();
             var roleMgr = CreateRoleManager();
-            var role = new InMemoryRole("addUserDupeTest");
-            var user = new InMemoryUser("user1");
+            var role = new IdentityRole("addUserDupeTest");
+            var user = new IdentityUser("user1");
             IdentityResultAssert.IsSuccess(await userMgr.CreateAsync(user));
             IdentityResultAssert.IsSuccess(await roleMgr.CreateAsync(role));
             IdentityResultAssert.IsSuccess(await userMgr.AddToRoleAsync(user, role.Name));
@@ -1012,16 +1033,16 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task CanFindRoleByNameWithManager()
         {
             var roleMgr = CreateRoleManager();
-            var role = new InMemoryRole("findRoleByNameTest");
+            var role = new IdentityRole("findRoleByNameTest");
             IdentityResultAssert.IsSuccess(await roleMgr.CreateAsync(role));
-            Assert.Equal(role.Id, (await roleMgr.FindByName(role.Name)).Id);
+            Assert.Equal(role.Id, (await roleMgr.FindByNameAsync(role.Name)).Id);
         }
 
         [Fact]
         public async Task CanFindRoleWithManager()
         {
             var roleMgr = CreateRoleManager();
-            var role = new InMemoryRole("findRoleTest");
+            var role = new IdentityRole("findRoleTest");
             IdentityResultAssert.IsSuccess(await roleMgr.CreateAsync(role));
             Assert.Equal(role.Name, (await roleMgr.FindByIdAsync(role.Id)).Name);
         }
@@ -1031,7 +1052,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         {
             var manager = CreateManager();
             var userName = "PhoneTest";
-            var user = new InMemoryUser(userName);
+            var user = new IdentityUser(userName);
             user.PhoneNumber = "123-456-7890";
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             var stamp = await manager.GetSecurityStampAsync(user);
@@ -1041,16 +1062,17 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             Assert.NotEqual(stamp, user.SecurityStamp);
         }
 
+#if NET45
         [Fact]
         public async Task CanChangePhoneNumber()
         {
             var manager = CreateManager();
             const string userName = "PhoneTest";
-            var user = new InMemoryUser(userName) {PhoneNumber = "123-456-7890"};
+            var user = new IdentityUser(userName) {PhoneNumber = "123-456-7890"};
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             Assert.False(await manager.IsPhoneNumberConfirmedAsync(user));
             var stamp = await manager.GetSecurityStampAsync(user);
-            var token1 = await manager.GenerateChangePhoneNumberToken(user, "111-111-1111");
+            var token1 = await manager.GenerateChangePhoneNumberTokenAsync(user, "111-111-1111");
             IdentityResultAssert.IsSuccess(await manager.ChangePhoneNumberAsync(user, "111-111-1111", token1));
             Assert.True(await manager.IsPhoneNumberConfirmedAsync(user));
             Assert.Equal(await manager.GetPhoneNumberAsync(user), "111-111-1111");
@@ -1062,7 +1084,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         {
             var manager = CreateManager();
             const string userName = "PhoneTest";
-            var user = new InMemoryUser(userName) {PhoneNumber = "123-456-7890"};
+            var user = new IdentityUser(userName) {PhoneNumber = "123-456-7890"};
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             Assert.False(await manager.IsPhoneNumberConfirmedAsync(user));
             var stamp = await manager.GetSecurityStampAsync(user);
@@ -1078,38 +1100,39 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         {
             var manager = CreateManager();
             const string userName = "VerifyPhoneTest";
-            var user = new InMemoryUser(userName);
+            var user = new IdentityUser(userName);
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             const string num1 = "111-123-4567";
             const string num2 = "111-111-1111";
-            var token1 = await manager.GenerateChangePhoneNumberToken(user, num1);
-            var token2 = await manager.GenerateChangePhoneNumberToken(user, num2);
+            var token1 = await manager.GenerateChangePhoneNumberTokenAsync(user, num1);
+            var token2 = await manager.GenerateChangePhoneNumberTokenAsync(user, num2);
             Assert.NotEqual(token1, token2);
             Assert.True(await manager.VerifyChangePhoneNumberTokenAsync(user, token1, num1));
             Assert.True(await manager.VerifyChangePhoneNumberTokenAsync(user, token2, num2));
             Assert.False(await manager.VerifyChangePhoneNumberTokenAsync(user, token2, num1));
             Assert.False(await manager.VerifyChangePhoneNumberTokenAsync(user, token1, num2));
         }
+#endif
 
-        private class EmailTokenProvider : IUserTokenProvider<InMemoryUser>
+        private class EmailTokenProvider : IUserTokenProvider<IdentityUser>
         {
-            public Task<string> GenerateAsync(string purpose, UserManager<InMemoryUser> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GenerateAsync(string purpose, UserManager<IdentityUser> manager, IdentityUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(MakeToken(purpose));
             }
 
-            public Task<bool> ValidateAsync(string purpose, string token, UserManager<InMemoryUser> manager,
-                InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> ValidateAsync(string purpose, string token, UserManager<IdentityUser> manager,
+                IdentityUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(token == MakeToken(purpose));
             }
 
-            public Task NotifyAsync(string token, UserManager<InMemoryUser> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task NotifyAsync(string token, UserManager<IdentityUser> manager, IdentityUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
-                return manager.SendEmail(user, token, token);
+                return manager.SendEmailAsync(user, token, token);
             }
 
-            public async Task<bool> IsValidProviderForUserAsync(UserManager<InMemoryUser> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public async Task<bool> IsValidProviderForUserAsync(UserManager<IdentityUser> manager, IdentityUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return !string.IsNullOrEmpty(await manager.GetEmailAsync(user));
             }
@@ -1120,25 +1143,25 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             }
         }
 
-        private class SmsTokenProvider : IUserTokenProvider<InMemoryUser>
+        private class SmsTokenProvider : IUserTokenProvider<IdentityUser>
         {
-            public Task<string> GenerateAsync(string purpose, UserManager<InMemoryUser> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GenerateAsync(string purpose, UserManager<IdentityUser> manager, IdentityUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(MakeToken(purpose));
             }
 
-            public Task<bool> ValidateAsync(string purpose, string token, UserManager<InMemoryUser> manager,
-                InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> ValidateAsync(string purpose, string token, UserManager<IdentityUser> manager,
+                IdentityUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(token == MakeToken(purpose));
             }
 
-            public Task NotifyAsync(string token, UserManager<InMemoryUser> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task NotifyAsync(string token, UserManager<IdentityUser> manager, IdentityUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
-                return manager.SendSms(user, token, cancellationToken);
+                return manager.SendSmsAsync(user, token, cancellationToken);
             }
 
-            public async Task<bool> IsValidProviderForUserAsync(UserManager<InMemoryUser> manager, InMemoryUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public async Task<bool> IsValidProviderForUserAsync(UserManager<IdentityUser> manager, IdentityUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return !string.IsNullOrEmpty(await manager.GetPhoneNumberAsync(user, cancellationToken));
             }
@@ -1157,7 +1180,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             manager.EmailService = messageService;
             const string factorId = "EmailCode";
             manager.RegisterTwoFactorProvider(factorId, new EmailTokenProvider());
-            var user = new InMemoryUser("EmailCodeTest") {Email = "foo@foo.com"};
+            var user = new IdentityUser("EmailCodeTest") {Email = "foo@foo.com"};
             const string password = "password";
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, password));
             var stamp = user.SecurityStamp;
@@ -1176,7 +1199,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task NotifyWithUnknownProviderFails()
         {
             var manager = CreateManager();
-            var user = new InMemoryUser("NotifyFail");
+            var user = new IdentityUser("NotifyFail");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             await
                 ExceptionAssert.ThrowsAsync<NotSupportedException>(
@@ -1192,12 +1215,12 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         //    var messageService = new TestMessageService();
         //    manager.EmailService = messageService;
         //    const string factorId = "EmailCode";
-        //    manager.RegisterTwoFactorProvider(factorId, new EmailTokenProvider<InMemoryUser>
+        //    manager.RegisterTwoFactorProvider(factorId, new EmailTokenProvider<IdentityUser>
         //    {
         //        Subject = "Security Code",
         //        BodyFormat = "Your code is: {0}"
         //    });
-        //    var user = new InMemoryUser("EmailCodeTest") { Email = "foo@foo.com" };
+        //    var user = new IdentityUser("EmailCodeTest") { Email = "foo@foo.com" };
         //    const string password = "password";
         //    IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, password));
         //    var stamp = user.SecurityStamp;
@@ -1217,8 +1240,8 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         //{
         //    var manager = CreateManager();
         //    const string factorId = "EmailCode";
-        //    manager.RegisterTwoFactorProvider(factorId, new EmailTokenProvider<InMemoryUser>());
-        //    var user = new InMemoryUser("EmailCodeTest") { Email = "foo@foo.com" };
+        //    manager.RegisterTwoFactorProvider(factorId, new EmailTokenProvider<IdentityUser>());
+        //    var user = new IdentityUser("EmailCodeTest") { Email = "foo@foo.com" };
         //    IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
         //    var stamp = user.SecurityStamp;
         //    Assert.NotNull(stamp);
@@ -1232,13 +1255,13 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task EnableTwoFactorChangesSecurityStamp()
         {
             var manager = CreateManager();
-            var user = new InMemoryUser("TwoFactorEnabledTest");
+            var user = new IdentityUser("TwoFactorEnabledTest");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             var stamp = user.SecurityStamp;
             Assert.NotNull(stamp);
             IdentityResultAssert.IsSuccess(await manager.SetTwoFactorEnabledAsync(user, true));
             Assert.NotEqual(stamp, await manager.GetSecurityStampAsync(user));
-            Assert.True(await manager.GetTwoFactorEnabled(user));
+            Assert.True(await manager.GetTwoFactorEnabledAsync(user));
         }
 
         [Fact]
@@ -1247,9 +1270,9 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             var manager = CreateManager();
             var messageService = new TestMessageService();
             manager.SmsService = messageService;
-            var user = new InMemoryUser("SmsTest") {PhoneNumber = "4251234567"};
+            var user = new IdentityUser("SmsTest") {PhoneNumber = "4251234567"};
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
-            await manager.SendSms(user, "Hi");
+            await manager.SendSmsAsync(user, "Hi");
             Assert.NotNull(messageService.Message);
             Assert.Equal("Hi", messageService.Message.Body);
         }
@@ -1260,9 +1283,9 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             var manager = CreateManager();
             var messageService = new TestMessageService();
             manager.EmailService = messageService;
-            var user = new InMemoryUser("EmailTest") {Email = "foo@foo.com"};
+            var user = new IdentityUser("EmailTest") {Email = "foo@foo.com"};
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
-            await manager.SendEmail(user, "Hi", "Body");
+            await manager.SendEmailAsync(user, "Hi", "Body");
             Assert.NotNull(messageService.Message);
             Assert.Equal("Hi", messageService.Message.Subject);
             Assert.Equal("Body", messageService.Message.Body);
@@ -1276,7 +1299,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             manager.SmsService = messageService;
             const string factorId = "PhoneCode";
             manager.RegisterTwoFactorProvider(factorId, new SmsTokenProvider());
-            var user = new InMemoryUser("PhoneCodeTest") {PhoneNumber = "4251234567"};
+            var user = new IdentityUser("PhoneCodeTest") {PhoneNumber = "4251234567"};
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             var stamp = user.SecurityStamp;
             Assert.NotNull(stamp);
@@ -1296,11 +1319,11 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         //    var messageService = new TestMessageService();
         //    manager.SmsService = messageService;
         //    const string factorId = "PhoneCode";
-        //    manager.RegisterTwoFactorProvider(factorId, new PhoneNumberTokenProvider<InMemoryUser>
+        //    manager.RegisterTwoFactorProvider(factorId, new PhoneNumberTokenProvider<IdentityUser>
         //    {
         //        MessageFormat = "Your code is: {0}"
         //    });
-        //    var user = new InMemoryUser("PhoneCodeTest") { PhoneNumber = "4251234567" };
+        //    var user = new IdentityUser("PhoneCodeTest") { PhoneNumber = "4251234567" };
         //    IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
         //    var stamp = user.SecurityStamp;
         //    Assert.NotNull(stamp);
@@ -1317,7 +1340,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task GenerateTwoFactorWithUnknownFactorProviderWillThrow()
         {
             var manager = CreateManager();
-            var user = new InMemoryUser("PhoneCodeTest");
+            var user = new IdentityUser("PhoneCodeTest");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             const string error = "No IUserTwoFactorProvider for 'bogus' is registered.";
             await
@@ -1331,9 +1354,9 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task GetValidTwoFactorTestEmptyWithNoProviders()
         {
             var manager = CreateManager();
-            var user = new InMemoryUser("test");
+            var user = new IdentityUser("test");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
-            var factors = await manager.GetValidTwoFactorProviders(user);
+            var factors = await manager.GetValidTwoFactorProvidersAsync(user);
             Assert.NotNull(factors);
             Assert.True(!factors.Any());
         }
@@ -1344,22 +1367,22 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             var manager = CreateManager();
             manager.RegisterTwoFactorProvider("phone", new SmsTokenProvider());
             manager.RegisterTwoFactorProvider("email", new EmailTokenProvider());
-            var user = new InMemoryUser("test");
+            var user = new IdentityUser("test");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
-            var factors = await manager.GetValidTwoFactorProviders(user);
+            var factors = await manager.GetValidTwoFactorProvidersAsync(user);
             Assert.NotNull(factors);
             Assert.True(!factors.Any());
             IdentityResultAssert.IsSuccess(await manager.SetPhoneNumberAsync(user, "111-111-1111"));
-            factors = await manager.GetValidTwoFactorProviders(user);
+            factors = await manager.GetValidTwoFactorProvidersAsync(user);
             Assert.NotNull(factors);
             Assert.True(factors.Count() == 1);
             Assert.Equal("phone", factors[0]);
             IdentityResultAssert.IsSuccess(await manager.SetEmailAsync(user, "test@test.com"));
-            factors = await manager.GetValidTwoFactorProviders(user);
+            factors = await manager.GetValidTwoFactorProvidersAsync(user);
             Assert.NotNull(factors);
             Assert.True(factors.Count() == 2);
             IdentityResultAssert.IsSuccess(await manager.SetEmailAsync(user, null));
-            factors = await manager.GetValidTwoFactorProviders(user);
+            factors = await manager.GetValidTwoFactorProvidersAsync(user);
             Assert.NotNull(factors);
             Assert.True(factors.Count() == 1);
             Assert.Equal("phone", factors[0]);
@@ -1370,8 +1393,8 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         //{
         //    var manager = CreateManager();
         //    var factorId = "PhoneCode";
-        //    manager.RegisterTwoFactorProvider(factorId, new PhoneNumberTokenProvider<InMemoryUser>());
-        //    var user = new InMemoryUser("PhoneCodeTest");
+        //    manager.RegisterTwoFactorProvider(factorId, new PhoneNumberTokenProvider<IdentityUser>());
+        //    var user = new IdentityUser("PhoneCodeTest");
         //    user.PhoneNumber = "4251234567";
         //    IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
         //    var stamp = user.SecurityStamp;
@@ -1388,7 +1411,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             var manager = CreateManager();
             manager.RegisterTwoFactorProvider("PhoneCode", new SmsTokenProvider());
             manager.RegisterTwoFactorProvider("EmailCode", new EmailTokenProvider());
-            var user = new InMemoryUser("WrongTokenProviderTest") {PhoneNumber = "4251234567"};
+            var user = new IdentityUser("WrongTokenProviderTest") {PhoneNumber = "4251234567"};
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             var token = await manager.GenerateTwoFactorTokenAsync(user, "PhoneCode");
             Assert.NotNull(token);
@@ -1401,19 +1424,19 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             var manager = CreateManager();
             const string factorId = "PhoneCode";
             manager.RegisterTwoFactorProvider(factorId, new SmsTokenProvider());
-            var user = new InMemoryUser("PhoneCodeTest") {PhoneNumber = "4251234567"};
+            var user = new IdentityUser("PhoneCodeTest") {PhoneNumber = "4251234567"};
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             Assert.False(await manager.VerifyTwoFactorTokenAsync(user, factorId, "bogus"));
         }
 
-        private static UserManager<InMemoryUser> CreateManager()
+        private static UserManager<IdentityUser> CreateManager()
         {
-            return new UserManager<InMemoryUser>(new InMemoryUserStore<InMemoryUser>());
+            return new UserManager<IdentityUser>(new InMemoryUserStore<IdentityUser>());
         }
 
-        private static RoleManager<InMemoryRole> CreateRoleManager()
+        private static RoleManager<IdentityRole> CreateRoleManager()
         {
-            return new RoleManager<InMemoryRole>(new InMemoryRoleStore<InMemoryRole>());
+            return new RoleManager<IdentityRole>(new InMemoryRoleStore<IdentityRole>());
         }
 
         public class TestMessageService : IIdentityMessageService

@@ -1,12 +1,11 @@
+using Microsoft.AspNet.DependencyInjection.Fallback;
+using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.DependencyInjection.Fallback;
-using Microsoft.AspNet.Testing;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.Test
@@ -15,7 +14,7 @@ namespace Microsoft.AspNet.Identity.Test
     {
         private class TestManager : UserManager<TestUser>
         {
-            public IUserStore<TestUser> StorePublic { get { return base.Store; } }
+            public IUserStore<TestUser> StorePublic { get { return Store; } }
 
             public TestManager(IServiceProvider provider) : base(provider) { }
         }
@@ -102,7 +101,7 @@ namespace Microsoft.AspNet.Identity.Test
             userManager.UserValidator = validator.Object;
 
             // Act
-            var result = await userManager.SetUserName(user, "foo");
+            var result = await userManager.SetUserNameAsync(user, "foo");
 
             // Assert
             Assert.True(result.Succeeded);
@@ -156,7 +155,7 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task FindWithUnknownUserAndPasswordReturnsNull()
         {
             var manager = new UserManager<TestUser>(new EmptyStore());
-            Assert.Null(await manager.FindByUserNamePassword("bogus", "whatevs"));
+            Assert.Null(await manager.FindByUserNamePasswordAsync("bogus", "whatevs"));
         }
 
         [Fact]
@@ -219,12 +218,14 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.False(manager.SupportsUserSecurityStamp);
             await Assert.ThrowsAsync<NotSupportedException>(() => manager.UpdateSecurityStampAsync(null));
             await Assert.ThrowsAsync<NotSupportedException>(() => manager.GetSecurityStampAsync(null));
+#if NET45
             await
                 Assert.ThrowsAsync<NotSupportedException>(
                     () => manager.VerifyChangePhoneNumberTokenAsync(null, "1", "111-111-1111"));
             await
                 Assert.ThrowsAsync<NotSupportedException>(
-                    () => manager.GenerateChangePhoneNumberToken(null, "111-111-1111"));
+                    () => manager.GenerateChangePhoneNumberTokenAsync(null, "111-111-1111"));
+#endif
         }
 
         [Fact]
@@ -232,9 +233,9 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var manager = new UserManager<TestUser>(new NoopUserStore());
             Assert.False(manager.SupportsUserLogin);
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.AddLogin(null, null));
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.RemoveLogin(null, null));
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetLogins(null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.AddLoginAsync(null, null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.RemoveLoginAsync(null, null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetLoginsAsync(null));
             await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.FindByLoginAsync(null));
         }
 
@@ -253,7 +254,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var manager = new UserManager<TestUser>(new NoopUserStore());
             Assert.False(manager.SupportsUserTwoFactor);
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetTwoFactorEnabled(null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetTwoFactorEnabledAsync(null));
             await
                 Assert.ThrowsAsync<NotSupportedException>(async () => await manager.SetTwoFactorEnabledAsync(null, true));
         }
@@ -314,7 +315,7 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.Throws<ArgumentNullException>(() => manager.PasswordHasher = null);
             await
                 Assert.ThrowsAsync<ArgumentNullException>("user",
-                    async () => await manager.CreateIdentity(null, "whatever"));
+                    async () => await manager.CreateIdentityAsync(null, "whatever"));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await manager.CreateAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await manager.CreateAsync(null, null));
             await
@@ -324,10 +325,10 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await manager.DeleteAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("claim", async () => await manager.AddClaimAsync(null, null));
             await Assert.ThrowsAsync<ArgumentNullException>("userName", async () => await manager.FindByNameAsync(null));
-            await Assert.ThrowsAsync<ArgumentNullException>("userName", async () => await manager.FindByUserNamePassword(null, null));
-            await Assert.ThrowsAsync<ArgumentNullException>("login", async () => await manager.AddLogin(null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("userName", async () => await manager.FindByUserNamePasswordAsync(null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("login", async () => await manager.AddLoginAsync(null, null));
             await
-                Assert.ThrowsAsync<ArgumentNullException>("login", async () => await manager.RemoveLogin(null, null));
+                Assert.ThrowsAsync<ArgumentNullException>("login", async () => await manager.RemoveLoginAsync(null, null));
             await Assert.ThrowsAsync<ArgumentNullException>("email", async () => await manager.FindByEmailAsync(null));
             Assert.Throws<ArgumentNullException>("twoFactorProvider",
                 () => manager.RegisterTwoFactorProvider(null, null));
@@ -342,9 +343,13 @@ namespace Microsoft.AspNet.Identity.Test
                 UserTokenProvider = new NoOpTokenProvider()
             };
             await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.GetUserNameAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.SetUserNameAsync(null, "bogus"));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.AddClaimAsync(null, new Claim("a", "b")));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
-                async () => await manager.AddLogin(null, new UserLoginInfo("", "")));
+                async () => await manager.AddLoginAsync(null, new UserLoginInfo("", "")));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.AddPasswordAsync(null, null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
@@ -354,7 +359,7 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.GetClaimsAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
-                async () => await manager.GetLogins(null));
+                async () => await manager.GetLoginsAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.GetRolesAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
@@ -362,7 +367,7 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.RemoveClaimAsync(null, new Claim("a", "b")));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
-                async () => await manager.RemoveLogin(null, new UserLoginInfo("", "")));
+                async () => await manager.RemoveLoginAsync(null, new UserLoginInfo("", "")));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.RemovePasswordAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
@@ -398,7 +403,7 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.SetPhoneNumberAsync(null, null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
-                async () => await manager.GetTwoFactorEnabled(null));
+                async () => await manager.GetTwoFactorEnabledAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.SetTwoFactorEnabledAsync(null, true));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
@@ -408,7 +413,7 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.NotifyTwoFactorTokenAsync(null, null, null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
-                async () => await manager.GetValidTwoFactorProviders(null));
+                async () => await manager.GetValidTwoFactorProvidersAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.VerifyUserTokenAsync(null, null, null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
@@ -422,11 +427,15 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.SetLockoutEnabledAsync(null, false));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
-                async () => await manager.SetLockoutEndDate(null, DateTimeOffset.UtcNow));
+                async () => await manager.SetLockoutEndDateAsync(null, DateTimeOffset.UtcNow));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
-                async () => await manager.GetLockoutEndDate(null));
+                async () => await manager.GetLockoutEndDateAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.IsLockedOutAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.SendEmailAsync(null, null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.SendSmsAsync(null, null));
         }
 
         [Fact]
@@ -436,26 +445,26 @@ namespace Microsoft.AspNet.Identity.Test
             manager.Dispose();
             Assert.Throws<ObjectDisposedException>(() => manager.ClaimsIdentityFactory);
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.AddClaimAsync(null, null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.AddLogin(null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.AddLoginAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.AddPasswordAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.AddToRoleAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.ChangePasswordAsync(null, null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GetClaimsAsync(null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GetLogins(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GetLoginsAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GetRolesAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.IsInRoleAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemoveClaimAsync(null, null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemoveLogin(null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemoveLoginAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemovePasswordAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemoveFromRoleAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemoveClaimAsync(null, null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByUserNamePassword(null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByUserNamePasswordAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByLoginAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByIdAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByNameAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.CreateAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.CreateAsync(null, null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.CreateIdentity(null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.CreateIdentityAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.UpdateAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.DeleteAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.UpdateSecurityStampAsync(null));

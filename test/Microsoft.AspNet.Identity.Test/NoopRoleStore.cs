@@ -20,6 +20,11 @@ namespace Microsoft.AspNet.Identity.Test
             return Task.FromResult<string>(null);
         }
 
+        public Task SetRoleNameAsync(TestRole role, string roleName, CancellationToken cancellationToken = new CancellationToken())
+        {
+            return Task.FromResult(0);
+        }
+
         public Task<TestRole> FindByIdAsync(string roleId, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Task.FromResult<TestRole>(null);

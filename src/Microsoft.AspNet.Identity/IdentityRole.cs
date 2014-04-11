@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Identity.Entity
+namespace Microsoft.AspNet.Identity
 {
     /// <summary>
     ///     Represents a Role entity
     /// </summary>
-    public class IdentityRole : IdentityRole<string, IdentityUserRole>
+    public class IdentityRole : IdentityRole<string>
     {
         /// <summary>
         ///     Constructor
@@ -31,23 +31,20 @@ namespace Microsoft.AspNet.Identity.Entity
     ///     Represents a Role entity
     /// </summary>
     /// <typeparam name="TKey"></typeparam>
-    /// <typeparam name="TUserRole"></typeparam>
-    public class IdentityRole<TKey, TUserRole> 
-        where TUserRole : IdentityUserRole<TKey>
-        where TKey : IEquatable<TKey>
+    public class IdentityRole<TKey> where TKey : IEquatable<TKey>
     {
         /// <summary>
         ///     Constructor
         /// </summary>
         public IdentityRole()
         {
-            Users = new List<TUserRole>();
+            Users = new List<IdentityUserRole<TKey>>();
         }
 
         /// <summary>
         ///     Navigation property for users in the role
         /// </summary>
-        public virtual ICollection<TUserRole> Users { get; private set; }
+        public virtual ICollection<IdentityUserRole<TKey>> Users { get; private set; }
 
         /// <summary>
         ///     Role id

@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Identity.InMemory
         IUserPhoneNumberStore<TUser>,
         IQueryableUserStore<TUser>,
         IUserTwoFactorStore<TUser>
-        where TUser : InMemoryUser
+        where TUser : IdentityUser
     {
         private readonly Dictionary<UserLoginInfo, TUser> _logins =
             new Dictionary<UserLoginInfo, TUser>(new LoginComparer());
@@ -32,18 +32,25 @@ namespace Microsoft.AspNet.Identity.InMemory
 
         public Task<IList<Claim>> GetClaimsAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return Task.FromResult(user.Claims);
+            var claims = user.Claims.Select(c => new Claim(c.ClaimType, c.ClaimValue)).ToList();
+            return Task.FromResult<IList<Claim>>(claims);
         }
 
         public Task AddClaimAsync(TUser user, Claim claim, CancellationToken cancellationToken = default(CancellationToken))
         {
-            user.Claims.Add(claim);
+            user.Claims.Add(new IdentityUserClaim<string> { ClaimType = claim.Type, ClaimValue = claim.Value, UserId = user.Id });
             return Task.FromResult(0);
         }
 
         public Task RemoveClaimAsync(TUser user, Claim claim, CancellationToken cancellationToken = default(CancellationToken))
         {
-            user.Claims.Remove(claim);
+            var entity =
+                user.Claims.FirstOrDefault(
+                    uc => uc.UserId == user.Id && uc.ClaimType == claim.Type && uc.ClaimValue == claim.Value);
+            if (entity != null)
+            {
+                user.Claims.Remove(entity);
+            }
             return Task.FromResult(0);
         }
 
@@ -117,27 +124,35 @@ namespace Microsoft.AspNet.Identity.InMemory
 
         public Task AddLoginAsync(TUser user, UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
         {
-            user.Logins.Add(login);
+            user.Logins.Add(new IdentityUserLogin<string>
+            {
+                UserId = user.Id, 
+                LoginProvider = login.LoginProvider, 
+                ProviderKey = login.ProviderKey
+            });
             _logins[login] = user;
             return Task.FromResult(0);
         }
 
         public Task RemoveLoginAsync(TUser user, UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var logs =
-                user.Logins.Where(l => l.ProviderKey == login.ProviderKey && l.LoginProvider == login.LoginProvider)
-                    .ToList();
-            foreach (var l in logs)
+            var loginEntity =
+                user.Logins.SingleOrDefault(
+                    l =>
+                        l.ProviderKey == login.ProviderKey && l.LoginProvider == login.LoginProvider &&
+                        l.UserId == user.Id);
+            if (loginEntity != null)
             {
-                user.Logins.Remove(l);
-                _logins[l] = null;
+                user.Logins.Remove(loginEntity);
             }
+            _logins[login] = null;
             return Task.FromResult(0);
         }
 
         public Task<IList<UserLoginInfo>> GetLoginsAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return Task.FromResult(user.Logins);
+            var logins = user.Logins.Select(l => new UserLoginInfo(l.LoginProvider, l.ProviderKey)).ToList();
+            return Task.FromResult<IList<UserLoginInfo>>(logins);
         }
 
         public Task<TUser> FindByLoginAsync(UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
@@ -245,26 +260,32 @@ namespace Microsoft.AspNet.Identity.InMemory
             return Task.FromResult(0);
         }
 
+        // RoleId == roleName for InMemory
         public Task AddToRoleAsync(TUser user, string role, CancellationToken cancellationToken = default(CancellationToken))
         {
-            user.Roles.Add(role);
+            user.Roles.Add(new IdentityUserRole<string> { RoleId = role, UserId = user.Id });
             return Task.FromResult(0);
         }
 
+        // RoleId == roleName for InMemory
         public Task RemoveFromRoleAsync(TUser user, string role, CancellationToken cancellationToken = default(CancellationToken))
         {
-            user.Roles.Remove(role);
+            var roleEntity = user.Roles.SingleOrDefault(ur => ur.RoleId == role);
+            if (roleEntity != null)
+            {
+                user.Roles.Remove(roleEntity);
+            }
             return Task.FromResult(0);
         }
 
         public Task<IList<string>> GetRolesAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return Task.FromResult(user.Roles);
+            return Task.FromResult<IList<string>>(user.Roles.Select(ur => ur.RoleId).ToList());
         }
 
         public Task<bool> IsInRoleAsync(TUser user, string role, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return Task.FromResult(user.Roles.Contains(role));
+            return Task.FromResult(user.Roles.Any(ur => ur.RoleId == role));
         }
 
         public Task SetSecurityStampAsync(TUser user, string stamp, CancellationToken cancellationToken = default(CancellationToken))

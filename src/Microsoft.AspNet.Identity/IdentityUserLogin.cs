@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Microsoft.AspNet.Identity.Entity
+namespace Microsoft.AspNet.Identity
 {
     public class IdentityUserLogin : IdentityUserLogin<string> { }
 
@@ -10,6 +10,13 @@ namespace Microsoft.AspNet.Identity.Entity
     /// <typeparam name="TKey"></typeparam>
     public class IdentityUserLogin<TKey> where TKey : IEquatable<TKey>
     {
+        // TODO: Remove
+        public virtual string Id
+        {
+            get;
+            set;
+        }
+
         /// <summary>
         ///     The login provider for the login (i.e. facebook, google)
         /// </summary>

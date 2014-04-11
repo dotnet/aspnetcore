@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Identity.Security.Test
             var helper = new SignInManager<TestUser> { UserManager = userManager, AuthenticationType = authType, Context = context.Object };
 
             // Act
-            await helper.SignIn(user, false, false);
+            await helper.SignInAsync(user, false, false);
 
             // Assert
             identityFactory.VerifyAll();
@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Identity.Security.Test
             manager.Setup(m => m.IsLockedOutAsync(user, CancellationToken.None)).ReturnsAsync(false).Verifiable();
             manager.Setup(m => m.FindByNameAsync(user.UserName, CancellationToken.None)).ReturnsAsync(user).Verifiable();
             manager.Setup(m => m.CheckPasswordAsync(user, "password", CancellationToken.None)).ReturnsAsync(true).Verifiable();
-            manager.Setup(m => m.CreateIdentity(user, "Microsoft.AspNet.Identity", CancellationToken.None)).ReturnsAsync(new ClaimsIdentity("Microsoft.AspNet.Identity")).Verifiable();
+            manager.Setup(m => m.CreateIdentityAsync(user, "Microsoft.AspNet.Identity", CancellationToken.None)).ReturnsAsync(new ClaimsIdentity("Microsoft.AspNet.Identity")).Verifiable();
             var context = new Mock<HttpContext>();
             var response = new Mock<HttpResponse>();
             context.Setup(c => c.Response).Returns(response.Object).Verifiable();
@@ -127,6 +127,16 @@ namespace Microsoft.AspNet.Identity.Security.Test
 
             // Assert
             Assert.Equal(SignInStatus.Failure, result);
+        }
+
+        [Fact]
+        public async Task SignInWithNoContextDoesNotBlowUp()
+        {
+            // Setup
+            var helper = new SignInManager<TestUser>();
+
+            // Act
+            await helper.SignInAsync(null, false, false);
         }
 
         [Fact]

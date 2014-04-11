@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Identity.Test
             // Assert
             Assert.NotNull(identity);
             Assert.Equal(authType, identity.AuthenticationType);
-            var claims = identity.Claims;
+            var claims = identity.Claims.ToList();
             Assert.NotNull(claims);
             Assert.True(
                 claims.Any(c => c.Type == factory.UserNameClaimType && c.Value == user.UserName));
@@ -66,48 +66,5 @@ namespace Microsoft.AspNet.Identity.Test
             }
         }
 #endif
-
-       //[Fact]
-        //public async Task ClaimsIdentityTest()
-        //{
-        //    var db = UnitTestHelper.CreateDefaultDb();
-        //    var manager = new UserManager<TestUser>(new UserStore<TestUser>(db));
-        //    var role = new RoleManager<IdentityRole>(new RoleStore<IdentityRole>(db));
-        //    var user = new TestUser("Hao");
-        //    UnitTestHelper.IsSuccess(await manager.CreateAsync(user));
-        //    UnitTestHelper.IsSuccess(await role.CreateAsync(new IdentityRole("Admin")));
-        //    UnitTestHelper.IsSuccess(await role.CreateAsync(new IdentityRole("Local")));
-        //    UnitTestHelper.IsSuccess(await manager.AddToRoleAsync(user.Id, "Admin"));
-        //    UnitTestHelper.IsSuccess(await manager.AddToRoleAsync(user.Id, "Local"));
-        //    Claim[] userClaims =
-        //    {
-        //        new Claim("Whatever", "Value"),
-        //        new Claim("Whatever2", "Value2")
-        //    };
-        //    foreach (var c in userClaims)
-        //    {
-        //        UnitTestHelper.IsSuccess(await manager.AddClaimAsync(user.Id, c));
-        //    }
-
-        //    var identity = await manager.CreateIdentityAsync(user, "test");
-        //    var claimsFactory = manager.ClaimsIdentityFactory as ClaimsIdentityFactory<TestUser, string>;
-        //    Assert.NotNull(claimsFactory);
-        //    var claims = identity.Claims;
-        //    Assert.NotNull(claims);
-        //    Assert.True(
-        //        claims.Any(c => c.Type == claimsFactory.UserNameClaimType && c.Value == user.UserName));
-        //    Assert.True(claims.Any(c => c.Type == claimsFactory.UserIdClaimType && c.Value == user.Id));
-        //    Assert.True(claims.Any(c => c.Type == claimsFactory.RoleClaimType && c.Value == "Admin"));
-        //    Assert.True(claims.Any(c => c.Type == claimsFactory.RoleClaimType && c.Value == "Local"));
-        //    Assert.True(
-        //        claims.Any(
-        //            c =>
-        //                c.Type == ClaimsIdentityFactory<TestUser>.IdentityProviderClaimType &&
-        //                c.Value == ClaimsIdentityFactory<TestUser>.DefaultIdentityProviderClaimValue));
-        //    foreach (var cl in userClaims)
-        //    {
-        //        Assert.True(claims.Any(c => c.Type == cl.Type && c.Value == cl.Value));
-        //    }
-        //}
     }
 }

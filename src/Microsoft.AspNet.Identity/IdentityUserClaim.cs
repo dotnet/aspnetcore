@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Microsoft.AspNet.Identity.Entity
+namespace Microsoft.AspNet.Identity
 {
     public class IdentityUserClaim : IdentityUserClaim<string> { }
 

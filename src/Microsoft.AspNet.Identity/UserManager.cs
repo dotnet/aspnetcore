@@ -311,7 +311,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="authenticationType"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task<ClaimsIdentity> CreateIdentity(TUser user, string authenticationType, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<ClaimsIdentity> CreateIdentityAsync(TUser user, string authenticationType, CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
             if (user == null)
@@ -329,7 +329,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     CreateAsync a user with no password
+        ///     Create a user with no password
         /// </summary>
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
@@ -352,7 +352,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     UpdateAsync a user
+        ///     Update a user
         /// </summary>
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
@@ -374,7 +374,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     DeleteAsync a user
+        ///     Delete a user
         /// </summary>
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
@@ -391,7 +391,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     FindByLoginAsync a user by id
+        ///     Find a user by id
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="cancellationToken"></param>
@@ -403,7 +403,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     FindByLoginAsync a user by name
+        ///     Find a user by name
         /// </summary>
         /// <param name="userName"></param>
         /// <param name="cancellationToken"></param>
@@ -430,10 +430,11 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     CreateAsync a user and associates it with the given password (if one is provided)
+        ///     Create a user and associates it with the given password
         /// </summary>
         /// <param name="user"></param>
         /// <param name="password"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public virtual async Task<IdentityResult> CreateAsync(TUser user, string password, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -478,7 +479,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="userName"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> SetUserName(TUser user, string userName, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> SetUserNameAsync(TUser user, string userName, CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
             if (user == null)
@@ -508,7 +509,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="password"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<TUser> FindByUserNamePassword(string userName, string password, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<TUser> FindByUserNamePasswordAsync(string userName, string password, CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
             var user = await FindByNameAsync(userName, cancellationToken);
@@ -699,7 +700,7 @@ namespace Microsoft.AspNet.Identity
         public virtual async Task<IdentityResult> UpdateSecurityStampAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
-            var securityStore = GetSecurityStore();
+            GetSecurityStore();
             if (user == null)
             {
                 throw new ArgumentNullException("user");
@@ -791,7 +792,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="login"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> RemoveLogin(TUser user, UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> RemoveLoginAsync(TUser user, UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
             var loginStore = GetLoginStore();
@@ -811,11 +812,11 @@ namespace Microsoft.AspNet.Identity
         /// <summary>
         ///     Associate a login with a user
         /// </summary>
-        /// <param name="userId"></param>
+        /// <param name="user"></param>
         /// <param name="login"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> AddLogin(TUser user, UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> AddLoginAsync(TUser user, UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
             var loginStore = GetLoginStore();
@@ -842,7 +843,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IList<UserLoginInfo>> GetLogins(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IList<UserLoginInfo>> GetLoginsAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
             var loginStore = GetLoginStore();
@@ -1030,6 +1031,7 @@ namespace Microsoft.AspNet.Identity
         ///     Get a user's email
         /// </summary>
         /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public virtual async Task<string> GetEmailAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -1047,6 +1049,7 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="user"></param>
         /// <param name="email"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public virtual async Task<IdentityResult> SetEmailAsync(TUser user, string email, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -1066,6 +1069,7 @@ namespace Microsoft.AspNet.Identity
         ///     FindByLoginAsync a user by his email
         /// </summary>
         /// <param name="email"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public virtual Task<TUser> FindByEmailAsync(string email, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -1237,7 +1241,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="phoneNumber"></param>
         /// <returns></returns>
-        public virtual async Task<string> GenerateChangePhoneNumberToken(TUser user, string phoneNumber)
+        public virtual async Task<string> GenerateChangePhoneNumberTokenAsync(TUser user, string phoneNumber)
         {
             ThrowIfDisposed();
             return
@@ -1336,7 +1340,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IList<string>> GetValidTwoFactorProviders(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IList<string>> GetValidTwoFactorProvidersAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
             if (user == null)
@@ -1443,7 +1447,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<bool> GetTwoFactorEnabled(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<bool> GetTwoFactorEnabledAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
             var store = GetUserTwoFactorStore();
@@ -1477,14 +1481,14 @@ namespace Microsoft.AspNet.Identity
         // SMS/Email methods
 
         /// <summary>
-        ///     SendAsync an email to the user
+        ///     Send an email to the user
         /// </summary>
         /// <param name="user"></param>
         /// <param name="subject"></param>
         /// <param name="body"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task SendEmail(TUser user, string subject, string body, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task SendEmailAsync(TUser user, string subject, string body, CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
             if (user == null)
@@ -1504,13 +1508,13 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     SendAsync a user a sms message
+        ///     Send a user a sms message
         /// </summary>
         /// <param name="user"></param>
         /// <param name="message"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task SendSms(TUser user, string message, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task SendSmsAsync(TUser user, string message, CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
             if (user == null)
@@ -1566,6 +1570,7 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="user"></param>
         /// <param name="enabled"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public virtual async Task<IdentityResult> SetLockoutEnabledAsync(TUser user, bool enabled, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -1583,6 +1588,7 @@ namespace Microsoft.AspNet.Identity
         ///     Returns whether the user allows lockout
         /// </summary>
         /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public virtual async Task<bool> GetLockoutEnabledAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -1601,7 +1607,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<DateTimeOffset> GetLockoutEndDate(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<DateTimeOffset> GetLockoutEndDateAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
             var store = GetUserLockoutStore();
@@ -1609,7 +1615,7 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            return await store.GetLockoutEndDateAsync(user);
+            return await store.GetLockoutEndDateAsync(user, cancellationToken);
         }
 
         /// <summary>
@@ -1619,7 +1625,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="lockoutEnd"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> SetLockoutEndDate(TUser user, DateTimeOffset lockoutEnd, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> SetLockoutEndDateAsync(TUser user, DateTimeOffset lockoutEnd, CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
             var store = GetUserLockoutStore();
@@ -1685,6 +1691,7 @@ namespace Microsoft.AspNet.Identity
         ///     Returns the number of failed access attempts for the user
         /// </summary>
         /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public virtual async Task<int> GetAccessFailedCountAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {

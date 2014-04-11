@@ -157,7 +157,7 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("roleName");
             }
 
-            return await FindByName(roleName, cancellationToken) != null;
+            return await FindByNameAsync(roleName, cancellationToken) != null;
         }
 
         /// <summary>
@@ -185,12 +185,26 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
+        /// Set the name of the role
+        /// </summary>
+        /// <param name="role"></param>
+        /// <param name="name"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public virtual async Task<IdentityResult> SetRoleNameAsync(TRole role, string name, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            ThrowIfDisposed();
+            await Store.SetRoleNameAsync(role, name, cancellationToken);
+            return IdentityResult.Success;
+        }
+
+        /// <summary>
         /// Return the role id for a role
         /// </summary>
         /// <param name="role"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<string> GetRoleId(TRole role, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<string> GetRoleIdAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
             return await Store.GetRoleIdAsync(role, cancellationToken);
@@ -202,7 +216,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="roleName"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<TRole> FindByName(string roleName, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<TRole> FindByNameAsync(string roleName, CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
             if (roleName == null)

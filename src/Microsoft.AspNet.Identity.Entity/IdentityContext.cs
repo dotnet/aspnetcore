@@ -1,21 +1,20 @@
 ﻿using System;
 using Microsoft.Data.Entity;
 using Microsoft.Data.InMemory;
-using Microsoft.Data.SqlServer;
 using Microsoft.Data.Entity.Metadata;
 
 namespace Microsoft.AspNet.Identity.Entity
 {
     public class IdentityContext :
-        IdentityContext<IdentityUser, IdentityRole, string, IdentityUserLogin, IdentityUserRole, IdentityUserClaim>
+        IdentityContext<EntityUser, EntityRole, string, IdentityUserLogin, IdentityUserRole, IdentityUserClaim>
     {
         public IdentityContext(EntityConfiguration config) : base(config) { }
         public IdentityContext() { }
     }
 
     public class IdentityContext<TUser, TRole, TKey, TUserLogin, TUserRole, TUserClaim> : EntityContext
-        where TUser : IdentityUser<TKey, TUserLogin, TUserRole, TUserClaim>
-        where TRole : IdentityRole<TKey, TUserRole> /*, TUserRole*/
+        where TUser : EntityUser<TKey, TUserLogin, TUserRole, TUserClaim>
+        where TRole : EntityRole<TKey, TUserRole> /*, TUserRole*/
         where TUserLogin : IdentityUserLogin<TKey>
         where TUserRole : IdentityUserRole<TKey>
         where TUserClaim : IdentityUserClaim<TKey>
@@ -48,13 +47,15 @@ namespace Microsoft.AspNet.Identity.Entity
                 //.ToTable("AspNetRoles");
  
             builder.Entity<TUserRole>()
-                .Key(r => new {r.UserId, r.RoleId})
+                .Key(u => u.Id)
+                //TODO: .Key(r => new { r.UserId, r.RoleId })
                 .ForeignKeys(fk => fk.ForeignKey<TUser>(f => f.UserId))
                 .ForeignKeys(fk => fk.ForeignKey<TRole>(f => f.RoleId));
                 //.ToTable("AspNetUserRoles");
 
             builder.Entity<TUserLogin>()
-                .Key(l => new {l.LoginProvider, l.ProviderKey, l.UserId})
+                .Key(u => u.Id)
+                //TODO: .Key(l => new { l.LoginProvider, l.ProviderKey, l.UserId })
                 .ForeignKeys(fk => fk.ForeignKey<TUser>(f => f.UserId));
             //.ToTable("AspNetUserLogins");
 

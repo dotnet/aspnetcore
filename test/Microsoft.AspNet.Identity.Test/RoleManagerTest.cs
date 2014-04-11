@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await manager.CreateAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await manager.UpdateAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await manager.DeleteAsync(null));
-            await Assert.ThrowsAsync<ArgumentNullException>("roleName", async () => await manager.FindByName(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("roleName", async () => await manager.FindByNameAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("roleName", async () => await manager.RoleExistsAsync(null));
         }
 
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Identity.Test
             var manager = new RoleManager<TestRole>(new NoopRoleStore());
             manager.Dispose();
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByIdAsync(null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByName(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByNameAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RoleExistsAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.CreateAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.UpdateAsync(null));
@@ -79,6 +79,11 @@ namespace Microsoft.AspNet.Identity.Test
             }
 
             public Task<string> GetRoleNameAsync(TestRole role, CancellationToken cancellationToken = new CancellationToken())
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SetRoleNameAsync(TestRole role, string roleName, CancellationToken cancellationToken = new CancellationToken())
             {
                 throw new NotImplementedException();
             }

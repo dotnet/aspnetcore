@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Identity
     public interface IQueryableRoleStore<TRole> : IRoleStore<TRole> where TRole : class
     {
         /// <summary>
-        ///     IQueryable users
+        ///     IQueryable roles
         /// </summary>
         IQueryable<TRole> Roles { get; }
     }

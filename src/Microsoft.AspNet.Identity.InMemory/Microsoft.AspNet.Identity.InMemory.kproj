@@ -20,9 +20,7 @@
     <Content Include="Project.json" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="InMemoryRole.cs" />
     <Compile Include="InMemoryRoleStore.cs" />
-    <Compile Include="InMemoryUser.cs" />
     <Compile Include="InMemoryUserStore.cs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />

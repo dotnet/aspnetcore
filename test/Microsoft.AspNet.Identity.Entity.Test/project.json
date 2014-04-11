@@ -50,5 +50,6 @@
     }
   },
   "commands": {
+    "test": "Xunit.KRunner"
   }
 }

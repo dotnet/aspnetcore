@@ -1,27 +1,38 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Security.Claims;
 
-namespace Microsoft.AspNet.Identity.InMemory
+namespace Microsoft.AspNet.Identity.Entity
 {
-    public class InMemoryUser
+    public class EntityUser : EntityUser<string, IdentityUserLogin, IdentityUserRole, IdentityUserClaim>
     {
-        private readonly IList<Claim> _claims;
-        private readonly IList<UserLoginInfo> _logins;
-        private readonly IList<string> _roles;
-
-        public InMemoryUser()
+        public EntityUser()
         {
             Id = Guid.NewGuid().ToString();
-            _logins = new List<UserLoginInfo>();
-            _claims = new List<Claim>();
-            _roles = new List<string>();
         }
 
-        public InMemoryUser(string name) : this()
+        public EntityUser(string userName)
+            : this()
         {
-            UserName = name;
+            UserName = userName;
         }
+    }
+
+    public class EntityUser<TKey, TLogin, TRole, TClaim>
+        where TLogin : IdentityUserLogin<TKey>
+        where TRole : IdentityUserRole<TKey>
+        where TClaim : IdentityUserClaim<TKey>
+        where TKey : IEquatable<TKey>
+    {
+        public EntityUser()
+        {
+            Claims = new List<TClaim>();
+            Roles = new List<TRole>();
+            Logins = new List<TLogin>();
+
+        }
+
+        public virtual TKey Id { get; set; }
+        public virtual string UserName { get; set; }
 
         /// <summary>
         ///     Email
@@ -61,7 +72,7 @@ namespace Microsoft.AspNet.Identity.InMemory
         /// <summary>
         ///     DateTime in UTC when lockout ends, any time in the past is considered not locked out.
         /// </summary>
-        public virtual DateTimeOffset LockoutEnd { get; set; }
+        public virtual DateTime? LockoutEnd { get; set; }
 
         /// <summary>
         ///     Is lockout enabled for this user
@@ -73,22 +84,21 @@ namespace Microsoft.AspNet.Identity.InMemory
         /// </summary>
         public virtual int AccessFailedCount { get; set; }
 
-        public IList<UserLoginInfo> Logins
-        {
-            get { return _logins; }
-        }
+        /// <summary>
+        ///     Navigation property for user roles
+        /// </summary>
+        public virtual ICollection<TRole> Roles { get; private set; }
 
-        public IList<Claim> Claims
-        {
-            get { return _claims; }
-        }
+        /// <summary>
+        ///     Navigation property for user claims
+        /// </summary>
+        public virtual ICollection<TClaim> Claims { get; private set; }
 
-        public IList<string> Roles
-        {
-            get { return _roles; }
-        }
+        /// <summary>
+        ///     Navigation property for user logins
+        /// </summary>
+        public virtual ICollection<TLogin> Logins { get; private set; }
 
-        public virtual string Id { get; set; }
-        public virtual string UserName { get; set; }
     }
 }
+

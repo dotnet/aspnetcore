@@ -1,11 +1,9 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 
-namespace Microsoft.AspNet.Identity.Entity
+namespace Microsoft.AspNet.Identity
 {
-    public class IdentityUser : IdentityUser<string, IdentityUserLogin, IdentityUserRole, IdentityUserClaim>
+    public class IdentityUser : IdentityUser<string>
     {
         public IdentityUser()
         {
@@ -18,18 +16,14 @@ namespace Microsoft.AspNet.Identity.Entity
         }
     }
 
-    public class IdentityUser<TKey, TLogin, TRole, TClaim>
-        where TLogin : IdentityUserLogin<TKey>
-        where TRole : IdentityUserRole<TKey>
-        where TClaim : IdentityUserClaim<TKey>
+    public class IdentityUser<TKey>
         where TKey : IEquatable<TKey>
     {
         public IdentityUser()
         {
-            Claims = new List<TClaim>();
-            Roles = new List<TRole>();
-            Logins = new List<TLogin>();
-            
+            Claims = new List<IdentityUserClaim<TKey>>();
+            Roles = new List<IdentityUserRole<TKey>>();
+            Logins = new List<IdentityUserLogin<TKey>>();
         }
 
         public virtual TKey Id { get; set; }
@@ -73,7 +67,7 @@ namespace Microsoft.AspNet.Identity.Entity
         /// <summary>
         ///     DateTime in UTC when lockout ends, any time in the past is considered not locked out.
         /// </summary>
-        public virtual DateTime? LockoutEndDateUtc { get; set; }
+        public virtual DateTimeOffset LockoutEnd { get; set; }
 
         /// <summary>
         ///     Is lockout enabled for this user
@@ -86,19 +80,19 @@ namespace Microsoft.AspNet.Identity.Entity
         public virtual int AccessFailedCount { get; set; }
 
         /// <summary>
-        ///     Navigation property for user roles
+        ///     Roles for the user
         /// </summary>
-        public virtual ICollection<TRole> Roles { get; private set; }
+        public virtual ICollection<IdentityUserRole<TKey>> Roles { get; private set; }
 
         /// <summary>
-        ///     Navigation property for user claims
+        ///     Claims for the user
         /// </summary>
-        public virtual ICollection<TClaim> Claims { get; private set; }
+        public virtual ICollection<IdentityUserClaim<TKey>> Claims { get; private set; }
 
         /// <summary>
-        ///     Navigation property for user logins
+        ///     Associated logins for the user
         /// </summary>
-        public virtual ICollection<TLogin> Logins { get; private set; }
+        public virtual ICollection<IdentityUserLogin<TKey>> Logins { get; private set; }
 
     }
 }
