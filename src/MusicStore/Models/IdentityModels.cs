@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNet.Identity.InMemory;
+﻿using Microsoft.AspNet.Identity;
 
 namespace MusicStore.Models
 {
-    public class ApplicationUser : InMemoryUser
+    public class ApplicationUser : IdentityUser
     {
     }
 

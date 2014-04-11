@@ -46,7 +46,7 @@ namespace MusicStore.Controllers
         {
             if (ModelState.IsValid == true)
             {
-                var user = await UserManager.FindByUserNamePassword(model.UserName, model.Password);
+                var user = await UserManager.FindByUserNamePasswordAsync(model.UserName, model.Password);
                 if (user != null)
                 {
                     await SignIn(user, model.RememberMe);
@@ -106,7 +106,7 @@ namespace MusicStore.Controllers
 
             ManageMessageId? message = null;
             var user = new ApplicationUser() { UserName = this.Context.User.Identity.GetUserId() };
-            IdentityResult result = await UserManager.RemoveLogin(user, new UserLoginInfo(loginProvider, providerKey));
+            IdentityResult result = await UserManager.RemoveLoginAsync(user, new UserLoginInfo(loginProvider, providerKey));
             if (result.Succeeded)
             {
                 message = ManageMessageId.RemoveLoginSuccess;
@@ -259,7 +259,7 @@ namespace MusicStore.Controllers
                 return View();
             }
             var user = new ApplicationUser() { UserName = this.Context.User.Identity.GetUserId()};
-            var result = await UserManager.AddLogin(user, loginInfo.Login);
+            var result = await UserManager.AddLoginAsync(user, loginInfo.Login);
             if (result.Succeeded)
             {
                 //Bug: No helper method
@@ -298,7 +298,7 @@ namespace MusicStore.Controllers
                 var result = await UserManager.CreateAsync(user);
                 if (result.Succeeded)
                 {
-                    result = await UserManager.AddLogin(user, info.Login);
+                    result = await UserManager.AddLoginAsync(user, info.Login);
                     if (result.Succeeded)
                     {
                         await SignIn(user, isPersistent: false);
@@ -337,7 +337,7 @@ namespace MusicStore.Controllers
         public async Task<IActionResult> RemoveAccountList()
         {
             var user = new ApplicationUser() { UserName = this.Context.User.Identity.GetUserId() };
-            var linkedAccounts = await UserManager.GetLogins(user);
+            var linkedAccounts = await UserManager.GetLoginsAsync(user);
             ViewBag.ShowRemoveButton = await HasPassword() || linkedAccounts.Count > 1;
             //Bug: We dont have partial views yet
             //return (IActionResult)PartialView("_RemoveAccountPartial", linkedAccounts);
@@ -363,7 +363,7 @@ namespace MusicStore.Controllers
         private async Task SignIn(ApplicationUser user, bool isPersistent)
         {
             this.Context.Response.SignOut(DefaultAuthenticationTypes.ExternalCookie);
-            var identity = await UserManager.CreateIdentity(user, DefaultAuthenticationTypes.ApplicationCookie);
+            var identity = await UserManager.CreateIdentityAsync(user, DefaultAuthenticationTypes.ApplicationCookie);
             this.Context.Response.SignIn(identity, new AuthenticationProperties() { IsPersistent = isPersistent });
         }
 
