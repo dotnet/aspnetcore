@@ -117,6 +117,7 @@ namespace MusicStore.Controllers
         //
         // GET: /StoreManager/Delete/5
 
+        [HttpGet]
         public IActionResult Delete(int id = 0)
         {
             Album album = db.Albums.Single(a => a.AlbumId == id);
