@@ -141,7 +141,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Returns HTML markup for each property in the object that is represented by the specified expression, using the 
         /// template, an HTML field ID, and additional view data.
         /// </summary>
-        /// <typeparam name="TDisplayModel">The type of the model.</typeparam>
         /// <typeparam name="TValue">The type of the value.</typeparam>
         /// <param name="expression">An expression that identifies the object that contains the properties to display.</param>
         /// <param name="templateName">The name of the template that is used to render the object.</param>
@@ -174,6 +173,43 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </param>
         /// <returns>The HTML markup for each property in the model.</returns>
         HtmlString DisplayForModel(string templateName, string htmlFieldName, object additionalViewData);
+
+        /// <summary>
+        /// Returns a single-selection HTML {select} element using the specified name of the form field,
+        /// list items, option label, and HTML attributes.
+        /// </summary>
+        /// <param name="name">The name of the form field to return.</param>
+        /// <param name="selectList">A collection of <see href="SelectListItem"/> objects that are used to populate the
+        /// drop-down list.</param>
+        /// <param name="optionLabel">The text for a default empty item. This parameter can be null.</param>
+        /// <param name="htmlAttributes">An object that contains the HTML attributes to set for the {select} element.
+        /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>An HTML {select} element with an {option} subelement for each item in the list.</returns>
+        HtmlString DropDownList(
+            string name,
+            IEnumerable<SelectListItem> selectList,
+            string optionLabel,
+            object htmlAttributes);
+
+        /// <summary>
+        /// Returns a single-selection HTML {select} element for the object that is represented
+        /// by the specified expression using the specified list items, option label, and HTML attributes.
+        /// </summary>
+        /// <typeparam name="TProperty">The type of the value.</typeparam>
+        /// <param name="expression">An expression that identifies the value to display.</param>
+        /// <param name="selectList">A collection of <see href="SelectListItem"/> objects that are used to populate the
+        /// drop-down list.</param>
+        /// <param name="optionLabel">The text for a default empty item. This parameter can be null.</param>
+        /// <param name="htmlAttributes">An object that contains the HTML attributes to set for the {select} element.
+        /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>An HTML {select} element with an {option} subelement for each item in the list.</returns>
+        HtmlString DropDownListFor<TProperty>(
+            [NotNull] Expression<Func<TModel, TProperty>> expression,
+            IEnumerable<SelectListItem> selectList,
+            string optionLabel,
+            object htmlAttributes);
 
         /// <summary>
         /// Converts the value of the specified object to an HTML-encoded string.

@@ -20,6 +20,12 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
             return EvalComplexExpression(viewData, expression);
         }
 
+        public static ViewDataInfo Eval(object indexableObject, [NotNull] string expression)
+        {
+            // Run through same cases as other Eval() overload but allow a null container.
+            return (indexableObject == null) ? null : EvalComplexExpression(indexableObject, expression);
+        }
+
         private static ViewDataInfo EvalComplexExpression(object indexableObject, string expression)
         {
             foreach (var expressionPair in GetRightToLeftExpressions(expression))

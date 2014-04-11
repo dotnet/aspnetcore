@@ -38,6 +38,46 @@
     }
 </div>
 
+<div class="row">
+    <div style="float: left; border: thick solid limegreen; padding-right: 10px">
+        @using (Html.BeginForm(controllerName: "Home", actionName: "Edit", method: FormMethod.Post))
+        {
+            <table>
+                <tr>
+                    <td>
+                        <label class="control-label col-md-2">Model.Name</label>
+                    </td>
+                    <td>
+                        @Html.TextBox("Name")
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="control-label col-md-2">Model.Address</label>
+                    </td>
+                    <td>
+                        @Html.DropDownList("Address", "Select an Address")
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="control-label col-md-2">Model.Age</label>
+                    </td>
+                    <td>
+                        @Html.DropDownListFor(model => model.Age, (IEnumerable<SelectListItem>)ViewBag.Ages, htmlAttributes: new { @class = "form-control" })
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="submit" value="Save" class="btn btn-default" style="margin-left: 10px" />
+                    </td>
+                    <td></td>
+                </tr>
+            </table>
+        }
+    </div>
+</div>
+
 @helper PropertyListItem(ModelMetadata property)
 {
     var propertyName = property.PropertyName;

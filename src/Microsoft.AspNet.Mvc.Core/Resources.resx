@@ -195,6 +195,15 @@
   <data name="HtmlHelper_NotContextualized" xml:space="preserve">
     <value>Must call 'Contextualize' method before using this HtmlHelper instance.</value>
   </data>
+  <data name="HtmlHelper_MissingSelectData" xml:space="preserve">
+    <value>There is no ViewData item of type '{0}' that has the key '{1}'.</value>
+  </data>
+  <data name="HtmlHelper_SelectExpressionNotEnumerable" xml:space="preserve">
+    <value>The parameter '{0}' must evaluate to an IEnumerable when multiple selection is allowed.</value>
+  </data>
+  <data name="HtmlHelper_WrongSelectDataType" xml:space="preserve">
+    <value>The ViewData item that has the key '{0}' is of type '{1}' but must be of type '{2}'.</value>
+  </data>
   <data name="TemplateHelpers_TemplateLimitations" xml:space="preserve">
     <value>Templates can be used only with field access, property access, single-dimension array index, or single-parameter custom indexer expressions.</value>
   </data>

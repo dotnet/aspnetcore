@@ -57,6 +57,16 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
+        public HtmlString DropDownListFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression,
+            IEnumerable<SelectListItem> selectList, string optionLabel, object htmlAttributes)
+        {
+            var metadata = ExpressionMetadataProvider.FromLambdaExpression(expression, ViewData, MetadataProvider);
+
+            return GenerateDropDown(metadata, ExpressionHelper.GetExpressionText(expression), selectList,
+                optionLabel, htmlAttributes);
+        }
+
+        /// <inheritdoc />
         public HtmlString DisplayFor<TValue>([NotNull] Expression<Func<TModel, TValue>> expression,
                                              string templateName,
                                              string htmlFieldName,

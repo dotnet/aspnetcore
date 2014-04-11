@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
@@ -224,6 +225,17 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                    additionalViewData);
         }
 
+        public HtmlString DropDownList(string name, IEnumerable<SelectListItem> selectList, string optionLabel,
+            object htmlAttributes)
+        {
+            return GenerateDropDown(
+                metadata: null,
+                expression: name,
+                selectList: selectList,
+                optionLabel: optionLabel,
+                htmlAttributes: htmlAttributes);
+        }
+
         public HtmlString Hidden(string name, object value, object htmlAttributes)
         {
             return GenerateHidden(metadata: null, name: name, value: value, useViewData: (value == null),
@@ -302,6 +314,16 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             return GenerateRadioButton(metadata: null, name: name, value: value, isChecked: isChecked,
                 htmlAttributes: htmlAttributes);
+        }
+
+        public HtmlString Raw(string value)
+        {
+            return new HtmlString(value);
+        }
+
+        public HtmlString Raw(object value)
+        {
+            return new HtmlString(value == null ? null : value.ToString());
         }
 
         public virtual HtmlString ValidationSummary(bool excludePropertyErrors, string message, IDictionary<string, object> htmlAttributes)
@@ -522,6 +544,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 htmlAttributes: htmlAttributeDictionary);
         }
 
+        protected HtmlString GenerateDropDown(ModelMetadata metadata, string expression,
+            IEnumerable<SelectListItem> selectList, string optionLabel, object htmlAttributes)
+        {
+            return GenerateSelect(metadata, optionLabel, expression, selectList, allowMultiple: false,
+                htmlAttributes: htmlAttributes);
+        }
+
         /// <summary>
         /// Writes an opening <form> tag to the response. When the user submits the form,
         /// the request will be processed by an action method.
@@ -713,6 +742,78 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 htmlAttributes: htmlAttributeDictionary);
         }
 
+        protected virtual HtmlString GenerateSelect(ModelMetadata metadata,
+            string optionLabel, string name, IEnumerable<SelectListItem> selectList, bool allowMultiple,
+            object htmlAttributes)
+        {
+            var fullName = ViewData.TemplateInfo.GetFullHtmlFieldName(name);
+            if (string.IsNullOrEmpty(fullName))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "name");
+            }
+
+            var usedViewData = false;
+
+            // If we got a null selectList, try to use ViewData to get the list of items.
+            if (selectList == null)
+            {
+                selectList = GetSelectListItems(name);
+                usedViewData = true;
+            }
+
+            var defaultValue = (allowMultiple) ?
+                GetModelStateValue(fullName, typeof(string[])) :
+                GetModelStateValue(fullName, typeof(string));
+
+            // If we haven't already used ViewData to get the entire list of items then we need to
+            // use the ViewData-supplied value before using the parameter-supplied value.
+            if (defaultValue == null && !string.IsNullOrEmpty(name))
+            {
+                if (!usedViewData)
+                {
+                    defaultValue = ViewData.Eval(name);
+                }
+                else if (metadata != null)
+                {
+                    defaultValue = metadata.Model;
+                }
+            }
+
+            if (defaultValue != null)
+            {
+                selectList = UpdateSelectListItemsWithDefaultValue(selectList, defaultValue, allowMultiple);
+            }
+
+            // Convert each ListItem to an <option> tag and wrap them with <optgroup> if requested.
+            var listItemBuilder = GenerateGroupsAndOptions(optionLabel, selectList);
+
+            var tagBuilder = new TagBuilder("select")
+            {
+                InnerHtml = listItemBuilder.ToString()
+            };
+            tagBuilder.MergeAttributes(AnonymousObjectToHtmlAttributes(htmlAttributes));
+            tagBuilder.MergeAttribute("name", fullName, true /* replaceExisting */);
+            tagBuilder.GenerateId(fullName, IdAttributeDotReplacement);
+            if (allowMultiple)
+            {
+                tagBuilder.MergeAttribute("multiple", "multiple");
+            }
+
+            // If there are any errors for a named field, we add the css attribute.
+            ModelState modelState;
+            if (ViewData.ModelState.TryGetValue(fullName, out modelState))
+            {
+                if (modelState.Errors.Count > 0)
+                {
+                    tagBuilder.AddCssClass(ValidationInputCssClassName);
+                }
+            }
+
+            tagBuilder.MergeAttributes(GetValidationAttributes(name, metadata));
+
+            return tagBuilder.ToHtmlString(TagRenderMode.Normal);
+        }
+
         protected virtual HtmlString GenerateTextBox(ModelMetadata metadata, string name, object value, string format,
             IDictionary<string, object> htmlAttributes)
         {
@@ -838,10 +939,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return tagBuilder.ToHtmlString(TagRenderMode.SelfClosing);
         }
 
-
         protected virtual HtmlString GenerateValue(string name, object value, string format, bool useViewData)
         {
-            var fullName = ViewContext.ViewData.TemplateInfo.GetFullHtmlFieldName(name);
+            var fullName = ViewData.TemplateInfo.GetFullHtmlFieldName(name);
             var attemptedValue = (string)GetModelStateValue(fullName, typeof(string));
 
             string resolvedValue;
@@ -892,14 +992,145 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
         }
 
-        public HtmlString Raw(string value)
+        private StringBuilder GenerateGroupsAndOptions(string optionLabel, IEnumerable<SelectListItem> selectList)
         {
-            return new HtmlString(value);
+            var listItemBuilder = new StringBuilder();
+
+            // Make optionLabel the first item that gets rendered.
+            if (optionLabel != null)
+            {
+                listItemBuilder.AppendLine(GenerateOption(new SelectListItem()
+                {
+                    Text = optionLabel,
+                    Value = string.Empty,
+                    Selected = false,
+                }));
+            }
+
+            // Group items in the SelectList if requested.
+            // Treat each item with Group == null as a member of a unique group
+            // so they are added according to the original order.
+            var groupedSelectList = selectList.GroupBy<SelectListItem, int>(
+                item => (item.Group == null) ? item.GetHashCode() : item.Group.GetHashCode());
+            foreach (var group in groupedSelectList)
+            {
+                var optGroup = group.First().Group;
+
+                // Wrap if requested.
+                TagBuilder groupBuilder = null;
+                if (optGroup != null)
+                {
+                    groupBuilder = new TagBuilder("optgroup");
+                    if (optGroup.Name != null)
+                    {
+                        groupBuilder.MergeAttribute("label", optGroup.Name);
+                    }
+
+                    if (optGroup.Disabled)
+                    {
+                        groupBuilder.MergeAttribute("disabled", "disabled");
+                    }
+
+                    listItemBuilder.AppendLine(groupBuilder.ToString(TagRenderMode.StartTag));
+                }
+
+                foreach (var item in group)
+                {
+                    listItemBuilder.AppendLine(GenerateOption(item));
+                }
+
+                if (optGroup != null)
+                {
+                    listItemBuilder.AppendLine(groupBuilder.ToString(TagRenderMode.EndTag));
+                }
+            }
+
+            return listItemBuilder;
         }
 
-        public HtmlString Raw(object value)
+        private string GenerateOption(SelectListItem item)
         {
-            return new HtmlString(value == null ? null : value.ToString());
+            var builder = new TagBuilder("option")
+            {
+                InnerHtml = Encode(item.Text)
+            };
+
+            if (item.Value != null)
+            {
+                builder.Attributes["value"] = item.Value;
+            }
+
+            if (item.Selected)
+            {
+                builder.Attributes["selected"] = "selected";
+            }
+
+            if (item.Disabled)
+            {
+                builder.Attributes["disabled"] = "disabled";
+            }
+
+            return builder.ToString(TagRenderMode.Normal);
+        }
+
+        private IEnumerable<SelectListItem> GetSelectListItems(string name)
+        {
+            var value = ViewData.Eval(name);
+            if (value == null)
+            {
+                throw new InvalidOperationException(Resources.FormatHtmlHelper_MissingSelectData(
+                    "IEnumerable<SelectListItem>", name));
+            }
+
+            var selectList = value as IEnumerable<SelectListItem>;
+            if (selectList == null)
+            {
+                throw new InvalidOperationException(Resources.FormatHtmlHelper_WrongSelectDataType(
+                    name, value.GetType().FullName, "IEnumerable<SelectListItem>"));
+            }
+
+            return selectList;
+        }
+
+        private IEnumerable<SelectListItem> UpdateSelectListItemsWithDefaultValue(
+            IEnumerable<SelectListItem> selectList,
+            object defaultValue,
+            bool allowMultiple)
+        {
+            IEnumerable defaultValues;
+            if (allowMultiple)
+            {
+                defaultValues = defaultValue as IEnumerable;
+                if (defaultValues == null || defaultValues is string)
+                {
+                    throw new InvalidOperationException(
+                        Resources.FormatHtmlHelper_SelectExpressionNotEnumerable("expression"));
+                }
+            }
+            else
+            {
+                defaultValues = new[] { defaultValue };
+            }
+
+            var values = from object value in defaultValues
+                         select Convert.ToString(value, CultureInfo.CurrentCulture);
+
+            // ToString() by default returns an enum value's name.  But selectList may use numeric values.
+            var enumValues = from Enum value in defaultValues.OfType<Enum>()
+                             select value.ToString("d");
+            values = values.Concat(enumValues);
+
+            var selectedValues = new HashSet<string>(values, StringComparer.OrdinalIgnoreCase);
+            var newSelectList = new List<SelectListItem>();
+            foreach (SelectListItem item in selectList)
+            {
+                item.Selected = (item.Value != null) ?
+                    selectedValues.Contains(item.Value) :
+                    selectedValues.Contains(item.Text);
+                newSelectList.Add(item);
+            }
+
+            return newSelectList;
         }
     }
 }

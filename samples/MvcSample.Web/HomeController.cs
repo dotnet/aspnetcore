@@ -1,10 +1,16 @@
-﻿using Microsoft.AspNet.Mvc;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.Rendering;
 using MvcSample.Web.Models;
 
 namespace MvcSample.Web
 {
     public class HomeController : Controller
     {
+        private static readonly IEnumerable<SelectListItem> _addresses = CreateAddresses();
+        private static readonly IEnumerable<SelectListItem> _ages = CreateAges();
+
         public IActionResult Index()
         {
             return View("MyView", User());
@@ -22,17 +28,21 @@ namespace MvcSample.Web
         /// </summary>
         public IActionResult Create()
         {
+            ViewBag.Address = _addresses;
+            ViewBag.Ages = _ages;
+
             return View();
         }
 
         /// <summary>
         /// Action that shows metadata when model is non-<c>null</c>.
         /// </summary>
-        /// <returns></returns>
-        public IActionResult Edit()
+        public IActionResult Edit(User user)
         {
+            ViewBag.Address = _addresses;
+            ViewBag.Age = _ages;
             ViewBag.Gift = "the banana";
-            ViewData.Model = new User { Name = "Name", Address = "Address in a State", Age = 37, };
+
             return View("Create");
         }
 
@@ -97,6 +107,28 @@ namespace MvcSample.Web
         public IActionResult MyView()
         {
             return View(User());
+        }
+
+        private static IEnumerable<SelectListItem> CreateAddresses()
+        {
+            var addresses = new[]
+            {
+                "121 Fake St., Redmond, WA, USA",
+                "123 Fake St., Redmond, WA, USA",
+                "125 Fake St., Redmond, WA, USA",
+                "127 Fake St., Redmond, WA, USA",
+                "129 Fake St., Redmond, WA, USA",
+                "131 Fake St., Redmond, WA, USA",
+            };
+
+            return new SelectList(addresses);
+        }
+
+        private static IEnumerable<SelectListItem> CreateAges()
+        {
+            var ages = Enumerable.Range(27, 47).Select(age => new { Age = age, Display = age.ToString("####"), });
+
+            return new SelectList(ages, dataValueField: "Age", dataTextField: "Display");
         }
     }
 }

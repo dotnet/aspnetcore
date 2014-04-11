@@ -427,6 +427,54 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
+        /// There is no ViewData item of type '{0}' that has the key '{1}'.
+        /// </summary>
+        internal static string HtmlHelper_MissingSelectData
+        {
+            get { return GetString("HtmlHelper_MissingSelectData"); }
+        }
+
+        /// <summary>
+        /// There is no ViewData item of type '{0}' that has the key '{1}'.
+        /// </summary>
+        internal static string FormatHtmlHelper_MissingSelectData(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("HtmlHelper_MissingSelectData"), p0, p1);
+        }
+
+        /// <summary>
+        /// The parameter '{0}' must evaluate to an IEnumerable when multiple selection is allowed.
+        /// </summary>
+        internal static string HtmlHelper_SelectExpressionNotEnumerable
+        {
+            get { return GetString("HtmlHelper_SelectExpressionNotEnumerable"); }
+        }
+
+        /// <summary>
+        /// The parameter '{0}' must evaluate to an IEnumerable when multiple selection is allowed.
+        /// </summary>
+        internal static string FormatHtmlHelper_SelectExpressionNotEnumerable(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("HtmlHelper_SelectExpressionNotEnumerable"), p0);
+        }
+
+        /// <summary>
+        /// The ViewData item that has the key '{0}' is of type '{1}' but must be of type '{2}'.
+        /// </summary>
+        internal static string HtmlHelper_WrongSelectDataType
+        {
+            get { return GetString("HtmlHelper_WrongSelectDataType"); }
+        }
+
+        /// <summary>
+        /// The ViewData item that has the key '{0}' is of type '{1}' but must be of type '{2}'.
+        /// </summary>
+        internal static string FormatHtmlHelper_WrongSelectDataType(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("HtmlHelper_WrongSelectDataType"), p0, p1, p2);
+        }
+
+        /// <summary>
         /// Templates can be used only with field access, property access, single-dimension array index, or single-parameter custom indexer expressions.
         /// </summary>
         internal static string TemplateHelpers_TemplateLimitations

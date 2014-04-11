@@ -141,6 +141,7 @@
     <Compile Include="Rendering\HtmlHelperLinkExtensions.cs" />
     <Compile Include="Rendering\HtmlHelperNameExtensions.cs" />
     <Compile Include="Rendering\HtmlHelperPartialExtensions.cs" />
+    <Compile Include="Rendering\HtmlHelperSelectExtensions.cs" />
     <Compile Include="Rendering\HtmlHelperValidationExtensions.cs" />
     <Compile Include="Rendering\HtmlHelperValueExtensions.cs" />
     <Compile Include="Rendering\HtmlString.cs" />
@@ -156,7 +157,11 @@
     <Compile Include="Rendering\IHtmlHelperOfT.cs" />
     <Compile Include="Rendering\IView.cs" />
     <Compile Include="Rendering\IViewEngine.cs" />
+    <Compile Include="Rendering\MultiSelectList.cs" />
     <Compile Include="Rendering\MvcForm.cs" />
+    <Compile Include="Rendering\SelectList.cs" />
+    <Compile Include="Rendering\SelectListGroup.cs" />
+    <Compile Include="Rendering\SelectListItem.cs" />
     <Compile Include="Rendering\ViewEngineResult.cs" />
     <Compile Include="RouteConstraintAttribute.cs" />
     <Compile Include="RouteDataActionConstraint.cs" />
