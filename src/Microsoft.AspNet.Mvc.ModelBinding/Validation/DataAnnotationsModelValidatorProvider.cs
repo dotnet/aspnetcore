@@ -18,29 +18,25 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     /// </summary>
     public class DataAnnotationsModelValidatorProvider : AssociatedValidatorProvider
     {
-        // A factory for validators based on ValidationAttribute
+        // A factory for validators based on ValidationAttribute.
         private delegate IModelValidator DataAnnotationsModelValidationFactory(ValidationAttribute attribute);
 
         // A factory for validators based on IValidatableObject
         private delegate IModelValidator DataAnnotationsValidatableObjectAdapterFactory();
 
         private static bool _addImplicitRequiredAttributeForValueTypes = true;
+        private readonly Dictionary<Type, DataAnnotationsModelValidationFactory> _attributeFactories =
+            BuildAttributeFactoriesDictionary();
 
         // Factories for validation attributes
-        private static DataAnnotationsModelValidationFactory DefaultAttributeFactory =
+        private static readonly DataAnnotationsModelValidationFactory _defaultAttributeFactory =
             (attribute) => new DataAnnotationsModelValidator(attribute);
 
-        private static Dictionary<Type, DataAnnotationsModelValidationFactory> AttributeFactories =
-            new Dictionary<Type, DataAnnotationsModelValidationFactory>();
-
         // Factories for IValidatableObject models
-        private static DataAnnotationsValidatableObjectAdapterFactory DefaultValidatableFactory =
+        private static readonly DataAnnotationsValidatableObjectAdapterFactory _defaultValidatableFactory =
             () => new ValidatableObjectAdapter();
 
-        private static Dictionary<Type, DataAnnotationsValidatableObjectAdapterFactory> ValidatableFactories =
-            new Dictionary<Type, DataAnnotationsValidatableObjectAdapterFactory>();
-
-        public static bool AddImplicitRequiredAttributeForValueTypes
+        private static bool AddImplicitRequiredAttributeForValueTypes
         {
             get { return _addImplicitRequiredAttributeForValueTypes; }
             set { _addImplicitRequiredAttributeForValueTypes = value; }
@@ -54,9 +50,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             foreach (var attribute in attributes.OfType<ValidationAttribute>())
             {
                 DataAnnotationsModelValidationFactory factory;
-                if (!AttributeFactories.TryGetValue(attribute.GetType(), out factory))
+                if (!_attributeFactories.TryGetValue(attribute.GetType(), out factory))
                 {
-                    factory = DefaultAttributeFactory;
+                    factory = _defaultAttributeFactory;
                 }
                 results.Add(factory(attribute));
             }
@@ -64,15 +60,41 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Produce a validator if the type supports IValidatableObject
             if (typeof(IValidatableObject).IsAssignableFrom(metadata.ModelType))
             {
-                DataAnnotationsValidatableObjectAdapterFactory factory;
-                if (!ValidatableFactories.TryGetValue(metadata.ModelType, out factory))
-                {
-                    factory = DefaultValidatableFactory;
-                }
-                results.Add(factory());
+                results.Add(_defaultValidatableFactory());
             }
 
             return results;
+        }
+
+        private static Dictionary<Type, DataAnnotationsModelValidationFactory> BuildAttributeFactoriesDictionary()
+        {
+            var dict = new Dictionary<Type, DataAnnotationsModelValidationFactory>();
+            AddValidationAttributeAdapter(dict, typeof(RegularExpressionAttribute),
+                (attribute) => new RegularExpressionAttributeAdapter((RegularExpressionAttribute)attribute));
+
+            AddDataTypeAttributeAdapter(dict, typeof(UrlAttribute), "url");
+
+            return dict;
+        }
+
+        private static void AddValidationAttributeAdapter(Dictionary<Type, DataAnnotationsModelValidationFactory> dictionary,
+                                                          Type validationAttributeType,
+                                                          DataAnnotationsModelValidationFactory factory)
+        {
+            if (validationAttributeType != null)
+            {
+                dictionary.Add(validationAttributeType, factory);
+            }
+        }
+
+        private static void AddDataTypeAttributeAdapter(Dictionary<Type, DataAnnotationsModelValidationFactory> dictionary,
+                                                        Type attributeType,
+                                                        string ruleName)
+        {
+            AddValidationAttributeAdapter(
+                dictionary,
+                attributeType,
+                (attribute) => new DataTypeAttributeAdapter((DataTypeAttribute)attribute, ruleName));
         }
     }
 }

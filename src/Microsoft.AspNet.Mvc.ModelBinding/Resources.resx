@@ -123,6 +123,9 @@
   <data name="Common_PropertyNotFound" xml:space="preserve">
     <value>The property {0}.{1} could not be found.</value>
   </data>
+  <data name="DataAnnotationsModelValidatorProvider_ConstructorRequirements" xml:space="preserve">
+    <value>The type '{0}' must have a public constructor which accepts a single parameter of type '{1}'.</value>
+  </data>
   <data name="JQuerySyntaxMissingClosingBracket" xml:space="preserve">
     <value>The key is invalid JQuery syntax because it is missing a closing bracket.</value>
   </data>
@@ -155,6 +158,9 @@
   </data>
   <data name="ModelBindingContext_ModelMetadataMustBeSet" xml:space="preserve">
     <value>The ModelMetadata property must be set before accessing this property.</value>
+  </data>
+  <data name="TypeMustDeriveFromType" xml:space="preserve">
+    <value>The type '{0}' must derive from '{1}'.</value>
   </data>
   <data name="ValidatableObjectAdapter_IncompatibleType" xml:space="preserve">
     <value>The model object inside the metadata claimed to be compatible with '{0}', but was actually '{1}'.</value>

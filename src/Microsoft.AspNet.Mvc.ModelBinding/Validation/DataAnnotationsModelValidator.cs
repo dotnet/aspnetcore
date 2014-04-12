@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
-    public class DataAnnotationsModelValidator : IModelValidator
+    public class DataAnnotationsModelValidator : IModelValidator, IClientModelValidator
     {
         public DataAnnotationsModelValidator([NotNull] ValidationAttribute attribute)
         {
@@ -52,6 +52,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             return Enumerable.Empty<ModelValidationResult>();
+        }
+
+        public virtual IEnumerable<ModelClientValidationRule> GetClientValidationRules(
+            [NotNull] ClientModelValidationContext context)
+        {
+            return Enumerable.Empty<ModelClientValidationRule>();
+        }
+
+        protected virtual string GetErrorMessage([NotNull] ModelMetadata modelMetadata)
+        {
+            return Attribute.FormatErrorMessage(modelMetadata.GetDisplayName());
         }
     }
 }

@@ -43,6 +43,22 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
+        /// The type '{0}' must have a public constructor which accepts a single parameter of type '{1}'.
+        /// </summary>
+        internal static string DataAnnotationsModelValidatorProvider_ConstructorRequirements
+        {
+            get { return GetString("DataAnnotationsModelValidatorProvider_ConstructorRequirements"); }
+        }
+
+        /// <summary>
+        /// The type '{0}' must have a public constructor which accepts a single parameter of type '{1}'.
+        /// </summary>
+        internal static string FormatDataAnnotationsModelValidatorProvider_ConstructorRequirements(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("DataAnnotationsModelValidatorProvider_ConstructorRequirements"), p0, p1);
+        }
+
+        /// <summary>
         /// The key is invalid JQuery syntax because it is missing a closing bracket.
         /// </summary>
         internal static string JQuerySyntaxMissingClosingBracket
@@ -216,6 +232,22 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         internal static string FormatModelBindingContext_ModelMetadataMustBeSet()
         {
             return GetString("ModelBindingContext_ModelMetadataMustBeSet");
+        }
+
+        /// <summary>
+        /// The type '{0}' must derive from '{1}'.
+        /// </summary>
+        internal static string TypeMustDeriveFromType
+        {
+            get { return GetString("TypeMustDeriveFromType"); }
+        }
+
+        /// <summary>
+        /// The type '{0}' must derive from '{1}'.
+        /// </summary>
+        internal static string FormatTypeMustDeriveFromType(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TypeMustDeriveFromType"), p0, p1);
         }
 
         /// <summary>
