@@ -7,12 +7,27 @@ namespace Microsoft.AspNet.Mvc
     [ViewComponent]
     public abstract class ViewComponent
     {
+        private dynamic _viewBag;
+
         public HttpContext Context
         {
             get { return ViewContext == null ? null : ViewContext.HttpContext; }
         }
 
         public IViewComponentResultHelper Result { get; private set; }
+
+        public dynamic ViewBag
+        {
+            get
+            {
+                if (_viewBag == null)
+                {
+                    _viewBag = new DynamicViewData(() => ViewData);
+                }
+
+                return _viewBag;
+            }
+        }
 
         public ViewContext ViewContext { get; set; }
 

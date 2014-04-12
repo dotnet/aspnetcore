@@ -37,6 +37,7 @@ namespace MvcSample.Web.Components
 
         private string[] GetTags(int count)
         {
+            @ViewBag.Title = count.ToString() + " Tags:";
             return Tags.Take(count).ToArray();
         }
     }
