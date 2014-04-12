@@ -6,9 +6,8 @@
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>65c93d2b-cbd1-4e51-9312-10c1965a7241</ProjectGuid>
+    <ProjectGuid>83d44696-c790-4356-9187-79f89010ed4f</ProjectGuid>
     <OutputType>Library</OutputType>
-    <ActiveTargetFramework>net45</ActiveTargetFramework>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
   </PropertyGroup>
@@ -21,13 +20,11 @@
     <Content Include="Project.json" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AppBuilderSupportExtensions.cs" />
-    <Compile Include="ICanHasOwinEnvironment.cs" />
-    <Compile Include="OwinConstants.cs" />
-    <Compile Include="OwinHttpEnvironment.cs" />
+    <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Properties\" />
+    <Compile Include="AppBuilderSupportTests.cs" />
+    <Compile Include="OwinHttpEnvironmentTests.cs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
