@@ -37,6 +37,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         // Default IValidatableObject adapter factory
+
+#if NET45
         [Fact]
         public void IValidatableObjectGetsAValidator()
         {
@@ -51,6 +53,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Assert
             Assert.Single(validators);
         }
+#endif
 
         // Integration with metadata system
 
