@@ -19,10 +19,6 @@
     "net45": { 
       "dependencies": {
         "System.Runtime": "",
-        "Owin": "1.0",
-        "Microsoft.Owin": "2.1.0",
-        "Microsoft.Owin.Hosting": "2.1.0",
-        "Microsoft.Owin.Testing": "2.1.0",
         "Moq": "4.2.1312.1622",
         "Microsoft.Net.Http": "2.2.13",
         "System.Net.Http": ""
