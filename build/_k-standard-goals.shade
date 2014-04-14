@@ -66,6 +66,14 @@ default Configuration='Release'
 #make-roslyn-fast
   ngen-roslyn
 
+#resx
+   @{
+     foreach (var file in Directory.EnumerateFiles(BASE_DIR, "*.resx", SearchOption.AllDirectories))
+     {
+        UpdateResx(file);
+     }
+   }
+  
 #watch
   @{
     var watcher = new FileWatcher(BASE_DIR);
@@ -79,7 +87,12 @@ default Configuration='Release'
     {
         watcher.WatchFile(file);
     }
-
+    
+    foreach (var file in Directory.EnumerateFiles(BASE_DIR, "*.resx", SearchOption.AllDirectories))
+    {
+        watcher.WatchFile(file);
+    }
+    
     foreach (var dir in Directory.EnumerateDirectories(BASE_DIR, "*.*", SearchOption.AllDirectories))
     {
         watcher.WatchDirectory(dir, ".cs");
@@ -90,7 +103,13 @@ default Configuration='Release'
     {
       Log.Info("Change detected in " + path);
       bool restore = path.EndsWith("project.json");
-
+      
+      if(path.EndsWith(".resx"))
+      {
+        UpdateResx(path);
+        return;
+      }          
+        
       try
       {
         UpdateProjects(BASE_DIR, restore);
@@ -118,3 +137,6 @@ macro name='UpdateProjects' basePath='string' restore='bool'
 
 macro name='Exec' program='string' commandline='string'
     exec
+
+macro name="UpdateResx" resxFile='string'
+    k-generate-resx
