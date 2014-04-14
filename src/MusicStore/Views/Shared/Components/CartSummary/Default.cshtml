@@ -1,9 +1,9 @@
-﻿@if ((int)ViewData["CartCount"] > 0)
+﻿@if (ViewBag.CartCount > 0)
 {
     <li>
-        <a href="@Url.Action("Index", "ShoppingCart")" title="@ViewData["CartSummary"]">
+        <a href="@Url.Action("Index", "ShoppingCart")" title="@ViewBag.CartSummary">
             <span class="glyphicon glyphicon glyphicon-shopping-cart"></span>
-            @ViewData["CartCount"]
+            @ViewBag.CartCount
         </a>
     </li>
 }

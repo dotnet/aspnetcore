@@ -19,9 +19,8 @@ namespace MusicStore.Components
                 .Select(a => a.Album.Title)
                 .OrderBy(x => x);
 
-            //Bug: Start using ViewBag when that's available in a ViewComponent
-            ViewData.Add("CartCount", cartItems.Count());
-            ViewData.Add("CartSummary", string.Join("\n", cartItems.Distinct()));
+            ViewBag.CartCount = cartItems.Count();
+            ViewBag.CartSummary = string.Join("\n", cartItems.Distinct());
 
             return View();
         }
