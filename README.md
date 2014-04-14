@@ -6,9 +6,9 @@
 3. [Helios]:
 	4. Helios.cmd to launch the app on IISExpress.
 4. [SelfHost]:
-	5. Run Selfhost.cmd (This runs k web) (Note: If your changes to C# files are not picked up in successive builds - try deleting the bin and obj folder)
+	5. Run Selfhost.cmd (This runs k web)
 5. [CustomHost]:
-	6. Run CustomHost.cmd (This hosts the app in a console application) (Note: If your changes to C# files are not picked up in successive builds - try deleting the bin and obj folder)
+	6. Run CustomHost.cmd (This hosts the app in a console application)
 
 ### Adding a new package:
 1. Edit the project.json to include the package you want to install
