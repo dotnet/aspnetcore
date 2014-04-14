@@ -90,7 +90,6 @@ namespace MusicStore.Models
                 {
                     _db.CartItems.Remove(cartItem);
                 }
-
             }
 
             return itemCount;
@@ -105,12 +104,18 @@ namespace MusicStore.Models
                 // TODO [EF] Change to EntitySet.Remove once querying attaches instances
                 _db.ChangeTracker.Entry(cartItem).State = EntityState.Deleted;
             }
-
         }
 
         public List<CartItem> GetCartItems()
         {
-            return _db.CartItems.Where(cart => cart.CartId == ShoppingCartId).ToList();
+            var cartItems = _db.CartItems.Where(cart => cart.CartId == ShoppingCartId).ToList();
+            //TODO: Auto population of the related album data not available until EF feature is lighted up.
+            foreach (var cartItem in cartItems)
+            {
+                cartItem.Album = _db.Albums.Single(a => a.AlbumId == cartItem.AlbumId);
+            }
+
+            return cartItems;
         }
 
         public int GetCount()

@@ -10,6 +10,7 @@ namespace MusicStore.Components
     public class CartSummaryComponent : ViewComponent
     {
         private MusicStoreContext db = new MusicStoreContext();
+
         public async Task<IViewComponentResult> InvokeAsync()
         {
             var cart = ShoppingCart.GetCart(db, this.Context);
@@ -18,9 +19,9 @@ namespace MusicStore.Components
                 .Select(a => a.Album.Title)
                 .OrderBy(x => x);
 
-            //Bug: Uncommenting results in compilation error. 
-            //ViewBag.CartCount = cartItems.Count();
-            //ViewBag.CartSummary = string.Join("\n", cartItems.Distinct());
+            //Bug: Start using ViewBag when that's available in a ViewComponent
+            ViewData.Add("CartCount", cartItems.Count());
+            ViewData.Add("CartSummary", string.Join("\n", cartItems.Distinct()));
 
             return View();
         }

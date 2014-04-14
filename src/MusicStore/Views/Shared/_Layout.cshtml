@@ -27,7 +27,7 @@
                 <ul class="nav navbar-nav">
                     <li>@Html.ActionLink("Home", "Index", "Home")</li>
                     @await Component.InvokeAsync("GenreMenu")
-                    @*@await Component.InvokeAsync("CartSummary")*@
+                    @await Component.InvokeAsync("CartSummary")
                 </ul>
                 @await Html.PartialAsync("_LoginPartial")
             </div>
