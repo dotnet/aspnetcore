@@ -8,15 +8,20 @@ The samples provided are designed to show some of the features of the new framew
 
 #Getting Started
 
+The first thing we need to do is setup the tools required to build and run an application.
+
+* Open a command prompt and execute
+
+```
+@powershell -NoProfile -ExecutionPolicy unrestricted -Command "(New-Object System.Net.WebClient).DownloadFile('http://bit.ly/1hrhEXf', 'temp.cmd'); .\temp setup; del temp.cmd"
+```
+
+* This command will download the latest version of the SDK and put it on your path so that you can run the rest of the commands in the readme. If you want to know more about what this is doing then you can read the [KVM page](https://github.com/aspnet/Preview/wiki/version-manager) of the wiki.
+
 * Clone repository
-* Optionally add the repo directory to your path, see the note below.
-* Open a command prompt and navigate to the repository
-* Run GetLatestRuntime.cmd. This will download the SDK you will use to run your applications.
 * Navigate to samples\HelloConsole
 * Run ```K run```
 * You should see some compiler output and a message saying "Hello World"
-
-**The K.cmd file in the root of this repo is designed to be able to be put in your path. It will probe various locations relative to your current directory to find the k tools that it should use. All the steps after this will assume you've done this, so that you can just type ```K Run``` from anywhere. If you choose not to then add the appropriate number of folder traversals (..\\) before each K command.**
 
 #Samples
 
@@ -24,9 +29,9 @@ The samples provided are designed to show some of the features of the new framew
 
 These samples, in this repo, are just basic starting points for you to experiment with features. Since there is no File->New Project we thought some simple samples to take the place of scaffolding would be convenient.
 
-+ HelloConsole. This is just basic console app if you want to use it as a starting point. Use it the same as the console app from our earlier samples
-+ HelloWeb. This is a minimal startup class that shows welcome page and static file middleware. This is mostly for you to run through the steps in the readme and make sure you have everything setup and working correctly.
-+ HelloWebFx. This sample is a basic MVC app. It is not designed to show all the functionality of the new web stack, but to give you a starting point to play with features.
++ [HelloConsole](https://github.com/aspnet/Preview/tree/master/samples/ConsoleApp). This is just basic console app if you want to use it as a starting point. Use it the same as the console app from our earlier samples
++ [HelloWeb](https://github.com/aspnet/Preview/tree/master/samples/HelloWeb). This is a minimal startup class that shows welcome page and static file middleware. This is mostly for you to run through the steps in the readme and make sure you have everything setup and working correctly.
++ [HelloWebFx](https://github.com/aspnet/Preview/tree/master/samples/HelloWebFx). This sample is a basic MVC app. It is not designed to show all the functionality of the new web stack, but to give you a starting point to play with features.
 
 ##[Feature Samples](https://github.com/aspnet/Entropy)
 The Entropy repo contains samples of specific features in isolation. Each directory contains just enough code to show an aspect of a feature.
