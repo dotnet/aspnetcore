@@ -1,23 +1,23 @@
 ﻿using Microsoft.AspNet;
 using Microsoft.AspNet.Abstractions;
-using Microsoft.AspNet.ConfigurationModel;
 using Microsoft.AspNet.Configuration.Json;
+using Microsoft.AspNet.ConfigurationModel;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.DependencyInjection.Fallback;
-using Microsoft.AspNet.DependencyInjection.NestedProviders;
-using Microsoft.AspNet.RequestContainer;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.InMemory;
+using Microsoft.AspNet.Logging;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.RequestContainer;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Security.Cookies;
+using Microsoft.Net.Runtime;
+using MusicStore.Logging;
 using MusicStore.Models;
 using MusicStore.Web.Models;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
-using Microsoft.Net.Runtime;
 
 public class Startup
 {
@@ -28,14 +28,22 @@ public class Startup
         //ErrorPageOptions.ShowAll to be used only at development time. Not recommended for production. 
         app.UseErrorPage(ErrorPageOptions.ShowAll);
 
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddInstance<ILoggerFactory>(new NullLoggerFactory());
+        serviceCollection.Add(MvcServices.GetDefaultServices());
+        app.UseContainer(serviceCollection.BuildServiceProvider(app.ServiceProvider));
+
         app.UseFileServer();
 
-        var serviceProvider = MvcServices.GetDefaultServices().BuildServiceProvider(app.ServiceProvider);
-        app.UseContainer(serviceProvider);
+        app.UseCookieAuthentication(new CookieAuthenticationOptions()
+        {
+            AuthenticationType = "Application",
+            LoginPath = new PathString("/Account/Login")
+        });
 
         var routes = new RouteCollection()
         {
-            DefaultHandler = new MvcApplication(serviceProvider),
+            DefaultHandler = new MvcApplication(app.ServiceProvider),
         };
 
         routes.MapRoute(

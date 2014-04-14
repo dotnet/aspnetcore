@@ -65,6 +65,7 @@ namespace MusicStore.Controllers
         //
         // GET: /Account/Register
         [AllowAnonymous]
+        [HttpGet] //TODO: Do we need this. Without this I seem to be landing here irrespective of the HTTP verb?
         public IActionResult Register()
         {
             return View();
@@ -362,7 +363,7 @@ namespace MusicStore.Controllers
 
         private async Task SignIn(ApplicationUser user, bool isPersistent)
         {
-            this.Context.Response.SignOut(DefaultAuthenticationTypes.ExternalCookie);
+            //this.Context.Response.SignOut(DefaultAuthenticationTypes.ExternalCookie);
             var identity = await UserManager.CreateIdentityAsync(user, DefaultAuthenticationTypes.ApplicationCookie);
             this.Context.Response.SignIn(identity, new AuthenticationProperties() { IsPersistent = isPersistent });
         }
@@ -447,7 +448,7 @@ namespace MusicStore.Controllers
     {
         public static string GetUserId(this IIdentity user)
         {
-            return string.Empty;
+            return user.Name;
         }
 
         public static Task<ExternalLoginInfo> GetExternalLoginInfo(this HttpResponse response)
