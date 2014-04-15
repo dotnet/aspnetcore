@@ -72,6 +72,24 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         public static HtmlString ActionLink<TModel>(
+            [NotNull] this IHtmlHelper<TModel> helper,
+            [NotNull] string linkText,
+            string actionName,
+            string controllerName,
+            object routeValues)
+        {
+            return helper.ActionLink(
+                linkText,
+                actionName,
+                controllerName,
+                protocol: null,
+                hostname: null,
+                fragment: null,
+                routeValues: routeValues,
+                htmlAttributes: null);
+        }
+
+        public static HtmlString ActionLink<TModel>(
             [NotNull] this IHtmlHelper<TModel> helper, 
             [NotNull] string linkText, 
             string actionName, 
