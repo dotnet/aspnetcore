@@ -39,6 +39,8 @@
     <Compile Include="ActionResults\JsonResult.cs" />
     <Compile Include="ActionResults\NoContentResult.cs" />
     <Compile Include="ActionResults\RedirectResult.cs" />
+    <Compile Include="ActionResults\RedirectToActionResult.cs" />
+    <Compile Include="ActionResults\RedirectToRouteResult.cs" />
     <Compile Include="ActionResults\ViewResult.cs" />
     <Compile Include="Areas\AreaAttribute.cs" />
     <Compile Include="Areas\ReflectedRouteConstraintsActionDescriptorProvider.cs" />

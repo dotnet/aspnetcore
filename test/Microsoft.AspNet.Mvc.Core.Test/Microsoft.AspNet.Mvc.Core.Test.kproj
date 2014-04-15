@@ -23,6 +23,8 @@
   <ItemGroup>
     <Compile Include="ActionAttributeTests.cs" />
     <Compile Include="ActionExecutorTests.cs" />
+    <Compile Include="ActionResults\RedirectToActionResultTest.cs" />
+    <Compile Include="ActionResults\RedirectToRouteResultTest.cs" />
     <Compile Include="ActionSelectionConventionTests.cs" />
     <Compile Include="ControllerTests.cs" />
     <Compile Include="DefaultActionSelectorTest.cs" />
