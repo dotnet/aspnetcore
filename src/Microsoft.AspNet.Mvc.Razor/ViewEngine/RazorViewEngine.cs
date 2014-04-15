@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Threading.Tasks;
+using System.Linq;
 using Microsoft.AspNet.Mvc.Rendering;
 
 namespace Microsoft.AspNet.Mvc.Razor
@@ -10,9 +10,14 @@ namespace Microsoft.AspNet.Mvc.Razor
     {
         private static readonly string[] _viewLocationFormats =
         {
+            "/Views/{1}/{0}.cshtml",
+            "/Views/Shared/{0}.cshtml",
+        };
+
+        private static readonly string[] _areaViewLocationFormats =
+        {
             "/Areas/{2}/Views/{1}/{0}.cshtml",
             "/Areas/{2}/Views/Shared/{0}.cshtml",
-            "/Views/{1}/{0}.cshtml",
             "/Views/Shared/{0}.cshtml",
         };
 
@@ -56,27 +61,47 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 var controllerName = context.GetValueOrDefault<string>("controller");
                 var areaName = context.GetValueOrDefault<string>("area");
+                var potentialPaths = GetViewSearchPaths(viewName, controllerName, areaName);
 
-                var searchedLocations = new List<string>(_viewLocationFormats.Length);
-                for (int i = 0; i < _viewLocationFormats.Length; i++)
+                foreach (var path in potentialPaths)
                 {
-                    var path = String.Format(CultureInfo.InvariantCulture, _viewLocationFormats[i], viewName, controllerName, areaName);
-                    IView view = _virtualPathFactory.CreateInstance(path);
+                    var view = _virtualPathFactory.CreateInstance(path);
                     if (view != null)
                     {
                         return ViewEngineResult.Found(viewName, view);
                     }
-                    searchedLocations.Add(path);
                 }
 
-                return ViewEngineResult.NotFound(viewName, searchedLocations);
+                return ViewEngineResult.NotFound(viewName, potentialPaths);
             }
         }
 
         private static bool IsSpecificPath(string name)
         {
             char c = name[0];
-            return (name[0] == '/');
+            return name[0] == '~' || name[0] == '/';
+        }
+
+        private IEnumerable<string> GetViewSearchPaths(string viewName, string controllerName, string areaName)
+        {
+            IEnumerable<string> unformattedPaths;
+
+            if (string.IsNullOrEmpty(areaName))
+            {
+                // If no areas then no need to search area locations.
+                unformattedPaths = _viewLocationFormats;
+            }
+            else
+            {
+                // If there's an area provided only search area view locations
+                unformattedPaths = _areaViewLocationFormats;
+            }
+
+            var formattedPaths = unformattedPaths.Select(path =>
+                string.Format(CultureInfo.InvariantCulture, path, viewName, controllerName, areaName)
+            );
+
+            return formattedPaths;
         }
     }
 }
