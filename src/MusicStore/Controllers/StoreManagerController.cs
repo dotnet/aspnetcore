@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.Data.Entity;
 using MusicStore.Models;
 using System.Linq;
@@ -54,8 +55,8 @@ namespace MusicStore.Controllers
 
         public IActionResult Create()
         {
-            //ViewBag.GenreId = new SelectList(db.Genres, "GenreId", "Name");
-            //ViewBag.ArtistId = new SelectList(db.Artists, "ArtistId", "Name");
+            ViewBag.GenreId = new SelectList(db.Genres, "GenreId", "Name");
+            ViewBag.ArtistId = new SelectList(db.Artists, "ArtistId", "Name");
             return View();
         }
 
@@ -70,11 +71,11 @@ namespace MusicStore.Controllers
                 db.SaveChanges();
                 //Bug: RedirectToAction() not available
                 //return RedirectToAction("Index");
-                return View();
+                return Redirect("/");
             }
 
-            //ViewBag.GenreId = new SelectList(db.Genres, "GenreId", "Name", album.GenreId);
-            //ViewBag.ArtistId = new SelectList(db.Artists, "ArtistId", "Name", album.ArtistId);
+            ViewBag.GenreId = new SelectList(db.Genres, "GenreId", "Name", album.GenreId);
+            ViewBag.ArtistId = new SelectList(db.Artists, "ArtistId", "Name", album.ArtistId);
             return View(album);
         }
 
@@ -91,8 +92,8 @@ namespace MusicStore.Controllers
                 //return HttpNotFound();
                 return new HttpStatusCodeResult(404);
             }
-            //ViewBag.GenreId = new SelectList(db.Genres, "GenreId", "Name", album.GenreId);
-            //ViewBag.ArtistId = new SelectList(db.Artists, "ArtistId", "Name", album.ArtistId);
+            ViewBag.GenreId = new SelectList(db.Genres, "GenreId", "Name", album.GenreId);
+            ViewBag.ArtistId = new SelectList(db.Artists, "ArtistId", "Name", album.ArtistId);
             return View(album);
         }
 
@@ -107,10 +108,10 @@ namespace MusicStore.Controllers
                 db.SaveChanges();
                 //Bug: Missing RedirectToAction helper
                 //return RedirectToAction("Index");
-                return View();
+                return Redirect("/");
             }
-            //ViewBag.GenreId = new SelectList(db.Genres, "GenreId", "Name", album.GenreId);
-            //ViewBag.ArtistId = new SelectList(db.Artists, "ArtistId", "Name", album.ArtistId);
+            ViewBag.GenreId = new SelectList(db.Genres, "GenreId", "Name", album.GenreId);
+            ViewBag.ArtistId = new SelectList(db.Artists, "ArtistId", "Name", album.ArtistId);
             return View(album);
         }
 
@@ -140,8 +141,7 @@ namespace MusicStore.Controllers
             db.SaveChanges();
             //Bug: Missing helper
             //return RedirectToAction("Index");
-
-            return View();
+            return Redirect("/");
         }
 
         //Bug: Can't dispose db. 
