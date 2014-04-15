@@ -1,13 +1,10 @@
-﻿using Microsoft.AspNet.Abstractions;
-using Microsoft.AspNet.Abstractions.Security;
+﻿using Microsoft.AspNet.Abstractions.Security;
 using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.InMemory;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using MusicStore.Models;
 using System.Security.Principal;
 using System.Threading.Tasks;
-using System.Runtime.CompilerServices;
 
 namespace MusicStore.Controllers
 {
@@ -15,22 +12,26 @@ namespace MusicStore.Controllers
     public class AccountController : Controller
     {
         public AccountController()
-            //Bug: No EF yet - using an in memory store
+            //Bug: Using an in memory store
             //: this(new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext())))
-            : this(new UserManager<ApplicationUser>(new InMemoryUserStore<ApplicationUser>()))
+            //: this(new UserManager<ApplicationUser>(new InMemoryUserStore<ApplicationUser>()))
         {
         }
 
-        public AccountController(UserManager<ApplicationUser> userManager)
-        {
-            UserManager = userManager;
-        }
+        //public AccountController(UserManager<ApplicationUser> userManager)
+        //{
+        //    UserManager = userManager;
+        //}
 
-        public UserManager<ApplicationUser> UserManager { get; private set; }
+        /// <summary>
+        /// TODO: Temporary ugly work around (making this static) to enable creating a static InMemory UserManager. Will go away shortly.
+        /// </summary>
+        public static UserManager<ApplicationUser> UserManager { get; set; }
 
         //
         // GET: /Account/Login
         [AllowAnonymous]
+        [HttpGet]
         public IActionResult Login(string returnUrl)
         {
             ViewBag.ReturnUrl = returnUrl;
@@ -78,7 +79,8 @@ namespace MusicStore.Controllers
         //[ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            if (ModelState.IsValid == true)
+            //Bug: https://github.com/aspnet/DataAnnotations/issues/21
+            //if (ModelState.IsValid == true)
             {
                 var user = new ApplicationUser() { UserName = model.UserName };
                 var result = await UserManager.CreateAsync(user, model.Password);
@@ -87,9 +89,11 @@ namespace MusicStore.Controllers
                     await SignIn(user, isPersistent: false);
                     //Bug: No helper methods
                     //return RedirectToAction("Index", "Home");
+                    return Redirect("/");
                 }
                 else
                 {
+                    //https://github.com/aspnet/Identity/issues/37
                     AddErrors(result);
                 }
             }
@@ -99,31 +103,8 @@ namespace MusicStore.Controllers
         }
 
         //
-        // POST: /Account/Disassociate
-        [HttpPost]
-        //[ValidateAntiForgeryToken]
-        public async Task<IActionResult> Disassociate(string loginProvider, string providerKey)
-        {
-
-            ManageMessageId? message = null;
-            var user = new ApplicationUser() { UserName = this.Context.User.Identity.GetUserId() };
-            IdentityResult result = await UserManager.RemoveLoginAsync(user, new UserLoginInfo(loginProvider, providerKey));
-            if (result.Succeeded)
-            {
-                message = ManageMessageId.RemoveLoginSuccess;
-            }
-            else
-            {
-                message = ManageMessageId.Error;
-            }
-            //Bug: No helpers available
-            //return RedirectToAction("Manage", new { Message = message });
-            return View();
-        }
-
-        //
         // GET: /Account/Manage
-        public IActionResult Manage(ManageMessageId? message)
+        public async Task<IActionResult> Manage(ManageMessageId? message)
         {
             ViewBag.StatusMessage =
                 message == ManageMessageId.ChangePasswordSuccess ? "Your password has been changed."
@@ -131,10 +112,8 @@ namespace MusicStore.Controllers
                 : message == ManageMessageId.RemoveLoginSuccess ? "The external login was removed."
                 : message == ManageMessageId.Error ? "An error has occurred."
                 : "";
-            ViewBag.HasLocalPassword = HasPassword();
-            //Bug: No Action method with single parameter
-            //ViewBag.ReturnUrl = Url.Action("Manage");
-            //ViewBag.ReturnUrl = Url.Action("Manage", "Account", null);
+            ViewBag.HasLocalPassword = await HasPassword();
+            ViewBag.ReturnUrl = Url.Action("Manage");
             return View();
         }
 
@@ -146,9 +125,7 @@ namespace MusicStore.Controllers
         {
             bool hasPassword = await HasPassword();
             ViewBag.HasLocalPassword = hasPassword;
-            //Bug: No Action method with single parameter
-            //ViewBag.ReturnUrl = Url.Action("Manage");
-            //ViewBag.ReturnUrl = Url.Action("Manage", "Account", null);
+            ViewBag.ReturnUrl = Url.Action("Manage");
             if (hasPassword)
             {
                 if (ModelState.IsValid == true)
@@ -199,121 +176,6 @@ namespace MusicStore.Controllers
         }
 
         //
-        // POST: /Account/ExternalLogin
-        [HttpPost]
-        [AllowAnonymous]
-        //[ValidateAntiForgeryToken]
-        public IActionResult ExternalLogin(string provider, string returnUrl)
-        {
-            // Request a redirect to the external login provider
-            return new ChallengeResult(provider, Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl }));
-        }
-
-        //
-        // GET: /Account/ExternalLoginCallback
-        [AllowAnonymous]
-        public async Task<IActionResult> ExternalLoginCallback(string returnUrl)
-        {
-            var loginInfo = await this.Context.Response.GetExternalLoginInfo();
-            if (loginInfo == null)
-            {
-                //Bug: No helper
-                //return RedirectToAction("Login");
-                return View();
-            }
-
-            // Sign in the user with this external login provider if the user already has a login
-            var user = await UserManager.FindByLoginAsync(loginInfo.Login);
-            if (user != null)
-            {
-                await SignIn(user, isPersistent: false);
-                return RedirectToLocal(returnUrl);
-            }
-            else
-            {
-                // If the user does not have an account, then prompt the user to create an account
-                ViewBag.ReturnUrl = returnUrl;
-                ViewBag.LoginProvider = loginInfo.Login.LoginProvider;
-                return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { UserName = loginInfo.DefaultUserName });
-            }
-        }
-
-        //
-        // POST: /Account/LinkLogin
-        [HttpPost]
-        //[ValidateAntiForgeryToken]
-        public IActionResult LinkLogin(string provider)
-        {
-            // Request a redirect to the external login provider to link a login for the current user
-            return new ChallengeResult(provider, Url.Action("LinkLoginCallback", "Account", null), this.Context.User.Identity.GetUserId());
-        }
-
-        //
-        // GET: /Account/LinkLoginCallback
-        public async Task<IActionResult> LinkLoginCallback()
-        {
-            var loginInfo = await this.Context.Response.GetExternalLoginInfo(XsrfKey, this.Context.User.Identity.GetUserId());
-            if (loginInfo == null)
-            {
-                //Bug: No helper method
-                //return RedirectToAction("Manage", new { Message = ManageMessageId.Error });
-                return View();
-            }
-            var user = new ApplicationUser() { UserName = this.Context.User.Identity.GetUserId()};
-            var result = await UserManager.AddLoginAsync(user, loginInfo.Login);
-            if (result.Succeeded)
-            {
-                //Bug: No helper method
-                //return RedirectToAction("Manage");
-                return View();
-            }
-            //Bug: No helper method
-            //return RedirectToAction("Manage", new { Message = ManageMessageId.Error });
-            return View();
-        }
-
-        //
-        // POST: /Account/ExternalLoginConfirmation
-        [HttpPost]
-        [AllowAnonymous]
-        //[ValidateAntiForgeryToken]
-        public async Task<IActionResult> ExternalLoginConfirmation(ExternalLoginConfirmationViewModel model, string returnUrl)
-        {
-            if (this.Context.User.Identity.IsAuthenticated)
-            {
-                //Bug: No helper yet
-                //return RedirectToAction("Manage");
-                return View();
-            }
-
-            if (ModelState.IsValid == true)
-            {
-                // Get the information about the user from the external login provider
-                var info = await this.Context.Response.GetExternalLoginInfo();
-                if (info == null)
-                {
-                    return View("ExternalLoginFailure");
-                }
-
-                var user = new ApplicationUser() { UserName = model.UserName };
-                var result = await UserManager.CreateAsync(user);
-                if (result.Succeeded)
-                {
-                    result = await UserManager.AddLoginAsync(user, info.Login);
-                    if (result.Succeeded)
-                    {
-                        await SignIn(user, isPersistent: false);
-                        return RedirectToLocal(returnUrl);
-                    }
-                }
-                AddErrors(result);
-            }
-
-            ViewBag.ReturnUrl = returnUrl;
-            return View(model);
-        }
-
-        //
         // POST: /Account/LogOff
         [HttpPost]
         //[ValidateAntiForgeryToken]
@@ -322,27 +184,7 @@ namespace MusicStore.Controllers
             this.Context.Response.SignOut();
             //Bug: No helper
             //return RedirectToAction("Index", "Home");
-            return View();
-        }
-
-        //
-        // GET: /Account/ExternalLoginFailure
-        [AllowAnonymous]
-        public IActionResult ExternalLoginFailure()
-        {
-            return View();
-        }
-
-        //Bug: Need this attribute
-        //[ChildActionOnly]
-        public async Task<IActionResult> RemoveAccountList()
-        {
-            var user = new ApplicationUser() { UserName = this.Context.User.Identity.GetUserId() };
-            var linkedAccounts = await UserManager.GetLoginsAsync(user);
-            ViewBag.ShowRemoveButton = await HasPassword() || linkedAccounts.Count > 1;
-            //Bug: We dont have partial views yet
-            //return (IActionResult)PartialView("_RemoveAccountPartial", linkedAccounts);
-            return View();
+            return Redirect("/");
         }
 
         //Bug: Controllers need to be disposable? 
@@ -358,12 +200,9 @@ namespace MusicStore.Controllers
         }
 
         #region Helpers
-        // Used for XSRF protection when adding external logins
-        private const string XsrfKey = "XsrfId";
 
         private async Task SignIn(ApplicationUser user, bool isPersistent)
         {
-            //this.Context.Response.SignOut(DefaultAuthenticationTypes.ExternalCookie);
             var identity = await UserManager.CreateIdentityAsync(user, DefaultAuthenticationTypes.ApplicationCookie);
             this.Context.Response.SignIn(identity, new AuthenticationProperties() { IsPersistent = isPersistent });
         }
@@ -378,7 +217,7 @@ namespace MusicStore.Controllers
 
         private async Task<bool> HasPassword()
         {
-            var user = await UserManager.FindByIdAsync(this.Context.User.Identity.GetUserId());
+            var user = await UserManager.FindByNameAsync(this.Context.User.Identity.GetUserId());
             if (user != null)
             {
                 return user.PasswordHash != null;
@@ -396,48 +235,18 @@ namespace MusicStore.Controllers
 
         private IActionResult RedirectToLocal(string returnUrl)
         {
-            //Bug: No helpers available
+            //Bug: https://github.com/aspnet/WebFx/issues/244
+            returnUrl = string.IsNullOrWhiteSpace(returnUrl) ? "/Home" : returnUrl;
             //if (Url.IsLocalUrl(returnUrl))
-            //{
-            //    return Redirect(returnUrl);
-            //}
+            {
+                return Redirect(returnUrl);
+            }
             //else
             //{
             //    return RedirectToAction("Index", "Home");
             //}
-            return View();
         }
 
-        private class ChallengeResult : HttpStatusCodeResult
-        {
-            public ChallengeResult(string provider, string redirectUri)
-                : this(provider, redirectUri, null)
-            {
-            }
-
-            public ChallengeResult(string provider, string redirectUri, string userId)
-                : base(401)
-            {
-                LoginProvider = provider;
-                RedirectUri = redirectUri;
-                UserId = userId;
-            }
-
-            public string LoginProvider { get; set; }
-            public string RedirectUri { get; set; }
-            public string UserId { get; set; }
-
-            new public void ExecuteResultAsync(ActionContext context)
-            {
-                var properties = new AuthenticationProperties() { RedirectUri = RedirectUri };
-                if (UserId != null)
-                {
-                    properties.Dictionary[XsrfKey] = UserId;
-                }
-
-                context.HttpContext.Response.Challenge(LoginProvider, properties);
-            }
-        }
         #endregion
     }
 
@@ -450,25 +259,6 @@ namespace MusicStore.Controllers
         {
             return user.Name;
         }
-
-        public static Task<ExternalLoginInfo> GetExternalLoginInfo(this HttpResponse response)
-        {
-            return Task.FromResult<ExternalLoginInfo>(new ExternalLoginInfo());
-        }
-
-        public static Task<ExternalLoginInfo> GetExternalLoginInfo(this HttpResponse response, string xsrfKey, string expectedValue)
-        {
-            return Task.FromResult<ExternalLoginInfo>(new ExternalLoginInfo());
-        }
-    }
-
-    /// <summary>
-    /// TODO: Temporary APIs to unblock build. Need to remove this once we have these APIs available. 
-    /// </summary>
-    public class ExternalLoginInfo
-    {
-        public string DefaultUserName { get; set; }
-        public UserLoginInfo Login { get; set; }
     }
 
     /// <summary>
@@ -477,6 +267,5 @@ namespace MusicStore.Controllers
     public static class DefaultAuthenticationTypes
     {
         public const string ApplicationCookie = "Application";
-        public const string ExternalCookie = "External";
     }
 }
