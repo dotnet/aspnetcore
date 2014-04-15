@@ -56,39 +56,40 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 htmlAttributes: htmlAttributes);
         }
 
-        private IHtmlString BuildValidationMessage(string name, string message, IDictionary<string, object> htmlAttributes)
+        public static HtmlString ValidationMessage<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper,
+            string modelName)
         {
-            var modelState = ModelState[name];
-            IEnumerable<string> errors = null;
-            if (modelState != null)
-            {
-                errors = modelState.Errors;
-            }
-            bool hasError = errors != null && errors.Any();
-            if (!hasError && !UnobtrusiveJavaScriptEnabled)
-            {
-                // If unobtrusive validation is enabled, we need to generate an empty span with the "val-for" attribute"
-                return null;
-            }
-            else
-            {
-                string error = null;
-                if (hasError)
-                {
-                    error = message ?? errors.First();
-                }
+            return ValidationMessage(htmlHelper, modelName, message: null, htmlAttributes: null);
+        }
 
-                TagBuilder tagBuilder = new TagBuilder("span") { InnerHtml = Encode(error) };
-                tagBuilder.MergeAttributes(htmlAttributes);
-                if (UnobtrusiveJavaScriptEnabled)
-                {
-                    bool replaceValidationMessageContents = String.IsNullOrEmpty(message);
-                    tagBuilder.MergeAttribute("data-valmsg-for", name);
-                    tagBuilder.MergeAttribute("data-valmsg-replace", replaceValidationMessageContents.ToString().ToLowerInvariant());
-                }
-                tagBuilder.AddCssClass(hasError ? ValidationMessageCssClassName : ValidationMessageValidCssClassName);
-                return tagBuilder.ToHtmlString(TagRenderMode.Normal);
-            }
+        public static HtmlString ValidationMessage<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper,
+            string modelName, string message)
+        {
+            return ValidationMessage(htmlHelper, modelName, message, htmlAttributes: null);
+        }
+
+        public static HtmlString ValidationMessage<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper,
+            string modelName, object htmlAttributes)
+        {
+            return ValidationMessage(htmlHelper, modelName, message: null, htmlAttributes: htmlAttributes);
+        }
+
+        public static HtmlString ValidationMessage<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper,
+            string modelName, IDictionary<string, object> htmlAttributes)
+        {
+            return ValidationMessage(htmlHelper, modelName, message: null, htmlAttributes: htmlAttributes);
+        }
+
+        public static HtmlString ValidationMessage<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper,
+            string modelName, string message, IDictionary<string, object> htmlAttributes)
+        {
+            return htmlHelper.ValidationMessage(modelName, message, htmlAttributes);
+        }
+
+        public static HtmlString ValidationMessage<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper,
+            string modelName, string message, object htmlAttributes)
+        {
+            return htmlHelper.ValidationMessage(modelName, message, htmlAttributes);
         }
     }
 }

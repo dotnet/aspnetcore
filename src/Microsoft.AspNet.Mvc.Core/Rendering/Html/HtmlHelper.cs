@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Initializes a new instance of the <see cref="HtmlHelper"/> class.
         /// </summary>
         public HtmlHelper(
-            [NotNull] IViewEngine viewEngine, 
+            [NotNull] IViewEngine viewEngine,
             [NotNull] IModelMetadataProvider metadataProvider,
             [NotNull] IUrlHelper urlHelper, 
             [NotNull] AntiForgery antiForgeryInstance)
@@ -98,13 +98,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         /// <inheritdoc />
         public HtmlString ActionLink(
-            [NotNull] string linkText, 
-            string actionName, 
-            string controllerName, 
-            string protocol, 
-            string hostname, 
-            string fragment, 
-            object routeValues, 
+            [NotNull] string linkText,
+            string actionName,
+            string controllerName,
+            string protocol,
+            string hostname,
+            string fragment,
+            object routeValues,
             object htmlAttributes)
         {
             var url = _urlHelper.Action(actionName, controllerName, routeValues);
@@ -506,6 +506,46 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
 
             return divBuilder.ToHtmlString(TagRenderMode.Normal);
+        }
+
+        public HtmlString ValidationMessage(string name, string message, object htmlAttributes)
+        {
+            ModelState modelState;
+            ViewData.ModelState.TryGetValue(name, out modelState);
+
+            ModelErrorCollection errors = null;
+            if (modelState != null)
+            {
+                errors = modelState.Errors;
+            }
+
+            bool hasError = errors != null && errors.Any();
+            if (!hasError && !ViewContext.UnobtrusiveJavaScriptEnabled)
+            {
+                return null;
+            }
+            else
+            {
+                string error = null;
+                if (hasError)
+                {
+                    error = message ?? errors.First().ErrorMessage;
+                }
+
+                var tagBuilder = new TagBuilder("span") { InnerHtml = Encode(error) };
+                tagBuilder.MergeAttributes(AnonymousObjectToHtmlAttributes(htmlAttributes));
+
+                if (ViewContext.UnobtrusiveJavaScriptEnabled)
+                {
+                    bool replaceValidationMessageContents = string.IsNullOrEmpty(message);
+                    tagBuilder.MergeAttribute("data-valmsg-for", name);
+                    tagBuilder.MergeAttribute("data-valmsg-replace",
+                        replaceValidationMessageContents.ToString().ToLowerInvariant());
+                }
+
+                tagBuilder.AddCssClass(hasError ? ValidationMessageCssClassName : ValidationMessageValidCssClassName);
+                return tagBuilder.ToHtmlString(TagRenderMode.Normal);
+            }
         }
 
         /// <summary>

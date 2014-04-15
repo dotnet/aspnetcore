@@ -224,6 +224,16 @@ namespace Microsoft.AspNet.Mvc.Rendering
             IDictionary<string, object> htmlAttributes);
 
         /// <summary>
+        /// Returns the validation message if an error exists in the <see cref="ModelStateDictionary"/> object.
+        /// </summary>
+        /// <param name="modelName">The name of the property that is being validated.</param>
+        /// <param name="message">The message to be displayed if the specified field contains an error.</param>
+        /// <param name="htmlAttributes">Dictionary that contains the HTML attributes which should
+        /// be applied on the element</param>
+        /// <returns></returns>
+        HtmlString ValidationMessage(string modelName, string message, object htmlAttributes);
+
+        /// <summary>
         /// Returns the model value for the given expression <paramref name="expression"/>.
         /// </summary>
         /// <param name="expression">An expression, relative to the current model.</param>
