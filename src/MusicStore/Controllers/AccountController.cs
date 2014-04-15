@@ -126,11 +126,8 @@ namespace MusicStore.Controllers
         {
             ViewBag.StatusMessage =
                 message == ManageMessageId.ChangePasswordSuccess ? "Your password has been changed."
-                : message == ManageMessageId.SetPasswordSuccess ? "Your password has been set."
-                : message == ManageMessageId.RemoveLoginSuccess ? "The external login was removed."
                 : message == ManageMessageId.Error ? "An error has occurred."
                 : "";
-            ViewBag.HasLocalPassword = await HasPassword();
             ViewBag.ReturnUrl = Url.Action("Manage");
             return View();
         }
@@ -141,51 +138,20 @@ namespace MusicStore.Controllers
         //[ValidateAntiForgeryToken]
         public async Task<IActionResult> Manage(ManageUserViewModel model)
         {
-            bool hasPassword = await HasPassword();
-            ViewBag.HasLocalPassword = hasPassword;
             ViewBag.ReturnUrl = Url.Action("Manage");
-            if (hasPassword)
+            if (ModelState.IsValid == true)
             {
-                if (ModelState.IsValid == true)
+                var user = await GetCurrentUserAsync();
+                var result = await UserManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+                if (result.Succeeded)
                 {
-                    var user = await GetCurrentUser();
-                    var result = await UserManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
-                    if (result.Succeeded)
-                    {
-                        return RedirectToAction("Manage", new { Message = ManageMessageId.ChangePasswordSuccess });
-                    }
-                    else
-                    {
-                        AddErrors(result);
-                    }
+                    return RedirectToAction("Manage", new { Message = ManageMessageId.ChangePasswordSuccess });
+                }
+                else
+                {
+                    AddErrors(result);
                 }
             }
-            else
-            {
-                // User does not have a password so remove any validation errors caused by a missing OldPassword field
-                ModelState state = null;
-                ModelState.TryGetValue("OldPassword", out state);
-
-                if (state != null)
-                {
-                    state.Errors.Clear();
-                }
-
-                if (ModelState.IsValid == true)
-                {
-                    var user = await GetCurrentUser();
-                    var result = await UserManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
-                    if (result.Succeeded)
-                    {
-                        return RedirectToAction("Manage", new { Message = ManageMessageId.SetPasswordSuccess });
-                    }
-                    else
-                    {
-                        AddErrors(result);
-                    }
-                }
-            }
-
             // If we got this far, something failed, redisplay form
             return View(model);
         }
@@ -196,8 +162,7 @@ namespace MusicStore.Controllers
         //[ValidateAntiForgeryToken]
         public IActionResult LogOff()
         {
-            // Bug: This should call SignInManager.SignOut() once its available
-            this.Context.Response.SignOut();
+            SignInManager.SignOut();
             return RedirectToAction("Index", "Home");
         }
 
@@ -211,19 +176,9 @@ namespace MusicStore.Controllers
             }
         }
 
-        private async Task<ApplicationUser> GetCurrentUser()
+        private async Task<ApplicationUser> GetCurrentUserAsync()
         {
             return await UserManager.FindByIdAsync(Context.User.Identity.GetUserId());
-        }
-
-        private async Task<bool> HasPassword()
-        {
-            var user = await GetCurrentUser();
-            if (user != null)
-            {
-                return await UserManager.HasPasswordAsync(user);
-            }
-            return false;
         }
 
         public enum ManageMessageId
@@ -310,13 +265,5 @@ namespace MusicStore.Controllers
             var claim = identity.FindFirst(claimType);
             return claim != null ? claim.Value : null;
         }
-    }
-
-    /// <summary>
-    /// TODO: Temporary APIs to unblock build. Need to remove this once we have these APIs available. 
-    /// </summary>
-    public static class DefaultAuthenticationTypes
-    {
-        public const string ApplicationCookie = "Application";
     }
 }

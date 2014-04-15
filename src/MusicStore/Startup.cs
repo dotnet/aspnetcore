@@ -7,6 +7,7 @@ using Microsoft.AspNet.DependencyInjection.Fallback;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.InMemory;
+using Microsoft.AspNet.Identity.Security;
 using Microsoft.AspNet.Logging;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.RequestContainer;
