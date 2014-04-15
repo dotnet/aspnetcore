@@ -13,7 +13,7 @@ The first thing we need to do is setup the tools required to build and run an ap
 * Open a command prompt and execute
 
 ```
-@powershell -NoProfile -ExecutionPolicy unrestricted -Command "(New-Object System.Net.WebClient).DownloadFile('http://bit.ly/1hrhEXf', 'temp.cmd'); .\temp setup; del temp.cmd"
+@powershell -NoProfile -ExecutionPolicy unrestricted -Command "(New-Object System.Net.WebClient).DownloadFile('https://gist.github.com/loudej/def309d3d43e8b29d457/raw/kvm.cmd', 'temp.cmd'); .\temp setup; del temp.cmd"
 ```
 
 * This command will download the latest version of the SDK and put it on your path so that you can run the rest of the commands in the readme. If you want to know more about what this is doing then you can read the [KVM page](https://github.com/aspnet/Preview/wiki/version-manager) of the wiki.
