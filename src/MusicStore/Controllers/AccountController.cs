@@ -107,9 +107,7 @@ namespace MusicStore.Controllers
                 if (result.Succeeded)
                 {
                     await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
-                    //Bug: No helper methods
-                    //return RedirectToAction("Index", "Home");
-                    return Redirect("/");
+                    return RedirectToAction("Index", "Home");
                 }
                 else
                 {
@@ -154,9 +152,7 @@ namespace MusicStore.Controllers
                     var result = await UserManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
                     if (result.Succeeded)
                     {
-                        //Bug: No helper method
-                        //return RedirectToAction("Manage", new { Message = ManageMessageId.ChangePasswordSuccess });
-                        return View();
+                        return RedirectToAction("Manage", new { Message = ManageMessageId.ChangePasswordSuccess });
                     }
                     else
                     {
@@ -181,8 +177,7 @@ namespace MusicStore.Controllers
                     var result = await UserManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
                     if (result.Succeeded)
                     {
-                        //Bug: No helper method
-                        //return RedirectToAction("Manage", new { Message = ManageMessageId.SetPasswordSuccess });
+                        return RedirectToAction("Manage", new { Message = ManageMessageId.SetPasswordSuccess });
                     }
                     else
                     {
@@ -203,9 +198,7 @@ namespace MusicStore.Controllers
         {
             // Bug: This should call SignInManager.SignOut() once its available
             this.Context.Response.SignOut();
-            //Bug: No helper
-            //return RedirectToAction("Index", "Home");
-            return Redirect("/");
+            return RedirectToAction("Index", "Home");
         }
 
         #region Helpers
@@ -246,13 +239,14 @@ namespace MusicStore.Controllers
             //Bug: https://github.com/aspnet/WebFx/issues/244
             returnUrl = string.IsNullOrWhiteSpace(returnUrl) ? "/Home" : returnUrl;
             //if (Url.IsLocalUrl(returnUrl))
+            if(true)
             {
                 return Redirect(returnUrl);
             }
-            //else
-            //{
-            //    return RedirectToAction("Index", "Home");
-            //}
+            else
+            {
+                return RedirectToAction("Index", "Home");
+            }
         }
 
         #endregion

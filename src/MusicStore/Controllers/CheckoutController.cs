@@ -59,10 +59,8 @@ namespace MusicStore.Controllers
                     // Save all changes
                     db.SaveChanges();
 
-                    //Bug: Helper not available
-                    //return RedirectToAction("Complete",
-                    //    new { id = order.OrderId });
-                    return View();
+                    return RedirectToAction("Complete",
+                        new { id = order.OrderId });
                 }
             }
             catch

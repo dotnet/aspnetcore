@@ -32,7 +32,6 @@ namespace MusicStore.Controllers
 
         public IActionResult AddToCart(int id)
         {
-
             // Retrieve the album from the database
             var addedAlbum = db.Albums
                 .Single(album => album.AlbumId == id);
@@ -45,9 +44,7 @@ namespace MusicStore.Controllers
             db.SaveChanges();
 
             // Go back to the main store page for more shopping
-            //Bug: Helper method not available
-            //return RedirectToAction("Index");
-            return View();
+            return RedirectToAction("Index");
         }
 
         //
