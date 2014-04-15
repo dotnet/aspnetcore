@@ -1,6 +1,4 @@
-﻿@using MusicStore.Models;
-@using Microsoft.AspNet.Identity;
-@{
+﻿@{
     //Bug: Need a way to specify the layout page in a single place
     Layout = "/Views/Shared/_Layout.cshtml";
     ViewBag.Title = "Manage Account";
@@ -11,14 +9,7 @@
 
 <div class="row">
     <div class="col-md-12">
-        @if (ViewBag.HasLocalPassword)
-        {
-            await Html.PartialAsync("_ChangePasswordPartial");
-        }
-        else
-        {
-            await Html.PartialAsync("_SetPasswordPartial");
-        }
+        @await Html.PartialAsync("_ChangePasswordPartial")
     </div>
 </div>
 
