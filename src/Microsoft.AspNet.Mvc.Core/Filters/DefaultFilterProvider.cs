@@ -6,9 +6,12 @@ namespace Microsoft.AspNet.Mvc.Filters
 {
     public class DefaultFilterProvider : INestedProvider<FilterProviderContext>
     {
-        public DefaultFilterProvider(IServiceProvider serviceProvider)
+        private readonly ITypeActivator _typeActivator;
+
+        public DefaultFilterProvider(IServiceProvider serviceProvider, ITypeActivator typeActivator)
         {
             ServiceProvider = serviceProvider;
+            _typeActivator = typeActivator;
         }
 
         public int Order
@@ -70,8 +73,7 @@ namespace Microsoft.AspNet.Mvc.Filters
                         throw new InvalidOperationException("Type filter must implement IFilter");
                     }
 
-                    // TODO: Move activatorUtilities to come from the service provider.
-                    var typeFilter = ActivatorUtilities.CreateInstance(ServiceProvider, typeFilterSignature.ImplementationType) as IFilter;
+                    var typeFilter = _typeActivator.CreateInstance(ServiceProvider, typeFilterSignature.ImplementationType) as IFilter;
 
                     ApplyFilterToContainer(typeFilter, filter);
                     filterItem.Filter = typeFilter;
