@@ -50,6 +50,9 @@
                     <td>
                         @Html.TextBox("Name")
                     </td>
+                    <td>
+                        @Html.ValidationMessage("Name.Name", "Name is required", new { @style = "font-weight: bold" })
+                    </td>
                 </tr>
                 <tr>
                     <td>
@@ -65,6 +68,9 @@
                     </td>
                     <td>
                         @Html.DropDownListFor(model => model.Age, (IEnumerable<SelectListItem>)ViewBag.Ages, htmlAttributes: new { @class = "form-control" })
+                    </td>
+                    <td>
+                        @Html.ValidationMessageFor(model => model.Age, "Age must be between 27 and 70", new { @style = "font-weight: bold" })
                     </td>
                 </tr>
                 <tr>

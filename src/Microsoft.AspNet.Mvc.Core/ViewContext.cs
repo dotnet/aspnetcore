@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.IO;
-using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Mvc.Rendering;
 
 namespace Microsoft.AspNet.Mvc
@@ -82,5 +79,10 @@ namespace Microsoft.AspNet.Mvc
         public ViewDataDictionary ViewData { get; set; }
 
         public TextWriter Writer { get; set; }
+
+        public FormContext GetFormContextForClientValidation()
+        {
+            return (ClientValidationEnabled) ? FormContext : null;
+        }
     }
 }

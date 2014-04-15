@@ -8,6 +8,7 @@ namespace MvcSample.Web.Models
         [MinLength(4)]
         public string Name { get; set; }
         public string Address { get; set; }
+        [Range(27, 70)]
         public int Age { get; set; }
         public decimal GPA { get; set; }
         public User Dependent { get; set; }

@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Initializes a new instance of the <see cref="HtmlHelper{TModel}"/> class.
         /// </summary>
         public HtmlHelper(
-            [NotNull] IViewEngine viewEngine, 
+            [NotNull] IViewEngine viewEngine,
             [NotNull] IModelMetadataProvider metadataProvider,
             [NotNull] IUrlHelper urlHelper,
             [NotNull] AntiForgery antiForgeryInstance)
@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public new ViewDataDictionary<TModel> ViewData { get; private set;}
+        public new ViewDataDictionary<TModel> ViewData { get; private set; }
 
         public override void Contextualize([NotNull] ViewContext viewContext)
         {
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             {
                 throw new ArgumentException(Resources.FormatPropertyOfTypeCannotBeNull(
                         "ViewData",
-                        typeof(ViewContext)), 
+                        typeof(ViewContext)),
                     "viewContext");
             }
 
@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                              object additionalViewData)
         {
             var metadata = ExpressionMetadataProvider.FromLambdaExpression(expression,
-                                                                           ViewData, 
+                                                                           ViewData,
                                                                            MetadataProvider);
 
             return GenerateDisplay(metadata,
@@ -212,7 +212,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString ValueFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression, string format)
+        public HtmlString ValidationMessageFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression,
+                                                            string message, object htmlAttributes)
+        {
+            return GenerateValidationMessage(ExpressionHelper.GetExpressionText(expression), message, htmlAttributes);
+        }
+
+        /// <inheritdoc />
+        public HtmlString ValueFor<TProperty>(Expression<Func<TModel, TProperty>> expression, string format)
         {
             var metadata = GetModelMetadata(expression);
             return GenerateValue(ExpressionHelper.GetExpressionText(expression), metadata.Model, format,

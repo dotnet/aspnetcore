@@ -417,6 +417,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
+        public HtmlString ValidationMessage(string expression, string message, object htmlAttributes)
+        {
+            return GenerateValidationMessage(expression, message, htmlAttributes);
+        }
+
+        /// <inheritdoc />
         public virtual HtmlString ValidationSummary(bool excludePropertyErrors, string message, IDictionary<string, object> htmlAttributes)
         {
             var formContext = ViewContext.ClientValidationEnabled ? ViewContext.FormContext : null;
@@ -506,46 +512,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
 
             return divBuilder.ToHtmlString(TagRenderMode.Normal);
-        }
-
-        public HtmlString ValidationMessage(string name, string message, object htmlAttributes)
-        {
-            ModelState modelState;
-            ViewData.ModelState.TryGetValue(name, out modelState);
-
-            ModelErrorCollection errors = null;
-            if (modelState != null)
-            {
-                errors = modelState.Errors;
-            }
-
-            bool hasError = errors != null && errors.Any();
-            if (!hasError && !ViewContext.UnobtrusiveJavaScriptEnabled)
-            {
-                return null;
-            }
-            else
-            {
-                string error = null;
-                if (hasError)
-                {
-                    error = message ?? errors.First().ErrorMessage;
-                }
-
-                var tagBuilder = new TagBuilder("span") { InnerHtml = Encode(error) };
-                tagBuilder.MergeAttributes(AnonymousObjectToHtmlAttributes(htmlAttributes));
-
-                if (ViewContext.UnobtrusiveJavaScriptEnabled)
-                {
-                    bool replaceValidationMessageContents = string.IsNullOrEmpty(message);
-                    tagBuilder.MergeAttribute("data-valmsg-for", name);
-                    tagBuilder.MergeAttribute("data-valmsg-replace",
-                        replaceValidationMessageContents.ToString().ToLowerInvariant());
-                }
-
-                tagBuilder.AddCssClass(hasError ? ValidationMessageCssClassName : ValidationMessageValidCssClassName);
-                return tagBuilder.ToHtmlString(TagRenderMode.Normal);
-            }
         }
 
         /// <summary>
@@ -698,7 +664,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var resolvedDisplayName = metadata.PropertyName;
             if (resolvedDisplayName == null)
             {
-                resolvedDisplayName = string.IsNullOrEmpty(htmlFieldName) ? 
+                resolvedDisplayName = string.IsNullOrEmpty(htmlFieldName) ?
                                                                     string.Empty :
                                                                     htmlFieldName.Split('.').Last();
             }
@@ -823,7 +789,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return new HtmlString(Encode(ViewData.TemplateInfo.GetFullHtmlFieldName(expression)));
         }
 
-        protected virtual HtmlString GenerateLabel([NotNull] ModelMetadata metadata, 
+        protected virtual HtmlString GenerateLabel([NotNull] ModelMetadata metadata,
                                                     string htmlFieldName,
                                                     string labelText,
                                                     object htmlAttributes)
@@ -832,7 +798,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string resolvedLabelText = labelText ?? metadata.PropertyName;
             if (resolvedLabelText == null)
             {
-                resolvedLabelText = string.IsNullOrEmpty(htmlFieldName) ? 
+                resolvedLabelText = string.IsNullOrEmpty(htmlFieldName) ?
                                                                     string.Empty :
                                                                     htmlFieldName.Split('.').Last();
             }
@@ -1218,6 +1184,76 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
 
             return tagBuilder.ToHtmlString(TagRenderMode.SelfClosing);
+        }
+
+        protected virtual HtmlString GenerateValidationMessage(string expression, string message,
+            object htmlAttributes)
+        {
+            var modelName = ViewData.TemplateInfo.GetFullHtmlFieldName(expression);
+            if (string.IsNullOrEmpty(modelName))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "expression");
+            }
+
+            var formContext = ViewContext.GetFormContextForClientValidation();
+
+            if (!ViewData.ModelState.ContainsKey(modelName) && formContext == null)
+            {
+                return null;
+            }
+
+            ModelState modelState;
+            var tryGetModelStateResult = ViewData.ModelState.TryGetValue(modelName, out modelState);
+            var modelErrors = tryGetModelStateResult ? modelState.Errors : null;
+
+            ModelError modelError = null;
+            if(modelErrors != null && modelErrors.Count != 0)
+            {
+                modelError = modelErrors.FirstOrDefault(m => !string.IsNullOrEmpty(m.ErrorMessage)) ?? modelErrors[0];
+            }
+
+            if (modelError == null && formContext == null)
+            {
+                return null;
+            }
+
+            // Even if there are no model errors, we generate the span and add the validation message
+            // if formContext is not null.
+            var builder = new TagBuilder("span");
+            builder.MergeAttributes(AnonymousObjectToHtmlAttributes(htmlAttributes));
+
+            // Only the style of the span is changed according to the errors if message is null or empty.
+            // Otherwise the content and style is handled by the client-side validation.
+            builder.AddCssClass((modelError != null) ?
+                ValidationMessageCssClassName :
+                ValidationMessageValidCssClassName);
+
+            if (!string.IsNullOrEmpty(message))
+            {
+                builder.SetInnerText(message);
+            }
+            else if (modelError != null)
+            {
+                builder.SetInnerText(ValidationHelpers.GetUserErrorMessageOrDefault(modelError, modelState));
+            }
+
+            if (formContext != null)
+            {
+                var replaceValidationMessageContents = string.IsNullOrEmpty(message);
+
+                if (ViewContext.UnobtrusiveJavaScriptEnabled)
+                {
+                    builder.MergeAttribute("data-valmsg-for", modelName);
+                    builder.MergeAttribute("data-valmsg-replace",
+                        replaceValidationMessageContents.ToString().ToLowerInvariant());
+                }
+
+                // TODO: (WebFX-217) Add support for Unobtrusive JS disabled -
+                // Modify the field metadata to add the validation message,
+                // Add the client validation id in the field metadata
+            }
+
+            return builder.ToHtmlString(TagRenderMode.Normal);
         }
 
         protected virtual HtmlString GenerateValue(string name, object value, string format, bool useViewData)

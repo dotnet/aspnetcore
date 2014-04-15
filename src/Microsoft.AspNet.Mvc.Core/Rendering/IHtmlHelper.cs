@@ -394,6 +394,18 @@ namespace Microsoft.AspNet.Mvc.Rendering
         HtmlString TextBox(string name, object value, string format, IDictionary<string, object> htmlAttributes);
 
         /// <summary>
+        /// Returns the validation message if an error exists in the <see cref="ModelStateDictionary"/> object.
+        /// </summary>
+        /// <param name="modelName">The name of the property that is being validated.</param>
+        /// <param name="message">The message to be displayed. This will always be visible but client-side
+        /// validation may update the associated CSS class.</param>
+        /// <param name="htmlAttributes"> An object that contains the HTML attributes to set for the element. 
+        /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>An <see cref="HtmlString"/> that contains the validation message</returns>
+        HtmlString ValidationMessage(string modelName, string message, object htmlAttributes);
+
+        /// <summary>
         /// Returns an unordered list (ul element) of validation messages that are in the
         /// <see cref="ModelStateDictionary"/> object.
         /// </summary>
