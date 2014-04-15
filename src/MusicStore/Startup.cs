@@ -13,6 +13,7 @@ using Microsoft.AspNet.RequestContainer;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Security.Cookies;
 using Microsoft.Net.Runtime;
+using MusicStore.Controllers;
 using MusicStore.Logging;
 using MusicStore.Models;
 using MusicStore.Web.Models;
@@ -21,6 +22,12 @@ using System.IO;
 
 public class Startup
 {
+    /// <summary>
+    /// TODO: Temporary ugly work around (making this static) to enable creating a static InMemory UserManager. Will go away shortly.
+    /// </summary>
+    public static InMemoryUserStore<ApplicationUser> UserStore = new InMemoryUserStore<ApplicationUser>();
+    public static InMemoryRoleStore<IdentityRole> RoleStore = new InMemoryRoleStore<IdentityRole>();
+
     public void Configuration(IBuilder app)
     {
         CreateAdminUser(app.ServiceProvider);
@@ -37,7 +44,7 @@ public class Startup
 
         app.UseCookieAuthentication(new CookieAuthenticationOptions()
         {
-            AuthenticationType = "Application",
+            AuthenticationType = DefaultAuthenticationTypes.ApplicationCookie,
             LoginPath = new PathString("/Account/Login")
         });
 
@@ -71,8 +78,8 @@ public class Startup
         string _password = configuration.Get("DefaultAdminPassword");
         string _role = "Administrator";
 
-        var userManager = new UserManager<ApplicationUser>(new InMemoryUserStore<ApplicationUser>());
-        var roleManager = new RoleManager<IdentityRole>(new InMemoryRoleStore<IdentityRole>());
+        var userManager = new UserManager<ApplicationUser>(UserStore);
+        var roleManager = new RoleManager<IdentityRole>(RoleStore);
 
         var role = new IdentityRole(_role);
         var result = await roleManager.RoleExistsAsync(_role);

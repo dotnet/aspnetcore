@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNet.Abstractions.Security;
+﻿using System;
+using System.Security.Claims;
 using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.Security;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using MusicStore.Models;
@@ -14,19 +16,34 @@ namespace MusicStore.Controllers
         public AccountController()
             //Bug: Using an in memory store
             //: this(new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext())))
-            //: this(new UserManager<ApplicationUser>(new InMemoryUserStore<ApplicationUser>()))
+            : this(new UserManager<ApplicationUser>(Startup.UserStore))
         {
         }
 
-        //public AccountController(UserManager<ApplicationUser> userManager)
-        //{
-        //    UserManager = userManager;
-        //}
+        public AccountController(UserManager<ApplicationUser> userManager)
+        {
+            UserManager = userManager;
+        }
 
-        /// <summary>
-        /// TODO: Temporary ugly work around (making this static) to enable creating a static InMemory UserManager. Will go away shortly.
-        /// </summary>
-        public static UserManager<ApplicationUser> UserManager { get; set; }
+        public UserManager<ApplicationUser> UserManager { get; set; }
+
+        private SignInManager<ApplicationUser> _signInManager;
+        public SignInManager<ApplicationUser> SignInManager {
+            get
+            {
+                if (_signInManager == null)
+                {
+                    _signInManager = new SignInManager<ApplicationUser>()
+                    {
+                        UserManager = UserManager,
+                        Context = Context,
+                        AuthenticationType = DefaultAuthenticationTypes.ApplicationCookie
+                    };
+                }
+                return _signInManager;
+            }
+            set { _signInManager = value; } 
+        }
 
         //
         // GET: /Account/Login
@@ -47,15 +64,18 @@ namespace MusicStore.Controllers
         {
             if (ModelState.IsValid == true)
             {
-                var user = await UserManager.FindByUserNamePasswordAsync(model.UserName, model.Password);
-                if (user != null)
+                var signInStatus = await SignInManager.PasswordSignInAsync(model.UserName, model.Password, model.RememberMe, shouldLockout: false);
+                switch (signInStatus)
                 {
-                    await SignIn(user, model.RememberMe);
-                    return RedirectToLocal(returnUrl);
-                }
-                else
-                {
-                    ModelState.AddModelError("", "Invalid username or password.");
+                    case SignInStatus.Success:
+                        return RedirectToLocal(returnUrl);
+                    case SignInStatus.LockedOut:
+                        ModelState.AddModelError("", "User is locked out, try again later.");
+                        return View(model);
+                    case SignInStatus.Failure:
+                    default:
+                        ModelState.AddModelError("", "Invalid username or password.");
+                        return View(model);
                 }
             }
 
@@ -86,7 +106,7 @@ namespace MusicStore.Controllers
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                    await SignIn(user, isPersistent: false);
+                    await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
                     //Bug: No helper methods
                     //return RedirectToAction("Index", "Home");
                     return Redirect("/");
@@ -130,8 +150,8 @@ namespace MusicStore.Controllers
             {
                 if (ModelState.IsValid == true)
                 {
-                    var user = new ApplicationUser() { UserName = this.Context.User.Identity.GetUserId() };
-                    IdentityResult result = await UserManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+                    var user = await GetCurrentUser();
+                    var result = await UserManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
                     if (result.Succeeded)
                     {
                         //Bug: No helper method
@@ -157,8 +177,8 @@ namespace MusicStore.Controllers
 
                 if (ModelState.IsValid == true)
                 {
-                    var user = new ApplicationUser() { UserName = this.Context.User.Identity.GetUserId() };
-                    IdentityResult result = await UserManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+                    var user = await GetCurrentUser();
+                    var result = await UserManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
                     if (result.Succeeded)
                     {
                         //Bug: No helper method
@@ -181,31 +201,14 @@ namespace MusicStore.Controllers
         //[ValidateAntiForgeryToken]
         public IActionResult LogOff()
         {
+            // Bug: This should call SignInManager.SignOut() once its available
             this.Context.Response.SignOut();
             //Bug: No helper
             //return RedirectToAction("Index", "Home");
             return Redirect("/");
         }
 
-        //Bug: Controllers need to be disposable? 
-        protected void Dispose(bool disposing)
-        {
-            if (disposing && UserManager != null)
-            {
-                UserManager.Dispose();
-                UserManager = null;
-            }
-
-            //base.Dispose(disposing);
-        }
-
         #region Helpers
-
-        private async Task SignIn(ApplicationUser user, bool isPersistent)
-        {
-            var identity = await UserManager.CreateIdentityAsync(user, DefaultAuthenticationTypes.ApplicationCookie);
-            this.Context.Response.SignIn(identity, new AuthenticationProperties() { IsPersistent = isPersistent });
-        }
 
         private void AddErrors(IdentityResult result)
         {
@@ -215,12 +218,17 @@ namespace MusicStore.Controllers
             }
         }
 
+        private async Task<ApplicationUser> GetCurrentUser()
+        {
+            return await UserManager.FindByIdAsync(Context.User.Identity.GetUserId());
+        }
+
         private async Task<bool> HasPassword()
         {
-            var user = await UserManager.FindByNameAsync(this.Context.User.Identity.GetUserId());
+            var user = await GetCurrentUser();
             if (user != null)
             {
-                return user.PasswordHash != null;
+                return await UserManager.HasPasswordAsync(user);
             }
             return false;
         }
@@ -255,9 +263,58 @@ namespace MusicStore.Controllers
     /// </summary>
     public static class Extensions
     {
-        public static string GetUserId(this IIdentity user)
+        /// <summary>
+        ///     Return the user name using the UserNameClaimType
+        /// </summary>
+        /// <param name="identity"></param>
+        /// <returns></returns>
+        public static string GetUserName(this IIdentity identity)
         {
-            return user.Name;
+            if (identity == null)
+            {
+                throw new ArgumentNullException("identity");
+            }
+            var ci = identity as ClaimsIdentity;
+            if (ci != null)
+            {
+                return ci.FindFirstValue(ClaimsIdentity.DefaultNameClaimType);
+            }
+            return null;
+        }
+
+        /// <summary>
+        ///     Return the user id using the UserIdClaimType
+        /// </summary>
+        /// <param name="identity"></param>
+        /// <returns></returns>
+        public static string GetUserId(this IIdentity identity)
+        {
+            if (identity == null)
+            {
+                throw new ArgumentNullException("identity");
+            }
+            var ci = identity as ClaimsIdentity;
+            if (ci != null)
+            {
+                return ci.FindFirstValue(ClaimTypes.NameIdentifier);
+            }
+            return null;
+        }
+
+        /// <summary>
+        ///     Return the claim value for the first claim with the specified type if it exists, null otherwise
+        /// </summary>
+        /// <param name="identity"></param>
+        /// <param name="claimType"></param>
+        /// <returns></returns>
+        public static string FindFirstValue(this ClaimsIdentity identity, string claimType)
+        {
+            if (identity == null)
+            {
+                throw new ArgumentNullException("identity");
+            }
+            var claim = identity.FindFirst(claimType);
+            return claim != null ? claim.Value : null;
         }
     }
 
