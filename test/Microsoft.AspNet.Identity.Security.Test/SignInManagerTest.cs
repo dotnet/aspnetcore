@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Identity.Security.Test
             manager.Setup(m => m.IsLockedOutAsync(user, CancellationToken.None)).ReturnsAsync(false).Verifiable();
             manager.Setup(m => m.FindByNameAsync(user.UserName, CancellationToken.None)).ReturnsAsync(user).Verifiable();
             manager.Setup(m => m.CheckPasswordAsync(user, "password", CancellationToken.None)).ReturnsAsync(true).Verifiable();
-            manager.Setup(m => m.CreateIdentityAsync(user, "Microsoft.AspNet.Identity", CancellationToken.None)).ReturnsAsync(new ClaimsIdentity("Microsoft.AspNet.Identity")).Verifiable();
+            manager.Setup(m => m.CreateIdentityAsync(user, DefaultAuthenticationTypes.ApplicationCookie, CancellationToken.None)).ReturnsAsync(new ClaimsIdentity("Microsoft.AspNet.Identity")).Verifiable();
             var context = new Mock<HttpContext>();
             var response = new Mock<HttpResponse>();
             context.Setup(c => c.Response).Returns(response.Object).Verifiable();
@@ -78,6 +78,26 @@ namespace Microsoft.AspNet.Identity.Security.Test
             // Assert
             Assert.Equal(SignInStatus.Success, result);
             manager.VerifyAll();
+        }
+
+        [Theory]
+        [InlineData(DefaultAuthenticationTypes.ApplicationCookie)]
+        [InlineData("Foo")]
+        public void SignOutCallsContextResponseSignOut(string authenticationType)
+        {
+            // Setup
+            var context = new Mock<HttpContext>();
+            var response = new Mock<HttpResponse>();
+            context.Setup(c => c.Response).Returns(response.Object).Verifiable();
+            response.Setup(r => r.SignOut(authenticationType)).Verifiable();
+            var helper = new SignInManager<TestUser> { Context = context.Object, AuthenticationType = authenticationType };
+
+            // Act
+            helper.SignOut();
+
+            // Assert
+            context.VerifyAll();
+            response.VerifyAll();
         }
 
         [Fact]
@@ -137,6 +157,16 @@ namespace Microsoft.AspNet.Identity.Security.Test
 
             // Act
             await helper.SignInAsync(null, false, false);
+        }
+
+        [Fact]
+        public void SignOutWithNoContextDoesNotBlowUp()
+        {
+            // Setup
+            var helper = new SignInManager<TestUser>();
+
+            // Act
+            helper.SignOut();
         }
 
         [Fact]

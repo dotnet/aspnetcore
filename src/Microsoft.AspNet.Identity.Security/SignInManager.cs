@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Identity.Security
         private string _authType;
         public string AuthenticationType
         {
-            get { return _authType ?? "Microsoft.AspNet.Identity"; }
+            get { return _authType ?? DefaultAuthenticationTypes.ApplicationCookie; }
             set { _authType = value; }
         }
 
@@ -37,6 +37,15 @@ namespace Microsoft.AspNet.Identity.Security
             // TODO: all the two factor logic/external/rememberBrowser
             var userIdentity = await CreateUserIdentityAsync(user);
             Context.Response.SignIn(userIdentity, new AuthenticationProperties { IsPersistent = isPersistent });
+        }
+
+        public virtual void SignOut()
+        {
+            if (Context == null)
+            {
+                return;
+            }
+            Context.Response.SignOut(AuthenticationType);
         }
 
         //public virtual async Task<bool> SendTwoFactorCode(string provider)

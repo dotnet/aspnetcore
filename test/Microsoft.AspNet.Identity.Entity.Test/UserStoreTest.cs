@@ -1600,22 +1600,6 @@ namespace Microsoft.AspNet.Identity.Entity.Test
             Assert.False(await manager.VerifyTwoFactorTokenAsync(user, factorId, "bogus"));
         }
 
-        private class DataStoreConfig : ContextConfiguration
-        {
-            private readonly DataStore _store;
-
-            public DataStoreConfig(DataStore store)
-            {
-                _store = store;
-            }
-
-            public override DataStore DataStore
-            {
-                get { return _store; }
-            }
-
-        }
-
         public class TestMessageService : IIdentityMessageService
         {
             public IdentityMessage Message { get; set; }
