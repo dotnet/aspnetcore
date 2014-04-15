@@ -26,8 +26,6 @@
         @Html.ValueFor(model => model.Price)
     </p>
     <p class="button">
-        @*https://github.com/aspnet/WebFx/issues/246*@
-        @*@Html.ActionLink("Add to cart", "AddToCart", "ShoppingCart", new { id = Model.AlbumId })*@
-        <a href="@Url.Action("AddToCart", "ShoppingCart", new { id = Model.AlbumId })">Add to cart</a>
+        @Html.ActionLink("Add to cart", "AddToCart", "ShoppingCart", new { id = Model.AlbumId })
     </p>
 </div>
