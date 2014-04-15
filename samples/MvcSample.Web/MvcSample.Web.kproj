@@ -28,11 +28,7 @@
     <Content Include="Views\Home\ValidationSummary.cshtml" />
     <Content Include="Views\Link\Details.cshtml" />
     <Content Include="Views\Shared\Components\Tags\Default.cshtml" />
-    <Content Include="Views\Shared\DisplayTemplates\Boolean.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\Decimal.cshtml" />
-    <Content Include="Views\Shared\DisplayTemplates\Int32.cshtml" />
-    <Content Include="Views\Shared\DisplayTemplates\String.cshtml" />
-    <Content Include="Views\Shared\DisplayTemplates\User.cshtml" />
     <Content Include="Views\Shared\HelloWorldPartial.cshtml" />
     <Content Include="Views\Shared\MyView.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />

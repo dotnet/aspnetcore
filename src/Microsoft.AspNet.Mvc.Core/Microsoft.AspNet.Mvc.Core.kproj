@@ -152,6 +152,7 @@
     <Compile Include="Rendering\HtmlHelperValidationExtensions.cs" />
     <Compile Include="Rendering\HtmlHelperValueExtensions.cs" />
     <Compile Include="Rendering\HtmlString.cs" />
+    <Compile Include="Rendering\Html\DefaultDisplayTemplates.cs" />
     <Compile Include="Rendering\Html\HtmlHelper.cs" />
     <Compile Include="Rendering\Html\HtmlHelperOfT.cs" />
     <Compile Include="Rendering\Html\InputType.cs" />

@@ -183,6 +183,15 @@
   <data name="Common_ValueNotValidForProperty" xml:space="preserve">
     <value>The value '{0}' is invalid.</value>
   </data>
+  <data name="Common_TriState_False" xml:space="preserve">
+    <value>False</value>
+  </data>
+  <data name="Common_TriState_NotSet" xml:space="preserve">
+    <value>Not Set</value>
+  </data>
+  <data name="Common_TriState_True" xml:space="preserve">
+    <value>True</value>
+  </data>
   <data name="DynamicViewData_ViewDataNull" xml:space="preserve">
     <value>ViewData value must not be null.</value>
   </data>
@@ -203,6 +212,9 @@
   </data>
   <data name="HtmlHelper_WrongSelectDataType" xml:space="preserve">
     <value>The ViewData item that has the key '{0}' is of type '{1}' but must be of type '{2}'.</value>
+  </data>
+  <data name="Templates_TypeMustImplementIEnumerable" xml:space="preserve">
+    <value>The '{0}' template was used with an object of type '{1}', which does not implement '{2}'.</value>
   </data>
   <data name="TemplateHelpers_TemplateLimitations" xml:space="preserve">
     <value>Templates can be used only with field access, property access, single-dimension array index, or single-parameter custom indexer expressions.</value>

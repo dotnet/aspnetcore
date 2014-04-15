@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Mvc.Core;
 
@@ -15,15 +14,30 @@ namespace Microsoft.AspNet.Mvc.Rendering
         private static readonly string DisplayTemplateViewPath = "DisplayTemplates";
         private static readonly string EditorTemplateViewPath = "EditorTemplates";
 
+        private static readonly Dictionary<string, Func<IHtmlHelper<object>, string>> _defaultDisplayActions =
+            new Dictionary<string, Func<IHtmlHelper<object>, string>>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "EmailAddress", DefaultDisplayTemplates.EmailAddressTemplate },
+                { "HiddenInput", DefaultDisplayTemplates.HiddenInputTemplate },
+                { "Html", DefaultDisplayTemplates.HtmlTemplate },
+                { "Text", DefaultDisplayTemplates.StringTemplate },
+                { "Url", DefaultDisplayTemplates.UrlTemplate },
+                { "Collection", DefaultDisplayTemplates.CollectionTemplate },
+                { typeof(bool).Name, DefaultDisplayTemplates.BooleanTemplate },
+                { typeof(decimal).Name, DefaultDisplayTemplates.DecimalTemplate },
+                { typeof(string).Name, DefaultDisplayTemplates.StringTemplate },
+                { typeof(object).Name, DefaultDisplayTemplates.ObjectTemplate },
+            };
+
         private ViewContext _viewContext;
-        private ViewDataDictionary _viewData;
+        private ViewDataDictionary<object> _viewData;
         private IViewEngine _viewEngine;
         private string _templateName;
         private bool _readOnly;
 
         public TemplateRenderer([NotNull] IViewEngine viewEngine, 
                                 [NotNull] ViewContext viewContext,
-                                [NotNull] ViewDataDictionary viewData,
+                                [NotNull] ViewDataDictionary<object> viewData,
                                 string templateName, 
                                 bool readOnly)
         {
@@ -61,22 +75,29 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     }
                 }
 
-                Func<IHtmlHelper<object>, Task<string>> defaultAction;
+                Func<IHtmlHelper<object>, string> defaultAction;
                 if (defaultActions.TryGetValue(viewName, out defaultAction))
                 {
-                    // Right now there's no IhtmlHelper<object> pass in or default templates so this will be
-                    // changed once a decision has been reached.
-                    return defaultAction(null).Result;
+                    return defaultAction(MakeHtmlHelper(_viewContext, _viewData));
                 }
             }
 
-            throw new InvalidOperationException(Resources.FormatTemplateHelpers_NoTemplate(_viewData.ModelMetadata.RealModelType.FullName));
+            throw new InvalidOperationException(
+                Resources.FormatTemplateHelpers_NoTemplate(_viewData.ModelMetadata.RealModelType.FullName));
         }
 
-        private Dictionary<string, Func<IHtmlHelper<object>, Task<string>>> GetDefaultActions()
+        private Dictionary<string, Func<IHtmlHelper<object>, string>> GetDefaultActions()
         {
-            // TODO: Implement default templates
-            return new Dictionary<string, Func<IHtmlHelper<object>, Task<string>>>(StringComparer.OrdinalIgnoreCase);
+            if (_readOnly)
+            {
+                return _defaultDisplayActions;
+            }
+            else
+            {
+                // TODO: Support Editor() and its default templates.
+                // (No resource for this message because this line _must_ be very short-lived.)
+                throw new NotImplementedException("No default editor templates yet");
+            }
         }
 
         private IEnumerable<string> GetViewNames()
@@ -147,6 +168,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     yield return fieldType.Name;
                 }
             }
+        }
+
+        private static IHtmlHelper<object> MakeHtmlHelper(ViewContext viewContext, ViewDataDictionary<object> viewData)
+        {
+            var newHelper = viewContext.HttpContext.RequestServices.GetService<IHtmlHelper<object>>();
+
+            var contextable = newHelper as ICanHasViewContext;
+            if (contextable != null)
+            {
+                var newViewContext = new ViewContext(viewContext, viewContext.View, viewData, viewContext.Writer);
+                contextable.Contextualize(newViewContext);
+            }
+
+            return newHelper;
         }
     }
 }

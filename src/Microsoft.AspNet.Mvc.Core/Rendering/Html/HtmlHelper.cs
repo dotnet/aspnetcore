@@ -301,7 +301,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                                       ViewContext,
                                                       ViewData,
                                                       metadata,
-                                                      templateName,
+                                                      htmlFieldName,
                                                       templateName,
                                                       readOnly: true,
                                                       additionalViewData: additionalViewData);
@@ -1135,9 +1135,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         private string GenerateOption(SelectListItem item)
         {
+            var encodedText = Encode(item.Text);
+            return GenerateOption(item, encodedText);
+        }
+
+        internal static string GenerateOption(SelectListItem item, string encodedText)
+        {
             var builder = new TagBuilder("option")
             {
-                InnerHtml = Encode(item.Text)
+                InnerHtml = encodedText,
             };
 
             if (item.Value != null)

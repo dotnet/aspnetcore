@@ -85,7 +85,7 @@
 </div>
 
 <div class="row">
-    <div style="float: left; border: 5px solid blue; padding-right: 10px;">
+    <div style="float: left; border: 5px solid blue; margin: 5px; padding: 7px;">
         <table>
             <tr>
                 <td>
@@ -145,15 +145,11 @@
             </tr>
         </table>
     </div>
-
-    <div style="float: right; border: 5px solid red;">
+    <div style="float: left; border: 5px solid red; margin: 5px;">
         @await Component.InvokeAsync("Tags", 15)
         <p style="padding: 0px 10px;">'@ViewBag.Title' should match page heading (still)</p>
     </div>
-</div>
-
-<div class="row">
-    <div style="float: left; border: thick solid lightskyblue; margin-bottom: 10px; margin-top: -180px; padding-right: 10px">
+    <div style="float: left; border: thick solid lightskyblue; margin: 5px; padding: 7px;">
         @using (Html.BeginForm(controllerName: "Home", actionName: "Hello", method: FormMethod.Post))
         {
             @Html.HiddenFor(m => m.Age)
@@ -273,10 +269,7 @@
             </table>
         @{ Html.EndForm(); }
     </div>
-</div>
-
-<div class="row">
-    <div style="float: left; border: 5px solid green;">
+    <div style="float: left; border: 5px solid lightgreen; margin: 5px; padding: 7px;">
         <table>
             <tr>
                 <td>
@@ -328,7 +321,7 @@
             </tr>
         </table>
     </div>
-    <div style="float: left; border: 5px solid green; margin-left: 10px; margin-bottom: 10px; ">
+    <div style="float: left; border: 5px dashed green; margin: 5px; padding: 7px;">
         <table>
             <tr>
                 <td>
@@ -381,7 +374,7 @@
         </table>
     </div>
 
-    <div style="float: left; border: 5px solid green;">
+    <div style="float: left; border: 5px solid darkgreen; margin: 5px; padding: 7px;">
         @Html.DisplayForModel()
     </div>
 </div>

@@ -363,6 +363,54 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
+        /// False
+        /// </summary>
+        internal static string Common_TriState_False
+        {
+            get { return GetString("Common_TriState_False"); }
+        }
+
+        /// <summary>
+        /// False
+        /// </summary>
+        internal static string FormatCommon_TriState_False()
+        {
+            return GetString("Common_TriState_False");
+        }
+
+        /// <summary>
+        /// Not Set
+        /// </summary>
+        internal static string Common_TriState_NotSet
+        {
+            get { return GetString("Common_TriState_NotSet"); }
+        }
+
+        /// <summary>
+        /// Not Set
+        /// </summary>
+        internal static string FormatCommon_TriState_NotSet()
+        {
+            return GetString("Common_TriState_NotSet");
+        }
+
+        /// <summary>
+        /// True
+        /// </summary>
+        internal static string Common_TriState_True
+        {
+            get { return GetString("Common_TriState_True"); }
+        }
+
+        /// <summary>
+        /// True
+        /// </summary>
+        internal static string FormatCommon_TriState_True()
+        {
+            return GetString("Common_TriState_True");
+        }
+
+        /// <summary>
         /// ViewData value must not be null.
         /// </summary>
         internal static string DynamicViewData_ViewDataNull
@@ -472,6 +520,22 @@ namespace Microsoft.AspNet.Mvc.Core
         internal static string FormatHtmlHelper_WrongSelectDataType(object p0, object p1, object p2)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("HtmlHelper_WrongSelectDataType"), p0, p1, p2);
+        }
+
+        /// <summary>
+        /// The '{0}' template was used with an object of type '{1}', which does not implement '{2}'.
+        /// </summary>
+        internal static string Templates_TypeMustImplementIEnumerable
+        {
+            get { return GetString("Templates_TypeMustImplementIEnumerable"); }
+        }
+
+        /// <summary>
+        /// The '{0}' template was used with an object of type '{1}', which does not implement '{2}'.
+        /// </summary>
+        internal static string FormatTemplates_TypeMustImplementIEnumerable(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Templates_TypeMustImplementIEnumerable"), p0, p1, p2);
         }
 
         /// <summary>
