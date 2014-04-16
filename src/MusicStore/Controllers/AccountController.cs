@@ -122,7 +122,10 @@ namespace MusicStore.Controllers
 
         //
         // GET: /Account/Manage
-        public async Task<IActionResult> Manage(ManageMessageId? message)
+        [HttpGet]
+        //Bug: https://github.com/aspnet/WebFx/issues/256. Unable to model bind for a nullable value. Work around to remove the nullable
+        //public async Task<IActionResult> Manage(ManageMessageId? message)
+        public async Task<IActionResult> Manage(ManageMessageId message)
         {
             ViewBag.StatusMessage =
                 message == ManageMessageId.ChangePasswordSuccess ? "Your password has been changed."
@@ -139,7 +142,8 @@ namespace MusicStore.Controllers
         public async Task<IActionResult> Manage(ManageUserViewModel model)
         {
             ViewBag.ReturnUrl = Url.Action("Manage");
-            if (ModelState.IsValid == true)
+            //Bug: https://github.com/aspnet/DataAnnotations/issues/21
+            //if (ModelState.IsValid == true)
             {
                 var user = await GetCurrentUserAsync();
                 var result = await UserManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
@@ -152,6 +156,7 @@ namespace MusicStore.Controllers
                     AddErrors(result);
                 }
             }
+            
             // If we got this far, something failed, redisplay form
             return View(model);
         }
