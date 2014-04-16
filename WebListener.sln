@@ -11,7 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{E183C826-1
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{3A1E31E3-2794-4CA3-B8E2-253E96BDE514}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Server.WebListener", "src\Microsoft.AspNet.Server.WebListener\Microsoft.AspNet.Server.WebListener.kproj", "{3F5212AA-E287-49DD-8CEC-44BF0A2AC9A1}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Net.Server", "src\Microsoft.Net.Server\Microsoft.Net.Server.kproj", "{3F5212AA-E287-49DD-8CEC-44BF0A2AC9A1}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "HelloWorld", "samples\HelloWorld\HelloWorld.kproj", "{6DAF3E6B-8E1B-4E6E-B9FE-7B1E5FDB7DB4}"
 EndProject
@@ -22,6 +22,8 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.WebSockets", "src\Microsoft.AspNet.WebSockets\Microsoft.AspNet.WebSockets.kproj", "{E788AEAE-2CB4-4BFA-8746-D0BB7E93A1BB}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Server.WebListener.FunctionalTests", "test\Microsoft.AspNet.Server.WebListener.FunctionalTests\Microsoft.AspNet.Server.WebListener.FunctionalTests.kproj", "{4492FF4C-9032-411D-853F-46B01755E504}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Server.WebListener", "src\Microsoft.AspNet.Server.WebListener\Microsoft.AspNet.Server.WebListener.kproj", "{B9F45F9D-D206-47F0-8E5F-54CE2F0BDF92}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -103,6 +105,16 @@ Global
 		{4492FF4C-9032-411D-853F-46B01755E504}.Release|Mixed Platforms.Build.0 = Release|x86
 		{4492FF4C-9032-411D-853F-46B01755E504}.Release|x86.ActiveCfg = Release|x86
 		{4492FF4C-9032-411D-853F-46B01755E504}.Release|x86.Build.0 = Release|x86
+		{B9F45F9D-D206-47F0-8E5F-54CE2F0BDF92}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{B9F45F9D-D206-47F0-8E5F-54CE2F0BDF92}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{B9F45F9D-D206-47F0-8E5F-54CE2F0BDF92}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{B9F45F9D-D206-47F0-8E5F-54CE2F0BDF92}.Debug|x86.ActiveCfg = Debug|x86
+		{B9F45F9D-D206-47F0-8E5F-54CE2F0BDF92}.Debug|x86.Build.0 = Debug|x86
+		{B9F45F9D-D206-47F0-8E5F-54CE2F0BDF92}.Release|Any CPU.ActiveCfg = Release|x86
+		{B9F45F9D-D206-47F0-8E5F-54CE2F0BDF92}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{B9F45F9D-D206-47F0-8E5F-54CE2F0BDF92}.Release|Mixed Platforms.Build.0 = Release|x86
+		{B9F45F9D-D206-47F0-8E5F-54CE2F0BDF92}.Release|x86.ActiveCfg = Release|x86
+		{B9F45F9D-D206-47F0-8E5F-54CE2F0BDF92}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -115,5 +127,6 @@ Global
 		{EFC7538F-7AEB-4A3E-A1E6-6BDCCBD272BF} = {99D5E5F3-88F5-4CCF-8D8C-717C8925DF09}
 		{E788AEAE-2CB4-4BFA-8746-D0BB7E93A1BB} = {99D5E5F3-88F5-4CCF-8D8C-717C8925DF09}
 		{4492FF4C-9032-411D-853F-46B01755E504} = {E183C826-1360-4DFF-9994-F33CED5C8525}
+		{B9F45F9D-D206-47F0-8E5F-54CE2F0BDF92} = {99D5E5F3-88F5-4CCF-8D8C-717C8925DF09}
 	EndGlobalSection
 EndGlobal

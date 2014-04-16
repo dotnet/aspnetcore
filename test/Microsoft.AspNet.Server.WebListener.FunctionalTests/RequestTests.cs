@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.PipelineCore;
+using Microsoft.Net.Server;
 using Xunit;
 
 namespace Microsoft.AspNet.Server.WebListener

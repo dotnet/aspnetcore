@@ -1,7 +1,7 @@
 
 using System;
 using System.Text;
-using Microsoft.AspNet.Server.WebListener;
+using Microsoft.Net.Server;
 
 namespace HelloWorld
 {
@@ -9,7 +9,7 @@ namespace HelloWorld
     {
         public static void Main(string[] args)
         {
-            using (OwinWebListener listener = new OwinWebListener())
+            using (WebListener listener = new WebListener())
             {
                 listener.UrlPrefixes.Add(UrlPrefix.Create("http://localhost:8080"));
                 listener.Start();

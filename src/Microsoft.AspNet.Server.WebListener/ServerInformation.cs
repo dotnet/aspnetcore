@@ -5,16 +5,16 @@ namespace Microsoft.AspNet.Server.WebListener
 {
     public class ServerInformation : IServerInformation
     {
-        private WebListenerWrapper _webListenerWrapper;
+        private MessagePump _messagePump;
 
-        internal ServerInformation(WebListenerWrapper webListenerWrapper)
+        internal ServerInformation(MessagePump messagePump)
         {
-            _webListenerWrapper = webListenerWrapper;
+            _messagePump = messagePump;
         }
 
-        internal WebListenerWrapper Wrapper
+        internal MessagePump MessagePump
         {
-            get { return _webListenerWrapper; }
+            get { return _messagePump; }
         }
 
         // Microsoft.AspNet.Server.WebListener
@@ -23,15 +23,15 @@ namespace Microsoft.AspNet.Server.WebListener
             get { return GetType().GetTypeInfo().Assembly.GetName().Name; }
         }
 
-        public OwinWebListener Listener
+        public Microsoft.Net.Server.WebListener Listener
         {
-            get { return _webListenerWrapper.Listener; }
+            get { return _messagePump.Listener; }
         }
 
         public int MaxAccepts
         {
-            get { return _webListenerWrapper.MaxAccepts; }
-            set { _webListenerWrapper.MaxAccepts = value; }
+            get { return _messagePump.MaxAccepts; }
+            set { _messagePump.MaxAccepts = value; }
         }
     }
 }

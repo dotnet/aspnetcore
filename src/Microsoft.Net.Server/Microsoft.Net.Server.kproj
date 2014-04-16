@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.Props" Condition="'$(VSToolsPath)' != ''" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>3f5212aa-e287-49dd-8cec-44bf0a2ac9a1</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <ActiveTargetFramework>net45</ActiveTargetFramework>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
+  </PropertyGroup>
+  <PropertyGroup>
+    <SchemaVersion>2.0</SchemaVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="AsyncAcceptContext.cs" />
+    <Compile Include="AuthenticationManager.cs" />
+    <Compile Include="AuthenticationTypes.cs" />
+    <Compile Include="Constants.cs" />
+    <Compile Include="DictionaryExtensions.cs" />
+    <Compile Include="fx\Microsoft\Win32\SafeHandles\CriticalHandleZeroOrMinusOneIsInvalid.cs" />
+    <Compile Include="fx\Microsoft\Win32\SafeHandles\SafeHandleZeroOrMinusOneIsInvalid.cs" />
+    <Compile Include="fx\System\Diagnostics\TraceEventType.cs" />
+    <Compile Include="fx\System\ExternDll.cs" />
+    <Compile Include="fx\System\Runtime\InteropServices\ExternalException.cs" />
+    <Compile Include="fx\System\SafeNativeMethods.cs" />
+    <Compile Include="fx\System\Security\Authentication\ExtendedProtection\ChannelBinding.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Helpers.cs" />
+    <Compile Include="LogHelper.cs" />
+    <Compile Include="NativeInterop\AddressFamily.cs" />
+    <Compile Include="NativeInterop\ComNetOS.cs" />
+    <Compile Include="NativeInterop\ContextAttribute.cs" />
+    <Compile Include="NativeInterop\HttpRequestQueueV2Handle.cs" />
+    <Compile Include="NativeInterop\HttpServerSessionHandle.cs" />
+    <Compile Include="NativeInterop\HttpSysRequestHeader.cs" />
+    <Compile Include="NativeInterop\HttpSysResponseHeader.cs" />
+    <Compile Include="NativeInterop\HttpSysSettings.cs" />
+    <Compile Include="NativeInterop\IntPtrHelper.cs" />
+    <Compile Include="NativeInterop\NclUtilities.cs" />
+    <Compile Include="NativeInterop\SafeLoadLibrary.cs" />
+    <Compile Include="NativeInterop\SafeLocalFree.cs" />
+    <Compile Include="NativeInterop\SafeLocalFreeChannelBinding.cs" />
+    <Compile Include="NativeInterop\SafeLocalMemHandle.cs" />
+    <Compile Include="NativeInterop\SafeNativeOverlapped.cs" />
+    <Compile Include="NativeInterop\SchProtocols.cs" />
+    <Compile Include="NativeInterop\SecurityStatus.cs" />
+    <Compile Include="NativeInterop\SocketAddress.cs" />
+    <Compile Include="NativeInterop\SSPIHandle.cs" />
+    <Compile Include="NativeInterop\UnsafeNativeMethods.cs" />
+    <Compile Include="WebListener.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RequestProcessing\BoundaryType.cs" />
+    <Compile Include="RequestProcessing\ClientCertLoader.cs" />
+    <Compile Include="RequestProcessing\HeaderEncoding.cs" />
+    <Compile Include="RequestProcessing\HttpKnownHeaderNames.cs" />
+    <Compile Include="RequestProcessing\HttpReasonPhrase.cs" />
+    <Compile Include="RequestProcessing\HttpStatusCode.cs" />
+    <Compile Include="RequestProcessing\NativeRequestContext.cs" />
+    <Compile Include="RequestProcessing\OpaqueStream.cs" />
+    <Compile Include="RequestProcessing\Request.cs" />
+    <Compile Include="RequestProcessing\RequestContext.cs" />
+    <Compile Include="RequestProcessing\RequestHeaders.cs" />
+    <Compile Include="RequestProcessing\RequestHeaders.Generated.cs" />
+    <Compile Include="RequestProcessing\RequestStream.cs" />
+    <Compile Include="RequestProcessing\RequestUriBuilder.cs" />
+    <Compile Include="RequestProcessing\Response.cs" />
+    <Compile Include="RequestProcessing\ResponseStream.cs" />
+    <Compile Include="RequestProcessing\ResponseStreamAsyncResult.cs" />
+    <Compile Include="RequestProcessing\SslStatus.cs" />
+    <Compile Include="Resources.Designer.cs" />
+    <Compile Include="TimeoutManager.cs" />
+    <Compile Include="UrlPrefix.cs" />
+    <Compile Include="ValidationHelper.cs" />
+    <Compile Include="WebListenerException.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="CustomDictionary.xml" />
+    <Content Include="Project.json" />
+    <Content Include="RequestProcessing\RequestHeaders.Generated.tt" />
+    <Content Include="Resources.resx" />
+  </ItemGroup>
+  <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />
+</Project>

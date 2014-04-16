@@ -25,6 +25,7 @@ using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.ConfigurationModel;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Logging;
+using Microsoft.Net.Server;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
@@ -49,9 +50,9 @@ namespace Microsoft.AspNet.Server.WebListener
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposed by caller")]
         public IServerInformation Initialize(IConfiguration configuration)
         {
-            OwinWebListener listener = new OwinWebListener();
+            Microsoft.Net.Server.WebListener listener = new Microsoft.Net.Server.WebListener();
             ParseAddresses(configuration, listener);
-            return new ServerInformation(new WebListenerWrapper(listener, _loggerFactory));
+            return new ServerInformation(new MessagePump(listener, _loggerFactory));
         }
 
         /// <summary>
@@ -78,11 +79,11 @@ namespace Microsoft.AspNet.Server.WebListener
 
             // TODO: var capabilities = new Dictionary<string, object>();
 
-            serverInfo.Wrapper.Start(app);
-            return serverInfo.Wrapper;
+            serverInfo.MessagePump.Start(app);
+            return serverInfo.MessagePump;
         }
 
-        private void ParseAddresses(IConfiguration config, OwinWebListener listener)
+        private void ParseAddresses(IConfiguration config, Microsoft.Net.Server.WebListener listener)
         {
             // TODO: Key format?
             string urls;

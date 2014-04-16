@@ -2,6 +2,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.Net.Server;
 
 namespace Microsoft.AspNet.Server.WebListener
 {

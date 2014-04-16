@@ -1,7 +1,7 @@
 {
   "version" : "0.1-alpha-*",
   "dependencies": {
-    "Microsoft.AspNet.Server.WebListener" : ""
+    "Microsoft.Net.Server" : ""
   },
   "configurations": {
     "net45": { },

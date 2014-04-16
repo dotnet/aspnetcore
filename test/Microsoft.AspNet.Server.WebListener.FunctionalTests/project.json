@@ -10,6 +10,7 @@
           "xunit.core": "2.0.0-aspnet-*",
           "xunit.execution": "2.0.0-aspnet-*",
           "Microsoft.AspNet.Server.WebListener" : "",
+          "Microsoft.Net.Server" : "",
           "Microsoft.AspNet.Abstractions" : "0.1-alpha-*",
           "Microsoft.AspNet.ConfigurationModel": "0.1-alpha-*",
           "Microsoft.AspNet.HttpFeature" : "0.1-alpha-*",
