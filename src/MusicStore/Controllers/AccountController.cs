@@ -189,8 +189,6 @@ namespace MusicStore.Controllers
         public enum ManageMessageId
         {
             ChangePasswordSuccess,
-            SetPasswordSuccess,
-            RemoveLoginSuccess,
             Error
         }
 

@@ -14,7 +14,6 @@ using Microsoft.AspNet.RequestContainer;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Security.Cookies;
 using Microsoft.Net.Runtime;
-using MusicStore.Controllers;
 using MusicStore.Logging;
 using MusicStore.Models;
 using MusicStore.Web.Models;
