@@ -20,6 +20,7 @@
     <Content Include="Project.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ServiceCollectionExtensions.cs" />
     <Compile Include="MvcServices.cs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />

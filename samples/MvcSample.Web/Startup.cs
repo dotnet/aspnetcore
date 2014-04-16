@@ -12,7 +12,7 @@ namespace MvcSample.Web
         public void Configuration(IBuilder builder)
         {
             var services = new ServiceCollection();
-            services.Add(MvcServices.GetDefaultServices());
+            services.AddMvc();
             services.AddSingleton<PassThroughAttribute, PassThroughAttribute>();
 
             var serviceProvider = services.BuildServiceProvider(builder.ServiceProvider);
