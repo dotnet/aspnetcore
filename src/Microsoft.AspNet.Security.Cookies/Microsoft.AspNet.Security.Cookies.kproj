@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="__ToolsVersion__" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.Props" Condition="'$(VSToolsPath)' != ''" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>15f1211b-b695-4a1c-b730-1ac58fc91090</ProjectGuid>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
+  </PropertyGroup>
+  <PropertyGroup>
+    <SchemaVersion>2.0</SchemaVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="Project.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CookieAuthenticationDefaults.cs" />
+    <Compile Include="CookieAuthenticationExtensions.cs" />
+    <Compile Include="CookieAuthenticationHandler.cs" />
+    <Compile Include="CookieAuthenticationMiddleware.cs" />
+    <Compile Include="CookieAuthenticationOptions.cs" />
+    <Compile Include="CookieSecureOption.cs" />
+    <Compile Include="Notifications\CookieApplyRedirectContext.cs" />
+    <Compile Include="Notifications\CookieAuthenticationNotifications.cs" />
+    <Compile Include="Notifications\CookieResponseSignInContext.cs" />
+    <Compile Include="Notifications\CookieResponseSignOutContext.cs" />
+    <Compile Include="Notifications\CookieValidateIdentityContext.cs" />
+    <Compile Include="Notifications\DefaultBehavior.cs" />
+    <Compile Include="Notifications\ICookieAuthenticationNotifications.cs" />
+    <Compile Include="NotNullAttribute.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />
+</Project>
