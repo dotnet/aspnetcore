@@ -150,12 +150,6 @@
   <data name="SectionsNotRendered" xml:space="preserve">
     <value>The following sections have been defined but have not been rendered: '{0}'.</value>
   </data>
-  <data name="ViewEngine_PartialViewNotFound" xml:space="preserve">
-    <value>The partial view '{0}' was not found. The following locations were searched:{1}</value>
-  </data>
-  <data name="ViewEngine_ViewNotFound" xml:space="preserve">
-    <value>The view '{0}' was not found. The following locations were searched:{1}.</value>
-  </data>
   <data name="View_MethodCannotBeCalled" xml:space="preserve">
     <value>The method '{0}' cannot be invoked by this view.</value>
   </data>

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Rendering;
 
 namespace Microsoft.AspNet.Mvc
@@ -74,6 +75,18 @@ namespace Microsoft.AspNet.Mvc
         private IView FindView([NotNull] IDictionary<string, object> context, [NotNull] string viewName)
         {
             var result = _viewEngine.FindView(context, viewName);
+            if (!result.Success)
+            {
+                var locations = string.Empty;
+                if (result.SearchedLocations != null)
+                {
+                    locations = Environment.NewLine +
+                        string.Join(Environment.NewLine, result.SearchedLocations);
+                }
+
+                throw new InvalidOperationException(Resources.FormatViewEngine_ViewNotFound(viewName, locations));
+            }
+
             return result.View;
         }
     }

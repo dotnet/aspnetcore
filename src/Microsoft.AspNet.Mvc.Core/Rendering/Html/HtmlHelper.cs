@@ -321,11 +321,21 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             var newViewData = new ViewDataDictionary(baseViewData, model);
 
-
-
             var viewEngineResult = _viewEngine.FindPartialView(ViewContext.RouteValues, partialViewName);
-            var view = viewEngineResult.View;
+            if (!viewEngineResult.Success)
+            {
+                var locations = string.Empty;
+                if (viewEngineResult.SearchedLocations != null)
+                {
+                    locations = Environment.NewLine +
+                        string.Join(Environment.NewLine, viewEngineResult.SearchedLocations);
+                }
 
+                throw new InvalidOperationException(
+                    Resources.FormatViewEngine_PartialViewNotFound(partialViewName, locations));
+            }
+
+            var view = viewEngineResult.View;
             using (view as IDisposable)
             {
                 var viewContext = new ViewContext(ViewContext, view, newViewData, writer);
