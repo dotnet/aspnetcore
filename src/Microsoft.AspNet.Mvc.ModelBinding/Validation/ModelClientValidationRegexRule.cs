@@ -4,13 +4,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class ModelClientValidationRegexRule : ModelClientValidationRule
     {
-        private const string ValidationType = "regex";
-        private const string ValidationRuleName = "pattern";
+        private const string RegexValidationType = "regex";
+        private const string RegexValidationRuleName = "pattern";
 
         public ModelClientValidationRegexRule(string errorMessage, string pattern)
-            : base(ValidationType, errorMessage)
+            : base(RegexValidationType, errorMessage)
         {
-            ValidationParameters.Add(ValidationRuleName, pattern);
+            ValidationParameters.Add(RegexValidationRuleName, pattern);
         }
     }
 }
