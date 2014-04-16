@@ -31,11 +31,11 @@ namespace Microsoft.AspNet.Security.DataProtection
 
             return algHandle;
         }
-        private static BCryptAlgorithmHandle CreateHMACSHA256AlgorithmHandle()
+
+        internal static BCryptAlgorithmHandle CreateGenericHMACHandleFromPrimitiveProvider(string algorithmName)
         {
-            // create the HMACSHA-256 instance
             BCryptAlgorithmHandle algHandle;
-            int status = UnsafeNativeMethods.BCryptOpenAlgorithmProvider(out algHandle, Constants.BCRYPT_SHA256_ALGORITHM, Constants.MS_PRIMITIVE_PROVIDER, dwFlags: BCryptAlgorithmFlags.BCRYPT_ALG_HANDLE_HMAC_FLAG);
+            int status = UnsafeNativeMethods.BCryptOpenAlgorithmProvider(out algHandle, algorithmName, Constants.MS_PRIMITIVE_PROVIDER, dwFlags: BCryptAlgorithmFlags.BCRYPT_ALG_HANDLE_HMAC_FLAG);
             if (status != 0 || algHandle == null || algHandle.IsInvalid)
             {
                 throw new CryptographicException(status);
@@ -44,17 +44,16 @@ namespace Microsoft.AspNet.Security.DataProtection
             return algHandle;
         }
 
+        private static BCryptAlgorithmHandle CreateHMACSHA256AlgorithmHandle()
+        {
+            // create the HMACSHA-256 instance
+            return CreateGenericHMACHandleFromPrimitiveProvider(Constants.BCRYPT_SHA256_ALGORITHM);
+        }
+
         private static BCryptAlgorithmHandle CreateHMACSHA512AlgorithmHandle()
         {
             // create the HMACSHA-512 instance
-            BCryptAlgorithmHandle algHandle;
-            int status = UnsafeNativeMethods.BCryptOpenAlgorithmProvider(out algHandle, Constants.BCRYPT_SHA512_ALGORITHM, Constants.MS_PRIMITIVE_PROVIDER, dwFlags: BCryptAlgorithmFlags.BCRYPT_ALG_HANDLE_HMAC_FLAG);
-            if (status != 0 || algHandle == null || algHandle.IsInvalid)
-            {
-                throw new CryptographicException(status);
-            }
-
-            return algHandle;
+            return CreateGenericHMACHandleFromPrimitiveProvider(Constants.BCRYPT_SHA512_ALGORITHM);
         }
     }
 }
