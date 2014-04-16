@@ -11,15 +11,8 @@ using Microsoft.AspNet.Routing;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class MvcApplication : IRouter
+    public class MvcRouteHandler : IRouter
     {
-        private readonly IServiceProvider _serviceProvider;
-
-        public MvcApplication([NotNull] IServiceProvider serviceProvider)
-        {
-            _serviceProvider = serviceProvider;
-        }
-
         public string GetVirtualPath([NotNull] VirtualPathContext context)
         {
             // The contract of this method is to check that the values coming in from the route are valid;
@@ -81,7 +74,7 @@ namespace Microsoft.AspNet.Mvc
                 return null;
             }
 
-            var applicationServices = httpContext.ApplicationServices ?? _serviceProvider;
+            var applicationServices = httpContext.ApplicationServices;
 
             var scopeFactory = applicationServices.GetService<IServiceScopeFactory>();
             var scope = scopeFactory.CreateScope();

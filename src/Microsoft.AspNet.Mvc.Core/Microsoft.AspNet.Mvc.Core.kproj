@@ -113,7 +113,7 @@
     <Compile Include="IParameterDescriptorFactory.cs" />
     <Compile Include="IUrlHelper.cs" />
     <Compile Include="JsonOutputFormatter.cs" />
-    <Compile Include="MvcApplication.cs" />
+    <Compile Include="MvcRouteHandler.cs" />
     <Compile Include="NonActionAttribute.cs" />
     <Compile Include="ParameterBindingInfo.cs" />
     <Compile Include="ParameterBinding\ActionBindingContext.cs" />

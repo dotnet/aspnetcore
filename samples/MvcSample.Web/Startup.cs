@@ -19,7 +19,7 @@ namespace MvcSample.Web
 
             var routes = new RouteCollection()
             {
-                DefaultHandler = new MvcApplication(serviceProvider),
+                DefaultHandler = new MvcRouteHandler(),
             };
 
             // TODO: Add support for route constraints, so we can potentially constrain by existing routes
