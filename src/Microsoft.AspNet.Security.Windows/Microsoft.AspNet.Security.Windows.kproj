@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="__ToolsVersion__" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.Props" Condition="'$(VSToolsPath)' != ''" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>efc7538f-7aeb-4a3e-a1e6-6bdccbd272bf</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <ActiveTargetFramework>net45</ActiveTargetFramework>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
+  </PropertyGroup>
+  <PropertyGroup>
+    <SchemaVersion>2.0</SchemaVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="Project.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AuthTypes.cs" />
+    <Compile Include="ComNetOS.cs" />
+    <Compile Include="Constants.cs" />
+    <Compile Include="DictionaryExtensions.cs" />
+    <Compile Include="DigestCache.cs" />
+    <Compile Include="DisconnectAsyncResult.cs" />
+    <Compile Include="HeaderEncoding.cs" />
+    <Compile Include="HttpKnownHeaderNames.cs" />
+    <Compile Include="HttpStatusCode.cs" />
+    <Compile Include="Legacy\CaseInsinsitiveAscii.cs" />
+    <Compile Include="Legacy\GlobalLog.cs" />
+    <Compile Include="Legacy\HttpListenerContext.cs" />
+    <Compile Include="Legacy\Internal.cs" />
+    <Compile Include="Legacy\Logging.cs" />
+    <Compile Include="Legacy\LoggingObject.cs" />
+    <Compile Include="Legacy\SR.cs" />
+    <Compile Include="Legacy\ValidationHelper.cs" />
+    <Compile Include="NativeInterop\AuthIdentity.cs" />
+    <Compile Include="NativeInterop\ContextFlags.cs" />
+    <Compile Include="NativeInterop\NativeSSPI.cs" />
+    <Compile Include="NativeInterop\SafeCloseHandle.cs" />
+    <Compile Include="NativeInterop\SafeCredentialReference.cs" />
+    <Compile Include="NativeInterop\SafeDeleteContext.cs" />
+    <Compile Include="NativeInterop\SafeFreeCertContext.cs" />
+    <Compile Include="NativeInterop\SafeFreeContextBuffer.cs" />
+    <Compile Include="NativeInterop\SafeFreeContextBufferChannelBinding.cs" />
+    <Compile Include="NativeInterop\SafeFreeCredentials.cs" />
+    <Compile Include="NativeInterop\SafeLocalFree.cs" />
+    <Compile Include="NativeInterop\SafeSspiAuthDataHandle.cs" />
+    <Compile Include="NativeInterop\SchProtocols.cs" />
+    <Compile Include="NativeInterop\SecSizes.cs" />
+    <Compile Include="NativeInterop\SecurityBuffer.cs" />
+    <Compile Include="NativeInterop\SecurityBufferDescriptor.cs" />
+    <Compile Include="NativeInterop\SecurityPackageInfoClass.cs" />
+    <Compile Include="NativeInterop\SslConnectionInfo.cs" />
+    <Compile Include="NativeInterop\SSPIAuthType.cs" />
+    <Compile Include="NativeInterop\SSPIHandle.cs" />
+    <Compile Include="NativeInterop\SSPISessionCache.cs" />
+    <Compile Include="NativeInterop\SSPIWrapper.cs" />
+    <Compile Include="NativeInterop\StreamSizes.cs" />
+    <Compile Include="NativeInterop\UnsafeNativeMethods.cs" />
+    <Compile Include="NegotiationInfoClass.cs" />
+    <Compile Include="NTAuthentication.cs" />
+    <Compile Include="PrefixCollection.cs" />
+    <Compile Include="PrefixEnumerator.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServiceNameStore.cs" />
+    <Compile Include="WindowsAuthMiddleware.cs" />
+  </ItemGroup>
+  <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />
+</Project>
