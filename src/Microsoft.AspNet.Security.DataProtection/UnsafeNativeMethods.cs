@@ -1,17 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Security.DataProtection
 {
-#if NET45
     [SuppressUnmanagedCodeSecurity]
-#endif
-    internal static unsafe class UnsafeNativeMethods
+    internal unsafe static class UnsafeNativeMethods
     {
         private const string BCRYPT_LIB = "bcrypt.dll";
         private const string CRYPT32_LIB = "crypt32.dll";
@@ -51,19 +45,6 @@ namespace Microsoft.AspNet.Security.DataProtection
             [In] uint cbOutput,
             [Out] out uint pcbResult,
             [In] BCryptEncryptFlags dwFlags);
-
-        [DllImport(BCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
-        // http://msdn.microsoft.com/en-us/library/windows/desktop/dd433795(v=vs.85).aspx
-        internal static extern int BCryptDeriveKeyPBKDF2(
-            [In] BCryptAlgorithmHandle hPrf,
-            [In] byte* pbPassword,
-            [In] uint cbPassword,
-            [In] byte* pbSalt,
-            [In] uint cbSalt,
-            [In] ulong cIterations,
-            [In] byte* pbDerivedKey,
-            [In] uint cbDerivedKey,
-            [In] uint dwFlags);
 
         [DllImport(BCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
         // http://msdn.microsoft.com/en-us/library/windows/desktop/aa375399(v=vs.85).aspx
@@ -178,6 +159,13 @@ namespace Microsoft.AspNet.Security.DataProtection
             [Out] out DATA_BLOB pDataOut);
 
         [DllImport(CRYPT32_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        // http://msdn.microsoft.com/en-us/library/windows/desktop/aa380262(v=vs.85).aspx
+        internal static extern bool CryptProtectMemory(
+            [In] byte* pData,
+            [In] uint cbData,
+            [In] uint dwFlags);
+
+        [DllImport(CRYPT32_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
         // http://msdn.microsoft.com/en-us/library/windows/desktop/aa380882(v=vs.85).aspx
         internal static extern bool CryptUnprotectData(
             [In] DATA_BLOB* pDataIn,
@@ -187,6 +175,13 @@ namespace Microsoft.AspNet.Security.DataProtection
             [In] IntPtr pPromptStruct,
             [In] uint dwFlags,
             [Out] out DATA_BLOB pDataOut);
+
+        [DllImport(CRYPT32_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        // http://msdn.microsoft.com/en-us/library/windows/desktop/aa380890(v=vs.85).aspx
+        internal static extern bool CryptUnprotectMemory(
+            [In] byte* pData,
+            [In] uint cbData,
+            [In] uint dwFlags);
 
         /*
          * KERNEL32.DLL

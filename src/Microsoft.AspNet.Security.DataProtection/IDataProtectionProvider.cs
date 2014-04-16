@@ -2,6 +2,9 @@
 
 namespace Microsoft.AspNet.Security.DataProtection
 {
+    /// <summary>
+    /// A factory that can provide IDataProtector instances.
+    /// </summary>
     public interface IDataProtectionProvider : IDisposable
     {
         /// <summary>

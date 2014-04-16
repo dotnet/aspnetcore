@@ -1,13 +1,21 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using System.Text;
 using Microsoft.AspNet.Security.DataProtection.Util;
 
 namespace Microsoft.AspNet.Security.DataProtection
 {
-    internal static unsafe class BCryptUtil
+    internal unsafe static class BCryptUtil
     {
+        // from dpapi.h
+        const uint CRYPTPROTECTMEMORY_BLOCK_SIZE = 16;
+        const uint CRYPTPROTECTMEMORY_SAME_PROCESS = 0x00;
+
+        private static readonly UTF8Encoding _secureUtf8Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+
         // constant-time buffer comparison
         [MethodImpl(MethodImplOptions.NoOptimization)]
         public static bool BuffersAreEqualSecure(byte* p1, byte* p2, uint count)
@@ -23,22 +31,22 @@ namespace Microsoft.AspNet.Security.DataProtection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void CheckOverflowUnderflow(int input)
         {
-            var unused = checked((uint) input);
+            var unused = checked((uint)input);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void CheckOverflowUnderflow(uint input)
         {
-            var unused = checked((int) input);
+            var unused = checked((int)input);
         }
 
-        // helper function to wrap BCryptCreateHash
-        public static BCryptHashHandle CreateHash(BCryptAlgorithmHandle algorithmHandle, byte* key, int keyLengthInBytes)
+        // helper function to wrap BCryptCreateHash, passing in a key used for HMAC
+        public static BCryptHashHandle CreateHMACHandle(BCryptAlgorithmHandle algorithmHandle, byte* key, int keyLengthInBytes)
         {
             CheckOverflowUnderflow(keyLengthInBytes);
 
             BCryptHashHandle retVal;
-            int status = UnsafeNativeMethods.BCryptCreateHash(algorithmHandle, out retVal, IntPtr.Zero, 0, key, (uint) keyLengthInBytes, dwFlags: 0);
+            int status = UnsafeNativeMethods.BCryptCreateHash(algorithmHandle, out retVal, IntPtr.Zero, 0, key, (uint)keyLengthInBytes, dwFlags: 0);
             if (status != 0 || retVal == null || retVal.IsInvalid)
             {
                 throw new CryptographicException(status);
@@ -61,24 +69,24 @@ namespace Microsoft.AspNet.Security.DataProtection
                 throw new InvalidOperationException();
             }
             byte* pDuplicatedIV = stackalloc byte[ivLength];
-            BufferUtil.BlockCopy(from: (IntPtr) iv, to: (IntPtr) pDuplicatedIV, byteCount: ivLength);
+            BufferUtil.BlockCopy(from: iv, to: pDuplicatedIV, byteCount: ivLength);
 
             uint retVal;
-            int status = UnsafeNativeMethods.BCryptDecrypt(keyHandle, input, (uint) inputLength, IntPtr.Zero, pDuplicatedIV, (uint) ivLength, output, (uint) outputLength, out retVal, BCryptEncryptFlags.BCRYPT_BLOCK_PADDING);
+            int status = UnsafeNativeMethods.BCryptDecrypt(keyHandle, input, (uint)inputLength, IntPtr.Zero, pDuplicatedIV, (uint)ivLength, output, (uint)outputLength, out retVal, BCryptEncryptFlags.BCRYPT_BLOCK_PADDING);
             if (status != 0)
             {
                 throw new CryptographicException(status);
             }
 
-            return checked((int) retVal);
+            return checked((int)retVal);
         }
 
         // helper function to wrap BCryptKeyDerivation using SP800-108-CTR-HMAC-SHA512
-        public static void DeriveKeysSP800108(BCryptAlgorithmHandle kdfAlgorithmHandle, BCryptKeyHandle keyHandle, string purpose, BCryptAlgorithmHandle encryptionAlgorithmHandle, out BCryptKeyHandle encryptionKeyHandle, BCryptAlgorithmHandle hashAlgorithmHandle, out BCryptHashHandle hmacHandle, out BCryptKeyHandle kdfKeyHandle)
+        public static void DeriveKeysSP800108(byte[] protectedKdk, string purpose, BCryptAlgorithmHandle encryptionAlgorithmHandle, out BCryptKeyHandle encryptionKeyHandle, BCryptAlgorithmHandle hashAlgorithmHandle, out BCryptHashHandle hmacHandle, out byte[] kdfSubkey)
         {
-            const int ENCRYPTION_KEY_SIZE_IN_BYTES = 256/8;
-            const int HMAC_KEY_SIZE_IN_BYTES = 256/8;
-            const int KDF_SUBKEY_SIZE_IN_BYTES = 512/8;
+            const int ENCRYPTION_KEY_SIZE_IN_BYTES = 256 / 8;
+            const int HMAC_KEY_SIZE_IN_BYTES = 256 / 8;
+            const int KDF_SUBKEY_SIZE_IN_BYTES = 512 / 8;
             const int TOTAL_NUM_BYTES_TO_DERIVE = ENCRYPTION_KEY_SIZE_IN_BYTES + HMAC_KEY_SIZE_IN_BYTES + KDF_SUBKEY_SIZE_IN_BYTES;
 
             // keep our buffers on the stack while we're generating key material
@@ -87,50 +95,27 @@ namespace Microsoft.AspNet.Security.DataProtection
             byte* pNewHmacKey = &pNewEncryptionKey[ENCRYPTION_KEY_SIZE_IN_BYTES];
             byte* pNewKdfSubkey = &pNewHmacKey[HMAC_KEY_SIZE_IN_BYTES];
 
-            try
+            protectedKdk = (byte[])protectedKdk.Clone(); // CryptUnprotectMemory mutates its input, so we preserve the original
+            fixed (byte* pKdk = protectedKdk)
             {
-                fixed (char* pszPrfAlgorithmName = Constants.BCRYPT_SHA512_ALGORITHM)
+                try
                 {
-                    // Create a buffer to hold the hash algorithm name, currently hardcoded to HMACSHA512
-                    uint numBuffers = 1;
-                    BCryptBuffer* pBCryptBuffers = stackalloc BCryptBuffer[2];
-                    pBCryptBuffers[0].BufferType = BCryptKeyDerivationBufferType.KDF_HASH_ALGORITHM;
-                    pBCryptBuffers[0].pvBuffer = (IntPtr) pszPrfAlgorithmName;
-                    pBCryptBuffers[0].cbBuffer = (uint) ((Constants.BCRYPT_SHA512_ALGORITHM.Length + 1)*sizeof (char)); // per http://msdn.microsoft.com/en-us/library/windows/desktop/aa375368(v=vs.85).aspx, need to include terminating null
-                    fixed (char* pszPurpose = (String.IsNullOrEmpty(purpose) ? (string) null : purpose))
-                    {
-                        // Create a buffer to hold the purpose string if it is specified (we'll treat it as UTF-16LE)
-                        if (pszPurpose != null)
-                        {
-                            numBuffers = 2;
-                            pBCryptBuffers[1].BufferType = BCryptKeyDerivationBufferType.KDF_LABEL;
-                            pBCryptBuffers[1].pvBuffer = (IntPtr) pszPurpose;
-                            pBCryptBuffers[1].cbBuffer = checked((uint) (purpose.Length*sizeof (char)));
-                        }
+                    // Since the KDK is pinned, the GC won't move around the array containing the plaintext key before we
+                    // have the opportunity to clear its contents.
+                    UnprotectMemoryWithinThisProcess(pKdk, (uint)protectedKdk.Length);
 
-                        // .. and the header ..
-                        BCryptBufferDesc bufferDesc = default(BCryptBufferDesc);
-                        BCryptBufferDesc.Initialize(ref bufferDesc);
-                        bufferDesc.cBuffers = numBuffers;
-                        bufferDesc.pBuffers = pBCryptBuffers;
+                    byte[] purposeBytes = (!String.IsNullOrEmpty(purpose)) ? _secureUtf8Encoding.GetBytes(purpose) : null;
+                    SP800_108Helper.DeriveKeys(pKdk, protectedKdk.Length, purposeBytes, pBuffer, TOTAL_NUM_BYTES_TO_DERIVE);
 
-                        uint numBytesDerived;
-                        int status = UnsafeNativeMethods.BCryptKeyDerivation(keyHandle, &bufferDesc, pBuffer, TOTAL_NUM_BYTES_TO_DERIVE, out numBytesDerived, dwFlags: 0);
-                        if (status != 0 || numBytesDerived != TOTAL_NUM_BYTES_TO_DERIVE)
-                        {
-                            throw new CryptographicException(status);
-                        }
-                    }
+                    // Split into AES, HMAC, and KDF subkeys
+                    encryptionKeyHandle = ImportKey(encryptionAlgorithmHandle, pNewEncryptionKey, ENCRYPTION_KEY_SIZE_IN_BYTES);
+                    hmacHandle = CreateHMACHandle(hashAlgorithmHandle, pNewHmacKey, HMAC_KEY_SIZE_IN_BYTES);
+                    kdfSubkey = BufferUtil.ToProtectedManagedByteArray(pNewKdfSubkey, KDF_SUBKEY_SIZE_IN_BYTES);
                 }
-
-                // At this point, we have all the bytes we need.
-                encryptionKeyHandle = ImportKey(encryptionAlgorithmHandle, pNewEncryptionKey, ENCRYPTION_KEY_SIZE_IN_BYTES);
-                hmacHandle = CreateHash(hashAlgorithmHandle, pNewHmacKey, HMAC_KEY_SIZE_IN_BYTES);
-                kdfKeyHandle = ImportKey(kdfAlgorithmHandle, pNewKdfSubkey, KDF_SUBKEY_SIZE_IN_BYTES);
-            }
-            finally
-            {
-                BufferUtil.ZeroMemory(pBuffer, TOTAL_NUM_BYTES_TO_DERIVE);
+                finally
+                {
+                    BufferUtil.SecureZeroMemory(pKdk, protectedKdk.Length);
+                }
             }
         }
 
@@ -161,16 +146,16 @@ namespace Microsoft.AspNet.Security.DataProtection
                 throw new InvalidOperationException();
             }
             byte* pDuplicatedIV = stackalloc byte[ivLength];
-            BufferUtil.BlockCopy(from: (IntPtr) iv, to: (IntPtr) pDuplicatedIV, byteCount: ivLength);
+            BufferUtil.BlockCopy(from: iv, to: pDuplicatedIV, byteCount: ivLength);
 
             uint retVal;
-            int status = UnsafeNativeMethods.BCryptEncrypt(keyHandle, input, (uint) inputLength, IntPtr.Zero, pDuplicatedIV, (uint) ivLength, output, (uint) outputLength, out retVal, BCryptEncryptFlags.BCRYPT_BLOCK_PADDING);
+            int status = UnsafeNativeMethods.BCryptEncrypt(keyHandle, input, (uint)inputLength, IntPtr.Zero, pDuplicatedIV, (uint)ivLength, output, (uint)outputLength, out retVal, BCryptEncryptFlags.BCRYPT_BLOCK_PADDING);
             if (status != 0)
             {
                 throw new CryptographicException(status);
             }
 
-            return checked((int) retVal);
+            return checked((int)retVal);
         }
 
         // helper function to take a key, apply a purpose, and generate a new subkey ("entropy") for DPAPI-specific scenarios
@@ -183,7 +168,7 @@ namespace Microsoft.AspNet.Security.DataProtection
             BCryptHashHandle hashHandle;
             fixed (byte* pPreviousKey = previousKey)
             {
-                hashHandle = CreateHash(Algorithms.HMACSHA256AlgorithmHandle, pPreviousKey, previousKey.Length);
+                hashHandle = CreateHMACHandle(Algorithms.HMACSHA256AlgorithmHandle, pPreviousKey, previousKey.Length);
             }
 
             // hash the purpose string, treating it as UTF-16LE
@@ -206,7 +191,7 @@ namespace Microsoft.AspNet.Security.DataProtection
         {
             CheckOverflowUnderflow(bufferBytes);
 
-            int status = UnsafeNativeMethods.BCryptGenRandom(IntPtr.Zero, buffer, (uint) bufferBytes, BCryptGenRandomFlags.BCRYPT_USE_SYSTEM_PREFERRED_RNG);
+            int status = UnsafeNativeMethods.BCryptGenRandom(IntPtr.Zero, buffer, (uint)bufferBytes, BCryptGenRandomFlags.BCRYPT_USE_SYSTEM_PREFERRED_RNG);
             if (status != 0)
             {
                 throw new CryptographicException(status);
@@ -219,13 +204,13 @@ namespace Microsoft.AspNet.Security.DataProtection
             CheckOverflowUnderflow(inputBytes);
             CheckOverflowUnderflow(outputBytes);
 
-            int status = UnsafeNativeMethods.BCryptHashData(hashHandle, input, (uint) inputBytes, dwFlags: 0);
+            int status = UnsafeNativeMethods.BCryptHashData(hashHandle, input, (uint)inputBytes, dwFlags: 0);
             if (status != 0)
             {
                 throw new CryptographicException(status);
             }
 
-            status = UnsafeNativeMethods.BCryptFinishHash(hashHandle, output, (uint) outputBytes, dwFlags: 0);
+            status = UnsafeNativeMethods.BCryptFinishHash(hashHandle, output, (uint)outputBytes, dwFlags: 0);
             if (status != 0)
             {
                 throw new CryptographicException(status);
@@ -238,7 +223,7 @@ namespace Microsoft.AspNet.Security.DataProtection
             CheckOverflowUnderflow(keyBytes);
 
             byte[] heapAllocatedKeyDataBlob = null;
-            int numBytesRequiredForKeyDataBlob = checked(keyBytes + sizeof (BCRYPT_KEY_DATA_BLOB_HEADER));
+            int numBytesRequiredForKeyDataBlob = checked(keyBytes + sizeof(BCRYPT_KEY_DATA_BLOB_HEADER));
             if (numBytesRequiredForKeyDataBlob > Constants.MAX_STACKALLOC_BYTES)
             {
                 heapAllocatedKeyDataBlob = new byte[numBytesRequiredForKeyDataBlob]; // allocate on heap if we cannot allocate on stack
@@ -248,28 +233,28 @@ namespace Microsoft.AspNet.Security.DataProtection
             BCryptKeyHandle retVal;
             fixed (byte* pHeapAllocatedKeyDataBlob = heapAllocatedKeyDataBlob)
             {
-                // The header is first
-                BCRYPT_KEY_DATA_BLOB_HEADER* pKeyDataBlobHeader = (BCRYPT_KEY_DATA_BLOB_HEADER*) pHeapAllocatedKeyDataBlob;
+                // The header is first; if it wasn't heap-allocated we can stack-allocate now
+                BCRYPT_KEY_DATA_BLOB_HEADER* pKeyDataBlobHeader = (BCRYPT_KEY_DATA_BLOB_HEADER*)pHeapAllocatedKeyDataBlob;
                 if (pKeyDataBlobHeader == null)
                 {
                     byte* temp = stackalloc byte[numBytesRequiredForKeyDataBlob]; // won't be released until frame pops
-                    pKeyDataBlobHeader = (BCRYPT_KEY_DATA_BLOB_HEADER*) temp;
+                    pKeyDataBlobHeader = (BCRYPT_KEY_DATA_BLOB_HEADER*)temp;
                 }
                 BCRYPT_KEY_DATA_BLOB_HEADER.Initialize(ref *pKeyDataBlobHeader);
-                pKeyDataBlobHeader->cbKeyData = (uint) keyBytes;
+                pKeyDataBlobHeader->cbKeyData = (uint)keyBytes;
 
                 // the raw material immediately follows the header
-                byte* pKeyDataRawMaterial = (byte*) (&pKeyDataBlobHeader[1]);
+                byte* pKeyDataRawMaterial = (byte*)(&pKeyDataBlobHeader[1]);
 
                 try
                 {
-                    BufferUtil.BlockCopy(from: (IntPtr) key, to: (IntPtr) pKeyDataRawMaterial, byteCount: keyBytes);
-                    status = UnsafeNativeMethods.BCryptImportKey(algHandle, IntPtr.Zero, Constants.BCRYPT_KEY_DATA_BLOB, out retVal, IntPtr.Zero, 0, (byte*) pKeyDataBlobHeader, (uint) numBytesRequiredForKeyDataBlob, dwFlags: 0);
+                    BufferUtil.BlockCopy(from: key, to: pKeyDataRawMaterial, byteCount: keyBytes);
+                    status = UnsafeNativeMethods.BCryptImportKey(algHandle, IntPtr.Zero, Constants.BCRYPT_KEY_DATA_BLOB, out retVal, IntPtr.Zero, 0, (byte*)pKeyDataBlobHeader, (uint)numBytesRequiredForKeyDataBlob, dwFlags: 0);
                 }
                 finally
                 {
                     // zero out the key we just copied
-                    BufferUtil.ZeroMemory(pKeyDataRawMaterial, keyBytes);
+                    BufferUtil.SecureZeroMemory(pKeyDataRawMaterial, keyBytes);
                 }
             }
 
@@ -278,6 +263,30 @@ namespace Microsoft.AspNet.Security.DataProtection
                 throw new CryptographicException(status);
             }
             return retVal;
+        }
+
+        internal static void ProtectMemoryWithinThisProcess(byte* pBuffer, uint bufferLength)
+        {
+            Debug.Assert(pBuffer != null);
+            Debug.Assert(bufferLength % CRYPTPROTECTMEMORY_BLOCK_SIZE == 0, "Input buffer size must be a multiple of CRYPTPROTECTMEMORY_BLOCK_SIZE.");
+
+            bool success = UnsafeNativeMethods.CryptProtectMemory(pBuffer, bufferLength, CRYPTPROTECTMEMORY_SAME_PROCESS);
+            if (!success)
+            {
+                throw new CryptographicException(Marshal.GetLastWin32Error());
+            }
+        }
+
+        internal static void UnprotectMemoryWithinThisProcess(byte* pBuffer, uint bufferLength)
+        {
+            Debug.Assert(pBuffer != null);
+            Debug.Assert(bufferLength % CRYPTPROTECTMEMORY_BLOCK_SIZE == 0, "Input buffer size must be a multiple of CRYPTPROTECTMEMORY_BLOCK_SIZE.");
+
+            bool success = UnsafeNativeMethods.CryptUnprotectMemory(pBuffer, bufferLength, CRYPTPROTECTMEMORY_SAME_PROCESS);
+            if (!success)
+            {
+                throw new CryptographicException(Marshal.GetLastWin32Error());
+            }
         }
     }
 }

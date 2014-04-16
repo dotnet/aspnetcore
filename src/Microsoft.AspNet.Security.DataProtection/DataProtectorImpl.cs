@@ -5,29 +5,37 @@ using Microsoft.AspNet.Security.DataProtection.Util;
 
 namespace Microsoft.AspNet.Security.DataProtection
 {
-    internal sealed unsafe class DataProtectorImpl : IDataProtector
+    internal unsafe sealed class DataProtectorImpl : IDataProtector
     {
-        private const int AES_BLOCK_LENGTH_IN_BYTES = 128/8;
-        private const int MAC_LENGTH_IN_BYTES = 256/8;
+        private const int AES_BLOCK_LENGTH_IN_BYTES = 128 / 8;
+        private const int AES_IV_LENGTH_IN_BYTES = AES_BLOCK_LENGTH_IN_BYTES;
+        private const int MAC_LENGTH_IN_BYTES = 256 / 8;
 
         private readonly BCryptKeyHandle _aesKeyHandle;
         private readonly BCryptHashHandle _hmacHashHandle;
-        private readonly BCryptKeyHandle _kdfSubkeyHandle;
+        private readonly byte[] _protectedKdk;
 
-        public DataProtectorImpl(BCryptKeyHandle aesKeyHandle, BCryptHashHandle hmacHashHandle, BCryptKeyHandle kdfSubkeyHandle)
+        public DataProtectorImpl(BCryptKeyHandle aesKeyHandle, BCryptHashHandle hmacHashHandle, byte[] protectedKdk)
         {
             _aesKeyHandle = aesKeyHandle;
             _hmacHashHandle = hmacHashHandle;
-            _kdfSubkeyHandle = kdfSubkeyHandle;
+            _protectedKdk = protectedKdk;
         }
 
-        private static int CalculateTotalProtectedDataSize(int unprotectedDataSize)
+        private static int CalculateTotalProtectedDataSize(int unprotectedDataSizeInBytes)
         {
-            Debug.Assert(unprotectedDataSize >= 0);
+            Debug.Assert(unprotectedDataSizeInBytes >= 0);
 
-            // Calculates 
-            int numFullBlocks = unprotectedDataSize/AES_BLOCK_LENGTH_IN_BYTES;
-            return checked(AES_BLOCK_LENGTH_IN_BYTES /* IV */+ (numFullBlocks + 1)*AES_BLOCK_LENGTH_IN_BYTES /* ciphertext w/ padding */+ MAC_LENGTH_IN_BYTES /* HMAC */);
+            checked
+            {
+                // Padding always rounds the block count up, never down.
+                // If the input size is already a multiple of the block length, a block is added.
+                int numBlocks = 1 + unprotectedDataSizeInBytes / AES_BLOCK_LENGTH_IN_BYTES;
+                return
+                    AES_IV_LENGTH_IN_BYTES /* IV */
+                    + numBlocks * AES_BLOCK_LENGTH_IN_BYTES /* ciphertext with padding */
+                    + MAC_LENGTH_IN_BYTES /* MAC */;
+            }
         }
 
         private static CryptographicException CreateGenericCryptographicException()
@@ -39,17 +47,16 @@ namespace Microsoft.AspNet.Security.DataProtection
         {
             BCryptKeyHandle newAesKeyHandle;
             BCryptHashHandle newHmacHashHandle;
-            BCryptKeyHandle newKdfSubkeyHandle;
+            byte[] newProtectedKdfSubkey;
 
-            BCryptUtil.DeriveKeysSP800108(Algorithms.SP800108AlgorithmHandle, _kdfSubkeyHandle, purpose, Algorithms.AESAlgorithmHandle, out newAesKeyHandle, Algorithms.HMACSHA256AlgorithmHandle, out newHmacHashHandle, out newKdfSubkeyHandle);
-            return new DataProtectorImpl(newAesKeyHandle, newHmacHashHandle, newKdfSubkeyHandle);
+            BCryptUtil.DeriveKeysSP800108(_protectedKdk, purpose, Algorithms.AESAlgorithmHandle, out newAesKeyHandle, Algorithms.HMACSHA256AlgorithmHandle, out newHmacHashHandle, out newProtectedKdfSubkey);
+            return new DataProtectorImpl(newAesKeyHandle, newHmacHashHandle, newProtectedKdfSubkey);
         }
 
         public void Dispose()
         {
             _aesKeyHandle.Dispose();
             _hmacHashHandle.Dispose();
-            _kdfSubkeyHandle.Dispose();
         }
 
         public byte[] Protect(byte[] unprotectedData)
@@ -66,14 +73,14 @@ namespace Microsoft.AspNet.Security.DataProtection
             {
                 // first, generate a random IV for CBC mode encryption
                 byte* pIV = pProtectedData;
-                BCryptUtil.GenRandom(pIV, AES_BLOCK_LENGTH_IN_BYTES);
+                BCryptUtil.GenRandom(pIV, AES_IV_LENGTH_IN_BYTES);
 
                 // then, encrypt the plaintext contents
-                byte* pCiphertext = &pIV[AES_BLOCK_LENGTH_IN_BYTES];
-                int expectedCiphertextLength = protectedData.Length - AES_BLOCK_LENGTH_IN_BYTES - MAC_LENGTH_IN_BYTES;
-                fixed (byte* pPlaintext = unprotectedData)
+                byte* pCiphertext = &pIV[AES_IV_LENGTH_IN_BYTES];
+                int expectedCiphertextLength = protectedData.Length - AES_IV_LENGTH_IN_BYTES - MAC_LENGTH_IN_BYTES;
+                fixed (byte* pPlaintext = unprotectedData.AsFixed())
                 {
-                    int actualCiphertextLength = BCryptUtil.EncryptWithPadding(_aesKeyHandle, pPlaintext, unprotectedData.Length, pIV, AES_BLOCK_LENGTH_IN_BYTES, pCiphertext, expectedCiphertextLength);
+                    int actualCiphertextLength = BCryptUtil.EncryptWithPadding(_aesKeyHandle, pPlaintext, unprotectedData.Length, pIV, AES_IV_LENGTH_IN_BYTES, pCiphertext, expectedCiphertextLength);
                     if (actualCiphertextLength != expectedCiphertextLength)
                     {
                         throw new InvalidOperationException("Unexpected error while encrypting data.");
@@ -86,7 +93,7 @@ namespace Microsoft.AspNet.Security.DataProtection
                 {
                     // Use a cloned hash handle since IDataProtector instances could be singletons, but BCryptHashHandle instances contain
                     // state hence aren't thread-safe. Our own perf testing shows that duplicating existing hash handles is very fast.
-                    BCryptUtil.HashData(clonedHashHandle, pProtectedData, AES_BLOCK_LENGTH_IN_BYTES + expectedCiphertextLength, pMac, MAC_LENGTH_IN_BYTES);
+                    BCryptUtil.HashData(clonedHashHandle, pProtectedData, AES_IV_LENGTH_IN_BYTES + expectedCiphertextLength, pMac, MAC_LENGTH_IN_BYTES);
                 }
             }
 
@@ -125,7 +132,7 @@ namespace Microsoft.AspNet.Security.DataProtection
             Debug.Assert(protectedData != null);
 
             // is the protected data even long enough to be valid?
-            if (protectedData.Length < AES_BLOCK_LENGTH_IN_BYTES /* IV */+ AES_BLOCK_LENGTH_IN_BYTES /* min ciphertext size = 1 block */+ MAC_LENGTH_IN_BYTES)
+            if (protectedData.Length < AES_IV_LENGTH_IN_BYTES /* IV */ + AES_BLOCK_LENGTH_IN_BYTES /* min ciphertext size = 1 block */ + MAC_LENGTH_IN_BYTES)
             {
                 return null;
             }
@@ -134,8 +141,8 @@ namespace Microsoft.AspNet.Security.DataProtection
             {
                 // calculate pointer offsets
                 byte* pIV = pProtectedData;
-                byte* pCiphertext = &pProtectedData[AES_BLOCK_LENGTH_IN_BYTES];
-                int ciphertextLength = protectedData.Length - AES_BLOCK_LENGTH_IN_BYTES /* IV */- MAC_LENGTH_IN_BYTES /* MAC */;
+                byte* pCiphertext = &pProtectedData[AES_IV_LENGTH_IN_BYTES];
+                int ciphertextLength = protectedData.Length - AES_IV_LENGTH_IN_BYTES /* IV */ - MAC_LENGTH_IN_BYTES /* MAC */;
                 byte* pSuppliedMac = &pCiphertext[ciphertextLength];
 
                 // first, ensure that the MAC is valid
@@ -143,7 +150,7 @@ namespace Microsoft.AspNet.Security.DataProtection
                 using (var clonedHashHandle = BCryptUtil.DuplicateHash(_hmacHashHandle))
                 {
                     // see comments in Protect(byte[]) for why we duplicate the hash
-                    BCryptUtil.HashData(clonedHashHandle, pProtectedData, AES_BLOCK_LENGTH_IN_BYTES + ciphertextLength, pCalculatedMac, MAC_LENGTH_IN_BYTES);
+                    BCryptUtil.HashData(clonedHashHandle, pProtectedData, AES_IV_LENGTH_IN_BYTES + ciphertextLength, pCalculatedMac, MAC_LENGTH_IN_BYTES);
                 }
                 if (!BCryptUtil.BuffersAreEqualSecure(pSuppliedMac, pCalculatedMac, MAC_LENGTH_IN_BYTES))
                 {
@@ -168,16 +175,11 @@ namespace Microsoft.AspNet.Security.DataProtection
                         pPlaintextBuffer = temp;
                     }
 
-                    int actualPlaintextLength = BCryptUtil.DecryptWithPadding(_aesKeyHandle, pCiphertext, ciphertextLength, pIV, AES_BLOCK_LENGTH_IN_BYTES, pPlaintextBuffer, plaintextBufferLength);
+                    int actualPlaintextLength = BCryptUtil.DecryptWithPadding(_aesKeyHandle, pCiphertext, ciphertextLength, pIV, AES_IV_LENGTH_IN_BYTES, pPlaintextBuffer, plaintextBufferLength);
                     Debug.Assert(actualPlaintextLength >= 0 && actualPlaintextLength < ciphertextLength);
 
                     // truncate the return value to accomodate the plaintext size perfectly
-                    byte[] retVal = new byte[actualPlaintextLength];
-                    fixed (byte* pRetVal = retVal)
-                    {
-                        BufferUtil.BlockCopy(from: (IntPtr) pPlaintextBuffer, to: (IntPtr) pRetVal, byteCount: actualPlaintextLength);
-                    }
-                    return retVal;
+                    return BufferUtil.ToManagedByteArray(pPlaintextBuffer, actualPlaintextLength);
                 }
             }
         }

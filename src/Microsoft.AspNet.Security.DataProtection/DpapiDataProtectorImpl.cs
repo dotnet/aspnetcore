@@ -10,15 +10,19 @@ namespace Microsoft.AspNet.Security.DataProtection
     internal unsafe sealed class DpapiDataProtectorImpl : IDataProtector
     {
         // from dpapi.h
+        private const uint CRYPTPROTECT_LOCAL_MACHINE = 0x4;
         private const uint CRYPTPROTECT_UI_FORBIDDEN = 0x1;
 
         // Used as the 'purposes' parameter to DPAPI operations
         private readonly byte[] _entropy;
 
-        public DpapiDataProtectorImpl(byte[] entropy)
+        private readonly bool _protectToLocalMachine;
+
+        public DpapiDataProtectorImpl(byte[] entropy, bool protectToLocalMachine)
         {
             Debug.Assert(entropy != null);
             _entropy = entropy;
+            _protectToLocalMachine = protectToLocalMachine;
         }
 
         private static CryptographicException CreateGenericCryptographicException(bool isErrorDueToProfileNotLoaded = false)
@@ -29,12 +33,24 @@ namespace Microsoft.AspNet.Security.DataProtection
 
         public IDataProtector CreateSubProtector(string purpose)
         {
-            return new DpapiDataProtectorImpl(BCryptUtil.GenerateDpapiSubkey(_entropy, purpose));
+            return new DpapiDataProtectorImpl(BCryptUtil.GenerateDpapiSubkey(_entropy, purpose), _protectToLocalMachine);
         }
 
         public void Dispose()
         {
             // no-op; no unmanaged resources to dispose
+        }
+
+        private uint GetCryptProtectUnprotectFlags()
+        {
+            if (_protectToLocalMachine)
+            {
+                return CRYPTPROTECT_LOCAL_MACHINE | CRYPTPROTECT_UI_FORBIDDEN;
+            }
+            else
+            {
+                return CRYPTPROTECT_UI_FORBIDDEN;
+            }
         }
 
         public byte[] Protect(byte[] unprotectedData)
@@ -52,14 +68,14 @@ namespace Microsoft.AspNet.Security.DataProtection
             try
             {
                 bool success;
-                fixed (byte* pUnprotectedData = unprotectedData)
+                fixed (byte* pUnprotectedData = unprotectedData.AsFixed())
                 {
                     fixed (byte* pEntropy = _entropy)
                     {
                         // no need for checked arithmetic here
                         DATA_BLOB dataIn = new DATA_BLOB() { cbData = (uint)unprotectedData.Length, pbData = pUnprotectedData };
                         DATA_BLOB optionalEntropy = new DATA_BLOB() { cbData = (uint)_entropy.Length, pbData = pEntropy };
-                        success = UnsafeNativeMethods.CryptProtectData(&dataIn, IntPtr.Zero, &optionalEntropy, IntPtr.Zero, IntPtr.Zero, CRYPTPROTECT_UI_FORBIDDEN, out dataOut);
+                        success = UnsafeNativeMethods.CryptProtectData(&dataIn, IntPtr.Zero, &optionalEntropy, IntPtr.Zero, IntPtr.Zero, GetCryptProtectUnprotectFlags(), out dataOut);
                     }
                 }
 
@@ -104,14 +120,14 @@ namespace Microsoft.AspNet.Security.DataProtection
             try
             {
                 bool success;
-                fixed (byte* pProtectedData = protectedData)
+                fixed (byte* pProtectedData = protectedData.AsFixed())
                 {
                     fixed (byte* pEntropy = _entropy)
                     {
                         // no need for checked arithmetic here
                         DATA_BLOB dataIn = new DATA_BLOB() { cbData = (uint)protectedData.Length, pbData = pProtectedData };
                         DATA_BLOB optionalEntropy = new DATA_BLOB() { cbData = (uint)_entropy.Length, pbData = pEntropy };
-                        success = UnsafeNativeMethods.CryptUnprotectData(&dataIn, IntPtr.Zero, &optionalEntropy, IntPtr.Zero, IntPtr.Zero, CRYPTPROTECT_UI_FORBIDDEN, out dataOut);
+                        success = UnsafeNativeMethods.CryptUnprotectData(&dataIn, IntPtr.Zero, &optionalEntropy, IntPtr.Zero, IntPtr.Zero, GetCryptProtectUnprotectFlags(), out dataOut);
                     }
                 }
 

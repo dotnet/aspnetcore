@@ -2,28 +2,28 @@
 
 namespace Microsoft.AspNet.Security.DataProtection
 {
-    internal sealed unsafe class DataProtectionProviderImpl : IDataProtectionProvider
+    internal unsafe sealed class DataProtectionProviderImpl : IDataProtectionProvider
     {
-        private readonly BCryptKeyHandle _kdfSubkeyHandle;
+        private readonly byte[] _protectedKdk;
 
-        public DataProtectionProviderImpl(BCryptKeyHandle kdfSubkeyHandle)
+        public DataProtectionProviderImpl(byte[] protectedKdk)
         {
-            _kdfSubkeyHandle = kdfSubkeyHandle;
+            _protectedKdk = protectedKdk;
         }
 
         public IDataProtector CreateProtector(string purpose)
         {
             BCryptKeyHandle newAesKeyHandle;
             BCryptHashHandle newHmacHashHandle;
-            BCryptKeyHandle newKdfSubkeyHandle;
+            byte[] newProtectedKdfSubkey;
 
-            BCryptUtil.DeriveKeysSP800108(Algorithms.SP800108AlgorithmHandle, _kdfSubkeyHandle, purpose, Algorithms.AESAlgorithmHandle, out newAesKeyHandle, Algorithms.HMACSHA256AlgorithmHandle, out newHmacHashHandle, out newKdfSubkeyHandle);
-            return new DataProtectorImpl(newAesKeyHandle, newHmacHashHandle, newKdfSubkeyHandle);
+            BCryptUtil.DeriveKeysSP800108(_protectedKdk, purpose, Algorithms.AESAlgorithmHandle, out newAesKeyHandle, Algorithms.HMACSHA256AlgorithmHandle, out newHmacHashHandle, out newProtectedKdfSubkey);
+            return new DataProtectorImpl(newAesKeyHandle, newHmacHashHandle, newProtectedKdfSubkey);
         }
 
         public void Dispose()
         {
-            _kdfSubkeyHandle.Dispose();
+            // no-op: we hold no protected resources
         }
     }
 }

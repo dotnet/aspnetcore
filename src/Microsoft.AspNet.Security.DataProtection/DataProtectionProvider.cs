@@ -1,41 +1,38 @@
 ﻿using System;
 using System.Globalization;
-using System.Reflection;
+using System.Text;
+using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.AspNet.Security.DataProtection.Util;
 
 namespace Microsoft.AspNet.Security.DataProtection
 {
-    public static unsafe class DataProtectionProvider
+    /// <summary>
+    /// Provides methods for creating IDataProtectionProvider instances.
+    /// </summary>
+    public unsafe static class DataProtectionProvider
     {
-        private const int MASTER_KEY_REQUIRED_LENGTH = 512/8;
+        const int MASTER_KEY_REQUIRED_LENGTH = 512 / 8;
 
-        private static readonly byte[] MASTER_SUBKEY_GENERATOR = GetMasterSubkeyGenerator();
-        private static readonly byte[] MASTER_DPAPI_ENTROPY = GetMasterSubkeyGenerator(isDpapi: true);
+        private static readonly byte[] MASTER_SUBKEY_GENERATOR = Encoding.ASCII.GetBytes("Microsoft.AspNet.Security.DataProtection");
 
-        private static byte[] GetMasterSubkeyGenerator(bool isDpapi = false)
+        /// <summary>
+        /// Creates a new IDataProtectionProvider backed by DPAPI, where the protected
+        /// payload can only be decrypted by the current user.
+        /// </summary>
+        public static IDataProtectionProvider CreateFromDpapi()
         {
-            TypeInfo typeInfo = ((isDpapi) ? typeof(DpapiDataProtectionProviderImpl) : typeof(DataProtectionProvider)).GetTypeInfo();
-
-            byte[] retVal = new byte[sizeof (Guid)*2];
-            fixed (byte* pRetVal = retVal)
-            {
-                Guid* guids = (Guid*) pRetVal;
-                guids[0] = typeInfo.GUID;
-#if NET45
-                guids[1] = typeInfo.Module.ModuleVersionId;
-#else
-                guids[1] = default(Guid);
-#endif
-            }
-            return retVal;
+            return CreateFromDpapi(protectToLocalMachine: false);
         }
 
         /// <summary>
         /// Creates a new IDataProtectionProvider backed by DPAPI.
         /// </summary>
-        public static IDataProtectionProvider CreateFromDpapi()
+        /// <param name="protectToLocalMachine">True if protected payloads can be decrypted by any user
+        /// on the local machine, false if protected payloads should only be able to decrypted by the
+        /// current user account.</param>
+        public static IDataProtectionProvider CreateFromDpapi(bool protectToLocalMachine)
         {
-            return new DpapiDataProtectionProviderImpl(MASTER_DPAPI_ENTROPY);
+            return new DpapiDataProtectionProviderImpl(MASTER_SUBKEY_GENERATOR, protectToLocalMachine);
         }
 
         /// <summary>
@@ -51,7 +48,7 @@ namespace Microsoft.AspNet.Security.DataProtection
             }
             finally
             {
-                BufferUtil.ZeroMemory(masterKey, MASTER_KEY_REQUIRED_LENGTH);
+                BufferUtil.SecureZeroMemory(masterKey, MASTER_KEY_REQUIRED_LENGTH);
             }
         }
 
@@ -82,16 +79,19 @@ namespace Microsoft.AspNet.Security.DataProtection
             byte* masterSubkey = stackalloc byte[MASTER_KEY_REQUIRED_LENGTH];
             try
             {
-                using (var hashHandle = BCryptUtil.CreateHash(Algorithms.HMACSHA512AlgorithmHandle, masterKey, masterKeyLengthInBytes))
+                using (var hashHandle = BCryptUtil.CreateHMACHandle(Algorithms.HMACSHA512AlgorithmHandle, masterKey, masterKeyLengthInBytes))
                 {
-                    BCryptUtil.HashData(hashHandle, masterKey, masterKeyLengthInBytes, masterSubkey, MASTER_KEY_REQUIRED_LENGTH);
+                    fixed (byte* pMasterSubkeyGenerator = MASTER_SUBKEY_GENERATOR)
+                    {
+                        BCryptUtil.HashData(hashHandle, pMasterSubkeyGenerator, MASTER_SUBKEY_GENERATOR.Length, masterSubkey, MASTER_KEY_REQUIRED_LENGTH);
+                    }
                 }
-                BCryptKeyHandle kdfSubkeyHandle = BCryptUtil.ImportKey(Algorithms.SP800108AlgorithmHandle, masterSubkey, MASTER_KEY_REQUIRED_LENGTH);
-                return new DataProtectionProviderImpl(kdfSubkeyHandle);
+                byte[] protectedKdk = BufferUtil.ToProtectedManagedByteArray(masterSubkey, MASTER_KEY_REQUIRED_LENGTH);
+                return new DataProtectionProviderImpl(protectedKdk);
             }
             finally
             {
-                BufferUtil.ZeroMemory(masterSubkey, MASTER_KEY_REQUIRED_LENGTH);
+                BufferUtil.SecureZeroMemory(masterSubkey, MASTER_KEY_REQUIRED_LENGTH);
             }
         }
     }

@@ -23,6 +23,8 @@
   <ItemGroup>
     <Compile Include="Algorithms.cs" />
     <Compile Include="BCryptAlgorithmFlags.cs" />
+    <Compile Include="SuppressUnmanagedCodeSecurityAttribute - Copy.cs" />
+    <Compile Include="SafeLibraryHandle.cs" />
     <Compile Include="BCryptAlgorithmHandle.cs" />
     <Compile Include="BCryptBuffer.cs" />
     <Compile Include="BCryptBufferDesc.cs" />
@@ -34,7 +36,6 @@
     <Compile Include="BCryptUtil.cs" />
     <Compile Include="BCRYPT_KEY_DATA_BLOB_HEADER.cs" />
     <Compile Include="Constants.cs" />
-    <Compile Include="CryptographicException.cs" />
     <Compile Include="CryptRand.cs" />
     <Compile Include="DataProtectionProvider.cs" />
     <Compile Include="DataProtectionProviderImpl.cs" />
@@ -44,11 +45,13 @@
     <Compile Include="DpapiDataProtectorImpl.cs" />
     <Compile Include="IDataProtectionProvider.cs" />
     <Compile Include="IDataProtector.cs" />
-    <Compile Include="PBKDF2.cs" />
     <Compile Include="Properties\Res.Designer.cs" />
     <Compile Include="SafeHandleZeroOrMinusOneIsInvalid.cs" />
+    <Compile Include="SP800_108Helper.cs" />
     <Compile Include="UnsafeNativeMethods.cs" />
     <Compile Include="Util\BufferUtil.cs" />
+    <Compile Include="Util\ByteArrayExtensions.cs" />
+    <Compile Include="Util\MemoryUtil.cs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
