@@ -19,8 +19,7 @@
         @Html.ValidationSummary(true)
 
         <div class="form-group">
-            @*@Html.LabelFor(model => model.GenreId, "GenreId", new { @class = "control-label col-md-2" })*@
-            <label class="control-label col-md-2">GenreId</label>
+            @Html.LabelFor(model => model.GenreId, "GenreId", new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 @Html.DropDownList("GenreId", String.Empty)
                 @*@Html.ValidationMessageFor(model => model.GenreId)*@
@@ -28,8 +27,7 @@
         </div>
 
         <div class="form-group">
-            @*@Html.LabelFor(model => model.ArtistId, "ArtistId", new { @class = "control-label col-md-2" })*@
-            <label class="control-label col-md-2">ArtistId</label>
+            @Html.LabelFor(model => model.ArtistId, "ArtistId", new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 @Html.DropDownList("ArtistId", String.Empty)
                 @*@Html.ValidationMessageFor(model => model.ArtistId)*@
@@ -37,8 +35,7 @@
         </div>
 
         <div class="form-group">
-            @*@Html.LabelFor(model => model.Title, new { @class = "control-label col-md-2" })*@
-            <label class="control-label col-md-2">Title</label>
+            @Html.LabelFor(model => model.Title, new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 @*@Html.EditorFor(model => model.Title)*@
                 @*@Html.ValidationMessageFor(model => model.Title)*@
@@ -46,8 +43,7 @@
         </div>
 
         <div class="form-group">
-            @*@Html.LabelFor(model => model.Price, new { @class = "control-label col-md-2" })*@
-            <label class="control-label col-md-2">Price</label>
+            @Html.LabelFor(model => model.Price, new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 @*@Html.EditorFor(model => model.Price)*@
                 @*@Html.ValidationMessageFor(model => model.Price)*@
@@ -55,8 +51,7 @@
         </div>
 
         <div class="form-group">
-            @*@Html.LabelFor(model => model.AlbumArtUrl, new { @class = "control-label col-md-2" })*@
-            <label class="control-label col-md-2">AlbumArtUrl</label>
+            @Html.LabelFor(model => model.AlbumArtUrl, new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 @*@Html.EditorFor(model => model.AlbumArtUrl)*@
                 @*@Html.ValidationMessageFor(model => model.AlbumArtUrl)*@
