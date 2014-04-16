@@ -6,15 +6,10 @@ namespace Microsoft.AspNet.Abstractions
 {
     public static class BuilderExtensions
     {
-        public static IRouteCollection UseRouter(this IBuilder builder)
-        {
-            return UseRouter(builder, new RouteCollection());
-        }
-
-        public static IRouteCollection UseRouter(this IBuilder builder, IRouteCollection routes)
+        public static IBuilder UseRouter(this IBuilder builder, IRouteCollection routes)
         {
             builder.Use((next) => new RouterMiddleware(next, routes).Invoke);
-            return routes;
+            return builder;
         }
     }
 }

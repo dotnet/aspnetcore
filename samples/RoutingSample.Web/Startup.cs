@@ -8,7 +8,8 @@ namespace RoutingSample.Web
     {
         public void Configuration(IBuilder builder)
         {
-            var routes = builder.UseRouter();
+            var routes = new RouteCollection();
+            builder.UseRouter(routes);
 
             var endpoint1 = new DelegateRouteEndpoint(async (context) =>
                                                             await context.HttpContext.Response.WriteAsync(
