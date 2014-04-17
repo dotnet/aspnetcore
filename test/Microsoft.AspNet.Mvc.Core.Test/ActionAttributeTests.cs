@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         [InlineData("Put")]
         [InlineData("RPCMethod")]
         [InlineData("RPCMethodWithHttpGet")]
-        public async Task NonActionAttribute_ActionNotReachable(string actionName)
+        public void NonActionAttribute_ActionNotReachable(string actionName)
         {
             // Arrange
             var actionDescriptorProvider = GetActionDescriptorProvider(_actionDiscoveryConventions);
