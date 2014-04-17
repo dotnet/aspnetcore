@@ -1,5 +1,8 @@
 {
   "version": "0.1-alpha-*",
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
   "dependencies": {
     "Newtonsoft.Json": "5.0.8",
     "Microsoft.AspNet.DependencyInjection": "0.1-alpha-*",
