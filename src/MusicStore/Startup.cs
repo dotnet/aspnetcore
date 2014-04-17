@@ -28,17 +28,20 @@ public class Startup
     public static InMemoryUserStore<ApplicationUser> UserStore = new InMemoryUserStore<ApplicationUser>();
     public static InMemoryRoleStore<IdentityRole> RoleStore = new InMemoryRoleStore<IdentityRole>();
 
+    private static void ConfigureServices(ServiceCollection services)
+    {
+        services.AddInstance<ILoggerFactory>(new NullLoggerFactory());
+        services.AddMvc();
+    }
+
     public void Configuration(IBuilder app)
     {
         CreateAdminUser(app.ServiceProvider);
 
+        app.UseContainer(ConfigureServices);
+
         //ErrorPageOptions.ShowAll to be used only at development time. Not recommended for production. 
         app.UseErrorPage(ErrorPageOptions.ShowAll);
-
-        var serviceCollection = new ServiceCollection();
-        serviceCollection.AddInstance<ILoggerFactory>(new NullLoggerFactory());
-        serviceCollection.Add(MvcServices.GetDefaultServices());
-        app.UseContainer(serviceCollection.BuildServiceProvider(app.ServiceProvider));
 
         app.UseFileServer();
 
@@ -50,7 +53,7 @@ public class Startup
 
         var routes = new RouteCollection()
         {
-            DefaultHandler = new MvcApplication(app.ServiceProvider),
+            DefaultHandler = new MvcRouteHandler(),
         };
 
         routes.MapRoute(
