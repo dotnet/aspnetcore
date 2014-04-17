@@ -1,6 +1,4 @@
-﻿using System;
-using System.Security.Claims;
-using Microsoft.AspNet.Identity;
+﻿using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Security;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -208,65 +206,5 @@ namespace MusicStore.Controllers
         }
 
         #endregion
-    }
-
-    /// <summary>
-    /// TODO: Temporary APIs to unblock build. Need to remove this once we have these APIs available. 
-    /// </summary>
-    public static class Extensions
-    {
-        /// <summary>
-        ///     Return the user name using the UserNameClaimType
-        /// </summary>
-        /// <param name="identity"></param>
-        /// <returns></returns>
-        public static string GetUserName(this IIdentity identity)
-        {
-            if (identity == null)
-            {
-                throw new ArgumentNullException("identity");
-            }
-            var ci = identity as ClaimsIdentity;
-            if (ci != null)
-            {
-                return ci.FindFirstValue(ClaimsIdentity.DefaultNameClaimType);
-            }
-            return null;
-        }
-
-        /// <summary>
-        ///     Return the user id using the UserIdClaimType
-        /// </summary>
-        /// <param name="identity"></param>
-        /// <returns></returns>
-        public static string GetUserId(this IIdentity identity)
-        {
-            if (identity == null)
-            {
-                throw new ArgumentNullException("identity");
-            }
-            var ci = identity as ClaimsIdentity;
-            if (ci != null)
-            {
-                return ci.FindFirstValue(ClaimTypes.NameIdentifier);
-            }
-            return null;
-        }
-
-        /// <summary>
-        ///     Return the claim value for the first claim with the specified type if it exists, null otherwise
-        /// </summary>
-        /// <param name="identity"></param>
-        /// <param name="claimType"></param>
-        /// <returns></returns>
-        public static string FindFirstValue(this ClaimsIdentity identity, string claimType)
-        {
-            if (identity == null)
-            {
-                throw new ArgumentNullException("identity");
-            }
-            var claim = identity.FindFirst(claimType);
-            return claim != null ? claim.Value : null;
-        }
     }
 }

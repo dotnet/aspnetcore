@@ -1,6 +1,4 @@
-﻿@*This using statement to MusicStore.Controllers should go away once we have the GetUserName() extension on IIdentity in some Identity package*@
-@using MusicStore.Controllers
-@using Microsoft.AspNet.Identity;
+﻿@using System.Security.Principal
 
 @if (Context.HttpContext.User != null && Context.HttpContext.User.Identity.IsAuthenticated)
 {
