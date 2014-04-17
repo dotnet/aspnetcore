@@ -142,6 +142,117 @@ namespace Microsoft.AspNet.Identity.Test
             store.VerifyAll();
         }
 
+        [Fact]
+        public async Task AddToRolesCallsStore()
+        {
+            // Setup
+            var store = new Mock<IUserRoleStore<TestUser>>();
+            var user = new TestUser { UserName = "Foo" };
+            var roles = new string[] {"A", "B", "C"};
+            store.Setup(s => s.AddToRoleAsync(user, "A", CancellationToken.None))
+                .Returns(Task.FromResult(0))
+                .Verifiable();
+            store.Setup(s => s.AddToRoleAsync(user, "B", CancellationToken.None))
+                .Returns(Task.FromResult(0))
+                .Verifiable();
+            store.Setup(s => s.AddToRoleAsync(user, "C", CancellationToken.None))
+                .Returns(Task.FromResult(0))
+                .Verifiable();
+            store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
+            store.Setup(s => s.GetRolesAsync(user, CancellationToken.None)).ReturnsAsync(new List<string>()).Verifiable();
+            var userManager = new UserManager<TestUser>(store.Object) {UserValidator = null};
+
+            // Act
+            var result = await userManager.AddToRolesAsync(user, roles);
+
+            // Assert
+            Assert.True(result.Succeeded);
+            store.VerifyAll();
+        }
+
+        [Fact]
+        public async Task AddToRolesFailsIfUserInRole()
+        {
+            // Setup
+            var store = new Mock<IUserRoleStore<TestUser>>();
+            var user = new TestUser { UserName = "Foo" };
+            var roles = new string[] { "A", "B", "C" };
+            store.Setup(s => s.AddToRoleAsync(user, "A", CancellationToken.None))
+                .Returns(Task.FromResult(0))
+                .Verifiable();
+            store.Setup(s => s.GetRolesAsync(user, CancellationToken.None)).ReturnsAsync(new List<string> { "B" }).Verifiable();
+            var userManager = new UserManager<TestUser>(store.Object) { UserValidator = null };
+
+            // Act
+            var result = await userManager.AddToRolesAsync(user, roles);
+
+            // Assert
+            IdentityResultAssert.IsFailure(result, "User already in role.");
+            store.VerifyAll();
+        }
+
+        [Fact]
+        public async Task RemoveFromRolesCallsStore()
+        {
+            // Setup
+            var store = new Mock<IUserRoleStore<TestUser>>();
+            var user = new TestUser { UserName = "Foo" };
+            var roles = new string[] { "A", "B", "C" };
+            store.Setup(s => s.RemoveFromRoleAsync(user, "A", CancellationToken.None))
+                .Returns(Task.FromResult(0))
+                .Verifiable();
+            store.Setup(s => s.RemoveFromRoleAsync(user, "B", CancellationToken.None))
+                .Returns(Task.FromResult(0))
+                .Verifiable();
+            store.Setup(s => s.RemoveFromRoleAsync(user, "C", CancellationToken.None))
+                .Returns(Task.FromResult(0))
+                .Verifiable();
+            store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
+            store.Setup(s => s.IsInRoleAsync(user, "A", CancellationToken.None))
+                .Returns(Task.FromResult(true))
+                .Verifiable();
+            store.Setup(s => s.IsInRoleAsync(user, "B", CancellationToken.None))
+                .Returns(Task.FromResult(true))
+                .Verifiable();
+            store.Setup(s => s.IsInRoleAsync(user, "C", CancellationToken.None))
+                .Returns(Task.FromResult(true))
+                .Verifiable();
+            var userManager = new UserManager<TestUser>(store.Object) { UserValidator = null };
+
+            // Act
+            var result = await userManager.RemoveFromRolesAsync(user, roles);
+
+            // Assert
+            Assert.True(result.Succeeded);
+            store.VerifyAll();
+        }
+
+        [Fact]
+        public async Task RemoveFromRolesFailsIfNotInRole()
+        {
+            // Setup
+            var store = new Mock<IUserRoleStore<TestUser>>();
+            var user = new TestUser { UserName = "Foo" };
+            var roles = new string[] { "A", "B", "C" };
+            store.Setup(s => s.RemoveFromRoleAsync(user, "A", CancellationToken.None))
+                .Returns(Task.FromResult(0))
+                .Verifiable();
+            store.Setup(s => s.IsInRoleAsync(user, "A", CancellationToken.None))
+                .Returns(Task.FromResult(true))
+                .Verifiable();
+            store.Setup(s => s.IsInRoleAsync(user, "B", CancellationToken.None))
+                .Returns(Task.FromResult(false))
+                .Verifiable();
+            var userManager = new UserManager<TestUser>(store.Object) { UserValidator = null };
+
+            // Act
+            var result = await userManager.RemoveFromRolesAsync(user, roles);
+
+            // Assert
+            IdentityResultAssert.IsFailure(result, "User is not in role.");
+            store.VerifyAll();
+        }
+
 #endif
 
         [Fact]
@@ -278,8 +389,10 @@ namespace Microsoft.AspNet.Identity.Test
             var manager = new UserManager<TestUser>(new NoopUserStore());
             Assert.False(manager.SupportsUserRole);
             await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.AddToRoleAsync(null, "bogus"));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.AddToRolesAsync(null, null));
             await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetRolesAsync(null));
             await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.RemoveFromRoleAsync(null, "bogus"));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.RemoveFromRolesAsync(null, null));
             await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.IsInRoleAsync(null, "bogus"));
         }
 
@@ -333,6 +446,8 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.Throws<ArgumentNullException>("twoFactorProvider",
                 () => manager.RegisterTwoFactorProvider(null, null));
             Assert.Throws<ArgumentNullException>("provider", () => manager.RegisterTwoFactorProvider("bogus", null));
+            await Assert.ThrowsAsync<ArgumentNullException>("roles", async () => await manager.AddToRolesAsync(new TestUser(), null));
+            await Assert.ThrowsAsync<ArgumentNullException>("roles", async () => await manager.RemoveFromRolesAsync(new TestUser(), null));
         }
 
         [Fact]
@@ -355,6 +470,8 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.AddToRoleAsync(null, null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.AddToRolesAsync(null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.ChangePasswordAsync(null, null, null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.GetClaimsAsync(null));
@@ -372,6 +489,8 @@ namespace Microsoft.AspNet.Identity.Test
                 async () => await manager.RemovePasswordAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.RemoveFromRoleAsync(null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.RemoveFromRolesAsync(null, null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.UpdateSecurityStampAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
@@ -448,6 +567,7 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.AddLoginAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.AddPasswordAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.AddToRoleAsync(null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.AddToRolesAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.ChangePasswordAsync(null, null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GetClaimsAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GetLoginsAsync(null));
@@ -457,6 +577,7 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemoveLoginAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemovePasswordAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemoveFromRoleAsync(null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemoveFromRolesAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemoveClaimAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByUserNamePasswordAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByLoginAsync(null));
@@ -740,6 +861,7 @@ namespace Microsoft.AspNet.Identity.Test
             IUserPasswordStore<TestUser>,
             IUserClaimStore<TestUser>,
             IUserLoginStore<TestUser>,
+            IUserRoleStore<TestUser>,
             IUserEmailStore<TestUser>,
             IUserPhoneNumberStore<TestUser>,
             IUserLockoutStore<TestUser>,
@@ -926,6 +1048,26 @@ namespace Microsoft.AspNet.Identity.Test
             }
 
             public Task<bool> GetTwoFactorEnabledAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task AddToRoleAsync(TestUser user, string roleName, CancellationToken cancellationToken = new CancellationToken())
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task RemoveFromRoleAsync(TestUser user, string roleName, CancellationToken cancellationToken = new CancellationToken())
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<IList<string>> GetRolesAsync(TestUser user, CancellationToken cancellationToken = new CancellationToken())
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<bool> IsInRoleAsync(TestUser user, string roleName, CancellationToken cancellationToken = new CancellationToken())
             {
                 throw new NotImplementedException();
             }

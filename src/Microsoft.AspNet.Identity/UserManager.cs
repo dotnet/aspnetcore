@@ -959,6 +959,37 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
+        ///     Add a user to roles
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="roles"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public virtual async Task<IdentityResult> AddToRolesAsync(TUser user, IEnumerable<string> roles, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            ThrowIfDisposed();
+            var userRoleStore = GetUserRoleStore();
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            if (roles == null)
+            {
+                throw new ArgumentNullException("roles");
+            }
+            var userRoles = await userRoleStore.GetRolesAsync(user, cancellationToken);
+            foreach (var role in roles)
+            {
+                if (userRoles.Contains(role))
+                {
+                    return new IdentityResult(Resources.UserAlreadyInRole);
+                }
+                await userRoleStore.AddToRoleAsync(user, role, cancellationToken);
+            }
+            return await UpdateAsync(user, cancellationToken);
+        }
+
+        /// <summary>
         ///     Remove a user from a role.
         /// </summary>
         /// <param name="user"></param>
@@ -978,6 +1009,36 @@ namespace Microsoft.AspNet.Identity
                 return new IdentityResult(Resources.UserNotInRole);
             }
             await userRoleStore.RemoveFromRoleAsync(user, role, cancellationToken);
+            return await UpdateAsync(user, cancellationToken);
+        }
+
+        /// <summary>
+        ///     Remove a user from a specified roles.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="roles"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public virtual async Task<IdentityResult> RemoveFromRolesAsync(TUser user, IEnumerable<string> roles, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            ThrowIfDisposed();
+            var userRoleStore = GetUserRoleStore();
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            if (roles == null)
+            {
+                throw new ArgumentNullException("roles");
+            }
+            foreach (var role in roles)
+            {
+                if (!await userRoleStore.IsInRoleAsync(user, role, cancellationToken))
+                {
+                    return new IdentityResult(Resources.UserNotInRole);
+                }
+                await userRoleStore.RemoveFromRoleAsync(user, role, cancellationToken);
+            }
             return await UpdateAsync(user, cancellationToken);
         }
 
