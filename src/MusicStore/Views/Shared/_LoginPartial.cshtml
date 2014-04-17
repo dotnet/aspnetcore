@@ -1,4 +1,6 @@
-﻿@using Microsoft.AspNet.Identity;
+﻿@*This using statement to MusicStore.Controllers should go away once we have the GetUserName() extension on IIdentity in some Identity package*@
+@using MusicStore.Controllers
+@using Microsoft.AspNet.Identity;
 
 @if (Context.HttpContext.User != null && Context.HttpContext.User.Identity.IsAuthenticated)
 {
@@ -8,7 +10,7 @@
 
         <ul class="nav navbar-nav navbar-right">
             <li>
-                @Html.ActionLink("Hello " + Context.HttpContext.User.Identity.Name + "!", "Manage", "Account", routeValues: null, htmlAttributes: new { title = "Manage" })
+                @Html.ActionLink("Hello " + Context.HttpContext.User.Identity.GetUserName() + "!", "Manage", "Account", routeValues: null, htmlAttributes: new { title = "Manage" })
             </li>
             <li><a href="javascript:document.getElementById('logoutForm').submit()">Log off</a></li>
         </ul>

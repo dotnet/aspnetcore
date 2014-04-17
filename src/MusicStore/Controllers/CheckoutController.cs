@@ -46,7 +46,7 @@ namespace MusicStore.Controllers
                         : 1;
 
                     order.OrderId = nextId;
-                    order.Username = this.Context.User.Identity.Name;
+                    order.Username = this.Context.User.Identity.GetUserName();
                     order.OrderDate = DateTime.Now;
 
                     //Add the Order
@@ -78,7 +78,7 @@ namespace MusicStore.Controllers
             // Validate customer owns this order
             bool isValid = db.Orders.Any(
                 o => o.OrderId == id &&
-                o.Username == this.Context.User.Identity.Name);
+                o.Username == this.Context.User.Identity.GetUserName());
 
             if (isValid)
             {
