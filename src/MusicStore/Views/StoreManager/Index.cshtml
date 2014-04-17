@@ -24,23 +24,18 @@
         @Html.ActionLink("Create New", "Create")
     </p>
     <table class="table">
-        @*Bug: Html.NameFor does not contain an overload taking in IEnumerable<Tmodel>*@
         <tr>
             <th>
-                @*@Html.NameFor(model => model.Genre.Name)*@
-                @Html.NameFor(model => model.FirstOrDefault().Genre.Name)
+                @Html.DisplayNameFor(model => model.Genre.Name)
             </th>
             <th>
-                @*@Html.NameFor(model => model.Artist.Name)*@
-                @Html.NameFor(model => model.FirstOrDefault().Artist.Name)
+                @Html.DisplayNameFor(model => model.FirstOrDefault().Artist.Name)
             </th>
             <th>
-                @*@Html.NameFor(model => model.Title)*@
-                @Html.NameFor(model => model.FirstOrDefault().Title)
+                @Html.DisplayNameFor(model => model.FirstOrDefault().Title)
             </th>
             <th>
-                @*@Html.NameFor(model => model.Price)*@
-                @Html.NameFor(model => model.FirstOrDefault().Price)
+                @Html.DisplayNameFor(model => model.FirstOrDefault().Price)
             </th>
             <th></th>
         </tr>
