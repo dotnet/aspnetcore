@@ -36,8 +36,13 @@ namespace Microsoft.AspNet.RequestContainer
 
         public static IBuilder UseContainer(this IBuilder builder, IEnumerable<IServiceDescriptor> applicationServices)
         {
+            return builder.UseContainer(services => services.Add(applicationServices));
+        }
+
+        public static IBuilder UseContainer(this IBuilder builder, Action<ServiceCollection> configureServices)
+        {
             var serviceCollection = new ServiceCollection();
-            serviceCollection.Add(applicationServices);
+            configureServices(serviceCollection);
             builder.ServiceProvider = serviceCollection.BuildServiceProvider(builder.ServiceProvider);
 
             return builder.UseMiddleware(typeof(ContainerMiddleware));
