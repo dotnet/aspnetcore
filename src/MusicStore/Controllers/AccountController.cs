@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNet.Identity;
+﻿using Microsoft.AspNet.DependencyInjection;
+using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Security;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -11,19 +12,10 @@ namespace MusicStore.Controllers
     //[Authorize]
     public class AccountController : Controller
     {
-        public AccountController()
-            //Bug: Using an in memory store
-            //: this(new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext())))
-            : this(new UserManager<ApplicationUser>(Startup.UserStore))
+        public UserManager<ApplicationUser> UserManager
         {
+            get { return Context.ApplicationServices.GetService<UserManager<ApplicationUser>>(); }
         }
-
-        public AccountController(UserManager<ApplicationUser> userManager)
-        {
-            UserManager = userManager;
-        }
-
-        public UserManager<ApplicationUser> UserManager { get; set; }
 
         private SignInManager<ApplicationUser> _signInManager;
         public SignInManager<ApplicationUser> SignInManager {

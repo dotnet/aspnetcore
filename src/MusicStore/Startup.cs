@@ -22,22 +22,18 @@ using System.IO;
 
 public class Startup
 {
-    /// <summary>
-    /// TODO: Temporary ugly work around (making this static) to enable creating a static InMemory UserManager. Will go away shortly.
-    /// </summary>
-    public static InMemoryUserStore<ApplicationUser> UserStore = new InMemoryUserStore<ApplicationUser>();
-    public static InMemoryRoleStore<IdentityRole> RoleStore = new InMemoryRoleStore<IdentityRole>();
 
     private static void ConfigureServices(ServiceCollection services)
     {
         services.AddInstance<ILoggerFactory>(new NullLoggerFactory());
         services.AddMvc();
+
+        services.AddInstance<UserManager<ApplicationUser>>(new UserManager<ApplicationUser>(new InMemoryUserStore<ApplicationUser>()));
+        services.AddInstance<RoleManager<IdentityRole>>(new RoleManager<IdentityRole>(new InMemoryRoleStore<IdentityRole>()));
     }
 
     public void Configuration(IBuilder app)
     {
-        CreateAdminUser(app.ServiceProvider);
-
         app.UseContainer(ConfigureServices);
 
         //ErrorPageOptions.ShowAll to be used only at development time. Not recommended for production. 
@@ -67,6 +63,7 @@ public class Startup
         app.UseRouter(routes);
 
         SampleData.InitializeMusicStoreDatabaseAsync().Wait();
+        CreateAdminUser(app.ServiceProvider);
     }
 
     private async void CreateAdminUser(IServiceProvider serviceProvider)
@@ -81,8 +78,8 @@ public class Startup
         string _password = configuration.Get("DefaultAdminPassword");
         string _role = "Administrator";
 
-        var userManager = new UserManager<ApplicationUser>(UserStore);
-        var roleManager = new RoleManager<IdentityRole>(RoleStore);
+        var userManager = serviceProvider.GetService<UserManager<ApplicationUser>>();
+        var roleManager = serviceProvider.GetService<RoleManager<IdentityRole>>();
 
         var role = new IdentityRole(_role);
         var result = await roleManager.RoleExistsAsync(_role);

@@ -1,8 +1,8 @@
-﻿using System.Security.Principal;
-using Microsoft.AspNet.Mvc;
+﻿using Microsoft.AspNet.Mvc;
 using MusicStore.Models;
 using System;
 using System.Linq;
+using System.Security.Principal;
 using System.Threading.Tasks;
 
 namespace MusicStore.Controllers
