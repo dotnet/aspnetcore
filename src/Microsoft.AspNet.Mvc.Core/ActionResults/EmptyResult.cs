@@ -11,9 +11,11 @@ namespace Microsoft.AspNet.Mvc
             get { return _singleton; }
         }
 
+        #pragma warning disable 1998
         public async Task ExecuteResultAsync(ActionContext context)
         {
             context.HttpContext.Response.StatusCode = 204;
         }
+        #pragma warning restore 1998
     }
 }

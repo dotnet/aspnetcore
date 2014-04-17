@@ -11,9 +11,11 @@ namespace Microsoft.AspNet.Mvc
             _statusCode = statusCode;
         }
 
+        #pragma warning disable 1998
         public async Task ExecuteResultAsync(ActionContext context)
         {
             context.HttpContext.Response.StatusCode = _statusCode;
         }
+        #pragma warning restore 1998
     }
 }

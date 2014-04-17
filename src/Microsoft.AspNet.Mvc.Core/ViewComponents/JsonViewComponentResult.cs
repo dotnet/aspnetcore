@@ -43,9 +43,11 @@ namespace Microsoft.AspNet.Mvc
             formatter.WriteObject(context.Writer, _value);
         }
 
+        #pragma warning disable 1998
         public async Task ExecuteAsync([NotNull] ViewComponentContext context)
         {
             Execute(context);
         }
+        #pragma warning restore 1998
     }
 }

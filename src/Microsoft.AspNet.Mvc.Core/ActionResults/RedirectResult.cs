@@ -27,6 +27,7 @@ namespace Microsoft.AspNet.Mvc
 
         public string Url { get; private set; }
 
+        #pragma warning disable 1998
         public async Task ExecuteResultAsync([NotNull] ActionContext context)
         {
             // It is redirected directly to the input URL.
@@ -34,5 +35,6 @@ namespace Microsoft.AspNet.Mvc
             // only when relative URLs are supported. (Issue - WEBFX-202)
             context.HttpContext.Response.Redirect(Url, Permanent);
         }
+        #pragma warning restore 1998
     }
 }

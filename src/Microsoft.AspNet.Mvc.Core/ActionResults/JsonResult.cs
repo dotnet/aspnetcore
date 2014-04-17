@@ -59,6 +59,7 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
+        #pragma warning disable 1998
         public async Task ExecuteResultAsync(ActionContext context)
         {
             HttpResponse response = context.HttpContext.Response;
@@ -76,5 +77,6 @@ namespace Microsoft.AspNet.Mvc
                 formatter.WriteObject(writer, _returnValue);
             }
         }
+        #pragma warning restore 1998
     }
 }

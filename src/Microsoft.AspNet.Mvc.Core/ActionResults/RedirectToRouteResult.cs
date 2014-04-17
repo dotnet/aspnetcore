@@ -26,6 +26,7 @@ namespace Microsoft.AspNet.Mvc
 
         public bool Permanent { get; private set; }
 
+        #pragma warning disable 1998
         public async Task ExecuteResultAsync([NotNull] ActionContext context)
         {
             var destinationUrl = UrlHelper.RouteUrl(RouteValues);
@@ -37,5 +38,6 @@ namespace Microsoft.AspNet.Mvc
 
             context.HttpContext.Response.Redirect(destinationUrl, Permanent);
         }
+        #pragma warning restore 1998
     }
 }
