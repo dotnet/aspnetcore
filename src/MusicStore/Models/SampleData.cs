@@ -14,9 +14,9 @@ namespace MusicStore.Web.Models
     {
         const string imgUrl = "~/Images/placeholder.png";
 
-        public static async Task InitializeMusicStoreDatabaseAsync()
+        public static async Task InitializeMusicStoreDatabaseAsync(IServiceProvider serviceProvider)
         {
-            using (var db = new MusicStoreContext())
+            using (var db = new MusicStoreContext(serviceProvider))
             {
                 // TODO [EF] Swap to use top level API when available
                 var sqlServerDataStore = db.Configuration.DataStore as SqlServerDataStore;
@@ -26,39 +26,41 @@ namespace MusicStore.Web.Models
                     if (!await creator.ExistsAsync())
                     {
                         await creator.CreateAsync(db.Model);
-                        await InsertTestData();
+                        await InsertTestData(serviceProvider);
                     }
                 }
                 else
                 {
-                    await InsertTestData();
+                    await InsertTestData(serviceProvider);
                 }
             }
         }
 
-        private static async Task InsertTestData()
+        private static async Task InsertTestData(IServiceProvider serviceProvider)
         {
             var genres = GetGenres();
             var artists = GetArtists();
             var albums = GetAlbums(imgUrl, genres, artists);
 
-            await AddOrUpdateAsync(g => g.GenreId, genres);
-            await AddOrUpdateAsync(a => a.ArtistId, artists);
-            await AddOrUpdateAsync(a => a.AlbumId, albums);
+            await AddOrUpdateAsync(serviceProvider, g => g.GenreId, genres);
+            await AddOrUpdateAsync(serviceProvider, a => a.ArtistId, artists);
+            await AddOrUpdateAsync(serviceProvider, a => a.AlbumId, albums);
         }
 
         // TODO [EF] This may be replaced by a first class mechanism in EF
-        private static async Task AddOrUpdateAsync<TEntity>(Func<TEntity, object> propertyToMatch, IEnumerable<TEntity> entities)
+        private static async Task AddOrUpdateAsync<TEntity>(
+            IServiceProvider serviceProvider,
+            Func<TEntity, object> propertyToMatch, IEnumerable<TEntity> entities)
             where TEntity : class
         {
             // Query in a separate context so that we can attach existing entities as modified
             List<TEntity> existingData;
-            using (var db = new MusicStoreContext())
+            using (var db = new MusicStoreContext(serviceProvider))
             {
                 existingData = db.Set<TEntity>().ToList();
             }
 
-            using (var db = new MusicStoreContext())
+            using (var db = new MusicStoreContext(serviceProvider))
             {
                 foreach (var item in entities)
                 {

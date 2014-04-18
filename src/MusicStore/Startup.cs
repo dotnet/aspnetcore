@@ -13,6 +13,9 @@ using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.RequestContainer;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Security.Cookies;
+using Microsoft.Data.Entity;
+using Microsoft.Data.InMemory;
+using Microsoft.Data.SqlServer;
 using Microsoft.Net.Runtime;
 using MusicStore.Logging;
 using MusicStore.Models;
@@ -29,6 +32,12 @@ public class Startup
         {
             services.AddInstance<ILoggerFactory>(new NullLoggerFactory());
             services.AddMvc();
+#if NET45
+            services.AddEntityFramework(s => s.AddSqlServer());
+#else
+            services.AddEntityFramework(s => s.AddInMemoryStore());
+#endif
+            services.AddTransient<MusicStoreContext, MusicStoreContext>();
             services.AddInstance<UserManager<ApplicationUser>>(new UserManager<ApplicationUser>(new InMemoryUserStore<ApplicationUser>()));
             services.AddInstance<RoleManager<IdentityRole>>(new RoleManager<IdentityRole>(new InMemoryRoleStore<IdentityRole>()));
         });
@@ -55,7 +64,7 @@ public class Startup
                 new { controller = "Home" });
         });
 
-        SampleData.InitializeMusicStoreDatabaseAsync().Wait();
+        SampleData.InitializeMusicStoreDatabaseAsync(app.ApplicationServices).Wait();
         CreateAdminUser(app.ApplicationServices);
     }
 

@@ -7,7 +7,12 @@ namespace MusicStore.Controllers
 {
     public class HomeController : Controller
     {
-        private MusicStoreContext db = new MusicStoreContext();
+        private readonly MusicStoreContext db;
+
+        public HomeController(MusicStoreContext context)
+        {
+            db = context;
+        }
 
         //
         // GET: /Home/

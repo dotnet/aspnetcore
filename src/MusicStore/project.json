@@ -22,7 +22,7 @@
         "Microsoft.AspNet.Identity.Security": "0.1-alpha-*",
         "Microsoft.Data.Entity": "0.1-alpha-*",
         "Microsoft.Data.Relational": "0.1-alpha-*",
-        "Microsoft.Data.SqlServer": "0.1-pre-*",
+        "Microsoft.Data.SqlServer": "0.1-alpha-*",
         "Microsoft.Data.InMemory": "0.1-alpha-*",
         "Microsoft.Data.Migrations": "0.1-alpha-*",
         "Microsoft.AspNet.Diagnostics": "0.1-alpha-*",

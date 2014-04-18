@@ -9,7 +9,12 @@ namespace MusicStore.Components
     [ViewComponent(Name = "CartSummary")]
     public class CartSummaryComponent : ViewComponent
     {
-        private MusicStoreContext db = new MusicStoreContext();
+        private readonly MusicStoreContext db;
+
+        public CartSummaryComponent(MusicStoreContext context)
+        {
+            db = context;
+        }
 
         public async Task<IViewComponentResult> InvokeAsync()
         {

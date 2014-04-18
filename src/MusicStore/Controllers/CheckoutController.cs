@@ -11,7 +11,13 @@ namespace MusicStore.Controllers
     //[Authorize]
     public class CheckoutController : Controller
     {
-        MusicStoreContext db = new MusicStoreContext();
+        private readonly MusicStoreContext db;
+
+        public CheckoutController(MusicStoreContext context)
+        {
+            db = context;
+        }
+
         const string PromoCode = "FREE";
 
         //

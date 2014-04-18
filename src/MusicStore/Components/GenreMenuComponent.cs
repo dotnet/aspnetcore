@@ -9,7 +9,13 @@ namespace MusicStore.Components
     [ViewComponent(Name = "GenreMenu")]
     public class GenreMenuComponent : ViewComponent
     {
-        private MusicStoreContext db = new MusicStoreContext();
+        private readonly MusicStoreContext db;
+
+        public GenreMenuComponent(MusicStoreContext context)
+        {
+            db = context;
+        }
+
         public async Task<IViewComponentResult> InvokeAsync()
         {
             // TODO [EF] We don't query related data as yet, so the OrderByDescending isn't doing anything

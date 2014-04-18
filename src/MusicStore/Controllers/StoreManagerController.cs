@@ -11,7 +11,12 @@ namespace MusicStore.Controllers
     //[Authorize(Roles="Administrator")]
     public class StoreManagerController : Controller
     {
-        private MusicStoreContext db = new MusicStoreContext();
+        private readonly MusicStoreContext db;
+
+        public StoreManagerController(MusicStoreContext context)
+        {
+            db = context;
+        }
 
         //
         // GET: /StoreManager/

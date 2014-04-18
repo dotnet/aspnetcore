@@ -6,7 +6,12 @@ namespace MusicStore.Controllers
 {
     public class StoreController : Controller
     {
-        MusicStoreContext db = new MusicStoreContext();
+        private readonly MusicStoreContext db;
+
+        public StoreController(MusicStoreContext context)
+        {
+            db = context;
+        }
 
         //
         // GET: /Store/

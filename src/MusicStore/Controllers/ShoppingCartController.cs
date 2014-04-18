@@ -7,7 +7,12 @@ namespace MusicStore.Controllers
 {
     public class ShoppingCartController : Controller
     {
-        private MusicStoreContext db = new MusicStoreContext();
+        private readonly MusicStoreContext db;
+
+        public ShoppingCartController(MusicStoreContext context)
+        {
+            db = context;
+        }
 
         //
         // GET: /ShoppingCart/
