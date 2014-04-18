@@ -1,3 +1,5 @@
+using Microsoft.AspNet.DependencyInjection;
+using Microsoft.AspNet.DependencyInjection.Fallback;
 using Microsoft.AspNet.Testing;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Metadata;
@@ -119,13 +121,17 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         [Fact]
         public async Task Can_share_instance_between_contexts_with_sugar_experience2()
         {
-            using (var db = new IdentityContext())
+            // TODO: Should be possible to do this without creating the provider externally, but
+            // that is currently not working. Will be investigated.
+            var provider = new ServiceCollection().AddEntityFramework(s => s.AddInMemoryStore()).BuildServiceProvider();
+
+            using (var db = new IdentityContext(provider))
             {
                 db.Users.Add(new EntityUser { UserName = "John Doe" });
                 await db.SaveChangesAsync();
             }
 
-            using (var db = new IdentityContext())
+            using (var db = new IdentityContext(provider))
             {
                 var data = db.Users.ToList();
                 Assert.Equal(1, data.Count);
@@ -151,7 +157,9 @@ namespace Microsoft.AspNet.Identity.Entity.Test
 
             protected override void OnConfiguring(EntityConfigurationBuilder builder)
             {
-                builder.UseDataStore(new InMemoryDataStore());
+                builder
+                    .WithServices(s => s.AddInMemoryStore())
+                    .UseInMemoryStore(persist: true);
             }
 
             protected override void OnModelCreating(ModelBuilder builder)

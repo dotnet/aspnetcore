@@ -1,4 +1,6 @@
 using Microsoft.AspNet.Testing;
+using Microsoft.AspNet.DependencyInjection;
+using Microsoft.AspNet.DependencyInjection.Fallback;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Metadata;
 using Microsoft.Data.Entity.Storage;
@@ -16,12 +18,11 @@ namespace Microsoft.AspNet.Identity.Entity.Test
     {
         public static EntityContext CreateContext()
         {
-            var configuration = new EntityConfigurationBuilder()
-                //.UseModel(model)
-                            .UseDataStore(new InMemoryDataStore())
-                            .BuildConfiguration();
+            var serviceProvider = new ServiceCollection()
+                        .AddEntityFramework(s => s.AddInMemoryStore())
+                        .BuildServiceProvider();
 
-            var db = new IdentityContext(configuration);
+            var db = new IdentityContext(serviceProvider);
             //            var sql = db.Configuration.DataStore as SqlServerDataStore;
             //            if (sql != null)
             //            {

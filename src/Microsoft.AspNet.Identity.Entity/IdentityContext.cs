@@ -1,4 +1,6 @@
 ﻿using System;
+using Microsoft.AspNet.DependencyInjection;
+using Microsoft.AspNet.DependencyInjection.Fallback;
 using Microsoft.Data.Entity;
 using Microsoft.Data.InMemory;
 using Microsoft.Data.Entity.Metadata;
@@ -8,8 +10,8 @@ namespace Microsoft.AspNet.Identity.Entity
     public class IdentityContext :
         IdentityContext<EntityUser, EntityRole, string, IdentityUserLogin, IdentityUserRole, IdentityUserClaim>
     {
-        public IdentityContext(EntityConfiguration config) : base(config) { }
         public IdentityContext() { }
+        public IdentityContext(IServiceProvider serviceProvider) : base(serviceProvider) { }
     }
 
     public class IdentityContext<TUser, TRole, TKey, TUserLogin, TUserRole, TUserClaim> : EntityContext
@@ -24,15 +26,25 @@ namespace Microsoft.AspNet.Identity.Entity
         public EntitySet<TUser> Users { get; set; }
         public EntitySet<TRole> Roles { get; set; }
 
-        public IdentityContext() { }
-        public IdentityContext(EntityConfiguration config) : base(config) { }
+        public IdentityContext(IServiceProvider serviceProvider)
+        : base(serviceProvider) { }
+
+        public IdentityContext()
+        : this(new ServiceCollection()
+            .AddEntityFramework(
+//#if NET45
+//          s => s.AddSqlServer()
+//#else
+            s => s.AddInMemoryStore()
+//#endif
+              ).BuildServiceProvider()) { }
 
         protected override void OnConfiguring(EntityConfigurationBuilder builder)
         {
 //#if NET45
-//            builder.UseSqlServer(@"Server=(localdb)\v11.0;Database=IdentityDb;Trusted_Connection=True;");
+//          builder.SqlServerConnectionString(@"Server=(localdb)\v11.0;Database=IdentityDb;Trusted_Connection=True;");
 //#else
-            builder.UseDataStore(new InMemoryDataStore());
+            builder.UseInMemoryStore(persist: true);
 //#endif
         }
 
