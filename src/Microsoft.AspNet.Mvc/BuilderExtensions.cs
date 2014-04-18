@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Mvc
 {
     public static class BuilderExtensions
     {
-        public static IBuilder UseMvc(this IBuilder app, Action<IRouteCollection> configureRoutes)
+        public static IBuilder UseMvc([NotNull] this IBuilder app, [NotNull] Action<IRouteCollection> configureRoutes)
         {
             var routes = new RouteCollection
             {
