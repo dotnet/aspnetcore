@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30401.0
+VisualStudioVersion = 12.0.30327.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A5A15F1C-885A-452A-A731-B0173DDBD913}"
 EndProject
@@ -20,8 +20,6 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.FeatureModel.Tests", "test\Microsoft.AspNet.FeatureModel.Tests\Microsoft.AspNet.FeatureModel.Tests.kproj", "{C5D2BAE1-E182-48A0-AA74-1AF14B782BF7}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Abstractions.Tests", "test\Microsoft.AspNet.Abstractions.Tests\Microsoft.AspNet.Abstractions.Tests.kproj", "{F16692B8-9F38-4DCA-A582-E43172B989C6}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.AppBuilderSupport.Tests", "test\Microsoft.AspNet.AppBuilderSupport.Tests\Microsoft.AspNet.AppBuilderSupport.Tests.kproj", "{83D44696-C790-4356-9187-79F89010ED4F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -103,16 +101,6 @@ Global
 		{F16692B8-9F38-4DCA-A582-E43172B989C6}.Release|Mixed Platforms.Build.0 = Release|x86
 		{F16692B8-9F38-4DCA-A582-E43172B989C6}.Release|x86.ActiveCfg = Release|x86
 		{F16692B8-9F38-4DCA-A582-E43172B989C6}.Release|x86.Build.0 = Release|x86
-		{83D44696-C790-4356-9187-79F89010ED4F}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{83D44696-C790-4356-9187-79F89010ED4F}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{83D44696-C790-4356-9187-79F89010ED4F}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{83D44696-C790-4356-9187-79F89010ED4F}.Debug|x86.ActiveCfg = Debug|x86
-		{83D44696-C790-4356-9187-79F89010ED4F}.Debug|x86.Build.0 = Debug|x86
-		{83D44696-C790-4356-9187-79F89010ED4F}.Release|Any CPU.ActiveCfg = Release|x86
-		{83D44696-C790-4356-9187-79F89010ED4F}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{83D44696-C790-4356-9187-79F89010ED4F}.Release|Mixed Platforms.Build.0 = Release|x86
-		{83D44696-C790-4356-9187-79F89010ED4F}.Release|x86.ActiveCfg = Release|x86
-		{83D44696-C790-4356-9187-79F89010ED4F}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -125,6 +113,5 @@ Global
 		{AA99AF26-F7B1-4A6B-A922-5C25539F6391} = {F31FF137-390C-49BF-A3BD-7C6ED3597C21}
 		{C5D2BAE1-E182-48A0-AA74-1AF14B782BF7} = {F31FF137-390C-49BF-A3BD-7C6ED3597C21}
 		{F16692B8-9F38-4DCA-A582-E43172B989C6} = {F31FF137-390C-49BF-A3BD-7C6ED3597C21}
-		{83D44696-C790-4356-9187-79F89010ED4F} = {F31FF137-390C-49BF-A3BD-7C6ED3597C21}
 	EndGlobalSection
 EndGlobal
