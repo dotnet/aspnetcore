@@ -23,18 +23,15 @@ using System.IO;
 public class Startup
 {
 
-    private static void ConfigureServices(ServiceCollection services)
-    {
-        services.AddInstance<ILoggerFactory>(new NullLoggerFactory());
-        services.AddMvc();
-
-        services.AddInstance<UserManager<ApplicationUser>>(new UserManager<ApplicationUser>(new InMemoryUserStore<ApplicationUser>()));
-        services.AddInstance<RoleManager<IdentityRole>>(new RoleManager<IdentityRole>(new InMemoryRoleStore<IdentityRole>()));
-    }
-
     public void Configuration(IBuilder app)
     {
-        app.UseContainer(ConfigureServices);
+        app.UseServices(services =>
+        {
+            services.AddInstance<ILoggerFactory>(new NullLoggerFactory());
+            services.AddMvc();
+            services.AddInstance<UserManager<ApplicationUser>>(new UserManager<ApplicationUser>(new InMemoryUserStore<ApplicationUser>()));
+            services.AddInstance<RoleManager<IdentityRole>>(new RoleManager<IdentityRole>(new InMemoryRoleStore<IdentityRole>()));
+        });
 
         //ErrorPageOptions.ShowAll to be used only at development time. Not recommended for production. 
         app.UseErrorPage(ErrorPageOptions.ShowAll);
@@ -47,20 +44,16 @@ public class Startup
             LoginPath = new PathString("/Account/Login")
         });
 
-        var routes = new RouteCollection()
+        app.UseMvc(routes =>
         {
-            DefaultHandler = new MvcRouteHandler(),
-        };
+            routes.MapRoute(
+                "{controller}/{action}",
+                new { controller = "Home", action = "Index" });
 
-        routes.MapRoute(
-            "{controller}/{action}",
-            new { controller = "Home", action = "Index" });
-
-        routes.MapRoute(
-            "{controller}",
-            new { controller = "Home" });
-
-        app.UseRouter(routes);
+            routes.MapRoute(
+                "{controller}",
+                new { controller = "Home" });
+        });
 
         SampleData.InitializeMusicStoreDatabaseAsync().Wait();
         CreateAdminUser(app.ServiceProvider);
