@@ -9,7 +9,7 @@ namespace MvcSample.Web
     {
         public void Configuration(IBuilder app)
         {
-            app.UseContainer(services =>
+            app.UseServices(services =>
             {
                 services.AddMvc();
                 services.AddSingleton<PassThroughAttribute, PassThroughAttribute>();
