@@ -5,8 +5,9 @@ using System.Linq;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.DependencyInjection.Fallback;
+using Microsoft.AspNet.RequestContainer;
 
-namespace Microsoft.AspNet.RequestContainer
+namespace Microsoft.AspNet
 {
     public static class ContainerExtensions
     {
