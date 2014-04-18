@@ -56,7 +56,7 @@ public class Startup
         });
 
         SampleData.InitializeMusicStoreDatabaseAsync().Wait();
-        CreateAdminUser(app.ServiceProvider);
+        CreateAdminUser(app.ApplicationServices);
     }
 
     private async void CreateAdminUser(IServiceProvider serviceProvider)
