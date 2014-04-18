@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNet.Abstractions;
+﻿using Microsoft.AspNet;
+using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.RequestContainer;
 using Microsoft.AspNet.Routing;
 
 namespace MvcSample.Web

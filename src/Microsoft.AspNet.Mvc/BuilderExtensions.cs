@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
 
-
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet
 {
     public static class BuilderExtensions
     {
