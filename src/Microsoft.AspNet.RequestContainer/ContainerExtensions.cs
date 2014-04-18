@@ -22,24 +22,24 @@ namespace Microsoft.AspNet.RequestContainer
             });
         }
 
-        public static IBuilder UseContainer(this IBuilder builder)
+        public static IBuilder UseServices(this IBuilder builder)
         {
             return builder.UseMiddleware(typeof(ContainerMiddleware));
         }
 
-        public static IBuilder UseContainer(this IBuilder builder, IServiceProvider applicationServices)
+        public static IBuilder UseServices(this IBuilder builder, IServiceProvider applicationServices)
         {
             builder.ServiceProvider = applicationServices;
 
             return builder.UseMiddleware(typeof(ContainerMiddleware));
         }
 
-        public static IBuilder UseContainer(this IBuilder builder, IEnumerable<IServiceDescriptor> applicationServices)
+        public static IBuilder UseServices(this IBuilder builder, IEnumerable<IServiceDescriptor> applicationServices)
         {
-            return builder.UseContainer(services => services.Add(applicationServices));
+            return builder.UseServices(services => services.Add(applicationServices));
         }
 
-        public static IBuilder UseContainer(this IBuilder builder, Action<ServiceCollection> configureServices)
+        public static IBuilder UseServices(this IBuilder builder, Action<ServiceCollection> configureServices)
         {
             var serviceCollection = new ServiceCollection();
             configureServices(serviceCollection);
