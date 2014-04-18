@@ -35,8 +35,5 @@
     <Compile Include="Notifications\ICookieAuthenticationNotifications.cs" />
     <Compile Include="NotNullAttribute.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
   <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
