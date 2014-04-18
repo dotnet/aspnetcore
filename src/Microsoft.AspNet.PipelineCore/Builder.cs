@@ -11,16 +11,16 @@ namespace Microsoft.AspNet.PipelineCore
 
         public Builder(IServiceProvider serviceProvider)
         {
-            ServiceProvider = serviceProvider;
+            ApplicationServices = serviceProvider;
         }
 
         private Builder(Builder builder)
         {
-            ServiceProvider = builder.ServiceProvider;
+            ApplicationServices = builder.ApplicationServices;
             Server = builder.Server;
         }
 
-        public IServiceProvider ServiceProvider { get; set; }
+        public IServiceProvider ApplicationServices { get; set; }
         public IServerInformation Server { get; set; }
 
         public IBuilder Use(Func<RequestDelegate, RequestDelegate> middleware)
