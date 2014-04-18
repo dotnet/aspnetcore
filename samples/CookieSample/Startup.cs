@@ -6,6 +6,7 @@ using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.DependencyInjection.Fallback;
 using Microsoft.AspNet.Logging;
 using Microsoft.AspNet.Security.Cookies;
+using Microsoft.AspNet.RequestContainer;
 
 namespace CookieSample
 {
@@ -13,15 +14,16 @@ namespace CookieSample
     {
         public void Configuration(IBuilder app)
         {
-            // TODO: Move to host.
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance<ILoggerFactory>(new NullLoggerFactory());
-            app.ServiceProvider = serviceCollection.BuildServiceProvider(app.ServiceProvider);
+            app.UseServices(services =>
+            {
+                // TODO: Move to host.
+                services.AddInstance<ILoggerFactory>(new NullLoggerFactory());
+            });
 
             app.UseCookieAuthentication(new CookieAuthenticationOptions()
-                {
+            {
 
-                });
+            });
 
             app.Run(async context =>
             {
