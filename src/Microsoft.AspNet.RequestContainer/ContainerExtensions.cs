@@ -15,8 +15,8 @@ namespace Microsoft.AspNet.RequestContainer
             // TODO: move this ext method someplace nice
             return builder.Use(next =>
             {
-                var typeActivator = builder.ServiceProvider.GetService<ITypeActivator>();
-                var instance = typeActivator.CreateInstance(builder.ServiceProvider, middleware, new[] { next }.Concat(args).ToArray());
+                var typeActivator = builder.ApplicationServices.GetService<ITypeActivator>();
+                var instance = typeActivator.CreateInstance(builder.ApplicationServices, middleware, new[] { next }.Concat(args).ToArray());
                 var methodinfo = middleware.GetTypeInfo().GetDeclaredMethod("Invoke");
                 return (RequestDelegate)methodinfo.CreateDelegate(typeof(RequestDelegate), instance);
             });
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.RequestContainer
 
         public static IBuilder UseServices(this IBuilder builder, IServiceProvider applicationServices)
         {
-            builder.ServiceProvider = applicationServices;
+            builder.ApplicationServices = applicationServices;
 
             return builder.UseMiddleware(typeof(ContainerMiddleware));
         }
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.RequestContainer
         {
             var serviceCollection = new ServiceCollection();
             configureServices(serviceCollection);
-            builder.ServiceProvider = serviceCollection.BuildServiceProvider(builder.ServiceProvider);
+            builder.ApplicationServices = serviceCollection.BuildServiceProvider(builder.ApplicationServices);
 
             return builder.UseMiddleware(typeof(ContainerMiddleware));
         }
