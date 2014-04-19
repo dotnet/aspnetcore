@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-#if NET45
 using System.Security.Cryptography.X509Certificates;
-#endif
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
@@ -12,10 +10,7 @@ using Microsoft.AspNet.HttpFeature;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
-    internal class FeatureContext : IHttpRequestInformation, IHttpConnection, IHttpResponseInformation, IHttpSendFile
-#if NET45
-        , IHttpTransportLayerSecurity
-#endif
+    internal class FeatureContext : IHttpRequestInformation, IHttpConnection, IHttpResponseInformation, IHttpSendFile, IHttpTransportLayerSecurity
     {
         private RequestContext _requestContext;
         private FeatureCollection _features;
@@ -28,16 +23,12 @@ namespace Microsoft.AspNet.Server.WebListener
         private string _query;
         private string _pathBase;
         private string _path;
-#if NET45
         private IPAddress _remoteIpAddress;
         private IPAddress _localIpAddress;
-#endif
         private int? _remotePort;
         private int? _localPort;
         private bool? _isLocal;
-#if NET45
         private X509Certificate _clientCert;
-#endif
         private Stream _responseStream;
         private IDictionary<string, string[]> _responseHeaders;
 
@@ -69,10 +60,8 @@ namespace Microsoft.AspNet.Server.WebListener
             _features.Add(typeof(IHttpConnection), this);
             if (Request.IsSecureConnection)
             {
-#if NET45
                 // TODO: Should this feature be conditional? Should we add this for HTTP requests?
                 _features.Add(typeof(IHttpTransportLayerSecurity), this);
-#endif
             }
             _features.Add(typeof(IHttpResponseInformation), this);
             _features.Add(typeof(IHttpSendFile), this);
@@ -90,7 +79,7 @@ namespace Microsoft.AspNet.Server.WebListener
              */
         }
 
-#region IHttpRequestInformation
+        #region IHttpRequestInformation
 
         Stream IHttpRequestInformation.Body
         {
@@ -207,8 +196,8 @@ namespace Microsoft.AspNet.Server.WebListener
             }
             set { _scheme = value; }
         }
-#endregion
-#region IHttpConnection
+        #endregion
+        #region IHttpConnection
         bool IHttpConnection.IsLocal
         {
             get
@@ -221,7 +210,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }
             set { _isLocal = value; }
         }
-#if NET45
+
         IPAddress IHttpConnection.LocalIpAddress
         {
             get
@@ -247,7 +236,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }
             set { _remoteIpAddress = value; }
         }
-#endif
+
         int IHttpConnection.LocalPort
         {
             get
@@ -273,9 +262,8 @@ namespace Microsoft.AspNet.Server.WebListener
             }
             set { _remotePort = value; }
         }
-#endregion
-#region IHttpTransportLayerSecurity
-#if NET45
+        #endregion
+        #region IHttpTransportLayerSecurity
         X509Certificate IHttpTransportLayerSecurity.ClientCertificate
         {
             get
@@ -296,9 +284,8 @@ namespace Microsoft.AspNet.Server.WebListener
                 _clientCert = await Request.GetClientCertificateAsync();
             }
         }
-#endif
-#endregion
-#region IHttpResponseInformation
+        #endregion
+        #region IHttpResponseInformation
         Stream IHttpResponseInformation.Body
         {
             get
@@ -341,7 +328,7 @@ namespace Microsoft.AspNet.Server.WebListener
             get { return Response.StatusCode; }
             set { Response.StatusCode = value; }
         }
-#endregion
+        #endregion
         Task IHttpSendFile.SendFileAsync(string path, long offset, long? length, CancellationToken cancellation)
         {
             return Response.SendFileAsync(path, offset, length, cancellation);

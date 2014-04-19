@@ -10,9 +10,7 @@ using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Runtime.InteropServices;
-#if NET45
 using System.Security.Cryptography.X509Certificates;
-#endif
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
@@ -41,9 +39,7 @@ namespace Microsoft.AspNet.Server.WebListener
         private string _pathBase;
         private string _path;
 
-#if NET45
         private X509Certificate _clientCert;
-#endif
 
         private IDictionary<string, string[]> _headers;
         private BoundaryType _contentBoundaryType;
@@ -270,11 +266,7 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             get
             {
-#if NET45
                 return LocalEndPoint.GetIPAddress().Equals(RemoteEndPoint.GetIPAddress());
-#else
-                throw new NotImplementedException();
-#endif
             }
         }
 
@@ -337,7 +329,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return _localEndPoint;
             }
         }
-#if NET45
+
         public IPAddress RemoteIpAddress
         {
             get { return RemoteEndPoint.GetIPAddress(); }
@@ -347,7 +339,7 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             get { return LocalEndPoint.GetIPAddress(); }
         }
-#endif
+
         public int RemotePort
         {
             get { return RemoteEndPoint.GetPort(); }
@@ -432,7 +424,6 @@ namespace Microsoft.AspNet.Server.WebListener
             return UnsafeNclNativeMethods.HttpApi.GetKnownVerb(RequestBuffer, OriginalBlobAddress);
         }
 
-#if NET45
         // Populates the client certificate.  The result may be null if there is no client cert.
         // TODO: Does it make sense for this to be invoked multiple times (e.g. renegotiate)? Client and server code appear to
         // enable this, but it's unclear what Http.Sys would do.
@@ -470,7 +461,6 @@ namespace Microsoft.AspNet.Server.WebListener
             }
             return _clientCert;
         }
-#endif
 
         // Use this to save the blob from dispose if this object was never used (never given to a user) and is about to be
         // disposed.

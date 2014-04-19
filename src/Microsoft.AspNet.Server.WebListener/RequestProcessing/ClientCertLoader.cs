@@ -4,8 +4,6 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-#if NET45
-
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
@@ -343,5 +341,3 @@ namespace Microsoft.AspNet.Server.WebListener
         }
     }
 }
-
-#endif

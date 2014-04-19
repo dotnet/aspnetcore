@@ -170,7 +170,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }
             return _hash;
         }
-#if NET45
+
         internal IPAddress GetIPAddress()
         {
             if (Family == AddressFamily.InterNetworkV6)
@@ -200,7 +200,7 @@ namespace Microsoft.AspNet.Server.WebListener
             Contract.Assert(Size >= IPv4AddressSize);
             return new IPAddress(new byte[] { _buffer[4], _buffer[5], _buffer[6], _buffer[7] });
         }
-#endif
+
         public override string ToString()
         {
             StringBuilder bytes = new StringBuilder();
