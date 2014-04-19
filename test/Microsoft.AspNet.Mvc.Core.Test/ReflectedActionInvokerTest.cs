@@ -623,7 +623,7 @@ namespace Microsoft.AspNet.Mvc
 
             var message =
                 "If an IAsyncActionFilter provides a result value by setting the Result property of " +
-                "ActionExecutingContext to a non-null value, then the it should not call the next filter by invoking " +
+                "ActionExecutingContext to a non-null value, then it cannot call the next filter by invoking " +
                 "ActionExecutionDelegate.";
 
             var invoker = CreateInvoker(actionFilter.Object);
@@ -972,7 +972,7 @@ namespace Microsoft.AspNet.Mvc
 
             var message = 
                 "If an IAsyncResultFilter cancels execution by setting the Cancel property of " +
-                "ResultExecutingContext to 'true', then the it should not call the next filter by invoking " +
+                "ResultExecutingContext to 'true', then it cannot call the next filter by invoking " +
                 "ResultExecutionDelegate.";
 
             var invoker = CreateInvoker(filter.Object);

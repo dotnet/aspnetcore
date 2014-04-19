@@ -350,7 +350,6 @@ namespace Microsoft.AspNet.Mvc
                 // Exceptions thrown by the action method OR filters bubble back up through ActionExcecutedContext.
                 _actionExecutedContext = new ActionExecutedContext(_actionExecutingContext, _filters)
                 {
-                    Exception = exception,
                     ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception)
                 };
             }
@@ -467,7 +466,6 @@ namespace Microsoft.AspNet.Mvc
             {
                 _resultExecutedContext = new ResultExecutedContext(_resultExecutingContext, _filters, _resultExecutingContext.Result)
                 {
-                    Exception = exception,
                     ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception)
                 };
             }

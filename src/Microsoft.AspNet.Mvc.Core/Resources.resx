@@ -232,10 +232,10 @@
     <value>No route matches the supplied values.</value>
   </data>
   <data name="AsyncActionFilter_InvalidShortCircuit" xml:space="preserve">
-    <value>If an {0} provides a result value by setting the {1} property of {2} to a non-null value, then the it should not call the next filter by invoking {3}.</value>
+    <value>If an {0} provides a result value by setting the {1} property of {2} to a non-null value, then it cannot call the next filter by invoking {3}.</value>
   </data>
   <data name="AsyncResultFilter_InvalidShortCircuit" xml:space="preserve">
-    <value>If an {0} cancels execution by setting the {1} property of {2} to 'true', then the it should not call the next filter by invoking {3}.</value>
+    <value>If an {0} cancels execution by setting the {1} property of {2} to 'true', then it cannot call the next filter by invoking {3}.</value>
   </data>
   <data name="ViewEngine_PartialViewNotFound" xml:space="preserve">
     <value>The partial view '{0}' was not found. The following locations were searched:{1}</value>
