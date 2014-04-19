@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
-using Microsoft.AspNet.FeatureModel.Implementation;
 
 namespace Microsoft.AspNet.FeatureModel
 {
@@ -32,20 +31,6 @@ namespace Microsoft.AspNet.FeatureModel
                 return _instance;
             }
 
-#if NET45
-            foreach (var interfaceType in _instance.GetType().GetInterfaces())
-            {
-                if (interfaceType.FullName == type.FullName)
-                {
-                    return Converter.Convert(interfaceType, type, _instance);
-                }
-            }
-#else
-            if (_instance != null && type == _instance.GetType())
-            {
-                return _instance;
-            }
-#endif
             return null;
         }
 

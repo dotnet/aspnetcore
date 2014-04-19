@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
-using Microsoft.AspNet.FeatureModel.Implementation;
 
 namespace Microsoft.AspNet.FeatureModel
 {
@@ -49,11 +48,8 @@ namespace Microsoft.AspNet.FeatureModel
                     {
                         return feature;
                     }
-#if NET45
-                    return Converter.Convert(type, actualType, feature);
-#else
+
                     return null;
-#endif
                 }
             }
 
