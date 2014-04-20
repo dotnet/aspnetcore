@@ -9,6 +9,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
     public interface IHtmlHelper
     {
         /// <summary>
+        /// Set this property to <see cref="Mvc.Html5DateRenderingMode.Rfc3339"/> to have templated helpers such as
+        /// <see cref="Editor"/> and <see cref="EditorFor"/> render date and time values as RFC 3339 compliant strings.
+        /// By default these helpers render dates and times using the current culture.
+        /// </summary>
+        Html5DateRenderingMode Html5DateRenderingMode { get; set; }
+
+        /// <summary>
         /// Gets or sets the character that replaces periods in the ID attribute of an element.
         /// </summary>
         string IdAttributeDotReplacement { get; set; }
@@ -171,6 +178,25 @@ namespace Microsoft.AspNet.Mvc.Rendering
             IEnumerable<SelectListItem> selectList,
             string optionLabel,
             object htmlAttributes);
+
+        /// <summary>
+        /// Returns an HTML input element for each property in the object that is represented by the expression, using
+        /// the specified template, HTML field ID, and additional view data.
+        /// </summary>
+        /// <param name="expression">An expression that identifies the object that contains the properties to edit.
+        /// </param>
+        /// <param name="templateName">The name of the template that is used to render the object.</param>
+        /// <param name="htmlFieldName">
+        /// A string that is used to disambiguate the names of HTML input elements that are rendered for properties
+        /// that have the same name.
+        /// </param>
+        /// <param name="additionalViewData">
+        /// An anonymous object or dictionary that can contain additional view data that will be merged into the
+        /// <see cref="ViewDataDictionary{TModel}"/> instance that is created for the template.
+        /// </param>
+        /// <returns>The HTML markup for the input elements for each property in the object that is represented by the
+        /// expression.</returns>
+        HtmlString Editor(string expression, string templateName, string htmlFieldName, object additionalViewData);
 
         /// <summary>
         /// Converts the value of the specified object to an HTML-encoded string.

@@ -159,8 +159,10 @@
     <Compile Include="Rendering\Expressions\ViewDataEvaluator.cs" />
     <Compile Include="Rendering\Expressions\ViewDataInfo.cs" />
     <Compile Include="Rendering\FormMethod.cs" />
+    <Compile Include="Rendering\Html5DateRenderingMode.cs" />
     <Compile Include="Rendering\HtmlAttributePropertyHelper.cs" />
     <Compile Include="Rendering\HtmlHelperDisplayExtensions.cs" />
+    <Compile Include="Rendering\HtmlHelperEditorExtensions.cs" />
     <Compile Include="Rendering\HtmlHelperFormExtensions.cs" />
     <Compile Include="Rendering\HtmlHelperInputExtensions.cs" />
     <Compile Include="Rendering\HtmlHelperLabelExtensions.cs" />
@@ -173,6 +175,7 @@
     <Compile Include="Rendering\HtmlHelperValueExtensions.cs" />
     <Compile Include="Rendering\HtmlString.cs" />
     <Compile Include="Rendering\Html\DefaultDisplayTemplates.cs" />
+    <Compile Include="Rendering\Html\DefaultEditorTemplates.cs" />
     <Compile Include="Rendering\Html\HtmlHelper.cs" />
     <Compile Include="Rendering\Html\HtmlHelperOfT.cs" />
     <Compile Include="Rendering\Html\InputType.cs" />

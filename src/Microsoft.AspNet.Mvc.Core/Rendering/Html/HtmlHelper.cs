@@ -53,6 +53,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
+        public Html5DateRenderingMode Html5DateRenderingMode { get; set; }
+
+        /// <inheritdoc />
         public string IdAttributeDotReplacement { get; set; }
 
         /// <inheritdoc />
@@ -271,6 +274,19 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 selectList: selectList,
                 optionLabel: optionLabel,
                 htmlAttributes: htmlAttributes);
+        }
+
+        /// <inheritdoc />
+        public HtmlString Editor(string expression, string templateName, string htmlFieldName,
+            object additionalViewData)
+        {
+            var metadata = ExpressionMetadataProvider.FromStringExpression(expression, ViewData, MetadataProvider);
+
+            return GenerateEditor(
+                metadata,
+                htmlFieldName ?? ExpressionHelper.GetExpressionText(expression),
+                templateName,
+                additionalViewData);
         }
 
         /// <inheritdoc />
@@ -640,6 +656,24 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             return GenerateSelect(metadata, optionLabel, expression, selectList, allowMultiple: false,
                 htmlAttributes: htmlAttributes);
+        }
+
+        protected virtual HtmlString GenerateEditor(ModelMetadata metadata, string htmlFieldName, string templateName,
+            object additionalViewData)
+        {
+            var templateBuilder = new TemplateBuilder(
+                _viewEngine,
+                ViewContext,
+                ViewData,
+                metadata,
+                htmlFieldName,
+                templateName,
+                readOnly: false,
+                additionalViewData: additionalViewData);
+
+            var templateResult = templateBuilder.Build();
+
+            return new HtmlString(templateResult);
         }
 
         /// <summary>

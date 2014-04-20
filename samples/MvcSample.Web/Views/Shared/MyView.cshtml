@@ -270,111 +270,156 @@
         @{ Html.EndForm(); }
     </div>
     <div style="float: left; border: 5px solid lightgreen; margin: 5px; padding: 7px;">
+        @using (Html.BeginForm(controllerName: "Home", actionName: "Edit", method: FormMethod.Post))
+        {
         <table>
             <tr>
                 <td>
-                    @Html.Label("Name", "Display Name")
+                    @Html.Label("Name", "Display / Edit Name")
                 </td>
                 <td>
                     '@Html.Display("Name")'
                 </td>
+                <td>
+                    @Html.Editor("Name")
+                </td>
             </tr>
             <tr>
                 <td>
-                    @Html.Label("Dependent.Name", "Display Dependent.Name")
+                    @Html.Label("Dependent.Name", "Display / Edit Dependent.Name")
                 </td>
                 <td>
                     '@Html.Display("Dependent.Name")'
                 </td>
+                <td>
+                    @Html.Editor("Dependent.Name")
+                </td>
             </tr>
             <tr>
                 <td>
-                    @Html.Label("Alive", "Display Alive")
+                    @Html.Label("Alive", "Display / Edit Alive")
                 </td>
                 <td>
                     '@Html.Display("Alive")'
                 </td>
+                <td>
+                    @Html.Editor("Alive")
+                </td>
             </tr>
             <tr>
                 <td>
-                    @Html.Label("Dependent.Alive", "Display Dependent.Alive")
+                    @Html.Label("Dependent.Alive", "Display / Edit Dependent.Alive")
                 </td>
                 <td>
                     '@Html.Display("Dependent.Alive")'
                 </td>
+                <td>
+                    @Html.Editor("Dependent.Alive")
+                </td>
             </tr>
             <tr>
                 <td>
-                    @Html.Label("Age", "Display Age")
+                    @Html.Label("Age", "Display / Edit Age")
                 </td>
                 <td>
                     '@Html.Display("Age")'
                 </td>
+                <td>
+                    @Html.Editor("Age")
+                </td>
             </tr>
             <tr>
                 <td>
-                    @Html.Label("GPA", "Display GPA")
+                    @Html.Label("GPA", "Display / Edit GPA")
                 </td>
                 <td>
                     '@Html.Display("GPA")'
                 </td>
+                <td>
+                    @Html.Editor("GPA")
+                </td>
             </tr>
         </table>
+        }
     </div>
     <div style="float: left; border: 5px dashed green; margin: 5px; padding: 7px;">
+        @using (Html.BeginForm(controllerName: "Home", actionName: "Edit", method: FormMethod.Post))
+        {
         <table>
             <tr>
                 <td>
-                    @Html.LabelFor(model => model.Name, "DisplayFor Name")
+                    @Html.LabelFor(model => model.Name, "DisplayFor / EditFor Name")
                 </td>
                 <td>
                     '@Html.DisplayFor(model => model.Name)'
                 </td>
+                <td>
+                    @Html.EditorFor(model => model.Name)
+                </td>
             </tr>
             <tr>
                 <td>
-                    @Html.LabelFor(model => model.Dependent.Name, "DisplayFor Dependent.Name")
+                    @Html.LabelFor(model => model.Dependent.Name, "DisplayFor / EditFor Dependent.Name")
                 </td>
                 <td>
                     '@Html.DisplayFor(model => model.Dependent.Name)'
                 </td>
+                <td>
+                    @Html.EditorFor(model => model.Dependent.Name)
+                </td>
             </tr>
             <tr>
                 <td>
-                    @Html.LabelFor(model => model.Alive, "DisplayFor Alive")
+                    @Html.LabelFor(model => model.Alive, "DisplayFor / EditFor Alive")
                 </td>
                 <td>
                     '@Html.DisplayFor(model => model.Alive)'
                 </td>
+                <td>
+                    @Html.EditorFor(model => model.Alive)
+                </td>
             </tr>
             <tr>
                 <td>
-                    @Html.LabelFor(model => model.Dependent.Alive, "DisplayFor Dependent.Alive")
+                    @Html.LabelFor(model => model.Dependent.Alive, "DisplayFor / EditFor Dependent.Alive")
                 </td>
                 <td>
                     '@Html.DisplayFor(model => model.Dependent.Alive)'
                 </td>
+                <td>
+                    @Html.EditorFor(model => model.Dependent.Alive)
+                </td>
             </tr>
             <tr>
                 <td>
-                    @Html.LabelFor(model => model.Age, "DisplayFor Age")
+                    @Html.LabelFor(model => model.Age, "DisplayFor / EditFor Age")
                 </td>
                 <td>
                     '@Html.DisplayFor(model => model.Age)'
                 </td>
+                <td>
+                    @Html.EditorFor(model => model.Age)
+                </td>
             </tr>
             <tr>
                 <td>
-                    @Html.LabelFor(model => model.GPA, "DisplayFor GPA")
+                    @Html.LabelFor(model => model.GPA, "DisplayFor / EditFor GPA")
                 </td>
                 <td>
                     '@Html.DisplayFor(model => model.GPA)'
                 </td>
+                <td>
+                    @Html.EditorFor(model => model.GPA)
+                </td>
             </tr>
         </table>
+        }
     </div>
 
-    <div style="float: left; border: 5px solid darkgreen; margin: 5px; padding: 7px;">
+    <div style="float: left; border: 5px solid darkseagreen; margin: 5px; padding: 7px;">
         @Html.DisplayForModel()
+    </div>
+    <div style="float: left; border: 5px dotted darkgreen; margin: 5px; padding: 7px">
+        @Html.EditorForModel()
     </div>
 </div>

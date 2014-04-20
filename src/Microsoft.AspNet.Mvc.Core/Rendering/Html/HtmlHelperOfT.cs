@@ -110,6 +110,22 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
+        public HtmlString EditorFor<TValue>(
+            [NotNull] Expression<Func<TModel, TValue>> expression,
+            string templateName,
+            string htmlFieldName,
+            object additionalViewData)
+        {
+            var metadata = ExpressionMetadataProvider.FromLambdaExpression(expression, ViewData, MetadataProvider);
+
+            return GenerateEditor(
+                metadata,
+                htmlFieldName ?? ExpressionHelper.GetExpressionText(expression),
+                templateName,
+                additionalViewData);
+        }
+
+        /// <inheritdoc />
         public HtmlString HiddenFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression,
             object htmlAttributes)
         {

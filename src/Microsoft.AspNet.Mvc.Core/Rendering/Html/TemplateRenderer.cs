@@ -29,6 +29,33 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 { typeof(object).Name, DefaultDisplayTemplates.ObjectTemplate },
             };
 
+        // TODO: Add DefaultEditorTemplates.MultilineTextTemplate and place in this dictionary.
+        private static readonly Dictionary<string, Func<IHtmlHelper, string>> _defaultEditorActions =
+            new Dictionary<string, Func<IHtmlHelper, string>>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "HiddenInput", DefaultEditorTemplates.HiddenInputTemplate },
+                { "Password", DefaultEditorTemplates.PasswordTemplate },
+                { "Text", DefaultEditorTemplates.StringTemplate },
+                { "Collection", DefaultEditorTemplates.CollectionTemplate },
+                { "PhoneNumber", DefaultEditorTemplates.PhoneNumberInputTemplate },
+                { "Url", DefaultEditorTemplates.UrlInputTemplate },
+                { "EmailAddress", DefaultEditorTemplates.EmailAddressInputTemplate },
+                { "DateTime", DefaultEditorTemplates.DateTimeInputTemplate },
+                { "DateTime-local", DefaultEditorTemplates.DateTimeLocalInputTemplate },
+                { "Date", DefaultEditorTemplates.DateInputTemplate },
+                { "Time", DefaultEditorTemplates.TimeInputTemplate },
+                { typeof(byte).Name, DefaultEditorTemplates.NumberInputTemplate },
+                { typeof(sbyte).Name, DefaultEditorTemplates.NumberInputTemplate },
+                { typeof(int).Name, DefaultEditorTemplates.NumberInputTemplate },
+                { typeof(uint).Name, DefaultEditorTemplates.NumberInputTemplate },
+                { typeof(long).Name, DefaultEditorTemplates.NumberInputTemplate },
+                { typeof(ulong).Name, DefaultEditorTemplates.NumberInputTemplate },
+                { typeof(bool).Name, DefaultEditorTemplates.BooleanTemplate },
+                { typeof(decimal).Name, DefaultEditorTemplates.DecimalTemplate },
+                { typeof(string).Name, DefaultEditorTemplates.StringTemplate },
+                { typeof(object).Name, DefaultEditorTemplates.ObjectTemplate },
+            };
+
         private ViewContext _viewContext;
         private ViewDataDictionary _viewData;
         private IViewEngine _viewEngine;
@@ -89,16 +116,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         private Dictionary<string, Func<IHtmlHelper, string>> GetDefaultActions()
         {
-            if (_readOnly)
-            {
-                return _defaultDisplayActions;
-            }
-            else
-            {
-                // TODO: Support Editor() and its default templates.
-                // (No resource for this message because this line _must_ be very short-lived.)
-                throw new NotImplementedException("No default editor templates yet");
-            }
+            return _readOnly ? _defaultDisplayActions : _defaultEditorActions;
         }
 
         private IEnumerable<string> GetViewNames()
