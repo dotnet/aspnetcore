@@ -1,11 +1,8 @@
+using Microsoft.AspNet;
 using Microsoft.AspNet.Abstractions;
-using Microsoft.AspNet.DependencyInjection;
-using Microsoft.AspNet.DependencyInjection.Fallback;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.RequestContainer;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Diagnostics;
-using Microsoft.AspNet;
 
 namespace KWebStartup
 {
@@ -13,20 +10,18 @@ namespace KWebStartup
     {
         public void Configuration(IBuilder app)
         {
-            var services = new ServiceCollection();
-            services.Add(MvcServices.GetDefaultServices());
-            var serviceProvider = services.BuildServiceProvider(app.ServiceProvider);
-
-            var routes = new RouteCollection
-            {
-                DefaultHandler = new MvcApplication(serviceProvider)
-            };
-
-            routes.MapRoute("{controller}/{action}", new { controller = "Home", action = "Index" });
-            
             app.UseErrorPage();
-            app.UseContainer(serviceProvider);
-            app.UseRouter(routes);
+
+            app.UseServices(services =>
+            {
+                services.AddMvc();
+            });
+
+            app.UseMvc(routes =>
+            {
+                routes.MapRoute("{controller}/{action}", new { controller = "Home", action = "Index" });
+            });
+
             app.UseWelcomePage();
         }       
     }
