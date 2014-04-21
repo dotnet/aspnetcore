@@ -35,6 +35,7 @@ default skipNet45='${false}'
 
     var templates = new Dictionary<string, string> {
         { "net45", net45 },
+        { "net451", net45 },
         { "k10", k10 },
         { "web", web }
     };
@@ -42,6 +43,7 @@ default skipNet45='${false}'
     if(skipNet45)
     {
         templates.Remove("net45");
+        templates.Remove("net451");
     }
 
     ProjectGenerator.MakeProjects(solutionPath, templates);
@@ -149,6 +151,7 @@ functions
                     string projectName = projectDir.Substring(Path.GetDirectoryName(projectDir).Length).Trim(Path.DirectorySeparatorChar);
 
                     string net45Project = Path.Combine(projectDir, GetProjectFileName(projectName, "net45"));
+                    string net451Project = Path.Combine(projectDir, GetProjectFileName(projectName, "net451"));
                     string k10Project = Path.Combine(projectDir, GetProjectFileName(projectName, "k10"));
 
                     var configs = new Dictionary<string, object>();
@@ -156,6 +159,10 @@ functions
                         solutionProjects[net45Project] :
                         GetProjectGuidFromFileOrCreateNew(net45Project);
 
+                    configs["net451"] = solutionProjects.ContainsKey(net451Project) ? 
+                        solutionProjects[net451Project] :
+                        GetProjectGuidFromFileOrCreateNew(net451Project);
+                        
                     configs["k10"] = solutionProjects.ContainsKey(k10Project) ?
                         solutionProjects[k10Project] :
                         GetProjectGuidFromFileOrCreateNew(k10Project);
@@ -629,7 +636,7 @@ functions
 
             private static string[] GetCandidates(string config)
             {
-                if (config == "net45")
+                if (config == "net45" || config == "net451")
                 {
                     return new[] { "net45", "net40", "net35", "35", "net20" };
                 }
