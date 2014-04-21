@@ -1,0 +1,30 @@
+{
+  "version": "0.1-alpha-*",
+  "dependencies": {
+    "Microsoft.AspNet.Abstractions": "",
+    "Microsoft.AspNet.FeatureModel": "",
+    "Microsoft.AspNet.PipelineCore": "",
+    "Microsoft.AspNet.HttpFeature": ""
+  },
+  "configurations": {
+    "net45": { },
+    "k10": {
+      "dependencies": {
+        "System.Collections": "4.0.0.0",
+        "System.ComponentModel": "4.0.0.0",
+        "System.Diagnostics.Tools": "4.0.0.0",
+        "System.Globalization": "4.0.10.0",
+        "System.IO": "4.0.0.0",
+        "System.Linq": "4.0.0.0",
+        "System.Net.Primitives": "4.0.10.0",
+        "System.Runtime": "4.0.20.0",
+        "System.Runtime.Extensions": "4.0.10.0",
+        "System.Runtime.InteropServices": "4.0.20.0",
+        "System.Security.Claims": "0.1-alpha-*",
+        "System.Security.Cryptography.X509Certificates": "4.0.0.0",
+        "System.Security.Principal" : "4.0.0.0",
+        "System.Threading.Tasks": "4.0.10.0"
+      }
+    }
+  }
+}
