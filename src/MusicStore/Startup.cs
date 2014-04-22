@@ -6,6 +6,7 @@ using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.DependencyInjection.Fallback;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.Entity;
 using Microsoft.AspNet.Identity.InMemory;
 using Microsoft.AspNet.Identity.Security;
 using Microsoft.AspNet.Logging;
@@ -21,11 +22,11 @@ using MusicStore.Logging;
 using MusicStore.Models;
 using MusicStore.Web.Models;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 public class Startup
 {
-
     public void Configuration(IBuilder app)
     {
         app.UseServices(services =>
@@ -38,8 +39,19 @@ public class Startup
             services.AddEntityFramework(s => s.AddInMemoryStore());
 #endif
             services.AddTransient<MusicStoreContext, MusicStoreContext>();
-            services.AddInstance<UserManager<ApplicationUser>>(new UserManager<ApplicationUser>(new InMemoryUserStore<ApplicationUser>()));
-            services.AddInstance<RoleManager<IdentityRole>>(new RoleManager<IdentityRole>(new InMemoryRoleStore<IdentityRole>()));
+            // File an issue trying to use IdentityUser/IdentityRole and open generic UserManager<>
+            services.AddIdentity<ApplicationUser, IdentityRole>(s =>
+            {
+                // Turn off password defaults since register error display blows up
+                s.UsePasswordValidator(() => new PasswordValidator()); 
+
+                //s.UseDbContext(() => context);
+                //s.UseUserStore(() => new UserStore(context));
+                s.UseUserStore(() => new InMemoryUserStore<ApplicationUser>());
+                s.UseUserManager<ApplicationUserManager>();
+                s.UseRoleStore(() => new InMemoryRoleStore<IdentityRole>());
+                s.UseRoleManager<ApplicationRoleManager>();
+            });
         });
 
         //ErrorPageOptions.ShowAll to be used only at development time. Not recommended for production. 
@@ -50,7 +62,13 @@ public class Startup
         app.UseCookieAuthentication(new CookieAuthenticationOptions()
         {
             AuthenticationType = DefaultAuthenticationTypes.ApplicationCookie,
-            LoginPath = new PathString("/Account/Login")
+            LoginPath = new PathString("/Account/Login"),
+            Notifications = new CookieAuthenticationNotifications
+            {
+                //OnValidateIdentity = SecurityStampValidator.OnValidateIdentity<ApplicationUserManager, ApplicationUser>(
+                //        validateInterval: TimeSpan.FromMinutes(30),
+                //        regenerateIdentity: (manager, user) => user.GenerateUserIdentityAsync(manager))
+            }
         });
 
         app.UseMvc(routes =>
@@ -76,26 +94,24 @@ public class Startup
         configuration.AddEnvironmentVariables(); //If configuration flows through environment we should pick that first
         configuration.AddJsonFile(Path.Combine(applicationEnvironment.ApplicationBasePath, "Config.json"));
 
-        string _username = configuration.Get("DefaultAdminUsername");
-        string _password = configuration.Get("DefaultAdminPassword");
-        string _role = "Administrator";
+        var userName = configuration.Get("DefaultAdminUsername");
+        var password = configuration.Get("DefaultAdminPassword");
+        const string adminRole = "Administrator";
 
-        var userManager = serviceProvider.GetService<UserManager<ApplicationUser>>();
-        var roleManager = serviceProvider.GetService<RoleManager<IdentityRole>>();
+        var userManager = serviceProvider.GetService<ApplicationUserManager>();
+        var roleManager = serviceProvider.GetService<ApplicationRoleManager>();
 
-        var role = new IdentityRole(_role);
-        var result = await roleManager.RoleExistsAsync(_role);
-        if (result == false)
+        if (!await roleManager.RoleExistsAsync(adminRole))
         {
-            await roleManager.CreateAsync(role);
+            await roleManager.CreateAsync(new IdentityRole(adminRole));
         }
 
-        var user = await userManager.FindByNameAsync(_username);
+        var user = await userManager.FindByNameAsync(userName);
         if (user == null)
         {
-            user = new ApplicationUser { UserName = _username };
-            await userManager.CreateAsync(user, _password);
-            await userManager.AddToRoleAsync(user, _role);
+            user = new ApplicationUser { UserName = userName };
+            await userManager.CreateAsync(user, password);
+            await userManager.AddToRoleAsync(user, adminRole);
         }
     }
 }

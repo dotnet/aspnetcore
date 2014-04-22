@@ -14,7 +14,7 @@ namespace MusicStore.Controllers
     {
         public UserManager<ApplicationUser> UserManager
         {
-            get { return Context.ApplicationServices.GetService<UserManager<ApplicationUser>>(); }
+            get { return Context.ApplicationServices.GetService<ApplicationUserManager>(); }
         }
 
         private SignInManager<ApplicationUser> _signInManager;
@@ -23,7 +23,7 @@ namespace MusicStore.Controllers
             {
                 if (_signInManager == null)
                 {
-                    _signInManager = new SignInManager<ApplicationUser>()
+                    _signInManager = new SignInManager<ApplicationUser>
                     {
                         UserManager = UserManager,
                         Context = Context,
