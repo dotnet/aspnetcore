@@ -1,7 +1,6 @@
 {
   "version": "0.1-alpha-*",
   "dependencies": {
-    "Microsoft.AspNet.AppBuilderSupport": "",
     "Microsoft.AspNet.HttpFeature": "",
     "Microsoft.AspNet.Abstractions": "",
     "Microsoft.AspNet.FeatureModel": "",
