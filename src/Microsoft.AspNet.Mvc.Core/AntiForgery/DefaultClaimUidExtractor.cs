@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Mvc
             return Convert.ToBase64String(claimUidBytes);
         }
 
-        private static IEnumerable<string> GetUniqueIdentifierParameters(ClaimsIdentity claimsIdentity)
+        internal static IEnumerable<string> GetUniqueIdentifierParameters(ClaimsIdentity claimsIdentity)
         {
             // TODO: Need to enable support for special casing acs identities.
             var nameIdentifierClaim = claimsIdentity.FindFirst(claim =>

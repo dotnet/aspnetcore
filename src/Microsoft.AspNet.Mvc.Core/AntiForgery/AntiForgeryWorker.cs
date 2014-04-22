@@ -177,6 +177,7 @@ namespace Microsoft.AspNet.Mvc
 
             return new AntiForgeryTokenSetInternal()
                             {
+                                // Note : The new cookie would be null if the old cookie is valid.
                                 CookieToken = newCookieToken,
                                 FormToken = formToken
                             };

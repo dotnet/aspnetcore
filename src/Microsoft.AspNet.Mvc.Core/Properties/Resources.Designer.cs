@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// The anti-forgery token could not be decrypted. If this application is hosted by a Web Farm or cluster, ensure that all machines are running the same version of ASP.NET Web Pages and that the &lt;machineKey&gt; configuration specifies explicit encryption and validation keys. AutoGenerate cannot be used in a cluster.
+        /// The anti-forgery token could not be decrypted.
         /// </summary>
         internal static string AntiForgeryToken_DeserializationFailed
         {
@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// The anti-forgery token could not be decrypted. If this application is hosted by a Web Farm or cluster, ensure that all machines are running the same version of ASP.NET Web Pages and that the &lt;machineKey&gt; configuration specifies explicit encryption and validation keys. AutoGenerate cannot be used in a cluster.
+        /// The anti-forgery token could not be decrypted.
         /// </summary>
         internal static string FormatAntiForgeryToken_DeserializationFailed()
         {

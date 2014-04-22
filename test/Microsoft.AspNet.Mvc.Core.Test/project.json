@@ -5,6 +5,7 @@
   },
   "dependencies": {
     "Microsoft.AspNet.Http": "0.1-alpha-*",
+    "Microsoft.AspNet.PipelineCore": "0.1-alpha-*",
     "Microsoft.AspNet.Mvc.Core" : "",
     "Microsoft.AspNet.Mvc" : "",
     "Microsoft.AspNet.Routing": "0.1-alpha-*",

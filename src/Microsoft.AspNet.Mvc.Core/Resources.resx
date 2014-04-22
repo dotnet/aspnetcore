@@ -127,7 +127,7 @@
     <value>The required anti-forgery cookie "{0}" is not present.</value>
   </data>
   <data name="AntiForgeryToken_DeserializationFailed" xml:space="preserve">
-    <value>The anti-forgery token could not be decrypted. If this application is hosted by a Web Farm or cluster, ensure that all machines are running the same version of ASP.NET Web Pages and that the &lt;machineKey&gt; configuration specifies explicit encryption and validation keys. AutoGenerate cannot be used in a cluster.</value>
+    <value>The anti-forgery token could not be decrypted.</value>
   </data>
   <data name="AntiForgeryToken_FormFieldMissing" xml:space="preserve">
     <value>The required anti-forgery form field "{0}" is not present.</value>
