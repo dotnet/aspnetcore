@@ -54,7 +54,16 @@ namespace Microsoft.AspNet.PipelineCore
 
         public override ClaimsPrincipal User
         {
-            get { return HttpAuthentication.User; }
+            get
+            {
+                var user = HttpAuthentication.User;
+                if (user == null)
+                {
+                    user = new ClaimsPrincipal(new ClaimsIdentity());
+                    HttpAuthentication.User = user;
+                }
+                return user;
+            }
             set { HttpAuthentication.User = value; }
         }
 
