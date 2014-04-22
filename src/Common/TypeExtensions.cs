@@ -100,22 +100,6 @@ namespace Microsoft.AspNet.Mvc
             return (!type.GetTypeInfo().IsValueType || IsNullableValueType(type));
         }
 
-        public static bool HasStringConverter([NotNull] this Type type)
-        {
-            var typeInfo = type.GetTypeInfo();
-            if (typeInfo.IsPrimitive || type == typeof(string))
-            {
-                return true;
-            }
-            if (IsNullableValueType(type) && HasStringConverter(type.GenericTypeArguments[0]))
-            {
-                // Nullable<T> where T is a primitive type or has a type converter
-                return true;
-            }
-
-            return false;
-        }
-
         public static Type[] GetTypeArgumentsIfMatch([NotNull] Type closedType, Type matchingOpenType)
         {
             var closedTypeInfo = closedType.GetTypeInfo();

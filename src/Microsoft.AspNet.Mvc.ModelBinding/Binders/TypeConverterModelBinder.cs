@@ -13,26 +13,25 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             ModelBindingHelper.ValidateBindingContext(bindingContext);
 
-            if (!bindingContext.ModelType.HasStringConverter())
+            if (!ValueProviderResult.CanConvertFromString(bindingContext.ModelType))
             {
                 // this type cannot be converted
                 return false;
             }
 
-            ValueProviderResult valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
+            var valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
             if (valueProviderResult == null)
             {
                 return false; // no entry
             }
-
-            // Provider should have verified this before creating
-            Contract.Assert(bindingContext.ModelType.HasStringConverter());
 
             object newModel;
             bindingContext.ModelState.SetModelValue(bindingContext.ModelName, valueProviderResult);
             try
             {
                 newModel = valueProviderResult.ConvertTo(bindingContext.ModelType);
+                ModelBindingHelper.ReplaceEmptyStringWithNull(bindingContext.ModelMetadata, ref newModel);
+                bindingContext.Model = newModel;
             }
             catch (Exception ex)
             {
@@ -45,11 +44,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 {
                     bindingContext.ModelState.AddModelError(bindingContext.ModelName, ex);
                 }
-                return false;
             }
 
-            ModelBindingHelper.ReplaceEmptyStringWithNull(bindingContext.ModelMetadata, ref newModel);
-            bindingContext.Model = newModel;
             return true;
         }
 

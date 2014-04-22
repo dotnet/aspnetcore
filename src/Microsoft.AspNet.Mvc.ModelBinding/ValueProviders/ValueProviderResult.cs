@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Globalization;
 using System.Reflection;
-using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -64,7 +63,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return UnwrapPossibleArrayType(cultureToUse, value, type);
         }
 
-        private static object ConvertSimpleType(CultureInfo culture, object value, Type destinationType)
+        public static bool CanConvertFromString(Type destinationType)
+        {
+            return GetConverterDelegate(destinationType) != null;
+        }
+
+        private object ConvertSimpleType(CultureInfo culture, object value, Type destinationType)
         {
             if (value == null || value.GetType().IsAssignableFrom(destinationType))
             {
@@ -72,80 +76,26 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             // In case of a Nullable object, we try again with its underlying type.
-            var underlyingType = Nullable.GetUnderlyingType(destinationType);
-            if (underlyingType != null)
-            {
-                destinationType = underlyingType;
-            }
+            destinationType = UnwrapNullableType(destinationType);
 
             // if this is a user-input value but the user didn't type anything, return no value
             var valueAsString = value as string;
-
             if (valueAsString != null && string.IsNullOrWhiteSpace(valueAsString))
             {
                 return null;
             }
 
-            if (destinationType == typeof(string))
+            var converter = GetConverterDelegate(destinationType);
+            if (converter == null)
             {
-                return Convert.ToString(value, culture);
+                var message = Resources.FormatValueProviderResult_NoConverterExists(value.GetType(), destinationType);
+                throw new InvalidOperationException(message);
             }
 
-            if (destinationType == typeof(int))
-            {
-                return Convert.ToInt32(value, culture);
-            }
-
-            if (destinationType == typeof(long))
-            {
-                return Convert.ToInt64(value, culture);
-            }
-
-            if (destinationType == typeof(float))
-            {
-                return Convert.ToSingle(value, culture);
-            }
-
-            if (destinationType == typeof(double))
-            {
-                return Convert.ToDouble(value, culture);
-            }
-
-            if (destinationType == typeof(decimal))
-            {
-                return Convert.ToDecimal(value, culture);
-            }
-            
-            if (destinationType == typeof(bool))
-            {
-                return Convert.ToBoolean(value, culture);
-            }
-
-            if (destinationType.GetTypeInfo().IsEnum)
-            {
-                // EnumConverter cannot convert integer, so we verify manually
-                if ((value is int))
-                {
-                    if (Enum.IsDefined(destinationType, value))
-                    {
-                        return Enum.ToObject(destinationType, (int)value);
-                    }
-                    
-                    throw new FormatException(
-                        Resources.FormatValueProviderResult_CannotConvertEnum(value, 
-                                                                              destinationType));
-                }
-                else
-                {
-                    return Enum.Parse(destinationType, valueAsString);
-                }
-            }
-
-            var message = Resources.FormatValueProviderResult_NoConverterExists(value.GetType(), destinationType);
-            throw new InvalidOperationException(message);
+            return converter(value, culture);
         }
 
-        private static object UnwrapPossibleArrayType(CultureInfo culture, object value, Type destinationType)
+        private object UnwrapPossibleArrayType(CultureInfo culture, object value, Type destinationType)
         {
             // array conversion results in four cases, as below
             var valueAsArray = value as Array;
@@ -188,6 +138,123 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // case 4: both destination + source type are single elements, so convert
             return ConvertSimpleType(culture, value, destinationType);
+        }
+
+        private static Func<object, CultureInfo, object> GetConverterDelegate(Type destinationType)
+        {
+            destinationType = UnwrapNullableType(destinationType);
+
+            if (destinationType == typeof(string))
+            {
+                return (value, culture) => Convert.ToString(value, culture);
+            }
+
+            if (destinationType == typeof(int))
+            {
+                return (value, culture) => Convert.ToInt32(value, culture);
+            }
+
+            if (destinationType == typeof(long))
+            {
+                return (value, culture) => Convert.ToInt64(value, culture);
+            }
+
+            if (destinationType == typeof(float))
+            {
+                return (value, culture) => Convert.ToSingle(value, culture);
+            }
+
+            if (destinationType == typeof(double))
+            {
+                return (value, culture) => Convert.ToDouble(value, culture);
+            }
+
+            if (destinationType == typeof(decimal))
+            {
+                return (value, culture) => Convert.ToDecimal(value, culture);
+            }
+
+            if (destinationType == typeof(bool))
+            {
+                return (value, culture) => Convert.ToBoolean(value, culture);
+            }
+
+            if (destinationType == typeof(DateTime))
+            {
+                return (value, culture) =>
+                {
+                    ThrowIfNotStringType(value, destinationType);
+                    return DateTime.Parse((string)value, culture);
+                };
+            }
+
+            if (destinationType == typeof(DateTimeOffset))
+            {
+                return (value, culture) =>
+                {
+                    ThrowIfNotStringType(value, destinationType);
+                    return DateTimeOffset.Parse((string)value, culture);
+                };
+            }
+
+            if (destinationType == typeof(TimeSpan))
+            {
+                return (value, culture) =>
+                {
+                    ThrowIfNotStringType(value, destinationType);
+                    return TimeSpan.Parse((string)value, culture);
+                };
+            }
+
+            if (destinationType == typeof(Guid))
+            {
+                return (value, culture) =>
+                {
+                    ThrowIfNotStringType(value, destinationType);
+                    return Guid.Parse((string)value);
+                };
+            }
+
+            if (destinationType.GetTypeInfo().IsEnum)
+            {
+                return (value, culture) =>
+                {
+                    // EnumConverter cannot convert integer, so we verify manually
+                    if ((value is int))
+                    {
+                        if (Enum.IsDefined(destinationType, value))
+                        {
+                            return Enum.ToObject(destinationType, (int)value);
+                        }
+
+                        throw new FormatException(
+                            Resources.FormatValueProviderResult_CannotConvertEnum(value,
+                                                                                  destinationType));
+                    }
+                    else
+                    {
+                        ThrowIfNotStringType(value, destinationType);
+                        return Enum.Parse(destinationType, (string)value);
+                    }
+                };
+            }
+
+            return null;
+        }
+
+        private static Type UnwrapNullableType(Type destinationType)
+        {
+            return Nullable.GetUnderlyingType(destinationType) ?? destinationType;
+        }
+
+        private static void ThrowIfNotStringType(object value, Type destinationType)
+        {
+            var type = value.GetType();
+            if (type != typeof(string))
+            {
+                string message = Resources.FormatValueProviderResult_NoConverterExists(type, destinationType);
+                throw new InvalidOperationException(message);
+            }
         }
     }
 }

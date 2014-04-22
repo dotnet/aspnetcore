@@ -390,7 +390,50 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 yield return new object[] { 42L, 42 };
                 yield return new object[] { (float)42.0, 42 };
                 yield return new object[] { (double)42.0, 42 };
+                yield return new object[] { "2008-01-01", new DateTime(2008, 01, 01) };
+                yield return new object[] { "00:00:20", TimeSpan.FromSeconds(20) };
+                yield return new object[] { "c6687d3a-51f9-4159-8771-a66d2b7d7038", 
+                                            Guid.Parse("c6687d3a-51f9-4159-8771-a66d2b7d7038") };
             }
+        }
+
+        [Theory]
+        [InlineData(typeof(TimeSpan))]
+        [InlineData(typeof(DateTime))]
+        [InlineData(typeof(DateTimeOffset))]
+        [InlineData(typeof(Guid))]
+        [InlineData(typeof(MyEnum))]
+        public void ConvertTo_Throws_IfValueIsNotStringData(Type destinationType)
+        {
+            // Arrange
+            var result = new ValueProviderResult(new MyClassWithoutConverter(), "", CultureInfo.InvariantCulture);
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => result.ConvertTo(destinationType));
+
+            // Assert
+            var expectedMessage = string.Format("The parameter conversion from type '{0}' to type '{1}' " +
+                                                "failed because no type converter can convert between these types.",
+                                                typeof(MyClassWithoutConverter), destinationType);
+            Assert.Equal(expectedMessage, ex.Message);
+        }
+
+        [Fact]
+        public void ConvertTo_Throws_IfDestinationTypeIsNotConvertible()
+        {
+            // Arrange
+            var value = "Hello world";
+            var destinationType = typeof(MyClassWithoutConverter);
+            var result = new ValueProviderResult(value, "", CultureInfo.InvariantCulture);
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => result.ConvertTo(destinationType));
+
+            // Assert
+            var expectedMessage = string.Format("The parameter conversion from type '{0}' to type '{1}' " +
+                                                "failed because no type converter can convert between these types.",
+                                                value.GetType(), typeof(MyClassWithoutConverter));
+            Assert.Equal(expectedMessage, ex.Message);
         }
 
         private class MyClassWithoutConverter

@@ -7,7 +7,52 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 {
     public class TypeConverterModelBinderTest
     {
-        // private static readonly ModelBinderErrorMessageProvider  = (modelMetadata, incomingValue) => null;
+        [Theory]
+        [InlineData(typeof(object))]
+        [InlineData(typeof(Calendar))]
+        [InlineData(typeof(TestClass))]
+        public void BindModel_ReturnsFalse_IfTypeCannotBeConverted(Type destinationType)
+        {
+            // Arrange
+            var bindingContext = GetBindingContext(destinationType);
+            bindingContext.ValueProvider = new SimpleHttpValueProvider
+            {
+                { "theModelName", "some-value" }
+            };
+
+            var binder = new TypeConverterModelBinder();
+
+            // Act
+            var retVal = binder.BindModel(bindingContext);
+
+            // Assert
+            Assert.False(retVal);
+        }
+
+        [Theory]
+        [InlineData(typeof(int))]
+        [InlineData(typeof(long))]
+        [InlineData(typeof(Guid))]
+        [InlineData(typeof(DateTimeOffset))]
+        [InlineData(typeof(double))]
+        [InlineData(typeof(DayOfWeek))]
+        public void BindModel_ReturnsTrue_IfTypeCanBeConverted(Type destinationType)
+        {
+            // Arrange
+            var bindingContext = GetBindingContext(destinationType);
+            bindingContext.ValueProvider = new SimpleHttpValueProvider
+            {
+                { "theModelName", "some-value" }
+            };
+
+            var binder = new TypeConverterModelBinder();
+
+            // Act
+            var retVal = binder.BindModel(bindingContext);
+
+            // Assert
+            Assert.True(retVal);
+        }
 
         [Fact]
         public void BindModel_Error_FormatExceptionsTurnedIntoStringsInModelState()
@@ -25,7 +70,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             bool retVal = binder.BindModel(bindingContext);
 
             // Assert
-            Assert.False(retVal);
+            Assert.True(retVal);
             Assert.Null(bindingContext.Model);
             Assert.Equal(false, bindingContext.ModelState.IsValid);
             Assert.Equal("Input string was not in a correct format.", bindingContext.ModelState["theModelName"].Errors[0].ErrorMessage);
@@ -97,6 +142,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 ModelName = "theModelName",
                 ValueProvider = new SimpleHttpValueProvider() // empty
             };
+        }
+
+        private sealed class TestClass
+        {
         }
     }
 }
