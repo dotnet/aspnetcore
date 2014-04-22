@@ -959,6 +959,50 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return tagBuilder.ToHtmlString(TagRenderMode.Normal);
         }
 
+        internal static MvcHtmlString TextAreaHelper(HtmlHelper htmlHelper, ModelMetadata modelMetadata, string name, IDictionary<string, object> rowsAndColumns, IDictionary<string, object> htmlAttributes, string innerHtmlPrefix = null)
+        {
+            string fullName = htmlHelper.ViewContext.ViewData.TemplateInfo.GetFullHtmlFieldName(name);
+            if (String.IsNullOrEmpty(fullName))
+            {
+                throw new ArgumentException(MvcResources.Common_NullOrEmpty, "name");
+            }
+
+            TagBuilder tagBuilder = new TagBuilder("textarea");
+            tagBuilder.GenerateId(fullName);
+            tagBuilder.MergeAttributes(htmlAttributes, true);
+            tagBuilder.MergeAttributes(rowsAndColumns, rowsAndColumns != implicitRowsAndColumns); // Only force explicit rows/cols
+            tagBuilder.MergeAttribute("name", fullName, true);
+
+            // If there are any errors for a named field, we add the CSS attribute.
+            ModelState modelState;
+            if (htmlHelper.ViewData.ModelState.TryGetValue(fullName, out modelState) && modelState.Errors.Count > 0)
+            {
+                tagBuilder.AddCssClass(HtmlHelper.ValidationInputCssClassName);
+            }
+
+            tagBuilder.MergeAttributes(htmlHelper.GetUnobtrusiveValidationAttributes(name, modelMetadata));
+
+            string value;
+            if (modelState != null && modelState.Value != null)
+            {
+                value = modelState.Value.AttemptedValue;
+            }
+            else if (modelMetadata.Model != null)
+            {
+                value = modelMetadata.Model.ToString();
+            }
+            else
+            {
+                value = String.Empty;
+            }
+
+            // The first newline is always trimmed when a TextArea is rendered, so we add an extra one
+            // in case the value being rendered is something like "\r\nHello".
+            tagBuilder.InnerHtml = (innerHtmlPrefix ?? Environment.NewLine) + HttpUtility.HtmlEncode(value);
+
+            return tagBuilder.ToMvcHtmlString(TagRenderMode.Normal);
+        }
+
         protected virtual HtmlString GenerateTextBox(ModelMetadata metadata, string name, object value, string format,
             IDictionary<string, object> htmlAttributes)
         {
