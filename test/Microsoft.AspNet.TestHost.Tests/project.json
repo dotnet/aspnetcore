@@ -1,8 +1,6 @@
 {
   "version" : "0.1-alpha-*",
   "dependencies": {
-    "System.Reflection": "4.0.10.0",
-    "System.Runtime" : "4.0.20.0",
     "Microsoft.AspNet.Hosting": "",
     "Microsoft.AspNet.TestHost": "",
     "xunit.abstractions": "2.0.0-aspnet-*",
