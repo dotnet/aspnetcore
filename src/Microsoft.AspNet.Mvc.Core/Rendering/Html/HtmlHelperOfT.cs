@@ -33,8 +33,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
             [NotNull] IViewEngine viewEngine,
             [NotNull] IModelMetadataProvider metadataProvider,
             [NotNull] IUrlHelper urlHelper,
-            [NotNull] AntiForgery antiForgeryInstance)
-             : base(viewEngine, metadataProvider, urlHelper, antiForgeryInstance)
+            [NotNull] AntiForgery antiForgeryInstance,
+            [NotNull] IActionBindingContextProvider actionBindingContextProvider)
+            : base(viewEngine, metadataProvider, urlHelper, antiForgeryInstance, actionBindingContextProvider)
         {
         }
 

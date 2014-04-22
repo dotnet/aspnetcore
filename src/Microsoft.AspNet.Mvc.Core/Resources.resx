@@ -288,4 +288,19 @@
   <data name="FilterFactoryAttribute_TypeMustImplementIFilter" xml:space="preserve">
     <value>The type provided to '{0}' must implement '{1}'.</value>
   </data>
+  <data name="UnobtrusiveJavascript_ValidationParameterCannotBeEmpty" xml:space="preserve">
+    <value>Validation parameter names in unobtrusive client validation rules cannot be empty. Client rule type: {0}</value>
+  </data>
+  <data name="UnobtrusiveJavascript_ValidationParameterMustBeLegal" xml:space="preserve">
+    <value>Validation parameter names in unobtrusive client validation rules must start with a lowercase letter and consist of only lowercase letters or digits. Validation parameter name: {0}, client rule type: {1}</value>
+  </data>
+  <data name="UnobtrusiveJavascript_ValidationTypeCannotBeEmpty" xml:space="preserve">
+    <value>Validation type names in unobtrusive client validation rules cannot be empty. Client rule type: {0}</value>
+  </data>
+  <data name="UnobtrusiveJavascript_ValidationTypeMustBeLegal" xml:space="preserve">
+    <value>Validation type names in unobtrusive client validation rules must consist of only lowercase letters. Invalid name: "{0}", client rule type: {1}</value>
+  </data>
+  <data name="UnobtrusiveJavascript_ValidationTypeMustBeUnique" xml:space="preserve">
+    <value>Validation type names in unobtrusive client validation rules must be unique. The following validation type was seen more than once: {0}</value>
+  </data>
 </root>

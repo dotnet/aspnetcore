@@ -48,6 +48,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         private readonly IUrlHelper _urlHelper;
         private readonly IViewEngine _viewEngine;
         private readonly AntiForgery _antiForgeryInstance;
+        private readonly IActionBindingContextProvider _actionBindingContextProvider;
 
         private ViewContext _viewContext;
 
@@ -57,13 +58,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public HtmlHelper(
             [NotNull] IViewEngine viewEngine,
             [NotNull] IModelMetadataProvider metadataProvider,
-            [NotNull] IUrlHelper urlHelper, 
-            [NotNull] AntiForgery antiForgeryInstance)
+            [NotNull] IUrlHelper urlHelper,             
+            [NotNull] AntiForgery antiForgeryInstance,
+            [NotNull] IActionBindingContextProvider actionBindingContextProvider)
         {
             _viewEngine = viewEngine;
             MetadataProvider = metadataProvider;
             _urlHelper = urlHelper;
             _antiForgeryInstance = antiForgeryInstance;
+            _actionBindingContextProvider = actionBindingContextProvider;
 
             // Underscores are fine characters in id's.
             IdAttributeDotReplacement = "_";
@@ -640,8 +643,21 @@ namespace Microsoft.AspNet.Mvc.Rendering
         // then we can't render the attributes (we'd have no <form> to attach them to).
         protected IDictionary<string, object> GetValidationAttributes(string name, ModelMetadata metadata)
         {
-            // TODO: Add validation attributes to input helpers.
-            return new Dictionary<string, object>();
+            var formContext = ViewContext.GetFormContextForClientValidation();
+            if (!ViewContext.UnobtrusiveJavaScriptEnabled || formContext == null)
+            {
+                return null;
+            }
+
+            var fullName = ViewData.TemplateInfo.GetFullHtmlFieldName(name);
+            if (formContext.RenderedField(fullName))
+            {
+                return null;
+            }
+
+            formContext.RenderedField(fullName, true);
+            var clientRules = GetClientValidationRules(name, metadata);
+            return UnobtrusiveValidationAttributesGenerator.GetValidationAttributes(clientRules);
         }
 
         protected virtual HtmlString GenerateCheckBox(ModelMetadata metadata, string name, bool? isChecked,
@@ -1348,6 +1364,18 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
 
             return new HtmlString(Encode(resolvedValue));
+        }
+
+        protected virtual IEnumerable<ModelClientValidationRule> GetClientValidationRules(string name, ModelMetadata metadata)
+        {
+            var actionBindingContext = _actionBindingContextProvider.GetActionBindingContextAsync(ViewContext).Result;
+            metadata = metadata ??
+                ExpressionMetadataProvider.FromStringExpression(name, ViewData, MetadataProvider);
+            return actionBindingContext.ValidatorProviders
+                .SelectMany(vp => vp.GetValidators(metadata))
+                .OfType<IClientModelValidator>()
+                .SelectMany(v => v.GetClientValidationRules(
+                    new ClientModelValidationContext(metadata, MetadataProvider)));
         }
 
         private static string GetInputTypeString(InputType inputType)

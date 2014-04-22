@@ -197,6 +197,7 @@
     <Compile Include="Rendering\SelectList.cs" />
     <Compile Include="Rendering\SelectListGroup.cs" />
     <Compile Include="Rendering\SelectListItem.cs" />
+    <Compile Include="Rendering\UnobtrusiveValidationAttributesGenerator.cs" />
     <Compile Include="Rendering\ViewEngineResult.cs" />
     <Compile Include="RouteConstraintAttribute.cs" />
     <Compile Include="RouteDataActionConstraint.cs" />
