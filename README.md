@@ -27,6 +27,8 @@ These samples, in this repo, are just basic starting points for you to experimen
 + [HelloWeb](https://github.com/aspnet/Preview/tree/master/samples/HelloWeb). This is a minimal startup class that shows welcome page and static file middleware. This is mostly for you to run through the steps in the readme and make sure you have everything setup and working correctly.
 + [HelloWebFx](https://github.com/aspnet/Preview/tree/master/samples/HelloWebFx). This sample is a basic MVC app. It is not designed to show all the functionality of the new web stack, but to give you a starting point to play with features.
 
+**NOTE: The samples are pinned to a specific version of the packages. If you want to try the latest builds then update the project.json and replace the number at the end of the version with a '\*', so '0.1-alpha-267' becomes '0.1-alpha-\*', and then run ```K restore``` to pull down the latest packages**
+
 ##[Feature Samples](https://github.com/aspnet/Entropy)
 The Entropy repo contains samples of specific features in isolation. Each directory contains just enough code to show an aspect of a feature.
 
