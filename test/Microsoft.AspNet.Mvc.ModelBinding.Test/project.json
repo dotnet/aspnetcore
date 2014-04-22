@@ -26,6 +26,7 @@
         "Moq": "4.2.1312.1622",
         "System.ComponentModel.DataAnnotations": "",
         "System.Reflection": "",
+        "System.Runtime": "",
         "System.Runtime.Serialization": ""
       }
     },
