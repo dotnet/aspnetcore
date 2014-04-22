@@ -17,7 +17,6 @@ namespace Microsoft.AspNet.Identity.Security
         public UserManager<TUser> UserManager { get; set; }
         public HttpContext Context { get; set; }
 
-
         public virtual async Task<ClaimsIdentity> CreateUserIdentityAsync(TUser user)
         {
             if (UserManager == null)

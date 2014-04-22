@@ -3,7 +3,7 @@
   "dependencies": {
     "Microsoft.AspNet.ConfigurationModel" : "0.1-alpha-*",
     "Microsoft.AspNet.DependencyInjection" : "0.1-alpha-*",
-    "Microsoft.AspNet.Identity" : "",
+    "Microsoft.AspNet.Identity" : "0.1-alpha-*",
     "Microsoft.AspNet.Testing" : "0.1-alpha-*",
     "Xunit.KRunner": "0.1-alpha-*",
     "xunit.abstractions": "2.0.0-aspnet-*",

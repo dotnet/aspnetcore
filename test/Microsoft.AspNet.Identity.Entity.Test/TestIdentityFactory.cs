@@ -81,7 +81,12 @@ namespace Microsoft.AspNet.Identity.Entity.Test
 
         public static UserManager<EntityUser> CreateManager(EntityContext context)
         {
-            return new UserManager<EntityUser>(new UserStore(context));
+            var manager = new UserManager<EntityUser>(new UserStore(context))
+            {
+                UserValidator = new UserValidator<EntityUser>(),
+                PasswordValidator = new PasswordValidator()
+            };
+            return manager;
         }
 
         public static UserManager<EntityUser> CreateManager()

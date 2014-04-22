@@ -2,6 +2,8 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.DependencyInjection;
+using Microsoft.AspNet.DependencyInjection.Fallback;
 
 namespace Microsoft.AspNet.Identity
 {
@@ -13,6 +15,11 @@ namespace Microsoft.AspNet.Identity
     {
         private bool _disposed;
 
+        public RoleManager(IServiceProvider services)
+        {
+            Initialize(services);
+        }
+
         /// <summary>
         ///     Constructor
         /// </summary>
@@ -23,8 +30,9 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("store");
             }
-            Store = store;
-            RoleValidator = new RoleValidator<TRole>();
+            var services = new ServiceCollection { IdentityServices.GetDefaultRoleServices<TRole>() };
+            services.AddInstance<IRoleStore<TRole>>(store);
+            Initialize(services.BuildServiceProvider());
         }
 
         /// <summary>
@@ -63,6 +71,21 @@ namespace Microsoft.AspNet.Identity
                 ThrowIfDisposed();
                 return Store is IQueryableRoleStore<TRole>;
             }
+        }
+
+        public void Initialize(IServiceProvider services)
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException("services");
+            }
+            Store = services.GetService<IRoleStore<TRole>>();
+            if (Store == null)
+            {
+                // TODO: what is the right way to enforce required services
+                throw new InvalidOperationException();
+            }
+            RoleValidator = services.GetService<IRoleValidator<TRole>>();
         }
 
         /// <summary>

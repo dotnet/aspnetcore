@@ -1,3 +1,4 @@
+using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.DependencyInjection.Fallback;
 using Moq;
 using System;
@@ -20,13 +21,19 @@ namespace Microsoft.AspNet.Identity.Test
         }
 
         [Fact]
-        public void ServiceProviderWireupTest()
+        public void EnsureDefaultServicesDefaultsWithStoreWorks()
         {
-            var manager = new TestManager(TestServices.DefaultServices<TestUser, string>().BuildServiceProvider());
+            var services = new ServiceCollection {IdentityServices.GetDefaultUserServices<TestUser>()};
+            services.AddInstance<IUserStore<TestUser>>(new NoopUserStore());
+            var manager = new TestManager(services.BuildServiceProvider());
             Assert.NotNull(manager.PasswordHasher);
             Assert.NotNull(manager.PasswordValidator);
             Assert.NotNull(manager.UserValidator);
             Assert.NotNull(manager.StorePublic);
+            Assert.NotNull(manager.LockoutPolicy);
+            Assert.Equal(TimeSpan.FromMinutes(5), manager.LockoutPolicy.DefaultAccountLockoutTimeSpan);
+            Assert.Equal(5, manager.LockoutPolicy.MaxFailedAccessAttemptsBeforeLockout);
+            Assert.False(manager.LockoutPolicy.UserLockoutEnabledByDefault);
         }
 
 #if NET45
@@ -419,13 +426,12 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public async Task ManagerPublicNullChecks()
         {
-            Assert.Throws<ArgumentNullException>("store",
-                () => new UserManager<TestUser>((IUserStore<TestUser>) null));
             Assert.Throws<ArgumentNullException>("serviceProvider",
                 () => new UserManager<TestUser>((IServiceProvider)null));
             var manager = new UserManager<TestUser>(new NotImplementedStore());
             Assert.Throws<ArgumentNullException>(() => manager.ClaimsIdentityFactory = null);
             Assert.Throws<ArgumentNullException>(() => manager.PasswordHasher = null);
+            Assert.Throws<ArgumentNullException>("serviceProvider", () => manager.Initialize(null));
             await
                 Assert.ThrowsAsync<ArgumentNullException>("user",
                     async () => await manager.CreateIdentityAsync(null, "whatever"));

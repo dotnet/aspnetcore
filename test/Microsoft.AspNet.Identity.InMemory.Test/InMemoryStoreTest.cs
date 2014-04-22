@@ -559,8 +559,11 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task SingleFailureLockout()
         {
             var mgr = CreateManager();
-            mgr.DefaultAccountLockoutTimeSpan = TimeSpan.FromHours(1);
-            mgr.UserLockoutEnabledByDefault = true;
+            mgr.LockoutPolicy = new LockoutPolicy
+            {
+                DefaultAccountLockoutTimeSpan = TimeSpan.FromHours(1),
+                UserLockoutEnabledByDefault = true
+            };
             var user = new IdentityUser("fastLockout");
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.True(await mgr.GetLockoutEnabledAsync(user));
@@ -576,9 +579,12 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task TwoFailureLockout()
         {
             var mgr = CreateManager();
-            mgr.DefaultAccountLockoutTimeSpan = TimeSpan.FromHours(1);
-            mgr.UserLockoutEnabledByDefault = true;
-            mgr.MaxFailedAccessAttemptsBeforeLockout = 2;
+            mgr.LockoutPolicy = new LockoutPolicy
+            {
+                DefaultAccountLockoutTimeSpan = TimeSpan.FromHours(1),
+                UserLockoutEnabledByDefault = true,
+                MaxFailedAccessAttemptsBeforeLockout = 2
+            };
             var user = new IdentityUser("twoFailureLockout");
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.True(await mgr.GetLockoutEnabledAsync(user));
@@ -598,9 +604,12 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task ResetAccessCountPreventsLockout()
         {
             var mgr = CreateManager();
-            mgr.DefaultAccountLockoutTimeSpan = TimeSpan.FromHours(1);
-            mgr.UserLockoutEnabledByDefault = true;
-            mgr.MaxFailedAccessAttemptsBeforeLockout = 2;
+            mgr.LockoutPolicy = new LockoutPolicy
+            {
+                DefaultAccountLockoutTimeSpan = TimeSpan.FromHours(1),
+                UserLockoutEnabledByDefault = true,
+                MaxFailedAccessAttemptsBeforeLockout = 2
+            };
             var user = new IdentityUser("resetLockout");
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.True(await mgr.GetLockoutEnabledAsync(user));
@@ -624,8 +633,11 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task CanEnableLockoutManuallyAndLockout()
         {
             var mgr = CreateManager();
-            mgr.DefaultAccountLockoutTimeSpan = TimeSpan.FromHours(1);
-            mgr.MaxFailedAccessAttemptsBeforeLockout = 2;
+            mgr.LockoutPolicy = new LockoutPolicy
+            {
+                DefaultAccountLockoutTimeSpan = TimeSpan.FromHours(1),
+                MaxFailedAccessAttemptsBeforeLockout = 2
+            };
             var user = new IdentityUser("manualLockout");
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.False(await mgr.GetLockoutEnabledAsync(user));
@@ -648,7 +660,10 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task UserNotLockedOutWithNullDateTimeAndIsSetToNullDate()
         {
             var mgr = CreateManager();
-            mgr.UserLockoutEnabledByDefault = true;
+            mgr.LockoutPolicy = new LockoutPolicy
+            {
+                UserLockoutEnabledByDefault = true,
+            };
             var user = new IdentityUser("LockoutTest");
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.True(await mgr.GetLockoutEnabledAsync(user));
@@ -676,8 +691,11 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task LockoutEndToUtcNowMinus1SecInUserShouldNotBeLockedOut()
         {
             var mgr = CreateManager();
-            mgr.UserLockoutEnabledByDefault = true;
-            var user = new IdentityUser("LockoutUtcNowTest") {LockoutEnd = DateTimeOffset.UtcNow.AddSeconds(-1)};
+            mgr.LockoutPolicy = new LockoutPolicy
+            {
+                UserLockoutEnabledByDefault = true,
+            };
+            var user = new IdentityUser("LockoutUtcNowTest") { LockoutEnd = DateTimeOffset.UtcNow.AddSeconds(-1) };
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.True(await mgr.GetLockoutEnabledAsync(user));
             Assert.True(user.LockoutEnabled);
@@ -688,7 +706,10 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task LockoutEndToUtcNowSubOneSecondWithManagerShouldNotBeLockedOut()
         {
             var mgr = CreateManager();
-            mgr.UserLockoutEnabledByDefault = true;
+            mgr.LockoutPolicy = new LockoutPolicy
+            {
+                UserLockoutEnabledByDefault = true,
+            };
             var user = new IdentityUser("LockoutUtcNowTest");
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.True(await mgr.GetLockoutEnabledAsync(user));
@@ -701,8 +722,11 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task LockoutEndToUtcNowPlus5ShouldBeLockedOut()
         {
             var mgr = CreateManager();
-            mgr.UserLockoutEnabledByDefault = true;
-            var user = new IdentityUser("LockoutUtcNowTest") {LockoutEnd = DateTimeOffset.UtcNow.AddMinutes(5)};
+            mgr.LockoutPolicy = new LockoutPolicy
+            {
+                UserLockoutEnabledByDefault = true,
+            };
+            var user = new IdentityUser("LockoutUtcNowTest") { LockoutEnd = DateTimeOffset.UtcNow.AddMinutes(5) };
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.True(await mgr.GetLockoutEnabledAsync(user));
             Assert.True(user.LockoutEnabled);
@@ -713,7 +737,10 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public async Task UserLockedOutWithDateTimeLocalKindNowPlus30()
         {
             var mgr = CreateManager();
-            mgr.UserLockoutEnabledByDefault = true;
+            mgr.LockoutPolicy = new LockoutPolicy
+            {
+                UserLockoutEnabledByDefault = true,
+            };
             var user = new IdentityUser("LockoutTest");
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.True(await mgr.GetLockoutEnabledAsync(user));
@@ -1431,7 +1458,12 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
 
         private static UserManager<IdentityUser> CreateManager()
         {
-            return new UserManager<IdentityUser>(new InMemoryUserStore<IdentityUser>());
+            var manager = new UserManager<IdentityUser>(new InMemoryUserStore<IdentityUser>())
+            {
+                UserValidator = new UserValidator<IdentityUser>(),
+                PasswordValidator = new PasswordValidator()
+            };
+            return manager;
         }
 
         private static RoleManager<IdentityRole> CreateRoleManager()

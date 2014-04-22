@@ -16,6 +16,58 @@ namespace Microsoft.AspNet.Identity.Entity.Test
 {
     public class UserStoreTest
     {
+        class ApplicationUserManager : UserManager<EntityUser>
+        {
+            public ApplicationUserManager(IServiceProvider services) : base(services) { }
+        }
+
+        [Fact]
+        public async Task CanUseAddedManagerInstance()
+        {
+            var services = new ServiceCollection();
+            var store = new UserStore(new IdentityContext());
+            services.AddInstance<UserManager<EntityUser>>(new UserManager<EntityUser>(store));
+            var provider = services.BuildServiceProvider();
+            var manager = provider.GetService<UserManager<EntityUser>>();
+            Assert.NotNull(manager);
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(new EntityUser("hello")));
+        }
+
+        [Fact]
+        public async Task CanUseSingletonManagerInstance()
+        {
+            var services = new ServiceCollection();
+            var store = new UserStore(new IdentityContext());
+            services.AddIdentity<EntityUser, EntityRole>(s =>
+            {
+                s.UseUserStore(() => store);
+                s.UseUserManager<ApplicationUserManager>();
+            });
+            //services.AddSingleton<ApplicationUserManager, ApplicationUserManager>();
+
+            var provider = services.BuildServiceProvider();
+            var manager = provider.GetService<ApplicationUserManager>();
+            Assert.NotNull(manager);
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(new EntityUser("hello")));
+        }
+
+        //[Fact]
+        //public async Task CanUseSingletonGenericManagerInstance()
+        //{
+        //    var services = new ServiceCollection();
+        //    var store = new UserStore(new IdentityContext());
+        //    services.AddIdentity<EntityUser>(s =>
+        //    {
+        //        s.UseStore(() => store);
+        //        s.UseManager<UserManager<EntityUser>>();
+        //    });
+
+        //    var provider = services.BuildServiceProvider();
+        //    var manager = provider.GetService<UserManager<EntityUser>>();
+        //    Assert.NotNull(manager);
+        //    IdentityResultAssert.IsSuccess(await manager.CreateAsync(new EntityUser("hello")));
+        //}
+
         [Fact]
         public async Task UserStoreMethodsThrowWhenDisposedTest()
         {
@@ -723,8 +775,11 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         public async Task SingleFailureLockout()
         {
             var mgr = TestIdentityFactory.CreateManager();
-            mgr.DefaultAccountLockoutTimeSpan = TimeSpan.FromHours(1);
-            mgr.UserLockoutEnabledByDefault = true;
+            mgr.LockoutPolicy = new LockoutPolicy
+            {
+                DefaultAccountLockoutTimeSpan = TimeSpan.FromHours(1),
+                UserLockoutEnabledByDefault = true,
+            };
             var user = new EntityUser("fastLockout");
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.True(await mgr.GetLockoutEnabledAsync(user));
@@ -740,9 +795,12 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         public async Task TwoFailureLockout()
         {
             var mgr = TestIdentityFactory.CreateManager();
-            mgr.DefaultAccountLockoutTimeSpan = TimeSpan.FromHours(1);
-            mgr.UserLockoutEnabledByDefault = true;
-            mgr.MaxFailedAccessAttemptsBeforeLockout = 2;
+            mgr.LockoutPolicy = new LockoutPolicy
+            {
+                DefaultAccountLockoutTimeSpan = TimeSpan.FromHours(1),
+                UserLockoutEnabledByDefault = true,
+                MaxFailedAccessAttemptsBeforeLockout = 2
+            };
             var user = new EntityUser("twoFailureLockout");
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.True(await mgr.GetLockoutEnabledAsync(user));
@@ -762,9 +820,12 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         public async Task ResetAccessCountPreventsLockout()
         {
             var mgr = TestIdentityFactory.CreateManager();
-            mgr.DefaultAccountLockoutTimeSpan = TimeSpan.FromHours(1);
-            mgr.UserLockoutEnabledByDefault = true;
-            mgr.MaxFailedAccessAttemptsBeforeLockout = 2;
+            mgr.LockoutPolicy = new LockoutPolicy
+            {
+                DefaultAccountLockoutTimeSpan = TimeSpan.FromHours(1),
+                UserLockoutEnabledByDefault = true,
+                MaxFailedAccessAttemptsBeforeLockout = 2
+            };
             var user = new EntityUser("resetLockout");
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.True(await mgr.GetLockoutEnabledAsync(user));
@@ -788,8 +849,11 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         public async Task CanEnableLockoutManuallyAndLockout()
         {
             var mgr = TestIdentityFactory.CreateManager();
-            mgr.DefaultAccountLockoutTimeSpan = TimeSpan.FromHours(1);
-            mgr.MaxFailedAccessAttemptsBeforeLockout = 2;
+            mgr.LockoutPolicy = new LockoutPolicy
+            {
+                DefaultAccountLockoutTimeSpan = TimeSpan.FromHours(1),
+                MaxFailedAccessAttemptsBeforeLockout = 2
+            };
             var user = new EntityUser("manualLockout");
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.False(await mgr.GetLockoutEnabledAsync(user));
@@ -812,7 +876,10 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         public async Task UserNotLockedOutWithNullDateTimeAndIsSetToNullDate()
         {
             var mgr = TestIdentityFactory.CreateManager();
-            mgr.UserLockoutEnabledByDefault = true;
+            mgr.LockoutPolicy = new LockoutPolicy
+            {
+                UserLockoutEnabledByDefault = true,
+            };
             var user = new EntityUser("LockoutTest");
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.True(await mgr.GetLockoutEnabledAsync(user));
@@ -840,7 +907,10 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         public async Task LockoutEndToUtcNowMinus1SecInUserShouldNotBeLockedOut()
         {
             var mgr = TestIdentityFactory.CreateManager();
-            mgr.UserLockoutEnabledByDefault = true;
+            mgr.LockoutPolicy = new LockoutPolicy
+            {
+                UserLockoutEnabledByDefault = true,
+            };
             var user = new EntityUser("LockoutUtcNowTest") { LockoutEnd = DateTime.UtcNow.AddSeconds(-1) };
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.True(await mgr.GetLockoutEnabledAsync(user));
@@ -852,7 +922,10 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         public async Task LockoutEndToUtcNowSubOneSecondWithManagerShouldNotBeLockedOut()
         {
             var mgr = TestIdentityFactory.CreateManager();
-            mgr.UserLockoutEnabledByDefault = true;
+            mgr.LockoutPolicy = new LockoutPolicy
+            {
+                UserLockoutEnabledByDefault = true,
+            };
             var user = new EntityUser("LockoutUtcNowTest");
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.True(await mgr.GetLockoutEnabledAsync(user));
@@ -865,7 +938,10 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         public async Task LockoutEndToUtcNowPlus5ShouldBeLockedOut()
         {
             var mgr = TestIdentityFactory.CreateManager();
-            mgr.UserLockoutEnabledByDefault = true;
+            mgr.LockoutPolicy = new LockoutPolicy
+            {
+                UserLockoutEnabledByDefault = true,
+            };
             var user = new EntityUser("LockoutUtcNowTest") { LockoutEnd = DateTime.UtcNow.AddMinutes(5) };
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.True(await mgr.GetLockoutEnabledAsync(user));
@@ -877,7 +953,10 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         public async Task UserLockedOutWithDateTimeLocalKindNowPlus30()
         {
             var mgr = TestIdentityFactory.CreateManager();
-            mgr.UserLockoutEnabledByDefault = true;
+            mgr.LockoutPolicy = new LockoutPolicy
+            {
+                UserLockoutEnabledByDefault = true,
+            };
             var user = new EntityUser("LockoutTest");
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.True(await mgr.GetLockoutEnabledAsync(user));

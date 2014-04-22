@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.DependencyInjection;
+using Microsoft.AspNet.DependencyInjection.Fallback;
 
 namespace Microsoft.AspNet.Identity
 {
@@ -23,25 +24,18 @@ namespace Microsoft.AspNet.Identity
         private TimeSpan _defaultLockout = TimeSpan.Zero;
         private bool _disposed;
         private IPasswordHasher _passwordHasher;
+        private LockoutPolicy _lockoutPolicy;
 
+        // Needed for mock unit tests
         public UserManager() { } 
 
         /// <summary>
-        ///     Constructor which takes a service provider to find the default interfaces to hook up
+        ///     Constructor which takes a service provider
         /// </summary>
         /// <param name="serviceProvider"></param>
         public UserManager(IServiceProvider serviceProvider)
         {
-            if (serviceProvider == null)
-            {
-                throw new ArgumentNullException("serviceProvider");
-            }
-            PasswordHasher = serviceProvider.GetService<IPasswordHasher>();
-            UserValidator = serviceProvider.GetService<IUserValidator<TUser>>();
-            PasswordValidator = serviceProvider.GetService<IPasswordValidator>();
-            ClaimsIdentityFactory = serviceProvider.GetService<IClaimsIdentityFactory<TUser>>();
-            Store = serviceProvider.GetService<IUserStore<TUser>>();
-            // TODO: maybe each optional store as well?  Email and SMS services?
+            Initialize(serviceProvider);
         }
 
         /// <summary>
@@ -54,10 +48,29 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("store");
             }
-            Store = store;
-            UserValidator = new UserValidator<TUser>();
-            PasswordHasher = new PasswordHasher();
-            ClaimsIdentityFactory = new ClaimsIdentityFactory<TUser>();
+            var services = new ServiceCollection { IdentityServices.GetDefaultUserServices<TUser>() };
+            services.AddInstance<IUserStore<TUser>>(store);
+            Initialize(services.BuildServiceProvider());
+        }
+
+        public void Initialize(IServiceProvider serviceProvider)
+        {
+            if (serviceProvider == null)
+            {
+                throw new ArgumentNullException("serviceProvider");
+            }
+            PasswordHasher = serviceProvider.GetService<IPasswordHasher>();
+            UserValidator = serviceProvider.GetService<IUserValidator<TUser>>();
+            PasswordValidator = serviceProvider.GetService<IPasswordValidator>();
+            ClaimsIdentityFactory = serviceProvider.GetService<IClaimsIdentityFactory<TUser>>();
+            LockoutPolicy = serviceProvider.GetService<LockoutPolicy>();
+            Store = serviceProvider.GetService<IUserStore<TUser>>();
+            if (Store == null)
+            {
+                // TODO: what is the right way to enforce required services
+                throw new InvalidOperationException();
+            }
+            // TODO: Email/Sms/Token services
         }
 
         /// <summary>
@@ -132,23 +145,30 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         public IUserTokenProvider<TUser> UserTokenProvider { get; set; }
 
-        /// <summary>
-        ///     If true, will enable user lockout when users are created
-        /// </summary>
-        public bool UserLockoutEnabledByDefault { get; set; }
+        public LockoutPolicy LockoutPolicy { get; set; }
 
-        /// <summary>
-        ///     Number of access attempts allowed for a user before lockout (if enabled)
-        /// </summary>
-        public int MaxFailedAccessAttemptsBeforeLockout { get; set; }
-
-        /// <summary>
-        ///     Default amount of time an user is locked out for after MaxFailedAccessAttempsBeforeLockout is reached
-        /// </summary>
-        public TimeSpan DefaultAccountLockoutTimeSpan
+        private bool UserLockoutEnabledByDefault
         {
-            get { return _defaultLockout; }
-            set { _defaultLockout = value; }
+            get
+            {
+                return LockoutPolicy != null && LockoutPolicy.UserLockoutEnabledByDefault;
+            }
+        }
+
+        private int MaxFailedAccessAttemptsBeforeLockout
+        {
+            get
+            {
+                return LockoutPolicy != null ? LockoutPolicy.MaxFailedAccessAttemptsBeforeLockout : 0;
+            }
+        }
+
+        private TimeSpan DefaultAccountLockoutTimeSpan
+        {
+            get
+            {
+                return LockoutPolicy != null ? LockoutPolicy.DefaultAccountLockoutTimeSpan : TimeSpan.FromMinutes(5);
+            }
         }
 
         /// <summary>

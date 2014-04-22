@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public void ConstructorThrowsWithNullStore()
         {
-            Assert.Throws<ArgumentNullException>("store", () => new RoleManager<TestRole>(null));
+            Assert.Throws<ArgumentNullException>("store", () => new RoleManager<TestRole>((IRoleStore<TestRole>)null));
         }
 
         [Fact]
@@ -34,8 +34,9 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task RoleManagerPublicNullChecks()
         {
             Assert.Throws<ArgumentNullException>("store",
-                () => new RoleManager<TestRole>(null));
+                () => new RoleManager<TestRole>((IRoleStore<TestRole>)null));
             var manager = new RoleManager<TestRole>(new NotImplementedStore());
+            Assert.Throws<ArgumentNullException>("services", () => manager.Initialize(null));
             await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await manager.CreateAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await manager.UpdateAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await manager.DeleteAsync(null));
