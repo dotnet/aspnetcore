@@ -33,7 +33,7 @@ These samples, in this repo, are just basic starting points for you to experimen
 The Entropy repo contains samples of specific features in isolation. Each directory contains just enough code to show an aspect of a feature.
 
 ##Application Samples
-MVC Music Store and [BugTracker](https://github.com/aspnet/BugTracker) application are both being ported. Each of these have their own repository that you can look at as they are working. 
+[MVC Music Store](https://github.com/aspnet/MusicStore) and [BugTracker](https://github.com/aspnet/BugTracker) application are both being ported. Each of these have their own repository that you can look at. Both of these should be mostly working, but some changes are still being made. 
 
 #Running the samples
 
