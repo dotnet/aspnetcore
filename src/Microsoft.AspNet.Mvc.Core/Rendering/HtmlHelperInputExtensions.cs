@@ -184,5 +184,53 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             return htmlHelper.TextBoxFor(expression, format: null, htmlAttributes: htmlAttributes);
         }
+
+        public static HtmlString TextArea([NotNull] this IHtmlHelper htmlHelper,
+            string name)
+        {
+            return htmlHelper.TextArea(name, value: null, rows: 0, columns: 0, htmlAttributes: null);
+        }
+
+        public static HtmlString TextArea([NotNull] this IHtmlHelper htmlHelper,
+            string name, object htmlAttributes)
+        {
+            return htmlHelper.TextArea(name, value: null, rows: 0, columns:0, htmlAttributes: htmlAttributes);
+        }
+
+        public static HtmlString TextArea([NotNull] this IHtmlHelper htmlHelper,
+            string name, string value)
+        {
+            return htmlHelper.TextArea(name, value, rows: 0, columns: 0, htmlAttributes: null);
+        }
+
+        public static HtmlString TextArea([NotNull] this IHtmlHelper htmlHelper,
+            string name, string value, object htmlAttributes)
+        {
+            return htmlHelper.TextArea(name, value, rows: 0, columns: 0, htmlAttributes: htmlAttributes);
+        }
+
+        public static HtmlString TextArea([NotNull] this IHtmlHelper htmlHelper,
+            string name, string value, int rows, int columns, object htmlAttributes)
+        {
+            return htmlHelper.TextArea(name, value, rows, columns, htmlAttributes);
+        }
+
+        public static HtmlString TextAreaFor<TModel, TProperty>([NotNull] this IHtmlHelper<TModel> htmlHelper,
+            [NotNull] Expression<Func<TModel, TProperty>> expression)
+        {
+            return htmlHelper.TextAreaFor(expression, rows: 0, columns: 0, htmlAttributes: null);
+        }
+
+        public static HtmlString TextAreaFor<TModel, TProperty>([NotNull] this IHtmlHelper<TModel> htmlHelper,
+            [NotNull] Expression<Func<TModel, TProperty>> expression, object htmlAttributes)
+        {
+            return htmlHelper.TextAreaFor(expression, rows: 0, columns: 0, htmlAttributes: htmlAttributes);
+        }
+
+        public static HtmlString TextAreaFor<TModel, TProperty>([NotNull] this IHtmlHelper<TModel> htmlHelper,
+            [NotNull] Expression<Func<TModel, TProperty>> expression, int rows, int columns, object htmlAttributes)
+        {
+            return htmlHelper.TextAreaFor(expression, rows, columns, htmlAttributes);
+        }
     }
 }

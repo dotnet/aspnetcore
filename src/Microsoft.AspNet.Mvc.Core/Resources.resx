@@ -285,4 +285,7 @@
   <data name="AuthorizeAttribute_OnAuthorizationNotImplemented" xml:space="preserve">
     <value>OnAuthorization is not implemented by this filter, use OnAuthorizationAsync instead.</value>
   </data>
+  <data name="HtmlHelper_TextAreaParameterOutOfRange" xml:space="preserve">
+    <value>The value must be greater than or equal to zero.</value>
+  </data>
 </root>

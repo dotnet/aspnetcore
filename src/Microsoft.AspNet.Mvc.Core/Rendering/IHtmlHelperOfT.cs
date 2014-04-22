@@ -178,6 +178,19 @@ namespace Microsoft.AspNet.Mvc.Rendering
             object htmlAttributes);
 
         /// <summary>
+        /// Render a textarea.
+        /// </summary>
+        /// <param name="expression">An expression, relative to the current model.</param>
+        /// <param name="rows">Number of rows in the textarea.</param>
+        /// <param name="columns">Number of columns in the textarea.</param>
+        /// <param name="htmlAttributes">
+        /// <see cref="IDictionary{string, object}"/> containing additional HTML attributes.
+        /// </param>
+        /// <returns>New <see cref="HtmlString"/> containing the rendered HTML.</returns>
+        HtmlString TextAreaFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression,
+            int rows, int columns, object htmlAttributes);
+
+        /// <summary>
         /// Render an input element of type "text".
         /// </summary>
         /// <param name="expression">

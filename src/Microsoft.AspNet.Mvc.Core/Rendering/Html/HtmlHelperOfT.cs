@@ -167,6 +167,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
+        public HtmlString TextAreaFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression, int rows,
+            int columns, object htmlAttributes)
+        {
+            var metadata = GetModelMetadata(expression);
+            return GenerateTextArea(metadata, GetExpressionName(expression), rows, columns, htmlAttributes);
+        }
+
+        /// <inheritdoc />
         public HtmlString TextBoxFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression,
             string format, IDictionary<string, object> htmlAttributes)
         {

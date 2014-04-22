@@ -342,6 +342,24 @@ namespace Microsoft.AspNet.Mvc.Rendering
         Task RenderPartialAsync([NotNull] string partialViewName, object model, ViewDataDictionary viewData);
 
         /// <summary>
+        /// Render a textarea.
+        /// </summary>
+        /// <param name="name">
+        /// Rendered element's name. Also use this name to find value in submitted data or view data. Use view data
+        /// only if value is not in submitted data and <paramref name="value"/> is <c>null</c>.
+        /// </param>
+        /// <param name="value">
+        /// If non-<c>null</c>, value to include in the element. Ignore if named value is found in submitted data.
+        /// </param>
+        /// <param name="rows">Number of rows in the textarea.</param>
+        /// <param name="columns">Number of columns in the textarea.</param>
+        /// <param name="htmlAttributes">
+        /// <see cref="IDictionary{string, object}"/> containing additional HTML attributes.
+        /// </param>
+        /// <returns>New <see cref="HtmlString"/> containing the rendered HTML.</returns>
+        HtmlString TextArea(string name, string value, int rows, int columns, object htmlAttributes);
+
+        /// <summary>
         /// Render an input element of type "text".
         /// </summary>
         /// <param name="name">

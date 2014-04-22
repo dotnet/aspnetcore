@@ -514,6 +514,18 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
+        public virtual HtmlString TextArea(string name, string value, int rows, int columns, object htmlAttributes)
+        {
+            var metadata = ExpressionMetadataProvider.FromStringExpression(name, ViewData, MetadataProvider);
+            if (value != null)
+            {
+                metadata.Model = value;
+            }
+
+            return GenerateTextArea(metadata, name, rows, columns, htmlAttributes);
+        }
+
+        /// <inheritdoc />
         public HtmlString TextBox(string name, object value, string format, IDictionary<string, object> htmlAttributes)
         {
             return GenerateTextBox(metadata: null, name: name, value: value, format: format,
@@ -959,48 +971,65 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return tagBuilder.ToHtmlString(TagRenderMode.Normal);
         }
 
-        internal static MvcHtmlString TextAreaHelper(HtmlHelper htmlHelper, ModelMetadata modelMetadata, string name, IDictionary<string, object> rowsAndColumns, IDictionary<string, object> htmlAttributes, string innerHtmlPrefix = null)
+        protected virtual HtmlString GenerateTextArea(ModelMetadata metadata, string name,
+            int rows, int columns, object htmlAttributes)
         {
-            string fullName = htmlHelper.ViewContext.ViewData.TemplateInfo.GetFullHtmlFieldName(name);
-            if (String.IsNullOrEmpty(fullName))
+            if (rows < 0)
             {
-                throw new ArgumentException(MvcResources.Common_NullOrEmpty, "name");
+                throw new ArgumentOutOfRangeException("rows", Resources.HtmlHelper_TextAreaParameterOutOfRange);
             }
 
-            TagBuilder tagBuilder = new TagBuilder("textarea");
-            tagBuilder.GenerateId(fullName);
-            tagBuilder.MergeAttributes(htmlAttributes, true);
-            tagBuilder.MergeAttributes(rowsAndColumns, rowsAndColumns != implicitRowsAndColumns); // Only force explicit rows/cols
-            tagBuilder.MergeAttribute("name", fullName, true);
+            if (columns < 0)
+            {
+                throw new ArgumentOutOfRangeException("columns", Resources.HtmlHelper_TextAreaParameterOutOfRange);
+            }
 
-            // If there are any errors for a named field, we add the CSS attribute.
+            var fullName = ViewData.TemplateInfo.GetFullHtmlFieldName(name);
+            if (string.IsNullOrEmpty(fullName))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "name");
+            }
+
             ModelState modelState;
-            if (htmlHelper.ViewData.ModelState.TryGetValue(fullName, out modelState) && modelState.Errors.Count > 0)
-            {
-                tagBuilder.AddCssClass(HtmlHelper.ValidationInputCssClassName);
-            }
+            ViewData.ModelState.TryGetValue(fullName, out modelState);
 
-            tagBuilder.MergeAttributes(htmlHelper.GetUnobtrusiveValidationAttributes(name, modelMetadata));
-
-            string value;
+            string value = string.Empty;
             if (modelState != null && modelState.Value != null)
             {
                 value = modelState.Value.AttemptedValue;
             }
-            else if (modelMetadata.Model != null)
+            else if (metadata.Model != null)
             {
-                value = modelMetadata.Model.ToString();
+                value = metadata.Model.ToString();
             }
-            else
+
+            var tagBuilder = new TagBuilder("textarea");
+            tagBuilder.GenerateId(fullName, IdAttributeDotReplacement);
+            tagBuilder.MergeAttributes(AnonymousObjectToHtmlAttributes(htmlAttributes), true);
+            if (rows > 0)
             {
-                value = String.Empty;
+                tagBuilder.MergeAttribute("rows", rows.ToString(CultureInfo.InvariantCulture), true);
+            }
+
+            if (columns > 0)
+            {
+                tagBuilder.MergeAttribute("columns", columns.ToString(CultureInfo.InvariantCulture), true);
+            }
+
+            tagBuilder.MergeAttribute("name", fullName, true);
+            tagBuilder.MergeAttributes(GetValidationAttributes(name, metadata));
+
+            // If there are any errors for a named field, we add this CSS attribute.
+            if (modelState != null && modelState.Errors.Count > 0)
+            {
+                tagBuilder.AddCssClass(HtmlHelper.ValidationInputCssClassName);
             }
 
             // The first newline is always trimmed when a TextArea is rendered, so we add an extra one
             // in case the value being rendered is something like "\r\nHello".
-            tagBuilder.InnerHtml = (innerHtmlPrefix ?? Environment.NewLine) + HttpUtility.HtmlEncode(value);
+            tagBuilder.InnerHtml = WebUtility.HtmlEncode(value);
 
-            return tagBuilder.ToMvcHtmlString(TagRenderMode.Normal);
+            return tagBuilder.ToHtmlString(TagRenderMode.Normal);
         }
 
         protected virtual HtmlString GenerateTextBox(ModelMetadata metadata, string name, object value, string format,

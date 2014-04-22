@@ -906,6 +906,22 @@ namespace Microsoft.AspNet.Mvc.Core
             return GetString("AuthorizeAttribute_OnAuthorizationNotImplemented");
         }
 
+        /// <summary>
+        /// The value must be greater than or equal to zero..
+        /// </summary>
+        internal static string HtmlHelper_TextAreaParameterOutOfRange
+        {
+            get { return GetString("HtmlHelper_TextAreaParameterOutOfRange"); }
+        }
+
+        /// <summary>
+        /// The value must be greater than or equal to zero..
+        /// </summary>
+        internal static string FormatHtmlHelper_TextAreaParameterOutOfRange()
+        {
+            return GetString("HtmlHelper_TextAreaParameterOutOfRange");
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
