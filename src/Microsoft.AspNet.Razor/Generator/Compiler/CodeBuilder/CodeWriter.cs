@@ -6,17 +6,10 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
 {
     public class CodeWriter : IDisposable
     {
-        protected StringWriter Writer;
-
+        private StringWriter _writer = new StringWriter();
         private bool _newLine;
-        private string _cache;
-        private bool _dirty;
-
-        public CodeWriter()
-        {
-            Writer = new StringWriter();
-            _dirty = true;
-        }
+        private string _cache = string.Empty;
+        private bool _dirty = false;
 
         public string LastWrite { get; private set; }
         public int CurrentIndent { get; private set; }
@@ -51,7 +44,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
         {
             if (_newLine)
             {
-                Writer.Write(new string(' ', size));
+                _writer.Write(new string(' ', size));
                 Flush();
                 _dirty = true;
                 _newLine = false;
@@ -64,7 +57,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
         {
             Indent(CurrentIndent);
 
-            Writer.Write(data);
+            _writer.Write(data);
 
             Flush();
 
@@ -79,7 +72,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
         {
             LastWrite = Environment.NewLine;
 
-            Writer.WriteLine();
+            _writer.WriteLine();
 
             Flush();
 
@@ -96,16 +89,17 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
 
         public CodeWriter Flush()
         {
-            Writer.Flush();
+            _writer.Flush();
 
             return this;
         }
 
-        public override string ToString()
+        public string GenerateCode()
         {
             if (_dirty)
             {
-                _cache = Writer.ToString();
+                _cache = _writer.ToString();
+                _dirty = false;
             }
 
             return _cache;
@@ -113,7 +107,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
 
         public SourceLocation GetCurrentSourceLocation()
         {
-            string output = ToString();
+            string output = GenerateCode();
             string unescapedOutput = output.Replace("\\r", String.Empty).Replace("\\n", String.Empty);
 
             return new SourceLocation(
@@ -126,7 +120,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
         {
             if(disposing)
             {
-                Writer.Dispose();
+                _writer.Dispose();
             }
         }
 

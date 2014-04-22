@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 }
             }
 
-            return new CodeBuilderResult(writer.ToString(), writer.LineMappingManager.Mappings);
+            return new CodeBuilderResult(writer.GenerateCode(), writer.LineMappingManager.Mappings);
         }
 
         private void AddImports(CodeTree codeTree, CSharpCodeWriter writer, IEnumerable<string> defaultImports)
