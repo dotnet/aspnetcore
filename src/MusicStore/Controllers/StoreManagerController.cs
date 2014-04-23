@@ -142,12 +142,5 @@ namespace MusicStore.Controllers
             db.SaveChanges();
             return RedirectToAction("Index");
         }
-
-        //Bug: Can't dispose db. 
-        //protected override void Dispose(bool disposing)
-        //{
-        //    db.Dispose();
-        //    base.Dispose(disposing);
-        //}
     }
 }

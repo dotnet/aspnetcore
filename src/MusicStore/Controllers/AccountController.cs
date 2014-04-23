@@ -101,7 +101,8 @@ namespace MusicStore.Controllers
                 }
                 else
                 {
-                    //https://github.com/aspnet/Identity/issues/37
+                    return Json(result.Errors);
+                    //https://github.com/aspnet/WebFx/issues/289
                     AddErrors(result);
                 }
             }
