@@ -29,22 +29,14 @@ namespace Microsoft.AspNet.Identity.Entity
         public IdentityContext(IServiceProvider serviceProvider)
         : base(serviceProvider) { }
 
-        public IdentityContext()
-        : this(new ServiceCollection()
-            .AddEntityFramework(
-//#if NET45
-//          s => s.AddSqlServer()
-//#else
-            s => s.AddInMemoryStore()
-//#endif
-              ).BuildServiceProvider()) { }
+        public IdentityContext() { }
 
         protected override void OnConfiguring(EntityConfigurationBuilder builder)
         {
 //#if NET45
 //          builder.SqlServerConnectionString(@"Server=(localdb)\v11.0;Database=IdentityDb;Trusted_Connection=True;");
 //#else
-            builder.UseInMemoryStore(persist: true);
+            builder.UseInMemoryStore();
 //#endif
         }
 
