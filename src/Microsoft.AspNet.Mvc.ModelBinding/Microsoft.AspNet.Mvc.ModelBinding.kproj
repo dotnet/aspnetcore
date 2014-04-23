@@ -71,6 +71,7 @@
     <Compile Include="RequestContext.cs" />
     <Compile Include="Validation\AssociatedValidatorProvider.cs" />
     <Compile Include="Validation\ClientModelValidationContext.cs" />
+    <Compile Include="Validation\CompareAttributeAdapter.cs" />
     <Compile Include="Validation\CompositeModelValidator.cs" />
     <Compile Include="Validation\DataAnnotationsModelValidator.cs" />
     <Compile Include="Validation\DataAnnotationsModelValidatorOfTAttribute.cs" />
@@ -83,6 +84,7 @@
     <Compile Include="Validation\IModelValidator.cs" />
     <Compile Include="Validation\IModelValidatorProvider.cs" />
     <Compile Include="Validation\InvalidModelValidatorProvider.cs" />
+    <Compile Include="Validation\ModelClientValidationEqualToRule.cs" />
     <Compile Include="Validation\ModelClientValidationRegexRule.cs" />
     <Compile Include="Validation\ModelClientValidationRule.cs" />
     <Compile Include="Validation\ModelValidatedEventArgs.cs" />

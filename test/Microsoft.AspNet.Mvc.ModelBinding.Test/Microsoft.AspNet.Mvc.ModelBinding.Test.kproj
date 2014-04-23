@@ -19,6 +19,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="Project.json" />
+    <Content Include="Resources.resx" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Binders\ArrayModelBinderTest.cs" />
@@ -36,8 +37,10 @@
     <Compile Include="Metadata\AssociatedMetadataProviderTest.cs" />
     <Compile Include="Metadata\ModelMetadataTest.cs" />
     <Compile Include="ModelBindingContextTest.cs" />
+    <Compile Include="Properties\Resources.Designer.cs" />
     <Compile Include="Utils\SimpleHttpValueProvider.cs" />
     <Compile Include="Validation\AssociatedValidatorProviderTest.cs" />
+    <Compile Include="Validation\CompareAttributeTest.cs" />
     <Compile Include="Validation\DataAnnotationsModelValidatorProviderTest.cs" />
     <Compile Include="Validation\DataAnnotationsModelValidatorTest.cs" />
     <Compile Include="Validation\DataMemberModelValidatorProviderTest.cs" />

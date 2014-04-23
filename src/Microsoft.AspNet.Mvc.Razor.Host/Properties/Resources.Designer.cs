@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host
             var value = _resourceManager.GetString(name);
 
             System.Diagnostics.Debug.Assert(value != null);
-
+    
             if (formatterNames != null)
             {
                 for (var i = 0; i < formatterNames.Length; i++)
