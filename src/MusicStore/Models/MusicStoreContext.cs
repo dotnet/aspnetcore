@@ -3,6 +3,8 @@ using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Metadata;
 using Microsoft.Data.InMemory;
 using Microsoft.Data.SqlServer;
+using Microsoft.AspNet.DependencyInjection;
+using Microsoft.AspNet.ConfigurationModel;
 
 namespace MusicStore.Models
 {
@@ -22,8 +24,9 @@ namespace MusicStore.Models
 
         protected override void OnConfiguring(EntityConfigurationBuilder builder)
         {
+            var configuration = builder.BuildConfiguration().Services.GetService<IConfiguration>();
 #if NET45
-            builder.SqlServerConnectionString(@"Server=(localdb)\v11.0;Database=MusicStore;Trusted_Connection=True;");
+            builder.SqlServerConnectionString(configuration.Get("Data:DefaultConnection:ConnectionString"));
 #else
             builder.UseInMemoryStore(persist: true);
 #endif

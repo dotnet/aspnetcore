@@ -103,7 +103,7 @@ namespace MusicStore.Controllers
                 {
                     return Json(result.Errors);
                     //https://github.com/aspnet/WebFx/issues/289
-                    AddErrors(result);
+                    //AddErrors(result);
                 }
             }
 

@@ -30,6 +30,13 @@ public class Startup
     {
         app.UseServices(services =>
         {
+            //Add configuration as a service
+            var applicationEnvironment = app.ApplicationServices.GetService<IApplicationEnvironment>();
+            var configuration = new Configuration();
+            configuration.AddJsonFile(Path.Combine(applicationEnvironment.ApplicationBasePath, "Config.json"));
+            configuration.AddEnvironmentVariables(); //If configuration flows through environment we should pick that first
+            services.AddInstance<IConfiguration>(configuration);
+
             services.AddInstance<ILoggerFactory>(new NullLoggerFactory());
             services.AddMvc();
 #if NET45
@@ -87,12 +94,7 @@ public class Startup
 
     private async void CreateAdminUser(IServiceProvider serviceProvider)
     {
-        var applicationEnvironment = serviceProvider.GetService<IApplicationEnvironment>();
-
-        var configuration = new Configuration();
-        configuration.AddEnvironmentVariables(); //If configuration flows through environment we should pick that first
-        configuration.AddJsonFile(Path.Combine(applicationEnvironment.ApplicationBasePath, "Config.json"));
-
+        var configuration = serviceProvider.GetService<IConfiguration>();
         var userName = configuration.Get("DefaultAdminUsername");
         var password = configuration.Get("DefaultAdminPassword");
         const string adminRole = "Administrator";
