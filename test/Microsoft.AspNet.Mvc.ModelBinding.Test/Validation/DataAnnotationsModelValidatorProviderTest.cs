@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 #if NET45
@@ -11,6 +12,51 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public class DataAnnotationsModelValidatorProviderTest
     {
         private readonly DataAnnotationsModelMetadataProvider _metadataProvider = new DataAnnotationsModelMetadataProvider();
+
+        public static IEnumerable<object[]> KnownAdapterTypeData
+        {
+            get
+            {
+                yield return new object[] { typeof(RegularExpressionAttribute), 
+                                            new RegularExpressionAttribute("abc"), 
+                                            typeof(RegularExpressionAttributeAdapter), null };
+
+                yield return new object[] { typeof(MaxLengthAttribute), 
+                                            new MaxLengthAttribute(), 
+                                            typeof(MaxLengthAttributeAdapter), null };
+
+                yield return new object[] { typeof(MinLengthAttribute), 
+                                            new MinLengthAttribute(1), 
+                                            typeof(MinLengthAttributeAdapter), null };
+
+                yield return new object[] { typeof(UrlAttribute), 
+                                            new UrlAttribute(), 
+                                            typeof(DataTypeAttributeAdapter), "url" };
+            }
+        }
+
+        [Theory]
+        [MemberData("KnownAdapterTypeData")]
+        public void AdapterForKnownTypeRegistered(Type attributeType, 
+                                                  ValidationAttribute validationAttr,
+                                                  Type expectedAdapterType, 
+                                                  string expectedRuleName)
+        {
+            // Arrange
+            var adapters = new DataAnnotationsModelValidatorProvider().AttributeFactories;
+            var adapterFactory = adapters.Single(kvp => kvp.Key == attributeType).Value;
+
+            // Act
+            var adapter = adapterFactory(validationAttr);
+
+            // Assert
+            Assert.IsType(expectedAdapterType, adapter);
+            if (expectedRuleName != null)
+            {
+                var dataTypeAdapter = Assert.IsType<DataTypeAttributeAdapter>(adapter);
+                Assert.Equal(expectedRuleName, dataTypeAdapter.RuleName);
+            }
+        }
 
         [Fact]
         public void UnknownValidationAttributeGetsDefaultAdapter()

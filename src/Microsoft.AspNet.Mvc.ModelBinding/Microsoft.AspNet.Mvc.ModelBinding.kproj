@@ -84,7 +84,11 @@
     <Compile Include="Validation\IModelValidator.cs" />
     <Compile Include="Validation\IModelValidatorProvider.cs" />
     <Compile Include="Validation\InvalidModelValidatorProvider.cs" />
+    <Compile Include="Validation\MaxLengthAttributeAdapter.cs" />
+    <Compile Include="Validation\MinLengthAttributeAdapter.cs" />
     <Compile Include="Validation\ModelClientValidationEqualToRule.cs" />
+    <Compile Include="Validation\ModelClientValidationMaxLengthRule.cs" />
+    <Compile Include="Validation\ModelClientValidationMinLengthRule.cs" />
     <Compile Include="Validation\ModelClientValidationRegexRule.cs" />
     <Compile Include="Validation\ModelClientValidationRule.cs" />
     <Compile Include="Validation\ModelValidatedEventArgs.cs" />

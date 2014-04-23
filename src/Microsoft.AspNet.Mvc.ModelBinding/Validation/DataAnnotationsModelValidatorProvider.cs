@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public class DataAnnotationsModelValidatorProvider : AssociatedValidatorProvider
     {
         // A factory for validators based on ValidationAttribute.
-        private delegate IModelValidator DataAnnotationsModelValidationFactory(ValidationAttribute attribute);
+        internal delegate IModelValidator DataAnnotationsModelValidationFactory(ValidationAttribute attribute);
 
         // A factory for validators based on IValidatableObject
         private delegate IModelValidator DataAnnotationsValidatableObjectAdapterFactory();
@@ -35,6 +35,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         // Factories for IValidatableObject models
         private static readonly DataAnnotationsValidatableObjectAdapterFactory _defaultValidatableFactory =
             () => new ValidatableObjectAdapter();
+
+        internal Dictionary<Type, DataAnnotationsModelValidationFactory> AttributeFactories
+        {
+            get { return _attributeFactories; }
+        }
 
         private static bool AddImplicitRequiredAttributeForValueTypes
         {
@@ -71,6 +76,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var dict = new Dictionary<Type, DataAnnotationsModelValidationFactory>();
             AddValidationAttributeAdapter(dict, typeof(RegularExpressionAttribute),
                 (attribute) => new RegularExpressionAttributeAdapter((RegularExpressionAttribute)attribute));
+
+            AddValidationAttributeAdapter(dict, typeof(MaxLengthAttribute),
+                (attribute) => new MaxLengthAttributeAdapter((MaxLengthAttribute)attribute));
+
+            AddValidationAttributeAdapter(dict, typeof(MinLengthAttribute),
+                (attribute) => new MinLengthAttributeAdapter((MinLengthAttribute)attribute));
+
+            AddValidationAttributeAdapter(dict, typeof(CompareAttribute),
+                (attribute) => new CompareAttributeAdapter((CompareAttribute)attribute));
 
             AddDataTypeAttributeAdapter(dict, typeof(UrlAttribute), "url");
 
