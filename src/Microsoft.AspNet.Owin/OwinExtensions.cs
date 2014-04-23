@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Owin;
 using Microsoft.AspNet.PipelineCore;
 
