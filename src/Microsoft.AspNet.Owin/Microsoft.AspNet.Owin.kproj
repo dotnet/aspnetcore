@@ -25,7 +25,6 @@
     <Compile Include="OwinEnvironment.cs" />
     <Compile Include="OwinExtensions.cs" />
     <Compile Include="OwinFeatureCollection.cs" />
-    <Compile Include="OwinMiddlewareFactory.cs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
