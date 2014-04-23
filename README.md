@@ -13,7 +13,7 @@ The first thing we need to do is setup the tools required to build and run an ap
 * Clone the repository
 * On the command line execute ```kvm setup``` 
 * This command will download the latest version of the SDK and put it on your path so that you can run the rest of the commands in the readme. If you want to know more about what this is doing then you can read the [KVM page](https://github.com/aspnet/Preview/wiki/version-manager) of the wiki.
-* Navigate to samples\HelloConsole
+* Navigate to samples\ConsoleApp
 * Run ```K run```
 * You should see some compiler output and a message saying "Hello World"
 
@@ -23,7 +23,7 @@ The first thing we need to do is setup the tools required to build and run an ap
 
 These samples, in this repo, are just basic starting points for you to experiment with features. Since there is no File->New Project we thought some simple samples to take the place of scaffolding would be convenient.
 
-+ [HelloConsole](https://github.com/aspnet/Preview/tree/master/samples/ConsoleApp). This is just basic console app if you want to use it as a starting point. Use it the same as the console app from our earlier samples
++ [ConsoleApp](https://github.com/aspnet/Preview/tree/master/samples/ConsoleApp). This is just basic console app if you want to use it as a starting point. Use it the same as the console app from our earlier samples
 + [HelloWeb](https://github.com/aspnet/Preview/tree/master/samples/HelloWeb). This is a minimal startup class that shows welcome page and static file middleware. This is mostly for you to run through the steps in the readme and make sure you have everything setup and working correctly.
 + [HelloWebFx](https://github.com/aspnet/Preview/tree/master/samples/HelloWebFx). This sample is a basic MVC app. It is not designed to show all the functionality of the new web stack, but to give you a starting point to play with features.
 
