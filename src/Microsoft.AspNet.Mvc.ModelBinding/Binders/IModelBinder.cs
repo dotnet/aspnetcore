@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNet.Abstractions;
+﻿using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -7,6 +7,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     /// </summary>
     public interface IModelBinder
     {
-        bool BindModel(ModelBindingContext bindingContext);
+        Task<bool> BindModelAsync(ModelBindingContext bindingContext);
     }
 }

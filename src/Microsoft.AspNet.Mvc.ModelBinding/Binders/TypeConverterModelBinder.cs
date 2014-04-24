@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Contracts;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public sealed class TypeConverterModelBinder : IModelBinder
     {
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The exception is recorded to be acted upon later.")]
-        [SuppressMessage("Microsoft.Globalization", "CA1304:SpecifyCultureInfo", MessageId = "System.Web.Http.ValueProviders.ValueProviderResult.ConvertTo(System.Type)", Justification = "The ValueProviderResult already has the necessary context to perform a culture-aware conversion.")]
-        public bool BindModel(ModelBindingContext bindingContext)
+        public async Task<bool> BindModelAsync(ModelBindingContext bindingContext)
         {
             ModelBindingHelper.ValidateBindingContext(bindingContext);
 
@@ -19,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return false;
             }
 
-            var valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
+            var valueProviderResult = await bindingContext.ValueProvider.GetValueAsync(bindingContext.ModelName);
             if (valueProviderResult == null)
             {
                 return false; // no entry

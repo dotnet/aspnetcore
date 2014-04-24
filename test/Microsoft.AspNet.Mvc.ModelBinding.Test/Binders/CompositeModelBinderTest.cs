@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNet.DependencyInjection;
 using Moq;
 using Xunit;
@@ -12,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
     public class CompositeModelBinderTest
     {
         [Fact]
-        public void BindModel_SuccessfulBind_RunsValidationAndReturnsModel()
+        public async Task BindModel_SuccessfulBind_RunsValidationAndReturnsModel()
         {
             // Arrange
             var validationCalled = false;
@@ -23,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(int)),
                 ModelName = "someName",
                 ModelState = new ModelStateDictionary(),
-                ValueProvider = new SimpleValueProvider
+                ValueProvider = new SimpleHttpValueProvider
                 {
                     { "someName", "dummyValue" }
                 },
@@ -32,7 +33,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             var mockIntBinder = new Mock<IModelBinder>();
             mockIntBinder
-                .Setup(o => o.BindModel(It.IsAny<ModelBindingContext>()))
+                .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
                 .Returns(
                     delegate(ModelBindingContext context)
                     {
@@ -42,13 +43,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
                         context.Model = 42;
                         bindingContext.ValidationNode.Validating += delegate { validationCalled = true; };
-                        return true;
+                        return Task.FromResult(true);
                     });
 
             var shimBinder = new CompositeModelBinder(mockIntBinder.Object);
 
             // Act
-            var isBound = shimBinder.BindModel(bindingContext);
+            var isBound = await shimBinder.BindModelAsync(bindingContext);
 
             // Assert
             Assert.True(isBound);
@@ -59,7 +60,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public void BindModel_SuccessfulBind_ComplexTypeFallback_RunsValidationAndReturnsModel()
+        public async Task BindModel_SuccessfulBind_ComplexTypeFallback_RunsValidationAndReturnsModel()
         {
             // Arrange
             var validationCalled = false;
@@ -71,7 +72,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(List<int>)),
                 ModelName = "someName",
                 ModelState = new ModelStateDictionary(),
-                ValueProvider = new SimpleValueProvider
+                ValueProvider = new SimpleHttpValueProvider
                 {
                     { "someOtherName", "dummyValue" }
                 },
@@ -80,13 +81,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             var mockIntBinder = new Mock<IModelBinder>();
             mockIntBinder
-                .Setup(o => o.BindModel(It.IsAny<ModelBindingContext>()))
+                .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
                 .Returns(
                     delegate(ModelBindingContext mbc)
                     {
-                        if (!String.IsNullOrEmpty(mbc.ModelName))
+                        if (!string.IsNullOrEmpty(mbc.ModelName))
                         {
-                            return false;
+                            return Task.FromResult(false);
                         }
 
                         Assert.Same(bindingContext.ModelMetadata, mbc.ModelMetadata);
@@ -95,13 +96,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
                         mbc.Model = expectedModel;
                         mbc.ValidationNode.Validating += delegate { validationCalled = true; };
-                        return true;
+                        return Task.FromResult(true);
                     });
 
             IModelBinder shimBinder = new CompositeModelBinder(mockIntBinder.Object);
 
             // Act
-            bool isBound = shimBinder.BindModel(bindingContext);
+            var isBound = await shimBinder.BindModelAsync(bindingContext);
 
             // Assert
             Assert.True(isBound);
@@ -111,12 +112,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public void BindModel_UnsuccessfulBind_BinderFails_ReturnsNull()
+        public async Task BindModel_UnsuccessfulBind_BinderFails_ReturnsNull()
         {
             // Arrange
             var mockListBinder = new Mock<IModelBinder>();
-            mockListBinder.Setup(o => o.BindModel(It.IsAny<ModelBindingContext>()))
-                          .Returns(false)
+            mockListBinder.Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                          .Returns(Task.FromResult(false))
                           .Verifiable();
 
             var shimBinder = (IModelBinder)mockListBinder.Object;
@@ -128,7 +129,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             };
 
             // Act
-            var isBound = shimBinder.BindModel(bindingContext);
+            var isBound = await shimBinder.BindModelAsync(bindingContext);
 
             // Assert
             Assert.False(isBound);
@@ -138,7 +139,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public void BindModel_UnsuccessfulBind_SimpleTypeNoFallback_ReturnsNull()
+        public async Task BindModel_UnsuccessfulBind_SimpleTypeNoFallback_ReturnsNull()
         {
             // Arrange
             var innerBinder = Mock.Of<IModelBinder>();
@@ -152,7 +153,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             };
 
             // Act
-            var isBound = shimBinder.BindModel(bindingContext);
+            var isBound = await shimBinder.BindModelAsync(bindingContext);
 
             // Assert
             Assert.False(isBound);
@@ -160,12 +161,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public void BindModel_WithDefaultBinders_BindsSimpleType()
+        public async Task BindModel_WithDefaultBinders_BindsSimpleType()
         {
             // Arrange
             var binder = CreateBinderWithDefaults();
 
-            var valueProvider = new SimpleValueProvider
+            var valueProvider = new SimpleHttpValueProvider
             {
                 { "firstName", "firstName-value"},
                 { "lastName", "lastName-value"}
@@ -173,7 +174,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var bindingContext = CreateBindingContext(binder, valueProvider, typeof(SimplePropertiesModel));
 
             // Act
-            var isBound = binder.BindModel(bindingContext);
+            var isBound = await binder.BindModelAsync(bindingContext);
 
             // Assert
             Assert.True(isBound);
@@ -183,12 +184,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public void BindModel_WithDefaultBinders_BindsComplexType()
+        public async Task BindModel_WithDefaultBinders_BindsComplexType()
         {
             // Arrange
             var binder = CreateBinderWithDefaults();
 
-            var valueProvider = new SimpleValueProvider
+            var valueProvider = new SimpleHttpValueProvider
             {
                 { "firstName", "firstName-value"},
                 { "lastName", "lastName-value"},
@@ -201,7 +202,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var bindingContext = CreateBindingContext(binder, valueProvider, typeof(Person));
 
             // Act
-            var isBound = binder.BindModel(bindingContext);
+            var isBound = await binder.BindModelAsync(bindingContext);
 
             // Assert
             Assert.True(isBound);
@@ -269,70 +270,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             public int Age { get; set; }
 
             public List<Person> Friends { get; set; }
-        }
-
-        private class SimpleValueProvider : Dictionary<string, object>, IValueProvider
-        {
-            private readonly CultureInfo _culture;
-
-            public SimpleValueProvider()
-                : this(null)
-            {
-            }
-
-            public SimpleValueProvider(CultureInfo culture)
-                : base(StringComparer.OrdinalIgnoreCase)
-            {
-                _culture = culture ?? CultureInfo.InvariantCulture;
-            }
-
-            // copied from ValueProviderUtil
-            public bool ContainsPrefix(string prefix)
-            {
-                foreach (string key in Keys)
-                {
-                    if (key != null)
-                    {
-                        if (prefix.Length == 0)
-                        {
-                            return true; // shortcut - non-null key matches empty prefix
-                        }
-
-                        if (key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if (key.Length == prefix.Length)
-                            {
-                                return true; // exact match
-                            }
-                            else
-                            {
-                                switch (key[prefix.Length])
-                                {
-                                    case '.': // known separator characters
-                                    case '[':
-                                        return true;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                return false; // nothing found
-            }
-
-            public ValueProviderResult GetValue(string key)
-            {
-                object rawValue;
-                if (TryGetValue(key, out rawValue))
-                {
-                    return new ValueProviderResult(rawValue, Convert.ToString(rawValue, _culture), _culture);
-                }
-                else
-                {
-                    // value not found
-                    return null;
-                }
-            }
         }
     }
 }

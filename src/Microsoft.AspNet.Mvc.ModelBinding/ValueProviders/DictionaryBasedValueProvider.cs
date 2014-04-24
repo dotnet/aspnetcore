@@ -1,6 +1,6 @@
-﻿
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -13,17 +13,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             _values = values;
         }
 
-        public bool ContainsPrefix(string key)
+        public Task<bool> ContainsPrefixAsync(string key)
         {
-            return _values.ContainsKey(key);
+            return Task.FromResult(_values.ContainsKey(key));
         }
 
-        public ValueProviderResult GetValue([NotNull] string key)
+        public Task<ValueProviderResult> GetValueAsync([NotNull] string key)
         {
             object value;
             if (_values.TryGetValue(key, out value))
             {
-                return new ValueProviderResult(value, value.ToString(), CultureInfo.InvariantCulture);
+                var result = new ValueProviderResult(value, value.ToString(), CultureInfo.InvariantCulture);
+                return Task.FromResult(result);
             }
 
             return null;

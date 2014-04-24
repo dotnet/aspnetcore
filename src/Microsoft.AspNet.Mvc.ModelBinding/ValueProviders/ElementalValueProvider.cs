@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -20,16 +21,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         public object RawValue { get; private set; }
 
-        public bool ContainsPrefix(string prefix)
+        public Task<bool> ContainsPrefixAsync(string prefix)
         {
-            return PrefixContainer.IsPrefixMatch(Name, prefix);
+            return Task.FromResult(PrefixContainer.IsPrefixMatch(Name, prefix));
         }
 
-        public ValueProviderResult GetValue(string key)
+        public Task<ValueProviderResult> GetValueAsync(string key)
         {
-            return string.Equals(key, Name, StringComparison.OrdinalIgnoreCase)
-                       ? new ValueProviderResult(RawValue, Convert.ToString(RawValue, Culture), Culture)
-                       : null;
+            var result = string.Equals(key, Name, StringComparison.OrdinalIgnoreCase) ?
+                                new ValueProviderResult(RawValue, Convert.ToString(RawValue, Culture), Culture) :
+                                null;
+            return Task.FromResult(result);
         }
     }
 }

@@ -1,13 +1,14 @@
 ﻿using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public sealed class TypeMatchModelBinder : IModelBinder
     {
-        public bool BindModel(ModelBindingContext bindingContext)
+        public async Task<bool> BindModelAsync(ModelBindingContext bindingContext)
         {
-            ValueProviderResult valueProviderResult = GetCompatibleValueProviderResult(bindingContext);
+            ValueProviderResult valueProviderResult = await GetCompatibleValueProviderResult(bindingContext);
             if (valueProviderResult == null)
             {
                 // conversion would have failed
@@ -23,11 +24,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return true;
         }
 
-        internal static ValueProviderResult GetCompatibleValueProviderResult(ModelBindingContext bindingContext)
+        internal static async Task<ValueProviderResult> GetCompatibleValueProviderResult(ModelBindingContext bindingContext)
         {
             ModelBindingHelper.ValidateBindingContext(bindingContext);
 
-            ValueProviderResult valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
+            var valueProviderResult = await bindingContext.ValueProvider.GetValueAsync(bindingContext.ModelName);
             if (valueProviderResult == null)
             {
                 return null; // the value doesn't exist

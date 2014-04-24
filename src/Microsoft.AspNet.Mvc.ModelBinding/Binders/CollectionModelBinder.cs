@@ -3,36 +3,36 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class CollectionModelBinder<TElement> : IModelBinder
     {
-        public virtual bool BindModel(ModelBindingContext bindingContext)
+        public virtual async Task<bool> BindModelAsync(ModelBindingContext bindingContext)
         {
             ModelBindingHelper.ValidateBindingContext(bindingContext);
 
-            if (!bindingContext.ValueProvider.ContainsPrefix(bindingContext.ModelName))
+            if (!await bindingContext.ValueProvider.ContainsPrefixAsync(bindingContext.ModelName))
             {
                 return false;
             }
 
-            ValueProviderResult valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
-            List<TElement> boundCollection = (valueProviderResult != null)
-                                                 ? BindSimpleCollection(bindingContext, valueProviderResult.RawValue, valueProviderResult.Culture)
-                                                 : BindComplexCollection(bindingContext);
+            var valueProviderResult = await bindingContext.ValueProvider.GetValueAsync(bindingContext.ModelName);
+            var boundCollection = await ((valueProviderResult != null) ?
+                                   BindSimpleCollection(bindingContext, valueProviderResult.RawValue, valueProviderResult.Culture) :
+                                   BindComplexCollection(bindingContext));
 
-            bool retVal = CreateOrReplaceCollection(bindingContext, boundCollection);
-            return retVal;
+            return CreateOrReplaceCollection(bindingContext, boundCollection);
         }
 
         // TODO: Make this method internal
         // Used when the ValueProvider contains the collection to be bound as a single element, e.g. the raw value
         // is [ "1", "2" ] and needs to be converted to an int[].
-        public List<TElement> BindSimpleCollection(ModelBindingContext bindingContext,
-                                                   object rawValue,
-                                                   CultureInfo culture)
+        public async Task<List<TElement>> BindSimpleCollection(ModelBindingContext bindingContext,
+                                                               object rawValue,
+                                                               CultureInfo culture)
         {
             if (rawValue == null)
             {
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 };
 
                 object boundValue = null;
-                if (bindingContext.ModelBinder.BindModel(innerBindingContext))
+                if (await bindingContext.ModelBinder.BindModelAsync(innerBindingContext))
                 {
                     boundValue = innerBindingContext.Model;
                     bindingContext.ValidationNode.ChildNodes.Add(innerBindingContext.ValidationNode);
@@ -69,17 +69,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         // Used when the ValueProvider contains the collection to be bound as multiple elements, e.g. foo[0], foo[1].
-        private List<TElement> BindComplexCollection(ModelBindingContext bindingContext)
+        private async Task<List<TElement>> BindComplexCollection(ModelBindingContext bindingContext)
         {
             string indexPropertyName = ModelBindingHelper.CreatePropertyModelName(bindingContext.ModelName, "index");
-            ValueProviderResult valueProviderResultIndex = bindingContext.ValueProvider.GetValue(indexPropertyName);
+            ValueProviderResult valueProviderResultIndex = await bindingContext.ValueProvider.GetValueAsync(indexPropertyName);
             IEnumerable<string> indexNames = CollectionModelBinderUtil.GetIndexNamesFromValueProviderResult(valueProviderResultIndex);
-            return BindComplexCollectionFromIndexes(bindingContext, indexNames);
+            return await BindComplexCollectionFromIndexes(bindingContext, indexNames);
         }
 
         // TODO: Convert to internal
-        public List<TElement> BindComplexCollectionFromIndexes(ModelBindingContext bindingContext,
-                                                               IEnumerable<string> indexNames)
+        public async Task<List<TElement>> BindComplexCollectionFromIndexes(ModelBindingContext bindingContext,
+                                                                           IEnumerable<string> indexNames)
         {
             bool indexNamesIsFinite;
             if (indexNames != null)
@@ -108,7 +108,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
                 Type modelType = bindingContext.ModelType;
 
-                if (bindingContext.ModelBinder.BindModel(childBindingContext))
+                if (await bindingContext.ModelBinder.BindModelAsync(childBindingContext))
                 {
                     didBind = true;
                     boundValue = childBindingContext.Model;

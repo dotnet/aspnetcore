@@ -1,4 +1,5 @@
 ﻿#if NET45
+using System.Threading.Tasks;
 using Moq;
 using Xunit;
 
@@ -7,7 +8,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
     public class ArrayModelBinderTest
     {
         [Fact]
-        public void BindModel()
+        public async Task BindModel()
         {
             // Arrange
             var valueProvider = new SimpleHttpValueProvider
@@ -19,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binder = new ArrayModelBinder<int>();
 
             // Act
-            bool retVal = binder.BindModel(bindingContext);
+            var retVal = await binder.BindModelAsync(bindingContext);
 
             // Assert
             Assert.True(retVal);
@@ -29,21 +30,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public void GetBinder_ValueProviderDoesNotContainPrefix_ReturnsNull()
+        public async Task GetBinder_ValueProviderDoesNotContainPrefix_ReturnsNull()
         {
             // Arrange
             ModelBindingContext bindingContext = GetBindingContext(new SimpleHttpValueProvider());
             var binder = new ArrayModelBinder<int>();
 
             // Act
-            bool bound = binder.BindModel(bindingContext);
+            var bound = await binder.BindModelAsync(bindingContext);
 
             // Assert
             Assert.False(bound);
         }
 
         [Fact]
-        public void GetBinder_ModelMetadataReturnsReadOnly_ReturnsNull()
+        public async Task GetBinder_ModelMetadataReturnsReadOnly_ReturnsNull()
         {
             // Arrange
             var valueProvider = new SimpleHttpValueProvider
@@ -55,7 +56,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binder = new ArrayModelBinder<int>();
 
             // Act
-            bool bound = binder.BindModel(bindingContext);
+            var bound = await binder.BindModelAsync(bindingContext);
 
             // Assert
             Assert.False(bound);
@@ -65,10 +66,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             var mockIntBinder = new Mock<IModelBinder>();
             mockIntBinder
-                .Setup(o => o.BindModel(It.IsAny<ModelBindingContext>()))
-                .Returns((ModelBindingContext mbc) =>
+                .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                .Returns(async (ModelBindingContext mbc) =>
                 {
-                    var value = mbc.ValueProvider.GetValue(mbc.ModelName);
+                    var value = await mbc.ValueProvider.GetValueAsync(mbc.ModelName);
                     if (value != null)
                     {
                         mbc.Model = value.ConvertTo(mbc.ModelType);

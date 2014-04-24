@@ -1,6 +1,7 @@
 ﻿#if NET45
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Moq;
 using Xunit;
 
@@ -9,7 +10,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
     public class KeyValuePairModelBinderTest
     {
         [Fact]
-        public void BindModel_MissingKey_ReturnsFalse()
+        public async Task BindModel_MissingKey_ReturnsFalse()
         {
             // Arrange
             var valueProvider = new SimpleHttpValueProvider();
@@ -17,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binder = new KeyValuePairModelBinder<int, string>();
 
             // Act
-            bool retVal = binder.BindModel(bindingContext);
+            bool retVal = await binder.BindModelAsync(bindingContext);
 
             // Assert
             Assert.False(retVal);
@@ -26,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public void BindModel_MissingValue_ReturnsTrue()
+        public async Task BindModel_MissingValue_ReturnsTrue()
         {
             // Arrange
             var valueProvider = new SimpleHttpValueProvider();
@@ -34,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binder = new KeyValuePairModelBinder<int, string>();
 
             // Act
-            bool retVal = binder.BindModel(bindingContext);
+            bool retVal = await binder.BindModelAsync(bindingContext);
 
             // Assert
             Assert.True(retVal);
@@ -43,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public void BindModel_SubBindingSucceeds()
+        public async Task BindModel_SubBindingSucceeds()
         {
             // Arrange
             var innerBinder = new CompositeModelBinder(CreateStringBinder(), CreateIntBinder());
@@ -53,7 +54,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binder = new KeyValuePairModelBinder<int, string>();
 
             // Act
-            var retVal = binder.BindModel(bindingContext);
+            var retVal = await binder.BindModelAsync(bindingContext);
 
             // Assert
             Assert.True(retVal);
@@ -62,34 +63,33 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public void TryBindStrongModel_BinderExists_BinderReturnsCorrectlyTypedObject_ReturnsTrue()
+        public async Task TryBindStrongModel_BinderExists_BinderReturnsCorrectlyTypedObject_ReturnsTrue()
         {
             // Arrange
             ModelBindingContext bindingContext = GetBindingContext(new SimpleHttpValueProvider());
             var binder = new KeyValuePairModelBinder<int, string>();
 
             // Act
-            int model;
-            var retVal = binder.TryBindStrongModel(bindingContext, "key", out model);
+            var retVal = await binder.TryBindStrongModel<int>(bindingContext, "key");
 
             // Assert
-            Assert.True(retVal);
-            Assert.Equal(42, model);
+            Assert.True(retVal.Success);
+            Assert.Equal(42, retVal.Model);
             Assert.Single(bindingContext.ValidationNode.ChildNodes);
             Assert.Empty(bindingContext.ModelState);
         }
 
         [Fact]
-        public void TryBindStrongModel_BinderExists_BinderReturnsIncorrectlyTypedObject_ReturnsTrue()
+        public async Task TryBindStrongModel_BinderExists_BinderReturnsIncorrectlyTypedObject_ReturnsTrue()
         {
             // Arrange
             var innerBinder = new Mock<IModelBinder>();
             innerBinder
-                .Setup(o => o.BindModel(It.IsAny<ModelBindingContext>()))
+                .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
                 .Returns((ModelBindingContext mbc) =>
                 {
                     Assert.Equal("someName.key", mbc.ModelName);
-                    return true;
+                    return Task.FromResult(true);
                 });
             var bindingContext = GetBindingContext(new SimpleHttpValueProvider(), innerBinder.Object);
             
@@ -97,12 +97,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binder = new KeyValuePairModelBinder<int, string>();
 
             // Act
-            int model;
-            var retVal = binder.TryBindStrongModel(bindingContext, "key", out model);
+            var retVal = await binder.TryBindStrongModel<int>(bindingContext, "key");
 
             // Assert
-            Assert.True(retVal);
-            Assert.Equal(default(int), model);
+            Assert.True(retVal.Success);
+            Assert.Equal(default(int), retVal.Model);
             Assert.Single(bindingContext.ValidationNode.ChildNodes);
             Assert.Empty(bindingContext.ModelState);
         }
@@ -126,15 +125,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             var mockIntBinder = new Mock<IModelBinder>();
             mockIntBinder
-                .Setup(o => o.BindModel(It.IsAny<ModelBindingContext>()))
+                .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
                 .Returns((ModelBindingContext mbc) =>
                 {
                     if (mbc.ModelType == typeof(int))
                     {
                         mbc.Model = 42;
-                        return true;
+                        return Task.FromResult(true);
                     }
-                    return false;
+                    return Task.FromResult(false);
                 });
             return mockIntBinder.Object;
         }
@@ -143,15 +142,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             var mockStringBinder = new Mock<IModelBinder>();
             mockStringBinder
-                .Setup(o => o.BindModel(It.IsAny<ModelBindingContext>()))
+                .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
                 .Returns((ModelBindingContext mbc) =>
                 {
                     if (mbc.ModelType == typeof(string))
                     {
                         mbc.Model = "some-value";
-                        return true;
+                        return Task.FromResult(true);
                     }
-                    return false;
+                    return Task.FromResult(false);
                 });
             return mockStringBinder.Object;
         }

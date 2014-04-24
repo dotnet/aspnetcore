@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Globalization;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Test
@@ -11,7 +12,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         [InlineData(typeof(object))]
         [InlineData(typeof(Calendar))]
         [InlineData(typeof(TestClass))]
-        public void BindModel_ReturnsFalse_IfTypeCannotBeConverted(Type destinationType)
+        public async Task BindModel_ReturnsFalse_IfTypeCannotBeConverted(Type destinationType)
         {
             // Arrange
             var bindingContext = GetBindingContext(destinationType);
@@ -23,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binder = new TypeConverterModelBinder();
 
             // Act
-            var retVal = binder.BindModel(bindingContext);
+            var retVal = await binder.BindModelAsync(bindingContext);
 
             // Assert
             Assert.False(retVal);
@@ -36,7 +37,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         [InlineData(typeof(DateTimeOffset))]
         [InlineData(typeof(double))]
         [InlineData(typeof(DayOfWeek))]
-        public void BindModel_ReturnsTrue_IfTypeCanBeConverted(Type destinationType)
+        public async Task BindModel_ReturnsTrue_IfTypeCanBeConverted(Type destinationType)
         {
             // Arrange
             var bindingContext = GetBindingContext(destinationType);
@@ -48,14 +49,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binder = new TypeConverterModelBinder();
 
             // Act
-            var retVal = binder.BindModel(bindingContext);
+            var retVal = await binder.BindModelAsync(bindingContext);
 
             // Assert
             Assert.True(retVal);
         }
 
         [Fact]
-        public void BindModel_Error_FormatExceptionsTurnedIntoStringsInModelState()
+        public async Task BindModel_Error_FormatExceptionsTurnedIntoStringsInModelState()
         {
             // Arrange
             ModelBindingContext bindingContext = GetBindingContext(typeof(int));
@@ -67,7 +68,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             TypeConverterModelBinder binder = new TypeConverterModelBinder();
 
             // Act
-            bool retVal = binder.BindModel(bindingContext);
+            bool retVal = await binder.BindModelAsync(bindingContext);
 
             // Assert
             Assert.True(retVal);
@@ -77,7 +78,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public void BindModel_NullValueProviderResult_ReturnsFalse()
+        public async Task BindModel_NullValueProviderResult_ReturnsFalse()
         {
             // Arrange
             ModelBindingContext bindingContext = GetBindingContext(typeof(int));
@@ -85,7 +86,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             TypeConverterModelBinder binder = new TypeConverterModelBinder();
 
             // Act
-            bool retVal = binder.BindModel(bindingContext);
+            bool retVal = await binder.BindModelAsync(bindingContext);
 
             // Assert
             Assert.False(retVal, "BindModel should have returned null.");
@@ -93,7 +94,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public void BindModel_ValidValueProviderResult_ConvertEmptyStringsToNull()
+        public async Task BindModel_ValidValueProviderResult_ConvertEmptyStringsToNull()
         {
             // Arrange
             ModelBindingContext bindingContext = GetBindingContext(typeof(string));
@@ -105,7 +106,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             TypeConverterModelBinder binder = new TypeConverterModelBinder();
 
             // Act
-            bool retVal = binder.BindModel(bindingContext);
+            bool retVal = await binder.BindModelAsync(bindingContext);
 
             // Assert
             Assert.True(retVal);
@@ -114,7 +115,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public void BindModel_ValidValueProviderResult_ReturnsModel()
+        public async Task BindModel_ValidValueProviderResult_ReturnsModel()
         {
             // Arrange
             ModelBindingContext bindingContext = GetBindingContext(typeof(int));
@@ -126,7 +127,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             TypeConverterModelBinder binder = new TypeConverterModelBinder();
 
             // Act
-            bool retVal = binder.BindModel(bindingContext);
+            bool retVal = await binder.BindModelAsync(bindingContext);
 
             // Assert
             Assert.True(retVal);

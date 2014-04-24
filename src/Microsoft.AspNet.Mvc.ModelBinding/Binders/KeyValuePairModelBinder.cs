@@ -1,31 +1,28 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public sealed class KeyValuePairModelBinder<TKey, TValue> : IModelBinder
     {
-        public bool BindModel(ModelBindingContext bindingContext)
+        public async Task<bool> BindModelAsync(ModelBindingContext bindingContext)
         {
             ModelBindingHelper.ValidateBindingContext(bindingContext, typeof(KeyValuePair<TKey, TValue>), allowNullModel: true);
 
-            TKey key;
-            bool keyBindingSucceeded = TryBindStrongModel(bindingContext, "key", out key);
+            var keyResult = await TryBindStrongModel<TKey>(bindingContext, "key");
+            var valueResult =  await TryBindStrongModel<TValue>(bindingContext, "value");
 
-            TValue value;
-            bool valueBindingSucceeded = TryBindStrongModel(bindingContext, "value", out value);
-
-            if (keyBindingSucceeded && valueBindingSucceeded)
+            if (keyResult.Success && valueResult.Success)
             {
-                bindingContext.Model = new KeyValuePair<TKey, TValue>(key, value);
+                bindingContext.Model = new KeyValuePair<TKey, TValue>(keyResult.Model, valueResult.Model);
             }
-            return keyBindingSucceeded || valueBindingSucceeded;
+            return keyResult.Success || valueResult.Success;
         }
 
-        // TODO: Make this internal
-        public bool TryBindStrongModel<TModel>(ModelBindingContext parentBindingContext,
-                                                string propertyName,
-                                                out TModel model)
+        internal async Task<BindResult<TModel>> TryBindStrongModel<TModel>(ModelBindingContext parentBindingContext,
+                                                                          string propertyName)
         {
             ModelBindingContext propertyBindingContext = new ModelBindingContext(parentBindingContext)
             {
@@ -33,16 +30,28 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 ModelName = ModelBindingHelper.CreatePropertyModelName(parentBindingContext.ModelName, propertyName)
             };
 
-            if (propertyBindingContext.ModelBinder.BindModel(propertyBindingContext))
+            if (await propertyBindingContext.ModelBinder.BindModelAsync(propertyBindingContext))
             {
                 object untypedModel = propertyBindingContext.Model;
-                model = ModelBindingHelper.CastOrDefault<TModel>(untypedModel);
+                var model = ModelBindingHelper.CastOrDefault<TModel>(untypedModel);
                 parentBindingContext.ValidationNode.ChildNodes.Add(propertyBindingContext.ValidationNode);
-                return true;
+                return new BindResult<TModel>(true, model);
             }
 
-            model = default(TModel);
-            return false;
+            return new BindResult<TModel>(false, default(TModel));
+        }
+
+        internal sealed class BindResult<TModel>
+        {
+            public BindResult(bool success, TModel model)
+            {
+                Success = success;
+                Model = model;
+            }
+
+            public bool Success { get; private set; }
+
+            public TModel Model { get; private set; }
         }
     }
 }

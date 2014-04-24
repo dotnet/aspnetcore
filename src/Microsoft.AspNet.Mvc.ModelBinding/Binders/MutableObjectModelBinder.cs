@@ -4,18 +4,19 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class MutableObjectModelBinder : IModelBinder
     {
-        public virtual bool BindModel(ModelBindingContext bindingContext)
+        public virtual async Task<bool> BindModelAsync(ModelBindingContext bindingContext)
         {
             ModelBindingHelper.ValidateBindingContext(bindingContext);
 
             if (!CanBindType(bindingContext.ModelType) ||
-                !bindingContext.ValueProvider.ContainsPrefix(bindingContext.ModelName))
+                !await bindingContext.ValueProvider.ContainsPrefixAsync(bindingContext.ModelName))
             {
                 return false;
             }
@@ -94,7 +95,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 ModelName = bindingContext.ModelName
             };
 
-            bindingContext.ModelBinder.BindModel(dtoBindingContext);
+            bindingContext.ModelBinder.BindModelAsync(dtoBindingContext);
             return (ComplexModelDto)dtoBindingContext.Model;
         }
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 
@@ -18,16 +19,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             _activator = activator;
         }
 
-        public bool BindModel(ModelBindingContext bindingContext)
+        public Task<bool> BindModelAsync(ModelBindingContext bindingContext)
         {
             Type binderType = ResolveBinderType(bindingContext.ModelType);
             if (binderType != null)
             {
                 var binder = (IModelBinder)_activator.CreateInstance(_serviceProvider, binderType);
-                return binder.BindModel(bindingContext);
+                return binder.BindModelAsync(bindingContext);
             }
 
-            return false;
+            return Task.FromResult(false);
         }
 
         private static Type ResolveBinderType(Type modelType)

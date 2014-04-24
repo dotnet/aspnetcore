@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.PipelineCore.Collections;
 using Xunit;
@@ -20,52 +21,52 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
 
         [Fact]
-        public void ContainsPrefix_WithEmptyCollection_ReturnsFalseForEmptyPrefix()
+        public async Task ContainsPrefix_WithEmptyCollection_ReturnsFalseForEmptyPrefix()
         {
             // Arrange
             var backingStore = new ReadableStringCollection(new Dictionary<string, string[]>());
             var valueProvider = new ReadableStringCollectionValueProvider(backingStore, null);
 
             // Act
-            bool result = valueProvider.ContainsPrefix("");
+            var result = await valueProvider.ContainsPrefixAsync("");
 
             // Assert
             Assert.False(result);
         }
 
         [Fact]
-        public void ContainsPrefix_WithNonEmptyCollection_ReturnsTrueForEmptyPrefix()
+        public async Task ContainsPrefix_WithNonEmptyCollection_ReturnsTrueForEmptyPrefix()
         {
             // Arrange
             var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, null);
 
             // Act
-            bool result = valueProvider.ContainsPrefix("");
+            var result = await valueProvider.ContainsPrefixAsync("");
 
             // Assert
             Assert.True(result);
         }
 
         [Fact]
-        public void ContainsPrefix_WithNonEmptyCollection_ReturnsTrueForKnownPrefixes()
+        public async Task ContainsPrefix_WithNonEmptyCollection_ReturnsTrueForKnownPrefixes()
         {
             // Arrange
             var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, null);
 
             // Act & Assert
-            Assert.True(valueProvider.ContainsPrefix("foo"));
-            Assert.True(valueProvider.ContainsPrefix("bar"));
-            Assert.True(valueProvider.ContainsPrefix("bar.baz"));
+            Assert.True(await valueProvider.ContainsPrefixAsync("foo"));
+            Assert.True(await valueProvider.ContainsPrefixAsync("bar"));
+            Assert.True(await valueProvider.ContainsPrefixAsync("bar.baz"));
         }
 
         [Fact]
-        public void ContainsPrefix_WithNonEmptyCollection_ReturnsFalseForUnknownPrefix()
+        public async Task ContainsPrefix_WithNonEmptyCollection_ReturnsFalseForUnknownPrefix()
         {
             // Arrange
             var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, null);
 
             // Act
-            bool result = valueProvider.ContainsPrefix("biff");
+            var result = await valueProvider.ContainsPrefixAsync("biff");
 
             // Assert
             Assert.False(result);
@@ -115,14 +116,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public void GetValue_SingleValue()
+        public async Task GetValue_SingleValue()
         {
             // Arrange
             var culture = new CultureInfo("fr-FR");
             var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, culture);
 
             // Act
-            ValueProviderResult vpResult = valueProvider.GetValue("bar.baz");
+            var vpResult = await valueProvider.GetValueAsync("bar.baz");
 
             // Assert
             Assert.NotNull(vpResult);
@@ -132,14 +133,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public void GetValue_MultiValue()
+        public async Task GetValue_MultiValue()
         {
             // Arrange
             var culture = new CultureInfo("fr-FR");
             var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, culture);
 
             // Act
-            ValueProviderResult vpResult = valueProvider.GetValue("foo");
+            var vpResult = await valueProvider.GetValueAsync("foo");
 
             // Assert
             Assert.NotNull(vpResult);
@@ -153,7 +154,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         //[Theory]
         //[InlineData("null_value")]
         //[InlineData("prefix.null_value")]
-        //public void GetValue_NullValue(string key)
+        //public async Task GetValue_NullValue(string key)
         //{
         //    // Arrange
         //    var culture = new CultureInfo("fr-FR");
@@ -170,7 +171,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         //}
 
         [Fact]
-        public void GetValue_NullMultipleValue()
+        public async Task GetValue_NullMultipleValue()
         {
             // Arrange
             var backingStore = new ReadableStringCollection(
@@ -182,7 +183,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var valueProvider = new ReadableStringCollectionValueProvider(backingStore, culture);
 
             // Act
-            ValueProviderResult vpResult = valueProvider.GetValue("key");
+            var vpResult = await valueProvider.GetValueAsync("key");
 
             // Assert
             Assert.Equal(new[] { null, null, "value" }, vpResult.RawValue as IEnumerable<string>);
@@ -190,13 +191,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public void GetValue_ReturnsNullIfKeyNotFound()
+        public async Task GetValue_ReturnsNullIfKeyNotFound()
         {
             // Arrange
             var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, null);
 
             // Act
-            ValueProviderResult vpResult = valueProvider.GetValue("bar");
+            var vpResult = await valueProvider.GetValueAsync("bar");
 
             // Assert
             Assert.Null(vpResult);

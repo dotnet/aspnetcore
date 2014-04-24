@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -19,11 +20,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
         }
 
-        public virtual bool ContainsPrefix(string prefix)
+        public virtual async Task<bool> ContainsPrefixAsync(string prefix)
         {
             for (int i = 0; i < Count; i++)
             {
-                if (this[i].ContainsPrefix(prefix))
+                if (await this[i].ContainsPrefixAsync(prefix))
                 {
                     return true;
                 }
@@ -31,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return false;
         }
 
-        public virtual ValueProviderResult GetValue(string key)
+        public virtual async Task<ValueProviderResult> GetValueAsync(string key)
         {
             // Performance-sensitive
             // Caching the count is faster for IList<T>
@@ -39,7 +40,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             for (int i = 0; i < itemCount; i++)
             {
                 IValueProvider vp = Items[i];
-                ValueProviderResult result = vp.GetValue(key);
+                ValueProviderResult result = await vp.GetValueAsync(key);
                 if (result != null)
                 {
                     return result;

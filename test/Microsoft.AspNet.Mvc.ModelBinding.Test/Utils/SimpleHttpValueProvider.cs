@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 {
@@ -20,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         // copied from ValueProviderUtil
-        public bool ContainsPrefix(string prefix)
+        public Task<bool> ContainsPrefixAsync(string prefix)
         {
             foreach (string key in Keys)
             {
@@ -28,14 +29,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 {
                     if (prefix.Length == 0)
                     {
-                        return true; // shortcut - non-null key matches empty prefix
+                        return Task.FromResult(true); // shortcut - non-null key matches empty prefix
                     }
 
                     if (key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
                     {
                         if (key.Length == prefix.Length)
                         {
-                            return true; // exact match
+                            return Task.FromResult(true); // exact match
                         }
                         else
                         {
@@ -43,28 +44,26 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                             {
                                 case '.': // known separator characters
                                 case '[':
-                                    return true;
+                                    return Task.FromResult(true);
                             }
                         }
                     }
                 }
             }
 
-            return false; // nothing found
+            return Task.FromResult(false); // nothing found
         }
 
-        public ValueProviderResult GetValue(string key)
+        public Task<ValueProviderResult> GetValueAsync(string key)
         {
+            ValueProviderResult result = null;
             object rawValue;
             if (TryGetValue(key, out rawValue))
             {
-                return new ValueProviderResult(rawValue, Convert.ToString(rawValue, _culture), _culture);
+                result = new ValueProviderResult(rawValue, Convert.ToString(rawValue, _culture), _culture);
             }
-            else
-            {
-                // value not found
-                return null;
-            }
+
+            return Task.FromResult(result);
         }
     }
 }

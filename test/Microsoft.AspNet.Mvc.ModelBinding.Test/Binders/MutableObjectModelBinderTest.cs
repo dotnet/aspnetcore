@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Testing;
 using Moq;
 using Xunit;
@@ -13,12 +14,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public class MutableObjectModelBinderTest
     {
         [Fact]
-        public void BindModel_InitsInstance()
+        public async Task BindModel_InitsInstance()
         {
             // Arrange
             var mockValueProvider = new Mock<IValueProvider>();
-            mockValueProvider.Setup(o => o.ContainsPrefix(It.IsAny<string>()))
-                             .Returns(true);
+            mockValueProvider.Setup(o => o.ContainsPrefixAsync(It.IsAny<string>()))
+                             .Returns(Task.FromResult(true));
 
             var mockDtoBinder = new Mock<IModelBinder>();
             var bindingContext = new ModelBindingContext
@@ -32,11 +33,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             };
 
             mockDtoBinder
-                .Setup(o => o.BindModel(It.IsAny<ModelBindingContext>()))
+                .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
                 .Returns((ModelBindingContext mbc) =>
                 {
                     // just return the DTO unchanged
-                    return true;
+                    return Task.FromResult(true);
                 });
 
             var testableBinder = new Mock<TestableMutableObjectModelBinder> { CallBase = true };
@@ -45,7 +46,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                               .Returns(new ModelMetadata[0]).Verifiable();
 
             // Act
-            var retValue = testableBinder.Object.BindModel(bindingContext);
+            var retValue = await testableBinder.Object.BindModelAsync(bindingContext);
 
             // Assert
             Assert.True(retValue);

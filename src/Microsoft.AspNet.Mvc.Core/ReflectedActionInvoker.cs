@@ -278,7 +278,7 @@ namespace Microsoft.AspNet.Mvc
                         HttpContext = actionBindingContext.ActionContext.HttpContext,
                         FallbackToEmptyPrefix = true
                     };
-                    actionBindingContext.ModelBinder.BindModel(modelBindingContext);
+                    await actionBindingContext.ModelBinder.BindModelAsync(modelBindingContext);
                     parameterValues[parameter.Name] = modelBindingContext.Model;
                 }
             }

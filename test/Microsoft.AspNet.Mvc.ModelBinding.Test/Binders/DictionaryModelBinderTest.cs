@@ -1,5 +1,6 @@
 ﻿#if NET45
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Moq;
 using Xunit;
 
@@ -8,7 +9,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
     public class DictionaryModelBinderTest
     {
         [Fact]
-        public void BindModel()
+        public async Task BindModel()
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
@@ -27,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binder = new DictionaryModelBinder<int, string>();
             
             // Act
-            bool retVal = binder.BindModel(bindingContext);
+            bool retVal = await binder.BindModelAsync(bindingContext);
 
             // Assert
             Assert.True(retVal);
@@ -43,10 +44,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             Mock<IModelBinder> mockKvpBinder = new Mock<IModelBinder>();
             mockKvpBinder
-                .Setup(o => o.BindModel(It.IsAny<ModelBindingContext>()))
-                .Returns((ModelBindingContext mbc) =>
+                .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                .Returns(async (ModelBindingContext mbc) =>
                 {
-                    var value = mbc.ValueProvider.GetValue(mbc.ModelName);
+                    var value = await mbc.ValueProvider.GetValueAsync(mbc.ModelName);
                     if (value != null)
                     {
                         mbc.Model = value.ConvertTo(mbc.ModelType);

@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Mvc
 
                 foreach (var parameter in action.Parameters.Where(p => p.ParameterBindingInfo != null))
                 {
-                    if (actionBindingContext.ValueProvider.ContainsPrefix(parameter.ParameterBindingInfo.Prefix))
+                    if (await actionBindingContext.ValueProvider.ContainsPrefixAsync(parameter.ParameterBindingInfo.Prefix))
                     {
                         candidate.FoundParameters++;
                         if (parameter.IsOptional)

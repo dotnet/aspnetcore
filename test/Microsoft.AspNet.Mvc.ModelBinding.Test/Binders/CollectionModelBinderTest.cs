@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 #if NET45
 using Moq;
 #endif
@@ -12,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
     {
 #if NET45
         [Fact]
-        public void BindComplexCollectionFromIndexes_FiniteIndexes()
+        public async Task BindComplexCollectionFromIndexes_FiniteIndexes()
         {
             // Arrange
             var valueProvider = new SimpleHttpValueProvider
@@ -24,7 +25,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binder = new CollectionModelBinder<int>();
 
             // Act
-            var boundCollection = binder.BindComplexCollectionFromIndexes(bindingContext, new[] { "foo", "bar", "baz" });
+            var boundCollection = await binder.BindComplexCollectionFromIndexes(bindingContext, new[] { "foo", "bar", "baz" });
 
             // Assert
             Assert.Equal(new[] { 42, 0, 200 }, boundCollection.ToArray());
@@ -32,7 +33,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public void BindComplexCollectionFromIndexes_InfiniteIndexes()
+        public async Task BindComplexCollectionFromIndexes_InfiniteIndexes()
         {
             // Arrange
             var valueProvider = new SimpleHttpValueProvider
@@ -45,7 +46,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binder = new CollectionModelBinder<int>();
 
             // Act
-            var boundCollection = binder.BindComplexCollectionFromIndexes(bindingContext, indexNames: null);
+            var boundCollection = await binder.BindComplexCollectionFromIndexes(bindingContext, indexNames: null);
 
             // Assert
             Assert.Equal(new[] { 42, 100 }, boundCollection.ToArray());
@@ -53,7 +54,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public void BindModel_ComplexCollection()
+        public async Task BindModel_ComplexCollection()
         {
             // Arrange
             var valueProvider = new SimpleHttpValueProvider
@@ -67,14 +68,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binder = new CollectionModelBinder<int>();
 
             // Act
-            bool retVal = binder.BindModel(bindingContext);
+            bool retVal = await binder.BindModelAsync(bindingContext);
 
             // Assert
             Assert.Equal(new[] { 42, 100, 200 }, ((List<int>)bindingContext.Model).ToArray());
         }
 
         [Fact]
-        public void BindModel_SimpleCollection()
+        public async Task BindModel_SimpleCollection()
         {
             // Arrange
             var valueProvider = new SimpleHttpValueProvider
@@ -85,7 +86,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binder = new CollectionModelBinder<int>();
 
             // Act
-            bool retVal = binder.BindModel(bindingContext);
+            bool retVal = await binder.BindModelAsync(bindingContext);
 
             // Assert
             Assert.True(retVal);
@@ -94,13 +95,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 #endif
 
         [Fact]
-        public void BindSimpleCollection_RawValueIsEmptyCollection_ReturnsEmptyList()
+        public async Task BindSimpleCollection_RawValueIsEmptyCollection_ReturnsEmptyList()
         {
             // Arrange
             var binder = new CollectionModelBinder<int>();
 
             // Act
-            var boundCollection = binder.BindSimpleCollection(bindingContext: null, rawValue: new object[0], culture: null);
+            var boundCollection = await binder.BindSimpleCollection(bindingContext: null, rawValue: new object[0], culture: null);
 
             // Assert
             Assert.NotNull(boundCollection);
@@ -108,13 +109,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public void BindSimpleCollection_RawValueIsNull_ReturnsNull()
+        public async Task BindSimpleCollection_RawValueIsNull_ReturnsNull()
         {
             // Arrange
             var binder = new CollectionModelBinder<int>();
 
             // Act
-            var boundCollection = binder.BindSimpleCollection(bindingContext: null, rawValue: null, culture: null);
+            var boundCollection = await binder.BindSimpleCollection(bindingContext: null, rawValue: null, culture: null);
 
             // Assert
             Assert.Null(boundCollection);
@@ -122,7 +123,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
 #if NET45
         [Fact]
-        public void BindSimpleCollection_SubBindingSucceeds()
+        public async Task BindSimpleCollection_SubBindingSucceeds()
         {
             // Arrange
             var culture = new CultureInfo("fr-FR");
@@ -130,18 +131,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             ModelValidationNode childValidationNode = null;
             Mock.Get<IModelBinder>(bindingContext.ModelBinder)
-                .Setup(o => o.BindModel(It.IsAny<ModelBindingContext>()))
+                .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
                 .Returns((ModelBindingContext mbc) =>
                 {
                     Assert.Equal("someName", mbc.ModelName);
                     childValidationNode = mbc.ValidationNode;
                     mbc.Model = 42;
-                    return true;
+                    return Task.FromResult(true);
                 });
             var modelBinder = new CollectionModelBinder<int>();
 
             // Act
-            var boundCollection = modelBinder.BindSimpleCollection(bindingContext, new int[1], culture);
+            var boundCollection = await modelBinder.BindSimpleCollection(bindingContext, new int[1], culture);
 
             // Assert
             Assert.Equal(new[] { 42 }, boundCollection.ToArray());
@@ -166,10 +167,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             Mock<IModelBinder> mockIntBinder = new Mock<IModelBinder>();
             mockIntBinder
-                .Setup(o => o.BindModel(It.IsAny<ModelBindingContext>()))
-                .Returns((ModelBindingContext mbc) =>
+                .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                .Returns(async (ModelBindingContext mbc) =>
                 {
-                    var value = mbc.ValueProvider.GetValue(mbc.ModelName);
+                    var value = await mbc.ValueProvider.GetValueAsync(mbc.ModelName);
                     if (value != null)
                     {
                         mbc.Model = value.ConvertTo(mbc.ModelType);

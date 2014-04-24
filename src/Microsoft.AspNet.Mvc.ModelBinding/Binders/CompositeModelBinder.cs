@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -26,13 +27,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private IModelBinder[] Binders { get; set; }
 
-        public virtual bool BindModel(ModelBindingContext bindingContext)
+        public virtual async Task<bool> BindModelAsync(ModelBindingContext bindingContext)
         {
             var newBindingContext = CreateNewBindingContext(bindingContext, 
                                                             bindingContext.ModelName, 
                                                             reuseValidationNode: true);
 
-            bool boundSuccessfully = TryBind(newBindingContext);
+            var boundSuccessfully = await TryBind(newBindingContext);
             if (!boundSuccessfully && !string.IsNullOrEmpty(bindingContext.ModelName)
                 && bindingContext.FallbackToEmptyPrefix)
             {
@@ -40,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 newBindingContext = CreateNewBindingContext(bindingContext, 
                                                             modelName: string.Empty,
                                                             reuseValidationNode: false);
-                boundSuccessfully = TryBind(newBindingContext);
+                boundSuccessfully = await TryBind(newBindingContext);
             }
 
             if (!boundSuccessfully)
@@ -68,7 +69,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return true;
         }
 
-        private bool TryBind([NotNull] ModelBindingContext bindingContext)
+        private async Task<bool> TryBind([NotNull] ModelBindingContext bindingContext)
         {
             // TODO: RuntimeHelpers.EnsureSufficientExecutionStack does not exist in the CoreCLR.
             // Protects against stack overflow for deeply nested model binding
@@ -76,7 +77,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             foreach (var binder in Binders)
             {
-                if (binder.BindModel(bindingContext))
+                if (await binder.BindModelAsync(bindingContext))
                 {
                     return true;
                 }
