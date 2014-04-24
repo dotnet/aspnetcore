@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions.Security;
 
@@ -20,6 +21,10 @@ namespace Microsoft.AspNet.Abstractions
         public abstract IServiceProvider ApplicationServices { get; set; }
 
         public abstract IServiceProvider RequestServices { get; set; }
+
+        public abstract CancellationToken OnRequestAborted { get; }
+
+        public abstract void Abort();
 
         public abstract void Dispose();
 

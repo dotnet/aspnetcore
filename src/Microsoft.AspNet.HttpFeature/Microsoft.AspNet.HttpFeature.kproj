@@ -24,6 +24,7 @@
     <Compile Include="IHttpBuffering.cs" />
     <Compile Include="IHttpConnection.cs" />
     <Compile Include="IHttpRequestInformation.cs" />
+    <Compile Include="IHttpRequestLifetime.cs" />
     <Compile Include="IHttpResponseInformation.cs" />
     <Compile Include="IHttpSendFile.cs" />
     <Compile Include="IHttpTransportLayerSecurity.cs" />

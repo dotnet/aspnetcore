@@ -104,6 +104,16 @@ namespace Microsoft.AspNet.Owin
             {
                 throw new NotImplementedException();
             }
+
+            public override CancellationToken OnRequestAborted
+            {
+                get { throw new NotImplementedException(); }
+            }
+
+            public override void Abort()
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private class MoqHttpRequest : HttpRequest, IHttpRequestInformation

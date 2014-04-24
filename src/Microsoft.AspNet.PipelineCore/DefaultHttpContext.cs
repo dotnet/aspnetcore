@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Abstractions.Security;
 using Microsoft.AspNet.FeatureModel;
+using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.HttpFeature.Security;
 using Microsoft.AspNet.PipelineCore.Infrastructure;
 using Microsoft.AspNet.PipelineCore.Security;
@@ -20,6 +22,7 @@ namespace Microsoft.AspNet.PipelineCore
         private FeatureReference<ICanHasItems> _canHasItems;
         private FeatureReference<ICanHasServiceProviders> _canHasServiceProviders;
         private FeatureReference<IHttpAuthentication> _authentication;
+        private FeatureReference<IHttpRequestLifetime> _lifetime;
         private IFeatureCollection _features;
 
         public DefaultHttpContext(IFeatureCollection features)
@@ -46,6 +49,11 @@ namespace Microsoft.AspNet.PipelineCore
         private IHttpAuthentication HttpAuthentication
         {
             get { return _authentication.Fetch(_features) ?? _authentication.Update(_features, new DefaultHttpAuthentication()); }
+        }
+
+        private IHttpRequestLifetime Lifetime
+        {
+            get { return _lifetime.Fetch(_features); }
         }
 
         public override HttpRequest Request { get { return _request; } }
@@ -85,6 +93,28 @@ namespace Microsoft.AspNet.PipelineCore
         }
 
         public int Revision { get { return _features.Revision; } }
+
+        public override CancellationToken OnRequestAborted
+        {
+            get
+            {
+                var lifetime = Lifetime;
+                if (lifetime != null)
+                {
+                    return lifetime.OnRequestAborted;
+                }
+                return CancellationToken.None;
+            }
+        }
+
+        public override void Abort()
+        {
+            var lifetime = Lifetime;
+            if (lifetime != null)
+            {
+                lifetime.Abort();
+            }
+        }
 
         public override void Dispose()
         {
