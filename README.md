@@ -13,7 +13,7 @@ The first thing we need to do is setup the tools required to build and run an ap
 * Clone the repository
 * On the command line execute ```kvm setup``` 
 * This command will download the latest version of the SDK and put it on your path so that you can run the rest of the commands in the readme. If you want to know more about what this is doing then you can read the [KVM page](https://github.com/aspnet/Preview/wiki/version-manager) of the wiki.
-* Navigate to samples\HelloConsole
+* Navigate to samples\ConsoleApp
 * Run ```K run```
 * You should see some compiler output and a message saying "Hello World"
 
