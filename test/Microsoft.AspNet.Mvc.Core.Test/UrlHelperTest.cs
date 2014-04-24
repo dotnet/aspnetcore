@@ -52,6 +52,201 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             Assert.Equal(expectedPath, path);
         }
 
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void IsLocalUrl_ReturnsFalseOnEmpty(string url)
+        {
+            // Arrange
+            var helper = CreateUrlHelper();
+
+            // Act
+            var result = helper.IsLocalUrl(url);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Theory]
+        [InlineData("/foo.html")]
+        [InlineData("/www.example.com")]
+        [InlineData("/")]
+        public void IsLocalUrl_AcceptsRootedUrls(string url)
+        {
+            // Arrange
+            var helper = CreateUrlHelper();
+
+            // Act
+            var result = helper.IsLocalUrl(url);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Theory]
+        [InlineData("~/")]
+        [InlineData("~/foo.html")]
+        public void IsLocalUrl_AcceptsApplicationRelativeUrls(string url)
+        {
+            // Arrange
+            var helper = CreateUrlHelper();
+
+            // Act
+            var result = helper.IsLocalUrl(url);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Theory]
+        [InlineData("foo.html")]
+        [InlineData("../foo.html")]
+        [InlineData("fold/foo.html")]
+        public void IsLocalUrl_RejectsRelativeUrls(string url)
+        {
+            // Arrange
+            var helper = CreateUrlHelper();
+
+            // Act
+            var result = helper.IsLocalUrl(url);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Theory]
+        [InlineData("http:/foo.html")]
+        [InlineData("hTtP:foo.html")]
+        [InlineData("http:/www.example.com")]
+        [InlineData("HtTpS:/www.example.com")]
+        public void IsLocalUrl_RejectValidButUnsafeRelativeUrls(string url)
+        {
+            // Arrange
+            var helper = CreateUrlHelper();
+
+            // Act
+            var result = helper.IsLocalUrl(url);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Theory]
+        [InlineData("http://www.mysite.com/appDir/foo.html")]
+        [InlineData("http://WWW.MYSITE.COM")]
+        public void IsLocalUrl_RejectsUrlsOnTheSameHost(string url)
+        {
+            // Arrange
+            var helper = CreateUrlHelper("www.mysite.com");
+
+            // Act
+            var result = helper.IsLocalUrl(url);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Theory]
+        [InlineData("http://localhost/foobar.html")]
+        [InlineData("http://127.0.0.1/foobar.html")]
+        public void IsLocalUrl_RejectsUrlsOnLocalHost(string url)
+        {
+            // Arrange
+            var helper = CreateUrlHelper("www.mysite.com");
+
+            // Act
+            var result = helper.IsLocalUrl(url);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Theory]
+        [InlineData("https://www.mysite.com/")]
+        public void IsLocalUrl_RejectsUrlsOnTheSameHostButDifferentScheme(string url)
+        {
+            // Arrange
+            var helper = CreateUrlHelper("www.mysite.com");
+
+            // Act
+            var result = helper.IsLocalUrl(url);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Theory]
+        [InlineData("http://www.example.com")]
+        [InlineData("https://www.example.com")]
+        [InlineData("hTtP://www.example.com")]
+        [InlineData("HtTpS://www.example.com")]
+        public void IsLocalUrl_RejectsUrlsOnDifferentHost(string url)
+        {
+            // Arrange
+            var helper = CreateUrlHelper("www.mysite.com");
+
+            // Act
+            var result = helper.IsLocalUrl(url);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Theory]
+        [InlineData("http://///www.example.com/foo.html")]
+        [InlineData("https://///www.example.com/foo.html")]
+        [InlineData("HtTpS://///www.example.com/foo.html")]
+        [InlineData("http:///www.example.com/foo.html")]
+        [InlineData("http:////www.example.com/foo.html")]
+        [InlineData("http://///www.example.com/foo.html")]
+        public void IsLocalUrl_RejectsUrlsWithTooManySchemeSeparatorCharacters(string url)
+        {
+            // Arrange
+            var helper = CreateUrlHelper("www.mysite.com");
+
+            // Act
+            var result = helper.IsLocalUrl(url);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Theory]
+        [InlineData("//www.example.com")]
+        [InlineData("//www.example.com?")]
+        [InlineData("//www.example.com:80")]
+        [InlineData("//www.example.com/foobar.html")]
+        [InlineData("///www.example.com")]
+        [InlineData("//////www.example.com")]
+        public void IsLocalUrl_RejectsUrlsWithMissingSchemeName(string url)
+        {
+            // Arrange
+            var helper = CreateUrlHelper("www.mysite.com");
+
+            // Act
+            var result = helper.IsLocalUrl(url);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Theory]
+        [InlineData("http:\\\\www.example.com")]
+        [InlineData("http:\\\\www.example.com\\")]
+        [InlineData("/\\")]
+        [InlineData("/\\foo")]
+        public void IsLocalUrl_RejectsInvalidUrls(string url)
+        {
+            // Arrange
+            var helper = CreateUrlHelper("www.mysite.com");
+
+            // Act
+            var result = helper.IsLocalUrl(url);
+
+            // Assert
+            Assert.False(result);
+        }
+
         private static HttpContext CreateHttpContext(string appRoot)
         {
             var appRootPath = new PathString(appRoot);
@@ -74,6 +269,26 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             contextAccessor.SetupGet(c => c.Value)
                            .Returns(actionContext);
             return contextAccessor.Object;
+        }
+
+        private static UrlHelper CreateUrlHelper()
+        {
+            var context = CreateHttpContext(string.Empty);
+            var actionContext = CreateActionContext(context);
+
+            var actionSelector = new Mock<IActionSelector>(MockBehavior.Strict);
+            return new UrlHelper(actionContext, actionSelector.Object);
+        }
+
+        private static UrlHelper CreateUrlHelper(string host)
+        {
+            var context = CreateHttpContext(string.Empty);
+            context.Request.Host = new HostString(host);
+
+            var actionContext = CreateActionContext(context);
+
+            var actionSelector = new Mock<IActionSelector>(MockBehavior.Strict);
+            return new UrlHelper(actionContext, actionSelector.Object);
         }
 
         private static UrlHelper CreateUrlHelper(IContextAccessor<ActionContext> contextAccessor)

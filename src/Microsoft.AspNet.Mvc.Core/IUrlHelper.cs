@@ -5,6 +5,8 @@
         string Action(string action, string controller, object values, string protocol, string host, string fragment);
 
         string Content(string contentPath);
+
+        bool IsLocalUrl(string url);
         
         string RouteUrl(object values, string protocol, string host, string fragment);
     }
