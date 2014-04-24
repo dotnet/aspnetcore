@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30401.0
+VisualStudioVersion = 12.0.30411.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{4D2B6A51-2F9F-44F5-8131-EA5CAC053652}"
 EndProject
@@ -12,6 +12,10 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Security.Cookies", "src\Microsoft.AspNet.Security.Cookies\Microsoft.AspNet.Security.Cookies.kproj", "{15F1211B-B695-4A1C-B730-1AC58FC91090}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CookieSample", "samples\CookieSample\CookieSample.kproj", "{558C2C2A-AED8-49DE-BB60-D5F8AE06C714}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{7BF11F3A-60B6-4796-B504-579C67FFBA34}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Security", "test\Microsoft.AspNet.Security.Test\Microsoft.AspNet.Security.kproj", "{8DA26CD1-1302-4CFD-9270-9FA1B7C6138B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,6 +57,16 @@ Global
 		{558C2C2A-AED8-49DE-BB60-D5F8AE06C714}.Release|Mixed Platforms.Build.0 = Release|x86
 		{558C2C2A-AED8-49DE-BB60-D5F8AE06C714}.Release|x86.ActiveCfg = Release|x86
 		{558C2C2A-AED8-49DE-BB60-D5F8AE06C714}.Release|x86.Build.0 = Release|x86
+		{8DA26CD1-1302-4CFD-9270-9FA1B7C6138B}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{8DA26CD1-1302-4CFD-9270-9FA1B7C6138B}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{8DA26CD1-1302-4CFD-9270-9FA1B7C6138B}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{8DA26CD1-1302-4CFD-9270-9FA1B7C6138B}.Debug|x86.ActiveCfg = Debug|x86
+		{8DA26CD1-1302-4CFD-9270-9FA1B7C6138B}.Debug|x86.Build.0 = Debug|x86
+		{8DA26CD1-1302-4CFD-9270-9FA1B7C6138B}.Release|Any CPU.ActiveCfg = Release|x86
+		{8DA26CD1-1302-4CFD-9270-9FA1B7C6138B}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{8DA26CD1-1302-4CFD-9270-9FA1B7C6138B}.Release|Mixed Platforms.Build.0 = Release|x86
+		{8DA26CD1-1302-4CFD-9270-9FA1B7C6138B}.Release|x86.ActiveCfg = Release|x86
+		{8DA26CD1-1302-4CFD-9270-9FA1B7C6138B}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -61,5 +75,6 @@ Global
 		{0F174C63-1898-4024-9A3C-3FDF5CAE5C68} = {4D2B6A51-2F9F-44F5-8131-EA5CAC053652}
 		{15F1211B-B695-4A1C-B730-1AC58FC91090} = {4D2B6A51-2F9F-44F5-8131-EA5CAC053652}
 		{558C2C2A-AED8-49DE-BB60-D5F8AE06C714} = {F8C0AA27-F3FB-4286-8E4C-47EF86B539FF}
+		{8DA26CD1-1302-4CFD-9270-9FA1B7C6138B} = {7BF11F3A-60B6-4796-B504-579C67FFBA34}
 	EndGlobalSection
 EndGlobal

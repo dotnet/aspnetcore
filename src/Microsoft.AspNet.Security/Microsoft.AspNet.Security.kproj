@@ -25,6 +25,10 @@
     <Compile Include="AuthenticationMode.cs" />
     <Compile Include="AuthenticationOptions.cs" />
     <Compile Include="AuthenticationTicket.cs" />
+    <Compile Include="Authorization\AuthorizationPolicyContext.cs" />
+    <Compile Include="Authorization\DefaultAuthorizationService.cs" />
+    <Compile Include="Authorization\IAuthorizationPolicy.cs" />
+    <Compile Include="Authorization\IAuthorizationService.cs" />
     <Compile Include="CertificateSubjectKeyIdentifierValidator.cs" />
     <Compile Include="CertificateSubjectPublicKeyInfoValidator.cs" />
     <Compile Include="CertificateThumbprintValidator.cs" />

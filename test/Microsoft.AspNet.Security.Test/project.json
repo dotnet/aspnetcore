@@ -1,0 +1,25 @@
+{
+  "version" : "0.1-alpha-*",
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
+  "dependencies": {
+    "Microsoft.AspNet.Security" : "0.1-alpha-*",
+    "Moq": "4.2.1312.1622",
+    "Xunit.KRunner": "0.1-alpha-*",
+    "xunit.abstractions": "2.0.0-aspnet-*",
+    "xunit.assert": "2.0.0-aspnet-*",
+    "xunit.core": "2.0.0-aspnet-*",
+    "xunit.execution": "2.0.0-aspnet-*"
+  },
+  "commands": {
+    "test": "Xunit.KRunner"
+  },
+  "configurations": {
+    "net45": { 
+      "dependencies": {
+          "System.Runtime": ""
+      }
+    }
+  }
+}
