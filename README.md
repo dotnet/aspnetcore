@@ -32,8 +32,8 @@ These samples, in this repo, are just basic starting points for you to experimen
 
 **NOTE: The samples are pinned to a specific version of the packages. If you want to try the latest builds then update the project.json and replace the number at the end of the version with a '\*', so '0.1-alpha-267' becomes '0.1-alpha-\*', and then run ```K restore``` to pull down the latest packages**
 
-##[Feature Samples](https://github.com/aspnet/Entropy)
-The Entropy repo contains samples of specific features in isolation. Each directory contains just enough code to show an aspect of a feature.
+##Feature Samples
+The [Entropy repo](https://github.com/aspnet/Entropy) contains samples of specific features in isolation. Each directory contains just enough code to show an aspect of a feature.
 
 ##Application Samples
 [MVC Music Store](https://github.com/aspnet/MusicStore) and [BugTracker](https://github.com/aspnet/BugTracker) application are both being ported. Each of these have their own repository that you can look at. Both of these should be mostly working, but some changes are still being made. 
