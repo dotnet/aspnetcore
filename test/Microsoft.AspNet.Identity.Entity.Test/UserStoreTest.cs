@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Identity.Entity.Test
             public ApplicationUserManager(IServiceProvider services) : base(services) { }
         }
 
-        [Fact]
+        // [Fact] Disabled - see issue #48
         public async Task CanUseAddedManagerInstance()
         {
             var services = new ServiceCollection();
