@@ -10,9 +10,12 @@ namespace MusicStore.Models
 {
     public class MusicStoreContext : EntityContext
     {
+        private readonly IServiceProvider _serviceProvider;
+
         public MusicStoreContext(IServiceProvider serviceProvider)
             : base(serviceProvider)
         {
+            _serviceProvider = serviceProvider;
         }
 
         public EntitySet<Album> Albums { get; set; }
@@ -24,7 +27,7 @@ namespace MusicStore.Models
 
         protected override void OnConfiguring(EntityConfigurationBuilder builder)
         {
-            var configuration = builder.BuildConfiguration().Services.GetService<IConfiguration>();
+            var configuration = _serviceProvider.GetService<IConfiguration>();
 #if NET45
             builder.SqlServerConnectionString(configuration.Get("Data:DefaultConnection:ConnectionString"));
 #else
