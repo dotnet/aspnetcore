@@ -31,7 +31,7 @@ powershell -NoProfile -ExecutionPolicy unrestricted -Command "[Environment]::Set
 :end_setup
 CALL "%_KVM_PATH%kvm.cmd" upgrade
 @ECHO Running crossgen, see crossgen.log for results
-CALL "%_KVM_PATH%k.cmd" crossgen --in %_KVM_PATH%packages\ProjectK.%_KVM_VERSION%\tools\k10 >crossgen.log 2>crossgen.err.log
+CALL "%_KVM_PATH%k.cmd" crossgen >crossgen.log 2>crossgen.err.log
 SET _KVM_PATH=
 SET _TEMP_PATH=
 GOTO:EOF
