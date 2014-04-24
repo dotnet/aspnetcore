@@ -69,6 +69,7 @@ namespace Microsoft.Win32.SafeHandles
         public static SafeLibraryHandle Open(string filename)
         {
             SafeLibraryHandle handle = UnsafeNativeMethods.LoadLibrary(filename);
+
             if (handle == null || handle.IsInvalid)
             {
                 UnsafeNativeMethods.ThrowExceptionForLastWin32Error();
@@ -85,34 +86,59 @@ namespace Microsoft.Win32.SafeHandles
         [SuppressUnmanagedCodeSecurity]
         private static class UnsafeNativeMethods
         {
+#if ASPNETCORE50
+            private const string api_ms_win_core_libraryloader_LIB = "api-ms-win-core-libraryloader-l1-1-0.dll";
+#else
             private const string KERNEL32_LIB = "kernel32.dll";
-
+#endif
             // http://msdn.microsoft.com/en-us/library/ms683152(v=vs.85).aspx
             [return: MarshalAs(UnmanagedType.Bool)]
-#if NET45
+#if ASPNETCORE50
+            [DllImport(api_ms_win_core_libraryloader_LIB, ExactSpelling = true, SetLastError = true)]
+#else
+            [DllImport(KERNEL32_LIB, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode)]
             [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
-            [DllImport(KERNEL32_LIB, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode)]
-            internal static extern bool FreeLibrary(IntPtr hModule);
+            public static extern bool FreeLibrary(IntPtr hModule);
+
 
             // http://msdn.microsoft.com/en-us/library/ms683200(v=vs.85).aspx
             [return: MarshalAs(UnmanagedType.Bool)]
+#if ASPNETCORE50
+            [DllImport(api_ms_win_core_libraryloader_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+#else
             [DllImport(KERNEL32_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+#endif
             internal static extern bool GetModuleHandleEx(
                 [In] uint dwFlags,
                 [In] SafeLibraryHandle lpModuleName, // can point to a location within the module if GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS is set
                 [Out] out IntPtr phModule);
 
+#if ASPNETCORE50
+            [DllImport(api_ms_win_core_libraryloader_LIB, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Ansi, SetLastError = true, ExactSpelling = true, BestFitMapping = false, ThrowOnUnmappableChar = true)]
+#else
             // http://msdn.microsoft.com/en-us/library/ms683212(v=vs.85).aspx
             [DllImport(KERNEL32_LIB, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Ansi, SetLastError = true, ExactSpelling = true, BestFitMapping = false, ThrowOnUnmappableChar = true)]
+#endif
+
             internal static extern IntPtr GetProcAddress(
                 [In] SafeLibraryHandle hModule,
                 [In, MarshalAs(UnmanagedType.LPStr)] string lpProcName);
 
+#if ASPNETCORE50
+            [DllImport(api_ms_win_core_libraryloader_LIB, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode, SetLastError = true)]
+            internal static extern SafeLibraryHandle LoadLibraryExW([In,MarshalAs(UnmanagedType.LPWStr)] string lpFileName, IntPtr hFile, uint dwFlags);
+
+            internal static SafeLibraryHandle LoadLibrary(string lpFileName)
+            {
+                return LoadLibraryExW(lpFileName, IntPtr.Zero, 0);
+            }
+#else
             // http://msdn.microsoft.com/en-us/library/ms684175(v=vs.85).aspx
             [DllImport(KERNEL32_LIB, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode, SetLastError = true)]
             internal static extern SafeLibraryHandle LoadLibrary(
                 [In, MarshalAs(UnmanagedType.LPWStr)]string lpFileName);
+#endif
 
             internal static void ThrowExceptionForLastWin32Error()
             {

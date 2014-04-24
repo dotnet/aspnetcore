@@ -12,7 +12,11 @@ namespace Microsoft.AspNet.Security.DataProtection
     {
         private const string BCRYPT_LIB = "bcrypt.dll";
         private const string CRYPT32_LIB = "crypt32.dll";
+        private const string NTDLL_LIB = "ntdll.dll";
+        
+#if !ASPNETCORE50
         private const string KERNEL32_LIB = "kernel32.dll";
+#endif
 
         /*
          * BCRYPT.DLL
@@ -199,13 +203,16 @@ namespace Microsoft.AspNet.Security.DataProtection
             [In] uint cbData,
             [In] uint dwFlags);
 
-        /*
-         * KERNEL32.DLL
-         */
-
+#if ASPNETCORE50
+        [DllImport(NTDLL_LIB)]
+        internal static extern void RtlZeroMemory(
+            [In] IntPtr Destination,
+            [In] UIntPtr /* SIZE_T */ Length);
+#else
         [DllImport(KERNEL32_LIB, CallingConvention = CallingConvention.Winapi)]
         internal static extern void RtlZeroMemory(
             [In] IntPtr Destination,
             [In] UIntPtr /* SIZE_T */ Length);
+#endif
     }
 }
