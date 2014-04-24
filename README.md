@@ -67,6 +67,10 @@ By default when running the applications you are running against Desktop CLR (4.
 
 Currently the BCL is split into some fairly fine grained packages, which was one of the goals of this effort. However, the packages that exist today do not necessarily represent the list of packages that we will end up with. We are still experimenting with what makes sense to be a package and what the experience should be.
 
+#OS Requirements
+
+Today Core CLR will only work on Windows 8 and above, otherwise we support Windows 7 and above. Before RTM Core CLR will support Windows 7 as well.
+
 #Feedback
 
 You can log issues in this repo in order to start discussions, ask questions, make suggestions, etc.
