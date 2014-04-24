@@ -61,6 +61,7 @@
     <Compile Include="Filters\AllowAnonymousAttribute.cs" />
     <Compile Include="Filters\AuthorizationContext.cs" />
     <Compile Include="Filters\AuthorizationFilterAttribute.cs" />
+    <Compile Include="Filters\AuthorizeAttribute.cs" />
     <Compile Include="Filters\DefaultFilterProvider.cs" />
     <Compile Include="Filters\ExceptionContext.cs" />
     <Compile Include="Filters\ExceptionFilterAttribute.cs" />

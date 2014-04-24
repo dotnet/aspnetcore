@@ -38,6 +38,19 @@ namespace MvcSample.Web
             return Index(age, userName);
         }
 
+        [Authorize("Permission", "CanViewPage")]
+        public IActionResult NotGrantedClaim(int age, string userName)
+        {
+            return Index(age, userName);
+        }
+
+        [FakeUser]
+        [Authorize("Permission", "CanViewPage", "CanViewAnything")]
+        public IActionResult AllGranted(int age, string userName)
+        {
+            return Index(age, userName);
+        }
+
         [ErrorMessages, AllowAnonymous]
         public IActionResult Crash(string message)
         {

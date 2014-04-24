@@ -8,6 +8,7 @@
     "Microsoft.AspNet.DependencyInjection": "0.1-alpha-*",
     "Microsoft.AspNet.Abstractions": "0.1-alpha-*",
     "Microsoft.AspNet.Routing": "0.1-alpha-*",
+    "Microsoft.AspNet.Security": "0.1-alpha-*",
     "Common": "",
     "Microsoft.AspNet.Mvc.ModelBinding": "",
     "Microsoft.Net.Runtime.Interfaces":  "0.1-alpha-*"

@@ -243,4 +243,10 @@
   <data name="ViewEngine_ViewNotFound" xml:space="preserve">
     <value>The view '{0}' was not found. The following locations were searched:{1}.</value>
   </data>
+  <data name="AuthorizeAttribute_AuthorizationServiceMustBeDefined" xml:space="preserve">
+    <value>Unable to locate an implementation of IAuthorizationService.</value>
+  </data>
+  <data name="AuthorizeAttribute_OnAuthorizationNotImplemented" xml:space="preserve">
+    <value>OnAuthorization is not implemented by this filter, use OnAuthorizationAsync instead.</value>
+  </data>
 </root>

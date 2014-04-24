@@ -682,6 +682,38 @@ namespace Microsoft.AspNet.Mvc.Core
             return string.Format(CultureInfo.CurrentCulture, GetString("ViewEngine_ViewNotFound"), p0, p1);
         }
 
+        /// <summary>
+        /// Unable to locate an implementation of IAuthorizationService.
+        /// </summary>
+        internal static string AuthorizeAttribute_AuthorizationServiceMustBeDefined
+        {
+            get { return GetString("AuthorizeAttribute_AuthorizationServiceMustBeDefined"); }
+        }
+
+        /// <summary>
+        /// Unable to locate an implementation of IAuthorizationService.
+        /// </summary>
+        internal static string FormatAuthorizeAttribute_AuthorizationServiceMustBeDefined()
+        {
+            return GetString("AuthorizeAttribute_AuthorizationServiceMustBeDefined");
+        }
+
+        /// <summary>
+        /// OnAuthorization is not implemented by this filter, use OnAuthorizationAsync instead.
+        /// </summary>
+        internal static string AuthorizeAttribute_OnAuthorizationNotImplemented
+        {
+            get { return GetString("AuthorizeAttribute_OnAuthorizationNotImplemented"); }
+        }
+
+        /// <summary>
+        /// OnAuthorization is not implemented by this filter, use OnAuthorizationAsync instead.
+        /// </summary>
+        internal static string FormatAuthorizeAttribute_OnAuthorizationNotImplemented()
+        {
+            return GetString("AuthorizeAttribute_OnAuthorizationNotImplemented");
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

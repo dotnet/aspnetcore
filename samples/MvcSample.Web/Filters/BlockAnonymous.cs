@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc;
 
 namespace MvcSample.Web.Filters
 {
@@ -6,9 +6,18 @@ namespace MvcSample.Web.Filters
     {
         public override void OnAuthorization(AuthorizationContext context)
         {
-            if (!HasAllowAnonymous(context))
+            if (!HasAllowAnonymous(context)) 
             {
-                context.Result = new HttpStatusCodeResult(401);
+                var user = content.HttpContext.User;
+                var userIsAnonymous = 
+                    user == null || 
+                    user.Identity == null || 
+                    !user.Identity.IsAuthenticated;
+
+                if(userIsAnonymous)
+                {
+                    base.Fail(context);
+                }
             }
         }
     }

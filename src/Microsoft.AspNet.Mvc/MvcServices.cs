@@ -8,6 +8,7 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.Razor.Compilation;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Security.Authorization;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -75,6 +76,8 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Transient<INestedProvider<ViewComponentInvokerProviderContext>, DefaultViewComponentInvokerProvider>();
             yield return describe.Transient<IViewComponentResultHelper, DefaultViewComponentResultHelper>();
             yield return describe.Transient<IViewComponentHelper, DefaultViewComponentHelper>();
+
+            yield return describe.Transient<IAuthorizationService, DefaultAuthorizationService>();
 
             yield return
                describe.Describe(
