@@ -23,8 +23,11 @@ The first thing we need to do is setup the tools required to build and run an ap
 
 These samples, in this repo, are just basic starting points for you to experiment with features. Since there is no File->New Project we thought some simple samples to take the place of scaffolding would be convenient.
 
-+ [HelloConsole](https://github.com/aspnet/Preview/tree/master/samples/ConsoleApp). This is just basic console app if you want to use it as a starting point. Use it the same as the console app from our earlier samples
++ [ConsoleApp](https://github.com/aspnet/Preview/tree/master/samples/ConsoleApp). This is just basic console app if you want to use it as a starting point. Use it the same as the console app from our earlier samples
 + [HelloWeb](https://github.com/aspnet/Preview/tree/master/samples/HelloWeb). This is a minimal startup class that shows welcome page and static file middleware. This is mostly for you to run through the steps in the readme and make sure you have everything setup and working correctly.
+
+**NOTE: This sample doesn't currently work when using Core CLR. This is a known issue that we will fix in the future.**
+
 + [HelloWebFx](https://github.com/aspnet/Preview/tree/master/samples/HelloWebFx). This sample is a basic MVC app. It is not designed to show all the functionality of the new web stack, but to give you a starting point to play with features.
 
 **NOTE: The samples are pinned to a specific version of the packages. If you want to try the latest builds then update the project.json and replace the number at the end of the version with a '\*', so '0.1-alpha-267' becomes '0.1-alpha-\*', and then run ```K restore``` to pull down the latest packages**
