@@ -17,11 +17,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public abstract class CachedModelMetadata<TPrototypeCache> : ModelMetadata
     {
         private bool _convertEmptyStringToNull;
+        private string _nullDisplayText;
         private string _description;
         private bool _isReadOnly;
         private bool _isComplexType;
 
         private bool _convertEmptyStringToNullComputed;
+        private bool _nullDisplayTextComputed;
         private bool _descriptionComputed;
         private bool _isReadOnlyComputed;
         private bool _isComplexTypeComputed;
@@ -59,6 +61,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 _convertEmptyStringToNull = value;
                 _convertEmptyStringToNullComputed = true;
+            }
+        }
+
+        public sealed override string NullDisplayText
+        {
+            get
+            {
+                if (!_nullDisplayTextComputed)
+                {
+                    _nullDisplayText = ComputeNullDisplayText();
+                    _nullDisplayTextComputed = true;
+                }
+                return _nullDisplayText;
+            }
+            set
+            {
+                _nullDisplayText = value;
+                _nullDisplayTextComputed = true;
             }
         }
 
@@ -116,6 +136,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         protected virtual bool ComputeConvertEmptyStringToNull()
         {
             return base.ConvertEmptyStringToNull;
+        }
+
+        protected virtual string ComputeNullDisplayText()
+        {
+            return base.NullDisplayText;
         }
 
         protected virtual string ComputeDescription()

@@ -15,5 +15,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             return htmlHelper.Name(string.Empty);
         }
+
+        /// <summary>
+        /// Gets the full HTML field id for the current model.
+        /// </summary>
+        /// <param name="htmlHelper">The <see cref="HtmlHelper"/> instance that this method extends.</param>
+        /// <returns>An <see cref="HtmlString"/> that represents HTML markup.</returns>
+        public static HtmlString IdForModel([NotNull] this IHtmlHelper htmlHelper)
+        {
+            return htmlHelper.Id(string.Empty);
+        }
     }
 }

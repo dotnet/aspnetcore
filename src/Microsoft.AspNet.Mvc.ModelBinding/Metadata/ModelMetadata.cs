@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Linq;
 using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -20,6 +22,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private int _order = DefaultOrder;
         private IEnumerable<ModelMetadata> _properties;
         private Type _realModelType;
+        private string _simpleDisplayText;
 
         public ModelMetadata([NotNull] IModelMetadataProvider provider, 
                              Type containerType, 
@@ -141,6 +144,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
+        public virtual string SimpleDisplayText
+        {
+            get
+            {
+                if (_simpleDisplayText == null)
+                {
+                    _simpleDisplayText = ComputeSimpleDisplayText();
+                }
+
+                return _simpleDisplayText;
+            }
+
+            set { _simpleDisplayText = value; }
+        }
+
         public virtual string TemplateHint { get; set; }
 
         internal EfficientTypePropertyKey<Type, string> CacheKey
@@ -176,6 +194,38 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         //    return validatorProviders.SelectMany(provider => provider.GetValidators(this, validatorProviders));
         //}
+
+        protected virtual string ComputeSimpleDisplayText()
+        {
+            if (Model == null)
+            {
+                return NullDisplayText;
+            }
+
+            var stringResult = Convert.ToString(Model, CultureInfo.CurrentCulture);
+            if (stringResult == null)
+            {
+                return string.Empty;
+            }
+
+            if (!stringResult.Equals(Model.GetType().FullName, StringComparison.Ordinal))
+            {
+                return stringResult;
+            }
+
+            var firstProperty = Properties.FirstOrDefault();
+            if (firstProperty == null)
+            {
+                return string.Empty;
+            }
+
+            if (firstProperty.Model == null)
+            {
+                return firstProperty.NullDisplayText;
+            }
+
+            return Convert.ToString(firstProperty.Model, CultureInfo.CurrentCulture);
+        }
 
         private static EfficientTypePropertyKey<Type, string> CreateCacheKey(Type containerType, Type modelType, string propertyName)
         {

@@ -108,6 +108,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             return GenerateDisplayName(metadata, expressionText);
         }
+        
+        /// <inheritdoc />
+        public HtmlString DisplayTextFor<TValue>([NotNull] Expression<Func<TModel, TValue>> expression)
+        {
+            return GenerateDisplayText(GetModelMetadata(expression));
+        }
 
         /// <inheritdoc />
         public HtmlString EditorFor<TValue>(
@@ -132,6 +138,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var metadata = GetModelMetadata(expression);
             return GenerateHidden(metadata, GetExpressionName(expression), metadata.Model, useViewData: false,
                 htmlAttributes: htmlAttributes);
+        }
+
+        /// <inheritdoc />
+        public HtmlString IdFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression)
+        {
+            return GenerateId(GetExpressionName(expression));
         }
 
         /// <inheritdoc />

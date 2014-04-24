@@ -13,6 +13,8 @@ namespace MvcSample.Web.Models
         public User Dependent { get; set; }
         public bool Alive { get; set; }
         public string Password { get; set; }
+        [DisplayFormat(ConvertEmptyStringToNull = true, NullDisplayText = "You can explain about your profession")]
+        public string Profession { get; set; }
         public string About { get; set; }
         public string Log { get; set; }
     }

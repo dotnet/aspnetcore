@@ -18,7 +18,7 @@
     }
     else
     {
-        <h4 title="@Model.Name" class="@ViewBag.NullValue">Hello @Model.Name! Happy @(Model.Age)th birthday.</h4>
+        <h4 title="@Model.Name" class="@ViewBag.NullValue">Hello @Html.DisplayTextFor(model => model.Name)! Happy @(Model.Age)th birthday.</h4>
     }
 
     @{
@@ -69,10 +69,18 @@
                 </tr>
                 <tr>
                     <td>
-                        <label class="control-label col-md-2">Model.Name</label>
+                        <label class="control-label col-md-2">Model.Profession</label>
                     </td>
                     <td>
-                        @Html.TextArea("About", "You can explain about your profession, hobbies etc.", 5, 40, htmlAttributes: new { style = "font-weight:bold" })
+                        <input type="text" id="@Html.IdFor(model => model.Profession)" name="Profession" value='@Html.DisplayText("Profession")' />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="control-label col-md-2">Model.About</label>
+                    </td>
+                    <td>
+                        @Html.TextArea("About", "You can explain about your hobbies, work etc.", 5, 40, htmlAttributes: new { style = "font-weight:bold" })
                     </td>
                 </tr>
                 <tr>

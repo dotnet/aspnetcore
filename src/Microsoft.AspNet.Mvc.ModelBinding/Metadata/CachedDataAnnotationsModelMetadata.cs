@@ -31,6 +31,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                        : base.ComputeConvertEmptyStringToNull();
         }
 
+        protected override string ComputeNullDisplayText()
+        {
+            return PrototypeCache.DisplayFormat != null
+                       ? PrototypeCache.DisplayFormat.NullDisplayText
+                       : base.ComputeNullDisplayText();
+        }
+
         protected override string ComputeDescription()
         {
             return PrototypeCache.Display != null

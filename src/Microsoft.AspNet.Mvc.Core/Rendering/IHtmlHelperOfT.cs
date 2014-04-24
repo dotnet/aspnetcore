@@ -71,6 +71,18 @@ namespace Microsoft.AspNet.Mvc.Rendering
             [NotNull] Expression<Func<TInnerModel, TValue>> expression);
 
         /// <summary>
+        /// Returns the HtmlString corresponding to the expression specified.
+        /// </summary>
+        /// <param name="expression">
+        /// The expression identifies the object for which the HtmlString should be returned.
+        /// </param>
+        /// <returns>
+        /// New <see cref="HtmlString"/> containing the display text. If the value is null,
+        /// then it returns the ModelMetadata.NullDisplayText.
+        /// </returns>
+        HtmlString DisplayTextFor<TValue>([NotNull] Expression<Func<TModel, TValue>> expression);
+
+        /// <summary>
         /// Returns a single-selection HTML {select} element for the object that is represented
         /// by the specified expression using the specified list items, option label, and HTML attributes.
         /// </summary>
@@ -124,6 +136,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>New <see cref="HtmlString"/> containing the rendered HTML.</returns>
         HtmlString HiddenFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression,
             object htmlAttributes);
+
+        /// <summary>
+        /// Gets the Id of the given expression.
+        /// </summary>
+        /// <param name="expression">The expression identifies the object for which the Id should be returned.</param>
+        /// <returns>New <see cref="HtmlString"/> containing the Id.</returns>
+        HtmlString IdFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression);
 
         /// <summary>
         /// Returns an HTML label element and the property name of the property that is represented by the specified

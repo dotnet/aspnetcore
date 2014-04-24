@@ -161,6 +161,16 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </returns>
         HtmlString DisplayName(string expression);
 
+        /// Returns the HtmlString corresponding to the property in the model specified by the name.
+        /// </summary>
+        /// <param name="name">
+        /// The string which identifies the object for which the HtmlString should be returned.</param>
+        /// <returns>
+        /// New <see cref="HtmlString"/> containing the display text. If the value is null,
+        /// then it returns the ModelMetadata.NullDisplayText.
+        /// </returns>
+        HtmlString DisplayText(string name);
+
         /// <summary>
         /// Returns a single-selection HTML {select} element using the specified name of the form field,
         /// list items, option label, and HTML attributes.
@@ -247,6 +257,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </param>
         /// <returns>New <see cref="HtmlString"/> containing the rendered HTML.</returns>
         HtmlString Hidden(string name, object value, object htmlAttributes);
+
+        /// <summary>
+        /// Gets the Id of the given string.
+        /// </summary>
+        /// <param name="name">The string which identifies the object for which the Id should be returned.</param>
+        /// <returns>New <see cref="HtmlString"/> containing the Id.</returns>
+        HtmlString Id(string name);
 
         /// <summary>
         /// Returns an HTML label element and the property name of the property that is represented by the specified

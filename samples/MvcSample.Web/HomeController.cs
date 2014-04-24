@@ -96,7 +96,8 @@ namespace MvcSample.Web
                     Address = "Dependents address",
                     Alive = false,
                 },
-                About = "I am a Software Engineer"
+                Profession = "Software Engineer",
+                About = "I like playing Football"
             };
 
             return user;
