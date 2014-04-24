@@ -1,4 +1,6 @@
-﻿﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
+
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -7,6 +9,9 @@ namespace Microsoft.AspNet.Routing
     public class RouteCollection : IRouteCollection
     {
         private readonly List<IRouter> _routes = new List<IRouter>();
+        private readonly List<IRouter> _unnamedRoutes = new List<IRouter>();
+        private readonly Dictionary<string, INamedRouter> _namedRoutes = 
+                                    new Dictionary<string, INamedRouter>(StringComparer.OrdinalIgnoreCase);
 
         public IRouter this[int index]
         {
@@ -20,8 +25,21 @@ namespace Microsoft.AspNet.Routing
 
         public IRouter DefaultHandler { get; set; }
 
-        public void Add(IRouter router)
+        public void Add([NotNull] IRouter router)
         {
+            var namedRouter = router as INamedRouter;
+            if (namedRouter != null)
+            {
+                if (!string.IsNullOrEmpty(namedRouter.Name))
+                {
+                    _namedRoutes.Add(namedRouter.Name, namedRouter);
+                }
+            }
+            else
+            {
+                _unnamedRoutes.Add(router);
+            }
+
             _routes.Add(router);
         }
 
@@ -41,14 +59,41 @@ namespace Microsoft.AspNet.Routing
 
         public virtual string GetVirtualPath(VirtualPathContext context)
         {
-            for (var i = 0; i < Count; i++)
+            if (!string.IsNullOrEmpty(context.RouteName))
             {
-                var route = this[i];
+                INamedRouter matchedNamedRoute;
+                _namedRoutes.TryGetValue(context.RouteName, out matchedNamedRoute);
 
-                var path = route.GetVirtualPath(context);
-                if (path != null)
+                var virtualPath = matchedNamedRoute != null ? matchedNamedRoute.GetVirtualPath(context) : null;
+                foreach (var unnamedRoute in _unnamedRoutes)
                 {
-                    return path;
+                    var tempVirtualPath = unnamedRoute.GetVirtualPath(context);
+                    if (tempVirtualPath != null)
+                    {
+                        if (virtualPath != null)
+                        {
+                            // There was already a previous route which matched the name.
+                            throw new InvalidOperationException(
+                                        Resources.FormatNamedRoutes_AmbiguousRoutesFound(context.RouteName));
+                        }
+
+                        virtualPath = tempVirtualPath;
+                    }
+                }
+
+                return virtualPath;
+            }
+            else
+            {
+                for (var i = 0; i < Count; i++)
+                {
+                    var route = this[i];
+
+                    var path = route.GetVirtualPath(context);
+                    if (path != null)
+                    {
+                        return path;
+                    }
                 }
             }
 

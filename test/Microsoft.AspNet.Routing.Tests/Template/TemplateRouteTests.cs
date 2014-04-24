@@ -375,6 +375,11 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             return new VirtualPathContext(context.Object, ambientValues, values);
         }
 
+        private static VirtualPathContext CreateVirtualPathContext(string routeName)
+        {
+            return new VirtualPathContext(null, null, null, routeName);
+        }
+
         #endregion
 
         #region Route Registration
@@ -387,7 +392,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             collection.DefaultHandler = new Mock<IRouter>().Object;
 
             // Assert
-            ExceptionAssert.Throws<InvalidOperationException>(() => collection.MapRoute("{controller}/{action}",
+            ExceptionAssert.Throws<InvalidOperationException>(() => collection.MapRoute("mockName", 
+                "{controller}/{action}",
                 defaults: null,
                 constraints: new { controller = "a.*", action = new Object() }),
                 "The constraint entry 'action' on the route with route template '{controller}/{action}' " +
@@ -404,7 +410,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
             var mockConstraint = new Mock<IRouteConstraint>().Object;
 
-            collection.MapRoute("{controller}/{action}",
+            collection.MapRoute("mockName",
+                "{controller}/{action}",
                 defaults: null,
                 constraints: new { controller = "a.*", action = mockConstraint });
 
@@ -414,7 +421,41 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             Assert.Equal(2, constraints.Count);
             Assert.IsType<RegexConstraint>(constraints["controller"]);
             Assert.Equal(mockConstraint, constraints["action"]);
+        }
 
+        [Fact]
+        public void RegisteringRouteWithRouteName_WithNullDefaults_AddsTheRoute()
+        {
+            // Arrange
+            var collection = new RouteCollection();
+            collection.DefaultHandler = new Mock<IRouter>().Object;
+
+            collection.MapRoute(name: "RouteName", template: "{controller}/{action}", defaults: null);
+
+            // Act
+            var name = ((TemplateRoute)collection[0]).Name;
+
+            // Assert
+            Assert.Equal("RouteName", name);
+        }
+
+        [Fact]
+        public void RegisteringRouteWithRouteName_WithNullDefaultsAndConstraints_AddsTheRoute()
+        {
+            // Arrange
+            var collection = new RouteCollection();
+            collection.DefaultHandler = new Mock<IRouter>().Object;
+
+            collection.MapRoute(name: "RouteName",
+                                template: "{controller}/{action}",
+                                defaults: null,
+                                constraints: null);
+
+            // Act
+            var name = ((TemplateRoute)collection[0]).Name;
+
+            // Assert
+            Assert.Equal("RouteName", name);
         }
 
         #endregion

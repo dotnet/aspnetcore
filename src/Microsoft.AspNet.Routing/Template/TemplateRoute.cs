@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Routing.Template
 {
-    public class TemplateRoute : IRouter
+    public class TemplateRoute : INamedRouter
     {
         private readonly IDictionary<string, object> _defaults;
         private readonly IDictionary<string, IRouteConstraint> _constraints;
@@ -22,11 +22,23 @@ namespace Microsoft.AspNet.Routing.Template
         {
         }
 
-        public TemplateRoute([NotNull] IRouter target, string routeTemplate, IDictionary<string, object> defaults,
+        public TemplateRoute([NotNull] IRouter target,
+                             string routeTemplate,
+                             IDictionary<string, object> defaults,
+                             IDictionary<string, object> constraints)
+            : this(target, null, routeTemplate, defaults, constraints)
+        {
+        }
+
+        public TemplateRoute([NotNull] IRouter target,
+                             string routeName,
+                             string routeTemplate,
+                             IDictionary<string, object> defaults,
                              IDictionary<string, object> constraints)
         {
             _target = target;
             _routeTemplate = routeTemplate ?? string.Empty;
+            Name = routeName;
             _defaults = defaults ?? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             _constraints = RouteConstraintBuilder.BuildConstraints(constraints, _routeTemplate);
 
@@ -36,6 +48,8 @@ namespace Microsoft.AspNet.Routing.Template
             _matcher = new TemplateMatcher(_parsedTemplate);
             _binder = new TemplateBinder(_parsedTemplate, _defaults);
         }
+
+        public string Name { get; private set; }
 
         public IDictionary<string, object> Defaults
         {

@@ -8,20 +8,20 @@ namespace Microsoft.AspNet.Routing
 {
     public static class RouteCollectionExtensions
     {
-        public static IRouteCollection MapRoute(this IRouteCollection routes, string template)
+        public static IRouteCollection MapRoute(this IRouteCollection routes, string name, string template)
         {
-            MapRoute(routes, template, defaults: null);
+            MapRoute(routes, name, template, defaults: null);
             return routes;
         }
 
-        public static IRouteCollection MapRoute(this IRouteCollection routes, string template,
+        public static IRouteCollection MapRoute(this IRouteCollection routes, string name, string template,
                                                 object defaults)
         {
-            MapRoute(routes, template, new RouteValueDictionary(defaults));
+            MapRoute(routes, name, template, new RouteValueDictionary(defaults));
             return routes;
         }
 
-        public static IRouteCollection MapRoute(this IRouteCollection routes, string template,
+        public static IRouteCollection MapRoute(this IRouteCollection routes, string name, string template,
                                                 IDictionary<string, object> defaults)
         {
             if (routes.DefaultHandler == null)
@@ -29,32 +29,32 @@ namespace Microsoft.AspNet.Routing
                 throw new InvalidOperationException(Resources.DefaultHandler_MustBeSet);
             }
 
-            routes.Add(new TemplateRoute(routes.DefaultHandler, template, defaults, constraints: null));
+            routes.Add(new TemplateRoute(routes.DefaultHandler, name, template, defaults, constraints: null));
             return routes;
         }
 
-        public static IRouteCollection MapRoute(this IRouteCollection routes, string template,
-                                                object defaults, object constraints)
+        public static IRouteCollection MapRoute(this IRouteCollection routes, string name, string template,
+                                            object defaults, object constraints)
         {
-            MapRoute(routes, template, new RouteValueDictionary(defaults), new RouteValueDictionary(constraints));
+            MapRoute(routes, name, template, new RouteValueDictionary(defaults), new RouteValueDictionary(constraints));
             return routes;
         }
 
-        public static IRouteCollection MapRoute(this IRouteCollection routes, string template,
+        public static IRouteCollection MapRoute(this IRouteCollection routes, string name, string template,
                                                 object defaults, IDictionary<string, object> constraints)
         {
-            MapRoute(routes, template, new RouteValueDictionary(defaults), constraints);
+            MapRoute(routes, name, template, new RouteValueDictionary(defaults), constraints);
             return routes;
         }
 
-        public static IRouteCollection MapRoute(this IRouteCollection routes, string template, 
+        public static IRouteCollection MapRoute(this IRouteCollection routes, string name, string template,
                                                 IDictionary<string, object> defaults, object constraints)
         {
-            MapRoute(routes, template, defaults, new RouteValueDictionary(constraints));
+            MapRoute(routes, name, template, defaults, new RouteValueDictionary(constraints));
             return routes;
         }
 
-        public static IRouteCollection MapRoute(this IRouteCollection routes, string template,
+        public static IRouteCollection MapRoute(this IRouteCollection routes, string name, string template,
                                                 IDictionary<string, object> defaults, IDictionary<string, object> constraints)
         {
             if (routes.DefaultHandler == null)
@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Routing
                 throw new InvalidOperationException(Resources.DefaultHandler_MustBeSet);
             }
 
-            routes.Add(new TemplateRoute(routes.DefaultHandler, template, defaults, constraints));
+            routes.Add(new TemplateRoute(routes.DefaultHandler, name, template, defaults, constraints));
             return routes;
         }
     }

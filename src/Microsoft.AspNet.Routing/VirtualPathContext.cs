@@ -7,12 +7,25 @@ namespace Microsoft.AspNet.Routing
 {
     public class VirtualPathContext
     {
-        public VirtualPathContext(HttpContext context, IDictionary<string, object> ambientValues, IDictionary<string, object> values)
+        public VirtualPathContext(HttpContext httpContext,
+                                  IDictionary<string, object> ambientValues, 
+                                  IDictionary<string, object> values)
+            : this(httpContext, ambientValues, values, null)
+        {
+        }
+
+        public VirtualPathContext(HttpContext context,
+                                  IDictionary<string, object> ambientValues,
+                                  IDictionary<string, object> values,
+                                  string routeName)
         {
             Context = context;
             AmbientValues = ambientValues;
             Values = values;
+            RouteName = routeName;
         }
+
+        public string RouteName { get; private set; }
 
         public IDictionary<string, object> ProvidedValues { get; set; } 
 

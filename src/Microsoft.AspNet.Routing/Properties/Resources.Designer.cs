@@ -11,6 +11,22 @@ namespace Microsoft.AspNet.Routing
             = new ResourceManager("Microsoft.AspNet.Routing.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// The supplied route name '{0}' is ambiguous and matched more than one routes.
+        /// </summary>
+        internal static string NamedRoutes_AmbiguousRoutesFound
+        {
+            get { return GetString("NamedRoutes_AmbiguousRoutesFound"); }
+        }
+
+        /// <summary>
+        /// The supplied route name '{0}' is ambiguous and matched more than one routes.
+        /// </summary>
+        internal static string FormatNamedRoutes_AmbiguousRoutesFound(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("NamedRoutes_AmbiguousRoutesFound"), p0);
+        }
+
+        /// <summary>
         /// A default handler must be set on the RouteCollection.
         /// </summary>
         internal static string DefaultHandler_MustBeSet
