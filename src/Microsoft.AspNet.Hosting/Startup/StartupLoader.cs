@@ -65,6 +65,11 @@ namespace Microsoft.AspNet.Hosting.Startup
                 throw new Exception("TODO: Configuration method not found");
             }
 
+            if (methodInfo.ReturnType != typeof(void))
+            {
+                throw new Exception("TODO: Configuration method isn't void-returning.");
+            }
+
             object instance = null;
             if (!methodInfo.IsStatic)
             {
