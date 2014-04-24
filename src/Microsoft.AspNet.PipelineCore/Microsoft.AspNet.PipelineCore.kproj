@@ -23,6 +23,7 @@
     <Compile Include="Builder.cs" />
     <Compile Include="Collections\FormCollection.cs" />
     <Compile Include="Collections\HeaderDictionary.cs" />
+    <Compile Include="Collections\ItemsDictionary.cs" />
     <Compile Include="Collections\ReadableStringCollection.cs" />
     <Compile Include="Collections\RequestCookiesCollection.cs" />
     <Compile Include="Collections\ResponseCookies.cs" />

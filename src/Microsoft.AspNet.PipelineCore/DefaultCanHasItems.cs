@@ -6,7 +6,7 @@ namespace Microsoft.AspNet.PipelineCore
     {
         public DefaultCanHasItems()
         {
-            Items = new Dictionary<object, object>();
+            Items = new ItemsDictionary();
         }
 
         public IDictionary<object, object> Items { get; private set; }
