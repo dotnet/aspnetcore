@@ -1,6 +1,6 @@
 ﻿@using System.Security.Principal
 
-@if (Context.HttpContext.User != null && Context.HttpContext.User.Identity.IsAuthenticated)
+@if (Context.HttpContext.User.Identity.IsAuthenticated)
 {
     using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
     {
