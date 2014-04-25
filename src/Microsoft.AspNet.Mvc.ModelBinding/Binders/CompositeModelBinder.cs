@@ -15,7 +15,6 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -44,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private IModelBinder[] Binders { get; set; }
 
-        public virtual async Task<bool> BindModelAsync(ModelBindingContext bindingContext)
+        public virtual async Task<bool> BindModelAsync([NotNull] ModelBindingContext bindingContext)
         {
             var newBindingContext = CreateNewBindingContext(bindingContext, 
                                                             bindingContext.ModelName, 
@@ -66,22 +65,30 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return false; // something went wrong
             }
 
-            // run validation and return the model
-            // If we fell back to an empty prefix above and are dealing with simple types,
-            // propagate the non-blank model name through for user clarity in validation errors.
-            // Complex types will reveal their individual properties as model names and do not require this.
-            if (!newBindingContext.ModelMetadata.IsComplexType && String.IsNullOrEmpty(newBindingContext.ModelName))
+            // Only perform validation at the root of the object graph. ValidationNode will recursively walk the graph.
+            // Ignore ComplexModelDto since it essentially wraps the primary object.
+            if (newBindingContext.ModelMetadata.ContainerType == null && 
+                newBindingContext.ModelMetadata.ModelType != typeof(ComplexModelDto))
             {
-                newBindingContext.ValidationNode = new ModelValidationNode(newBindingContext.ModelMetadata, bindingContext.ModelName);
+                // run validation and return the model
+                // If we fell back to an empty prefix above and are dealing with simple types,
+                // propagate the non-blank model name through for user clarity in validation errors.
+                // Complex types will reveal their individual properties as model names and do not require this.
+                if (!newBindingContext.ModelMetadata.IsComplexType && string.IsNullOrEmpty(newBindingContext.ModelName))
+                {
+                    newBindingContext.ValidationNode = new ModelValidationNode(newBindingContext.ModelMetadata, 
+                                                                               bindingContext.ModelName);
+                }
+
+                var validationContext = new ModelValidationContext(bindingContext.MetadataProvider,
+                                                                   bindingContext.ValidatorProviders,
+                                                                   bindingContext.ModelState,
+                                                                   bindingContext.ModelMetadata,
+                                                                   containerMetadata: null);
+
+                newBindingContext.ValidationNode.Validate(validationContext, parentNode: null);
             }
-
-            var validationContext = new ModelValidationContext(bindingContext.MetadataProvider, 
-                                                               bindingContext.ValidatorProviders, 
-                                                               bindingContext.ModelState, 
-                                                               bindingContext.ModelMetadata, 
-                                                               containerMetadata: null);
-
-            newBindingContext.ValidationNode.Validate(validationContext, parentNode: null);
+                
             bindingContext.Model = newBindingContext.Model;
             return true;
         }
