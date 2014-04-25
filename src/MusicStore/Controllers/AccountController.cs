@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace MusicStore.Controllers
 {
+    //https://github.com/aspnet/WebFx/issues/309
     //[Authorize]
     public class AccountController : Controller
     {
@@ -18,7 +19,8 @@ namespace MusicStore.Controllers
         }
 
         private SignInManager<ApplicationUser> _signInManager;
-        public SignInManager<ApplicationUser> SignInManager {
+        public SignInManager<ApplicationUser> SignInManager
+        {
             get
             {
                 if (_signInManager == null)
@@ -32,7 +34,7 @@ namespace MusicStore.Controllers
                 }
                 return _signInManager;
             }
-            set { _signInManager = value; } 
+            set { _signInManager = value; }
         }
 
         //
@@ -147,7 +149,7 @@ namespace MusicStore.Controllers
                     AddErrors(result);
                 }
             }
-            
+
             // If we got this far, something failed, redisplay form
             return View(model);
         }
@@ -188,7 +190,7 @@ namespace MusicStore.Controllers
             //Bug: https://github.com/aspnet/WebFx/issues/244
             returnUrl = string.IsNullOrWhiteSpace(returnUrl) ? "/Home" : returnUrl;
             //if (Url.IsLocalUrl(returnUrl))
-            if(true)
+            if (true)
             {
                 return Redirect(returnUrl);
             }

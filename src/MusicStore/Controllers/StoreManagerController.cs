@@ -7,8 +7,9 @@ using System.Linq;
 
 namespace MusicStore.Controllers
 {
-    ///Bug: No Authorize attribute
-    //[Authorize(Roles="Administrator")]
+    //https://github.com/aspnet/WebFx/issues/314
+    //[Authorize("ManageStore", "Allowed")]
+    [Authorize]
     public class StoreManagerController : Controller
     {
         private readonly MusicStoreContext db;

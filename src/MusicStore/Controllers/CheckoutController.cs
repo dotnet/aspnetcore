@@ -7,8 +7,7 @@ using System.Threading.Tasks;
 
 namespace MusicStore.Controllers
 {
-    //Bug: Missing auth filter
-    //[Authorize]
+    [Authorize]
     public class CheckoutController : Controller
     {
         private readonly MusicStoreContext db;

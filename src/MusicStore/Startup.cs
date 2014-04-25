@@ -23,6 +23,7 @@ using MusicStore.Web.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Claims;
 
 public class Startup
 {
@@ -113,6 +114,7 @@ public class Startup
             user = new ApplicationUser { UserName = userName };
             await userManager.CreateAsync(user, password);
             await userManager.AddToRoleAsync(user, adminRole);
+            await userManager.AddClaimAsync(user, new Claim("ManageStore", "Allowed"));
         }
     }
 }
