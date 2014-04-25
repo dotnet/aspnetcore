@@ -137,7 +137,7 @@ namespace MusicStore.Controllers
         public IActionResult DeleteConfirmed(int id)
         {
             Album album = db.Albums.Single(a => a.AlbumId == id);
-            // TODO [EF] Replace with EntitySet.Remove when querying attaches instances
+            // TODO [EF] Replace with DbSet.Remove when querying attaches instances
             db.ChangeTracker.Entry(album).State = EntityState.Deleted;
             db.SaveChanges();
             return RedirectToAction("Index");

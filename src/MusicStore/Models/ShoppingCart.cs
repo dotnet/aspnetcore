@@ -101,7 +101,7 @@ namespace MusicStore.Models
 
             foreach (var cartItem in cartItems)
             {
-                // TODO [EF] Change to EntitySet.Remove once querying attaches instances
+                // TODO [EF] Change to DbSet.Remove once querying attaches instances
                 _db.ChangeTracker.Entry(cartItem).State = EntityState.Deleted;
             }
         }
