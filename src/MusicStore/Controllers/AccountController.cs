@@ -187,10 +187,7 @@ namespace MusicStore.Controllers
 
         private IActionResult RedirectToLocal(string returnUrl)
         {
-            //Bug: https://github.com/aspnet/WebFx/issues/244
-            returnUrl = string.IsNullOrWhiteSpace(returnUrl) ? "/Home" : returnUrl;
-            //if (Url.IsLocalUrl(returnUrl))
-            if (true)
+            if (Url.IsLocalUrl(returnUrl))
             {
                 return Redirect(returnUrl);
             }
