@@ -21,13 +21,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public Task<ValueProviderResult> GetValueAsync([NotNull] string key)
         {
             object value;
+            ValueProviderResult result;
             if (_values.TryGetValue(key, out value))
             {
-                var result = new ValueProviderResult(value, value.ToString(), CultureInfo.InvariantCulture);
-                return Task.FromResult(result);
+                var attemptedValue = value != null ? value.ToString() : null;
+                result = new ValueProviderResult(value, attemptedValue, CultureInfo.InvariantCulture);
             }
-
-            return null;
+            else
+            {
+                result = null;
+            }
+            
+            return Task.FromResult(result);
         }
     }
 }
