@@ -57,7 +57,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 _innerDictionary.TryGetValue(key, out value);
                 return value;
             }
-            set { _innerDictionary[key] = value; }
+            set
+            {
+                if(value == null)
+                {
+                    throw new ArgumentNullException("value");
+                }
+                _innerDictionary[key] = value;
+            }
         }
 
         public void AddModelError([NotNull] string key, [NotNull] Exception exception)
@@ -149,7 +156,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         #region IDictionary members
         public void Add(KeyValuePair<string, ModelState> item)
         {
-            _innerDictionary.Add(item);
+            Add(item.Key, item.Value);
         }
 
         public void Add([NotNull] string key, [NotNull] ModelState value)
