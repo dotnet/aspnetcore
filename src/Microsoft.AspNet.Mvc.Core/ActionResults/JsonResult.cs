@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class JsonResult : IJsonResult
+    public class JsonResult : ActionResult
     {
         private readonly object _returnValue;
 
@@ -59,8 +59,7 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        #pragma warning disable 1998
-        public async Task ExecuteResultAsync(ActionContext context)
+        public override void ExecuteResult([NotNull] ActionContext context)
         {
             HttpResponse response = context.HttpContext.Response;
 
@@ -77,6 +76,5 @@ namespace Microsoft.AspNet.Mvc
                 formatter.WriteObject(writer, _returnValue);
             }
         }
-        #pragma warning restore 1998
     }
 }

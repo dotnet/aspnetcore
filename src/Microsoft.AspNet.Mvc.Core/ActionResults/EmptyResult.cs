@@ -2,7 +2,7 @@
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class EmptyResult : IActionResult
+    public class EmptyResult : ActionResult
     {
         private static readonly EmptyResult _singleton = new EmptyResult();
 
@@ -11,11 +11,9 @@ namespace Microsoft.AspNet.Mvc
             get { return _singleton; }
         }
 
-        #pragma warning disable 1998
-        public async Task ExecuteResultAsync(ActionContext context)
+        public override void ExecuteResult([NotNull] ActionContext context)
         {
             context.HttpContext.Response.StatusCode = 204;
         }
-        #pragma warning restore 1998
     }
 }

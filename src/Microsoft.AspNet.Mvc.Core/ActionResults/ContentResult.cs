@@ -5,7 +5,7 @@ using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class ContentResult : IActionResult
+    public class ContentResult : ActionResult
     {
         public string Content { get; set; }
 
@@ -13,13 +13,8 @@ namespace Microsoft.AspNet.Mvc
 
         public string ContentType { get; set; }
 
-        public async Task ExecuteResultAsync(ActionContext context)
+        public override async Task ExecuteResultAsync([NotNull] ActionContext context)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException("context");
-            }
-
             HttpResponse response = context.HttpContext.Response;
 
             if (!String.IsNullOrEmpty(ContentType))

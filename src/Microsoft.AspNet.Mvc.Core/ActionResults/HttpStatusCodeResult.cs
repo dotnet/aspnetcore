@@ -2,7 +2,7 @@
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class HttpStatusCodeResult : IActionResult
+    public class HttpStatusCodeResult : ActionResult
     {
         private int _statusCode;
 
@@ -11,11 +11,9 @@ namespace Microsoft.AspNet.Mvc
             _statusCode = statusCode;
         }
 
-        #pragma warning disable 1998
-        public async Task ExecuteResultAsync(ActionContext context)
+        public override void ExecuteResult([NotNull] ActionContext context)
         {
             context.HttpContext.Response.StatusCode = _statusCode;
         }
-        #pragma warning restore 1998
     }
 }

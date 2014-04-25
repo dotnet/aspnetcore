@@ -15,39 +15,32 @@ namespace Microsoft.AspNet.Mvc
             _viewEngine = viewEngine;
         }
 
-        public IActionResult Content(string value)
+        public ContentResult Content(string value, string contentType, Encoding contentEncoding)
         {
-            return new ContentResult
-            {
-                Content = value
-            };
-        }
-
-        public IActionResult Content(string value, string contentType)
-        {
-            return new ContentResult
+            var result = new ContentResult
             {
                 Content = value,
-                ContentType = contentType
             };
-        }
 
-        public IActionResult Content(string value, string contentType, Encoding contentEncoding)
-        {
-            return new ContentResult
+            if (contentType != null)
             {
-                Content = value,
-                ContentType = contentType,
-                ContentEncoding = contentEncoding
-            };
+                result.Content = contentType;
+            }
+
+            if (contentEncoding != null)
+            {
+                result.ContentEncoding = contentEncoding;
+            }
+
+            return result;
         }
 
-        public IJsonResult Json(object value)
+        public JsonResult Json(object value)
         {
             return new JsonResult(value);
         }
 
-        public IActionResult View(string view, ViewDataDictionary viewData)
+        public ViewResult View(string view, ViewDataDictionary viewData)
         {
             return new ViewResult(_serviceProvider, _viewEngine)
             {

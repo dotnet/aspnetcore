@@ -21,7 +21,7 @@ namespace MvcSample.Web
         [AllowAnonymous]
         [AgeEnhancer]
         [Delay(500)]
-        public IActionResult Index(int age, string userName)
+        public ActionResult Index(int age, string userName)
         {
             if (!string.IsNullOrEmpty(userName))
             {
@@ -33,26 +33,26 @@ namespace MvcSample.Web
             return View("MyView", _user);
         }
 
-        public IActionResult Blocked(int age, string userName)
+        public ActionResult Blocked(int age, string userName)
         {
             return Index(age, userName);
         }
 
         [Authorize("Permission", "CanViewPage")]
-        public IActionResult NotGrantedClaim(int age, string userName)
+        public ActionResult NotGrantedClaim(int age, string userName)
         {
             return Index(age, userName);
         }
 
         [FakeUser]
         [Authorize("Permission", "CanViewPage", "CanViewAnything")]
-        public IActionResult AllGranted(int age, string userName)
+        public ActionResult AllGranted(int age, string userName)
         {
             return Index(age, userName);
         }
 
         [ErrorMessages, AllowAnonymous]
-        public IActionResult Crash(string message)
+        public ActionResult Crash(string message)
         {
             throw new Exception(message);
         }

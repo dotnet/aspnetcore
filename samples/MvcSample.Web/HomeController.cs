@@ -11,12 +11,12 @@ namespace MvcSample.Web
         private static readonly IEnumerable<SelectListItem> _addresses = CreateAddresses();
         private static readonly IEnumerable<SelectListItem> _ages = CreateAges();
 
-        public IActionResult Index()
+        public ActionResult Index()
         {
             return View("MyView", User());
         }
 
-        public IActionResult ValidationSummary()
+        public ActionResult ValidationSummary()
         {
             ModelState.AddModelError("something", "Something happened, show up in validation summary.");
 
@@ -26,7 +26,7 @@ namespace MvcSample.Web
         /// <summary>
         /// Action that shows metadata when model is <c>null</c>.
         /// </summary>
-        public IActionResult Create()
+        public ActionResult Create()
         {
             ViewBag.Address = _addresses;
             ViewBag.Ages = _ages;
@@ -37,7 +37,7 @@ namespace MvcSample.Web
         /// <summary>
         /// Action that shows metadata when model is non-<c>null</c>.
         /// </summary>
-        public IActionResult Edit(User user)
+        public ActionResult Edit(User user)
         {
             ViewBag.Address = _addresses;
             ViewBag.Age = _ages;
@@ -49,7 +49,7 @@ namespace MvcSample.Web
         /// <summary>
         /// Action that exercises query\form based model binding.
         /// </summary>
-        public IActionResult SaveUser(User user)
+        public ActionResult SaveUser(User user)
         {
             return View("MyView", user);
         }
@@ -57,12 +57,12 @@ namespace MvcSample.Web
         /// <summary>
         /// Action that exercises input formatter
         /// </summary>
-        public IActionResult Post([FromBody]User user)
+        public ActionResult Post([FromBody]User user)
         {
             return View("MyView", user);
         }
 
-        public IActionResult Something()
+        public ActionResult Something()
         {
             return new ContentResult
             {
@@ -70,9 +70,9 @@ namespace MvcSample.Web
             };
         }
 
-        public IActionResult Hello()
+        public ActionResult Hello()
         {
-            return Result.Content("Hello World");
+            return Content("Hello World");
         }
 
         public void Raw()
@@ -104,7 +104,7 @@ namespace MvcSample.Web
         /// <summary>
         /// Action that exercises default view names.
         /// </summary>
-        public IActionResult MyView()
+        public ActionResult MyView()
         {
             return View(User());
         }

@@ -9,12 +9,12 @@ using Microsoft.AspNet.Mvc.Rendering;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class ViewResult : IActionResult
+    public class ViewResult : ActionResult
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly IViewEngine _viewEngine;
 
-        public ViewResult(IServiceProvider serviceProvider, IViewEngine viewEngine)
+        public ViewResult([NotNull] IServiceProvider serviceProvider, [NotNull] IViewEngine viewEngine)
         {
             _serviceProvider = serviceProvider;
             _viewEngine = viewEngine;
@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc
 
         public ViewDataDictionary ViewData { get; set; }
 
-        public async Task ExecuteResultAsync([NotNull] ActionContext context)
+        public override async Task ExecuteResultAsync([NotNull] ActionContext context)
         {
             var viewName = ViewName ?? context.ActionDescriptor.Name;
             var view = FindView(context.RouteValues, viewName);

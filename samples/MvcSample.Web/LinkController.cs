@@ -6,7 +6,7 @@ namespace MvcSample.Web
 {
     public class LinkController : Controller
     {
-        public IActionResult Details()
+        public ActionResult Details()
         {
             return View();
         }

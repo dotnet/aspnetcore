@@ -30,7 +30,7 @@ namespace MvcSample.Web.RandomNameSpace
             return "Hello World: my namespace is " + this.GetType().Namespace;
         }
 
-        public IActionResult Something()
+        public ActionResult Something()
         {
             return new ContentResult
             {
@@ -38,9 +38,9 @@ namespace MvcSample.Web.RandomNameSpace
             };
         }
 
-        public IActionResult Hello()
+        public ActionResult Hello()
         {
-            return Result.Content("Hello World");
+            return Result.Content("Hello World", null, null);
         }
 
         public void Raw()
@@ -48,7 +48,7 @@ namespace MvcSample.Web.RandomNameSpace
             Context.Response.WriteAsync("Hello World raw");
         }
 
-        public IActionResult UserJson()
+        public ActionResult UserJson()
         {
             var jsonResult = Result.Json(_user);
             jsonResult.Indent = false;

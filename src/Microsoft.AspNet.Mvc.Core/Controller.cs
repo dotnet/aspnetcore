@@ -53,23 +53,23 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        public IActionResult View()
+        public ViewResult View()
         {
             return View(view: null);
         }
 
-        public IActionResult View(string view)
+        public ViewResult View(string view)
         {
             return View(view, model: null);
         }
 
         // TODO #110: May need <TModel> here and in the overload below.
-        public IActionResult View(object model)
+        public ViewResult View(object model)
         {
             return View(view: null, model: model);
         }
 
-        public IActionResult View(string view, object model)
+        public ViewResult View(string view, object model)
         {
             // Do not override ViewData.Model unless passed a non-null value.
             if (model != null)
@@ -80,22 +80,22 @@ namespace Microsoft.AspNet.Mvc
             return Result.View(view, ViewData);
         }
 
-        public IActionResult Content(string content)
+        public ContentResult Content(string content)
         {
             return Content(content, contentType: null);
         }
 
-        public IActionResult Content(string content, string contentType)
+        public ContentResult Content(string content, string contentType)
         {
             return Content(content, contentType, contentEncoding: null);
         }
 
-        public IActionResult Content(string content, string contentType, Encoding contentEncoding)
+        public ContentResult Content(string content, string contentType, Encoding contentEncoding)
         {
             return Result.Content(content, contentType, contentEncoding);
         }
 
-        public IJsonResult Json(object value)
+        public JsonResult Json(object value)
         {
             return Result.Json(value);
         }

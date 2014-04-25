@@ -30,12 +30,12 @@
     <Compile Include="ActionInvokerProviderContext.cs" />
     <Compile Include="ActionMethodSelectorAttribute.cs" />
     <Compile Include="ActionNameAttribute.cs" />
+    <Compile Include="ActionResult.cs" />
     <Compile Include="ActionResultFactory.cs" />
     <Compile Include="ActionResultHelper.cs" />
     <Compile Include="ActionResults\ContentResult.cs" />
     <Compile Include="ActionResults\EmptyResult.cs" />
     <Compile Include="ActionResults\HttpStatusCodeResult.cs" />
-    <Compile Include="ActionResults\IJsonResult.cs" />
     <Compile Include="ActionResults\JsonResult.cs" />
     <Compile Include="ActionResults\NoContentResult.cs" />
     <Compile Include="ActionResults\RedirectResult.cs" />

@@ -5,7 +5,7 @@ using Microsoft.AspNet.Mvc.Core;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class RedirectToRouteResult : IActionResult
+    public class RedirectToRouteResult : ActionResult
     {
         public RedirectToRouteResult([NotNull] IUrlHelper urlHelper, IDictionary<string, object> routeValues)
             : this(urlHelper, routeValues, permanent: false)
@@ -26,8 +26,7 @@ namespace Microsoft.AspNet.Mvc
 
         public bool Permanent { get; private set; }
 
-        #pragma warning disable 1998
-        public async Task ExecuteResultAsync([NotNull] ActionContext context)
+        public override void ExecuteResult([NotNull] ActionContext context)
         {
             var destinationUrl = UrlHelper.RouteUrl(RouteValues);
 
@@ -38,6 +37,5 @@ namespace Microsoft.AspNet.Mvc
 
             context.HttpContext.Response.Redirect(destinationUrl, Permanent);
         }
-        #pragma warning restore 1998
     }
 }

@@ -5,15 +5,10 @@ using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class NoContentResult : IActionResult
+    public class NoContentResult : ActionResult
     {
-        public async Task ExecuteResultAsync(ActionContext context)
+        public override void ExecuteResult([NotNull] ActionContext context)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException("context");
-            }
-
             HttpResponse response = context.HttpContext.Response;
 
 #if NET45
@@ -21,8 +16,6 @@ namespace Microsoft.AspNet.Mvc
 #else
             response.StatusCode = 204;
 #endif
-
-            await Task.FromResult(false);
         }
     }
 }

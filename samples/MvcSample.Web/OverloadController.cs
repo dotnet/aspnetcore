@@ -12,19 +12,20 @@ namespace MvcSample.Web
             _result = result;
         }
 
+        // All results implement IActionResult so it can be safely returned.
         public IActionResult Get()
         {
-            return _result.Content("Get()");
+            return _result.Content("Get()", null, null);
         }
 
-        public IActionResult Get(int id)
+        public ActionResult Get(int id)
         {
-            return _result.Content("Get(id)");
+            return _result.Content("Get(id)", null, null);
         }
 
-        public IActionResult Get(int id, string name)
+        public ActionResult Get(int id, string name)
         {
-            return _result.Content("Get(id, name)");
+            return _result.Content("Get(id, name)", null, null);
         }
     }
 }
