@@ -135,13 +135,12 @@ namespace Microsoft.AspNet.PipelineCore
             }
             HttpResponseInformation.StatusCode = 401;
             var handler = HttpAuthentication.Handler;
-            if (handler == null)
-            {
-                throw new InvalidOperationException("No authentication handlers present.");
-            }
 
             var challengeContext = new ChallengeContext(authenticationTypes, properties == null ? null : properties.Dictionary);
-            handler.Challenge(challengeContext);
+            if (handler != null)
+            {
+                handler.Challenge(challengeContext);
+            }
 
             // Verify all types ack'd
             IEnumerable<string> leftovers = authenticationTypes.Except(challengeContext.Accepted);
@@ -158,13 +157,12 @@ namespace Microsoft.AspNet.PipelineCore
                 throw new ArgumentNullException();
             }
             var handler = HttpAuthentication.Handler;
-            if (handler == null)
-            {
-                throw new InvalidOperationException("No authentication handlers present.");
-            }
 
             var signInContext = new SignInContext(identities, properties == null ? null : properties.Dictionary);
-            handler.SignIn(signInContext);
+            if (handler != null)
+            {
+                handler.SignIn(signInContext);
+            }
 
             // Verify all types ack'd
             IEnumerable<string> leftovers = identities.Select(identity => identity.AuthenticationType).Except(signInContext.Accepted);
@@ -181,13 +179,12 @@ namespace Microsoft.AspNet.PipelineCore
                 throw new ArgumentNullException();
             }
             var handler = HttpAuthentication.Handler;
-            if (handler == null)
-            {
-                throw new InvalidOperationException("No authentication handlers present.");
-            }
 
             var signOutContext = new SignOutContext(authenticationTypes);
-            handler.SignOut(signOutContext);
+            if (handler != null)
+            {
+                handler.SignOut(signOutContext);
+            }
 
             // Verify all types ack'd
             IEnumerable<string> leftovers = authenticationTypes.Except(signOutContext.Accepted);

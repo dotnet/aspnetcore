@@ -153,13 +153,12 @@ namespace Microsoft.AspNet.PipelineCore
                 throw new ArgumentNullException();
             }
             var handler = HttpAuthentication.Handler;
-            if (handler == null)
-            {
-                throw new InvalidOperationException("No authentication handlers present.");
-            }
 
             var authenticateContext = new AuthenticateContext(authenticationTypes);
-            handler.Authenticate(authenticateContext);
+            if (handler != null)
+            {
+                handler.Authenticate(authenticateContext);
+            }
 
             // Verify all types ack'd
             IEnumerable<string> leftovers = authenticationTypes.Except(authenticateContext.Accepted);
@@ -178,13 +177,12 @@ namespace Microsoft.AspNet.PipelineCore
                 throw new ArgumentNullException();
             }
             var handler = HttpAuthentication.Handler;
-            if (handler == null)
-            {
-                throw new InvalidOperationException("No authentication handlers present.");
-            }
 
             var authenticateContext = new AuthenticateContext(authenticationTypes);
-            await handler.AuthenticateAsync(authenticateContext);
+            if (handler != null)
+            {
+                await handler.AuthenticateAsync(authenticateContext);
+            }
 
             // Verify all types ack'd
             IEnumerable<string> leftovers = authenticationTypes.Except(authenticateContext.Accepted);
