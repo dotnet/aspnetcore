@@ -86,6 +86,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             AddValidationAttributeAdapter(dict, typeof(CompareAttribute),
                 (attribute) => new CompareAttributeAdapter((CompareAttribute)attribute));
 
+            AddValidationAttributeAdapter(dict, typeof(RequiredAttribute),
+                (attribute) => new RequiredAttributeAdapter((RequiredAttribute)attribute));
+
+            AddValidationAttributeAdapter(dict, typeof(RangeAttribute),
+                (attribute) => new RangeAttributeAdapter((RangeAttribute)attribute));
+
+            AddValidationAttributeAdapter(dict, typeof(StringLengthAttribute),
+                (attribute) => new StringLengthAttributeAdapter((StringLengthAttribute)attribute));
+
+            AddDataTypeAttributeAdapter(dict, typeof(CreditCardAttribute), "creditcard");
+            AddDataTypeAttributeAdapter(dict, typeof(EmailAddressAttribute), "email");
+            AddDataTypeAttributeAdapter(dict, typeof(PhoneAttribute), "phone");
             AddDataTypeAttributeAdapter(dict, typeof(UrlAttribute), "url");
 
             return dict;

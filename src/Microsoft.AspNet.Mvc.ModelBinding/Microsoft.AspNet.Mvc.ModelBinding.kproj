@@ -71,6 +71,9 @@
     <Compile Include="RequestContext.cs" />
     <Compile Include="Validation\AssociatedValidatorProvider.cs" />
     <Compile Include="Validation\ClientModelValidationContext.cs" />
+    <Compile Include="Validation\RequiredAttributeAdapter.cs" />
+    <Compile Include="Validation\StringLengthAttributeAdapter.cs" />
+    <Compile Include="Validation\RangeAttributeAdapter.cs" />
     <Compile Include="Validation\CompareAttributeAdapter.cs" />
     <Compile Include="Validation\CompositeModelValidator.cs" />
     <Compile Include="Validation\DataAnnotationsModelValidator.cs" />
@@ -89,8 +92,11 @@
     <Compile Include="Validation\ModelClientValidationEqualToRule.cs" />
     <Compile Include="Validation\ModelClientValidationMaxLengthRule.cs" />
     <Compile Include="Validation\ModelClientValidationMinLengthRule.cs" />
+    <Compile Include="Validation\ModelClientValidationRangeRule.cs" />
     <Compile Include="Validation\ModelClientValidationRegexRule.cs" />
+    <Compile Include="Validation\ModelClientValidationRequiredRule.cs" />
     <Compile Include="Validation\ModelClientValidationRule.cs" />
+    <Compile Include="Validation\ModelClientValidationStringLengthRule.cs" />
     <Compile Include="Validation\ModelValidatedEventArgs.cs" />
     <Compile Include="Validation\ModelValidatingEventArgs.cs" />
     <Compile Include="Validation\ModelValidationContext.cs" />

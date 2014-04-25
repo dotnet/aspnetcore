@@ -13,49 +13,72 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     {
         private readonly DataAnnotationsModelMetadataProvider _metadataProvider = new DataAnnotationsModelMetadataProvider();
 
-        public static IEnumerable<object[]> KnownAdapterTypeData
+        public static IEnumerable<object[]> DataAnnotationAdapters
         {
             get
             {
-                yield return new object[] { typeof(RegularExpressionAttribute), 
-                                            new RegularExpressionAttribute("abc"), 
-                                            typeof(RegularExpressionAttributeAdapter), null };
+                yield return new object[] { new RegularExpressionAttribute("abc"),
+                                            typeof(RegularExpressionAttributeAdapter) };
 
-                yield return new object[] { typeof(MaxLengthAttribute), 
-                                            new MaxLengthAttribute(), 
-                                            typeof(MaxLengthAttributeAdapter), null };
+                yield return new object[] { new MaxLengthAttribute(),
+                                            typeof(MaxLengthAttributeAdapter) };
 
-                yield return new object[] { typeof(MinLengthAttribute), 
-                                            new MinLengthAttribute(1), 
-                                            typeof(MinLengthAttributeAdapter), null };
+                yield return new object[] { new MinLengthAttribute(1),
+                                            typeof(MinLengthAttributeAdapter) };
 
-                yield return new object[] { typeof(UrlAttribute), 
-                                            new UrlAttribute(), 
-                                            typeof(DataTypeAttributeAdapter), "url" };
+                yield return new object[] { new RangeAttribute(1, 100),
+                                            typeof(RangeAttributeAdapter) };
+
+                yield return new object[] { new StringLengthAttribute(6),
+                                            typeof(StringLengthAttributeAdapter) };
+
+                yield return new object[] { new RequiredAttribute(),
+                                            typeof(RequiredAttributeAdapter) };
             }
         }
 
         [Theory]
-        [MemberData("KnownAdapterTypeData")]
-        public void AdapterForKnownTypeRegistered(Type attributeType, 
-                                                  ValidationAttribute validationAttr,
-                                                  Type expectedAdapterType, 
-                                                  string expectedRuleName)
+        [MemberData("DataAnnotationAdapters")]
+        public void AdapterFactory_RegistersAdapters_ForDataAnnotationAttributes(ValidationAttribute attribute,
+                                                                                 Type expectedAdapterType)
         {
             // Arrange
             var adapters = new DataAnnotationsModelValidatorProvider().AttributeFactories;
-            var adapterFactory = adapters.Single(kvp => kvp.Key == attributeType).Value;
+            var adapterFactory = adapters.Single(kvp => kvp.Key == attribute.GetType()).Value;
 
             // Act
-            var adapter = adapterFactory(validationAttr);
+            var adapter = adapterFactory(attribute);
 
             // Assert
             Assert.IsType(expectedAdapterType, adapter);
-            if (expectedRuleName != null)
+        }
+
+        public static IEnumerable<object[]> DataTypeAdapters
+        {
+            get
             {
-                var dataTypeAdapter = Assert.IsType<DataTypeAttributeAdapter>(adapter);
-                Assert.Equal(expectedRuleName, dataTypeAdapter.RuleName);
+                yield return new object[] { new UrlAttribute(), "url" };
+                yield return new object[] { new CreditCardAttribute(), "creditcard" };
+                yield return new object[] { new EmailAddressAttribute(), "email" };
+                yield return new object[] { new PhoneAttribute(), "phone" };
             }
+        }
+
+        [Theory]
+        [MemberData("DataTypeAdapters")]
+        public void AdapterFactory_RegistersAdapters_ForDataTypeAttributes(ValidationAttribute attribute,
+                                                                           string expectedRuleName)
+        {
+            // Arrange
+            var adapters = new DataAnnotationsModelValidatorProvider().AttributeFactories;
+            var adapterFactory = adapters.Single(kvp => kvp.Key == attribute.GetType()).Value;
+
+            // Act
+            var adapter = adapterFactory(attribute);
+
+            // Assert
+            var dataTypeAdapter = Assert.IsType<DataTypeAttributeAdapter>(adapter);
+            Assert.Equal(expectedRuleName, dataTypeAdapter.RuleName);
         }
 
         [Fact]

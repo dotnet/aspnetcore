@@ -39,6 +39,9 @@
     <Compile Include="ModelBindingContextTest.cs" />
     <Compile Include="Properties\Resources.Designer.cs" />
     <Compile Include="Utils\SimpleHttpValueProvider.cs" />
+    <Compile Include="Validation\RequiredAttributeAdapterTest.cs" />
+    <Compile Include="Validation\StringLengthAttributeAdapterTest.cs" />
+    <Compile Include="Validation\RangeAttributeAdapterTest.cs" />
     <Compile Include="Validation\AssociatedValidatorProviderTest.cs" />
     <Compile Include="Validation\CompareAttributeTest.cs" />
     <Compile Include="Validation\DataAnnotationsModelValidatorProviderTest.cs" />
