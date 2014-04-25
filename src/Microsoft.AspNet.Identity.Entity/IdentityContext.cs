@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Identity.Entity
         public IdentityContext(IServiceProvider serviceProvider) : base(serviceProvider) { }
     }
 
-    public class IdentityContext<TUser, TRole, TKey, TUserLogin, TUserRole, TUserClaim> : EntityContext
+    public class IdentityContext<TUser, TRole, TKey, TUserLogin, TUserRole, TUserClaim> : DbContext
         where TUser : EntityUser<TKey, TUserLogin, TUserRole, TUserClaim>
         where TRole : EntityRole<TKey, TUserRole> /*, TUserRole*/
         where TUserLogin : IdentityUserLogin<TKey>
@@ -23,8 +23,8 @@ namespace Microsoft.AspNet.Identity.Entity
         where TKey : IEquatable<TKey>
     {
 
-        public EntitySet<TUser> Users { get; set; }
-        public EntitySet<TRole> Roles { get; set; }
+        public DbSet<TUser> Users { get; set; }
+        public DbSet<TRole> Roles { get; set; }
 
         public IdentityContext(IServiceProvider serviceProvider)
         : base(serviceProvider) { }

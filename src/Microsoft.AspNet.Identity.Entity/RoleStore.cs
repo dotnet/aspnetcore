@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Identity.Entity
     {
         private bool _disposed;
 
-        public RoleStore(EntityContext context)
+        public RoleStore(DbContext context)
         {
             if (context == null)
             {
@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Identity.Entity
             AutoSaveChanges = true;
         }
 
-        public EntityContext Context { get; private set; }
+        public DbContext Context { get; private set; }
 
         /// <summary>
         ///     If true will call SaveChanges after CreateAsync/UpdateAsync/DeleteAsync

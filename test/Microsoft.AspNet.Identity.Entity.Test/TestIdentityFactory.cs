@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Identity.Entity.Test
 {
     public static class TestIdentityFactory
     {
-        public static EntityContext CreateContext()
+        public static DbContext CreateContext()
         {
             var serviceProvider = new ServiceCollection()
                         .AddEntityFramework(s => s.AddInMemoryStore())
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         }
 
 
-        public static UserManager<EntityUser> CreateManager(EntityContext context)
+        public static UserManager<EntityUser> CreateManager(DbContext context)
         {
             var manager = new UserManager<EntityUser>(new UserStore(context))
             {
@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.Identity.Entity.Test
             return CreateManager(CreateContext());
         }
 
-        public static RoleManager<EntityRole> CreateRoleManager(EntityContext context)
+        public static RoleManager<EntityRole> CreateRoleManager(DbContext context)
         {
             return new RoleManager<EntityRole>(new RoleStore<EntityRole, string>(context));
         }

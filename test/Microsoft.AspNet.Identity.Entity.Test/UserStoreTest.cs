@@ -203,9 +203,9 @@ namespace Microsoft.AspNet.Identity.Entity.Test
             }
         }
 
-        private class SimpleContext : EntityContext
+        private class SimpleContext : DbContext
         {
-            public EntitySet<Artist> Artists { get; set; }
+            public DbSet<Artist> Artists { get; set; }
 
             protected override void OnConfiguring(EntityConfigurationBuilder builder)
             {

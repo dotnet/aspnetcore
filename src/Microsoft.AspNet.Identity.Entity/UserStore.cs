@@ -13,12 +13,12 @@ namespace Microsoft.AspNet.Identity.Entity
     public class UserStore :
         UserStore<EntityUser>
     {
-        public UserStore(EntityContext context) : base(context) { }
+        public UserStore(DbContext context) : base(context) { }
     }
 
     public class UserStore<TUser> : UserStore<TUser, EntityRole, string, IdentityUserLogin, IdentityUserRole, IdentityUserClaim> where TUser:EntityUser
     {
-        public UserStore(EntityContext context) : base(context) { }
+        public UserStore(DbContext context) : base(context) { }
     }
 
     public class UserStore<TUser, TRole, TKey, TUserLogin, TUserRole, TUserClaim> :
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Identity.Entity
     {
         private bool _disposed;
 
-        public UserStore(EntityContext context)
+        public UserStore(DbContext context)
         {
             if (context == null)
             {
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Identity.Entity
             AutoSaveChanges = true;
         }
 
-        public EntityContext Context { get; private set; }
+        public DbContext Context { get; private set; }
 
         /// <summary>
         ///     If true will call SaveChanges after CreateAsync/UpdateAsync/DeleteAsync
