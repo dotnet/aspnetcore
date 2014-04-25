@@ -73,7 +73,10 @@ namespace Microsoft.AspNet.Mvc.Filters
                         throw new InvalidOperationException("Type filter must implement IFilter");
                     }
 
-                    var typeFilter = _typeActivator.CreateInstance(ServiceProvider, typeFilterSignature.ImplementationType) as IFilter;
+                    var typeFilter = (IFilter)_typeActivator.CreateInstance(
+                        ServiceProvider,
+                        typeFilterSignature.ImplementationType,
+                        typeFilterSignature.Arguments);
 
                     ApplyFilterToContainer(typeFilter, filter);
                     filterItem.Filter = typeFilter;

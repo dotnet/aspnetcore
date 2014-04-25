@@ -11,7 +11,7 @@ namespace MvcSample.Web
     [PassThrough(Order = 2)]
     [InspectResultPage]
     [BlockAnonymous]
-    [UserNameProvider(Order = -1)]
+    [TypeFilter(typeof(UserNameProvider), Order = -1)]
     public class FiltersController : Controller
     {
         public User User { get; set; }

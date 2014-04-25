@@ -2,12 +2,12 @@
 
 namespace MvcSample.Web.Filters
 {
-    public class UserNameProvider : ActionFilterAttribute
+    public class UserNameProvider : IActionFilter
     {
         private static readonly string[] _userNames = new[] { "Jon", "David", "Goliath" };
         private static int _index;
 
-        public override void OnActionExecuting(ActionExecutingContext context)
+        public void OnActionExecuting(ActionExecutingContext context)
         {
             object originalUserName = null;
 
@@ -19,6 +19,10 @@ namespace MvcSample.Web.Filters
             {
                 context.ActionArguments["userName"] = _userNames[(_index++)%3];
             }
+        }
+
+        public void OnActionExecuted(ActionExecutedContext context)
+        {
         }
     }
 }
