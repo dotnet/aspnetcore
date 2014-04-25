@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Security.Claims;
+using System.IO;
 using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.HttpFeature;
@@ -38,6 +39,63 @@ namespace Microsoft.AspNet.PipelineCore.Tests
             context.User = new ClaimsPrincipal(new ClaimsIdentity("SomeAuthType"));
             Assert.Equal("SomeAuthType", context.User.Identity.AuthenticationType);
             Assert.True(context.User.Identity.IsAuthenticated);
+        }
+
+        [Fact]
+        public async Task AuthenticateWithNoAuthMiddlewareThrows()
+        {
+            var context = CreateContext();
+            Assert.Throws<InvalidOperationException>(() => context.Authenticate("Foo"));
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await context.AuthenticateAsync("Foo"));
+        }
+
+        [Fact]
+        public void ChallengeWithNoAuthMiddlewareMayThrow()
+        {
+            var context = CreateContext();
+            context.Response.Challenge();
+            Assert.Equal(401, context.Response.StatusCode);
+
+            Assert.Throws<InvalidOperationException>(() => context.Response.Challenge("Foo"));
+        }
+
+        [Fact]
+        public void SignInWithNoAuthMiddlewareThrows()
+        {
+            var context = CreateContext();
+            Assert.Throws<InvalidOperationException>(() => context.Response.SignIn(new ClaimsIdentity("Foo")));
+        }
+
+        [Fact]
+        public void SignOutWithNoAuthMiddlewareMayThrow()
+        {
+            var context = CreateContext();
+            context.Response.SignOut();
+
+            Assert.Throws<InvalidOperationException>(() => context.Response.SignOut("Foo"));
+        }
+
+        private HttpContext CreateContext()
+        {
+            var context = new DefaultHttpContext(new FeatureCollection());
+            context.SetFeature<IHttpResponseInformation>(new FakeHttpResponse());
+            return context;
+        }
+
+        private class FakeHttpResponse : IHttpResponseInformation
+        {
+            public int StatusCode { get; set; }
+
+            public string ReasonPhrase { get; set; }
+
+            public IDictionary<string, string[]> Headers { get; set; }
+
+            public Stream Body { get; set; }
+
+            public void OnSendingHeaders(Action<object> callback, object state)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }
