@@ -46,8 +46,11 @@
     <Compile Include="Validation\DataMemberModelValidatorProviderTest.cs" />
     <Compile Include="Validation\ErrorModelValidatorTest.cs" />
     <Compile Include="Validation\InvalidModelValidatorProviderTest.cs" />
+    <Compile Include="Validation\MaxLengthAttributeAdapterTest.cs" />
+    <Compile Include="Validation\MinLengthAttributeAdapterTest.cs" />
     <Compile Include="Validation\ModelStateDictionaryTest.cs" />
     <Compile Include="Validation\ModelValidationNodeTest.cs" />
+    <Compile Include="ValueProviders\DictionaryBasedValueProviderTests.cs" />
     <Compile Include="ValueProviders\FormValueProviderFactoryTests.cs" />
     <Compile Include="ValueProviders\QueryStringValueProviderFactoryTest.cs" />
     <Compile Include="ValueProviders\ReadableStringCollectionValueProviderTests.cs" />

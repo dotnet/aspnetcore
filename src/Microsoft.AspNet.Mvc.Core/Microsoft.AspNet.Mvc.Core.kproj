@@ -60,7 +60,7 @@
     <Compile Include="AntiForgery\ITokenGenerator.cs" />
     <Compile Include="AntiForgery\ITokenStore.cs" />
     <Compile Include="AntiForgery\ITokenValidator.cs" />
-    <Compile Include="AntiForgery\TokenValidator.cs" />
+    <Compile Include="AntiForgery\TokenProvider.cs" />
     <Compile Include="Areas\AreaAttribute.cs" />
     <Compile Include="Areas\ReflectedRouteConstraintsActionDescriptorProvider.cs" />
     <Compile Include="BodyParameterInfo.cs" />
