@@ -91,7 +91,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString DisplayNameForInnerType<TInnerModel, TValue>(Expression<Func<TInnerModel, TValue>> expression)
+        public HtmlString DisplayNameForInnerType<TInnerModel, TValue>(
+            [NotNull] Expression<Func<TInnerModel, TValue>> expression)
         {
             var metadata = ExpressionMetadataProvider.
                                             FromLambdaExpression<TInnerModel, TValue>(
@@ -175,7 +176,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString ValueFor<TProperty>(Expression<Func<TModel, TProperty>> expression, string format)
+        public HtmlString ValueFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression, string format)
         {
             var metadata = GetModelMetadata(expression);
             return GenerateValue(ExpressionHelper.GetExpressionText(expression), metadata.Model, format,

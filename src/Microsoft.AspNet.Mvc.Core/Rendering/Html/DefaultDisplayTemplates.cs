@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 {
     public static class DefaultDisplayTemplates
     {
-        public static string BooleanTemplate(IHtmlHelper<object> html)
+        public static string BooleanTemplate(IHtmlHelper html)
         {
             bool? value = null;
             if (html.ViewData.Model != null)
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return inputTag.ToString(TagRenderMode.SelfClosing);
         }
 
-        private static string BooleanTemplateDropDownList(IHtmlHelper<object> html, bool? value)
+        private static string BooleanTemplateDropDownList(IHtmlHelper html, bool? value)
         {
             var selectTag = new TagBuilder("select");
             selectTag.AddCssClass("list-box");
@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             };
         }
 
-        public static string CollectionTemplate(IHtmlHelper<object> html)
+        public static string CollectionTemplate(IHtmlHelper html)
         {
             var model = html.ViewData.ModelMetadata.Model;
             if (model == null)
@@ -158,7 +158,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
         }
 
-        public static string DecimalTemplate(IHtmlHelper<object> html)
+        public static string DecimalTemplate(IHtmlHelper html)
         {
             if (html.ViewData.TemplateInfo.FormattedModelValue == html.ViewData.ModelMetadata.Model)
             {
@@ -169,7 +169,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return StringTemplate(html);
         }
 
-        public static string EmailAddressTemplate(IHtmlHelper<object> html)
+        public static string EmailAddressTemplate(IHtmlHelper html)
         {
             var uriString = "mailto:" + ((html.ViewData.Model == null) ? string.Empty : html.ViewData.Model.ToString());
             var linkedText = (html.ViewData.TemplateInfo.FormattedModelValue == null) ?
@@ -179,18 +179,18 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return HyperlinkTemplate(uriString, linkedText);
         }
 
-        public static string HiddenInputTemplate(IHtmlHelper<object> html)
+        public static string HiddenInputTemplate(IHtmlHelper html)
         {
             // TODO: add ModelMetadata.HideSurroundingHtml and use here (return string.Empty)
             return StringTemplate(html);
         }
 
-        public static string HtmlTemplate(IHtmlHelper<object> html)
+        public static string HtmlTemplate(IHtmlHelper html)
         {
             return html.ViewData.TemplateInfo.FormattedModelValue.ToString();
         }
 
-        public static string ObjectTemplate(IHtmlHelper<object> html)
+        public static string ObjectTemplate(IHtmlHelper html)
         {
             var viewData = html.ViewData;
             var templateInfo = viewData.TemplateInfo;
@@ -261,12 +261,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 !templateInfo.Visited(metadata);
         }
 
-        public static string StringTemplate(IHtmlHelper<object> html)
+        public static string StringTemplate(IHtmlHelper html)
         {
             return html.Encode(html.ViewData.TemplateInfo.FormattedModelValue);
         }
 
-        public static string UrlTemplate(IHtmlHelper<object> html)
+        public static string UrlTemplate(IHtmlHelper html)
         {
             var uriString = (html.ViewData.Model == null) ? string.Empty : html.ViewData.Model.ToString();
             var linkedText = (html.ViewData.TemplateInfo.FormattedModelValue == null) ?

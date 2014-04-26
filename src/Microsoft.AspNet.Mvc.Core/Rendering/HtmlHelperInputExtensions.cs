@@ -6,18 +6,22 @@ namespace Microsoft.AspNet.Mvc.Rendering
 {
     public static class HtmlHelperInputExtensions
     {
-        public static HtmlString CheckBox<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name)
+        public static HtmlString CheckBox([NotNull] this IHtmlHelper htmlHelper, string name)
         {
             return htmlHelper.CheckBox(name, isChecked: null, htmlAttributes: null);
         }
 
-        public static HtmlString CheckBox<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name,
+        public static HtmlString CheckBox(
+            [NotNull] this IHtmlHelper htmlHelper,
+            string name,
             bool isChecked)
         {
             return htmlHelper.CheckBox(name, isChecked, htmlAttributes: null);
         }
 
-        public static HtmlString CheckBox<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name,
+        public static HtmlString CheckBox(
+            [NotNull] this IHtmlHelper htmlHelper,
+            string name,
             object htmlAttributes)
         {
             return htmlHelper.CheckBox(name, isChecked: null, htmlAttributes: htmlAttributes);
@@ -29,12 +33,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return htmlHelper.CheckBoxFor(expression, htmlAttributes: null);
         }
 
-        public static HtmlString Hidden<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name)
+        public static HtmlString Hidden([NotNull] this IHtmlHelper htmlHelper, string name)
         {
             return htmlHelper.Hidden(name, value: null, htmlAttributes: null);
         }
 
-        public static HtmlString Hidden<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name,
+        public static HtmlString Hidden(
+            [NotNull] this IHtmlHelper htmlHelper,
+            string name,
             object value)
         {
             return htmlHelper.Hidden(name, value, htmlAttributes: null);
@@ -46,12 +52,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return htmlHelper.HiddenFor(expression, htmlAttributes: null);
         }
 
-        public static HtmlString Password<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name)
+        public static HtmlString Password([NotNull] this IHtmlHelper htmlHelper, string name)
         {
             return htmlHelper.Password(name, value: null, htmlAttributes: null);
         }
 
-        public static HtmlString Password<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name,
+        public static HtmlString Password(
+            [NotNull] this IHtmlHelper htmlHelper,
+            string name,
             object value)
         {
             return htmlHelper.Password(name, value, htmlAttributes: null);
@@ -63,20 +71,28 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return htmlHelper.PasswordFor(expression, htmlAttributes: null);
         }
 
-        public static HtmlString RadioButton<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name,
+        public static HtmlString RadioButton(
+            [NotNull] this IHtmlHelper htmlHelper,
+            string name,
             object value)
         {
             return htmlHelper.RadioButton(name, value, isChecked: null, htmlAttributes: null);
         }
 
-        public static HtmlString RadioButton<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name,
-            object value, object htmlAttributes)
+        public static HtmlString RadioButton(
+            [NotNull] this IHtmlHelper htmlHelper,
+            string name,
+            object value,
+            object htmlAttributes)
         {
             return htmlHelper.RadioButton(name, value, isChecked: null, htmlAttributes: htmlAttributes);
         }
 
-        public static HtmlString RadioButton<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name,
-            object value, bool isChecked)
+        public static HtmlString RadioButton(
+            [NotNull] this IHtmlHelper htmlHelper,
+            string name,
+            object value,
+            bool isChecked)
         {
             return htmlHelper.RadioButton(name, value, isChecked, htmlAttributes: null);
         }
@@ -87,38 +103,53 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return htmlHelper.RadioButtonFor(expression, value, htmlAttributes: null);
         }
 
-        public static HtmlString TextBox<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name)
+        public static HtmlString TextBox([NotNull] this IHtmlHelper htmlHelper, string name)
         {
             return TextBox(htmlHelper, name, value: null);
         }
 
-        public static HtmlString TextBox<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name,
+        public static HtmlString TextBox(
+            [NotNull] this IHtmlHelper htmlHelper,
+            string name,
             object value)
         {
             return TextBox(htmlHelper, name, value, format: null);
         }
 
-        public static HtmlString TextBox<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name,
-            object value, string format)
+        public static HtmlString TextBox(
+            [NotNull] this IHtmlHelper htmlHelper,
+            string name,
+            object value,
+            string format)
         {
             return TextBox(htmlHelper, name, value, format, htmlAttributes: null);
         }
 
-        public static HtmlString TextBox<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name,
-            object value, object htmlAttributes)
+        public static HtmlString TextBox(
+            [NotNull] this IHtmlHelper htmlHelper,
+            string name,
+            object value,
+            object htmlAttributes)
         {
             return TextBox(htmlHelper, name, value, format: null, htmlAttributes: htmlAttributes);
         }
 
-        public static HtmlString TextBox<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name,
-            object value, string format, object htmlAttributes)
+        public static HtmlString TextBox(
+            [NotNull] this IHtmlHelper htmlHelper,
+            string name,
+            object value,
+            string format,
+            object htmlAttributes)
         {
             return htmlHelper.TextBox(name, value, format,
                 HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes));
         }
 
-        public static HtmlString TextBox<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name,
-            object value, IDictionary<string, object> htmlAttributes)
+        public static HtmlString TextBox(
+            [NotNull] this IHtmlHelper htmlHelper,
+            string name,
+            object value,
+            IDictionary<string, object> htmlAttributes)
         {
             return htmlHelper.TextBox(name, value, format: null, htmlAttributes: htmlAttributes);
         }

@@ -14,8 +14,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         private static readonly string DisplayTemplateViewPath = "DisplayTemplates";
         private static readonly string EditorTemplateViewPath = "EditorTemplates";
 
-        private static readonly Dictionary<string, Func<IHtmlHelper<object>, string>> _defaultDisplayActions =
-            new Dictionary<string, Func<IHtmlHelper<object>, string>>(StringComparer.OrdinalIgnoreCase)
+        private static readonly Dictionary<string, Func<IHtmlHelper, string>> _defaultDisplayActions =
+            new Dictionary<string, Func<IHtmlHelper, string>>(StringComparer.OrdinalIgnoreCase)
             {
                 { "EmailAddress", DefaultDisplayTemplates.EmailAddressTemplate },
                 { "HiddenInput", DefaultDisplayTemplates.HiddenInputTemplate },
@@ -30,16 +30,17 @@ namespace Microsoft.AspNet.Mvc.Rendering
             };
 
         private ViewContext _viewContext;
-        private ViewDataDictionary<object> _viewData;
+        private ViewDataDictionary _viewData;
         private IViewEngine _viewEngine;
         private string _templateName;
         private bool _readOnly;
 
-        public TemplateRenderer([NotNull] IViewEngine viewEngine, 
-                                [NotNull] ViewContext viewContext,
-                                [NotNull] ViewDataDictionary<object> viewData,
-                                string templateName, 
-                                bool readOnly)
+        public TemplateRenderer(
+            [NotNull] IViewEngine viewEngine,
+            [NotNull] ViewContext viewContext,
+            [NotNull] ViewDataDictionary viewData,
+            string templateName,
+            bool readOnly)
         {
             _viewEngine = viewEngine;
             _viewContext = viewContext;
@@ -75,7 +76,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     }
                 }
 
-                Func<IHtmlHelper<object>, string> defaultAction;
+                Func<IHtmlHelper, string> defaultAction;
                 if (defaultActions.TryGetValue(viewName, out defaultAction))
                 {
                     return defaultAction(MakeHtmlHelper(_viewContext, _viewData));
@@ -86,7 +87,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 Resources.FormatTemplateHelpers_NoTemplate(_viewData.ModelMetadata.RealModelType.FullName));
         }
 
-        private Dictionary<string, Func<IHtmlHelper<object>, string>> GetDefaultActions()
+        private Dictionary<string, Func<IHtmlHelper, string>> GetDefaultActions()
         {
             if (_readOnly)
             {
@@ -170,9 +171,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
         }
 
-        private static IHtmlHelper<object> MakeHtmlHelper(ViewContext viewContext, ViewDataDictionary<object> viewData)
+        private static IHtmlHelper MakeHtmlHelper(ViewContext viewContext, ViewDataDictionary viewData)
         {
-            var newHelper = viewContext.HttpContext.RequestServices.GetService<IHtmlHelper<object>>();
+            var newHelper = viewContext.HttpContext.RequestServices.GetService<IHtmlHelper>();
 
             var contextable = newHelper as ICanHasViewContext;
             if (contextable != null)

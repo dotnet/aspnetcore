@@ -9,7 +9,6 @@ using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.Razor.Compilation;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Security.Authorization;
-using Microsoft.AspNet.Security.DataProtection;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -97,6 +96,7 @@ namespace Microsoft.AspNet.Mvc
                     implementationInstance: null,
                     lifecycle: LifecycleKind.Transient);
 
+            yield return describe.Transient<IHtmlHelper, HtmlHelper>();
             yield return
                 describe.Describe(
                     typeof(IHtmlHelper<>),

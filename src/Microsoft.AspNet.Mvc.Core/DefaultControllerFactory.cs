@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Mvc
         {
             Injector.InjectProperty(controller, "ActionContext", actionContext);
 
-            var viewData = new ViewDataDictionary<object>(
+            var viewData = new ViewDataDictionary(
                 _serviceProvider.GetService<IModelMetadataProvider>(),
                 actionContext.ModelState);
             Injector.InjectProperty(controller, "ViewData", viewData);

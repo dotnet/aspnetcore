@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 return string.Empty;
             }
 
-            var viewData = new ViewDataDictionary<object>(_viewData)
+            var viewData = new ViewDataDictionary(_viewData)
             {
                 Model = _metadata.Model,
                 ModelMetadata = _metadata

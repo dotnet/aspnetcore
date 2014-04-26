@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
     /// <summary>
     /// Default implementation of non-generic portions of <see cref="IHtmlHelper{T}">.
     /// </summary>
-    public class HtmlHelper : ICanHasViewContext
+    public class HtmlHelper : IHtmlHelper, ICanHasViewContext
     {
         public static readonly string ValidationInputCssClassName = "input-validation-error";
         public static readonly string ValidationInputValidCssClassName = "input-validation-valid";
@@ -52,8 +52,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
             IdAttributeDotReplacement = "_";
         }
 
+        /// <inheritdoc />
         public string IdAttributeDotReplacement { get; set; }
 
+        /// <inheritdoc />
         public ViewContext ViewContext
         {
             get
@@ -71,6 +73,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
         }
 
+        /// <inheritdoc />
         public dynamic ViewBag
         {
             get
@@ -79,6 +82,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
         }
 
+        /// <inheritdoc />
         public ViewDataDictionary ViewData
         {
             get
@@ -89,6 +93,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         protected IModelMetadataProvider MetadataProvider { get; private set; }
 
+        /// <inheritdoc />
         public HtmlString ActionLink(
             [NotNull] string linkText, 
             string actionName, 
@@ -161,11 +166,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
             ViewContext = viewContext;
         }
 
+        /// <inheritdoc />
         public HtmlString AntiForgeryToken()
         {
             return _antiForgeryInstance.GetHtml(ViewContext.HttpContext);
         }
 
+        /// <inheritdoc />
         public MvcForm BeginForm(string actionName, string controllerName, object routeValues, FormMethod method,
                                  object htmlAttributes)
         {
@@ -179,37 +186,44 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return GenerateForm(actionName, controllerName, routeValues, method, htmlAttributeDictionary);
         }
 
+        /// <inheritdoc />
         public void EndForm()
         {
             var mvcForm = CreateForm();
             mvcForm.EndForm();
         }
 
+        /// <inheritdoc />
         public HtmlString CheckBox(string name, bool? isChecked, object htmlAttributes)
         {
             return GenerateCheckBox(metadata: null, name: name, isChecked: isChecked, htmlAttributes: htmlAttributes);
         }
 
+        /// <inheritdoc />
         public string Encode(string value)
         {
             return (!string.IsNullOrEmpty(value)) ? WebUtility.HtmlEncode(value) : string.Empty;
         }
 
+        /// <inheritdoc />
         public string Encode(object value)
         {
             return value != null ? WebUtility.HtmlEncode(value.ToString()) : string.Empty;
         }
 
+        /// <inheritdoc />
         public string FormatValue(object value, string format)
         {
             return ViewDataDictionary.FormatValue(value, format);
         }
 
+        /// <inheritdoc />
         public string GenerateIdFromName([NotNull] string name)
         {
             return TagBuilder.CreateSanitizedId(name, IdAttributeDotReplacement);
         }
 
+        /// <inheritdoc />
         public HtmlString Display(string expression,
                                   string templateName,
                                   string htmlFieldName,
@@ -223,6 +237,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                    additionalViewData);
         }
 
+        /// <inheritdoc />
         public HtmlString DisplayForModel(string templateName,
                                           string htmlFieldName,
                                           object additionalViewData)
@@ -232,7 +247,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                    templateName,
                                    additionalViewData);
         }
-        
+
+        /// <inheritdoc />
         public HtmlString DisplayName(string expression)
         {
             var modelMetadata = string.IsNullOrEmpty(expression) ?
@@ -245,6 +261,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
 
+        /// <inheritdoc />
         public HtmlString DropDownList(string name, IEnumerable<SelectListItem> selectList, string optionLabel,
             object htmlAttributes)
         {
@@ -256,13 +273,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 htmlAttributes: htmlAttributes);
         }
 
+        /// <inheritdoc />
         public HtmlString Hidden(string name, object value, object htmlAttributes)
         {
             return GenerateHidden(metadata: null, name: name, value: value, useViewData: (value == null),
                 htmlAttributes: htmlAttributes);
         }
-        
 
+        /// <inheritdoc />
         public HtmlString Label(string expression, string labelText, object htmlAttributes)
         {
             var modelMetadata = string.IsNullOrEmpty(expression)?
@@ -278,12 +296,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
                             htmlAttributes);
         }
 
+        /// <inheritdoc />
         public virtual HtmlString Name(string name)
         {
             var fullName = ViewData.TemplateInfo.GetFullHtmlFieldName(name);
             return new HtmlString(Encode(fullName));
         }
 
+        /// <inheritdoc />
         public async Task<HtmlString> PartialAsync([NotNull] string partialViewName, object model,
                                                    ViewDataDictionary viewData)
         {
@@ -295,6 +315,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
         }
 
+        /// <inheritdoc />
         public Task RenderPartialAsync([NotNull] string partialViewName, object model, ViewDataDictionary viewData)
         {
             return RenderPartialCoreAsync(partialViewName, model, viewData, ViewContext.Writer);
@@ -351,27 +372,32 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
         }
 
+        /// <inheritdoc />
         public HtmlString Password(string name, object value, object htmlAttributes)
         {
             return GeneratePassword(metadata: null, name: name, value: value, htmlAttributes: htmlAttributes);
         }
 
+        /// <inheritdoc />
         public HtmlString RadioButton(string name, object value, bool? isChecked, object htmlAttributes)
         {
             return GenerateRadioButton(metadata: null, name: name, value: value, isChecked: isChecked,
                 htmlAttributes: htmlAttributes);
         }
 
+        /// <inheritdoc />
         public HtmlString Raw(string value)
         {
             return new HtmlString(value);
         }
 
+        /// <inheritdoc />
         public HtmlString Raw(object value)
         {
             return new HtmlString(value == null ? null : value.ToString());
         }
 
+        /// <inheritdoc />
         public virtual HtmlString ValidationSummary(bool excludePropertyErrors, string message, IDictionary<string, object> htmlAttributes)
         {
             var formContext = ViewContext.ClientValidationEnabled ? ViewContext.FormContext : null;
@@ -481,12 +507,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
         }
 
+        /// <inheritdoc />
         public HtmlString TextBox(string name, object value, string format, IDictionary<string, object> htmlAttributes)
         {
             return GenerateTextBox(metadata: null, name: name, value: value, format: format,
                 htmlAttributes: htmlAttributes);
         }
 
+        /// <inheritdoc />
         public HtmlString Value([NotNull] string name, string format)
         {
             return GenerateValue(name, value: null, format: format, useViewData: true);
@@ -589,7 +617,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 format: null,
                 htmlAttributes: htmlAttributeDictionary);
         }
-        
+
         protected virtual HtmlString GenerateDisplayName([NotNull] ModelMetadata metadata, string htmlFieldName)
         {
             // We don't call ModelMetadata.GetDisplayName here because 
@@ -603,7 +631,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                                                     string.Empty :
                                                                     htmlFieldName.Split('.').Last();
             }
-            
+
             return new HtmlString(Encode(resolvedDisplayName));
         }
 
@@ -695,7 +723,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 format: null,
                 htmlAttributes: htmlAttributeDictionary);
         }
-        
+
         protected virtual HtmlString GenerateLabel([NotNull] ModelMetadata metadata, 
                                                     string htmlFieldName,
                                                     string labelText,

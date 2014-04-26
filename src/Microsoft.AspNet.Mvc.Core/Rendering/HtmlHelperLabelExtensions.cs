@@ -5,16 +5,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
 {
     public static class HtmlHelperLabelExtensions
     {
-        public static HtmlString Label<TModel>([NotNull] this IHtmlHelper<TModel> html, string expression)
+        public static HtmlString Label([NotNull] this IHtmlHelper html, string expression)
         {
             return html.Label(expression,
                              labelText: null,
                              htmlAttributes: null);
         }
 
-        public static HtmlString Label<TModel>([NotNull] this IHtmlHelper<TModel> html,
-                                               string expression,
-                                               string labelText)
+        public static HtmlString Label([NotNull] this IHtmlHelper html, string expression, string labelText)
         {
             return html.Label(expression, labelText, htmlAttributes: null);
         }
@@ -39,25 +37,25 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return html.LabelFor<TValue>(expression, labelText: null, htmlAttributes: htmlAttributes);
         }
 
-        public static HtmlString LabelForModel<TModel>([NotNull] this IHtmlHelper<TModel> html)
+        public static HtmlString LabelForModel([NotNull] this IHtmlHelper html)
         {
             return LabelForModel(html, labelText: null);
         }
 
-        public static HtmlString LabelForModel<TModel>([NotNull] this IHtmlHelper<TModel> html, string labelText)
+        public static HtmlString LabelForModel([NotNull] this IHtmlHelper html, string labelText)
         {
             return html.Label(expression: string.Empty, labelText: labelText, htmlAttributes: null);
         }
 
-        public static HtmlString LabelForModel<TModel>([NotNull] this IHtmlHelper<TModel> html,
-                                                        object htmlAttributes)
+        public static HtmlString LabelForModel([NotNull] this IHtmlHelper html, object htmlAttributes)
         {
             return html.Label(expression: string.Empty, labelText: null, htmlAttributes: htmlAttributes);
         }
 
-        public static HtmlString LabelForModel<TModel>([NotNull] this IHtmlHelper<TModel> html,
-                                                        string labelText,
-                                                        object htmlAttributes)
+        public static HtmlString LabelForModel(
+            [NotNull] this IHtmlHelper html,
+            string labelText,
+            object htmlAttributes)
         {
             return html.Label(expression: string.Empty, labelText: labelText, htmlAttributes: htmlAttributes);
         }

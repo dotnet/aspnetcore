@@ -3,9 +3,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
 {
     public static class HtmlHelperLinkExtensions
     {
-        public static HtmlString ActionLink<TModel>(
-            [NotNull] this IHtmlHelper<TModel> helper, 
-            [NotNull] string linkText, 
+        public static HtmlString ActionLink(
+            [NotNull] this IHtmlHelper helper,
+            [NotNull] string linkText,
             string actionName)
         {
             return helper.ActionLink(
@@ -19,10 +19,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 htmlAttributes: null);
         }
 
-        public static HtmlString ActionLink<TModel>(
-            [NotNull] this IHtmlHelper<TModel> helper, 
-            [NotNull] string linkText, 
-            string actionName, 
+        public static HtmlString ActionLink(
+            [NotNull] this IHtmlHelper helper,
+            [NotNull] string linkText,
+            string actionName,
             object routeValues)
         {
             return helper.ActionLink(
@@ -36,11 +36,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 htmlAttributes: null);
         }
 
-        public static HtmlString ActionLink<TModel>(
-            [NotNull] this IHtmlHelper<TModel> helper, 
-            [NotNull] string linkText, 
-            string actionName, 
-            object routeValues, 
+        public static HtmlString ActionLink(
+            [NotNull] this IHtmlHelper helper,
+            [NotNull] string linkText,
+            string actionName,
+            object routeValues,
             object htmlAttributes)
         {
             return helper.ActionLink(
@@ -54,10 +54,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 htmlAttributes: htmlAttributes);
         }
 
-        public static HtmlString ActionLink<TModel>(
-            [NotNull] this IHtmlHelper<TModel> helper, 
-            [NotNull] string linkText, 
-            string actionName, 
+        public static HtmlString ActionLink(
+            [NotNull] this IHtmlHelper helper,
+            [NotNull] string linkText,
+            string actionName,
             string controllerName)
         {
             return helper.ActionLink(
@@ -71,8 +71,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 htmlAttributes: null);
         }
 
-        public static HtmlString ActionLink<TModel>(
-            [NotNull] this IHtmlHelper<TModel> helper,
+        public static HtmlString ActionLink(
+            [NotNull] this IHtmlHelper helper,
             [NotNull] string linkText,
             string actionName,
             string controllerName,
@@ -89,12 +89,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 htmlAttributes: null);
         }
 
-        public static HtmlString ActionLink<TModel>(
-            [NotNull] this IHtmlHelper<TModel> helper, 
-            [NotNull] string linkText, 
-            string actionName, 
-            string controllerName, 
-            object routeValues, 
+        public static HtmlString ActionLink(
+            [NotNull] this IHtmlHelper helper,
+            [NotNull] string linkText,
+            string actionName,
+            string controllerName,
+            object routeValues,
             object htmlAttributes)
         {
             return helper.ActionLink(

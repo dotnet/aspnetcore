@@ -5,22 +5,24 @@ namespace Microsoft.AspNet.Mvc.Rendering
 {
     public static class HtmlHelperValueExtensions
     {
-        public static HtmlString Value<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name)
+        public static HtmlString Value([NotNull] this IHtmlHelper htmlHelper, string name)
         {
             return htmlHelper.Value(name, format: null);
         }
 
-        public static HtmlString ValueFor<TModel, TProperty>([NotNull] this IHtmlHelper<TModel> htmlHelper, Expression<Func<TModel, TProperty>> expression)
+        public static HtmlString ValueFor<TModel, TProperty>(
+            [NotNull] this IHtmlHelper<TModel> htmlHelper,
+            [NotNull] Expression<Func<TModel, TProperty>> expression)
         {
             return htmlHelper.ValueFor(expression, format: null);
         }
 
-        public static HtmlString ValueForModel<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper)
+        public static HtmlString ValueForModel([NotNull] this IHtmlHelper htmlHelper)
         {
-            return ValueForModel<TModel>(htmlHelper, format: null);
+            return ValueForModel(htmlHelper, format: null);
         }
 
-        public static HtmlString ValueForModel<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string format)
+        public static HtmlString ValueForModel([NotNull] this IHtmlHelper htmlHelper, string format)
         {
             return htmlHelper.Value(string.Empty, format);
         }

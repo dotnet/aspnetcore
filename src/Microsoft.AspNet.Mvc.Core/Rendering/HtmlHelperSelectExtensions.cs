@@ -6,31 +6,38 @@ namespace Microsoft.AspNet.Mvc.Rendering
 {
     public static class SelectExtensions
     {
-        public static HtmlString DropDownList<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name)
+        public static HtmlString DropDownList([NotNull] this IHtmlHelper htmlHelper, string name)
         {
             return htmlHelper.DropDownList(name, selectList: null, optionLabel: null, htmlAttributes: null);
         }
 
-        public static HtmlString DropDownList<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name,
-            string optionLabel)
+        public static HtmlString DropDownList([NotNull] this IHtmlHelper htmlHelper, string name, string optionLabel)
         {
             return htmlHelper.DropDownList(name, selectList: null, optionLabel: optionLabel, htmlAttributes: null);
         }
 
-        public static HtmlString DropDownList<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name,
+        public static HtmlString DropDownList(
+            [NotNull] this IHtmlHelper htmlHelper,
+            string name,
             IEnumerable<SelectListItem> selectList)
         {
             return htmlHelper.DropDownList(name, selectList, optionLabel: null, htmlAttributes: null);
         }
 
-        public static HtmlString DropDownList<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name,
-            IEnumerable<SelectListItem> selectList, object htmlAttributes)
+        public static HtmlString DropDownList(
+            [NotNull] this IHtmlHelper htmlHelper,
+            string name,
+            IEnumerable<SelectListItem> selectList,
+            object htmlAttributes)
         {
             return htmlHelper.DropDownList(name, selectList, optionLabel: null, htmlAttributes: htmlAttributes);
         }
 
-        public static HtmlString DropDownList<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper, string name,
-            IEnumerable<SelectListItem> selectList, string optionLabel)
+        public static HtmlString DropDownList(
+            [NotNull] this IHtmlHelper htmlHelper,
+            string name,
+            IEnumerable<SelectListItem> selectList,
+            string optionLabel)
         {
             return htmlHelper.DropDownList(name, selectList, optionLabel, htmlAttributes: null);
         }

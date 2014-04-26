@@ -1,7 +1,7 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+
 namespace Microsoft.AspNet.Mvc.Rendering
 {
     /// <summary>
@@ -12,9 +12,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <summary>
         /// Gets the display name for the current model.
         /// </summary>
-        /// <param name="htmlHelper">The <see cref="IHtmlHelper{T}"/> instance that this method extends.</param>
         /// <returns>An <see cref="HtmlString"/> that represents HTML markup.</returns>
-        public static HtmlString DisplayNameForModel<TModel>([NotNull] this IHtmlHelper<TModel> htmlHelper)
+        public static HtmlString DisplayNameForModel([NotNull] this IHtmlHelper htmlHelper)
         {
             return htmlHelper.DisplayName(string.Empty);
         }
@@ -27,8 +26,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>
         /// The display name for the model.
         /// </returns>
-        public static HtmlString DisplayNameFor<TInnerModel,TValue>(this IHtmlHelper<IEnumerable<TInnerModel>> htmlHelper,
-                                                                      Expression<Func<TInnerModel, TValue>> expression)
+        public static HtmlString DisplayNameFor<TInnerModel,TValue>(
+            [NotNull] this IHtmlHelper<IEnumerable<TInnerModel>> htmlHelper,
+            [NotNull] Expression<Func<TInnerModel, TValue>> expression)
         {
             return htmlHelper.DisplayNameForInnerType<TInnerModel, TValue>(expression);
         }
