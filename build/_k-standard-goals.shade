@@ -3,6 +3,7 @@ use namespace="System.IO"
 use import="Files"
 use import="BuildEnv"
 use import="FileWatcher"
+use import="Environment"
 
 default BASE_DIR='${Directory.GetCurrentDirectory()}'
 default TARGET_DIR='${Path.Combine(BASE_DIR, "artifacts")}'
@@ -16,7 +17,7 @@ default Configuration='Release'
 
 #repo-initialize target='initialize'
   k-restore
-  k-generate-projects solutionPath='${BASE_DIR}'
+  k-generate-projects solutionPath='${BASE_DIR}' if='!IsMono'
 
 #target-dir-clean target='clean'
   directory delete="${TARGET_DIR}"
@@ -33,7 +34,7 @@ default Configuration='Release'
     }
   }
 
-#native-compile target='compile'
+#native-compile target='compile' if='!IsMono'
   var programFilesX86 = '${Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)}'
   var msbuild = '${Path.Combine(programFilesX86, "MSBuild", "12.0", "Bin", "MSBuild.exe")}'
   var nativeProjects ='${Files.Include(Path.Combine(BASE_DIR, "src", "**", "*.vcxproj"))}'

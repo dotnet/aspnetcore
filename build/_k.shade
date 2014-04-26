@@ -17,8 +17,10 @@ prefetch='true'
 */}
 
 default prefetch='${true}'
+default mono='${IsMono}'
 
-nuget-install package='ProjectK' outputDir='packages' extra='-pre -nocache' once='ProjectK-NuGet' if='prefetch'
+nuget-install package='ProjectK' outputDir='packages' extra='-pre -nocache' once='ProjectK-NuGet' if='prefetch && !mono'
+nuget-install package='ProjectK.Mono' outputDir='packages' extra='-pre -nocache' once='ProjectK-NuGet' if='mono'
 
 @{
     Func<string, long> getVersion = version => {
@@ -38,12 +40,42 @@ nuget-install package='ProjectK' outputDir='packages' extra='-pre -nocache' once
         return Int64.MaxValue;
     };
 
+    var projectKPrefix =  mono ? "ProjectK.Mono*" : "ProjectK";
+
     string packagesDir = Path.Combine(Directory.GetCurrentDirectory(), "packages"),
-           projectKDir = Directory.EnumerateDirectories(packagesDir, "ProjectK*")
+           projectKDir = Directory.EnumerateDirectories(packagesDir, projectKPrefix)
                                   .OrderByDescending(getVersion)
                                   .First();
     
 }
 
 default kProgram='${projectKDir}/tools/k.cmd'
-exec program='${Path.GetFullPath(kProgram)}' commandline='${command}'
+exec program='${Path.GetFullPath(kProgram)}' commandline='${command}' if='!mono'
+
+default kMonoProgram='${projectKDir}/tools/net45/klr.mono.managed.dll'
+default monoPath='${Environment.GetEnvironmentVariable("MONO_PATH")}'
+
+@{
+    if(string.IsNullOrEmpty(monoPath))
+    {
+        monoPath = "mono";
+    }
+
+    var folder = Path.Combine(projectKDir, "tools", "net45");
+    var kMonoEntryPoint = Path.GetFullPath(kMonoProgram);
+
+    if(command.StartsWith("build"))
+    {
+        command = kMonoEntryPoint + " --lib " + folder + " Microsoft.Net.Project " + command;
+    }
+    else if(command.StartsWith("restore")) 
+    {
+        command = Path.Combine(projectKDir, "tools", "NuGet.exe") + " " + command;
+    }
+    else 
+    {
+        command = kMonoEntryPoint + " --lib " + folder + " Microsoft.Net.ApplicationHost " + command;
+    }
+}
+
+exec program='${monoPath}' commandline='${command}' if='mono'
