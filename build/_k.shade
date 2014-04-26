@@ -40,10 +40,10 @@ nuget-install package='ProjectK.Mono' outputDir='packages' extra='-pre -nocache'
         return Int64.MaxValue;
     };
 
-    var projectKPrefix =  mono ? "ProjectK.Mono*" : "ProjectK";
+    var projectKPrefix =  mono ? "ProjectK.Mono" : "ProjectK";
 
     string packagesDir = Path.Combine(Directory.GetCurrentDirectory(), "packages"),
-           projectKDir = Directory.EnumerateDirectories(packagesDir, projectKPrefix)
+           projectKDir = Directory.EnumerateDirectories(packagesDir, projectKPrefix + "*")
                                   .OrderByDescending(getVersion)
                                   .First();
     
@@ -56,25 +56,28 @@ default kMonoProgram='${projectKDir}/tools/net45/klr.mono.managed.dll'
 default monoPath='${Environment.GetEnvironmentVariable("MONO_PATH")}'
 
 @{
-    if(string.IsNullOrEmpty(monoPath))
+    if(mono)
     {
-        monoPath = "mono";
-    }
+        if(string.IsNullOrEmpty(monoPath))
+        {
+            monoPath = "mono";
+        }
 
-    var folder = Path.Combine(projectKDir, "tools", "net45");
-    var kMonoEntryPoint = Path.GetFullPath(kMonoProgram);
+        var folder = Path.Combine(projectKDir, "tools", "net45");
+        var kMonoEntryPoint = Path.GetFullPath(kMonoProgram);
 
-    if(command.StartsWith("build"))
-    {
-        command = kMonoEntryPoint + " --lib " + folder + " Microsoft.Net.Project " + command;
-    }
-    else if(command.StartsWith("restore")) 
-    {
-        command = Path.Combine(projectKDir, "tools", "NuGet.exe") + " " + command;
-    }
-    else 
-    {
-        command = kMonoEntryPoint + " --lib " + folder + " Microsoft.Net.ApplicationHost " + command;
+        if(command.StartsWith("build"))
+        {
+            command = kMonoEntryPoint + " --lib " + folder + " Microsoft.Net.Project " + command;
+        }
+        else if(command.StartsWith("restore")) 
+        {
+            command = Path.Combine(projectKDir, "tools", "NuGet.exe") + " " + command;
+        }
+        else 
+        {
+            command = kMonoEntryPoint + " --lib " + folder + " Microsoft.Net.ApplicationHost " + command;
+        }
     }
 }
 
