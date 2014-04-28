@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Data.Entity;
-using Microsoft.Data.Migrations;
-using Microsoft.Data.Relational;
 using Microsoft.Data.SqlServer;
 using MusicStore.Models;
 
@@ -18,14 +16,12 @@ namespace MusicStore.Web.Models
         {
             using (var db = new MusicStoreContext(serviceProvider))
             {
-                // TODO [EF] Swap to use top level API when available
                 var sqlServerDataStore = db.Configuration.DataStore as SqlServerDataStore;
                 if (sqlServerDataStore != null)
                 {
-                    var creator = new SqlServerDataStoreCreator(sqlServerDataStore, new ModelDiffer(), new SqlServerMigrationOperationSqlGenerator(), new SqlStatementExecutor());
-                    if (!await creator.ExistsAsync())
+                    if (!await db.Database.ExistsAsync())
                     {
-                        await creator.CreateAsync(db.Model);
+                        await db.Database.CreateAsync();
                         await InsertTestData(serviceProvider);
                     }
                 }
