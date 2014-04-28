@@ -14,7 +14,12 @@ namespace MvcSample.Web
     [UserNameProvider(Order = -1)]
     public class FiltersController : Controller
     {
-        private readonly User _user = new User() { Name = "User Name", Address = "Home Address" };
+        public User User { get; set; }
+
+        public FiltersController()
+        {
+            User = new User() { Name = "User Name", Address = "Home Address" };
+        }
 
         // TODO: Add a real filter here
         [ServiceFilter(typeof(PassThroughAttribute))]
@@ -25,12 +30,12 @@ namespace MvcSample.Web
         {
             if (!string.IsNullOrEmpty(userName))
             {
-                _user.Name = userName;
+                User.Name = userName;
             }
 
-            _user.Age = age;
+            User.Age = age;
 
-            return View("MyView", _user);
+            return View("MyView", User);
         }
 
         public ActionResult Blocked(int age, string userName)

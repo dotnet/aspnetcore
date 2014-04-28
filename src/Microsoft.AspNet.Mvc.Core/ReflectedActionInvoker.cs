@@ -60,6 +60,8 @@ namespace Microsoft.AspNet.Mvc
             _filters = GetFilters();
             _cursor = new FilterCursor(_filters);
 
+            _actionContext.Controller = _controllerFactory.CreateController(_actionContext);
+
             // >> ExceptionFilters >> AuthorizationFilters >> ActionFilters >> Action
             await InvokeActionExceptionFilters();
 
@@ -360,12 +362,10 @@ namespace Microsoft.AspNet.Mvc
         {
             _cursor.SetStage(FilterStage.ActionMethod);
 
-            var controller = _controllerFactory.CreateController(_actionContext);
-
             var actionMethodInfo = _descriptor.MethodInfo;
             var actionReturnValue = await ReflectedActionExecutor.ExecuteAsync(
                 actionMethodInfo,
-                controller,
+                _actionContext.Controller,
                 _actionExecutingContext.ActionArguments);
 
             var underlyingReturnType = TypeHelper.GetTaskInnerTypeOrNull(actionMethodInfo.ReturnType) ?? actionMethodInfo.ReturnType;

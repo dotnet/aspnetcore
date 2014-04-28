@@ -13,5 +13,7 @@ namespace MvcSample.Web.Models
         public User Dependent { get; set; }
         public bool Alive { get; set; }
         public string Password { get; set; }
+
+        public string Log { get; set; }
     }
 }

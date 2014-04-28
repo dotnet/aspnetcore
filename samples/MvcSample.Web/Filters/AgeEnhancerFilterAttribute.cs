@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNet.Mvc;
+﻿using System;
+using Microsoft.AspNet.Mvc;
 
 namespace MvcSample.Web.Filters
 {
@@ -8,6 +9,13 @@ namespace MvcSample.Web.Filters
         {
             object age = null;
 
+            var controller = context.Controller as FiltersController;
+
+            if (controller != null)
+            {
+                controller.User.Log += "Age Enhanced!" + Environment.NewLine;
+            }
+            
             if (context.ActionArguments.TryGetValue("age", out age))
             {
                 if (age is int)
