@@ -7,9 +7,7 @@ using System.Linq;
 
 namespace MusicStore.Controllers
 {
-    //https://github.com/aspnet/WebFx/issues/314
-    //[Authorize("ManageStore", "Allowed")]
-    [Authorize]
+    [Authorize("ManageStore", "Allowed")]
     public class StoreManagerController : Controller
     {
         private readonly MusicStoreContext db;
@@ -55,7 +53,6 @@ namespace MusicStore.Controllers
             return View(album);
         }
 
-        //Bug: SelectList still not available
         //
         // GET: /StoreManager/Create
 
@@ -66,7 +63,6 @@ namespace MusicStore.Controllers
             return View();
         }
 
-        //Bug: SelectList not available
         // POST: /StoreManager/Create
         [HttpPost]
         public IActionResult Create(Album album)
