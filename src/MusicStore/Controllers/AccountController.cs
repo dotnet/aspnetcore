@@ -9,8 +9,7 @@ using System.Threading.Tasks;
 
 namespace MusicStore.Controllers
 {
-    //https://github.com/aspnet/WebFx/issues/309
-    //[Authorize]
+    [Authorize]
     public class AccountController : Controller
     {
         public UserManager<ApplicationUser> UserManager
