@@ -42,24 +42,43 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
             else
             {
-                // Sort modelStates to respect the ordering in the metadata.                 
-                // ModelState doesn't refer to ModelMetadata, but we can correlate via the property name.
-                var ordering = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-
                 var metadata = viewData.ModelMetadata;
                 if (metadata != null)
                 {
-                    foreach (var data in metadata.Properties)
-                    {
-                        ordering[data.PropertyName] = data.Order;
-                    }
+                    var orderer = new ErrorsOrderer(metadata);
 
                     return viewData.ModelState
-                                   .OrderBy(data => ordering[data.Key])
+                                   .OrderBy(data => orderer.GetOrder(data.Key))
                                    .Select(ms => ms.Value);
                 }
 
                 return viewData.ModelState.Values;
+            }
+        }
+
+        // Helper for sorting modelStates to respect the ordering in the metadata.
+        // ModelState doesn't refer to ModelMetadata, but we can correlate via the property name.
+        private class ErrorsOrderer
+        {
+            private Dictionary<string, int> _ordering = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+            public ErrorsOrderer([NotNull] ModelMetadata metadata)
+            {
+                foreach (var data in metadata.Properties)
+                {
+                    _ordering[data.PropertyName] = data.Order;
+                }
+            }
+
+            public int GetOrder(string key)
+            {
+                int value;
+                if (_ordering.TryGetValue(key, out value))
+                {
+                    return value;
+                }
+            
+                return ModelMetadata.DefaultOrder;
             }
         }
     }
