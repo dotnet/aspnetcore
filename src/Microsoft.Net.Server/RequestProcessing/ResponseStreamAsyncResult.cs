@@ -119,9 +119,6 @@ namespace Microsoft.Net.Server
 #else
             _fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, bufferSize /*, useAsync: true*/); // Extremely expensive.
 #endif
-#if !NET45
-            throw new NotImplementedException();
-#else
             long length = _fileStream.Length; // Expensive
             if (offset < 0 || offset > length)
             {
@@ -189,7 +186,6 @@ namespace Microsoft.Net.Server
                     _dataChunks[2].fromMemory.pBuffer = Marshal.UnsafeAddrOfPinnedArrayElement(CRLF, 0);
                 }
             }
-#endif
         }
 
         internal ResponseStream ResponseStream
