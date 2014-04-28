@@ -14,10 +14,11 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
     public class RoslynCompilationService : ICompilationService
     {
+        private static readonly ConcurrentDictionary<string, MetadataReference> _metadataFileCache = new ConcurrentDictionary<string, MetadataReference>(StringComparer.OrdinalIgnoreCase);
+        
         private readonly ILibraryManager _libraryManager;
         private readonly IApplicationEnvironment _environment;
         private readonly IAssemblyLoaderEngine _loader;
-        private static readonly ConcurrentDictionary<string, MetadataReference> _metadataFileCache = new ConcurrentDictionary<string, MetadataReference>(StringComparer.OrdinalIgnoreCase);
 
         public RoslynCompilationService(IApplicationEnvironment environment,
                                         IAssemblyLoaderEngine loaderEngine,
