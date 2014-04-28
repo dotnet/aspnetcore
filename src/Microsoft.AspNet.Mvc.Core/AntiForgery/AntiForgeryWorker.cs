@@ -115,7 +115,7 @@ namespace Microsoft.AspNet.Mvc
                 // Adding X-Frame-Options header to prevent ClickJacking. See
                 // http://tools.ietf.org/html/draft-ietf-websec-x-frame-options-10
                 // for more information.
-                httpContext.Response.Headers.Add("X-Frame-Options", new[] { "SAMEORIGIN" });
+                httpContext.Response.Headers.Set("X-Frame-Options", "SAMEORIGIN");
             }
 
             // <input type="hidden" name="__AntiForgeryToken" value="..." />
