@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Net.Runtime;
 
@@ -15,6 +17,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         private readonly ILibraryManager _libraryManager;
         private readonly IApplicationEnvironment _environment;
         private readonly IAssemblyLoaderEngine _loader;
+        private static readonly ConcurrentDictionary<string, MetadataReference> _metadataFileCache = new ConcurrentDictionary<string, MetadataReference>(StringComparer.OrdinalIgnoreCase);
 
         public RoslynCompilationService(IApplicationEnvironment environment,
                                         IAssemblyLoaderEngine loaderEngine,
@@ -43,7 +46,16 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             {
                 using (var pdb = new MemoryStream())
                 {
-                    var result = compilation.Emit(ms, pdbStream: pdb);
+                    EmitResult result = null;
+
+                    if (PlatformHelper.IsMono)
+                    {
+                        result = compilation.Emit(ms, pdbStream: null);
+                    }
+                    else 
+                    {
+                        result = compilation.Emit(ms, pdbStream: pdb);
+                    }
 
                     if (!result.Success)
                     {
@@ -54,8 +66,18 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                         return CompilationResult.Failed(content, messages);
                     }
 
-                    var type = _loader.LoadBytes(ms.ToArray(), pdb.ToArray())
-                                       .GetExportedTypes()
+                    Assembly assembly = null;
+
+                    if (PlatformHelper.IsMono)
+                    {
+                       assembly = _loader.LoadBytes(ms.ToArray(), pdbBytes: null);
+                    }
+                    else
+                    {
+                        assembly = _loader.LoadBytes(ms.ToArray(), pdb.ToArray());
+                    }
+
+                    var type = assembly.GetExportedTypes()
                                        .First();
 
                     return CompilationResult.Successful(String.Empty, type);
@@ -93,16 +115,15 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 
         private MetadataReference CreateMetadataFileReference(string path)
         {
-#if NET45
-            return new MetadataFileReference(path);
-#else
-            // TODO: What about access to the file system? We need to be able to 
-            // read files from anywhere on disk, not just under the web root
-            using (var stream = File.OpenRead(path))
+            return _metadataFileCache.GetOrAdd(path, _ => 
             {
-                return new MetadataImageReference(stream);
-            }
-#endif
+                // TODO: What about access to the file system? We need to be able to 
+                // read files from anywhere on disk, not just under the web root
+                using (var stream = File.OpenRead(path))
+                {
+                    return new MetadataImageReference(stream);
+                }
+            });
         }
 
         private CompilationMessage GetCompilationMessage(DiagnosticFormatter formatter, Diagnostic diagnostic)
