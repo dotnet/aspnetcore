@@ -11,7 +11,7 @@ using Microsoft.Net.Server;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
-    internal class FeatureContext : IHttpRequestInformation, IHttpConnection, IHttpResponseInformation, IHttpSendFile, IHttpTransportLayerSecurity
+    internal class FeatureContext : IHttpRequestInformation, IHttpConnection, IHttpResponseInformation, IHttpSendFile, IHttpTransportLayerSecurity, IHttpRequestLifetime
     {
         private RequestContext _requestContext;
         private FeatureCollection _features;
@@ -66,6 +66,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }
             _features.Add(typeof(IHttpResponseInformation), this);
             _features.Add(typeof(IHttpSendFile), this);
+            _features.Add(typeof(IHttpRequestLifetime), this);
 
             // TODO: 
             // _environment.CallCancelled = _cts.Token;
@@ -333,6 +334,16 @@ namespace Microsoft.AspNet.Server.WebListener
         Task IHttpSendFile.SendFileAsync(string path, long offset, long? length, CancellationToken cancellation)
         {
             return Response.SendFileAsync(path, offset, length, cancellation);
+        }
+
+        public CancellationToken OnRequestAborted
+        {
+            get { return _requestContext.DisconnectToken; }
+        }
+
+        public void Abort()
+        {
+            _requestContext.Abort();
         }
     }
 }

@@ -147,7 +147,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 Assert.True(Task.WaitAll(requestTasks.ToArray(), TimeSpan.FromSeconds(2)), "Timed out");
             }
         }
-        /* TODO:
+
         [Fact]
         public async Task Server_ClientDisconnects_CallCancelled()
         {
@@ -158,7 +158,8 @@ namespace Microsoft.AspNet.Server.WebListener
 
             using (Utilities.CreateHttpServer(env =>
             {
-                CancellationToken ct = env.Get<CancellationToken>("owin.CallCancelled");
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                CancellationToken ct = httpContext.OnRequestAborted;
                 Assert.True(ct.CanBeCanceled, "CanBeCanceled");
                 Assert.False(ct.IsCancellationRequested, "IsCancellationRequested");
                 ct.Register(() => canceled.Set());
@@ -180,7 +181,36 @@ namespace Microsoft.AspNet.Server.WebListener
                 Assert.True(canceled.WaitOne(interval), "canceled");
             }
         }
-        */
+
+        [Fact]
+        public async Task Server_Abort_CallCancelled()
+        {
+            TimeSpan interval = TimeSpan.FromSeconds(100);
+            ManualResetEvent received = new ManualResetEvent(false);
+            ManualResetEvent aborted = new ManualResetEvent(false);
+            ManualResetEvent canceled = new ManualResetEvent(false);
+
+            using (Utilities.CreateHttpServer(env =>
+            {
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                CancellationToken ct = httpContext.OnRequestAborted;
+                Assert.True(ct.CanBeCanceled, "CanBeCanceled");
+                Assert.False(ct.IsCancellationRequested, "IsCancellationRequested");
+                ct.Register(() => canceled.Set());
+                received.Set();
+                httpContext.Abort();
+                Assert.True(canceled.WaitOne(interval), "Aborted");
+                Assert.True(ct.IsCancellationRequested, "IsCancellationRequested");
+                return Task.FromResult(0);
+            }))
+            {
+                using (Socket socket = await SendHungRequestAsync("GET", Address))
+                {
+                    Assert.True(received.WaitOne(interval), "Receive Timeout");
+                    Assert.Throws<SocketException>(() => socket.Receive(new byte[10]));
+                }
+            }
+        }
 
         [Fact]
         public async Task Server_SetQueueLimit_Success()

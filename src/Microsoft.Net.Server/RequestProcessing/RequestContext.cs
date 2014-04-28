@@ -25,7 +25,7 @@ namespace Microsoft.Net.Server
         private NativeRequestContext _memoryBlob;
         private OpaqueFunc _opaqueCallback;
         private bool _disposed;
-        private CancellationTokenRegistration? _disconnectRegistration;
+        private CancellationTokenSource _requestAbortSource;
         private CancellationToken? _disconnectToken;
 
         internal RequestContext(WebListener httpListener, NativeRequestContext memoryBlob)
@@ -63,22 +63,24 @@ namespace Microsoft.Net.Server
         {
             get
             {
+                // Create a new token per request, but link it to a single connection token.
+                // We need to be able to dispose of the registrations each request to prevent leaks.
                 if (!_disconnectToken.HasValue)
                 {
-                    _disconnectToken = _server.RegisterForDisconnectNotification(this);
-                    if (_disconnectToken.Value.CanBeCanceled)
+                    var connectionDisconnectToken = _server.RegisterForDisconnectNotification(this);
+
+                    if (connectionDisconnectToken.CanBeCanceled)
                     {
-                        _disconnectRegistration = _disconnectToken.Value.Register(Cancel, this);
+                        _requestAbortSource = CancellationTokenSource.CreateLinkedTokenSource(connectionDisconnectToken);
+                        _disconnectToken = _requestAbortSource.Token;
+                    }
+                    else
+                    {
+                        _disconnectToken = CancellationToken.None;
                     }
                 }
                 return _disconnectToken.Value;
             }
-        }
-
-        private static void Cancel(object obj)
-        {
-            RequestContext context = (RequestContext)obj;
-            context.Abort();
         }
 
         internal WebListener Server
@@ -138,9 +140,9 @@ namespace Microsoft.Net.Server
             // TODO: Verbose log
             try
             {
-                if (_disconnectRegistration.HasValue)
+                if (_requestAbortSource != null)
                 {
-                    _disconnectRegistration.Value.Dispose();
+                    _requestAbortSource.Dispose();
                 }
                 _response.Dispose();
             }
@@ -155,9 +157,17 @@ namespace Microsoft.Net.Server
             // May be called from Dispose() code path, don't check _disposed.
             // TODO: Verbose log
             _disposed = true;
-            if (_disconnectRegistration.HasValue)
+            if (_requestAbortSource != null)
             {
-                _disconnectRegistration.Value.Dispose();
+                try
+                {
+                    _requestAbortSource.Cancel();
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.LogException(Logger, "Abort", ex);
+                }
+                _requestAbortSource.Dispose();
             }
             ForceCancelRequest(RequestQueueHandle, _request.RequestId);
             _request.Dispose();
