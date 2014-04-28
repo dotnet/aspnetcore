@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Mvc
                     user.Identity == null || 
                     !user.Identity.IsAuthenticated;
 
-                    if(userIsAnonymous)
+                    if(userIsAnonymous && !HasAllowAnonymous(context))
                     {
                         base.Fail(context);
                     }

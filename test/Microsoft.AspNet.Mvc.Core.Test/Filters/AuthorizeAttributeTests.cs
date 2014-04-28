@@ -46,6 +46,26 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         }
 
         [Fact]
+        public async Task Invoke_EmptyClaimsWithAllowAnonymousAttributeShouldNotRejectAnonymousUser()
+        {
+            // Arrange
+            var authorizationService = new DefaultAuthorizationService(Enumerable.Empty<IAuthorizationPolicy>());
+            var authorizeAttribute = new AuthorizeAttribute();
+            var authorizationContext = GetAuthorizationContext(services => 
+                services.AddInstance<IAuthorizationService>(authorizationService),
+                anonymous: true
+                );
+
+            authorizationContext.Filters.Add(new AllowAnonymousAttribute());
+
+            // Act
+            await authorizeAttribute.OnAuthorizationAsync(authorizationContext);
+
+            // Assert
+            Assert.Null(authorizationContext.Result);
+        }
+
+        [Fact]
         public async Task Invoke_EmptyClaimsShouldAuthorizeAuthenticatedUser()
         {
             // Arrange
