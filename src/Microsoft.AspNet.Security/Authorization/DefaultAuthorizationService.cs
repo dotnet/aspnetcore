@@ -15,7 +15,14 @@ namespace Microsoft.AspNet.Security.Authorization
 
         public DefaultAuthorizationService(IEnumerable<IAuthorizationPolicy> policies)
         {
-            _policies = policies.OrderBy(x => x.Order).ToArray();
+            if (policies == null)
+            {
+                _policies = Enumerable.Empty<IAuthorizationPolicy>().ToArray();
+            } 
+            else 
+            {
+                _policies = policies.OrderBy(x => x.Order).ToArray();
+            }
         }
 
         public async Task<bool> AuthorizeAsync(IEnumerable<Claim> claims, ClaimsPrincipal user)
