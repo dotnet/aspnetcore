@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
     public class AuthorizeAttributeTests : AuthorizeAttributeTestsBase
     {
         [Fact]
-        public async void Invoke_ValidClaimShouldNotFail()
+        public async Task Invoke_ValidClaimShouldNotFail()
         {
             // Arrange
             var authorizationService = new DefaultAuthorizationService(Enumerable.Empty<IAuthorizationPolicy>());
@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         }
 
         [Fact]
-        public async void Invoke_EmptyClaimsShouldRejectAnonymousUser()
+        public async Task Invoke_EmptyClaimsShouldRejectAnonymousUser()
         {
             // Arrange
             var authorizationService = new DefaultAuthorizationService(Enumerable.Empty<IAuthorizationPolicy>());
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         }
 
         [Fact]
-        public async void Invoke_EmptyClaimsShouldAuthorizeAuthenticatedUser()
+        public async Task Invoke_EmptyClaimsShouldAuthorizeAuthenticatedUser()
         {
             // Arrange
             var authorizationService = new DefaultAuthorizationService(Enumerable.Empty<IAuthorizationPolicy>());
@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         }
 
         [Fact]
-        public async void Invoke_SingleValidClaimShouldSucceed()
+        public async Task Invoke_SingleValidClaimShouldSucceed()
         {
             // Arrange
             var authorizationService = new DefaultAuthorizationService(Enumerable.Empty<IAuthorizationPolicy>());
@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         }
 
         [Fact]
-        public async void Invoke_InvalidClaimShouldFail()
+        public async Task Invoke_InvalidClaimShouldFail()
         {
             // Arrange
             var authorizationService = new DefaultAuthorizationService(Enumerable.Empty<IAuthorizationPolicy>());
@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         }
 
         [Fact]
-        public async void Invoke_FailedContextShouldNotCheckPermission()
+        public async Task Invoke_FailedContextShouldNotCheckPermission()
         {
             // Arrange
             bool authorizationServiceIsCalled = false;
@@ -122,6 +122,23 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             // Assert
             Assert.False(authorizationServiceIsCalled);
+        }
+
+        [Fact]
+        public async Task Invoke_NullPoliciesShouldNotFail()
+        {
+            // Arrange
+            var authorizationService = new DefaultAuthorizationService(policies: null);
+            var authorizeAttribute = new AuthorizeAttribute("Permission", "CanViewPage");
+            var authorizationContext = GetAuthorizationContext(services => 
+                services.AddInstance<IAuthorizationService>(authorizationService)
+                );
+
+            // Act
+            await authorizeAttribute.OnAuthorizationAsync(authorizationContext);
+
+            // Assert
+            Assert.Null(authorizationContext.Result);
         }
     }
 }
