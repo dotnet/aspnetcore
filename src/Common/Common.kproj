@@ -21,6 +21,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="NotNullArgument.cs" />
+    <Compile Include="PlatformHelper.cs" />
     <Compile Include="TypeExtensions.cs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />
