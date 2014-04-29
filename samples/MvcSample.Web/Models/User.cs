@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace MvcSample.Web.Models
 {
+    [DisplayColumn("Name")]
     public class User
     {
         public User()

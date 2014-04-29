@@ -182,6 +182,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private class Class1
         {
             public string Prop1 { get; set; }
+            public override string ToString()
+            {
+                return "Class1";
+            }
         }
 
         private class Class2
@@ -220,6 +224,69 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Equal("Object", result);
         }
 #endif
+        // SimpleDisplayText
+
+        public static IEnumerable<object[]> SimpleDisplayTextData
+        {
+            get
+            {
+                yield return new object[]
+                        {
+                            new Func<object>(() => new ComplexClass()
+                                                {
+                                                    Prop1 = new Class1 { Prop1 = "Hello" }
+                                                }),
+                            typeof(ComplexClass),
+                            "Class1"
+                        };
+                yield return new object[]
+                    {
+                        new Func<object>(() => new Class1()),
+                        typeof(Class1),
+                        "Class1"
+                    };
+                yield return new object[]
+                    {
+                        new Func<object>(() => new ClassWithNoProperties()),
+                        typeof(ClassWithNoProperties),
+                        string.Empty
+                    };
+                yield return new object[]
+                    {
+                        null,
+                        typeof(object),
+                        null
+                    };
+            }
+        }
+
+        [Theory]
+        [MemberData("SimpleDisplayTextData")]
+        public void TestSimpleDisplayText(Func<object> modelAccessor, Type modelType, string expectedResult)
+        {
+            // Arrange
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = new ModelMetadata(provider, null, modelAccessor, modelType, null);
+
+            // Act
+            var result = metadata.SimpleDisplayText;
+
+            // Assert
+            Assert.Equal(expectedResult, result);
+        }
+
+        private class ClassWithNoProperties
+        {
+            public override string ToString()
+            {
+                return null;
+            }
+        }
+
+        private class ComplexClass
+        {
+            public Class1 Prop1 { get; set; }
+        }
 
         // Helpers
 

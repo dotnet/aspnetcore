@@ -378,6 +378,44 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return string.Format(CultureInfo.CurrentCulture, GetString("ValueProviderResult_NoConverterExists"), p0, p1);
         }
 
+        /// <summary>
+        /// {0} has a DisplayColumn attribute for {1}, but property {1} does not exist..
+        /// </summary>
+        internal static string DataAnnotationsModelMetadataProvider_UnknownProperty
+        {
+            get
+            {
+                return GetString("DataAnnotationsModelMetadataProvider_UnknownProperty");
+            }
+        }
+
+        /// <summary>
+        /// {0} has a DisplayColumn attribute for {1}, but property {1} does not exist..
+        /// </summary>
+        internal static string FormatDataAnnotationsModelMetadataProvider_UnknownProperty(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("DataAnnotationsModelMetadataProvider_UnknownProperty"), p0, p1);
+        }
+
+        /// <summary>
+        /// {0} has a DisplayColumn attribute for {1}, but property {1} does not have a public 'get' method..
+        /// </summary>
+        internal static string DataAnnotationsModelMetadataProvider_UnreadableProperty
+        {
+            get
+            {
+                return GetString("DataAnnotationsModelMetadataProvider_UnreadableProperty");
+            }
+        }
+
+        /// <summary>
+        /// {0} has a DisplayColumn attribute for {1}, but property {1} does not have a public 'get' method..
+        /// </summary>
+        internal static string FormatDataAnnotationsModelMetadataProvider_UnreadableProperty(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("DataAnnotationsModelMetadataProvider_UnreadableProperty"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

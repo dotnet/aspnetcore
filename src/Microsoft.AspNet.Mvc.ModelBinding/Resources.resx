@@ -186,4 +186,10 @@
   <data name="ValueProviderResult_NoConverterExists" xml:space="preserve">
     <value>The parameter conversion from type '{0}' to type '{1}' failed because no type converter can convert between these types.</value>
   </data>
+  <data name="DataAnnotationsModelMetadataProvider_UnknownProperty" xml:space="preserve">
+    <value>{0} has a DisplayColumn attribute for {1}, but property {1} does not exist.</value>
+  </data>
+  <data name="DataAnnotationsModelMetadataProvider_UnreadableProperty" xml:space="preserve">
+    <value>{0} has a DisplayColumn attribute for {1}, but property {1} does not have a public 'get' method.</value>
+  </data>
 </root>
