@@ -19,7 +19,6 @@ using Microsoft.Data.SqlServer;
 using Microsoft.Net.Runtime;
 using MusicStore.Logging;
 using MusicStore.Models;
-using MusicStore.Web.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
