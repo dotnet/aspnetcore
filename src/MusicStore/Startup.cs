@@ -83,10 +83,6 @@ public class Startup
             routes.MapRoute(
                 "{controller}/{action}",
                 new { controller = "Home", action = "Index" });
-
-            routes.MapRoute(
-                "{controller}",
-                new { controller = "Home" });
         });
 
         SampleData.InitializeMusicStoreDatabaseAsync(app.ApplicationServices).Wait();

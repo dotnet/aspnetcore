@@ -55,7 +55,8 @@ namespace MusicStore.Controllers
 
         //
         // GET: /StoreManager/Create
-
+        //Bug: https://github.com/aspnet/WebFx/issues/339
+        [HttpGet]
         public IActionResult Create()
         {
             ViewBag.GenreId = new SelectList(db.Genres, "GenreId", "Name");
@@ -81,7 +82,8 @@ namespace MusicStore.Controllers
 
         //
         // GET: /StoreManager/Edit/5
-
+        //Bug: https://github.com/aspnet/WebFx/issues/339
+        [HttpGet]
         public IActionResult Edit(int id = 0)
         {
             Album album = db.Albums.Single(a => a.AlbumId == id);
