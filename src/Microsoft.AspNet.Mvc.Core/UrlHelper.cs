@@ -1,12 +1,10 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.Globalization;
 using System.Linq;
-using System.Linq.Expressions;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.DependencyInjection;
-using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Routing;
 
 namespace Microsoft.AspNet.Mvc
@@ -69,21 +67,20 @@ namespace Microsoft.AspNet.Mvc
 
         public bool IsLocalUrl(string url)
         {
-            return 
+            return
                 !string.IsNullOrEmpty(url) &&
 
                 // Allows "/" or "/foo" but not "//" or "/\".
                 ((url[0] == '/' && (url.Length == 1 || (url[1] != '/' && url[1] != '\\'))) ||
 
                 // Allows "~/" or "~/foo".
-                (url.Length > 1 && url[0] == '~' && url[1] == '/')); 
+                (url.Length > 1 && url[0] == '~' && url[1] == '/'));
         }
 
-        public string RouteUrl(object values, string protocol, string host, string fragment)
+        public string RouteUrl(string routeName, object values, string protocol, string host, string fragment)
         {
             var valuesDictionary = TypeHelper.ObjectToDictionary(values);
-
-            var path = GeneratePathFromRoute(valuesDictionary);
+            var path = GeneratePathFromRoute(routeName, valuesDictionary);
             if (path == null)
             {
                 return null;
@@ -94,7 +91,12 @@ namespace Microsoft.AspNet.Mvc
 
         private string GeneratePathFromRoute(IDictionary<string, object> values)
         {
-            var context = new VirtualPathContext(_httpContext, _ambientValues, values);
+            return GeneratePathFromRoute(routeName: null, values: values);
+        }
+
+        private string GeneratePathFromRoute(string routeName, IDictionary<string, object> values)
+        {
+            var context = new VirtualPathContext(_httpContext, _ambientValues, values, routeName);
             var path = _router.GetVirtualPath(context);
             if (path == null)
             {
@@ -123,7 +125,7 @@ namespace Microsoft.AspNet.Mvc
             return GenerateClientUrl(_httpContext.Request.PathBase, contentPath);
         }
 
-        private static string GenerateClientUrl([NotNull] PathString applicationPath, 
+        private static string GenerateClientUrl([NotNull] PathString applicationPath,
                                                 [NotNull] string path)
         {
             if (path.StartsWith("~/", StringComparison.Ordinal))
@@ -132,12 +134,11 @@ namespace Microsoft.AspNet.Mvc
                 return applicationPath.Add(segment).Value;
             }
             return path;
-        } 
+        }
 
         private string GenerateUrl(string protocol, string host, string path, string fragment)
         {
             // We should have a robust and centrallized version of this code. See HttpAbstractions#28
-
             Contract.Assert(path != null);
 
             var url = path;

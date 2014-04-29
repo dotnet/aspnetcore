@@ -12,8 +12,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         [Theory]
         [InlineData("", "/Home/About", "/Home/About")]
         [InlineData("/myapproot", "/test", "/test")]
-        public void Content_ReturnsContentPath_WhenItDoesNotStartWithToken(string appRoot, 
-                                                                           string contentPath, 
+        public void Content_ReturnsContentPath_WhenItDoesNotStartWithToken(string appRoot,
+                                                                           string contentPath,
                                                                            string expectedPath)
         {
             // Arrange
@@ -36,8 +36,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         [InlineData("/myapproot", "~/", "/myapproot/")]
         [InlineData("", "~/Home/About", "/Home/About")]
         [InlineData("/myapproot", "~/", "/myapproot/")]
-        public void Content_ReturnsAppRelativePath_WhenItStartsWithToken(string appRoot, 
-                                                                         string contentPath, 
+        public void Content_ReturnsAppRelativePath_WhenItStartsWithToken(string appRoot,
+                                                                         string contentPath,
                                                                          string expectedPath)
         {
             // Arrange
@@ -247,22 +247,223 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             Assert.False(result);
         }
 
+        [Fact]
+        public void RouteUrlWithDictionary()
+        {
+            // Arrange
+            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+
+            // Act
+            var url = urlHelper.RouteUrl(values: new RouteValueDictionary(
+                                                                    new
+                                                                    {
+                                                                        Action = "newaction",
+                                                                        Controller = "home2",
+                                                                        id = "someid"
+                                                                    }));
+
+            // Assert
+            Assert.Equal("/app/home2/newaction/someid", url);
+        }
+
+        [Fact]
+        public void RouteUrlWithEmptyHostName()
+        {
+            // Arrange
+            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+
+            // Act
+            var url = urlHelper.RouteUrl(routeName: "namedroute",
+                                         values: new RouteValueDictionary(
+                                                                    new
+                                                                    {
+                                                                        Action = "newaction",
+                                                                        Controller = "home2",
+                                                                        id = "someid"
+                                                                    }),
+                                         protocol: "http",
+                                         host: string.Empty);
+
+            // Assert
+            Assert.Equal("http://localhost/app/named/home2/newaction/someid", url);
+        }
+
+        [Fact]
+        public void RouteUrlWithEmptyProtocol()
+        {
+            // Arrange
+            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+
+            // Act
+            var url = urlHelper.RouteUrl(routeName: "namedroute",
+                                         values: new RouteValueDictionary(
+                                                                    new
+                                                                    {
+                                                                        Action = "newaction",
+                                                                        Controller = "home2",
+                                                                        id = "someid"
+                                                                    }),
+                                         protocol: string.Empty,
+                                         host: "foo.bar.com");
+
+            // Assert
+            Assert.Equal("http://foo.bar.com/app/named/home2/newaction/someid", url);
+        }
+
+        [Fact]
+        public void RouteUrlWithNullProtocol()
+        {
+            // Arrange
+            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+
+            // Act
+            var url = urlHelper.RouteUrl(routeName: "namedroute",
+                                         values: new RouteValueDictionary(
+                                                                    new
+                                                                    {
+                                                                        Action = "newaction",
+                                                                        Controller = "home2",
+                                                                        id = "someid"
+                                                                    }),
+                                         protocol: null,
+                                         host: "foo.bar.com");
+
+            // Assert
+            Assert.Equal("http://foo.bar.com/app/named/home2/newaction/someid", url);
+        }
+
+        [Fact]
+        public void RouteUrlWithNullProtocolAndNullHostName()
+        {
+            // Arrange
+            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+
+            // Act
+            var url = urlHelper.RouteUrl(routeName: "namedroute",
+                                         values: new RouteValueDictionary(
+                                                                    new
+                                                                    {
+                                                                        Action = "newaction",
+                                                                        Controller = "home2",
+                                                                        id = "someid"
+                                                                    }),
+                                         protocol: null,
+                                         host: null);
+
+            // Assert
+            Assert.Equal("/app/named/home2/newaction/someid", url);
+        }
+
+        [Fact]
+        public void RouteUrlWithObjectProperties()
+        {
+            // Arrange
+            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+
+            // Act
+            var url = urlHelper.RouteUrl(new { Action = "newaction", Controller = "home2", id = "someid" });
+
+            // Assert
+            Assert.Equal("/app/home2/newaction/someid", url);
+        }
+
+        [Fact]
+        public void RouteUrlWithProtocol()
+        {
+            // Arrange
+            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+
+            // Act
+            var url = urlHelper.RouteUrl(routeName: "namedroute",
+                                         values: new
+                                                    {
+                                                        Action = "newaction",
+                                                        Controller = "home2",
+                                                        id = "someid"
+                                                    },
+                                         protocol: "https");
+
+            // Assert
+            Assert.Equal("https://localhost/app/named/home2/newaction/someid", url);
+        }
+
+        [Fact]
+        public void RouteUrlWithRouteNameAndDefaults()
+        {
+            // Arrange
+            var routeCollection = GetRouteCollection("MyRouteName", "any/url");
+            var urlHelper = CreateUrlHelper("/app", routeCollection);
+
+            // Act
+            var url = urlHelper.RouteUrl("MyRouteName");
+
+            // Assert
+            Assert.Equal("/app/any/url", url);
+        }
+
+        [Fact]
+        public void RouteUrlWithRouteNameAndDictionary()
+        {
+            // Arrange
+            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+
+            // Act
+            var url = urlHelper.RouteUrl(routeName: "namedroute",
+                                         values: new RouteValueDictionary(
+                                                            new
+                                                            {
+                                                                Action = "newaction",
+                                                                Controller = "home2",
+                                                                id = "someid"
+                                                            }));
+
+            // Assert
+            Assert.Equal("/app/named/home2/newaction/someid", url);
+        }
+
+        [Fact]
+        public void RouteUrlWithRouteNameAndObjectProperties()
+        {
+            // Arrange
+            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+
+            // Act
+            var url = urlHelper.RouteUrl(routeName: "namedroute",
+                                         values: new
+                                            {
+                                                Action = "newaction",
+                                                Controller = "home2",
+                                                id = "someid"
+                                            });
+
+            // Assert
+            Assert.Equal("/app/named/home2/newaction/someid", url);
+        }
+
         private static HttpContext CreateHttpContext(string appRoot)
         {
             var appRootPath = new PathString(appRoot);
             var request = new Mock<HttpRequest>();
             request.SetupGet(r => r.PathBase)
                    .Returns(appRootPath);
+            request.SetupGet(r => r.Host)
+                   .Returns(new HostString("localhost"));
             var context = new Mock<HttpContext>();
             context.SetupGet(c => c.Request)
                    .Returns(request.Object);
+
             return context.Object;
         }
 
         private static IContextAccessor<ActionContext> CreateActionContext(HttpContext context)
         {
+            return CreateActionContext(context, (new Mock<IRouter>()).Object);
+        }
+
+        private static IContextAccessor<ActionContext> CreateActionContext(HttpContext context, IRouter router)
+        {
             var actionContext = new ActionContext(context,
-                                                  Mock.Of<IRouter>(),
+                                                  router,
                                                   new Dictionary<string, object>(),
                                                   new ActionDescriptor());
             var contextAccessor = new Mock<IContextAccessor<ActionContext>>();
@@ -295,6 +496,53 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             var actionSelector = new Mock<IActionSelector>(MockBehavior.Strict);
             return new UrlHelper(contextAccessor, actionSelector.Object);
+        }
+
+        private static UrlHelper CreateUrlHelper(string appBase, IRouter router)
+        {
+            var context = CreateHttpContext(appBase);
+            var actionContext = CreateActionContext(context, router);
+
+            var actionSelector = new Mock<IActionSelector>(MockBehavior.Strict);
+            return new UrlHelper(actionContext, actionSelector.Object);
+        }
+
+        private static UrlHelper CreateUrlHelperWithRouteCollection(string appPrefix)
+        {
+            var routeCollection = GetRouteCollection();
+            return CreateUrlHelper("/app", routeCollection);
+        }
+
+        private static RouteCollection GetRouteCollection()
+        {
+            return GetRouteCollection("mockRoute", "/mockTemplate");
+        }
+
+        private static RouteCollection GetRouteCollection(string mockRouteName, string mockTemplateValue)
+        {
+            var rt = new RouteCollection();
+            var target = new Mock<IRouter>(MockBehavior.Strict);
+            target
+                .Setup(e => e.GetVirtualPath(It.IsAny<VirtualPathContext>()))
+                .Callback<VirtualPathContext>(c => c.IsBound = true)
+                .Returns<VirtualPathContext>(rc => null);
+            rt.DefaultHandler = target.Object;
+
+            rt.MapRoute(string.Empty,
+                        "{controller}/{action}/{id}",
+                        new RouteValueDictionary(new { id = "defaultid" }));
+            rt.MapRoute("namedroute",
+                        "named/{controller}/{action}/{id}",
+                        new RouteValueDictionary(new { id = "defaultid" }));
+
+            var mockHttpRoute = new Mock<IRouter>();
+            mockHttpRoute.Setup(mock =>
+                                    mock.GetVirtualPath(It.Is<VirtualPathContext>(c => string.Equals(c.RouteName,
+                                                                                                  mockRouteName)
+                                                                                  )))
+                         .Returns(mockTemplateValue);
+            rt.Add(mockHttpRoute.Object);
+            return rt;
         }
     }
 }

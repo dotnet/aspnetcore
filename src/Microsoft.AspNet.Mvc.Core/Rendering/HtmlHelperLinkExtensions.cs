@@ -107,5 +107,104 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 routeValues: routeValues,
                 htmlAttributes: htmlAttributes);
         }
+
+        public static HtmlString RouteLink(
+            [NotNull] this IHtmlHelper htmlHelper,
+            [NotNull] string linkText,
+            object routeValues)
+        {
+            return htmlHelper.RouteLink(
+                                linkText,
+                                routeName: null,
+                                protocol: null,
+                                hostName: null,
+                                fragment: null,
+                                routeValues: routeValues,
+                                htmlAttributes: null);
+        }
+
+        public static HtmlString RouteLink(
+            [NotNull] this IHtmlHelper htmlHelper,
+            [NotNull] string linkText,
+            string routeName)
+        {
+            return htmlHelper.RouteLink(
+                                linkText,
+                                routeName,
+                                protocol: null,
+                                hostName: null,
+                                fragment: null,
+                                routeValues: null,
+                                htmlAttributes: null);
+        }
+
+        public static HtmlString RouteLink(
+            [NotNull] this IHtmlHelper htmlHelper,
+            [NotNull] string linkText,
+            string routeName,
+            object routeValues)
+        {
+            return htmlHelper.RouteLink(
+                                linkText,
+                                routeName,
+                                protocol: null,
+                                hostName: null,
+                                fragment: null,
+                                routeValues: routeValues,
+                                htmlAttributes: null);
+        }
+
+        public static HtmlString RouteLink(
+            [NotNull] this IHtmlHelper htmlHelper,
+            [NotNull] string linkText,
+            object routeValues,
+            object htmlAttributes)
+        {
+            return htmlHelper.RouteLink(
+                                linkText,
+                                routeName: null,
+                                protocol: null,
+                                hostName: null,
+                                fragment: null,
+                                routeValues: routeValues,
+                                htmlAttributes: htmlAttributes);
+        }
+
+        public static HtmlString RouteLink(
+            [NotNull] this IHtmlHelper htmlHelper,
+            [NotNull] string linkText,
+            string routeName,
+            object routeValues,
+            object htmlAttributes)
+        {
+            return htmlHelper.RouteLink(
+                                 linkText,
+                                 routeName,
+                                 protocol: null,
+                                 hostName: null,
+                                 fragment: null,
+                                 routeValues: routeValues,
+                                 htmlAttributes: htmlAttributes);
+        }
+
+        public static HtmlString RouteLink(
+            [NotNull] this IHtmlHelper htmlHelper,
+            [NotNull] string linkText,
+            string routeName,
+            string protocol,
+            string hostName,
+            string fragment,
+            object routeValues,
+            object htmlAttributes)
+        {
+            return htmlHelper.RouteLink(
+                                 linkText,
+                                 routeName,
+                                 protocol,
+                                 hostName,
+                                 fragment,
+                                 routeValues,
+                                 htmlAttributes);
+        }
     }
 }

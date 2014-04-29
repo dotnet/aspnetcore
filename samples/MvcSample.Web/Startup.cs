@@ -27,7 +27,7 @@ namespace MvcSample.Web
                     new { controller = "Home", action = "Index" });
 
                 routes.MapRoute(
-                    "ControllerOnlyRoute",
+                    "controllerRoute",
                     "{controller}",
                     new { controller = "Home" });
             });

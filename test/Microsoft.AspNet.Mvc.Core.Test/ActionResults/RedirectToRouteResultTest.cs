@@ -26,7 +26,9 @@ namespace Microsoft.AspNet.Mvc.Core
                                                   new Dictionary<string, object>(),
                                                   new ActionDescriptor());
             IUrlHelper urlHelper = GetMockUrlHelper(expectedUrl);
-            RedirectToRouteResult result = new RedirectToRouteResult(urlHelper, TypeHelper.ObjectToDictionary(values));
+            RedirectToRouteResult result = new RedirectToRouteResult(urlHelper,
+                                                                     null,
+                                                                     TypeHelper.ObjectToDictionary(values));
 
             // Act
             await result.ExecuteResultAsync(actionContext);
@@ -50,7 +52,9 @@ namespace Microsoft.AspNet.Mvc.Core
                                                   new ActionDescriptor());
 
             IUrlHelper urlHelper = GetMockUrlHelper(returnValue: null);
-            RedirectToRouteResult result = new RedirectToRouteResult(urlHelper, new Dictionary<string, object>());
+            RedirectToRouteResult result = new RedirectToRouteResult(urlHelper, 
+                                                                     null,
+                                                                     new Dictionary<string, object>());
 
             // Act & Assert
             ExceptionAssert.ThrowsAsync<InvalidOperationException>(
@@ -81,7 +85,7 @@ namespace Microsoft.AspNet.Mvc.Core
         private static IUrlHelper GetMockUrlHelper(string returnValue)
         {
             var urlHelper = new Mock<IUrlHelper>();
-            urlHelper.Setup(o => o.RouteUrl(It.IsAny<object>(), It.IsAny<string>(),
+            urlHelper.Setup(o => o.RouteUrl(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<string>(),
                 It.IsAny<string>(), It.IsAny<string>())).Returns(returnValue);
             return urlHelper.Object;
         }

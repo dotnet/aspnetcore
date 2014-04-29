@@ -164,14 +164,34 @@ namespace Microsoft.AspNet.Mvc
                                                 TypeHelper.ObjectToDictionary(routeValues), permanent: true);
         }
 
+        public RedirectToRouteResult RedirectToRoute(string routeName)
+        {
+            return RedirectToRoute(routeName, routeValues: null);
+        }
+
         public RedirectToRouteResult RedirectToRoute(object routeValues)
         {
-            return new RedirectToRouteResult(Url, TypeHelper.ObjectToDictionary(routeValues));
+            return RedirectToRoute(routeName: null, routeValues: routeValues);
+        }
+
+        public RedirectToRouteResult RedirectToRoute(string routeName, object routeValues)
+        {
+            return new RedirectToRouteResult(Url, routeName, routeValues);
+        }
+
+        public RedirectToRouteResult RedirectToRoutePermanent(string routeName)
+        {
+            return RedirectToRoutePermanent(routeName, routeValues: null);
         }
 
         public RedirectToRouteResult RedirectToRoutePermanent(object routeValues)
         {
-            return new RedirectToRouteResult(Url, TypeHelper.ObjectToDictionary(routeValues), permanent: true);
+            return RedirectToRoutePermanent(routeName: null, routeValues: routeValues);
+        }
+
+        public RedirectToRouteResult RedirectToRoutePermanent(string routeName, object routeValues)
+        {
+            return new RedirectToRouteResult(Url, routeName, routeValues, permanent: true);
         }
     }
 }

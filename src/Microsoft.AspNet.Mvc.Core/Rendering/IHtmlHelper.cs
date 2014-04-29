@@ -359,6 +359,35 @@ namespace Microsoft.AspNet.Mvc.Rendering
         Task RenderPartialAsync([NotNull] string partialViewName, object model, ViewDataDictionary viewData);
 
         /// <summary>
+        /// Returns an anchor element (a element) that contains a URL path to the specified route.
+        /// </summary>
+        /// <param name="linkText">The inner text of the anchor element.</param>
+        /// <param name="routeName">The name of the route.</param>
+        /// <param name="protocol">The protocol for the URL, such as &quot;http&quot; or &quot;https&quot;.</param>
+        /// <param name="hostName">The host name for the URL.</param>
+        /// <param name="fragment">The URL fragment name (the anchor name).</param>
+        /// <param name="routeValues">
+        /// An object that contains the parameters for a route. The parameters are retrieved through reflection by
+        /// examining the properties of the object. This object is typically created using object initializer syntax.
+        /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the route parameters.
+        /// </param>
+        /// <param name="htmlAttributes">
+        /// An object that contains the HTML attributes to set for the element. Alternatively, an
+        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>
+        /// An anchor element (a element).
+        /// </returns>
+        HtmlString RouteLink(
+            [NotNull] string linkText,
+            string routeName,
+            string protocol,
+            string hostName,
+            string fragment,
+            object routeValues,
+            object htmlAttributes);
+
+        /// <summary>
         /// Render a textarea.
         /// </summary>
         /// <param name="name">
@@ -375,7 +404,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </param>
         /// <returns>New <see cref="HtmlString"/> containing the rendered HTML.</returns>
         HtmlString TextArea(string name, string value, int rows, int columns, object htmlAttributes);
-
+        
         /// <summary>
         /// Render an input element of type "text".
         /// </summary>

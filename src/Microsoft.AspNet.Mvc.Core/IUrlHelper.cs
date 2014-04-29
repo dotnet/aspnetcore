@@ -8,6 +8,6 @@
 
         bool IsLocalUrl(string url);
         
-        string RouteUrl(object values, string protocol, string host, string fragment);
+        string RouteUrl(string routeName, object values, string protocol, string host, string fragment);
     }
 }

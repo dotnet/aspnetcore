@@ -56,17 +56,31 @@
 
         public static string RouteUrl([NotNull] this IUrlHelper helper, object values)
         {
-            return helper.RouteUrl(values, protocol: null, host: null, fragment: null);
+            return helper.RouteUrl(routeName: null, values: values, protocol: null, host: null, fragment: null);
         }
 
-        public static string RouteUrl([NotNull] this IUrlHelper helper, object values, string protocol)
+        public static string RouteUrl([NotNull] this IUrlHelper helper, string routeName)
         {
-            return helper.RouteUrl(values, protocol, host: null, fragment: null);
+            return helper.RouteUrl(routeName, values: null, protocol: null, host: null, fragment: null);
         }
 
-        public static string RouteUrl([NotNull] this IUrlHelper helper, object values, string protocol, string host)
+        public static string RouteUrl([NotNull] this IUrlHelper helper, string routeName, object values)
         {
-            return helper.RouteUrl(values, protocol, host, fragment: null);
+            return helper.RouteUrl(routeName, values, protocol: null, host: null, fragment: null);
+        }
+
+        public static string RouteUrl([NotNull] this IUrlHelper helper, string routeName, object values, string protocol)
+        {
+            return helper.RouteUrl(routeName, values, protocol, host: null, fragment: null);
+        }
+
+        public static string RouteUrl([NotNull] this IUrlHelper helper,
+                                      string routeName,
+                                      object values,
+                                      string protocol,
+                                      string host)
+        {
+            return helper.RouteUrl(routeName, values, protocol, host, fragment: null);
         }
     }
 }

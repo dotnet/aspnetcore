@@ -417,6 +417,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
+        public HtmlString RouteLink(
+            [NotNull] string linkText,
+            string routeName,
+            string protocol,
+            string hostName,
+            string fragment,
+            object routeValues,
+            object htmlAttributes)
+        {
+            var url = _urlHelper.RouteUrl(routeName, routeValues, protocol, hostName, fragment);
+            return GenerateLink(linkText, url, HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes));
+        }
+        
+        /// <inheritdoc />
         public HtmlString ValidationMessage(string expression, string message, object htmlAttributes)
         {
             return GenerateValidationMessage(expression, message, htmlAttributes);
