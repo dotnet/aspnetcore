@@ -69,10 +69,15 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
             return GetMetadataFromProvider(modelAccessor, typeof(TValue), propertyName, containerType, metadataProvider);
         }
 
-        public static ModelMetadata FromStringExpression([NotNull] string expression,
+        public static ModelMetadata FromStringExpression(string expression,
                                                          [NotNull] ViewDataDictionary viewData,
                                                          IModelMetadataProvider metadataProvider)
         {
+            if(string.IsNullOrEmpty(expression))
+            {
+                return viewData.ModelMetadata;
+            }
+
             if (expression.Length == 0)
             {
                 // Empty string really means "model metadata for the current model"

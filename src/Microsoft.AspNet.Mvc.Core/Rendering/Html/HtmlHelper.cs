@@ -254,13 +254,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <inheritdoc />
         public HtmlString DisplayName(string expression)
         {
-            var modelMetadata = string.IsNullOrEmpty(expression) ?
-                                           ViewData.ModelMetadata :
-                                           ExpressionMetadataProvider.FromStringExpression(
-                                                                               expression,
-                                                                               ViewData,
-                                                                               MetadataProvider);
-            return GenerateDisplayName(modelMetadata, expression);
+            var metadata = ExpressionMetadataProvider.FromStringExpression(expression, ViewData, MetadataProvider);
+            return GenerateDisplayName(metadata, expression);
         }
 
 
@@ -299,14 +294,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <inheritdoc />
         public HtmlString Label(string expression, string labelText, object htmlAttributes)
         {
-            var modelMetadata = string.IsNullOrEmpty(expression)?
-                                            ViewData.ModelMetadata :
-                                            ExpressionMetadataProvider.FromStringExpression(
-                                                                                expression,
-                                                                                ViewData,
-                                                                                MetadataProvider);
+            var metadata = ExpressionMetadataProvider.FromStringExpression(expression, ViewData, MetadataProvider);
             return GenerateLabel(
-                            modelMetadata,
+                            metadata,
                             expression,
                             labelText,
                             htmlAttributes);
