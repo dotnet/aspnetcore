@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.PipelineCore
@@ -29,11 +30,6 @@ namespace Microsoft.AspNet.PipelineCore
             return this;
         }
 
-        public IBuilder Run(RequestDelegate handler)
-        {
-            return Use(next => handler);
-        }
-
         public IBuilder New()
         {
             return new Builder(this);
@@ -41,7 +37,11 @@ namespace Microsoft.AspNet.PipelineCore
 
         public RequestDelegate Build()
         {
-            RequestDelegate app = async context => context.Response.StatusCode = 404;
+            RequestDelegate app = context =>
+            {
+                context.Response.StatusCode = 404;
+                return Task.FromResult(0);
+            };
 
             foreach (var component in _components.Reverse())
             {

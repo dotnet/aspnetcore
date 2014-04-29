@@ -21,6 +21,9 @@
     <Content Include="Project.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Fakes.cs" />
+    <Compile Include="MapPathMiddlewareTests.cs" />
+    <Compile Include="MapPredicateMiddlewareTests.cs" />
     <Compile Include="PathStringTests.cs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />

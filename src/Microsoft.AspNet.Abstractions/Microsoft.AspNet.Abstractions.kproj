@@ -21,6 +21,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CookieOptions.cs" />
+    <Compile Include="Extensions\MapExtensions.cs" />
+    <Compile Include="Extensions\MapMiddleware.cs" />
+    <Compile Include="Extensions\MapOptions.cs" />
+    <Compile Include="Extensions\MapWhenExtensions.cs" />
+    <Compile Include="Extensions\MapWhenMiddleware.cs" />
+    <Compile Include="Extensions\MapWhenOptions.cs" />
+    <Compile Include="Extensions\RunExtensions.cs" />
     <Compile Include="HostString.cs" />
     <Compile Include="HttpContext.cs" />
     <Compile Include="HttpRequest.cs" />
@@ -31,6 +38,7 @@
     <Compile Include="IReadableStringCollection.cs" />
     <Compile Include="IResponseCookies.cs" />
     <Compile Include="IServerInformation.cs" />
+    <Compile Include="NotNullAttribute.cs" />
     <Compile Include="PathString.cs" />
     <Compile Include="QueryString.cs" />
     <Compile Include="RequestDelegate.cs" />
