@@ -150,9 +150,6 @@
   <data name="ActionExecutor_UnexpectedTaskInstance" xml:space="preserve">
     <value>The method '{0}' on type '{1}' returned a Task instance even though it is not an asynchronous method.</value>
   </data>
-  <!--<data name="ClaimUidExtractor_DefaultClaimsNotPresent" xml:space="preserve">
-    <value>A claim of type 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier' was not present on the provided ClaimsIdentity. To enable anti-forgery token support with claims-based authentication, please verify that the configured claims provider is providing both of these claims on the ClaimsIdentity instances it generates. If the configured claims provider instead uses a different claim type as a unique identifier, it can be configured by setting the static property AntiForgeryConfig.UniqueClaimTypeIdentifier.</value>
-  </data>-->
   <data name="ClaimUidExtractor_ClaimNotPresent" xml:space="preserve">
     <value>A claim of type '{0}' was not present on the provided ClaimsIdentity.</value>
   </data>
@@ -204,8 +201,8 @@
   <data name="PropertyOfTypeCannotBeNull" xml:space="preserve">
     <value>The '{0}' property of '{1}' must not be null.</value>
   </data>
-  <data name="MethodMustReturnNotNullValue" xml:space="preserve">
-    <value>The '{0}' must return a non-null '{1}'.</value>
+  <data name="TypeMethodMustReturnNotNullValue" xml:space="preserve">
+    <value>The '{0}' method of type '{1}' cannot return a null value.</value>
   </data>
   <data name="ActionSelector_GetCandidateActionsIsAmbiguous" xml:space="preserve">
     <value>The supplied route values are ambiguous and can select multiple sets of actions.</value>
@@ -287,5 +284,8 @@
   </data>
   <data name="HtmlHelper_TextAreaParameterOutOfRange" xml:space="preserve">
     <value>The value must be greater than or equal to zero.</value>
+  </data>
+  <data name="FilterFactoryAttribute_TypeMustImplementIFilter" xml:space="preserve">
+    <value>The type provided to '{0}' must implement '{1}'.</value>
   </data>
 </root>

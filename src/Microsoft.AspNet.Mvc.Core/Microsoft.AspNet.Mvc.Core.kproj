@@ -103,8 +103,7 @@
     <Compile Include="Filters\IFilterContainer.cs" />
     <Compile Include="Filters\IOrderedFilter.cs" />
     <Compile Include="Filters\IResultFilter.cs" />
-    <Compile Include="Filters\IServiceFilter.cs" />
-    <Compile Include="Filters\ITypeFilter.cs" />
+    <Compile Include="Filters\IFilterFactory.cs" />
     <Compile Include="Filters\ResultExecutedContext.cs" />
     <Compile Include="Filters\ResultExecutingContext.cs" />
     <Compile Include="Filters\ResultExecutionDelegate.cs" />

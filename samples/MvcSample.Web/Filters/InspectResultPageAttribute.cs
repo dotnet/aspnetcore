@@ -1,28 +1,37 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.Filters;
 using MvcSample.Web.Models;
 
 namespace MvcSample.Web.Filters
 {
-    public class InspectResultPageAttribute : ActionFilterAttribute
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
+    public class InspectResultPageAttribute : Attribute, IFilterFactory
     {
-        public override async Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
+        public IFilter CreateInstance(IServiceProvider serviceProvider)
         {
-            var viewResult = context.Result as ViewResult;
+            return new InspectResultPageFilter();
+        }
 
-            if (viewResult != null)
+        private class InspectResultPageFilter : IResultFilter
+        {
+            public void OnResultExecuting(ResultExecutingContext context)
             {
-                var user = viewResult.ViewData.Model as User;
+                var viewResult = context.Result as ViewResult;
 
-                if (user != null)
+                if (viewResult != null)
                 {
-                    user.Name += "**" + user.Name + "**";
+                    var user = viewResult.ViewData.Model as User;
+
+                    if (user != null)
+                    {
+                        user.Name += "**" + user.Name + "**";
+                    }
                 }
             }
 
-            await next();
+            public void OnResultExecuted(ResultExecutedContext context)
+            {
+            }
         }
     }
 }

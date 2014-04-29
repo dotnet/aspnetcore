@@ -2,6 +2,7 @@
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
+using MvcSample.Web.Filters;
 
 namespace MvcSample.Web
 {
@@ -13,6 +14,7 @@ namespace MvcSample.Web
             {
                 services.AddMvc();
                 services.AddSingleton<PassThroughAttribute, PassThroughAttribute>();
+                services.AddSingleton<UserNameService, UserNameService>();
             });
 
             app.UseMvc(routes =>

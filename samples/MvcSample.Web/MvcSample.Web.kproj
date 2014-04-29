@@ -50,6 +50,7 @@
     <Compile Include="Filters\InspectResultPageAttribute.cs" />
     <Compile Include="Filters\PassThroughAttribute.cs" />
     <Compile Include="Filters\UserNameProvider.cs" />
+    <Compile Include="Filters\UserNameService.cs" />
     <Compile Include="Home2Controller.cs" />
     <Compile Include="HomeController.cs" />
     <Compile Include="LinkController.cs" />

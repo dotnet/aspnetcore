@@ -4,8 +4,12 @@ namespace MvcSample.Web.Filters
 {
     public class UserNameProvider : IActionFilter
     {
-        private static readonly string[] _userNames = new[] { "Jon", "David", "Goliath" };
-        private static int _index;
+        private readonly UserNameService _nameService;
+
+        public UserNameProvider(UserNameService nameService)
+        {
+            _nameService = nameService;
+        }
 
         public void OnActionExecuting(ActionExecutingContext context)
         {
@@ -17,7 +21,7 @@ namespace MvcSample.Web.Filters
 
             if (string.IsNullOrWhiteSpace(userName))
             {
-                context.ActionArguments["userName"] = _userNames[(_index++)%3];
+                context.ActionArguments["userName"] = _nameService.GetName();
             }
         }
 

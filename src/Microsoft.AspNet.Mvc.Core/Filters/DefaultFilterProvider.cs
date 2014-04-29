@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.Contracts;
 using Microsoft.AspNet.DependencyInjection;
+using Microsoft.AspNet.Mvc.Core;
 
 namespace Microsoft.AspNet.Mvc.Filters
 {
@@ -46,45 +47,23 @@ namespace Microsoft.AspNet.Mvc.Filters
 
             var filter = filterItem.Descriptor.Filter;
 
-            var serviceFilterSignature = filter as IServiceFilter;
-            if (serviceFilterSignature != null)
+            var filterFactory = filter as IFilterFactory;
+            if (filterFactory == null)
             {
-                var serviceFilter = ServiceProvider.GetService(serviceFilterSignature.ServiceType) as IFilter;
-
-                if (serviceFilter == null)
-                {
-                    throw new InvalidOperationException("Service filter must be of type IFilter");
-                }
-
-                filterItem.Filter = serviceFilter;
+                filterItem.Filter = filter;
             }
             else
             {
-                var typeFilterSignature = filter as ITypeFilter;
-                if (typeFilterSignature != null)
+                filterItem.Filter = filterFactory.CreateInstance(ServiceProvider);
+
+                if (filterItem.Filter == null)
                 {
-                    if (typeFilterSignature.ImplementationType == null)
-                    {
-                        throw new InvalidOperationException("Type filter must provide a type to instantiate");
-                    }
-
-                    if (!typeof (IFilter).IsAssignableFrom(typeFilterSignature.ImplementationType))
-                    {
-                        throw new InvalidOperationException("Type filter must implement IFilter");
-                    }
-
-                    var typeFilter = (IFilter)_typeActivator.CreateInstance(
-                        ServiceProvider,
-                        typeFilterSignature.ImplementationType,
-                        typeFilterSignature.Arguments);
-
-                    ApplyFilterToContainer(typeFilter, filter);
-                    filterItem.Filter = typeFilter;
+                    throw new InvalidOperationException(Resources.FormatTypeMethodMustReturnNotNullValue(
+                        "CreateInstance",
+                        typeof(IFilterFactory).Name));
                 }
-                else
-                {
-                    filterItem.Filter = filter;
-                }
+
+                ApplyFilterToContainer(filterItem.Filter, filterFactory);
             }
         }
 

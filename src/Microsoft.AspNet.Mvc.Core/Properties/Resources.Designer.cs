@@ -11,86 +11,6 @@ namespace Microsoft.AspNet.Mvc.Core
             = new ResourceManager("Microsoft.AspNet.Mvc.Core.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// The provided identity of type '{0}' is marked IsAuthenticated = true but does not have a value for Name. By default, the anti-forgery system requires that all authenticated identities have a unique Name. If it is not possible to provide a unique Name for this identity, consider extending IAdditionalDataProvider by overriding the DefaultAdditionalDataProvider or a custom type that can provide some form of unique identifier for the current user.
-        /// </summary>
-        internal static string TokenValidator_AuthenticatedUserWithoutUsername
-        {
-            get { return GetString("TokenValidator_AuthenticatedUserWithoutUsername"); }
-        }
-
-        /// <summary>
-        /// The provided identity of type '{0}' is marked IsAuthenticated = true but does not have a value for Name. By default, the anti-forgery system requires that all authenticated identities have a unique Name. If it is not possible to provide a unique Name for this identity, consider extending IAdditionalDataProvider by overriding the DefaultAdditionalDataProvider or a custom type that can provide some form of unique identifier for the current user.
-        /// </summary>
-        internal static string FormatTokenValidator_AuthenticatedUserWithoutUsername(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TokenValidator_AuthenticatedUserWithoutUsername"), p0);
-        }
-
-        /// <summary>
-        /// A claim of type '{0}' was not present on the provided ClaimsIdentity.
-        /// </summary>
-        internal static string ClaimUidExtractor_ClaimNotPresent
-        {
-            get { return GetString("ClaimUidExtractor_ClaimNotPresent"); }
-        }
-
-        /// <summary>
-        /// A claim of type '{0}' was not present on the provided ClaimsIdentity.
-        /// </summary>
-        internal static string FormatClaimUidExtractor_ClaimNotPresent(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ClaimUidExtractor_ClaimNotPresent"), p0);
-        }
-
-        /// <summary>
-        /// A claim of type 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier' or 'http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider' was not present on the provided ClaimsIdentity. To enable anti-forgery token support with claims-based authentication, please verify that the configured claims provider is providing both of these claims on the ClaimsIdentity instances it generates. If the configured claims provider instead uses a different claim type as a unique identifier, it can be configured by setting the static property AntiForgeryConfig.UniqueClaimTypeIdentifier.
-        /// </summary>
-        internal static string ClaimUidExtractor_DefaultClaimsNotPresent
-        {
-            get { return GetString("ClaimUidExtractor_DefaultClaimsNotPresent"); }
-        }
-
-        /// <summary>
-        /// A claim of type 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier' or 'http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider' was not present on the provided ClaimsIdentity. To enable anti-forgery token support with claims-based authentication, please verify that the configured claims provider is providing both of these claims on the ClaimsIdentity instances it generates. If the configured claims provider instead uses a different claim type as a unique identifier, it can be configured by setting the static property AntiForgeryConfig.UniqueClaimTypeIdentifier.
-        /// </summary>
-        internal static string FormatClaimUidExtractor_DefaultClaimsNotPresent()
-        {
-            return GetString("ClaimUidExtractor_DefaultClaimsNotPresent");
-        }
-
-        /// <summary>
-        /// The method '{0}' on type '{1}' returned an instance of '{2}'. Make sure to call Unwrap on the returned value to avoid unobserved faulted Task.
-        /// </summary>
-        internal static string ActionExecutor_WrappedTaskInstance
-        {
-            get { return GetString("ActionExecutor_WrappedTaskInstance"); }
-        }
-
-        /// <summary>
-        /// The method '{0}' on type '{1}' returned an instance of '{2}'. Make sure to call Unwrap on the returned value to avoid unobserved faulted Task.
-        /// </summary>
-        internal static string FormatActionExecutor_WrappedTaskInstance(object p0, object p1, object p2)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ActionExecutor_WrappedTaskInstance"), p0, p1, p2);
-        }
-
-        /// <summary>
-        /// The method '{0}' on type '{1}' returned a Task instance even though it is not an asynchronous method.
-        /// </summary>
-        internal static string ActionExecutor_UnexpectedTaskInstance
-        {
-            get { return GetString("ActionExecutor_UnexpectedTaskInstance"); }
-        }
-
-        /// <summary>
-        /// The method '{0}' on type '{1}' returned a Task instance even though it is not an asynchronous method.
-        /// </summary>
-        internal static string FormatActionExecutor_UnexpectedTaskInstance(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ActionExecutor_UnexpectedTaskInstance"), p0, p1);
-        }
-
-        /// <summary>
         /// The provided anti-forgery token failed a custom data check.
         /// </summary>
         internal static string AntiForgeryToken_AdditionalDataCheckFailed
@@ -232,6 +152,70 @@ namespace Microsoft.AspNet.Mvc.Core
         internal static string FormatAntiForgeryWorker_RequireSSL()
         {
             return GetString("AntiForgeryWorker_RequireSSL");
+        }
+
+        /// <summary>
+        /// The method '{0}' on type '{1}' returned an instance of '{2}'. Make sure to call Unwrap on the returned value to avoid unobserved faulted Task.
+        /// </summary>
+        internal static string ActionExecutor_WrappedTaskInstance
+        {
+            get { return GetString("ActionExecutor_WrappedTaskInstance"); }
+        }
+
+        /// <summary>
+        /// The method '{0}' on type '{1}' returned an instance of '{2}'. Make sure to call Unwrap on the returned value to avoid unobserved faulted Task.
+        /// </summary>
+        internal static string FormatActionExecutor_WrappedTaskInstance(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ActionExecutor_WrappedTaskInstance"), p0, p1, p2);
+        }
+
+        /// <summary>
+        /// The method '{0}' on type '{1}' returned a Task instance even though it is not an asynchronous method.
+        /// </summary>
+        internal static string ActionExecutor_UnexpectedTaskInstance
+        {
+            get { return GetString("ActionExecutor_UnexpectedTaskInstance"); }
+        }
+
+        /// <summary>
+        /// The method '{0}' on type '{1}' returned a Task instance even though it is not an asynchronous method.
+        /// </summary>
+        internal static string FormatActionExecutor_UnexpectedTaskInstance(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ActionExecutor_UnexpectedTaskInstance"), p0, p1);
+        }
+
+        /// <summary>
+        /// A claim of type '{0}' was not present on the provided ClaimsIdentity.
+        /// </summary>
+        internal static string ClaimUidExtractor_ClaimNotPresent
+        {
+            get { return GetString("ClaimUidExtractor_ClaimNotPresent"); }
+        }
+
+        /// <summary>
+        /// A claim of type '{0}' was not present on the provided ClaimsIdentity.
+        /// </summary>
+        internal static string FormatClaimUidExtractor_ClaimNotPresent(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ClaimUidExtractor_ClaimNotPresent"), p0);
+        }
+
+        /// <summary>
+        /// The provided identity of type '{0}' is marked IsAuthenticated = true but does not have a value for Name. By default, the anti-forgery system requires that all authenticated identities have a unique Name. If it is not possible to provide a unique Name for this identity, consider extending IAdditionalDataProvider by overriding the DefaultAdditionalDataProvider or a custom type that can provide some form of unique identifier for the current user.
+        /// </summary>
+        internal static string TokenValidator_AuthenticatedUserWithoutUsername
+        {
+            get { return GetString("TokenValidator_AuthenticatedUserWithoutUsername"); }
+        }
+
+        /// <summary>
+        /// The provided identity of type '{0}' is marked IsAuthenticated = true but does not have a value for Name. By default, the anti-forgery system requires that all authenticated identities have a unique Name. If it is not possible to provide a unique Name for this identity, consider extending IAdditionalDataProvider by overriding the DefaultAdditionalDataProvider or a custom type that can provide some form of unique identifier for the current user.
+        /// </summary>
+        internal static string FormatTokenValidator_AuthenticatedUserWithoutUsername(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TokenValidator_AuthenticatedUserWithoutUsername"), p0);
         }
 
         /// <summary>
@@ -475,19 +459,19 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// The '{0}' must return a non-null '{1}'.
+        /// The '{0}' method of type '{1}' cannot return a null value.
         /// </summary>
-        internal static string MethodMustReturnNotNullValue
+        internal static string TypeMethodMustReturnNotNullValue
         {
-            get { return GetString("MethodMustReturnNotNullValue"); }
+            get { return GetString("TypeMethodMustReturnNotNullValue"); }
         }
 
         /// <summary>
-        /// The '{0}' must return a non-null '{1}'.
+        /// The '{0}' method of type '{1}' cannot return a null value.
         /// </summary>
-        internal static string FormatMethodMustReturnNotNullValue(object p0, object p1)
+        internal static string FormatTypeMethodMustReturnNotNullValue(object p0, object p1)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("MethodMustReturnNotNullValue"), p0, p1);
+            return string.Format(CultureInfo.CurrentCulture, GetString("TypeMethodMustReturnNotNullValue"), p0, p1);
         }
 
         /// <summary>
@@ -920,6 +904,21 @@ namespace Microsoft.AspNet.Mvc.Core
         internal static string FormatHtmlHelper_TextAreaParameterOutOfRange()
         {
             return GetString("HtmlHelper_TextAreaParameterOutOfRange");
+        }
+
+        /// The type provided to '{0}' must implement '{1}'.
+        /// </summary>
+        internal static string FilterFactoryAttribute_TypeMustImplementIFilter
+        {
+            get { return GetString("FilterFactoryAttribute_TypeMustImplementIFilter"); }
+        }
+
+        /// <summary>
+        /// The type provided to '{0}' must implement '{1}'.
+        /// </summary>
+        internal static string FormatFilterFactoryAttribute_TypeMustImplementIFilter(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("FilterFactoryAttribute_TypeMustImplementIFilter"), p0, p1);
         }
 
         private static string GetString(string name, params string[] formatterNames)
