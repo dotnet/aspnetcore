@@ -295,6 +295,19 @@ namespace Microsoft.AspNet.Mvc.Rendering
         HtmlString Label(string expression, string labelText, object htmlAttributes);
 
         /// <summary>
+        /// Returns a multi-selection HTML {select} element using the specified name of the form field,
+        /// list items, and HTML attributes.
+        /// </summary>
+        /// <param name="name">The name of the form field to return.</param>
+        /// <param name="selectList">A collection of <see href="SelectListItem"/> objects that are used to populate the
+        /// drop-down list.</param>
+        /// <param name="htmlAttributes">An object that contains the HTML attributes to set for the element.
+        /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>An HTML {select} element with an {option} subelement for each item in the list.</returns>
+        HtmlString ListBox(string name, IEnumerable<SelectListItem> selectList, object htmlAttributes);
+
+        /// <summary>
         /// Gets the full HTML field name for the given expression <paramref name="name"/>.
         /// </summary>
         /// <param name="name">Name of an expression, relative to the current model.</param>

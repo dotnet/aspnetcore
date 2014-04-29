@@ -15,12 +15,19 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace MvcSample.Web.Models
 {
     public class User
     {
+        public User()
+        {
+            OwnedAddresses = new List<string>();
+            ParentsAges = new List<int>();
+        }
+
         [Required]
         [MinLength(4)]
         public string Name { get; set; }
@@ -35,5 +42,9 @@ namespace MvcSample.Web.Models
         public string Profession { get; set; }
         public string About { get; set; }
         public string Log { get; set; }
+        public IEnumerable<string> OwnedAddresses { get; private set; }
+
+        // This does not bind correctly. Only gets highest value.
+        public List<int> ParentsAges { get; private set; }
     }
 }

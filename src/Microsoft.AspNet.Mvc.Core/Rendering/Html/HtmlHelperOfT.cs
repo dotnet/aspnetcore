@@ -171,6 +171,18 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
+        public HtmlString ListBoxFor<TProperty>(
+            [NotNull] Expression<Func<TModel, TProperty>> expression,
+            IEnumerable<SelectListItem> selectList,
+            object htmlAttributes)
+        {
+            var metadata = GetModelMetadata(expression);
+            var name = ExpressionHelper.GetExpressionText(expression);
+
+            return GenerateListBox(metadata, name, selectList, htmlAttributes);
+        }
+
+        /// <inheritdoc />
         public HtmlString NameFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression)
         {
             var expressionName = GetExpressionName(expression);

@@ -333,6 +333,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
+        public HtmlString ListBox(string name, IEnumerable<SelectListItem> selectList, object htmlAttributes)
+        {
+            return GenerateListBox(metadata: null, name: name, selectList: selectList, htmlAttributes: htmlAttributes);
+        }
+
+        /// <inheritdoc />
         public virtual HtmlString Name(string name)
         {
             var fullName = ViewData.TemplateInfo.GetFullHtmlFieldName(name);
@@ -866,6 +872,21 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return tagBuilder.ToHtmlString(TagRenderMode.Normal);
         }
 
+        protected HtmlString GenerateListBox(
+            ModelMetadata metadata,
+            string name,
+            IEnumerable<SelectListItem> selectList,
+            object htmlAttributes)
+        {
+            return GenerateSelect(
+                metadata,
+                optionLabel: null,
+                name: name,
+                selectList: selectList,
+                allowMultiple: true,
+                htmlAttributes: htmlAttributes);
+        }
+
         protected virtual HtmlString GeneratePassword(ModelMetadata metadata, string name, object value,
             object htmlAttributes)
         {
@@ -974,6 +995,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // If we got a null selectList, try to use ViewData to get the list of items.
             if (selectList == null)
             {
+                if (string.IsNullOrEmpty(name))
+                {
+                    // Avoid ViewData.Eval() throwing an ArgumentException with a different parameter name. Note this
+                    // is an extreme case since users must pass a non-null selectList to use CheckBox() or ListBox()
+                    // in a template, where a null or empty name has meaning.
+                    throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "name");
+                }
+
                 selectList = GetSelectListItems(name);
                 usedViewData = true;
             }

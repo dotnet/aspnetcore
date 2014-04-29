@@ -57,7 +57,7 @@ namespace MvcSample.Web
         public ActionResult Edit(User user)
         {
             ViewBag.Address = _addresses;
-            ViewBag.Age = _ages;
+            ViewBag.Ages = _ages;
             ViewBag.Gift = "the banana";
 
             return View("Create");

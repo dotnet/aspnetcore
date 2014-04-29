@@ -2,7 +2,7 @@
 @using Microsoft.AspNet.Mvc.ModelBinding
 @model User
 @{
-    ViewBag.Title = (Model == null) ? "Create Page" : "Edit Page";
+    ViewBag.Title = (Model == null && ViewData.ModelState.Count == 0) ? "Create Page" : "Edit Page";
     if (ViewBag.Gift == null)
     {
         ViewBag.Gift = "nothing";
@@ -45,7 +45,7 @@
             <table>
                 <tr>
                     <td>
-                        <label class="control-label col-md-2">Model.Name</label>
+                        <label class="control-label col-md-2" for="Name">Model.Name</label>
                     </td>
                     <td>
                         @Html.TextBox("Name")
@@ -56,7 +56,7 @@
                 </tr>
                 <tr>
                     <td>
-                        <label class="control-label col-md-2">Model.Address</label>
+                        <label class="control-label col-md-2" for="Address">Model.Address</label>
                     </td>
                     <td>
                         @Html.DropDownList("Address", "Select an Address")
@@ -64,7 +64,7 @@
                 </tr>
                 <tr>
                     <td>
-                        <label class="control-label col-md-2">Model.Age</label>
+                        <label class="control-label col-md-2" for="Age">Model.Age</label>
                     </td>
                     <td>
                         @Html.DropDownListFor(model => model.Age, (IEnumerable<SelectListItem>)ViewBag.Ages, htmlAttributes: new { @class = "form-control" })
@@ -87,6 +87,22 @@
                     </td>
                     <td>
                         @Html.TextArea("About", "You can explain about your hobbies, work etc.", 5, 40, htmlAttributes: new { style = "font-weight:bold" })
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="control-label col-md-2" for="OwnedAddresses">Model.OwnedAddresses</label>
+                    </td>
+                    <td>
+                        @Html.Editor("OwnedAddresses")
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="control-label col-md-2" for="ParentsAges">Model.ParentsAges</label>
+                    </td>
+                    <td>
+                        @Html.ListBoxFor(model => model.ParentsAges, (IEnumerable<SelectListItem>)ViewBag.Ages, htmlAttributes: new { @class = "form-control" })
                     </td>
                 </tr>
                 <tr>

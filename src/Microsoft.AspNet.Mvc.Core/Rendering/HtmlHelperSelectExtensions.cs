@@ -79,5 +79,26 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             return htmlHelper.DropDownListFor(expression, selectList, optionLabel, htmlAttributes: null);
         }
+
+        public static HtmlString ListBox([NotNull] this IHtmlHelper htmlHelper, string name)
+        {
+            return htmlHelper.ListBox(name, selectList: null, htmlAttributes: null);
+        }
+
+        public static HtmlString ListBox(
+            [NotNull] this IHtmlHelper htmlHelper,
+            string name,
+            IEnumerable<SelectListItem> selectList)
+        {
+            return htmlHelper.ListBox(name, selectList, htmlAttributes: null);
+        }
+
+        public static HtmlString ListBoxFor<TModel, TProperty>(
+            [NotNull] this IHtmlHelper<TModel> htmlHelper,
+            [NotNull] Expression<Func<TModel, TProperty>> expression,
+            IEnumerable<SelectListItem> selectList)
+        {
+            return htmlHelper.ListBoxFor(expression, selectList, htmlAttributes: null);
+        }
     }
 }

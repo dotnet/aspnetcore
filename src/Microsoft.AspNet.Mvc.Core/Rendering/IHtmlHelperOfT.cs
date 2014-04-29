@@ -176,6 +176,24 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                     object htmlAttributes);
 
         /// <summary>
+        /// Returns a multi-selection HTML {select} element for the object that is represented by the specified
+        /// expression using the specified list items and HTML attributes.
+        /// </summary>
+        /// <typeparam name="TProperty">The type of the property.</typeparam>
+        /// <param name="expression">An expression that identifies the object that contains the properties to
+        /// display.</param>
+        /// <param name="selectList">A collection of <see href="SelectListItem"/> objects that are used to populate the
+        /// drop-down list.</param>
+        /// <param name="htmlAttributes">An object that contains the HTML attributes to set for the element.
+        /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>An HTML {select} element with an {option} subelement for each item in the list.</returns>
+        HtmlString ListBoxFor<TProperty>(
+            [NotNull] Expression<Func<TModel, TProperty>> expression,
+            IEnumerable<SelectListItem> selectList,
+            object htmlAttributes);
+
+        /// <summary>
         /// Gets the full HTML field name for the given <paramref name="expression"/>.
         /// </summary>
         /// <typeparam name="TProperty">The <see cref="Type"/> the <paramref name="expression"/> returns.</typeparam>

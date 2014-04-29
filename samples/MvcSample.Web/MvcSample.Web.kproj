@@ -24,6 +24,7 @@
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Project.json" />
     <Content Include="Views\Home\Create.cshtml" />
+    <Content Include="Views\Home\EditorTemplates\IEnumerable`1.cshtml" />
     <Content Include="Views\Home\Test.cshtml" />
     <Content Include="Views\Home\ValidationSummary.cshtml" />
     <Content Include="Views\Link\Details.cshtml" />
