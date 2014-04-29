@@ -24,6 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 public class Startup
 {
@@ -86,10 +87,10 @@ public class Startup
         });
 
         SampleData.InitializeMusicStoreDatabaseAsync(app.ApplicationServices).Wait();
-        CreateAdminUser(app.ApplicationServices);
+        CreateAdminUser(app.ApplicationServices).Wait();
     }
 
-    private async void CreateAdminUser(IServiceProvider serviceProvider)
+    private async Task CreateAdminUser(IServiceProvider serviceProvider)
     {
         var configuration = serviceProvider.GetService<IConfiguration>();
         var userName = configuration.Get("DefaultAdminUsername");
