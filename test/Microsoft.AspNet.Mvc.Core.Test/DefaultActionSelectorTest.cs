@@ -1,6 +1,7 @@
 ﻿
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Routing;
@@ -193,6 +194,36 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             Assert.False(isValid);
         }
 
+        [Fact]
+        public async Task SelectAsync_PrefersActionWithConstraints()
+        {
+            // Arrange
+            var actionWithConstraints = new ActionDescriptor()
+            {
+                MethodConstraints = new List<HttpMethodConstraint>()
+                {
+                    new HttpMethodConstraint(new string[] { "POST" }),
+                },
+                Parameters = new List<ParameterDescriptor>(),
+            };
+
+            var actionWithoutConstraints = new ActionDescriptor()
+            {
+                Parameters = new List<ParameterDescriptor>(),
+            };
+
+            var actions = new ActionDescriptor[] { actionWithConstraints, actionWithoutConstraints };
+
+            var selector = CreateSelector(actions);
+            var context = new RequestContext(CreateHttpContext("POST"), new Dictionary<string, object>());
+
+            // Act
+            var action = await selector.SelectAsync(context);
+
+            // Assert
+            Assert.Same(action, actionWithConstraints);
+        }
+
         private static ActionDescriptor[] GetActions()
         {
             return new ActionDescriptor[]
@@ -232,6 +263,9 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 .Callback<ActionDescriptorProviderContext>(c => c.Results.AddRange(actions));
 
             var bindingProvider = new Mock<IActionBindingContextProvider>(MockBehavior.Strict);
+            bindingProvider
+                .Setup(bp => bp.GetActionBindingContextAsync(It.IsAny<ActionContext>()))
+                .Returns(() => Task.FromResult<ActionBindingContext>(null));
 
             return new DefaultActionSelector(actionProvider.Object, bindingProvider.Object);
         }
@@ -243,12 +277,22 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
         private static VirtualPathContext CreateContext(object routeValues, object ambientValues)
         {
-            var httpContext = new Mock<HttpContext>(MockBehavior.Strict);
-
             return new VirtualPathContext(
-                httpContext.Object,
+                new Mock<HttpContext>(MockBehavior.Strict).Object,
                 new RouteValueDictionary(ambientValues),
                 new RouteValueDictionary(routeValues));
+        }
+
+        private static HttpContext CreateHttpContext(string httpMethod)
+        {
+            var context = new Mock<HttpContext>(MockBehavior.Strict);
+
+            var request = new Mock<HttpRequest>(MockBehavior.Strict);
+            context.SetupGet(c => c.Request).Returns(request.Object);
+
+            request.SetupGet(r => r.Method).Returns(httpMethod);
+
+            return context.Object;
         }
 
         private static ActionDescriptor CreateAction(string area, string controller, string action)
