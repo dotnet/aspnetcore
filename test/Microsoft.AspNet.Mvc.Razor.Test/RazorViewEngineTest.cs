@@ -36,6 +36,52 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             {"controller", "bar"},
         };
 
+        [Theory]
+        [InlineData("~/foo/bar")]
+        [InlineData("/foo/bar")]
+        [InlineData("~/foo/bar.txt")]
+        [InlineData("/foo/bar.txt")]
+        public void FindViewFullPathRequiresCshtmlEnding(string viewName)
+        {
+            // Arrange
+            var viewEngine = CreateSearchLocationViewEngineTester();
+
+            // Act & Assert
+            Assert.Throws<InvalidOperationException>(() =>
+                viewEngine.FindView(_controllerTestContext, viewName));
+
+            // Append .cshtml so we can try and no longer throw.
+            viewName += ".cshtml";
+
+            // If this throws then our test case fails
+            var result = viewEngine.FindPartialView(_controllerTestContext, viewName);
+
+            Assert.False(result.Success);
+        }
+
+        [Theory]
+        [InlineData("~/foo/bar")]
+        [InlineData("/foo/bar")]
+        [InlineData("~/foo/bar.txt")]
+        [InlineData("/foo/bar.txt")]
+        public void FindPartialViewFullPathRequiresCshtmlEnding(string partialViewName)
+        {
+            // Arrange
+            var viewEngine = CreateSearchLocationViewEngineTester();
+
+            // Act & Assert
+            Assert.Throws<InvalidOperationException>(() => 
+                viewEngine.FindPartialView(_controllerTestContext, partialViewName));
+
+            // Append .cshtml so we can try and no longer throw.
+            partialViewName += ".cshtml";
+
+            // If this throws then our test case fails
+            var result = viewEngine.FindPartialView(_controllerTestContext, partialViewName);
+
+            Assert.False(result.Success);
+        }
+
         [Fact]
         public void FindPartialViewFailureSearchesCorrectLocationsWithAreas()
         {
