@@ -204,6 +204,22 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
+        /// View '{0}' must have extension '{1}' when the view represents a full path.
+        /// </summary>
+        internal static string ViewMustEndInExtension
+        {
+            get { return GetString("ViewMustEndInExtension"); }
+        }
+
+        /// <summary>
+        /// View '{0}' must have extension '{1}' when the view represents a full path.
+        /// </summary>
+        internal static string FormatViewMustEndInExtension(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ViewMustEndInExtension"), p0, p1);
+        }
+
+        /// <summary>
         /// The method '{0}' cannot be invoked by this view.
         /// </summary>
         internal static string View_MethodCannotBeCalled
