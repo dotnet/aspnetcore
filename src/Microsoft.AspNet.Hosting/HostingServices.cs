@@ -37,11 +37,20 @@ namespace Microsoft.AspNet.Hosting
                 Lifecycle = LifecycleKind.Scoped
             };
 
-            // The default IDataProtectionProvider is a singleton.
-            // Note: DPAPI isn't usable in IIS where the user profile hasn't been loaded, but loading DPAPI
-            // is deferred until the first call to Protect / Unprotect. It's up to an IIS-based host to
-            // replace this service as part of application initialization.
-            yield return describer.Instance<IDataProtectionProvider>(DataProtectionProvider.CreateFromDpapi());
+            if (PlatformHelper.IsMono)
+            {
+#if NET45
+                yield return describer.Instance<IDataProtectionProvider>(DataProtectionProvider.CreateFromLegacyDpapi());
+#endif
+            }
+            else
+            {
+                // The default IDataProtectionProvider is a singleton.
+                // Note: DPAPI isn't usable in IIS where the user profile hasn't been loaded, but loading DPAPI
+                // is deferred until the first call to Protect / Unprotect. It's up to an IIS-based host to
+                // replace this service as part of application initialization.
+                yield return describer.Instance<IDataProtectionProvider>(DataProtectionProvider.CreateFromDpapi());
+            }
         }
     }
 }

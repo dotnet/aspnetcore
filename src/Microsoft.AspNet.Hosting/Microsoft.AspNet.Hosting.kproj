@@ -29,6 +29,7 @@
     <Compile Include="HostingServices.cs" />
     <Compile Include="IHostingEngine.cs" />
     <Compile Include="PipelineInstance.cs" />
+    <Compile Include="PlatformHelper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Server\IServerFactory.cs" />
     <Compile Include="Server\IServerManager.cs" />
