@@ -88,6 +88,14 @@ namespace Microsoft.AspNet.Mvc.Filters
 
                 ApplyFilterToContainer(filterItem.Filter, filterFactory);
             }
+
+            var controllerFilter = context.ActionContext.Controller as IFilter;
+            if (controllerFilter != null)
+            {
+                // If the controller implements a filter, we want it to be the first to run.
+                var descriptor = new FilterDescriptor(controllerFilter, FilterScope.Action);
+                context.Result.Insert(0, new FilterItem(descriptor, controllerFilter));
+            }
         }
 
         private void InsertControllerAsFilter(FilterProviderContext context, IFilter controllerFilter)
