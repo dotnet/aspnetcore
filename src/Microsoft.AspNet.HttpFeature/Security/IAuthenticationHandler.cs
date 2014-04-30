@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Net.Runtime;
 
 namespace Microsoft.AspNet.HttpFeature.Security
 {
+    [AssemblyNeutral]
     public interface IAuthenticationHandler
     {
         void GetDescriptions(IAuthTypeContext context);

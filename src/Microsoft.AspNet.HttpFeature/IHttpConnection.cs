@@ -1,7 +1,9 @@
 using System.Net;
+using Microsoft.Net.Runtime;
 
 namespace Microsoft.AspNet.HttpFeature
 {
+    [AssemblyNeutral]
     public interface IHttpConnection
     {
         IPAddress RemoteIpAddress { get; set; }

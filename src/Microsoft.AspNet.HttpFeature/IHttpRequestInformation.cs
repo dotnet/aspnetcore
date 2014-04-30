@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.Net.Runtime;
 
 namespace Microsoft.AspNet.HttpFeature
 {
+    [AssemblyNeutral]
     public interface IHttpRequestInformation
     {
         string Protocol { get; set; }
