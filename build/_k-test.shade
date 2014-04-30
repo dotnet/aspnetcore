@@ -11,23 +11,47 @@ projectFile=''
 
 */}
 
-var projectFolder='${Path.GetDirectoryName(projectFile)}'
-
-k command='test' workingdir='${projectFolder}' if='HasTestCommand(projectFile)'
-
-functions
-    @{
-        bool HasTestCommand(string projectFile)
+@{
+    var serializer = new JavaScriptSerializer();
+    var projectText = File.ReadAllText(projectFile);
+    var project = (Dictionary<string, object>)serializer.DeserializeObject(projectText);
+    
+    object commandsObject;
+    var commands = project.TryGetValue("commands", out commandsObject)
+        ? (Dictionary<string, object>)commandsObject
+        : new Dictionary<string, object>();
+            
+    if (commands.Keys.Contains("test"))
+    {
+        var projectFolder = Path.GetDirectoryName(projectFile);
+        
+        object configsObject;
+        var configs = project.TryGetValue("configurations", out configsObject)
+            ? (Dictionary<string, object>)configsObject
+            : new Dictionary<string, object>();
+                                     
+        var targetFrameworks = configs.Keys.Where(k => k.StartsWith("net", StringComparison.OrdinalIgnoreCase)
+                                                    || k.StartsWith("k", StringComparison.OrdinalIgnoreCase));
+        
+        var originalTargetFramework = Environment.GetEnvironmentVariable("TARGET_FRAMEWORK");
+        try
         {
-            var serializer = new JavaScriptSerializer();
-            var projectText = File.ReadAllText(projectFile);
-            var project = (Dictionary<string, object>)serializer.DeserializeObject(projectText);
-                       
-            object commandsObject;
-            if (!project.TryGetValue("commands", out commandsObject))
-                return false;
-            var commands = (Dictionary<string, object>)commandsObject;
-                
-            return commands.Keys.Contains("test");
+            foreach (var framework in targetFrameworks)
+            {
+                // Workaround for aspnet/KRuntime#129
+                var frameworkString = framework.StartsWith("net", StringComparison.OrdinalIgnoreCase)
+                    ? ""
+                    : framework;
+
+                Environment.SetEnvironmentVariable("TARGET_FRAMEWORK", frameworkString);
+                K("test", projectFolder);
+            }
+        } finally
+        {
+            Environment.SetEnvironmentVariable("TARGET_FRAMEWORK", originalTargetFramework);
         }
     }
+}
+
+macro name='K' command='string' workingdir='string'
+    k
