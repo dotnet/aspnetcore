@@ -41,12 +41,18 @@ namespace Microsoft.AspNet.Mvc.Filters
 
         public virtual void Invoke(FilterProviderContext context, Action callNext)
         {
-            if (context.ActionDescriptor.FilterDescriptors != null)
+            if (context.ActionContext.ActionDescriptor.FilterDescriptors != null)
             {
-                foreach (var item in context.Result)
+                foreach (var item in context.Results)
                 {
                     ProvideFilter(context, item);
                 }
+            }
+
+            var controllerFilter = context.ActionContext.Controller as IFilter;
+            if (controllerFilter != null)
+            {
+                InsertControllerAsFilter(context, controllerFilter);
             }
 
             if (callNext != null)
@@ -82,6 +88,37 @@ namespace Microsoft.AspNet.Mvc.Filters
 
                 ApplyFilterToContainer(filterItem.Filter, filterFactory);
             }
+        }
+
+        private void InsertControllerAsFilter(FilterProviderContext context, IFilter controllerFilter)
+        {
+            // If the controller implements a filter, and doesn't specify order, then it should
+            // run closest to the action.
+            int order = Int32.MaxValue;
+            var orderedControllerFilter = controllerFilter as IOrderedFilter;
+            if (orderedControllerFilter == null)
+            {
+                order = orderedControllerFilter.Order;
+            }
+
+            var descriptor = new FilterDescriptor(controllerFilter, FilterScope.Controller);
+            var item = new FilterItem(descriptor, controllerFilter);
+
+            // BinarySearch will return the index of where the item _should_be_ in the list.
+            //
+            // If index > 0: 
+            //      Other items in the list have the same order and scope - the item was 'found'.
+            //
+            // If index < 0: 
+            //      No other items in the list have the same order and scope - the item was not 'found'
+            //      Index will be the bitwise compliment of of the 'right' location.
+            var index = context.Results.BinarySearch(item, FilterItemOrderComparer.Comparer);
+            if (index < 0)
+            {
+                index = ~index;
+            }
+
+            context.Results.Insert(index, item);
         }
 
         private void ApplyFilterToContainer(object actualFilter, IFilter filterMetadata)

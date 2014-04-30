@@ -73,6 +73,7 @@
     <Compile Include="DefaultControllerFactory.cs" />
     <Compile Include="DefaultParameterDescriptorFactory.cs" />
     <Compile Include="Extensions\IEnumerableExtensions.cs" />
+    <Compile Include="Filters\FilterItemOrderComparer.cs" />
     <Compile Include="Filters\TypeFilterAttribute.cs" />
     <Compile Include="Filters\ActionExecutedContext.cs" />
     <Compile Include="Filters\ActionExecutingContext.cs" />

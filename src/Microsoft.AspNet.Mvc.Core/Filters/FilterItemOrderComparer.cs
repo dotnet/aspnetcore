@@ -19,18 +19,15 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class FilterProviderContext
+    public class FilterItemOrderComparer : IComparer<FilterItem>
     {
-        public FilterProviderContext([NotNull] ActionContext actionContext, [NotNull] List<FilterItem> items)
+        private static readonly FilterItemOrderComparer _comparer = new FilterItemOrderComparer();
+
+        public static FilterItemOrderComparer Comparer { get { return _comparer; } }
+
+        public int Compare([NotNull] FilterItem x, [NotNull] FilterItem y)
         {
-            ActionContext = actionContext;
-            Results = items;
+            return FilterDescriptorOrderComparer.Comparer.Compare(x.Descriptor, y.Descriptor);
         }
-
-        // Input
-        public ActionContext ActionContext { get; set; }
-
-        // Results
-        public List<FilterItem> Results { get; set; }
     }
 }

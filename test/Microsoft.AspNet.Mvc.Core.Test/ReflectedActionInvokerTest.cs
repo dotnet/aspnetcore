@@ -1255,7 +1255,7 @@ namespace Microsoft.AspNet.Mvc
             filterProvider
                 .Setup(fp => fp.Invoke(It.IsAny<FilterProviderContext>()))
                 .Callback<FilterProviderContext>(
-                    context => context.Result.AddRange(filters.Select(f => new FilterItem(null, f))));
+                    context => context.Results.AddRange(filters.Select(f => new FilterItem(null, f))));
 
             var invoker = new ReflectedActionInvoker(
                 actionContext,

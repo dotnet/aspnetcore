@@ -74,10 +74,10 @@ namespace Microsoft.AspNet.Mvc
 
         public async Task InvokeActionAsync()
         {
+            _actionContext.Controller = _controllerFactory.CreateController(_actionContext);
+
             _filters = GetFilters();
             _cursor = new FilterCursor(_filters);
-
-            _actionContext.Controller = _controllerFactory.CreateController(_actionContext);
 
             // >> ExceptionFilters >> AuthorizationFilters >> ActionFilters >> Action
             await InvokeActionExceptionFilters();
@@ -116,12 +116,12 @@ namespace Microsoft.AspNet.Mvc
         private IFilter[] GetFilters()
         {
             var filterProviderContext = new FilterProviderContext(
-                _descriptor,
+                _actionContext,
                 _descriptor.FilterDescriptors.Select(fd => new FilterItem(fd)).ToList());
 
             _filterProvider.Invoke(filterProviderContext);
 
-            return filterProviderContext.Result.Select(item => item.Filter).Where(filter => filter != null).ToArray();
+            return filterProviderContext.Results.Select(item => item.Filter).Where(filter => filter != null).ToArray();
         }
 
         private async Task InvokeActionExceptionFilters()
