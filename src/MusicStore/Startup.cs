@@ -81,6 +81,7 @@ public class Startup
         app.UseMvc(routes =>
         {
             routes.MapRoute(
+		null,
                 "{controller}/{action}",
                 new { controller = "Home", action = "Index" });
         });
