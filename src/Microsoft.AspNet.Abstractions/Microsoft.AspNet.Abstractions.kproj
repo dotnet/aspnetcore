@@ -28,6 +28,7 @@
     <Compile Include="Extensions\MapWhenMiddleware.cs" />
     <Compile Include="Extensions\MapWhenOptions.cs" />
     <Compile Include="Extensions\RunExtensions.cs" />
+    <Compile Include="Extensions\UseExtensions.cs" />
     <Compile Include="HostString.cs" />
     <Compile Include="HttpContext.cs" />
     <Compile Include="HttpRequest.cs" />
