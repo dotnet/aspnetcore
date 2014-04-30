@@ -93,8 +93,8 @@ namespace Microsoft.AspNet.RequestContainer
                 httpContext.ApplicationServices = appServiceProvider;
                 httpContext.RequestServices = scopeServiceProvider;
 
-                var priorAppHttpContext = appHttpContextAccessor.ExchangeValue(httpContext);
-                var priorScopeHttpContext = scopeHttpContextAccessor.ExchangeValue(httpContext);
+                var priorAppHttpContext = appHttpContextAccessor.SetValue(httpContext);
+                var priorScopeHttpContext = scopeHttpContextAccessor.SetValue(httpContext);
                 
                 try
                 {
@@ -102,8 +102,8 @@ namespace Microsoft.AspNet.RequestContainer
                 }
                 finally
                 {
-                    scopeHttpContextAccessor.ExchangeValue(priorScopeHttpContext);
-                    appHttpContextAccessor.ExchangeValue(priorAppHttpContext);
+                    scopeHttpContextAccessor.SetValue(priorScopeHttpContext);
+                    appHttpContextAccessor.SetValue(priorAppHttpContext);
 
                     httpContext.RequestServices = priorRequestServices;
                     httpContext.ApplicationServices = priorApplicationServices;
