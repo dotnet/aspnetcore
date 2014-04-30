@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Globalization;
+#if NET45
+using System.Security.Cryptography;
+#endif
 using System.Text;
 using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.AspNet.Security.DataProtection.Util;
@@ -23,6 +26,19 @@ namespace Microsoft.AspNet.Security.DataProtection
         {
             return CreateFromDpapi(protectToLocalMachine: false);
         }
+
+#if NET45
+        // These are for mono
+        public static IDataProtectionProvider CreateFromLegacyDpapi()
+        {
+            return CreateFromLegacyDpapi(DataProtectionScope.CurrentUser);
+        }
+
+        public static IDataProtectionProvider CreateFromLegacyDpapi(DataProtectionScope scope)
+        {
+            return new ProtectedDataProtectionProvider(scope);
+        }
+#endif
 
         /// <summary>
         /// Creates a new IDataProtectionProvider backed by DPAPI.

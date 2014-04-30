@@ -23,6 +23,8 @@
   <ItemGroup>
     <Compile Include="Algorithms.cs" />
     <Compile Include="BCryptAlgorithmFlags.cs" />
+    <Compile Include="ProtectedDataProtectionProvider.cs" />
+    <Compile Include="PBKDF2.cs" />
     <Compile Include="SuppressUnmanagedCodeSecurityAttribute - Copy.cs" />
     <Compile Include="SafeLibraryHandle.cs" />
     <Compile Include="BCryptAlgorithmHandle.cs" />
