@@ -891,7 +891,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// The value must be greater than or equal to zero..
+        /// The value must be greater than or equal to zero.
         /// </summary>
         internal static string HtmlHelper_TextAreaParameterOutOfRange
         {
@@ -899,13 +899,14 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// The value must be greater than or equal to zero..
+        /// The value must be greater than or equal to zero.
         /// </summary>
         internal static string FormatHtmlHelper_TextAreaParameterOutOfRange()
         {
             return GetString("HtmlHelper_TextAreaParameterOutOfRange");
         }
 
+        /// <summary>
         /// The type provided to '{0}' must implement '{1}'.
         /// </summary>
         internal static string FilterFactoryAttribute_TypeMustImplementIFilter
