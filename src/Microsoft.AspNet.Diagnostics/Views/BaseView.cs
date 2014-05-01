@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Diagnostics.Views
 {
@@ -37,20 +38,20 @@ namespace Microsoft.AspNet.Diagnostics.Views
         /// Execute an individual request
         /// </summary>
         /// <param name="context"></param>
-        public void Execute(HttpContext context)
+        public async Task ExecuteAsync(HttpContext context)
         {
             Context = context;
             Request = Context.Request;
             Response = Context.Response;
             Output = new StreamWriter(Response.Body);
-            Execute();
+            await ExecuteAsync();
             Output.Dispose();
         }
 
         /// <summary>
         /// Execute an individual request
         /// </summary>
-        public abstract void Execute();
+        public abstract Task ExecuteAsync();
 
         /// <summary>
         /// Write the given value directly to the output

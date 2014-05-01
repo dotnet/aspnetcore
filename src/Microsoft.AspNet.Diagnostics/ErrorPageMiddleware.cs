@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Diagnostics
             {
                 try
                 {
-                    DisplayException(context, ex);
+                    await DisplayException(context, ex);
                     return;
                 }
                 catch (Exception)
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Diagnostics
         }
 
         // Assumes the response headers have not been sent.  If they have, still attempt to write to the body.
-        private void DisplayException(HttpContext context, Exception ex)
+        private async Task DisplayException(HttpContext context, Exception ex)
         {
             var request = context.Request;
 
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Diagnostics
             }*/
 
             var errorPage = new ErrorPage() { Model = model };
-            errorPage.Execute(context);
+            await errorPage.ExecuteAsync(context);
         }
 
         private IEnumerable<ErrorDetails> GetErrorDetails(Exception ex, bool showSource)

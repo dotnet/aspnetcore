@@ -1,5 +1,4 @@
-﻿
-(function ($) {
+﻿(function (window, undefined) {
     $('.collapsable').hide();
     $('.page').hide();
     $('#stackpage').show();
@@ -33,4 +32,4 @@
         }
     });
     
-})(jQuery);
+})(window);

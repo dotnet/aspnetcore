@@ -7,7 +7,7 @@
     /// <summary>
     /// 
     /// </summary>
-    public Views.ErrorPageModel Model { get; set; }
+    public ErrorPageModel Model { get; set; }
 }
 @{
     Response.StatusCode = 500;
@@ -17,22 +17,23 @@
     string location = string.Empty;
 }
 <!DOCTYPE html>
-<html lang="@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName"  xmlns="http://www.w3.org/1999/xhtml">
+<html lang="@CultureInfo.CurrentUICulture.TwoLetterISOLanguageName" xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <meta charset="utf-8" />
         <title>@Resources.ErrorPageHtml_Title</title>
         <style>
-            @(@"[[ErrorPage.css]]") 
+            <%$ include: ErrorPage.css %>
         </style>
     </head>
     <body>
+        Hello
         <h1>@Resources.ErrorPageHtml_UnhandledException</h1>
         @if (Model.Options.ShowExceptionDetails)
         {
             foreach (var errorDetail in Model.ErrorDetails)
             {
                 <h2 class="titleerror">@errorDetail.Error.GetType().Name: @errorDetail.Error.Message</h2>
-                {
+                @{
                     StackFrame firstFrame = null;
                     firstFrame = errorDetail.StackFrames.FirstOrDefault();
                     if (firstFrame != null)
@@ -43,7 +44,7 @@
                     {
                         location = errorDetail.Error.TargetSite.DeclaringType.FullName + "." + errorDetail.Error.TargetSite.Name;
                     }*/
-                 }
+                }
                 if (!string.IsNullOrEmpty(location) && firstFrame != null && !string.IsNullOrEmpty(firstFrame.File))
                 {
                     <p class="location">@location in <code title="@firstFrame.File">@System.IO.Path.GetFileName(firstFrame.File)</code>, line @firstFrame.Line</p>
@@ -272,10 +273,10 @@
              */
         }
         <script src="http://ajax.aspnetcdn.com/ajax/jquery/jquery-1.9.0.js"></script>
-        <script type="text/javascript">
+        <script>
             //<!--
-            @(@"[[ErrorPage.js]]")
-        //-->
+            <%$ include: ErrorPage.js %>
+            //-->
         </script>
     </body>
 </html>

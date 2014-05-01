@@ -20,13 +20,10 @@
     <Content Include="Project.json" />
     <Content Include="Resources.resx" />
     <Content Include="Views\DiagnosticsPage.cshtml" />
-    <Content Include="Views\DiagnosticsPage.tt" />
     <Content Include="Views\ErrorPage.cshtml" />
     <Content Include="Views\ErrorPage.css" />
     <Content Include="Views\ErrorPage.js" />
-    <Content Include="Views\ErrorPage.tt" />
     <Content Include="Views\WelcomePage.cshtml" />
-    <Content Include="Views\WelcomePage.tt" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants.cs" />

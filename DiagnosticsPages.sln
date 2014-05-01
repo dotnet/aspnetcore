@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30327.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.21628.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{509A6F36-AD80-4A18-B5B1-717D38DFF29D}"
 EndProject
@@ -12,6 +12,8 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Diagnostics", "src\Microsoft.AspNet.Diagnostics\Microsoft.AspNet.Diagnostics.kproj", "{68A1F0E1-ECCE-46D1-B20F-C43EE5B097DE}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ErrorPageSample", "samples\ErrorPageSample\ErrorPageSample.kproj", "{589AC17F-9455-4764-8F82-FCD2AE58DA14}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "PageGenerator", "src\PageGenerator\PageGenerator.kproj", "{4D4A785A-ECB9-4916-A88F-0FD306EE3B74}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,15 @@ Global
 		{589AC17F-9455-4764-8F82-FCD2AE58DA14}.Release|Mixed Platforms.Build.0 = Release|x86
 		{589AC17F-9455-4764-8F82-FCD2AE58DA14}.Release|x86.ActiveCfg = Release|x86
 		{589AC17F-9455-4764-8F82-FCD2AE58DA14}.Release|x86.Build.0 = Release|x86
+		{4D4A785A-ECB9-4916-A88F-0FD306EE3B74}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{4D4A785A-ECB9-4916-A88F-0FD306EE3B74}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{4D4A785A-ECB9-4916-A88F-0FD306EE3B74}.Debug|x86.ActiveCfg = Debug|x86
+		{4D4A785A-ECB9-4916-A88F-0FD306EE3B74}.Debug|x86.Build.0 = Debug|x86
+		{4D4A785A-ECB9-4916-A88F-0FD306EE3B74}.Release|Any CPU.ActiveCfg = Release|x86
+		{4D4A785A-ECB9-4916-A88F-0FD306EE3B74}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{4D4A785A-ECB9-4916-A88F-0FD306EE3B74}.Release|Mixed Platforms.Build.0 = Release|x86
+		{4D4A785A-ECB9-4916-A88F-0FD306EE3B74}.Release|x86.ActiveCfg = Release|x86
+		{4D4A785A-ECB9-4916-A88F-0FD306EE3B74}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -59,5 +70,6 @@ Global
 		{C5F59CBA-DF2D-4983-8CBB-11B6AF21B416} = {ACAA0157-A8C4-4152-93DE-90CCDF304087}
 		{68A1F0E1-ECCE-46D1-B20F-C43EE5B097DE} = {509A6F36-AD80-4A18-B5B1-717D38DFF29D}
 		{589AC17F-9455-4764-8F82-FCD2AE58DA14} = {ACAA0157-A8C4-4152-93DE-90CCDF304087}
+		{4D4A785A-ECB9-4916-A88F-0FD306EE3B74} = {509A6F36-AD80-4A18-B5B1-717D38DFF29D}
 	EndGlobalSection
 EndGlobal

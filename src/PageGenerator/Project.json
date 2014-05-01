@@ -1,0 +1,20 @@
+﻿{
+    "dependencies": {
+        "Microsoft.AspNet.Diagnostics":  "",
+        "Microsoft.Net.Runtime.Interfaces": "0.1.0-alpha-*",
+        "Microsoft.AspNet.Mvc": "0.1.0-alpha-*"
+    },
+
+    "configurations" : {
+        "net45" : {
+            "dependencies": {
+                "System.Runtime":  ""
+            }
+        },
+        "k10" : { 
+            "dependencies": {
+                "System.Console": "4.0.0.0"
+            }
+        }
+    }
+}

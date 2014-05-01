@@ -48,8 +48,7 @@ namespace Microsoft.AspNet.Diagnostics
             {
                 // Dynamically generated for LOC.
                 var welcomePage = new WelcomePage();
-                welcomePage.Execute(context);
-                return Task.FromResult(0);
+                return welcomePage.ExecuteAsync(context);
             }
 
             return _next(context);
