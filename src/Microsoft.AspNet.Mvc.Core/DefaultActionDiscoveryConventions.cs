@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Mvc
                 !method.IsConstructor &&
                 !method.IsGenericMethod &&
 
-                // The SpecialName bit is set to flag members that are treated in a special way by some compilers 
+                // The SpecialName bit is set to flag members that are treated in a special way by some compilers
                 // (such as property accessors and operator overloading methods).
                 !method.IsSpecialName &&
                 !method.IsDefined(typeof(NonActionAttribute));
@@ -98,7 +98,7 @@ namespace Microsoft.AspNet.Mvc
             var supportedHttpMethods =
                 _supportedHttpMethodsByConvention.FirstOrDefault(
                     httpMethod => methodInfo.Name.Equals(httpMethod, StringComparison.OrdinalIgnoreCase));
-            
+
             if (supportedHttpMethods != null)
             {
                 yield return supportedHttpMethods;
@@ -128,7 +128,7 @@ namespace Microsoft.AspNet.Mvc
             var actionAttributes = GetActionCustomAttributes(methodInfo);
             if (!actionAttributes.Any())
             {
-                // If the action is not decorated with any of the attributes, 
+                // If the action is not decorated with any of the attributes,
                 // it would be handled by convention.
                 yield break;
             }
@@ -147,7 +147,9 @@ namespace Microsoft.AspNet.Mvc
             };
         }
 
-        private IEnumerable<ActionInfo> GetActionsForMethodsWithoutCustomAttributes(MethodInfo methodInfo, TypeInfo controllerTypeInfo)
+        private IEnumerable<ActionInfo> GetActionsForMethodsWithoutCustomAttributes(
+            MethodInfo methodInfo,
+            TypeInfo controllerTypeInfo)
         {
             var actionInfos = new List<ActionInfo>();
             var httpMethods = GetSupportedHttpMethods(methodInfo);
@@ -165,8 +167,9 @@ namespace Microsoft.AspNet.Mvc
             }
 
             // For Default Method add an action Info with GET, POST Http Method constraints.
-            // Only constraints (out of GET and POST) for which there are no convention based actions available are added.
-            // If there are existing action infos with http constraints for GET and POST, this action info is not added for default method. 
+            // Only constraints (out of GET and POST) for which there are no convention based actions available are
+            // added. If there are existing action infos with http constraints for GET and POST, this action info is
+            // not added for default method.
             if (IsDefaultActionMethod(methodInfo))
             {
                 var existingHttpMethods = new HashSet<string>();

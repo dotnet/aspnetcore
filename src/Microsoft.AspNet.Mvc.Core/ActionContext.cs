@@ -22,7 +22,9 @@ namespace Microsoft.AspNet.Mvc
         {
         }
 
-        public ActionContext([NotNull] HttpContext httpContext, [NotNull] RouteData routeData, [NotNull] ActionDescriptor actionDescriptor)
+        public ActionContext([NotNull] HttpContext httpContext,
+            [NotNull] RouteData routeData,
+            [NotNull] ActionDescriptor actionDescriptor)
         {
             HttpContext = httpContext;
             RouteData = routeData;

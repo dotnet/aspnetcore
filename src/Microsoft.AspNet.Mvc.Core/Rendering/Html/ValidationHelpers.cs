@@ -29,7 +29,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         // Returns non-null list of model states, which caller will render in order provided.
-        public static IEnumerable<ModelState> GetModelStateList(ViewDataDictionary viewData, bool excludePropertyErrors)
+        public static IEnumerable<ModelState> GetModelStateList(
+            ViewDataDictionary viewData,
+            bool excludePropertyErrors)
         {
             if (excludePropertyErrors)
             {
@@ -80,7 +82,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 {
                     return value;
                 }
-            
+
                 return ModelMetadata.DefaultOrder;
             }
         }

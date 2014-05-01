@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Mvc
             set;
         }
 
-        // TODO: Replace the stub. 
+        // TODO: Replace the stub.
         private static string GetAntiForgeryCookieName()
         {
             return AntiForgeryTokenFieldName;

@@ -8,8 +8,8 @@ namespace Microsoft.AspNet.Mvc
     public abstract class FilterContext : ActionContext
     {
         public FilterContext(
-            [NotNull] ActionContext actionContext, 
-            [NotNull] IList<IFilter> filters) 
+            [NotNull] ActionContext actionContext,
+            [NotNull] IList<IFilter> filters)
             : base(actionContext)
         {
             Filters = filters;

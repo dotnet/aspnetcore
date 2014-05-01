@@ -64,12 +64,17 @@ namespace Microsoft.AspNet.Mvc
                 throw new ArgumentNullException("descriptor");
             }
 
-            return (descriptor.RouteConstraints == null || descriptor.RouteConstraints.All(c => c.Accept(context))) &&
-                   (descriptor.MethodConstraints == null || descriptor.MethodConstraints.All(c => c.Accept(context))) &&
-                   (descriptor.DynamicConstraints == null || descriptor.DynamicConstraints.All(c => c.Accept(context)));
+            return (descriptor.RouteConstraints == null ||
+                        descriptor.RouteConstraints.All(c => c.Accept(context))) &&
+                   (descriptor.MethodConstraints == null ||
+                        descriptor.MethodConstraints.All(c => c.Accept(context))) &&
+                   (descriptor.DynamicConstraints == null ||
+                        descriptor.DynamicConstraints.All(c => c.Accept(context)));
         }
 
-        protected virtual async Task<ActionDescriptor> SelectBestCandidate(RouteContext context, List<ActionDescriptor> candidates)
+        protected virtual async Task<ActionDescriptor> SelectBestCandidate(
+            RouteContext context,
+            List<ActionDescriptor> candidates)
         {
             var applicableCandiates = new List<ActionDescriptorCandidate>();
             foreach (var action in candidates)
@@ -90,7 +95,8 @@ namespace Microsoft.AspNet.Mvc
                         continue;
                     }
 
-                    if (await actionBindingContext.ValueProvider.ContainsPrefixAsync(parameter.ParameterBindingInfo.Prefix))
+                    if (await actionBindingContext.ValueProvider.ContainsPrefixAsync(
+                        parameter.ParameterBindingInfo.Prefix))
                     {
                         candidate.FoundParameters++;
                         if (parameter.IsOptional)
@@ -122,7 +128,7 @@ namespace Microsoft.AspNet.Mvc
                 .OrderByDescending(g => g.Key)
                 .First();
 
-            var fewestOptionalParameters = 
+            var fewestOptionalParameters =
                 mostParametersSatisfied
                 .GroupBy(c => c.FoundOptionalParameters)
                 .OrderBy(g => g.Key).First()
@@ -151,7 +157,7 @@ namespace Microsoft.AspNet.Mvc
 
             var actions =
                 GetActions().Where(
-                    action => 
+                    action =>
                         action.RouteConstraints == null ||
                         action.RouteConstraints.All(constraint => constraint.Accept(context.ProvidedValues)));
 
@@ -166,9 +172,9 @@ namespace Microsoft.AspNet.Mvc
             // This method attempts to find a unique 'best' candidate set of actions from the provided route
             // values and ambient route values.
             //
-            // The purpose of this process is to avoid allowing certain routes to be too greedy. When a route uses 
-            // a default value as a filter, it can generate links to actions it will never hit. The actions returned 
-            // by this method are used by the link generation code to manipulate the route values so that routes that 
+            // The purpose of this process is to avoid allowing certain routes to be too greedy. When a route uses
+            // a default value as a filter, it can generate links to actions it will never hit. The actions returned
+            // by this method are used by the link generation code to manipulate the route values so that routes that
             // are are greedy can't generate a link.
             //
             // The best example of this greediness is the canonical 'area' route from MVC.
@@ -178,11 +184,12 @@ namespace Microsoft.AspNet.Mvc
             // This route can generate a link even when the 'area' token is not provided.
             //
             //
-            // We define 'best' based on the combination of Values and AmbientValues. This set can be used to select a 
-            // set of actions, anything in this is set is 'reachable'. We determine 'best' by looking for the 'reachable'
-            // actions ordered by the most total constraints matched, then the most constraints matched by ambient values.
+            // We define 'best' based on the combination of Values and AmbientValues. This set can be used to select a
+            // set of actions, anything in this is set is 'reachable'. We determine 'best' by looking for the
+            // 'reachable' actions ordered by the most total constraints matched, then the most constraints matched by
+            // ambient values.
             //
-            // Ex: 
+            // Ex:
             //      Consider the following actions - Home/Index (no area), and Admin/Home/Index (area = Admin).
             //      ambient values = { area = "Admin", controller = "Home", action = "Diagnostics" }
             //      values = { action = "Index" }
@@ -194,7 +201,7 @@ namespace Microsoft.AspNet.Mvc
             //
             // The description here is based on the concepts we're using to implement areas in WebFx, but apply
             // to any tokens that might be used in routing (including REST conventions when action == null).
-            // 
+            //
             // This method does not take httpmethod or dynamic action constraints into account.
 
             var actions = GetActions();
@@ -209,7 +216,7 @@ namespace Microsoft.AspNet.Mvc
                     continue;
                 }
 
-                bool isActionValid = true;
+                var isActionValid = true;
                 foreach (var constraint in action.RouteConstraints)
                 {
                     if (constraint.Accept(context.Values))
@@ -299,7 +306,7 @@ namespace Microsoft.AspNet.Mvc
         //
         // This is a no-op for our default conventions, but becomes important with custom action
         // descriptor providers.
-        // 
+        //
         // Ex: These are not in the same equivalence class.
         //  Action 1: constraint keys - { action, controller, area }
         //  Action 2: constraint keys - { action, module }

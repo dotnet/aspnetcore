@@ -9,6 +9,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
     {
         ViewEngineResult FindView([NotNull] IDictionary<string, object> context, [NotNull] string viewName);
 
-        ViewEngineResult FindPartialView([NotNull] IDictionary<string, object> context, [NotNull] string partialViewName);
+        ViewEngineResult FindPartialView(
+            [NotNull] IDictionary<string, object> context,
+            [NotNull] string partialViewName);
     }
 }

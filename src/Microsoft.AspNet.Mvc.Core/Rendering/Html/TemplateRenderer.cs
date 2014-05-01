@@ -127,8 +127,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var metadata = _viewData.ModelMetadata;
             var templateHints = new string[]
             {
-                _templateName, 
-                metadata.TemplateHint, 
+                _templateName,
+                metadata.TemplateHint,
                 metadata.DataTypeName
             };
 
@@ -137,7 +137,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 yield return templateHint;
             }
 
-            // We don't want to search for Nullable<T>, we want to search for T (which should handle both T and Nullable<T>)
+            // We don't want to search for Nullable<T>, we want to search for T (which should handle both T and
+            // Nullable<T>).
             var fieldType = Nullable.GetUnderlyingType(metadata.RealModelType) ?? metadata.RealModelType;
 
             yield return fieldType.Name;
@@ -173,7 +174,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
             else
             {
-                bool isEnumerable = typeof(IEnumerable).IsAssignableFrom(fieldType);
+                var isEnumerable = typeof(IEnumerable).IsAssignableFrom(fieldType);
 
                 while (true)
                 {

@@ -124,12 +124,12 @@ namespace Microsoft.AspNet.Mvc
             if (routeValues == null)
             {
                 throw new ArgumentException(Resources.FormatPropertyOfTypeCannotBeNull(
-                        "Values", 
-                        typeof(RouteData)), 
+                        "Values",
+                        typeof(RouteData)),
                     "context");
             }
 
             return Accept(routeValues);
-        }   
+        }
     }
 }

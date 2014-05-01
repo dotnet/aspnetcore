@@ -10,7 +10,8 @@ namespace Microsoft.AspNet.Mvc
     {
         private readonly INestedProviderManager<ViewComponentInvokerProviderContext> _providerManager;
 
-        public DefaultViewComponentInvokerFactory(INestedProviderManager<ViewComponentInvokerProviderContext> providerManager)
+        public DefaultViewComponentInvokerFactory(
+            INestedProviderManager<ViewComponentInvokerProviderContext> providerManager)
         {
             _providerManager = providerManager;
         }

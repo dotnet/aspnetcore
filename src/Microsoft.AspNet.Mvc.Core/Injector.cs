@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc
         {
             var type = obj.GetType();
 
-            var initializeMethod = 
+            var initializeMethod =
                 type.GetRuntimeMethods()
                 .FirstOrDefault(m => m.Name.Equals("Initialize", StringComparison.OrdinalIgnoreCase));
 
@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc
                 return;
             }
 
-            var args = 
+            var args =
                 initializeMethod.GetParameters()
                 .Select(p => services.GetService(p.ParameterType))
                 .ToArray();
@@ -31,7 +31,10 @@ namespace Microsoft.AspNet.Mvc
             initializeMethod.Invoke(obj, args);
         }
 
-        public static void InjectProperty<TProperty>([NotNull] object obj, [NotNull] string propertyName, TProperty value)
+        public static void InjectProperty<TProperty>(
+            [NotNull] object obj, 
+            [NotNull] string propertyName, 
+            TProperty value)
         {
             var type = obj.GetType();
 
@@ -47,7 +50,10 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        public static void InjectProperty<TProperty>([NotNull] object obj, [NotNull] string propertyName, [NotNull] IServiceProvider services)
+        public static void InjectProperty<TProperty>(
+            [NotNull] object obj, 
+            [NotNull] string propertyName, 
+            [NotNull] IServiceProvider services)
         {
             var type = obj.GetType();
 

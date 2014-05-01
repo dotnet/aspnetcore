@@ -8,11 +8,11 @@ namespace Microsoft.AspNet.Mvc
         public static string Action([NotNull] this IUrlHelper helper)
         {
             return helper.Action(
-                action: null, 
-                controller: null, 
-                values: null, 
-                protocol: null, 
-                host: null, 
+                action: null,
+                controller: null,
+                values: null,
+                protocol: null,
+                host: null,
                 fragment: null);
         }
 
@@ -37,21 +37,21 @@ namespace Microsoft.AspNet.Mvc
         }
 
         public static string Action(
-            [NotNull] this IUrlHelper helper, 
-            string action, 
-            string controller, 
-            object values, 
+            [NotNull] this IUrlHelper helper,
+            string action,
+            string controller,
+            object values,
             string protocol)
         {
             return helper.Action(action, controller, values, protocol, host: null, fragment: null);
         }
 
         public static string Action(
-            [NotNull] this IUrlHelper helper, 
-            string action, 
-            string controller, 
-            object values, 
-            string protocol, 
+            [NotNull] this IUrlHelper helper,
+            string action,
+            string controller,
+            object values,
+            string protocol,
             string host)
         {
             return helper.Action(action, controller, values, protocol, host, fragment: null);
@@ -72,16 +72,21 @@ namespace Microsoft.AspNet.Mvc
             return helper.RouteUrl(routeName, values, protocol: null, host: null, fragment: null);
         }
 
-        public static string RouteUrl([NotNull] this IUrlHelper helper, string routeName, object values, string protocol)
+        public static string RouteUrl(
+            [NotNull] this IUrlHelper helper, 
+            string routeName, 
+            object values, 
+            string protocol)
         {
             return helper.RouteUrl(routeName, values, protocol, host: null, fragment: null);
         }
 
-        public static string RouteUrl([NotNull] this IUrlHelper helper,
-                                      string routeName,
-                                      object values,
-                                      string protocol,
-                                      string host)
+        public static string RouteUrl(
+            [NotNull] this IUrlHelper helper,
+            string routeName,
+            object values,
+            string protocol,
+            string host)
         {
             return helper.RouteUrl(routeName, values, protocol, host, fragment: null);
         }

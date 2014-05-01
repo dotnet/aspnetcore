@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             get { return View != null; }
         }
 
-        public static ViewEngineResult NotFound([NotNull] string viewName, 
+        public static ViewEngineResult NotFound([NotNull] string viewName,
                                                 [NotNull] IEnumerable<string> searchedLocations)
         {
             return new ViewEngineResult

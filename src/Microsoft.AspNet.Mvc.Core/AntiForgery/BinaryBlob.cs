@@ -48,13 +48,12 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Called by debugger.")]
         private string DebuggerString
         {
             get
             {
-                StringBuilder sb = new StringBuilder("0x", 2 + (_data.Length * 2));
-                for (int i = 0; i < _data.Length; i++)
+                var sb = new StringBuilder("0x", 2 + (_data.Length * 2));
+                for (var i = 0; i < _data.Length; i++)
                 {
                     sb.AppendFormat(CultureInfo.InvariantCulture, "{0:x2}", _data[i]);
                 }
@@ -93,14 +92,14 @@ namespace Microsoft.AspNet.Mvc
 
         private static byte[] GenerateNewToken(int bitLength)
         {
-            byte[] data = new byte[bitLength / 8];
+            var data = new byte[bitLength / 8];
             CryptRand.FillBuffer(new ArraySegment<byte>(data));
             return data;
         }
 
-        // Need to mark it with NoInlining and NoOptimization attributes to ensure that the 
+        // Need to mark it with NoInlining and NoOptimization attributes to ensure that the
         // operation runs in constant time.
-        [MethodImplAttribute(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)] 
+        [MethodImplAttribute(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         private static bool AreByteArraysEqual(byte[] a, byte[] b)
         {
             if (a == null || b == null || a.Length != b.Length)
@@ -108,8 +107,8 @@ namespace Microsoft.AspNet.Mvc
                 return false;
             }
 
-            bool areEqual = true;
-            for (int i = 0; i < a.Length; i++)
+            var areEqual = true;
+            for (var i = 0; i < a.Length; i++)
             {
                 areEqual &= (a[i] == b[i]);
             }

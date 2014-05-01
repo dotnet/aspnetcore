@@ -15,6 +15,10 @@ namespace Microsoft.AspNet.Mvc
         bool IsCookieTokenValid(AntiForgeryToken cookieToken);
 
         // Validates a (cookie, form) token pair.
-        void ValidateTokens(HttpContext httpContext, ClaimsIdentity identity, AntiForgeryToken cookieToken, AntiForgeryToken formToken);
+        void ValidateTokens(
+            HttpContext httpContext,
+            ClaimsIdentity identity,
+            AntiForgeryToken cookieToken,
+            AntiForgeryToken formToken);
     }
 }

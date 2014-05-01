@@ -46,9 +46,10 @@ namespace Microsoft.AspNet.Mvc
 
         public static Type ExtractGenericInterface([NotNull] this Type queryType, Type interfaceType)
         {
-            Func<Type, bool> matchesInterface = t => t.IsGenericType() && t.GetGenericTypeDefinition() == interfaceType;
-            return (matchesInterface(queryType)) ? 
-                queryType : 
+            Func<Type, bool> matchesInterface =
+                t => t.IsGenericType() && t.GetGenericTypeDefinition() == interfaceType;
+            return (matchesInterface(queryType)) ?
+                queryType :
                 queryType.GetInterfaces().FirstOrDefault(matchesInterface);
         }
 

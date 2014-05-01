@@ -12,12 +12,12 @@ namespace Microsoft.AspNet.Mvc
         private Exception _exception;
         private ExceptionDispatchInfo _exceptionDispatchInfo;
 
-        public ExceptionContext([NotNull] ActionContext actionContext, [NotNull] IList<IFilter> filters) 
+        public ExceptionContext([NotNull] ActionContext actionContext, [NotNull] IList<IFilter> filters)
             : base(actionContext, filters)
         {
         }
 
-        public virtual Exception Exception 
+        public virtual Exception Exception
         {
             get
             {
@@ -38,10 +38,10 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        public virtual ExceptionDispatchInfo ExceptionDispatchInfo 
+        public virtual ExceptionDispatchInfo ExceptionDispatchInfo
         {
-            get 
-            { 
+            get
+            {
                 return _exceptionDispatchInfo;
             }
 

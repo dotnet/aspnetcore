@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc
             }
 
             var uniqueIdentifierParameters = GetUniqueIdentifierParameters(claimsIdentity);
-            byte[] claimUidBytes = ComputeSHA256(uniqueIdentifierParameters);
+            var claimUidBytes = ComputeSHA256(uniqueIdentifierParameters);
             return Convert.ToBase64String(claimUidBytes);
         }
 
@@ -69,7 +69,7 @@ namespace Microsoft.AspNet.Mvc
 
                     using (var sha256 = SHA256.Create())
                     {
-                        byte[] retVal = sha256.ComputeHash(ms.ToArray(), 0, checked((int)ms.Length));
+                        var retVal = sha256.ComputeHash(ms.ToArray(), 0, checked((int)ms.Length));
                         return retVal;
                     }
                 }

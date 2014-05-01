@@ -111,7 +111,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             return GenerateDisplayName(metadata, expressionText);
         }
-        
+
         /// <inheritdoc />
         public HtmlString DisplayTextFor<TValue>([NotNull] Expression<Func<TModel, TValue>> expression)
         {
@@ -150,7 +150,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString LabelFor<TValue>([NotNull] Expression<Func<TModel, TValue>> expression, string labelText, object htmlAttributes)
+        public HtmlString LabelFor<TValue>(
+            [NotNull] Expression<Func<TModel, TValue>> expression,
+            string labelText,
+            object htmlAttributes)
         {
             var metadata = GetModelMetadata(expression);
             return GenerateLabel(metadata, ExpressionHelper.GetExpressionText(expression), labelText, htmlAttributes);

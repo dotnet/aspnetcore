@@ -21,7 +21,8 @@ namespace Microsoft.AspNet.Mvc
 
         public void Invoke([NotNull] ViewComponentInvokerProviderContext context, [NotNull] Action callNext)
         {
-            context.Result = new DefaultViewComponentInvoker(_serviceProvider, context.ComponentType, context.Arguments);
+            context.Result =
+                new DefaultViewComponentInvoker(_serviceProvider, context.ComponentType, context.Arguments);
             callNext();
         }
     }

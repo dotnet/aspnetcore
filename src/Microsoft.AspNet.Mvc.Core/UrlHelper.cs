@@ -26,7 +26,13 @@ namespace Microsoft.AspNet.Mvc
             _actionSelector = actionSelector;
         }
 
-        public string Action(string action, string controller, object values, string protocol, string host, string fragment)
+        public string Action(
+            string action, 
+            string controller, 
+            object values, 
+            string protocol, 
+            string host, 
+            string fragment)
         {
             var valuesDictionary = TypeHelper.ObjectToDictionary(values);
 

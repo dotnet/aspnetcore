@@ -12,7 +12,7 @@ namespace System.Collections.Generic
         {
             Contract.Assert(values != null);
 
-            T[] array = values as T[];
+            var array = values as T[];
             if (array == null)
             {
                 array = values.ToArray();

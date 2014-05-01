@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Mvc.Filters
         {
             // If the controller implements a filter, and doesn't specify order, then it should
             // run closest to the action.
-            int order = Int32.MaxValue;
+            var order = Int32.MaxValue;
             var orderedControllerFilter = controllerFilter as IOrderedFilter;
             if (orderedControllerFilter != null)
             {

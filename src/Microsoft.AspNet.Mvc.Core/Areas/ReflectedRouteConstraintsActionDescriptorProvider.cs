@@ -50,7 +50,8 @@ namespace Microsoft.AspNet.Mvc
                 {
                     if (!HasConstraint(actionDescriptor, key))
                     {
-                        actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(key, RouteKeyHandling.DenyKey));
+                        actionDescriptor.RouteConstraints.Add(
+                            new RouteDataActionConstraint(key, RouteKeyHandling.DenyKey));
                     }
                 }
             }
@@ -60,7 +61,8 @@ namespace Microsoft.AspNet.Mvc
 
         private bool HasConstraint(ActionDescriptor actionDescript, string routeKey)
         {
-            return actionDescript.RouteConstraints.Any(rc => string.Equals(rc.RouteKey, routeKey, StringComparison.OrdinalIgnoreCase));
+            return actionDescript.RouteConstraints.Any(
+                rc => string.Equals(rc.RouteKey, routeKey, StringComparison.OrdinalIgnoreCase));
         }
     }
 }

@@ -8,7 +8,10 @@ namespace Microsoft.AspNet.Mvc
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public abstract class RouteConstraintAttribute : Attribute
     {
-        protected RouteConstraintAttribute([NotNull]string routeKey, [NotNull]string routeValue, bool blockNonAttributedActions)
+        protected RouteConstraintAttribute(
+            [NotNull]string routeKey, 
+            [NotNull]string routeValue, 
+            bool blockNonAttributedActions)
         {
             RouteKey = routeKey;
             RouteValue = routeValue;

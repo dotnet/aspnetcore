@@ -13,9 +13,9 @@ namespace Microsoft.AspNet.Mvc
         private ExceptionDispatchInfo _exceptionDispatchInfo;
 
         public ResultExecutedContext(
-            [NotNull] ActionContext actionContext, 
+            [NotNull] ActionContext actionContext,
             [NotNull] IList<IFilter> filters,
-            [NotNull] IActionResult result) 
+            [NotNull] IActionResult result)
             : base(actionContext, filters)
         {
             Result = result;

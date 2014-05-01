@@ -46,9 +46,9 @@ namespace Microsoft.AspNet.Mvc
                     }
                     catch
                     {
-                        // Need to prevent writes/flushes on dispose because the StreamWriter will flush even if nothing
-                        // got written. This leads to a response going out on the wire prematurely in case an exception
-                        // is being thrown inside the try catch block.
+                        // Need to prevent writes/flushes on dispose because the StreamWriter will flush even if
+                        // nothing got written. This leads to a response going out on the wire prematurely in case an
+                        // exception is being thrown inside the try catch block.
                         wrappedStream.BlockWrites = true;
                         throw;
                     }

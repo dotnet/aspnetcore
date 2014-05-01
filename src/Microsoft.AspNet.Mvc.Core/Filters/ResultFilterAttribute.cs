@@ -19,7 +19,9 @@ namespace Microsoft.AspNet.Mvc
         {
         }
 
-        public virtual async Task OnResultExecutionAsync([NotNull] ResultExecutingContext context, [NotNull] ResultExecutionDelegate next)
+        public virtual async Task OnResultExecutionAsync(
+            [NotNull] ResultExecutingContext context,
+            [NotNull] ResultExecutionDelegate next)
         {
             OnResultExecuting(context);
             if (context.Result == null)

@@ -3,7 +3,8 @@
 
 namespace Microsoft.AspNet.Mvc
 {
-    // This needs more thought, the intent is that we would be able to cache over this constraint without running the accept method.
+    // This needs more thought, the intent is that we would be able to cache over this constraint
+    // without running the accept method.
     public enum RouteKeyHandling
     {
         /// <summary>

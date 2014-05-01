@@ -69,7 +69,12 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
                 }
             };
 
-            return GetMetadataFromProvider(modelAccessor, typeof(TValue), propertyName, containerType, metadataProvider);
+            return GetMetadataFromProvider(
+                modelAccessor,
+                typeof(TValue),
+                propertyName,
+                containerType,
+                metadataProvider);
         }
 
         public static ModelMetadata FromStringExpression(string expression,

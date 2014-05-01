@@ -18,8 +18,8 @@ namespace Microsoft.AspNet.Mvc
         private readonly object[] _args;
 
         public DefaultViewComponentInvoker(
-            [NotNull] IServiceProvider serviceProvider, 
-            [NotNull] TypeInfo componentType, 
+            [NotNull] IServiceProvider serviceProvider,
+            [NotNull] TypeInfo componentType,
             object[] args)
         {
             _serviceProvider = serviceProvider;
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Mvc
         private object CreateComponent([NotNull] ViewContext context)
         {
             var activator = _serviceProvider.GetService<ITypeActivator>();
-            object component = activator.CreateInstance(_serviceProvider, _componentType.AsType());
+            var component = activator.CreateInstance(_serviceProvider, _componentType.AsType());
 
             Injector.InjectProperty(component, "ViewContext", context);
 
@@ -86,7 +86,9 @@ namespace Microsoft.AspNet.Mvc
             return component;
         }
 
-        private async Task<IViewComponentResult> InvokeAsyncCore([NotNull] MethodInfo method, [NotNull] ViewContext context)
+        private async Task<IViewComponentResult> InvokeAsyncCore(
+            [NotNull] MethodInfo method,
+            [NotNull] ViewContext context)
         {
             var component = CreateComponent(context);
 

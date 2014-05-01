@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Mvc
     public class AuthorizationContext : FilterContext
     {
         public AuthorizationContext(
-            [NotNull] ActionContext actionContext, 
+            [NotNull] ActionContext actionContext,
             [NotNull] IList<IFilter> filters)
             : base(actionContext, filters)
         {

@@ -48,7 +48,8 @@ namespace Microsoft.AspNet.Mvc
                                 ReflectedRouteConstraintsActionDescriptorProvider>();
             yield return describe.Transient<INestedProvider<ActionInvokerProviderContext>,
                                             ReflectedActionInvokerProvider>();
-            yield return describe.Singleton<IActionDescriptorsCollectionProvider, DefaultActionDescriptorsCollectionProvider>();
+            yield return describe.Singleton<IActionDescriptorsCollectionProvider, 
+                DefaultActionDescriptorsCollectionProvider>();
 
             yield return describe.Transient<IModelMetadataProvider, DataAnnotationsModelMetadataProvider>();
             yield return describe.Transient<IActionBindingContextProvider, DefaultActionBindingContextProvider>();

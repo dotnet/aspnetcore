@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc
 
         public string FormToken { get; private set; }
 
-        // The cookie token is allowed to be null. 
+        // The cookie token is allowed to be null.
         // This would be the case when the old cookie token is still valid.
         // In such cases a call to GetTokens would return a token set with null cookie token.
         public string CookieToken { get; private set; }

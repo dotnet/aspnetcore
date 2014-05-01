@@ -420,7 +420,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </param>
         /// <returns>New <see cref="HtmlString"/> containing the rendered HTML.</returns>
         HtmlString TextArea(string name, string value, int rows, int columns, object htmlAttributes);
-        
+
         /// <summary>
         /// Render an input element of type "text".
         /// </summary>
@@ -444,7 +444,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="modelName">The name of the property that is being validated.</param>
         /// <param name="message">The message to be displayed. This will always be visible but client-side
         /// validation may update the associated CSS class.</param>
-        /// <param name="htmlAttributes"> An object that contains the HTML attributes to set for the element. 
+        /// <param name="htmlAttributes"> An object that contains the HTML attributes to set for the element.
         /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
         /// </param>
         /// <param name="tag">The tag to wrap the <paramref name="message"/> in the generated HTML.

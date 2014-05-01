@@ -18,13 +18,13 @@ namespace Microsoft.AspNet.Mvc
 
         public override async Task ExecuteResultAsync([NotNull] ActionContext context)
         {
-            HttpResponse response = context.HttpContext.Response;
+            var response = context.HttpContext.Response;
 
-            if (!String.IsNullOrEmpty(ContentType))
+            if (!string.IsNullOrEmpty(ContentType))
             {
                 response.ContentType = ContentType;
             }
-           
+
             if (Content != null)
             {
                 await response.WriteAsync(Content);

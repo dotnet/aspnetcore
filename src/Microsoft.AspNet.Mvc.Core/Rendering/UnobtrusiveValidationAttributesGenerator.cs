@@ -50,7 +50,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             if (string.IsNullOrEmpty(rule.ValidationType))
             {
                 throw new ArgumentException(
-                    Resources.FormatUnobtrusiveJavascript_ValidationTypeCannotBeEmpty(rule.GetType().FullName), "rule");
+                    Resources.FormatUnobtrusiveJavascript_ValidationTypeCannotBeEmpty(rule.GetType().FullName), 
+                    "rule");
             }
 
             if (resultsDictionary.ContainsKey(dictionaryKey))
@@ -72,7 +73,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 if (string.IsNullOrEmpty(key))
                 {
                     throw new InvalidOperationException(
-                        Resources.FormatUnobtrusiveJavascript_ValidationParameterCannotBeEmpty(rule.GetType().FullName));
+                        Resources.FormatUnobtrusiveJavascript_ValidationParameterCannotBeEmpty(
+                            rule.GetType().FullName));
                 }
 
                 if (!char.IsLower(key[0]) || key.Any(c => !char.IsLower(c) && !char.IsDigit(c)))

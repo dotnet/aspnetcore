@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public HtmlHelper(
             [NotNull] IViewEngine viewEngine,
             [NotNull] IModelMetadataProvider metadataProvider,
-            [NotNull] IUrlHelper urlHelper,             
+            [NotNull] IUrlHelper urlHelper,
             [NotNull] AntiForgery antiForgeryInstance,
             [NotNull] IActionBindingContextProvider actionBindingContextProvider)
         {
@@ -118,10 +118,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <summary>
-        /// Creates a dictionary from an object, by adding each public instance property as a key with its associated 
-        /// value to the dictionary. It will expose public properties from derived types as well. This is typically used
-        /// with objects of an anonymous type.
-        /// 
+        /// Creates a dictionary from an object, by adding each public instance property as a key with its associated
+        /// value to the dictionary. It will expose public properties from derived types as well. This is typically
+        /// used with objects of an anonymous type.
+        ///
         /// If the object is already an <see cref="IDictionary{string, object}"/> instance, then it is
         /// returned as-is.
         /// </summary>
@@ -137,9 +137,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <summary>
-        /// Creates a dictionary of HTML attributes from the input object, 
+        /// Creates a dictionary of HTML attributes from the input object,
         /// translating underscores to dashes in each public instance property.
-        /// 
+        ///
         /// If the object is already an <see cref="IDictionary{string, object}"/> instance, then it is
         /// returned as-is.
         /// <example>
@@ -441,7 +441,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var url = _urlHelper.RouteUrl(routeName, routeValues, protocol, hostName, fragment);
             return GenerateLink(linkText, url, HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes));
         }
-        
+
         /// <inheritdoc />
         public HtmlString ValidationMessage(string expression, string message, object htmlAttributes, string tag)
         {
@@ -490,7 +490,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             {
                 foreach (var modelError in modelState.Errors)
                 {
-                    string errorText = ValidationHelpers.GetUserErrorMessageOrDefault(modelError, modelState: null);
+                    var errorText = ValidationHelpers.GetUserErrorMessageOrDefault(modelError, modelState: null);
 
                     if (!string.IsNullOrEmpty(errorText))
                     {
@@ -703,7 +703,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         protected virtual HtmlString GenerateDisplayName([NotNull] ModelMetadata metadata, string htmlFieldName)
         {
-            // We don't call ModelMetadata.GetDisplayName here because 
+            // We don't call ModelMetadata.GetDisplayName here because
             // we want to fall back to the field name rather than the ModelType.
             // This is similar to how the GenerateLabel get the text of a label.
             // TODO: This needs to be updated after ModelMetadata has a DisplayName property
@@ -717,7 +717,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             return new HtmlString(Encode(resolvedDisplayName));
         }
-        
+
         protected virtual HtmlString GenerateDisplayText(ModelMetadata metadata)
         {
             return new HtmlString(metadata.SimpleDisplayText);
@@ -810,7 +810,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return theForm;
         }
 
-        protected virtual HtmlString GenerateHidden(ModelMetadata metadata, string name, object value, bool useViewData,
+        protected virtual HtmlString GenerateHidden(
+            ModelMetadata metadata,
+            string name,
+            object value,
+            bool useViewData,
             object htmlAttributes)
         {
             // Only need a dictionary if htmlAttributes is non-null. TagBuilder.MergeAttributes() is fine with null.
@@ -854,7 +858,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                                     object htmlAttributes)
         {
             // TODO: This needs to be updated after ModelMetadata has a DisplayName property
-            string resolvedLabelText = labelText ?? metadata.PropertyName;
+            var resolvedLabelText = labelText ?? metadata.PropertyName;
             if (resolvedLabelText == null)
             {
                 resolvedLabelText = string.IsNullOrEmpty(htmlFieldName) ?
@@ -867,7 +871,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 return HtmlString.Empty;
             }
 
-            TagBuilder tag = new TagBuilder("label");
+            var tag = new TagBuilder("label");
             tag.Attributes.Add(
                             "for",
                             TagBuilder.CreateSanitizedId(
@@ -1104,7 +1108,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             ModelState modelState;
             ViewData.ModelState.TryGetValue(fullName, out modelState);
 
-            string value = string.Empty;
+            var value = string.Empty;
             if (modelState != null && modelState.Value != null)
             {
                 value = modelState.Value.AttemptedValue;
@@ -1378,7 +1382,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return new HtmlString(Encode(resolvedValue));
         }
 
-        protected virtual IEnumerable<ModelClientValidationRule> GetClientValidationRules(string name, ModelMetadata metadata)
+        protected virtual IEnumerable<ModelClientValidationRule> GetClientValidationRules(
+            string name, 
+            ModelMetadata metadata)
         {
             var actionBindingContext = _actionBindingContextProvider.GetActionBindingContextAsync(ViewContext).Result;
             metadata = metadata ??

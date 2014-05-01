@@ -13,7 +13,8 @@ namespace Microsoft.AspNet.Mvc
 {
     public static class ReflectedActionExecutor
     {
-        private static readonly MethodInfo _convertOfTMethod = typeof(ReflectedActionExecutor).GetRuntimeMethods().Single(methodInfo => methodInfo.Name == "Convert");
+        private static readonly MethodInfo _convertOfTMethod = 
+            typeof(ReflectedActionExecutor).GetRuntimeMethods().Single(methodInfo => methodInfo.Name == "Convert");
 
         // Method called via reflection.
         private static Task<object> Convert<T>(object taskAsObject)
@@ -22,13 +23,19 @@ namespace Microsoft.AspNet.Mvc
             return CastToObject<T>(task);
         }
 
-        public static async Task<object> ExecuteAsync(MethodInfo actionMethodInfo, object instance, IDictionary<string, object> actionArguments)
+        public static async Task<object> ExecuteAsync(
+            MethodInfo actionMethodInfo, 
+            object instance, 
+            IDictionary<string, object> actionArguments)
         {
             var orderedArguments = PrepareArguments(actionArguments, actionMethodInfo.GetParameters());
             return await ExecuteAsync(actionMethodInfo, instance, orderedArguments);
         }
 
-        public static async Task<object> ExecuteAsync(MethodInfo actionMethodInfo, object instance, object[] orderedActionArguments)
+        public static async Task<object> ExecuteAsync(
+            MethodInfo actionMethodInfo, 
+            object instance, 
+            object[] orderedActionArguments)
         {
             object invocationResult = null;
             try
@@ -37,19 +44,27 @@ namespace Microsoft.AspNet.Mvc
             }
             catch (TargetInvocationException targetInvocationException)
             {
-                // Capturing the actual exception and the original callstack and rethrow for external exception handlers to observe.
-                ExceptionDispatchInfo exceptionDispatchInfo = ExceptionDispatchInfo.Capture(targetInvocationException.InnerException);
+                // Capturing the exception and the original callstack and rethrow for external exception handlers.
+                var exceptionDispatchInfo = ExceptionDispatchInfo.Capture(targetInvocationException.InnerException);
                 exceptionDispatchInfo.Throw();
             }
 
-            return await CoerceResultToTaskAsync(invocationResult, actionMethodInfo.ReturnType, actionMethodInfo.Name, actionMethodInfo.DeclaringType);
+            return await CoerceResultToTaskAsync(
+                invocationResult, 
+                actionMethodInfo.ReturnType, 
+                actionMethodInfo.Name, 
+                actionMethodInfo.DeclaringType);
         }
 
         // We need to CoerceResult as the object value returned from methodInfo.Invoke has to be cast to a Task<T>.
         // This is necessary to enable calling await on the returned task.
         // i.e we need to write the following var result = await (Task<ActualType>)mInfo.Invoke.
         // Returning Task<object> enables us to await on the result.
-        private static async Task<object> CoerceResultToTaskAsync(object result, Type returnType, string methodName, Type declaringType)
+        private static async Task<object> CoerceResultToTaskAsync(
+            object result, 
+            Type returnType, 
+            string methodName, 
+            Type declaringType)
         {
             // If it is either a Task or Task<T>
             // must coerce the return value to Task<object>
@@ -62,7 +77,7 @@ namespace Microsoft.AspNet.Mvc
                     return await CastToObject(resultAsTask);
                 }
 
-                Type taskValueType = TypeHelper.GetTaskInnerTypeOrNull(returnType);
+                var taskValueType = TypeHelper.GetTaskInnerTypeOrNull(returnType);
                 if (taskValueType != null)
                 {
                     // for: public Task<T> Action()
@@ -75,7 +90,9 @@ namespace Microsoft.AspNet.Mvc
                 // This will be the case for:
                 // 1. Types which have derived from Task and Task<T>,
                 // 2. Action methods which use dynamic keyword but return a Task or Task<T>.
-                throw new InvalidOperationException(Resources.FormatActionExecutor_UnexpectedTaskInstance(methodName, declaringType));
+                throw new InvalidOperationException(Resources.FormatActionExecutor_UnexpectedTaskInstance(
+                    methodName, 
+                    declaringType));
             }
             else
             {
@@ -83,16 +100,18 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        private static object[] PrepareArguments(IDictionary<string, object> actionParameters, ParameterInfo[] declaredParameterInfos)
+        private static object[] PrepareArguments(
+            IDictionary<string, object> actionParameters, 
+            ParameterInfo[] declaredParameterInfos)
         {
-            int count = declaredParameterInfos.Length;
+            var count = declaredParameterInfos.Length;
             if (count == 0)
             {
                 return null;
             }
 
             var arguments = new object[count];
-            for (int index = 0; index < count; index++)
+            for (var index = 0; index < count; index++)
             {
                 var parameterInfo = declaredParameterInfos[index];
                 object value;
@@ -123,7 +142,7 @@ namespace Microsoft.AspNet.Mvc
             // This most likely indicates that the developer forgot to call Unwrap() somewhere.
             if (actualTypeReturned != typeof(Task))
             {
-                Type innerTaskType = TypeHelper.GetTaskInnerTypeOrNull(actualTypeReturned);
+                var innerTaskType = TypeHelper.GetTaskInnerTypeOrNull(actualTypeReturned);
                 if (innerTaskType != null && typeof(Task).IsAssignableFrom(innerTaskType))
                 {
                     throw new InvalidOperationException(

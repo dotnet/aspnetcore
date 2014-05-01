@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Mvc
     {
         public ParameterDescriptor GetDescriptor(ParameterInfo parameter)
         {
-            bool isFromBody = IsFromBody(parameter);
+            var isFromBody = IsFromBody(parameter);
 
             return new ParameterDescriptor
             {

@@ -39,7 +39,8 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
 
             var dictionaryType = targetType.ExtractGenericInterface(typeof(IDictionary<,>));
 
-            // Just wrap a call to the underlying IDictionary<TKey, TValue>.TryGetValue() where string can be cast to TKey.
+            // Just wrap a call to the underlying IDictionary<TKey, TValue>.TryGetValue() where string can be cast to
+            // TKey.
             if (dictionaryType != null)
             {
                 var typeArguments = dictionaryType.GetGenericArguments();

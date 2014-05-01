@@ -174,7 +174,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         public static string EmailAddressTemplate(IHtmlHelper html)
         {
-            var uriString = "mailto:" + ((html.ViewData.Model == null) ? string.Empty : html.ViewData.Model.ToString());
+            var uriString = "mailto:" + ((html.ViewData.Model == null) ?
+                string.Empty :
+                html.ViewData.Model.ToString());
             var linkedText = (html.ViewData.TemplateInfo.FormattedModelValue == null) ?
                 string.Empty :
                 html.ViewData.TemplateInfo.FormattedModelValue.ToString();

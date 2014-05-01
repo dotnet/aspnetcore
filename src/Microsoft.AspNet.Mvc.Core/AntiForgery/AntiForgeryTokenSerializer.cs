@@ -70,12 +70,13 @@ namespace Microsoft.AspNet.Mvc
 
             var deserializedToken = new AntiForgeryToken();
             var securityTokenBytes = reader.ReadBytes(AntiForgeryToken.SecurityTokenBitLength / 8);
-            deserializedToken.SecurityToken = new BinaryBlob(AntiForgeryToken.SecurityTokenBitLength, securityTokenBytes);
+            deserializedToken.SecurityToken =
+                new BinaryBlob(AntiForgeryToken.SecurityTokenBitLength, securityTokenBytes);
             deserializedToken.IsSessionToken = reader.ReadBoolean();
 
             if (!deserializedToken.IsSessionToken)
             {
-                bool isClaimsBased = reader.ReadBoolean();
+                var isClaimsBased = reader.ReadBoolean();
                 if (isClaimsBased)
                 {
                     var claimUidBytes = reader.ReadBytes(AntiForgeryToken.ClaimUidBitLength / 8);
@@ -140,7 +141,7 @@ namespace Microsoft.AspNet.Mvc
             }
 
             var sb = new StringBuilder();
-            for (int i = 0; i < base64String.Length; i++)
+            for (var i = 0; i < base64String.Length; i++)
             {
                 switch (base64String[i])
                 {
@@ -165,7 +166,7 @@ namespace Microsoft.AspNet.Mvc
         private byte[] UrlTokenDecode(string input)
         {
             var sb = new StringBuilder();
-            for (int i = 0; i < input.Length; i++)
+            for (var i = 0; i < input.Length; i++)
             {
                 switch (input[i])
                 {

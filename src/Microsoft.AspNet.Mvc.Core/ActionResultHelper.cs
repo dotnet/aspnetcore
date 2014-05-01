@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Mvc
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly IViewEngine _viewEngine;
-        
+
         public ActionResultHelper(IServiceProvider serviceProvider, IViewEngine viewEngine)
         {
             _serviceProvider = serviceProvider;

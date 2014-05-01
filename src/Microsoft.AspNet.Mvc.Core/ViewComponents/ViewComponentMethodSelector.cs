@@ -22,7 +22,8 @@ namespace Microsoft.AspNet.Mvc
                 return null;
             }
 
-            if (!method.ReturnType.GetTypeInfo().IsGenericType || method.ReturnType.GetGenericTypeDefinition() != typeof(Task<>))
+            if (!method.ReturnType.GetTypeInfo().IsGenericType ||
+                method.ReturnType.GetGenericTypeDefinition() != typeof(Task<>))
             {
                 throw new InvalidOperationException(
                     Resources.FormatViewComponent_AsyncMethod_ShouldReturnTask(AsyncMethodName));
@@ -41,7 +42,8 @@ namespace Microsoft.AspNet.Mvc
 
             if (method.ReturnType == typeof(void))
             {
-                throw new InvalidOperationException(Resources.FormatViewComponent_SyncMethod_ShouldReturnValue(SyncMethodName));
+                throw new InvalidOperationException(
+                    Resources.FormatViewComponent_SyncMethod_ShouldReturnValue(SyncMethodName));
             }
 
             return method;
@@ -58,16 +60,21 @@ namespace Microsoft.AspNet.Mvc
 
             try
             {
-                // We're currently using this technique to make a call into a component method that looks like a regular method call.
+                // We're currently using this technique to make a call into a component method that looks like a
+                // regular method call.
                 //
                 // Ex: @Component.Invoke<Cart>("hello", 5) => cart.Invoke("hello", 5)
                 //
-                // This approach has some drawbacks, namely it doesn't account for default parameters, and more noticably, it throws
-                // if the method is not found.
+                // This approach has some drawbacks, namely it doesn't account for default parameters, and more
+                // noticably, it throws if the method is not found.
                 //
-                // Unfortunely the overload of Type.GetMethod that we would like to use is not present in CoreCLR. Item #160 in Jira
-                // tracks these issues.
-                var expression = Expression.Call(Expression.Constant(null, componentType.AsType()), methodName, null, argumentExpressions);
+                // Unfortunely the overload of Type.GetMethod that we would like to use is not present in CoreCLR.
+                // Item #160 in Jira tracks these issues.
+                var expression = Expression.Call(
+                    Expression.Constant(null, componentType.AsType()),
+                    methodName,
+                    null,
+                    argumentExpressions);
                 return expression.Method;
             }
             catch (InvalidOperationException)

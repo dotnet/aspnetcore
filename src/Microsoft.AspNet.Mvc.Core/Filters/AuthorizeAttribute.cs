@@ -20,8 +20,8 @@ namespace Microsoft.AspNet.Mvc
         {
             _claims = new Claim[0];
         }
-        
-        public AuthorizeAttribute([NotNull]IEnumerable<Claim> claims) 
+
+        public AuthorizeAttribute([NotNull]IEnumerable<Claim> claims)
         {
             _claims = claims.ToArray();
         }
@@ -48,9 +48,9 @@ namespace Microsoft.AspNet.Mvc
             // when no claims are specified, we just need to ensure the user is authenticated
             if (_claims.Length == 0)
             {
-                var userIsAnonymous = 
-                    user == null || 
-                    user.Identity == null || 
+                var userIsAnonymous =
+                    user == null ||
+                    user.Identity == null ||
                     !user.Identity.IsAuthenticated;
 
                     if (userIsAnonymous && !HasAllowAnonymous(context))
@@ -58,13 +58,14 @@ namespace Microsoft.AspNet.Mvc
                         Fail(context);
                     }
             }
-            else 
+            else
             {
                 var authorizationService = httpContext.RequestServices.GetService<IAuthorizationService>();
 
                 if (authorizationService == null)
                 {
-                    throw new InvalidOperationException(Resources.AuthorizeAttribute_AuthorizationServiceMustBeDefined);
+                    throw new InvalidOperationException(
+                        Resources.AuthorizeAttribute_AuthorizationServiceMustBeDefined);
                 }
 
                 var authorized = await authorizationService.AuthorizeAsync(_claims, user);

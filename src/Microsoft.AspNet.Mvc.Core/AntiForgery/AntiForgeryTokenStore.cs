@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc
         private readonly IAntiForgeryConfig _config;
         private readonly IAntiForgeryTokenSerializer _serializer;
 
-        internal AntiForgeryTokenStore([NotNull] IAntiForgeryConfig config, 
+        internal AntiForgeryTokenStore([NotNull] IAntiForgeryConfig config,
                                        [NotNull] IAntiForgeryTokenSerializer serializer)
         {
             _config = config;
@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc
         public AntiForgeryToken GetCookieToken(HttpContext httpContext)
         {
             var cookie = httpContext.Request.Cookies[_config.CookieName];
-            if (String.IsNullOrEmpty(cookie))
+            if (string.IsNullOrEmpty(cookie))
             {
                 // did not exist
                 return null;
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc
         public async Task<AntiForgeryToken> GetFormTokenAsync(HttpContext httpContext)
         {
             var form = await httpContext.Request.GetFormAsync();
-            string value = form[_config.FormFieldName];
+            var value = form[_config.FormFieldName];
             if (string.IsNullOrEmpty(value))
             {
                 // did not exist
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Mvc
 
         public void SaveCookieToken(HttpContext httpContext, AntiForgeryToken token)
         {
-            string serializedToken = _serializer.Serialize(token);
+            var serializedToken = _serializer.Serialize(token);
             var options = new CookieOptions() { HttpOnly = true };
 
             // Note: don't use "newCookie.Secure = _config.RequireSSL;" since the default

@@ -19,13 +19,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         private bool _readOnly;
         private object _additionalViewData;
 
-        public TemplateBuilder([NotNull] IViewEngine viewEngine, 
-                               [NotNull] ViewContext viewContext, 
-                               [NotNull] ViewDataDictionary viewData, 
-                               [NotNull] ModelMetadata metadata, 
-                               string htmlFieldName, 
-                               string templateName, 
-                               bool readOnly, 
+        public TemplateBuilder([NotNull] IViewEngine viewEngine,
+                               [NotNull] ViewContext viewContext,
+                               [NotNull] ViewDataDictionary viewData,
+                               [NotNull] ModelMetadata metadata,
+                               string htmlFieldName,
+                               string templateName,
+                               bool readOnly,
                                object additionalViewData)
         {
             _viewEngine = viewEngine;
@@ -76,13 +76,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             if (_additionalViewData != null)
             {
-                foreach (KeyValuePair<string, object> kvp in HtmlHelper.ObjectToDictionary(_additionalViewData))
+                foreach (var kvp in HtmlHelper.ObjectToDictionary(_additionalViewData))
                 {
                     viewData[kvp.Key] = kvp.Value;
                 }
             }
 
-            object visitedObjectsKey = _metadata.Model ?? _metadata.RealModelType;
+            var visitedObjectsKey = _metadata.Model ?? _metadata.RealModelType;
             viewData.TemplateInfo.AddVisited(visitedObjectsKey);
 
             var templateRenderer = new TemplateRenderer(_viewEngine, _viewContext, viewData, _templateName, _readOnly);

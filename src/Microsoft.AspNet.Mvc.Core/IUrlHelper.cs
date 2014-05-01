@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc
         string Content(string contentPath);
 
         bool IsLocalUrl(string url);
-        
+
         string RouteUrl(string routeName, object values, string protocol, string host, string fragment);
     }
 }

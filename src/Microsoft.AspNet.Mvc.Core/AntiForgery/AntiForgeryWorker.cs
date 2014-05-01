@@ -48,7 +48,6 @@ namespace Microsoft.AspNet.Mvc
                 : null;
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Caller will just regenerate token in case of failure.")]
         private AntiForgeryToken DeserializeTokenNoThrow(string serializedToken)
         {
             try
@@ -66,7 +65,7 @@ namespace Microsoft.AspNet.Mvc
         {
             if (httpContext != null)
             {
-                ClaimsPrincipal user = httpContext.User;
+                var user = httpContext.User;
 
                 if (user != null)
                 {
@@ -79,7 +78,6 @@ namespace Microsoft.AspNet.Mvc
             return null;
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Caller will just regenerate token in case of failure.")]
         private AntiForgeryToken GetCookieTokenNoThrow(HttpContext httpContext)
         {
             try
@@ -137,7 +135,7 @@ namespace Microsoft.AspNet.Mvc
         public AntiForgeryTokenSet GetTokens([NotNull] HttpContext httpContext, string serializedOldCookieToken)
         {
             CheckSSLConfig(httpContext);
-            AntiForgeryToken oldCookieToken = DeserializeTokenNoThrow(serializedOldCookieToken);
+            var oldCookieToken = DeserializeTokenNoThrow(serializedOldCookieToken);
             var tokenSet = GetTokens(httpContext, oldCookieToken);
 
             var serializedNewCookieToken = Serialize(tokenSet.CookieToken);
@@ -156,7 +154,7 @@ namespace Microsoft.AspNet.Mvc
 
             Contract.Assert(_validator.IsCookieTokenValid(oldCookieToken));
 
-            AntiForgeryToken formToken = _generator.GenerateFormToken(
+            var formToken = _generator.GenerateFormToken(
                 httpContext,
                 ExtractIdentity(httpContext),
                 oldCookieToken);
@@ -201,7 +199,11 @@ namespace Microsoft.AspNet.Mvc
             var deserializedFormToken = DeserializeToken(formToken);
 
             // Validate
-            _validator.ValidateTokens(httpContext, ExtractIdentity(httpContext), deserializedCookieToken, deserializedFormToken);
+            _validator.ValidateTokens(
+                httpContext,
+                ExtractIdentity(httpContext),
+                deserializedCookieToken,
+                deserializedFormToken);
         }
 
         private class AntiForgeryTokenSetInternal

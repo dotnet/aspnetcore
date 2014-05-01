@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc
         private readonly IAntiForgeryConfig _config;
         private readonly IAntiForgeryAdditionalDataProvider _additionalDataProvider;
 
-        internal TokenProvider(IAntiForgeryConfig config, 
+        internal TokenProvider(IAntiForgeryConfig config,
                                IClaimUidExtractor claimUidExtractor,
                                IAntiForgeryAdditionalDataProvider additionalDataProvider)
         {
@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Mvc
             };
         }
 
-        public AntiForgeryToken GenerateFormToken(HttpContext httpContext, 
+        public AntiForgeryToken GenerateFormToken(HttpContext httpContext,
                                                   ClaimsIdentity identity,
                                                   AntiForgeryToken cookieToken)
         {
@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Mvc
                 IsSessionToken = false
             };
 
-            bool isIdentityAuthenticated = false;
+            var isIdentityAuthenticated = false;
 
             // populate Username and ClaimUid
             if (identity != null && identity.IsAuthenticated)
@@ -82,22 +82,29 @@ namespace Microsoft.AspNet.Mvc
             return (cookieToken != null && cookieToken.IsSessionToken);
         }
 
-        public void ValidateTokens(HttpContext httpContext, ClaimsIdentity identity, AntiForgeryToken sessionToken, AntiForgeryToken fieldToken)
+        public void ValidateTokens(
+            HttpContext httpContext,
+            ClaimsIdentity identity,
+            AntiForgeryToken sessionToken,
+            AntiForgeryToken fieldToken)
         {
             // Were the tokens even present at all?
             if (sessionToken == null)
             {
-                throw new InvalidOperationException(Resources.FormatAntiForgeryToken_CookieMissing(_config.CookieName));
+                throw new InvalidOperationException(
+                    Resources.FormatAntiForgeryToken_CookieMissing(_config.CookieName));
             }
             if (fieldToken == null)
             {
-                throw new InvalidOperationException(Resources.FormatAntiForgeryToken_FormFieldMissing(_config.FormFieldName));
+                throw new InvalidOperationException(
+                    Resources.FormatAntiForgeryToken_FormFieldMissing(_config.FormFieldName));
             }
 
             // Do the tokens have the correct format?
             if (!sessionToken.IsSessionToken || fieldToken.IsSessionToken)
             {
-                throw new InvalidOperationException(Resources.FormatAntiForgeryToken_TokensSwapped(_config.CookieName, _config.FormFieldName));
+                throw new InvalidOperationException(
+                    Resources.FormatAntiForgeryToken_TokensSwapped(_config.CookieName, _config.FormFieldName));
             }
 
             // Are the security tokens embedded in each incoming token identical?
@@ -107,7 +114,7 @@ namespace Microsoft.AspNet.Mvc
             }
 
             // Is the incoming token meant for the current user?
-            string currentUsername = string.Empty;
+            var currentUsername = string.Empty;
             BinaryBlob currentClaimUid = null;
 
             if (identity != null && identity.IsAuthenticated)
@@ -121,13 +128,14 @@ namespace Microsoft.AspNet.Mvc
 
             // OpenID and other similar authentication schemes use URIs for the username.
             // These should be treated as case-sensitive.
-            bool useCaseSensitiveUsernameComparison = currentUsername.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
-                || currentUsername.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
+            var useCaseSensitiveUsernameComparison =
+                currentUsername.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                currentUsername.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
 
             if (!String.Equals(fieldToken.Username,
                                 currentUsername,
                                 (useCaseSensitiveUsernameComparison) ?
-                                                 StringComparison.Ordinal : 
+                                                 StringComparison.Ordinal :
                                                  StringComparison.OrdinalIgnoreCase))
             {
                 throw new InvalidOperationException(
@@ -140,7 +148,8 @@ namespace Microsoft.AspNet.Mvc
             }
 
             // Is the AdditionalData valid?
-            if (_additionalDataProvider != null && !_additionalDataProvider.ValidateAdditionalData(httpContext, fieldToken.AdditionalData))
+            if (_additionalDataProvider != null &&
+                !_additionalDataProvider.ValidateAdditionalData(httpContext, fieldToken.AdditionalData))
             {
                 throw new InvalidOperationException(Resources.AntiForgeryToken_AdditionalDataCheckFailed);
             }

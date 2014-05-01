@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Mvc
             // The Http Abstractions should take care of these.
             _httpMethods = methods.Select(method => method.ToUpperInvariant());
         }
-      
+
         /// <summary>
         /// Gets the HTTP methods the action supports.
         /// </summary>

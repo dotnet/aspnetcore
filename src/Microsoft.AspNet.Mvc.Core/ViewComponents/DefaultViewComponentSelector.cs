@@ -21,12 +21,12 @@ namespace Microsoft.AspNet.Mvc
             var assemblies = _assemblyProvider.CandidateAssemblies;
             var types = assemblies.SelectMany(a => a.DefinedTypes);
 
-            var components = 
+            var components =
                 types
                 .Where(ViewComponentConventions.IsComponent)
                 .Select(c => new { Name = ViewComponentConventions.GetComponentName(c), Type = c.AsType() });
 
-            var matching = 
+            var matching =
                 components
                 .Where(c => string.Equals(c.Name, componentName, StringComparison.OrdinalIgnoreCase))
                 .ToArray();

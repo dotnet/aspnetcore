@@ -162,7 +162,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
 
             var htmlAttributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
-            { 
+            {
                 { "class", className }
             };
 

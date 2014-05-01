@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc
                                                  IEnumerable<IFilter> globalFilters)
         {
             _controllerAssemblyProvider = controllerAssemblyProvider;
-            _conventions = conventions; 
+            _conventions = conventions;
             _controllerDescriptorFactory = controllerDescriptorFactory;
             _parameterDescriptorFactory = parameterDescriptorFactory;
             var filters = globalFilters ?? Enumerable.Empty<IFilter>();
@@ -49,7 +49,9 @@ namespace Microsoft.AspNet.Mvc
             var assemblies = _controllerAssemblyProvider.CandidateAssemblies;
             var types = assemblies.SelectMany(a => a.DefinedTypes);
             var controllers = types.Where(_conventions.IsController);
-            var controllerDescriptors = controllers.Select(t => _controllerDescriptorFactory.CreateControllerDescriptor(t)).ToArray();
+            var controllerDescriptors = controllers
+                .Select(t => _controllerDescriptorFactory.CreateControllerDescriptor(t))
+                .ToArray();
 
             foreach (var cd in controllerDescriptors)
             {
@@ -112,11 +114,15 @@ namespace Microsoft.AspNet.Mvc
                 ad.RouteConstraints.Add(new RouteDataActionConstraint("action", RouteKeyHandling.DenyKey));
             }
 
-            ad.Parameters = methodInfo.GetParameters().Select(p => _parameterDescriptorFactory.GetDescriptor(p)).ToList();
+            ad.Parameters = methodInfo.GetParameters()
+                .Select(p => _parameterDescriptorFactory.GetDescriptor(p))
+                .ToList();
 
             var attributes = methodInfo.GetCustomAttributes(inherit: true).ToArray();
 
-            var filtersFromAction = attributes.OfType<IFilter>().Select(filter => new FilterDescriptor(filter, FilterScope.Action));
+            var filtersFromAction = attributes
+                .OfType<IFilter>()
+                .Select(filter => new FilterDescriptor(filter, FilterScope.Action));
 
             ad.FilterDescriptors = filtersFromAction.Concat(globalAndControllerFilters)
                                                     .OrderBy(d => d, FilterDescriptorOrderComparer.Comparer)

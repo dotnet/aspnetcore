@@ -42,8 +42,8 @@ namespace Microsoft.AspNet.Mvc
             }
             else
             {
-                // This will produce a string like: 
-                //  
+                // This will produce a string like:
+                //
                 //  Components/Cart/Default
                 //
                 // The view engine will combine this with other path info to search paths like:
