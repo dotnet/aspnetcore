@@ -22,7 +22,7 @@
             @Html.LabelFor(model => model.GenreId, "GenreId", new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 @Html.DropDownList("GenreId", String.Empty)
-                @*@Html.ValidationMessageFor(model => model.GenreId)*@
+                @Html.ValidationMessageFor(model => model.GenreId)
             </div>
         </div>
 
@@ -30,7 +30,7 @@
             @Html.LabelFor(model => model.ArtistId, "ArtistId", new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 @Html.DropDownList("ArtistId", String.Empty)
-                @*@Html.ValidationMessageFor(model => model.ArtistId)*@
+                @Html.ValidationMessageFor(model => model.ArtistId)
             </div>
         </div>
 
@@ -38,7 +38,7 @@
             @Html.LabelFor(model => model.Title, new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 @Html.EditorFor(model => model.Title)
-                @*@Html.ValidationMessageFor(model => model.Title)*@
+                @Html.ValidationMessageFor(model => model.Title)
             </div>
         </div>
 
@@ -46,7 +46,7 @@
             @Html.LabelFor(model => model.Price, new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 @Html.EditorFor(model => model.Price)
-                @*@Html.ValidationMessageFor(model => model.Price)*@
+                @Html.ValidationMessageFor(model => model.Price)
             </div>
         </div>
 
@@ -54,7 +54,7 @@
             @Html.LabelFor(model => model.AlbumArtUrl, new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 @Html.EditorFor(model => model.AlbumArtUrl)
-                @*@Html.ValidationMessageFor(model => model.AlbumArtUrl)*@
+                @Html.ValidationMessageFor(model => model.AlbumArtUrl)
             </div>
         </div>
 
