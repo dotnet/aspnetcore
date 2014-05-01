@@ -23,13 +23,6 @@ namespace MusicStore.Models
             return cart;
         }
 
-        //TODO: Not used by anyone. Not sure why we have this.
-        // Helper method to simplify shopping cart calls
-        //public static ShoppingCart GetCart(MusicStoreEntities db, Controller controller)
-        //{
-        //    return GetCart(db, controller.HttpContext);
-        //}
-
         public void AddToCart(Album album)
         {
             // Get the matching cart and album instances
@@ -160,7 +153,6 @@ namespace MusicStore.Models
             // Iterate over the items in the cart, adding the order details for each
             foreach (var item in cartItems)
             {
-                //Bug: Missing EF
                 //var album = _db.Albums.Find(item.AlbumId);
                 var album = _db.Albums.Single(a => a.AlbumId == item.AlbumId);
 

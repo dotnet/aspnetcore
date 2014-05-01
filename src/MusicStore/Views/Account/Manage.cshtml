@@ -1,5 +1,5 @@
 ﻿@{
-    //Bug: Need a way to specify the layout page in a single place
+    //TODO: Until we have a way to specify the layout page at application level.
     Layout = "/Views/Shared/_Layout.cshtml";
     ViewBag.Title = "Manage Account";
 }
@@ -14,7 +14,7 @@
 </div>
 
 @section Scripts {
-    @*Bug : Script helpers are out of scope for alpha*@
+    @*TODO : Until script helpers are available, adding script references manually*@
     @*@Scripts.Render("~/bundles/jqueryval")*@
     <script src="@Url.Content("~/Scripts/jquery.validate.js")"></script>
     <script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.js")"></script>

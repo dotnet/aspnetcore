@@ -31,7 +31,7 @@ namespace MusicStore.Models
         public virtual List<OrderDetail> OrderDetails { get; set; }
 
         /// <summary>
-        /// Bug: We use this to populate the order details. This should be removed once we have an actual DB with EF. 
+        /// TODO: Temporary hack to populate the orderdetails until EF does this automatically. 
         /// </summary>
         public Album()
         {

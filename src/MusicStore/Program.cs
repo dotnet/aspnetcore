@@ -8,6 +8,10 @@ using System.Threading.Tasks;
 
 namespace MusicStore
 {
+    /// <summary>
+    /// This demonstrates how the application can be launched in a K console application. 
+    /// k run command in the application folder will invoke this.
+    /// </summary>
     public class Program
     {
         private readonly IServiceProvider _hostServiceProvider;
@@ -19,7 +23,7 @@ namespace MusicStore
 
         public Task<int> Main(string[] args)
         {
-            //Add command line to the configuration source to read command line parameters.
+            //Add command line configuration source to read command line parameters.
             var config = new Configuration();
             config.AddCommandLine(args);
             

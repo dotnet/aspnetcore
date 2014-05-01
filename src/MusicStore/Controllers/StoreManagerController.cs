@@ -42,8 +42,6 @@ namespace MusicStore.Controllers
             
             if (album == null)
             {
-                //Bug: Need method HttpNotFound() on Controller
-                //return HttpNotFound();
                 return new HttpStatusCodeResult(404);
             }
 
@@ -90,8 +88,6 @@ namespace MusicStore.Controllers
 
             if (album == null)
             {
-                //Bug: Need method HttpNotFound() on Controller
-                //return HttpNotFound();
                 return new HttpStatusCodeResult(404);
             }
             ViewBag.GenreId = new SelectList(db.Genres, "GenreId", "Name", album.GenreId);
@@ -118,13 +114,13 @@ namespace MusicStore.Controllers
         //
         // GET: /StoreManager/Delete/5
 
+        //Bug: https://github.com/aspnet/WebFx/issues/339
         [HttpGet]
         public IActionResult Delete(int id = 0)
         {
             Album album = db.Albums.Single(a => a.AlbumId == id);
             if (album == null)
             {
-                //Bug: Missing Helper
                 return new HttpStatusCodeResult(404);
             }
             return View(album);

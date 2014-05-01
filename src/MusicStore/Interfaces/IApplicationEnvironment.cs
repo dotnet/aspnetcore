@@ -3,6 +3,9 @@ using System.Runtime.Versioning;
 
 namespace Microsoft.Net.Runtime
 {
+    /// <summary>
+    /// Service provided by the host containing application environment details.
+    /// </summary>
     [AssemblyNeutral]
     public interface IApplicationEnvironment
     {

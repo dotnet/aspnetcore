@@ -39,6 +39,7 @@ namespace MusicStore.Controllers
         //
         // GET: /Account/Login
         [AllowAnonymous]
+        //Bug: https://github.com/aspnet/WebFx/issues/339
         [HttpGet]
         public IActionResult Login(string returnUrl)
         {
@@ -77,7 +78,8 @@ namespace MusicStore.Controllers
         //
         // GET: /Account/Register
         [AllowAnonymous]
-        [HttpGet] //TODO: Do we need this. Without this I seem to be landing here irrespective of the HTTP verb?
+        //Bug: https://github.com/aspnet/WebFx/issues/339
+        [HttpGet]
         public IActionResult Register()
         {
             return View();
@@ -90,7 +92,7 @@ namespace MusicStore.Controllers
         //[ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            //Bug: https://github.com/aspnet/DataAnnotations/issues/21
+            //Bug: https://github.com/aspnet/WebFx/issues/247
             //if (ModelState.IsValid == true)
             {
                 var user = new ApplicationUser() { UserName = model.UserName };
@@ -112,6 +114,7 @@ namespace MusicStore.Controllers
 
         //
         // GET: /Account/Manage
+        //Bug: https://github.com/aspnet/WebFx/issues/339
         [HttpGet]
         public async Task<IActionResult> Manage(ManageMessageId? message)
         {
@@ -130,7 +133,7 @@ namespace MusicStore.Controllers
         public async Task<IActionResult> Manage(ManageUserViewModel model)
         {
             ViewBag.ReturnUrl = Url.Action("Manage");
-            //Bug: https://github.com/aspnet/DataAnnotations/issues/21
+            //Bug: https://github.com/aspnet/WebFx/issues/247
             //if (ModelState.IsValid == true)
             {
                 var user = await GetCurrentUserAsync();

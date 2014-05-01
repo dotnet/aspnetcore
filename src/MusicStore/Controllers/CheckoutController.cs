@@ -22,6 +22,7 @@ namespace MusicStore.Controllers
         //
         // GET: /Checkout/
 
+        //Bug: https://github.com/aspnet/WebFx/issues/339
         [HttpGet]
         public IActionResult AddressAndPayment()
         {
@@ -31,9 +32,7 @@ namespace MusicStore.Controllers
         //
         // POST: /Checkout/AddressAndPayment
 
-        //Bug: Using direct model binding until we have TryUpdateModel available.
         [HttpPost]
-        //public IActionResult AddressAndPayment(FormCollection values)
         public async Task<IActionResult> AddressAndPayment(Order order)
         {
             var formCollection = await Context.Request.GetFormAsync();
