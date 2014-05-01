@@ -16,6 +16,7 @@
 // permissions and limitations under the License.
 
 using System;
+using System.Security.Principal;
 using System.Text;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Mvc.Core;
@@ -54,6 +55,18 @@ namespace Microsoft.AspNet.Mvc
         public IActionResultHelper Result { get; private set; }
 
         public IUrlHelper Url { get; set; }
+        public IPrincipal User
+        {
+            get
+            {
+                if (Context == null)
+                {
+                    return null;
+                }
+
+                return Context.User;
+            }
+        }
 
         public ViewDataDictionary ViewData { get; set; }
 
@@ -155,7 +168,7 @@ namespace Microsoft.AspNet.Mvc
         public RedirectToActionResult RedirectToAction(string actionName, string controllerName,
                                         object routeValues)
         {
-            return new RedirectToActionResult(Url, actionName, controllerName, 
+            return new RedirectToActionResult(Url, actionName, controllerName,
                                                 TypeHelper.ObjectToDictionary(routeValues));
         }
 
@@ -177,7 +190,7 @@ namespace Microsoft.AspNet.Mvc
         public RedirectToActionResult RedirectToActionPermanent(string actionName, string controllerName,
                                         object routeValues)
         {
-            return new RedirectToActionResult(Url, actionName, controllerName, 
+            return new RedirectToActionResult(Url, actionName, controllerName,
                                                 TypeHelper.ObjectToDictionary(routeValues), permanent: true);
         }
 

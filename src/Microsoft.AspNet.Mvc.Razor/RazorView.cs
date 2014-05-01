@@ -22,6 +22,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
+using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.DependencyInjection;
@@ -43,6 +44,19 @@ namespace Microsoft.AspNet.Mvc.Razor
         protected TextWriter Output { get; set; }
 
         public IUrlHelper Url { get; private set; }
+
+        public virtual IPrincipal User
+        {
+            get
+            {
+                if (Context == null || Context.HttpContext == null)
+                {
+                    return null;
+                }
+
+                return Context.HttpContext.User;
+            }
+        }
 
         public dynamic ViewBag
         {
