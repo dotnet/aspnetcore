@@ -36,12 +36,20 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             {"controller", "bar"},
         };
 
+        public static IEnumerable<string[]> InvalidViewNameValues
+        {
+            get
+            {
+                yield return new[] { "~/foo/bar" };
+                yield return new[] { "/foo/bar" };
+                yield return new[] { "~/foo/bar.txt" };
+                yield return new[] { "/foo/bar.txt" };
+            }
+        }
+
         [Theory]
-        [InlineData("~/foo/bar")]
-        [InlineData("/foo/bar")]
-        [InlineData("~/foo/bar.txt")]
-        [InlineData("/foo/bar.txt")]
-        public void FindViewFullPathRequiresCshtmlEnding(string viewName)
+        [MemberData("InvalidViewNameValues")]
+        public void FindViewFullPathFailsWithNoCshtmlEnding(string viewName)
         {
             // Arrange
             var viewEngine = CreateSearchLocationViewEngineTester();
@@ -49,10 +57,18 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             // Act & Assert
             Assert.Throws<InvalidOperationException>(() =>
                 viewEngine.FindView(_controllerTestContext, viewName));
+        }
 
-            // Append .cshtml so we can try and no longer throw.
+        [Theory]
+        [MemberData("InvalidViewNameValues")]
+        public void FindViewFullPathSucceedsWithCshtmlEnding(string viewName)
+        {
+            // Arrange
+            var viewEngine = CreateSearchLocationViewEngineTester();
+            // Append .cshtml so the viewname is no longer invalid
             viewName += ".cshtml";
 
+            // Act & Assert
             // If this throws then our test case fails
             var result = viewEngine.FindPartialView(_controllerTestContext, viewName);
 
@@ -60,22 +76,27 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         }
 
         [Theory]
-        [InlineData("~/foo/bar")]
-        [InlineData("/foo/bar")]
-        [InlineData("~/foo/bar.txt")]
-        [InlineData("/foo/bar.txt")]
-        public void FindPartialViewFullPathRequiresCshtmlEnding(string partialViewName)
+        [MemberData("InvalidViewNameValues")]
+        public void FindPartialViewFullPathFailsWithNoCshtmlEnding(string partialViewName)
         {
             // Arrange
             var viewEngine = CreateSearchLocationViewEngineTester();
 
             // Act & Assert
-            Assert.Throws<InvalidOperationException>(() => 
+            Assert.Throws<InvalidOperationException>(() =>
                 viewEngine.FindPartialView(_controllerTestContext, partialViewName));
+        }
 
-            // Append .cshtml so we can try and no longer throw.
+        [Theory]
+        [MemberData("InvalidViewNameValues")]
+        public void FindPartialViewFullPathSucceedsWithCshtmlEnding(string partialViewName)
+        {
+            // Arrange
+            var viewEngine = CreateSearchLocationViewEngineTester();
+            // Append .cshtml so the viewname is no longer invalid
             partialViewName += ".cshtml";
 
+            // Act & Assert
             // If this throws then our test case fails
             var result = viewEngine.FindPartialView(_controllerTestContext, partialViewName);
 
@@ -91,7 +112,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
             // Act
             var result = viewEngine.FindPartialView(_areaTestContext, "partial");
-            
+
             // Assert
             Assert.False(result.Success);
             Assert.Equal(new[] { 
