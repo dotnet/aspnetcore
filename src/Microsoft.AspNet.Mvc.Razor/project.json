@@ -1,7 +1,7 @@
 {
   "version": "0.1-alpha-*",
   "compilationOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": false
   },
   "dependencies": {
     "Microsoft.AspNet.FileSystems": "0.1-alpha-*",
