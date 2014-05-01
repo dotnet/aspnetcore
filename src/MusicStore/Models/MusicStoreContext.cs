@@ -1,21 +1,20 @@
-﻿using System;
+﻿using Microsoft.AspNet.ConfigurationModel;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Metadata;
 using Microsoft.Data.InMemory;
 using Microsoft.Data.SqlServer;
-using Microsoft.AspNet.DependencyInjection;
-using Microsoft.AspNet.ConfigurationModel;
+using System;
 
 namespace MusicStore.Models
 {
     public class MusicStoreContext : DbContext
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IConfiguration _configuration;
 
-        public MusicStoreContext(IServiceProvider serviceProvider)
+        public MusicStoreContext(IServiceProvider serviceProvider, IConfiguration configuration)
             : base(serviceProvider)
         {
-            _serviceProvider = serviceProvider;
+            _configuration = configuration;
         }
 
         public DbSet<Album> Albums { get; set; }
@@ -27,9 +26,8 @@ namespace MusicStore.Models
 
         protected override void OnConfiguring(EntityConfigurationBuilder builder)
         {
-            var configuration = _serviceProvider.GetService<IConfiguration>();
 #if NET45
-            builder.SqlServerConnectionString(configuration.Get("Data:DefaultConnection:ConnectionString"));
+            builder.SqlServerConnectionString(_configuration.Get("Data:DefaultConnection:ConnectionString"));
 #else
             builder.UseInMemoryStore(persist: true);
 #endif

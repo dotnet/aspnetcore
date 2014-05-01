@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Data.Entity;
 using Microsoft.Data.SqlServer;
+using Microsoft.AspNet.DependencyInjection;
 
 namespace MusicStore.Models
 {
@@ -13,7 +14,7 @@ namespace MusicStore.Models
 
         public static async Task InitializeMusicStoreDatabaseAsync(IServiceProvider serviceProvider)
         {
-            using (var db = new MusicStoreContext(serviceProvider))
+            using (var db = serviceProvider.GetService<MusicStoreContext>())
             {
                 var sqlServerDataStore = db.Configuration.DataStore as SqlServerDataStore;
                 if (sqlServerDataStore != null)
@@ -48,12 +49,12 @@ namespace MusicStore.Models
         {
             // Query in a separate context so that we can attach existing entities as modified
             List<TEntity> existingData;
-            using (var db = new MusicStoreContext(serviceProvider))
+            using (var db = serviceProvider.GetService<MusicStoreContext>())
             {
                 existingData = db.Set<TEntity>().ToList();
             }
 
-            using (var db = new MusicStoreContext(serviceProvider))
+            using (var db = serviceProvider.GetService<MusicStoreContext>())
             {
                 foreach (var item in entities)
                 {
