@@ -29,7 +29,8 @@ projectFile=''
         var configs = project.TryGetValue("configurations", out configsObject)
             ? (Dictionary<string, object>)configsObject
             : new Dictionary<string, object>();
-                                     
+        
+        // Currently only net* and k* targets are supported. See aspnet/Universe#53
         var targetFrameworks = configs.Keys.Where(k => k.StartsWith("net", StringComparison.OrdinalIgnoreCase)
                                                     || k.StartsWith("k", StringComparison.OrdinalIgnoreCase));
         
