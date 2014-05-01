@@ -24,6 +24,7 @@
     <Compile Include="ActionAttributeTests.cs" />
     <Compile Include="ActionExecutorTests.cs" />
     <Compile Include="ActionResults\ObjectContentResultTests.cs" />
+    <Compile Include="ActionResults\ChallengeResultTest.cs" />
     <Compile Include="ActionResults\RedirectToActionResultTest.cs" />
     <Compile Include="ActionResults\RedirectToRouteResultTest.cs" />
     <Compile Include="ActionResults\RedirectResultTest.cs" />

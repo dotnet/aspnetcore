@@ -43,6 +43,11 @@ namespace MvcSample.Web
             return Index(age, userName);
         }
 
+        public ActionResult ChallengeUser(int age = 20, string userName = "SampleUser")
+        {
+            return new ChallengeResult();
+        }
+
         [Authorize("Permission", "CanViewPage")]
         public ActionResult NotGrantedClaim(int age = 20, string userName = "SampleUser")
         {
