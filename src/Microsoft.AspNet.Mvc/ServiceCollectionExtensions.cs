@@ -22,12 +22,12 @@ namespace Microsoft.AspNet.Mvc
 {
     public static class ServiceCollectionExtensions
     {
-        public static ServiceCollection AddMvc(this ServiceCollection services)
+        public static IServiceCollection AddMvc(this IServiceCollection services)
         {
             return services.Add(MvcServices.GetDefaultServices());
         }
 
-        public static ServiceCollection AddMvc(this ServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddMvc(this IServiceCollection services, IConfiguration configuration)
         {
             return services.Add(MvcServices.GetDefaultServices(configuration));
         }
