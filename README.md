@@ -1,14 +1,26 @@
 ## Music store application
 
+###Getting Started
+
+The first thing we need to do is setup the tools required to build and run an application.
+
+* Clone the repository
+* On the command line execute ```kvm setup``` 
+* This command will download the latest version of the SDK and put it on your path so that you can run the rest of the commands in the readme. If you want to know more about what this is doing then you can read the [KVM page](https://github.com/aspnet/Preview/wiki/version-manager) of the wiki.
+* If you already have ```kvm``` installed on the machine ignore above steps.
+
 ### Run the application:
 1. Run build.cmd to restore all the necessary packages and generate project files
 2. Open a command prompt and cd \src\<AppFolder>\
 3. [Helios]:
 	4. Helios.cmd to launch the app on IISExpress (Application started at URL http://localhost:5001/).
 4. [SelfHost]:
-	5. Run Selfhost.cmd (This runs k web - Application started at URL http://localhost:5002/)
+	5. Run ```k web``` (Application started at URL http://localhost:5002/)
 5. [CustomHost]:
-	6. Run CustomHost.cmd (This hosts the app in a console application - Application started at URL http://localhost:5003/)
+	6. Run ```k run``` (This hosts the app in a console application - Application started at URL http://localhost:5003/)
+
+### Switching between Desktop CLR and CoreCLR:
+By default the app runs on desktop CLR. To switch to run the app on CoreCLR set environment variable ```SET TARGET_FRAMEWORK=k10```. To switch back to desktop CLR ```SET TARGET_FRAMEWORK=``` to empty.
 
 ### Adding a new package:
 1. Edit the project.json to include the package you want to install

@@ -1,4 +1,9 @@
 {
+    "name": "MusicStore",
+    "authors": [
+        "Microsoft"
+    ],
+    "description": "Music store application on K",
     "version": "0.1-alpha-*",
     "dependencies": {
         "Helios": "0.1-alpha-*",
@@ -34,7 +39,8 @@
         "Microsoft.AspNet.Logging": "0.1-alpha-*"
     },
     "commands": {
-        "web": "Microsoft.AspNet.Hosting server.name=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5002"
+        "web": "Microsoft.AspNet.Hosting server.name=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5002",
+        "run": "run server.urls=http://localhost:5003"
     },
     "configurations": {
         "net45": {
