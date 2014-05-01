@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
 using MusicStore.Models;
+using System.Collections.Generic;
 
 namespace MusicStore.Components
 {
@@ -18,6 +19,13 @@ namespace MusicStore.Components
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
+            var genres = await GetGenres();
+
+            return View(genres);
+        }
+
+        private Task<List<Genre>> GetGenres()
+        {
             // TODO [EF] We don't query related data as yet, so the OrderByDescending isn't doing anything
             //var genres = db.Genres
             //.OrderByDescending(
@@ -28,8 +36,7 @@ namespace MusicStore.Components
             //.ToList();
 
             var genres = db.Genres.ToList();
-
-            return View(genres);
+            return Task.FromResult(genres);
         }
     }
 }

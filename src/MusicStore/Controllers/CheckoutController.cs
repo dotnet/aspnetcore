@@ -22,6 +22,7 @@ namespace MusicStore.Controllers
         //
         // GET: /Checkout/
 
+        [HttpGet]
         public IActionResult AddressAndPayment()
         {
             return View();

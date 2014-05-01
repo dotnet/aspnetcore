@@ -1,8 +1,7 @@
-﻿using System;
+﻿using Microsoft.AspNet.Mvc;
+using MusicStore.Models;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc;
-using MusicStore.Models;
 
 namespace MusicStore.Components
 {
@@ -18,16 +17,23 @@ namespace MusicStore.Components
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
+            var cartItems = await GetCartItems();
+
+            ViewBag.CartCount = cartItems.Count();
+            ViewBag.CartSummary = string.Join("\n", cartItems.Distinct());
+
+            return View();
+        }
+
+        private Task<IOrderedEnumerable<string>> GetCartItems()
+        {
             var cart = ShoppingCart.GetCart(db, this.Context);
 
             var cartItems = cart.GetCartItems()
                 .Select(a => a.Album.Title)
                 .OrderBy(x => x);
 
-            ViewBag.CartCount = cartItems.Count();
-            ViewBag.CartSummary = string.Join("\n", cartItems.Distinct());
-
-            return View();
+            return Task.FromResult(cartItems);
         }
     }
 }
