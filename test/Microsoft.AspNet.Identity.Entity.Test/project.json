@@ -14,7 +14,7 @@
     "Microsoft.Data.Entity": "0.1-alpha-*",
     "Microsoft.Data.InMemory": "0.1-alpha-*",
     "Microsoft.Data.Relational": "0.1-alpha-*",
-    "Remotion.Linq": "1.16-alpha",
+    "Remotion.Linq": "1.15.13.0",
     "System.Security.Claims": "0.1-alpha-*",
     "Xunit.KRunner": "0.1-alpha-*",
     "xunit.abstractions": "2.0.0-aspnet-*",
