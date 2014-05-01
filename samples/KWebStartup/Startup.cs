@@ -1,3 +1,4 @@
+using Microsoft.AspNet;
 using Microsoft.AspNet.Abstractions;
 
 namespace KWebStartup
