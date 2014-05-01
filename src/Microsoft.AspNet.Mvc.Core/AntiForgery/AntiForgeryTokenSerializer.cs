@@ -38,11 +38,12 @@ namespace Microsoft.AspNet.Mvc
             Exception innerException = null;
             try
             {
-                using (MemoryStream stream = new MemoryStream(UrlTokenDecode(serializedToken)))
+                var tokenBytes = UrlTokenDecode(serializedToken);
+                using (var stream = new MemoryStream(_cryptoSystem.Unprotect(tokenBytes)))
                 {
-                    using (BinaryReader reader = new BinaryReader(stream))
+                    using (var reader = new BinaryReader(stream))
                     {
-                        AntiForgeryToken token = DeserializeImpl(reader);
+                        var token = DeserializeImpl(reader);
                         if (token != null)
                         {
                             return token;
@@ -64,7 +65,7 @@ namespace Microsoft.AspNet.Mvc
          * Version: 1 byte integer
          * SecurityToken: 16 byte binary blob
          * IsSessionToken: 1 byte Boolean
-         * [if IsSessionToken = true]
+         * [if IsSessionToken != true]
          *   +- IsClaimsBased: 1 byte Boolean
          *   |  [if IsClaimsBased = true]
          *   |    `- ClaimUid: 32 byte binary blob
