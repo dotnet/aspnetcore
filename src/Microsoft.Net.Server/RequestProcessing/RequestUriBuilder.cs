@@ -1,3 +1,20 @@
+// Copyright (c) Microsoft Open Technologies, Inc.
+// All Rights Reserved
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// THIS CODE IS PROVIDED *AS IS* BASIS, WITHOUT WARRANTIES OR
+// CONDITIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
+// WITHOUT LIMITATION ANY IMPLIED WARRANTIES OR CONDITIONS OF
+// TITLE, FITNESS FOR A PARTICULAR PURPOSE, MERCHANTABLITY OR
+// NON-INFRINGEMENT.
+// See the Apache 2 License for the specific language governing
+// permissions and limitations under the License.
+
 // -----------------------------------------------------------------------
 // <copyright file="RequestUriBuilder.cs" company="Microsoft">
 //      Copyright (c) Microsoft Corporation.  All rights reserved.
@@ -40,8 +57,8 @@ namespace Microsoft.Net.Server
         //
         // When parsing ANSI (Latin 1) encoded path '/pa%C4th/', %C4 will be added to rawOctets and when
         // we reach 't', the content of rawOctets { 0xC4 } will be fed into the ANSI encoding. The resulting 
-        // string 'Ä' will be percent encoded into UTF-8 octets and appended to requestUriString. The final
-        // path will be '/pa%C3%84th/', where '%C3%84' is the UTF-8 percent encoded character 'Ä'.
+        // string 'ï¿½' will be percent encoded into UTF-8 octets and appended to requestUriString. The final
+        // path will be '/pa%C3%84th/', where '%C3%84' is the UTF-8 percent encoded character 'ï¿½'.
         private List<byte> _rawOctets;
         private string _rawPath;
 
