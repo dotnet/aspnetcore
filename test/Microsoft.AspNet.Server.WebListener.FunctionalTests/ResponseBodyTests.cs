@@ -120,7 +120,7 @@ namespace Microsoft.AspNet.Server.WebListener
         }
         */
         [Fact]
-        public void ResponseBody_WriteContentLengthNoneWritten_Throws()
+        public async Task ResponseBody_WriteContentLengthNoneWritten_Throws()
         {
             using (Utilities.CreateHttpServer(env =>
             {
@@ -129,7 +129,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return Task.FromResult(0);
             }))
             {
-                Assert.Throws<AggregateException>(() => SendRequestAsync(Address).Result);
+                await Assert.ThrowsAsync<HttpRequestException>(() => SendRequestAsync(Address));
             }
         }
 

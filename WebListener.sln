@@ -25,6 +25,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Server.Web
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Server.WebListener", "src\Microsoft.AspNet.Server.WebListener\Microsoft.AspNet.Server.WebListener.kproj", "{B9F45F9D-D206-47F0-8E5F-54CE2F0BDF92}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Net.Server.FunctionalTests", "test\Microsoft.Net.Server.FunctionalTests\Microsoft.Net.Server.FunctionalTests.kproj", "{DCB6E0B1-223D-44E6-8696-4767E5B6E6A1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -115,6 +117,16 @@ Global
 		{B9F45F9D-D206-47F0-8E5F-54CE2F0BDF92}.Release|Mixed Platforms.Build.0 = Release|x86
 		{B9F45F9D-D206-47F0-8E5F-54CE2F0BDF92}.Release|x86.ActiveCfg = Release|x86
 		{B9F45F9D-D206-47F0-8E5F-54CE2F0BDF92}.Release|x86.Build.0 = Release|x86
+		{DCB6E0B1-223D-44E6-8696-4767E5B6E6A1}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{DCB6E0B1-223D-44E6-8696-4767E5B6E6A1}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{DCB6E0B1-223D-44E6-8696-4767E5B6E6A1}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{DCB6E0B1-223D-44E6-8696-4767E5B6E6A1}.Debug|x86.ActiveCfg = Debug|x86
+		{DCB6E0B1-223D-44E6-8696-4767E5B6E6A1}.Debug|x86.Build.0 = Debug|x86
+		{DCB6E0B1-223D-44E6-8696-4767E5B6E6A1}.Release|Any CPU.ActiveCfg = Release|x86
+		{DCB6E0B1-223D-44E6-8696-4767E5B6E6A1}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{DCB6E0B1-223D-44E6-8696-4767E5B6E6A1}.Release|Mixed Platforms.Build.0 = Release|x86
+		{DCB6E0B1-223D-44E6-8696-4767E5B6E6A1}.Release|x86.ActiveCfg = Release|x86
+		{DCB6E0B1-223D-44E6-8696-4767E5B6E6A1}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -128,5 +140,6 @@ Global
 		{E788AEAE-2CB4-4BFA-8746-D0BB7E93A1BB} = {99D5E5F3-88F5-4CCF-8D8C-717C8925DF09}
 		{4492FF4C-9032-411D-853F-46B01755E504} = {E183C826-1360-4DFF-9994-F33CED5C8525}
 		{B9F45F9D-D206-47F0-8E5F-54CE2F0BDF92} = {99D5E5F3-88F5-4CCF-8D8C-717C8925DF09}
+		{DCB6E0B1-223D-44E6-8696-4767E5B6E6A1} = {E183C826-1360-4DFF-9994-F33CED5C8525}
 	EndGlobalSection
 EndGlobal
