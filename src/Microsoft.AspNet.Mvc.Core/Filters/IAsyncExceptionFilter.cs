@@ -22,6 +22,6 @@ namespace Microsoft.AspNet.Mvc
 {
     public interface IAsyncExceptionFilter : IFilter
     {
-        Task OnActionExecutedAsync([NotNull] ExceptionContext context);
+        Task OnExceptionAsync([NotNull] ExceptionContext context);
     }
 }

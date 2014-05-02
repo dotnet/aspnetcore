@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var filter = new Mock<IExceptionFilter>(MockBehavior.Strict);
             filter
-                .Setup(f => f.OnActionExecuted(It.IsAny<ExceptionContext>()))
+                .Setup(f => f.OnException(It.IsAny<ExceptionContext>()))
                 .Verifiable();
 
             var invoker = CreateInvoker(filter.Object, actionThrows: false);
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Mvc
             await invoker.InvokeActionAsync();
 
             // Assert
-            filter.Verify(f => f.OnActionExecuted(It.IsAny<ExceptionContext>()), Times.Never());
+            filter.Verify(f => f.OnException(It.IsAny<ExceptionContext>()), Times.Never());
         }
 
         [Fact]
@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var filter = new Mock<IAsyncExceptionFilter>(MockBehavior.Strict);
             filter
-                .Setup(f => f.OnActionExecutedAsync(It.IsAny<ExceptionContext>()))
+                .Setup(f => f.OnExceptionAsync(It.IsAny<ExceptionContext>()))
                 .Returns<ExceptionContext>((context) => Task.FromResult<object>(null))
                 .Verifiable();
 
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             filter.Verify(
-                f => f.OnActionExecutedAsync(It.IsAny<ExceptionContext>()),
+                f => f.OnExceptionAsync(It.IsAny<ExceptionContext>()),
                 Times.Never());
         }
 
@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.Mvc
 
             var filter = new Mock<IExceptionFilter>(MockBehavior.Strict);
             filter
-                .Setup(f => f.OnActionExecuted(It.IsAny<ExceptionContext>()))
+                .Setup(f => f.OnException(It.IsAny<ExceptionContext>()))
                 .Callback<ExceptionContext>(context =>
                 {
                     exception = context.Exception;
@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.Mvc
             await invoker.InvokeActionAsync();
 
             // Assert
-            filter.Verify(f => f.OnActionExecuted(It.IsAny<ExceptionContext>()), Times.Once());
+            filter.Verify(f => f.OnException(It.IsAny<ExceptionContext>()), Times.Once());
 
             Assert.Same(_actionException, exception);
             Assert.Null(result);
@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.Mvc
 
             var filter = new Mock<IAsyncExceptionFilter>(MockBehavior.Strict);
             filter
-                .Setup(f => f.OnActionExecutedAsync(It.IsAny<ExceptionContext>()))
+                .Setup(f => f.OnExceptionAsync(It.IsAny<ExceptionContext>()))
                 .Callback<ExceptionContext>(context =>
                 {
                     exception = context.Exception;
@@ -135,7 +135,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             filter.Verify(
-                f => f.OnActionExecutedAsync(It.IsAny<ExceptionContext>()),
+                f => f.OnExceptionAsync(It.IsAny<ExceptionContext>()),
                 Times.Once());
 
             Assert.Same(_actionException, exception);
@@ -150,7 +150,7 @@ namespace Microsoft.AspNet.Mvc
 
             var filter2 = new Mock<IExceptionFilter>(MockBehavior.Strict);
             filter2
-                .Setup(f => f.OnActionExecuted(It.IsAny<ExceptionContext>()))
+                .Setup(f => f.OnException(It.IsAny<ExceptionContext>()))
                 .Callback<ExceptionContext>(context =>
                 {
                     context.Exception = null;
@@ -164,7 +164,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             filter2.Verify(
-                f => f.OnActionExecuted(It.IsAny<ExceptionContext>()),
+                f => f.OnException(It.IsAny<ExceptionContext>()),
                 Times.Once());
         }
 
@@ -176,7 +176,7 @@ namespace Microsoft.AspNet.Mvc
 
             var filter2 = new Mock<IAsyncExceptionFilter>(MockBehavior.Strict);
             filter2
-                .Setup(f => f.OnActionExecutedAsync(It.IsAny<ExceptionContext>()))
+                .Setup(f => f.OnExceptionAsync(It.IsAny<ExceptionContext>()))
                 .Callback<ExceptionContext>(context =>
                 {
                     context.Exception = null;
@@ -191,7 +191,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             filter2.Verify(
-                f => f.OnActionExecutedAsync(It.IsAny<ExceptionContext>()),
+                f => f.OnExceptionAsync(It.IsAny<ExceptionContext>()),
                 Times.Once());
         }
 
@@ -201,7 +201,7 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var filter = new Mock<IExceptionFilter>(MockBehavior.Strict);
             filter
-                .Setup(f => f.OnActionExecuted(It.IsAny<ExceptionContext>()))
+                .Setup(f => f.OnException(It.IsAny<ExceptionContext>()))
                 .Verifiable();
 
             var invoker = CreateInvoker(filter.Object, actionThrows: true);
@@ -210,7 +210,7 @@ namespace Microsoft.AspNet.Mvc
             await Assert.ThrowsAsync(_actionException.GetType(), async () => await invoker.InvokeActionAsync());
 
             // Assert
-            filter.Verify(f => f.OnActionExecuted(It.IsAny<ExceptionContext>()), Times.Once());
+            filter.Verify(f => f.OnException(It.IsAny<ExceptionContext>()), Times.Once());
         }
 
         [Fact]
@@ -225,7 +225,7 @@ namespace Microsoft.AspNet.Mvc
 
             var filter = new Mock<IExceptionFilter>(MockBehavior.Strict);
             filter
-                .Setup(f => f.OnActionExecuted(It.IsAny<ExceptionContext>()))
+                .Setup(f => f.OnException(It.IsAny<ExceptionContext>()))
                 .Callback<ExceptionContext>(c => c.Result = result.Object)
                 .Verifiable();
 
@@ -237,7 +237,7 @@ namespace Microsoft.AspNet.Mvc
             await invoker.InvokeActionAsync();
 
             // Assert
-            filter.Verify(f => f.OnActionExecuted(It.IsAny<ExceptionContext>()), Times.Once());
+            filter.Verify(f => f.OnException(It.IsAny<ExceptionContext>()), Times.Once());
             result.Verify(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()), Times.Once());
         }
 
@@ -339,7 +339,7 @@ namespace Microsoft.AspNet.Mvc
 
             var exceptionFilter = new Mock<IExceptionFilter>(MockBehavior.Strict);
             exceptionFilter
-                .Setup(f => f.OnActionExecuted(It.IsAny<ExceptionContext>()))
+                .Setup(f => f.OnException(It.IsAny<ExceptionContext>()))
                 .Callback<ExceptionContext>(context =>
                 {
                     exception = context.Exception;
@@ -373,7 +373,7 @@ namespace Microsoft.AspNet.Mvc
             await invoker.InvokeActionAsync();
 
             // Assert
-            exceptionFilter.Verify(f => f.OnActionExecuted(It.IsAny<ExceptionContext>()), Times.Once());
+            exceptionFilter.Verify(f => f.OnException(It.IsAny<ExceptionContext>()), Times.Once());
             authorizationFilter1.Verify(f => f.OnAuthorization(It.IsAny<AuthorizationContext>()), Times.Once());
         }
 

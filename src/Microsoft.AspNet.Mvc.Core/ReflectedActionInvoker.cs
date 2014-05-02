@@ -145,7 +145,7 @@ namespace Microsoft.AspNet.Mvc
                 {
                     // Exception filters only run when there's an exception - unsetting it will short-circuit
                     // other exception filters.
-                    await current.FilterAsync.OnActionExecutedAsync(_exceptionContext);
+                    await current.FilterAsync.OnExceptionAsync(_exceptionContext);
                 }
             }
             else if (current.Filter != null)
@@ -159,7 +159,7 @@ namespace Microsoft.AspNet.Mvc
                 {
                     // Exception filters only run when there's an exception - unsetting it will short-circuit
                     // other exception filters.
-                    current.Filter.OnActionExecuted(_exceptionContext);
+                    current.Filter.OnException(_exceptionContext);
                 }
             }
             else

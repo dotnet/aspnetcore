@@ -26,13 +26,13 @@ namespace Microsoft.AspNet.Mvc
         public int Order { get; set; }
 
         #pragma warning disable 1998
-        public async Task OnActionExecutedAsync([NotNull] ExceptionContext context)
+        public async Task OnExceptionAsync([NotNull] ExceptionContext context)
         {
-            OnActionExecuted(context);
+            OnException(context);
         }
         #pragma warning restore 1998
 
-        public void OnActionExecuted([NotNull] ExceptionContext context)
+        public void OnException([NotNull] ExceptionContext context)
         {
         }
     }
