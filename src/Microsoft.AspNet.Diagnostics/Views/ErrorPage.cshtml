@@ -4,9 +4,6 @@
 @using Views
 @functions
 {
-    /// <summary>
-    /// 
-    /// </summary>
     public ErrorPageModel Model { get; set; }
 }
 @{
@@ -26,7 +23,6 @@
         </style>
     </head>
     <body>
-        Hello
         <h1>@Resources.ErrorPageHtml_UnhandledException</h1>
         @if (Model.Options.ShowExceptionDetails)
         {
@@ -123,7 +119,7 @@
                                         <div class="source">
                                             @if (frame.PreContextCode != null)
                                             {
-                                                <ol start="@frame.PreContextLine" class="collapsable">
+                                                <ol start="@frame.PreContextLine" class="collapsible">
                                                     @foreach (var line in frame.PreContextCode)
                                                     {
                                                         <li><span>@line</span></li>
@@ -136,7 +132,7 @@
 
                                             @if (frame.PostContextCode != null)
                                             {
-                                                <ol start='@(frame.Line + 1)' class="collapsable">
+                                                <ol start='@(frame.Line + 1)' class="collapsible">
                                                     @foreach (var line in frame.PostContextCode)
                                                     {
                                                         <li><span>@line</span></li>
@@ -272,7 +268,6 @@
             </div>
              */
         }
-        <script src="http://ajax.aspnetcdn.com/ajax/jquery/jquery-1.9.0.js"></script>
         <script>
             //<!--
             <%$ include: ErrorPage.js %>

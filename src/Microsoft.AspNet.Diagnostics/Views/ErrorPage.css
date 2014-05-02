@@ -1,5 +1,5 @@
 ﻿body {
-    font-family: 'Segoe UI',Tahoma,Arial,Helvetica,sans-serif;
+    font-family: 'Segoe UI', Tahoma, Arial, Helvetica, sans-serif;
     font-size: .813em;
     line-height: 1.4em;
     color: #222;
@@ -25,7 +25,7 @@ h3 {
 }
 
 code {
-    font-family: consolas, "Courier New", courier, monospace;
+    font-family: Consolas, "Courier New", courier, monospace;
 }
 
 body .titleerror {
@@ -47,22 +47,23 @@ body .location {
     margin-bottom: 0px;
 }
 
-#header li {
-    display: inline;
-    margin: 5px;
-    padding: 5px;
-    color: #a0a0a0;
-}
+    #header li {
+        display: inline;
+        margin: 5px;
+        padding: 5px;
+        color: #a0a0a0;
+        cursor: pointer;
+    }
 
-#header li:hover {
-    background: #A9E4F9;
-    color: #fff;
-}
+        #header li:hover {
+            background: #a9e4f9;
+            color: #fff;
+        }
 
-#header li.selected {
-    background: #44C5F2;
-    color: #fff;
-}
+        #header li.selected {
+            background: #44c5f2;
+            color: #fff;
+        }
 
 #stackpage ul {
     list-style: none;
@@ -76,9 +77,9 @@ body .location {
     border-bottom: 1px #ddd solid;
 }
 
-#stackpage .stackerror:hover {
-    background-color: #f0f0f0;
-}
+    #stackpage .stackerror:hover {
+        background-color: #f0f0f0;
+    }
 
 #stackpage .frame:hover {
     background-color: #f0f0f0;
@@ -89,43 +90,44 @@ body .location {
     padding: 2px;
     margin: 0 0 0 30px;
     border-bottom: 1px #ddd solid;
+    cursor: pointer;
 }
 
-#stackpage .frame h3 {
-    padding: 5px;
-    margin: 0;
-}
+    #stackpage .frame h3 {
+        padding: 5px;
+        margin: 0;
+    }
 
 #stackpage .source {
     padding: 0px;
 }
 
-#stackpage .source ol li {
-    font-family: consolas, "Courier New", courier, monospace;
-    white-space: pre;
-}
+    #stackpage .source ol li {
+        font-family: Consolas, "Courier New", courier, monospace;
+        white-space: pre;
+    }
 
-#stackpage .source ol.highlight li {
-    /*color: #e22;*/
-    /*font-weight: bold;*/
-}
+    #stackpage .source ol.highlight li {
+        /*color: #e22;*/
+        /*font-weight: bold;*/
+    }
 
-#stackpage .source ol.highlight li span {
-    /*color: #000;*/
-}
+        #stackpage .source ol.highlight li span {
+            /*color: #000;*/
+        }
 
 #stackpage .frame:hover .source ol.highlight li span {
     color: #fff;
-    background: #B20000;
+    background: #b20000;
 }
 
 #stackpage .source ol.collapsable li {
     color: #888;
 }
 
-#stackpage .source ol.collapsable li span {
-    color: #606060;
-}
+    #stackpage .source ol.collapsable li span {
+        color: #606060;
+    }
 
 .page table {
     border-collapse: separate;
@@ -153,20 +155,20 @@ body .location {
     box-sizing: border-box;
 }
 
-.page th:last-child, .page td:last-child {
-    border-right: 1px transparent solid;
-}
+    .page th:last-child, .page td:last-child {
+        border-right: 1px transparent solid;
+    }
 
-.page td.length {
-    text-align: right;
-}
+    .page td.length {
+        text-align: right;
+    }
 
 a {
     color: #1ba1e2;
     text-decoration: none;
 }
 
-a:hover {
-    color: #13709e;
-    text-decoration: underline;
-}
+    a:hover {
+        color: #13709e;
+        text-decoration: underline;
+    }
