@@ -13,6 +13,7 @@ PublishProfiles/
 _ReSharper.*
 nuget.exe
 *net45.csproj
+*net451.csproj
 *k10.csproj
 *.psess
 *.vsp
@@ -20,3 +21,5 @@ nuget.exe
 *.userprefs
 *DS_Store
 *.ncrunchsolution
+*.*sdf
+*.ipch
