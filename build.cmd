@@ -18,8 +18,8 @@ copy %CACHED_NUGET% .nuget\nuget.exe > nul
 IF EXIST packages\KoreBuild goto run
 .nuget\NuGet.exe install KoreBuild -ExcludeVersion -o packages -nocache -pre
 .nuget\NuGet.exe install Sake -version 0.2 -o packages -ExcludeVersion
-CALL packages\KoreBuild\build\kvm install -svr50 -x86
-CALL packages\KoreBuild\build\kvm install -svrc50 -x86
+CALL packages\KoreBuild\build\kvm upgrade -svr50 -x86
+CALL packages\KoreBuild\build\kvm install default -svrc50 -x86
 
 :run
 CALL packages\KoreBuild\build\kvm use default -svr50 -x86
