@@ -29,25 +29,6 @@
         "System.Collections": "",
         "System.Data": ""
       }
-    },
-    "k10": {
-      "dependencies": {
-        "System.Collections": "4.0.0.0",
-        "System.ComponentModel": "4.0.0.0",
-        "System.Diagnostics.Debug": "4.0.10.0",
-        "System.Diagnostics.Tools": "4.0.0.0",
-        "System.Globalization": "4.0.10.0",
-        "System.Linq": "4.0.0.0",
-        "System.Linq.Expressions": "4.0.0.0",
-        "System.Linq.Queryable": "4.0.0.0",
-        "System.Reflection": "4.0.10.0",
-        "System.Resources.ResourceManager": "4.0.0.0",
-        "System.Runtime": "4.0.20.0",
-        "System.Runtime.Extensions": "4.0.10.0",
-        "System.Security.Principal": "4.0.0.0",
-        "System.Text.Encoding": "4.0.20.0",
-        "System.Threading.Tasks": "4.0.10.0"
-      }
     }
   },
   "commands": {
