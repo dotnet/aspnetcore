@@ -31,11 +31,11 @@ namespace MvcSample.Web
     [TypeFilter(typeof(UserNameProvider), Order = -1)]
     public class FiltersController : Controller
     {
-        public User User { get; set; }
+        public User CustomUser { get; set; }
 
         public FiltersController()
         {
-            User = new User() { Name = "User Name", Address = "Home Address" };
+            CustomUser = new User() { Name = "User Name", Address = "Home Address" };
         }
 
         // TODO: Add a real filter here
@@ -47,12 +47,12 @@ namespace MvcSample.Web
         {
             if (!string.IsNullOrEmpty(userName))
             {
-                User.Name = userName;
+                CustomUser.Name = userName;
             }
 
-            User.Age = age;
+            CustomUser.Age = age;
 
-            return View("MyView", User);
+            return View("MyView", CustomUser);
         }
 
         public ActionResult Blocked(int age, string userName)

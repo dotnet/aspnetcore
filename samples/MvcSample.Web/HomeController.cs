@@ -30,7 +30,7 @@ namespace MvcSample.Web
 
         public ActionResult Index()
         {
-            return View("MyView", User());
+            return View("MyView", CreateUser());
         }
 
         public ActionResult ValidationSummary()
@@ -97,7 +97,7 @@ namespace MvcSample.Web
             Context.Response.WriteAsync("Hello World raw");
         }
 
-        public User User()
+        public User CreateUser()
         {
             User user = new User()
             {
@@ -125,7 +125,7 @@ namespace MvcSample.Web
         /// </summary>
         public ActionResult MyView()
         {
-            return View(User());
+            return View(CreateUser());
         }
 
         private static IEnumerable<SelectListItem> CreateAddresses()

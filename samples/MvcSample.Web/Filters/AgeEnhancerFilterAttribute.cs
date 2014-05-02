@@ -30,7 +30,7 @@ namespace MvcSample.Web.Filters
 
             if (controller != null)
             {
-                controller.User.Log += "Age Enhanced!" + Environment.NewLine;
+                controller.CustomUser.Log += "Age Enhanced!" + Environment.NewLine;
             }
             
             if (context.ActionArguments.TryGetValue("age", out age))
