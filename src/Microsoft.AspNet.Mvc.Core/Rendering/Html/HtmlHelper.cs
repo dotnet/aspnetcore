@@ -758,10 +758,35 @@ namespace Microsoft.AspNet.Mvc.Rendering
         protected virtual MvcForm GenerateForm(string actionName, string controllerName, object routeValues,
                                                FormMethod method, IDictionary<string, object> htmlAttributes)
         {
-            var formAction = _urlHelper.Action(action: actionName, controller: controllerName, values: routeValues);
-
             var tagBuilder = new TagBuilder("form");
             tagBuilder.MergeAttributes(htmlAttributes);
+
+            string formAction;
+            if (actionName == null && controllerName == null && routeValues == null && method == FormMethod.Post &&
+                htmlAttributes == null)
+            {
+                // Submit to the original URL in the special case that user called the BeginForm() overload without
+                // parameters. Also reachable in the even-more-unusual case that user called another BeginForm()
+                // overload with default argument values.
+                var request = ViewContext.HttpContext.Request;
+                if (request.Path.HasValue)
+                {
+                    formAction = request.Path.Value;
+                }
+                else
+                {
+                    formAction = string.Empty;
+                }
+
+                if (request.QueryString.HasValue)
+                {
+                    formAction += request.QueryString.Value;
+                }
+            }
+            else
+            {
+                formAction = _urlHelper.Action(action: actionName, controller: controllerName, values: routeValues);
+            }
 
             // action is implicitly generated, so htmlAttributes take precedence.
             tagBuilder.MergeAttribute("action", formAction);
