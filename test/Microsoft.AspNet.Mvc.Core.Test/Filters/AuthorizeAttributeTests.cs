@@ -18,6 +18,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Security.Authorization;
 using Moq;
