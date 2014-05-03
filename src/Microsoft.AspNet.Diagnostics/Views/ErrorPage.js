@@ -135,9 +135,9 @@
                 if (el.addEventListener) { // DOM Events
                     el.addEventListener(eventName, callback, false);
                 } else if (el.attachEvent) { // IE8 events
-                    el.attachEvent('on' + eventName, callback)
+                    el.attachEvent("on" + eventName, callback)
                 } else {
-                    el['on' + type] = callback;
+                    el["on" + type] = callback;
                 }
             });
 

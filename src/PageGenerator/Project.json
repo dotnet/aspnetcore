@@ -2,7 +2,7 @@
     "dependencies": {
         "Microsoft.AspNet.Diagnostics":  "",
         "Microsoft.Net.Runtime.Interfaces": "0.1.0-alpha-*",
-        "Microsoft.AspNet.Mvc": "0.1.0-alpha-*"
+        "Microsoft.AspNet.Razor": "0.1.0-alpha-*"
     },
 
     "configurations" : {
