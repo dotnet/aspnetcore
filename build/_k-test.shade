@@ -31,8 +31,8 @@ projectFile=''
             : new Dictionary<string, object>();
         
         // Currently only net* and k* targets are supported. See aspnet/Universe#53
-        var targetFrameworks = configs.Keys.Where(k => k.StartsWith("net", StringComparison.OrdinalIgnoreCase)
-                                                    || k.StartsWith("k", StringComparison.OrdinalIgnoreCase));
+        var targetFrameworks = configs.Keys.Where(k => k.StartsWith("net", StringComparison.OrdinalIgnoreCase) /*
+                                                    || k.StartsWith("k", StringComparison.OrdinalIgnoreCase) */ );
         
         var originalTargetFramework = Environment.GetEnvironmentVariable("TARGET_FRAMEWORK");
         try
