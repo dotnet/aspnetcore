@@ -8,7 +8,7 @@
     "Microsoft.AspNet.DependencyInjection": "0.1-alpha-*",
     "Microsoft.AspNet.PipelineCore": "0.1-alpha-*",
     "Microsoft.AspNet.Testing": "0.1-alpha-*",
-    "Microsoft.ComponentModel.DataAnnotations" : "4.0.10.0",
+    "Microsoft.ComponentModel.DataAnnotations" : "0.1-alpha-*",
     "Microsoft.AspNet.Mvc.ModelBinding" : "",
     "Newtonsoft.Json": "5.0.8",
     "Xunit.KRunner": "0.1-alpha-*",
