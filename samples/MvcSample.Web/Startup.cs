@@ -17,6 +17,7 @@
 
 using Microsoft.AspNet;
 using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
 using MvcSample.Web.Filters;
