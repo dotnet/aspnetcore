@@ -24,8 +24,18 @@
     <Compile Include="ClaimsIdentityFactory.cs" />
     <Compile Include="Crypto.cs" />
     <Compile Include="IClaimsIdentityFactory.cs" />
+    <Compile Include="IdentityBuilder.cs" />
     <Compile Include="IdentityMessage.cs" />
+    <Compile Include="IdentityOptions.cs" />
     <Compile Include="IdentityResult.cs" />
+    <Compile Include="IdentityRole.cs" />
+    <Compile Include="IdentityServiceCollectionExtensions.cs" />
+    <Compile Include="IdentityServices.cs" />
+    <Compile Include="IdentitySetup.cs" />
+    <Compile Include="IdentityUser.cs" />
+    <Compile Include="IdentityUserClaim.cs" />
+    <Compile Include="IdentityUserLogin.cs" />
+    <Compile Include="IdentityUserRole.cs" />
     <Compile Include="IIdentityMessageService.cs" />
     <Compile Include="IPasswordHasher.cs" />
     <Compile Include="IPasswordValidator.cs" />
@@ -55,6 +65,9 @@
     <Compile Include="UserLoginInfo.cs" />
     <Compile Include="UserManager.cs" />
     <Compile Include="UserValidator.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>

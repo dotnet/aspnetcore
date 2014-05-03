@@ -4,9 +4,9 @@
     "Microsoft.AspNet.ConfigurationModel": "0.1-alpha-*",
     "Microsoft.AspNet.DependencyInjection": "0.1-alpha-*",
     "Microsoft.AspNet.Identity": "0.1-alpha-*",
-    "Microsoft.AspNet.Logging": "0.1-alpha-*",
     "Microsoft.Data.Entity": "0.1-alpha-*",
     "Microsoft.Data.Relational": "0.1-alpha-*",
+    "Microsoft.Data.SqlServer": "0.1-alpha-*",
     "Microsoft.Data.InMemory": "0.1-alpha-*",
     "System.Security.Claims" : "0.1-alpha-*"
   },

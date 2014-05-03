@@ -1,9 +1,9 @@
 {
   "version": "0.1-alpha-*",
   "dependencies": {
-    "Microsoft.Bcl.Immutable": "1.1.18-beta-*",
-    "Microsoft.AspNet.DependencyInjection": "0.1-alpha-*",
+    "Microsoft.AspNet.Abstractions": "0.1-alpha-*",
     "Microsoft.AspNet.ConfigurationModel": "0.1-alpha-*",
+    "Microsoft.AspNet.DependencyInjection": "0.1-alpha-*",
     "Microsoft.AspNet.Identity": "",
     "Microsoft.AspNet.Identity.Entity": "",
     "Microsoft.AspNet.PipelineCore": "0.1-alpha-*",
@@ -11,9 +11,12 @@
     "Microsoft.AspNet.RequestContainer": "0.1-alpha-*",
     "Microsoft.AspNet.Security.DataProtection": "0.1-alpha-*",
     "Microsoft.AspNet.Testing": "0.1-alpha-*",
+    "Microsoft.Bcl.Immutable": "1.1.18-beta-*",
     "Microsoft.Data.Entity": "0.1-alpha-*",
     "Microsoft.Data.InMemory": "0.1-alpha-*",
+    "Microsoft.Data.Migrations": "0.1-alpha-*",
     "Microsoft.Data.Relational": "0.1-alpha-*",
+    "Microsoft.Data.SqlServer": "0.1-alpha-*",
     "Remotion.Linq": "1.15.13.0",
     "System.Security.Claims": "0.1-alpha-*",
     "Xunit.KRunner": "0.1-alpha-*",
@@ -22,9 +25,11 @@
     "xunit.core": "2.0.0-aspnet-*",
     "xunit.execution": "2.0.0-aspnet-*"
   },
+  "code": "**\\*.cs;..\\Shared\\*.cs",
   "configurations": {
     "net45": {
       "dependencies": {
+        "Moq" : "4.2.1312.1622",
         "System.Runtime": "",
         "System.Collections": "",
         "System.Data": ""

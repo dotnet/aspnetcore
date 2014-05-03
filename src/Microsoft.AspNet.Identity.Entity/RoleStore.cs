@@ -24,6 +24,11 @@ using Microsoft.Data.Entity;
 
 namespace Microsoft.AspNet.Identity.Entity
 {
+    public class RoleStore<TRole> : RoleStore<TRole, string> where TRole : EntityRole
+    {
+        public RoleStore(DbContext context) : base(context) { }
+    }
+
     public class RoleStore<TRole, TKey> : 
         IQueryableRoleStore<TRole>
         where TRole : EntityRole

@@ -20,8 +20,13 @@
     <Content Include="Project.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DefaultAuthenticationTypes.cs" />
+    <Compile Include="IdentityExtensions.cs" />
     <Compile Include="SignInManager.cs" />
     <Compile Include="SignInStatus.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>

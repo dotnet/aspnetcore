@@ -20,6 +20,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.DependencyInjection;
+using Microsoft.AspNet.DependencyInjection.Fallback;
 using Moq;
 using Xunit;
 
@@ -31,7 +33,7 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task CreateIdentityNullChecks()
         {
             var factory = new ClaimsIdentityFactory<TestUser>();
-            var manager = new UserManager<TestUser>(new NoopUserStore());
+            var manager = MockHelpers.MockUserManager<TestUser>().Object;
             await Assert.ThrowsAsync<ArgumentNullException>("manager",
                 async () => await factory.CreateAsync(null, null, "whatever"));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
@@ -50,7 +52,7 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task EnsureClaimsIdentityHasExpectedClaims(bool supportRoles, bool supportClaims)
         {
             // Setup
-            var userManager = new Mock<UserManager<TestUser>>();
+            var userManager = MockHelpers.MockUserManager<TestUser>();
             var user = new TestUser { UserName = "Foo" };
             userManager.Setup(m => m.SupportsUserRole).Returns(supportRoles);
             userManager.Setup(m => m.SupportsUserClaim).Returns(supportClaims);
@@ -60,6 +62,7 @@ namespace Microsoft.AspNet.Identity.Test
             userManager.Setup(m => m.GetRolesAsync(user, CancellationToken.None)).ReturnsAsync(roleClaims);
             var userClaims = new[] { new Claim("Whatever", "Value"), new Claim("Whatever2", "Value2") };
             userManager.Setup(m => m.GetClaimsAsync(user, CancellationToken.None)).ReturnsAsync(userClaims);
+            userManager.Object.Options = new IdentityOptions();
 
             const string authType = "Microsoft.AspNet.Identity";
             var factory = new ClaimsIdentityFactory<TestUser>();
@@ -68,15 +71,16 @@ namespace Microsoft.AspNet.Identity.Test
             var identity = await factory.CreateAsync(userManager.Object, user, authType);
 
             // Assert
+            var manager = userManager.Object;
             Assert.NotNull(identity);
             Assert.Equal(authType, identity.AuthenticationType);
             var claims = identity.Claims.ToList();
             Assert.NotNull(claims);
             Assert.True(
-                claims.Any(c => c.Type == factory.UserNameClaimType && c.Value == user.UserName));
-            Assert.True(claims.Any(c => c.Type == factory.UserIdClaimType && c.Value == user.Id));
-            Assert.Equal(supportRoles, claims.Any(c => c.Type == factory.RoleClaimType && c.Value == "Admin"));
-            Assert.Equal(supportRoles, claims.Any(c => c.Type == factory.RoleClaimType && c.Value == "Local"));
+                claims.Any(c => c.Type == manager.Options.ClaimType.UserName && c.Value == user.UserName));
+            Assert.True(claims.Any(c => c.Type == manager.Options.ClaimType.UserId && c.Value == user.Id));
+            Assert.Equal(supportRoles, claims.Any(c => c.Type == manager.Options.ClaimType.Role && c.Value == "Admin"));
+            Assert.Equal(supportRoles, claims.Any(c => c.Type == manager.Options.ClaimType.Role && c.Value == "Local"));
             foreach (var cl in userClaims)
             {
                 Assert.Equal(supportClaims, claims.Any(c => c.Type == cl.Type && c.Value == cl.Value));

@@ -23,6 +23,10 @@
   <ItemGroup>
     <Compile Include="IdentityResultAssert.cs" />
     <Compile Include="InMemoryStoreTest.cs" />
+    <Compile Include="StartupTest.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>

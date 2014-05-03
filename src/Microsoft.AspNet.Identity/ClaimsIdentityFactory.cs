@@ -19,6 +19,7 @@ using System;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.DependencyInjection;
 
 namespace Microsoft.AspNet.Identity
 {
@@ -29,42 +30,6 @@ namespace Microsoft.AspNet.Identity
     public class ClaimsIdentityFactory<TUser> : IClaimsIdentityFactory<TUser>
         where TUser : class
     {
-        /// <summary>
-        ///     ClaimType used for the security stamp by default
-        /// </summary>
-        public const string DefaultSecurityStampClaimType = "AspNet.Identity.SecurityStamp";
-
-        /// <summary>
-        ///     Constructor
-        /// </summary>
-        public ClaimsIdentityFactory()
-        {
-            RoleClaimType = ClaimsIdentity.DefaultRoleClaimType;
-            UserIdClaimType = ClaimTypes.NameIdentifier;
-            UserNameClaimType = ClaimsIdentity.DefaultNameClaimType;
-            SecurityStampClaimType = DefaultSecurityStampClaimType;
-        }
-
-        /// <summary>
-        ///     Claim type used for role claims
-        /// </summary>
-        public string RoleClaimType { get; set; }
-
-        /// <summary>
-        ///     Claim type used for the user name
-        /// </summary>
-        public string UserNameClaimType { get; set; }
-
-        /// <summary>
-        ///     Claim type used for the user id
-        /// </summary>
-        public string UserIdClaimType { get; set; }
-
-        /// <summary>
-        ///     Claim type used for the user security stamp
-        /// </summary>
-        public string SecurityStampClaimType { get; set; }
-
         /// <summary>
         ///     CreateAsync a ClaimsIdentity from a user
         /// </summary>
@@ -86,19 +51,19 @@ namespace Microsoft.AspNet.Identity
             }
             var userId = await manager.GetUserIdAsync(user, cancellationToken);
             var userName = await manager.GetUserNameAsync(user, cancellationToken);
-            var id = new ClaimsIdentity(authenticationType, UserNameClaimType, RoleClaimType);
-            id.AddClaim(new Claim(UserIdClaimType, userId));
-            id.AddClaim(new Claim(UserNameClaimType, userName, ClaimValueTypes.String));
+            var id = new ClaimsIdentity(authenticationType, manager.Options.ClaimType.UserName, manager.Options.ClaimType.Role);
+            id.AddClaim(new Claim(manager.Options.ClaimType.UserId, userId));
+            id.AddClaim(new Claim(manager.Options.ClaimType.UserName, userName, ClaimValueTypes.String));
             if (manager.SupportsUserSecurityStamp)
             {
-                id.AddClaim(new Claim(SecurityStampClaimType, await manager.GetSecurityStampAsync(user, cancellationToken)));
+                id.AddClaim(new Claim(manager.Options.ClaimType.SecurityStamp, await manager.GetSecurityStampAsync(user, cancellationToken)));
             }
             if (manager.SupportsUserRole)
             {
                 var roles = await manager.GetRolesAsync(user, cancellationToken);
                 foreach (var roleName in roles)
                 {
-                    id.AddClaim(new Claim(RoleClaimType, roleName, ClaimValueTypes.String));
+                    id.AddClaim(new Claim(manager.Options.ClaimType.Role, roleName, ClaimValueTypes.String));
                 }
             }
             if (manager.SupportsUserClaim)

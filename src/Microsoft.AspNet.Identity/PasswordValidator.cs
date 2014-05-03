@@ -27,63 +27,44 @@ namespace Microsoft.AspNet.Identity
     /// <summary>
     ///     Used to validate some basic password policy like length and number of non alphanumerics
     /// </summary>
-    public class PasswordValidator : IPasswordValidator
+    public class PasswordValidator<TUser> : IPasswordValidator<TUser> where TUser : class
     {
         /// <summary>
-        ///     Minimum required length
+        ///     Ensures that the password is of the required length and meets the configured requirements
         /// </summary>
-        public int RequiredLength { get; set; }
-
-        /// <summary>
-        ///     Require a non letter or digit character
-        /// </summary>
-        public bool RequireNonLetterOrDigit { get; set; }
-
-        /// <summary>
-        ///     Require a lower case letter ('a' - 'z')
-        /// </summary>
-        public bool RequireLowercase { get; set; }
-
-        /// <summary>
-        ///     Require an upper case letter ('A' - 'Z')
-        /// </summary>
-        public bool RequireUppercase { get; set; }
-
-        /// <summary>
-        ///     Require a digit ('0' - '9')
-        /// </summary>
-        public bool RequireDigit { get; set; }
-
-        /// <summary>
-        ///     Ensures that the string is of the required length and meets the configured requirements
-        /// </summary>
-        /// <param name="item"></param>
+        /// <param name="password"></param>
+        /// <param name="manager"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task<IdentityResult> ValidateAsync(string item, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<IdentityResult> ValidateAsync(string password, UserManager<TUser> manager, CancellationToken cancellationToken = default(CancellationToken))
         {
-            if (item == null)
+            if (password == null)
             {
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException("password");
+            }
+            if (manager == null)
+            {
+                throw new ArgumentNullException("manager");
             }
             var errors = new List<string>();
-            if (string.IsNullOrWhiteSpace(item) || item.Length < RequiredLength)
+            var options = manager.Options.Password;
+            if (string.IsNullOrWhiteSpace(password) || password.Length < options.RequiredLength)
             {
-                errors.Add(String.Format(CultureInfo.CurrentCulture, Resources.PasswordTooShort, RequiredLength));
+                errors.Add(String.Format(CultureInfo.CurrentCulture, Resources.PasswordTooShort, options.RequiredLength));
             }
-            if (RequireNonLetterOrDigit && item.All(IsLetterOrDigit))
+            if (options.RequireNonLetterOrDigit && password.All(IsLetterOrDigit))
             {
                 errors.Add(Resources.PasswordRequireNonLetterOrDigit);
             }
-            if (RequireDigit && !item.Any(IsDigit))
+            if (options.RequireDigit && !password.Any(IsDigit))
             {
                 errors.Add(Resources.PasswordRequireDigit);
             }
-            if (RequireLowercase && !item.Any(IsLower))
+            if (options.RequireLowercase && !password.Any(IsLower))
             {
                 errors.Add(Resources.PasswordRequireLower);
             }
-            if (RequireUppercase && !item.Any(IsUpper))
+            if (options.RequireUppercase && !password.Any(IsUpper))
             {
                 errors.Add(Resources.PasswordRequireUpper);
             }

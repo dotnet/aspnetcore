@@ -20,20 +20,14 @@
     <Content Include="Project.json" />
   </ItemGroup>
   <ItemGroup>
-<<<<<<< HEAD
-    <Compile Include="IdentityContext.cs" />
-    <Compile Include="IdentityRole.cs" />
-    <Compile Include="IdentityUser.cs" />
-    <Compile Include="IdentityUserClaim.cs" />
-    <Compile Include="IdentityUserLogin.cs" />
-    <Compile Include="IdentityUserRole.cs" />
-=======
     <Compile Include="EntityRole.cs" />
     <Compile Include="EntityUser.cs" />
     <Compile Include="IdentityContext.cs" />
->>>>>>> POCO
     <Compile Include="RoleStore.cs" />
     <Compile Include="UserStore.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>

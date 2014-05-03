@@ -17,6 +17,8 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNet.DependencyInjection;
+using Microsoft.AspNet.DependencyInjection.Fallback;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.Test
@@ -27,7 +29,7 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task ValidateThrowsWithNull()
         {
             // Setup
-            var manager = new UserManager<TestUser>(new NoopUserStore());
+            var manager = MockHelpers.TestUserManager(new NoopUserStore());
             var validator = new UserValidator<TestUser>();
 
             // Act
@@ -42,7 +44,7 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task ValidateFailsWithTooShortUserNames(string input)
         {
             // Setup
-            var manager = new UserManager<TestUser>(new NoopUserStore());
+            var manager = MockHelpers.TestUserManager(new NoopUserStore());
             var validator = new UserValidator<TestUser>();
             var user = new TestUser {UserName = input};
 
@@ -62,7 +64,7 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task DefaultAlphaNumericOnlyUserNameValidation(string userName, bool expectSuccess)
         {
             // Setup
-            var manager = new UserManager<TestUser>(new NoopUserStore());
+            var manager = MockHelpers.TestUserManager(new NoopUserStore());
             var validator = new UserValidator<TestUser>();
             var user = new TestUser {UserName = userName};
 
@@ -89,8 +91,9 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task CanAllowNonAlphaNumericUserName(string userName, bool expectSuccess)
         {
             // Setup
-            var manager = new UserManager<TestUser>(new NoopUserStore());
-            var validator = new UserValidator<TestUser> {AllowOnlyAlphanumericUserNames = false};
+            var manager = MockHelpers.TestUserManager(new NoopUserStore());
+            manager.Options.User.AllowOnlyAlphanumericNames = false;
+            var validator = new UserValidator<TestUser>();
             var user = new TestUser {UserName = userName};
 
             // Act

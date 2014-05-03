@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Identity.Test
             Id = Guid.NewGuid().ToString();
         }
 
-        public string Id { get; set; }
+        public string Id { get; private set; }
         public string UserName { get; set; }
     }
 }

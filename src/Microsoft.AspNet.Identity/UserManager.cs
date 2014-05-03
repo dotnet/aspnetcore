@@ -41,52 +41,34 @@ namespace Microsoft.AspNet.Identity
         private TimeSpan _defaultLockout = TimeSpan.Zero;
         private bool _disposed;
         private IPasswordHasher _passwordHasher;
-        private LockoutPolicy _lockoutPolicy;
-
-        // Needed for mock unit tests
-        public UserManager() { } 
+        private IdentityOptions _options;
 
         /// <summary>
-        ///     Constructor which takes a service provider
+        ///     Constructor which takes a service provider and user store
         /// </summary>
         /// <param name="serviceProvider"></param>
-        public UserManager(IServiceProvider serviceProvider)
-        {
-            Initialize(serviceProvider);
-        }
-
-        /// <summary>
-        ///     Constructor
-        /// </summary>
-        /// <param name="store">The IUserStore is responsible for commiting changes via the UpdateAsync/CreateAsync methods</param>
-        public UserManager(IUserStore<TUser> store)
-        {
-            if (store == null)
-            {
-                throw new ArgumentNullException("store");
-            }
-            var services = new ServiceCollection { IdentityServices.GetDefaultUserServices<TUser>() };
-            services.AddInstance<IUserStore<TUser>>(store);
-            Initialize(services.BuildServiceProvider());
-        }
-
-        public void Initialize(IServiceProvider serviceProvider)
+        /// <param name="store"></param>
+        /// <param name="optionsAccessor"></param>
+        public UserManager(IServiceProvider serviceProvider, IUserStore<TUser> store, IOptionsAccessor<IdentityOptions> optionsAccessor)
         {
             if (serviceProvider == null)
             {
                 throw new ArgumentNullException("serviceProvider");
             }
-            PasswordHasher = serviceProvider.GetService<IPasswordHasher>();
-            UserValidator = serviceProvider.GetService<IUserValidator<TUser>>();
-            PasswordValidator = serviceProvider.GetService<IPasswordValidator>();
-            ClaimsIdentityFactory = serviceProvider.GetService<IClaimsIdentityFactory<TUser>>();
-            LockoutPolicy = serviceProvider.GetService<LockoutPolicy>();
-            Store = serviceProvider.GetService<IUserStore<TUser>>();
-            if (Store == null)
+            if (store == null)
             {
-                // TODO: what is the right way to enforce required services
-                throw new InvalidOperationException();
+                throw new ArgumentNullException("store");
             }
+            if (optionsAccessor == null || optionsAccessor.Options == null)
+            {
+                throw new ArgumentNullException("optionsAccessor");
+            }
+            Store = store;
+            Options = optionsAccessor.Options;
+            PasswordHasher = serviceProvider.GetService<IPasswordHasher>() ?? new PasswordHasher();
+            UserValidator = serviceProvider.GetService<IUserValidator<TUser>>() ?? new UserValidator<TUser>();
+            PasswordValidator = serviceProvider.GetService<IPasswordValidator<TUser>>() ?? new PasswordValidator<TUser>();
+            ClaimsIdentityFactory = serviceProvider.GetService<IClaimsIdentityFactory<TUser>>() ?? new ClaimsIdentityFactory<TUser>();
             // TODO: Email/Sms/Token services
         }
 
@@ -124,7 +106,7 @@ namespace Microsoft.AspNet.Identity
         /// <summary>
         ///     Used to validate passwords before persisting changes
         /// </summary>
-        public IPasswordValidator PasswordValidator { get; set; }
+        public IPasswordValidator<TUser> PasswordValidator { get; set; }
 
         /// <summary>
         ///     Used to create claims identities from users
@@ -162,30 +144,23 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         public IUserTokenProvider<TUser> UserTokenProvider { get; set; }
 
-        public LockoutPolicy LockoutPolicy { get; set; }
-
-        private bool UserLockoutEnabledByDefault
+        public IdentityOptions Options
         {
             get
             {
-                return LockoutPolicy != null && LockoutPolicy.UserLockoutEnabledByDefault;
+                ThrowIfDisposed();
+                return _options;
             }
-        }
-
-        private int MaxFailedAccessAttemptsBeforeLockout
-        {
-            get
+            set
             {
-                return LockoutPolicy != null ? LockoutPolicy.MaxFailedAccessAttemptsBeforeLockout : 0;
+                ThrowIfDisposed();
+                if (value == null)
+                {
+                    throw new ArgumentNullException("value");
+                }
+                _options = value;
             }
-        }
-
-        private TimeSpan DefaultAccountLockoutTimeSpan
-        {
-            get
-            {
-                return LockoutPolicy != null ? LockoutPolicy.DefaultAccountLockoutTimeSpan : TimeSpan.FromMinutes(5);
-            }
+            
         }
 
         /// <summary>
@@ -380,7 +355,7 @@ namespace Microsoft.AspNet.Identity
             {
                 return result;
             }
-            if (UserLockoutEnabledByDefault && SupportsUserLockout)
+            if (Options.Lockout.EnabledByDefault && SupportsUserLockout)
             {
                 await GetUserLockoutStore().SetLockoutEnabledAsync(user, true, cancellationToken);
             }
@@ -673,7 +648,7 @@ namespace Microsoft.AspNet.Identity
         {
             if (PasswordValidator != null)
             {
-                var result = await PasswordValidator.ValidateAsync(newPassword, cancellationToken);
+                var result = await PasswordValidator.ValidateAsync(newPassword, this, cancellationToken);
                 if (!result.Succeeded)
                 {
                     return result;
@@ -1757,12 +1732,12 @@ namespace Microsoft.AspNet.Identity
             }
             // If this puts the user over the threshold for lockout, lock them out and reset the access failed count
             var count = await store.IncrementAccessFailedCountAsync(user, cancellationToken);
-            if (count < MaxFailedAccessAttemptsBeforeLockout)
+            if (count < Options.Lockout.MaxFailedAccessAttempts)
             {
                 return await UpdateAsync(user, cancellationToken);
             }
             await
-                store.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.Add(DefaultAccountLockoutTimeSpan), cancellationToken);
+                store.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.Add(Options.Lockout.DefaultLockoutTimeSpan), cancellationToken);
             await store.ResetAccessFailedCountAsync(user, cancellationToken);
             return await UpdateAsync(user, cancellationToken);
         }

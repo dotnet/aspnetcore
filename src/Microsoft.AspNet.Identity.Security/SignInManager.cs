@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc.
+﻿// Copyright (c) Microsoft Open Technologies, Inc.
 // All Rights Reserved
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,13 +17,37 @@
 
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Abstractions.Security;
+using Microsoft.AspNet.DependencyInjection;
+using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Identity.Security
 {
-    public class SignInManager<TUser> where TUser : class
+    public class SignInManager<TUser> : SignInManager<UserManager<TUser>, TUser> where TUser : class
     {
+        public SignInManager(UserManager<TUser> userManager, IContextAccessor<HttpContext> contextAccessor)
+            : base(userManager, contextAccessor) { }
+    }
+
+
+    public class SignInManager<TManager, TUser> where TManager : UserManager<TUser> where TUser : class
+    {
+        public SignInManager(TManager userManager, IContextAccessor<HttpContext> contextAccessor)
+        {
+            if (userManager == null)
+            {
+                throw new ArgumentNullException("userManager");
+            }
+            if (contextAccessor == null || contextAccessor.Value == null)
+            {
+                throw new ArgumentNullException("contextAccessor");
+            }
+            UserManager = userManager;
+            Context = contextAccessor.Value;
+        }
+
+        // TODO: this should go into some kind of Options/setup
         private string _authType;
         public string AuthenticationType
         {
@@ -31,25 +55,16 @@ namespace Microsoft.AspNet.Identity.Security
             set { _authType = value; }
         }
 
-        public UserManager<TUser> UserManager { get; set; }
-        public HttpContext Context { get; set; }
+        public TManager UserManager { get; private set; }
+        public HttpContext Context { get; private set; }
 
         public virtual async Task<ClaimsIdentity> CreateUserIdentityAsync(TUser user)
         {
-            if (UserManager == null)
-            {
-                return null;
-            }
             return await UserManager.CreateIdentityAsync(user, AuthenticationType);
         }
 
         public virtual async Task SignInAsync(TUser user, bool isPersistent, bool rememberBrowser)
         {
-            if (Context == null)
-            {
-                return;
-            }
-
             // TODO: all the two factor logic/external/rememberBrowser
             var userIdentity = await CreateUserIdentityAsync(user);
             Context.Response.SignIn(userIdentity, new AuthenticationProperties { IsPersistent = isPersistent });
@@ -57,10 +72,6 @@ namespace Microsoft.AspNet.Identity.Security
 
         public virtual void SignOut()
         {
-            if (Context == null)
-            {
-                return;
-            }
             Context.Response.SignOut(AuthenticationType);
         }
 
@@ -151,10 +162,6 @@ namespace Microsoft.AspNet.Identity.Security
 
         public virtual async Task<SignInStatus> PasswordSignInAsync(string userName, string password, bool isPersistent, bool shouldLockout)
         {
-            if (UserManager == null)
-            {
-                return SignInStatus.Failure;
-            }
             var user = await UserManager.FindByNameAsync(userName);
             if (user == null)
             {

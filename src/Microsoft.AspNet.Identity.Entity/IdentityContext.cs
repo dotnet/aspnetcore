@@ -19,6 +19,7 @@ using System;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.DependencyInjection.Fallback;
 using Microsoft.Data.Entity;
+using Microsoft.Data.SqlServer;
 using Microsoft.Data.InMemory;
 using Microsoft.Data.Entity.Metadata;
 
@@ -33,7 +34,7 @@ namespace Microsoft.AspNet.Identity.Entity
 
     public class IdentityContext<TUser, TRole, TKey, TUserLogin, TUserRole, TUserClaim> : DbContext
         where TUser : EntityUser<TKey, TUserLogin, TUserRole, TUserClaim>
-        where TRole : EntityRole<TKey, TUserRole> /*, TUserRole*/
+        where TRole : EntityRole<TKey, TUserRole>
         where TUserLogin : IdentityUserLogin<TKey>
         where TUserRole : IdentityUserRole<TKey>
         where TUserClaim : IdentityUserClaim<TKey>
@@ -51,7 +52,7 @@ namespace Microsoft.AspNet.Identity.Entity
         protected override void OnConfiguring(EntityConfigurationBuilder builder)
         {
 //#if NET45
-//          builder.SqlServerConnectionString(@"Server=(localdb)\v11.0;Database=IdentityDb;Trusted_Connection=True;");
+//            builder.SqlServerConnectionString(@"Server=(localdb)\v11.0;Database=IdentityDb3;Trusted_Connection=True;");
 //#else
             builder.UseInMemoryStore();
 //#endif

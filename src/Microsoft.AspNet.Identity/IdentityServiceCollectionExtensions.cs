@@ -28,6 +28,7 @@ namespace Microsoft.AspNet.DependencyInjection
         {
             services.Add(IdentityServices.GetDefaultUserServices<TUser>());
             services.Add(IdentityServices.GetDefaultRoleServices<TRole>());
+            services.AddSingleton<IOptionsAccessor<IdentityOptions>, OptionsAccessor<IdentityOptions>>();
             actionBuilder(new IdentityBuilder<TUser, TRole>(services));
             return services;
         }
@@ -35,10 +36,7 @@ namespace Microsoft.AspNet.DependencyInjection
         public static ServiceCollection AddIdentity<TUser>(this ServiceCollection services, Action<IdentityBuilder<TUser, IdentityRole>> actionBuilder)
             where TUser : class
         {
-            services.Add(IdentityServices.GetDefaultUserServices<TUser>());
-            services.Add(IdentityServices.GetDefaultRoleServices<IdentityRole>());
-            actionBuilder(new IdentityBuilder<TUser, IdentityRole>(services));
-            return services;
+            return services.AddIdentity<TUser, IdentityRole>(actionBuilder);
         }
     }
 }

@@ -22,6 +22,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClaimsIdentityFactoryTest.cs" />
+    <Compile Include="IdentityBuilderTest.cs" />
     <Compile Include="IdentityResultAssert.cs" />
     <Compile Include="IdentityResultTest.cs" />
     <Compile Include="NoopRoleStore.cs" />
@@ -30,10 +31,12 @@
     <Compile Include="RoleManagerTest.cs" />
     <Compile Include="RoleValidatorTest.cs" />
     <Compile Include="TestRole.cs" />
-    <Compile Include="TestServices.cs" />
     <Compile Include="TestUser.cs" />
     <Compile Include="UserManagerTest.cs" />
     <Compile Include="UserValidatorTest.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>

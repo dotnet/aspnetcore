@@ -17,12 +17,64 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNet.DependencyInjection;
+using Microsoft.AspNet.DependencyInjection.Fallback;
+using Microsoft.AspNet.Identity.Test;
+using Microsoft.Data.Entity;
+using Microsoft.Data.InMemory;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.Entity.Test
 {
     public class RoleStoreTest
     {
+        class ApplicationRoleManager : RoleManager<EntityRole>
+        {
+            public ApplicationRoleManager(IServiceProvider services, IRoleStore<EntityRole> store) : base(services, store) { }
+        }
+
+        [Fact]
+        public async Task CanCreateUsingAddRoleManager()
+        {
+            var services = new ServiceCollection();
+#if NET45
+            //            services.AddEntityFramework(s => s.AddSqlServer());
+            //#else
+            services.AddEntityFramework(s => s.AddInMemoryStore());
+#endif
+            // TODO: this should construct a new instance of InMemoryStore
+            var store = new RoleStore<EntityRole>(new IdentityContext());
+            services.AddIdentity<EntityUser, EntityRole>(s =>
+            {
+                s.AddRoleStore(() => store);
+                s.AddRoleManager<ApplicationRoleManager>();
+            });
+
+            var provider = services.BuildServiceProvider();
+            var manager = provider.GetService<ApplicationRoleManager>();
+            Assert.NotNull(manager);
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(new EntityRole("arole")));
+        }
+        [Fact]
+        public async Task CanCreateRoleWithSingletonManager()
+        {
+            var services = new ServiceCollection();
+#if NET45
+//            services.AddEntityFramework(s => s.AddSqlServer());
+//#else
+            services.AddEntityFramework(s => s.AddInMemoryStore());
+#endif
+            services.AddTransient<DbContext, IdentityContext>();
+            services.AddTransient<IRoleStore<EntityRole>, RoleStore<EntityRole>>();
+            //todo: services.AddSingleton<RoleManager<EntityRole>, RoleManager<EntityRole>>();
+            // TODO: How to configure SqlServer?
+            services.AddSingleton<ApplicationRoleManager, ApplicationRoleManager>();
+            var provider = services.BuildServiceProvider();
+            var manager = provider.GetService<ApplicationRoleManager>();
+            Assert.NotNull(manager);
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(new EntityRole("someRole")));
+        }
+
         [Fact]
         public async Task RoleStoreMethodsThrowWhenDisposedTest()
         {

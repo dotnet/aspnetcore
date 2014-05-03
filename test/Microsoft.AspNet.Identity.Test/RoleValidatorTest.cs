@@ -17,6 +17,8 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNet.DependencyInjection;
+using Microsoft.AspNet.DependencyInjection.Fallback;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.Test
@@ -27,7 +29,7 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task ValidateThrowsWithNull()
         {
             // Setup
-            var manager = new RoleManager<TestRole>(new NoopRoleStore());
+            var manager = new RoleManager<TestRole>(new ServiceCollection().BuildServiceProvider(), new NoopRoleStore());
             var validator = new RoleValidator<TestRole>();
 
             // Act
@@ -42,7 +44,7 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task ValidateFailsWithTooShortRoleName(string input)
         {
             // Setup
-            var manager = new RoleManager<TestRole>(new NoopRoleStore());
+            var manager = new RoleManager<TestRole>(new ServiceCollection().BuildServiceProvider(), new NoopRoleStore());
             var validator = new RoleValidator<TestRole>();
             var user = new TestRole {Name = input};
 

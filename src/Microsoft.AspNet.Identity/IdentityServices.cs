@@ -38,26 +38,12 @@ namespace Microsoft.AspNet.Identity
             var describe = new ServiceDescriber(configuration);
 
             // TODO: review defaults for validators should get picked up from config?
-            yield return describe.Instance<IUserValidator<TUser>>(new UserValidator<TUser>());
-            yield return describe.Instance<IPasswordValidator>(new PasswordValidator()
-            {
-                RequiredLength = 6,
-                RequireDigit = true,
-                RequireLowercase = true,
-                RequireNonLetterOrDigit = true,
-                RequireUppercase = true
-            });
-            yield return describe.Instance<IPasswordHasher>(new PasswordHasher());
-            yield return describe.Instance<IClaimsIdentityFactory<TUser>>(new ClaimsIdentityFactory<TUser>());
-            yield return describe.Instance<LockoutPolicy>(new LockoutPolicy
-            {
-                UserLockoutEnabledByDefault = false,
-                DefaultAccountLockoutTimeSpan = TimeSpan.FromMinutes(5),
-                MaxFailedAccessAttemptsBeforeLockout = 5
-            });
+            yield return describe.Transient<IUserValidator<TUser>, UserValidator<TUser>>();
+            yield return describe.Transient<IPasswordValidator<TUser>, PasswordValidator<TUser>>();
+            yield return describe.Transient<IPasswordHasher, PasswordHasher>();
+            yield return describe.Transient<IClaimsIdentityFactory<TUser>, ClaimsIdentityFactory<TUser>>();
 
             // TODO: rationalize email/sms/usertoken services
-            // TODO: configure lockout from config?
         }
 
         public static IEnumerable<IServiceDescriptor> GetDefaultRoleServices<TRole>() where TRole : class
