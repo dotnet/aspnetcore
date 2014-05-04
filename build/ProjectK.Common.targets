@@ -1,0 +1,62 @@
+<!--
+***********************************************************************************************
+ProjectK.Common.targets
+
+Contains common properties and targets that are shared by all v4.5 Portable Library C# projects.
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (C) Microsoft Corporation. All rights reserved.
+***********************************************************************************************
+-->
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!--
+      The ImplicitlyExpandTargetFramework target will expand all 
+      of the dll reference assemblies in the TargetFrameworkDirectory 
+      for the project and place the items into the ReferencePath itemgroup 
+      which contains resolved items.
+    -->
+  <PropertyGroup>
+    <ResolveReferencesDependsOn>
+      $(ResolveReferencesDependsOn);
+      ImplicitlyExpandTargetFramework;
+    </ResolveReferencesDependsOn>
+
+    <ImplicitlyExpandTargetFrameworkDependsOn>
+      $(ImplicitlyExpandTargetFrameworkDependsOn);
+      GetReferenceAssemblyPaths
+    </ImplicitlyExpandTargetFrameworkDependsOn>
+  </PropertyGroup>
+
+  <Target Name="ImplicitlyExpandTargetFramework"
+      Condition="'$(ImplicitlyExpandTargetFramework)' == 'true'"
+      DependsOnTargets="$(ImplicitlyExpandTargetFrameworkDependsOn)"
+    >
+    <ItemGroup>
+      <ReferenceAssemblyPaths Include="$(_TargetFrameworkDirectories)"/>
+      <ReferencePath Include="%(ReferenceAssemblyPaths.Identity)*.dll">
+        <WinMDFile>false</WinMDFile>
+        <CopyLocal>false</CopyLocal>
+        <ReferenceGroupingDisplayName>$(TargetFrameworkMonikerDisplayName)</ReferenceGroupingDisplayName>
+        <ReferenceGrouping>$(TargetFrameworkIdentifier),$(TargetFrameworkVersion)</ReferenceGrouping>
+        <ResolvedFrom>ImplicitlyExpandTargetFramework</ResolvedFrom>
+        <IsSystemReference>True</IsSystemReference>
+      </ReferencePath>
+    </ItemGroup>
+
+    <Message Importance="Low" Text="TargetMonikerDisplayName: $(TargetFrameworkMonikerDisplayName) ReferenceAssemblyPaths: @(ReferenceAssemblyPaths)"/>
+
+    <Message Importance="Low" Text="Including @(ReferencePath)"
+      Condition="'%(ReferencePath.ResolvedFrom)' == 'ImplicitlyExpandTargetFramework'"/>
+
+    <ItemGroup>
+      <_ResolveAssemblyReferenceResolvedFiles Include="@(ReferencePath)"
+        Condition="'%(ReferencePath.ResolvedFrom)' == 'ImplicitlyExpandTargetFramework'"/>
+    </ItemGroup>
+  </Target>
+  
+</Project>
