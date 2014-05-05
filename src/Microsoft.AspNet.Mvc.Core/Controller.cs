@@ -18,6 +18,7 @@
 using System;
 using System.Security.Principal;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -25,7 +26,7 @@ using Microsoft.AspNet.Mvc.Rendering;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class Controller
+    public class Controller : IActionFilter, IAsyncActionFilter
     {
         private DynamicViewData _viewBag;
 
@@ -222,6 +223,25 @@ namespace Microsoft.AspNet.Mvc
         public RedirectToRouteResult RedirectToRoutePermanent(string routeName, object routeValues)
         {
             return new RedirectToRouteResult(Url, routeName, routeValues, permanent: true);
+        }
+
+        public virtual void OnActionExecuting([NotNull] ActionExecutingContext context)
+        {
+        }
+
+        public virtual void OnActionExecuted([NotNull] ActionExecutedContext context)
+        {
+        }
+
+        public virtual async Task OnActionExecutionAsync(
+            [NotNull] ActionExecutingContext context, 
+            [NotNull] ActionExecutionDelegate next)
+        {
+            OnActionExecuting(context);
+            if (context.Result == null)
+            {
+                OnActionExecuted(await next());
+            }
         }
     }
 }

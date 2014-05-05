@@ -78,5 +78,10 @@ namespace MvcSample.Web
         {
             throw new Exception(message);
         }
+
+        public override void OnActionExecuting(ActionExecutingContext context)
+        {
+            ViewBag.DidTheFilterRun = "Totally!";
+        }
     }
 }

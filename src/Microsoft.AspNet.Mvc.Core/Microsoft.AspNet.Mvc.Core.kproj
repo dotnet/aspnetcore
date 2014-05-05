@@ -110,7 +110,6 @@
     <Compile Include="Filters\ResultExecutionDelegate.cs" />
     <Compile Include="Filters\ResultFilterAttribute.cs" />
     <Compile Include="Filters\ServiceFilterAttribute.cs" />
-    <Compile Include="ControllerFilterProvider.cs" />
     <Compile Include="FormContext.cs" />
     <Compile Include="HttpDeleteAttribute.cs" />
     <Compile Include="HttpGetAttribute.cs" />
