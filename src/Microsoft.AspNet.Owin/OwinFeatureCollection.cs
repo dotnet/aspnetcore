@@ -34,12 +34,12 @@ namespace Microsoft.AspNet.Owin
 
     public class OwinFeatureCollection :
         IFeatureCollection,
-        IHttpRequestInformation,
-        IHttpResponseInformation,
-        IHttpConnection,
-        IHttpSendFile,
-        IHttpTransportLayerSecurity,
-        ICanHasOwinEnvironment
+        IHttpRequestFeature,
+        IHttpResponseFeature,
+        IHttpConnectionFeature,
+        IHttpSendFileFeature,
+        IHttpTransportLayerSecurityFeature,
+        IOwinEnvironmentFeature
     {
         public IDictionary<string, object> Environment { get; set; }
 
@@ -63,79 +63,79 @@ namespace Microsoft.AspNet.Owin
             Environment[key] = value;
         }
 
-        string IHttpRequestInformation.Protocol
+        string IHttpRequestFeature.Protocol
         {
             get { return Prop<string>(OwinConstants.RequestProtocol); }
             set { Prop(OwinConstants.RequestProtocol, value); }
         }
 
-        string IHttpRequestInformation.Scheme
+        string IHttpRequestFeature.Scheme
         {
             get { return Prop<string>(OwinConstants.RequestScheme); }
             set { Prop(OwinConstants.RequestScheme, value); }
         }
 
-        string IHttpRequestInformation.Method
+        string IHttpRequestFeature.Method
         {
             get { return Prop<string>(OwinConstants.RequestMethod); }
             set { Prop(OwinConstants.RequestMethod, value); }
         }
 
-        string IHttpRequestInformation.PathBase
+        string IHttpRequestFeature.PathBase
         {
             get { return Prop<string>(OwinConstants.RequestPathBase); }
             set { Prop(OwinConstants.RequestPathBase, value); }
         }
 
-        string IHttpRequestInformation.Path
+        string IHttpRequestFeature.Path
         {
             get { return Prop<string>(OwinConstants.RequestPath); }
             set { Prop(OwinConstants.RequestPath, value); }
         }
 
-        string IHttpRequestInformation.QueryString
+        string IHttpRequestFeature.QueryString
         {
             get { return Prop<string>(OwinConstants.RequestQueryString); }
             set { Prop(OwinConstants.RequestQueryString, value); }
         }
 
-        IDictionary<string, string[]> IHttpRequestInformation.Headers
+        IDictionary<string, string[]> IHttpRequestFeature.Headers
         {
             get { return Prop<IDictionary<string, string[]>>(OwinConstants.RequestHeaders); }
             set { Prop(OwinConstants.RequestHeaders, value); }
         }
 
-        Stream IHttpRequestInformation.Body
+        Stream IHttpRequestFeature.Body
         {
             get { return Prop<Stream>(OwinConstants.RequestBody); }
             set { Prop(OwinConstants.RequestBody, value); }
         }
 
-        int IHttpResponseInformation.StatusCode
+        int IHttpResponseFeature.StatusCode
         {
             get { return Prop<int>(OwinConstants.ResponseStatusCode); }
             set { Prop(OwinConstants.ResponseStatusCode, value); }
         }
 
-        string IHttpResponseInformation.ReasonPhrase
+        string IHttpResponseFeature.ReasonPhrase
         {
             get { return Prop<string>(OwinConstants.ResponseReasonPhrase); }
             set { Prop(OwinConstants.ResponseReasonPhrase, value); }
         }
 
-        IDictionary<string, string[]> IHttpResponseInformation.Headers
+        IDictionary<string, string[]> IHttpResponseFeature.Headers
         {
             get { return Prop<IDictionary<string, string[]>>(OwinConstants.ResponseHeaders); }
             set { Prop(OwinConstants.ResponseHeaders, value); }
         }
 
-        Stream IHttpResponseInformation.Body
+        Stream IHttpResponseFeature.Body
         {
             get { return Prop<Stream>(OwinConstants.ResponseBody); }
             set { Prop(OwinConstants.ResponseBody, value); }
         }
 
-        void IHttpResponseInformation.OnSendingHeaders(Action<object> callback, object state)
+        void IHttpResponseFeature.OnSendingHeaders(Action<object> callback, object state)
         {
             var register = Prop<Action<Action<object>, object>>(OwinConstants.CommonKeys.OnSendingHeaders);
             if (register == null)
@@ -145,31 +145,31 @@ namespace Microsoft.AspNet.Owin
             register(callback, state);
         }
 
-        IPAddress IHttpConnection.RemoteIpAddress
+        IPAddress IHttpConnectionFeature.RemoteIpAddress
         {
             get { return IPAddress.Parse(Prop<string>(OwinConstants.CommonKeys.RemoteIpAddress)); }
             set { Prop(OwinConstants.CommonKeys.RemoteIpAddress, value.ToString()); }
         }
 
-        IPAddress IHttpConnection.LocalIpAddress
+        IPAddress IHttpConnectionFeature.LocalIpAddress
         {
             get { return IPAddress.Parse(Prop<string>(OwinConstants.CommonKeys.LocalIpAddress)); }
             set { Prop(OwinConstants.CommonKeys.LocalIpAddress, value.ToString()); }
         }
 
-        int IHttpConnection.RemotePort
+        int IHttpConnectionFeature.RemotePort
         {
             get { return int.Parse(Prop<string>(OwinConstants.CommonKeys.RemotePort)); }
             set { Prop(OwinConstants.CommonKeys.RemotePort, value.ToString(CultureInfo.InvariantCulture)); }
         }
 
-        int IHttpConnection.LocalPort
+        int IHttpConnectionFeature.LocalPort
         {
             get { return int.Parse(Prop<string>(OwinConstants.CommonKeys.LocalPort)); }
             set { Prop(OwinConstants.CommonKeys.LocalPort, value.ToString(CultureInfo.InvariantCulture)); }
         }
 
-        bool IHttpConnection.IsLocal
+        bool IHttpConnectionFeature.IsLocal
         {
             get { return Prop<bool>(OwinConstants.CommonKeys.IsLocal); }
             set { Prop(OwinConstants.CommonKeys.LocalPort, value); }
@@ -184,7 +184,7 @@ namespace Microsoft.AspNet.Owin
             }
         }
 
-        Task IHttpSendFile.SendFileAsync(string path, long offset, long? length, CancellationToken cancellation)
+        Task IHttpSendFileFeature.SendFileAsync(string path, long offset, long? length, CancellationToken cancellation)
         {
             object obj;
             if (Environment.TryGetValue(OwinConstants.SendFiles.SendAsync, out obj))
@@ -200,7 +200,7 @@ namespace Microsoft.AspNet.Owin
             get
             {
                 object obj;
-                if (string.Equals("https", ((IHttpRequestInformation)this).Scheme, StringComparison.OrdinalIgnoreCase)
+                if (string.Equals("https", ((IHttpRequestFeature)this).Scheme, StringComparison.OrdinalIgnoreCase)
                     && (Environment.TryGetValue(OwinConstants.CommonKeys.LoadClientCertAsync, out obj)
                         || Environment.TryGetValue(OwinConstants.CommonKeys.ClientCertificate, out obj))
                     && obj != null)
@@ -211,13 +211,13 @@ namespace Microsoft.AspNet.Owin
             }
         }
 
-        X509Certificate IHttpTransportLayerSecurity.ClientCertificate
+        X509Certificate IHttpTransportLayerSecurityFeature.ClientCertificate
         {
             get { return Prop<X509Certificate>(OwinConstants.CommonKeys.ClientCertificate); }
             set { Prop(OwinConstants.CommonKeys.ClientCertificate, value); }
         }
 
-        Task IHttpTransportLayerSecurity.LoadAsync()
+        Task IHttpTransportLayerSecurityFeature.LoadAsync()
         {
             throw new NotImplementedException();
         }
@@ -238,11 +238,11 @@ namespace Microsoft.AspNet.Owin
             if (key.GetTypeInfo().IsAssignableFrom(this.GetType().GetTypeInfo()))
             {
                 // Check for conditional features
-                if (key == typeof(IHttpSendFile))
+                if (key == typeof(IHttpSendFileFeature))
                 {
                     return SupportsSendFile;
                 }
-                else if (key == typeof(IHttpTransportLayerSecurity))
+                else if (key == typeof(IHttpTransportLayerSecurityFeature))
                 {
                     return SupportsClientCerts;
                 }
@@ -259,18 +259,18 @@ namespace Microsoft.AspNet.Owin
             {
                 var keys = new List<Type>()
                 {
-                    typeof(IHttpRequestInformation),
-                    typeof(IHttpResponseInformation),
-                    typeof(IHttpConnection),
-                    typeof(ICanHasOwinEnvironment),
+                    typeof(IHttpRequestFeature),
+                    typeof(IHttpResponseFeature),
+                    typeof(IHttpConnectionFeature),
+                    typeof(IOwinEnvironmentFeature),
                 };
                 if (SupportsSendFile)
                 {
-                    keys.Add(typeof(IHttpSendFile));
+                    keys.Add(typeof(IHttpSendFileFeature));
                 }
                 if (SupportsClientCerts)
                 {
-                    keys.Add(typeof(IHttpTransportLayerSecurity));
+                    keys.Add(typeof(IHttpTransportLayerSecurityFeature));
                 }
                 return keys;
             }

@@ -15,14 +15,12 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
-using Microsoft.Net.Runtime;
+using Microsoft.AspNet.Abstractions;
 
-namespace Microsoft.AspNet.HttpFeature
+namespace Microsoft.AspNet.PipelineCore
 {
-    [AssemblyNeutral]
-    public interface IHttpBuffering
+    public interface IRequestCookiesFeature
     {
-        void DisableRequestBuffering();
-        void DisableResponseBuffering();
+        IReadableStringCollection Cookies { get; }
     }
 }

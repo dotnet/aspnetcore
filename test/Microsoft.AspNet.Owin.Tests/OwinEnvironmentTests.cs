@@ -133,7 +133,7 @@ namespace Microsoft.AspNet.Owin
             }
         }
 
-        private class MoqHttpRequest : HttpRequest, IHttpRequestInformation
+        private class MoqHttpRequest : HttpRequest, IHttpRequestFeature
         {
             public override HttpContext HttpContext
             {
@@ -225,25 +225,25 @@ namespace Microsoft.AspNet.Owin
                 set { throw new NotImplementedException(); }
             }
 
-            string IHttpRequestInformation.PathBase
+            string IHttpRequestFeature.PathBase
             {
                 get;
                 set;
             }
 
-            string IHttpRequestInformation.Path
+            string IHttpRequestFeature.Path
             {
                 get;
                 set;
             }
 
-            string IHttpRequestInformation.QueryString
+            string IHttpRequestFeature.QueryString
             {
                 get;
                 set;
             }
 
-            IDictionary<string, string[]> IHttpRequestInformation.Headers
+            IDictionary<string, string[]> IHttpRequestFeature.Headers
             {
                 get;
                 set;

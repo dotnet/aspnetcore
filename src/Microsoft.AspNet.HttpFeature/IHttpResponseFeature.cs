@@ -15,12 +15,20 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
-using Microsoft.AspNet.Abstractions;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using Microsoft.Net.Runtime;
 
-namespace Microsoft.AspNet.PipelineCore
+namespace Microsoft.AspNet.HttpFeature
 {
-    public interface ICanHasRequestCookies
+    [AssemblyNeutral]
+    public interface IHttpResponseFeature
     {
-        IReadableStringCollection Cookies { get; }
+        int StatusCode { get; set; }
+        string ReasonPhrase { get; set; }
+        IDictionary<string, string[]> Headers { get; set; }
+        Stream Body { get; set; }
+        void OnSendingHeaders(Action<object> callback, object state);
     }
 }

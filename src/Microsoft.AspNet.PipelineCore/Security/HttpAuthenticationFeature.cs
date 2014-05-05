@@ -15,29 +15,27 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using Microsoft.Net.Runtime;
+using System.Security.Claims;
+using Microsoft.AspNet.HttpFeature.Security;
 
-namespace Microsoft.AspNet.HttpFeature
+namespace Microsoft.AspNet.PipelineCore.Security
 {
-    [AssemblyNeutral]
-    public interface IHttpRequestInformation
+    public class HttpAuthenticationFeature : IHttpAuthenticationFeature
     {
-        string Protocol { get; set; }
-        string Scheme { get; set; }
-        string Method { get; set; }
-        string PathBase { get; set; }
-        string Path { get; set; }
-        string QueryString { get; set; }
-        IDictionary<string, string[]> Headers { get; set; }
-        Stream Body { get; set; }
-        // FURI: Uri Uri { get; }
-    }
+        public HttpAuthenticationFeature()
+        {
+        }
 
-    public interface ICanHasSession
-    {
-        
+        public ClaimsPrincipal User
+        {
+            get;
+            set;
+        }
+
+        public IAuthenticationHandler Handler
+        {
+            get;
+            set;
+        }
     }
 }

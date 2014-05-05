@@ -201,8 +201,8 @@ namespace Microsoft.AspNet.Abstractions.Extensions
         private HttpContext CreateRequest(string basePath, string requestPath)
         {
             HttpContext context = new DefaultHttpContext(new FeatureModel.FeatureCollection());
-            context.SetFeature<IHttpRequestInformation>(new FakeHttpRequestInfo());
-            context.SetFeature<IHttpResponseInformation>(new FakeHttpResponseInfo());
+            context.SetFeature<IHttpRequestFeature>(new FakeHttpRequestFeature());
+            context.SetFeature<IHttpResponseFeature>(new FakeHttpResponseFeature());
             context.Request.PathBase = new PathString(basePath);
             context.Request.Path = new PathString(requestPath);
             return context;

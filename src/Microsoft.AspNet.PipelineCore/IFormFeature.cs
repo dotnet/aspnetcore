@@ -15,17 +15,13 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
-using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.PipelineCore
 {
-    public class DefaultCanHasItems : ICanHasItems
+    public interface IFormFeature
     {
-        public DefaultCanHasItems()
-        {
-            Items = new ItemsDictionary();
-        }
-
-        public IDictionary<object, object> Items { get; private set; }
+        Task<IReadableStringCollection> GetFormAsync();
     }
 }

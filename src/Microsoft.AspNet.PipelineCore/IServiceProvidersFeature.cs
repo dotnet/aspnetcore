@@ -15,15 +15,13 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
-using System.Security.Claims;
-using Microsoft.Net.Runtime;
+using System;
 
-namespace Microsoft.AspNet.HttpFeature.Security
+namespace Microsoft.AspNet.PipelineCore
 {
-    [AssemblyNeutral]
-    public interface IHttpAuthentication
+    public interface IServiceProvidersFeature
     {
-        ClaimsPrincipal User { get; set; }
-        IAuthenticationHandler Handler { get; set; }
+        IServiceProvider ApplicationServices { get; set; }
+        IServiceProvider RequestServices { get; set; }
     }
 }

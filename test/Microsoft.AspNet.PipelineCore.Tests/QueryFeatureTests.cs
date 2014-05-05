@@ -22,21 +22,21 @@ using Xunit;
 
 namespace Microsoft.AspNet.PipelineCore.Tests
 {
-    public class DefaultCanHasQueryTests
+    public class QueryFeatureTests
     {
         [Fact]
         public void QueryReturnsParsedQueryCollection()
         {
             // Arrange
             var features = new Mock<IFeatureCollection>();
-            var request = new Mock<IHttpRequestInformation>();
+            var request = new Mock<IHttpRequestFeature>();
             request.SetupGet(r => r.QueryString).Returns("foo=bar");
 
             object value = request.Object;
-            features.Setup(f => f.TryGetValue(typeof(IHttpRequestInformation), out value))
+            features.Setup(f => f.TryGetValue(typeof(IHttpRequestFeature), out value))
                     .Returns(true);
 
-            var provider = new DefaultCanHasQuery(features.Object);
+            var provider = new QueryFeature(features.Object);
 
             // Act
             var queryCollection = provider.Query;

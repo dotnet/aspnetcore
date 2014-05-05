@@ -15,20 +15,16 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
+using System.Threading;
 using Microsoft.Net.Runtime;
 
 namespace Microsoft.AspNet.HttpFeature
 {
     [AssemblyNeutral]
-    public interface IHttpResponseInformation
+    public interface IHttpApplicationFeature
     {
-        int StatusCode { get; set; }
-        string ReasonPhrase { get; set; }
-        IDictionary<string, string[]> Headers { get; set; }
-        Stream Body { get; set; }
-        void OnSendingHeaders(Action<object> callback, object state);
+        string AppName { get; set; }
+        string AppMode { get; set; }
+        CancellationToken OnAppDisposing { get; set; }
     }
 }

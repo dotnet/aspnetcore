@@ -22,8 +22,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BuilderTests.cs" />
-    <Compile Include="DefaultCanHasFormTests.cs" />
-    <Compile Include="DefaultCanHasQueryTests.cs" />
+    <Compile Include="FormFeatureTests.cs" />
+    <Compile Include="QueryFeatureTests.cs" />
     <Compile Include="DefaultHttpContextTests.cs" />
     <Compile Include="DefaultHttpRequestTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

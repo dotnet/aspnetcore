@@ -15,7 +15,9 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
+using System;
 using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Abstractions.Infrastructure;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.PipelineCore.Collections;
@@ -23,25 +25,36 @@ using Microsoft.AspNet.PipelineCore.Infrastructure;
 
 namespace Microsoft.AspNet.PipelineCore
 {
-    public class DefaultCanHasResponseCookies : ICanHasResponseCookies
+    public class RequestCookiesFeature : IRequestCookiesFeature
     {
         private readonly IFeatureCollection _features;
-        private readonly FeatureReference<IHttpResponseInformation> _request = FeatureReference<IHttpResponseInformation>.Default;
-        private IResponseCookies _cookiesCollection;
+        private readonly FeatureReference<IHttpRequestFeature> _request = FeatureReference<IHttpRequestFeature>.Default;
+        private string _cookiesHeader;
+        private RequestCookiesCollection _cookiesCollection;
+        private static readonly string[] ZeroHeaders = new string[0];
 
-        public DefaultCanHasResponseCookies(IFeatureCollection features)
+        public RequestCookiesFeature(IFeatureCollection features)
         {
             _features = features;
         }
 
-        public IResponseCookies Cookies
+        public IReadableStringCollection Cookies
         {
             get
             {
+                var headers = _request.Fetch(_features).Headers;
+                string cookiesHeader = ParsingHelpers.GetHeader(headers, Constants.Headers.Cookie) ?? "";
+
                 if (_cookiesCollection == null)
                 {
-                    var headers = _request.Fetch(_features).Headers;
-                    _cookiesCollection = new ResponseCookies(new HeaderDictionary(headers));
+                    _cookiesCollection = new RequestCookiesCollection();
+                    _cookiesCollection.Reparse(cookiesHeader);
+                    _cookiesHeader = cookiesHeader;
+                }
+                else if (!string.Equals(_cookiesHeader, cookiesHeader, StringComparison.Ordinal))
+                {
+                    _cookiesCollection.Reparse(cookiesHeader);
+                    _cookiesHeader = cookiesHeader;
                 }
 
                 return _cookiesCollection;

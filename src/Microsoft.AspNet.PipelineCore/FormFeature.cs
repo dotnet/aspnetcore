@@ -26,14 +26,14 @@ using Microsoft.AspNet.PipelineCore.Infrastructure;
 
 namespace Microsoft.AspNet.PipelineCore
 {
-    public class DefaultCanHasForm : ICanHasForm
+    public class FormFeature : IFormFeature
     {
         private readonly IFeatureCollection _features;
-        private readonly FeatureReference<IHttpRequestInformation> _request = FeatureReference<IHttpRequestInformation>.Default;
+        private readonly FeatureReference<IHttpRequestFeature> _request = FeatureReference<IHttpRequestFeature>.Default;
         private Stream _bodyStream;
         private IReadableStringCollection _form;
 
-        public DefaultCanHasForm(IFeatureCollection features)
+        public FormFeature(IFeatureCollection features)
         {
             _features = features;
         }

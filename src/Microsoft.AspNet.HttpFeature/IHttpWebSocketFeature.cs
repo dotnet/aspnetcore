@@ -15,13 +15,18 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
-using Microsoft.AspNet.Abstractions;
-using Microsoft.AspNet.PipelineCore.Collections;
+#if NET45
+using System.Net.WebSockets;
+using System.Threading.Tasks;
+using Microsoft.Net.Runtime;
 
-namespace Microsoft.AspNet.PipelineCore
+namespace Microsoft.AspNet.HttpFeature
 {
-    public interface ICanHasResponseCookies
+    [AssemblyNeutral]
+    public interface IHttpWebSocketFeature
     {
-        IResponseCookies Cookies { get; }
+        bool IsWebSocketRequest { get; set; }
+        Task<WebSocket> AcceptAsync();
     }
 }
+#endif

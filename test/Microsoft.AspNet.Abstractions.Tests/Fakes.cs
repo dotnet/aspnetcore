@@ -22,7 +22,7 @@ using Microsoft.AspNet.HttpFeature;
 
 namespace Microsoft.AspNet.Abstractions.Extensions
 {
-    public class FakeHttpRequestInfo : IHttpRequestInformation
+    public class FakeHttpRequestFeature : IHttpRequestFeature
     {
         public string Protocol { get; set; }
         public string Scheme { get; set; }
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Abstractions.Extensions
         public Stream Body { get; set; }
     }
 
-    public class FakeHttpResponseInfo : IHttpResponseInformation
+    public class FakeHttpResponseFeature : IHttpResponseFeature
     {
         public int StatusCode { get; set; }
         public string ReasonPhrase { get; set; }

@@ -124,11 +124,11 @@ namespace Microsoft.AspNet.PipelineCore.Tests
 
         private static DefaultHttpRequest CreateRequest(IDictionary<string, string[]> headers)
         {
-            var requestInfo = new Mock<IHttpRequestInformation>();
+            var requestInfo = new Mock<IHttpRequestFeature>();
             requestInfo.SetupGet(r => r.Headers).Returns(headers);
 
             var features = new FeatureCollection();
-            features.Add(typeof(IHttpRequestInformation), requestInfo.Object);
+            features.Add(typeof(IHttpRequestFeature), requestInfo.Object);
 
             var context = new DefaultHttpContext(features);
             return new DefaultHttpRequest(context, features);

@@ -20,20 +20,21 @@
     <Content Include="Project.json" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IHttpApplicationInformation.cs" />
-    <Compile Include="IHttpBuffering.cs" />
-    <Compile Include="IHttpConnection.cs" />
-    <Compile Include="IHttpRequestInformation.cs" />
-    <Compile Include="IHttpRequestLifetime.cs" />
-    <Compile Include="IHttpResponseInformation.cs" />
-    <Compile Include="IHttpSendFile.cs" />
-    <Compile Include="IHttpTransportLayerSecurity.cs" />
-    <Compile Include="IHttpWebSocketAccept.cs" />
+    <Compile Include="AssemblyNeutralAttribute.cs" />
+    <Compile Include="IHttpApplicationFeature.cs" />
+    <Compile Include="IHttpBufferingFeature.cs" />
+    <Compile Include="IHttpConnectionFeature.cs" />
+    <Compile Include="IHttpRequestFeature.cs" />
+    <Compile Include="IHttpRequestLifetimeFeature.cs" />
+    <Compile Include="IHttpResponseFeature.cs" />
+    <Compile Include="IHttpSendFileFeature.cs" />
+    <Compile Include="IHttpTransportLayerSecurityFeature.cs" />
+    <Compile Include="IHttpWebSocketFeature.cs" />
     <Compile Include="Security\IAuthenticateContext.cs" />
     <Compile Include="Security\IAuthenticationHandler.cs" />
     <Compile Include="Security\IAuthTypeContext.cs" />
     <Compile Include="Security\IChallengeContext.cs" />
-    <Compile Include="Security\IHttpAuthentication.cs" />
+    <Compile Include="Security\IHttpAuthenticationFeature.cs" />
     <Compile Include="Security\ISignInContext.cs" />
     <Compile Include="Security\ISignOutContext .cs" />
   </ItemGroup>

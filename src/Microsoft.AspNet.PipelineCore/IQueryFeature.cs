@@ -15,12 +15,12 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
-using System.Collections.Generic;
+using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.PipelineCore
 {
-    public interface ICanHasItems
+    public interface IQueryFeature
     {
-        IDictionary<object, object> Items { get; }
+        IReadableStringCollection Query { get; }
     }
 }

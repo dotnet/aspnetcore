@@ -42,41 +42,41 @@ namespace Microsoft.AspNet.Owin
             _context = context;
             _entries = new Dictionary<string, FeatureMap>()
             {
-                { OwinConstants.RequestProtocol, new FeatureMap<IHttpRequestInformation>(feature => feature.Protocol, (feature, value) => feature.Protocol = Convert.ToString(value)) },
-                { OwinConstants.RequestScheme, new FeatureMap<IHttpRequestInformation>(feature => feature.Scheme, (feature, value) => feature.Scheme = Convert.ToString(value)) },
-                { OwinConstants.RequestMethod, new FeatureMap<IHttpRequestInformation>(feature => feature.Method, (feature, value) => feature.Method = Convert.ToString(value)) },
-                { OwinConstants.RequestPathBase, new FeatureMap<IHttpRequestInformation>(feature => feature.PathBase, (feature, value) => feature.PathBase = Convert.ToString(value)) },
-                { OwinConstants.RequestPath, new FeatureMap<IHttpRequestInformation>(feature => feature.Path, (feature, value) => feature.Path = Convert.ToString(value)) },
-                { OwinConstants.RequestQueryString, new FeatureMap<IHttpRequestInformation>(feature => feature.QueryString, (feature, value) => feature.QueryString = Convert.ToString(value)) },
-                { OwinConstants.RequestHeaders, new FeatureMap<IHttpRequestInformation>(feature => feature.Headers, (feature, value) => feature.Headers = (IDictionary<string, string[]>)value) },
-                { OwinConstants.RequestBody, new FeatureMap<IHttpRequestInformation>(feature => feature.Body, (feature, value) => feature.Body = (Stream)value) },
+                { OwinConstants.RequestProtocol, new FeatureMap<IHttpRequestFeature>(feature => feature.Protocol, (feature, value) => feature.Protocol = Convert.ToString(value)) },
+                { OwinConstants.RequestScheme, new FeatureMap<IHttpRequestFeature>(feature => feature.Scheme, (feature, value) => feature.Scheme = Convert.ToString(value)) },
+                { OwinConstants.RequestMethod, new FeatureMap<IHttpRequestFeature>(feature => feature.Method, (feature, value) => feature.Method = Convert.ToString(value)) },
+                { OwinConstants.RequestPathBase, new FeatureMap<IHttpRequestFeature>(feature => feature.PathBase, (feature, value) => feature.PathBase = Convert.ToString(value)) },
+                { OwinConstants.RequestPath, new FeatureMap<IHttpRequestFeature>(feature => feature.Path, (feature, value) => feature.Path = Convert.ToString(value)) },
+                { OwinConstants.RequestQueryString, new FeatureMap<IHttpRequestFeature>(feature => feature.QueryString, (feature, value) => feature.QueryString = Convert.ToString(value)) },
+                { OwinConstants.RequestHeaders, new FeatureMap<IHttpRequestFeature>(feature => feature.Headers, (feature, value) => feature.Headers = (IDictionary<string, string[]>)value) },
+                { OwinConstants.RequestBody, new FeatureMap<IHttpRequestFeature>(feature => feature.Body, (feature, value) => feature.Body = (Stream)value) },
 
-                { OwinConstants.ResponseStatusCode, new FeatureMap<IHttpResponseInformation>(feature => feature.StatusCode, (feature, value) => feature.StatusCode = Convert.ToInt32(value)) },
-                { OwinConstants.ResponseReasonPhrase, new FeatureMap<IHttpResponseInformation>(feature => feature.ReasonPhrase, (feature, value) => feature.ReasonPhrase = Convert.ToString(value)) },
-                { OwinConstants.ResponseHeaders, new FeatureMap<IHttpResponseInformation>(feature => feature.Headers, (feature, value) => feature.Headers = (IDictionary<string, string[]>)value) },
-                { OwinConstants.ResponseBody, new FeatureMap<IHttpResponseInformation>(feature => feature.Body, (feature, value) => feature.Body = (Stream)value) },
-                { OwinConstants.CommonKeys.OnSendingHeaders, new FeatureMap<IHttpResponseInformation>(feature => new Action<Action<object>, object>(feature.OnSendingHeaders)) },
+                { OwinConstants.ResponseStatusCode, new FeatureMap<IHttpResponseFeature>(feature => feature.StatusCode, (feature, value) => feature.StatusCode = Convert.ToInt32(value)) },
+                { OwinConstants.ResponseReasonPhrase, new FeatureMap<IHttpResponseFeature>(feature => feature.ReasonPhrase, (feature, value) => feature.ReasonPhrase = Convert.ToString(value)) },
+                { OwinConstants.ResponseHeaders, new FeatureMap<IHttpResponseFeature>(feature => feature.Headers, (feature, value) => feature.Headers = (IDictionary<string, string[]>)value) },
+                { OwinConstants.ResponseBody, new FeatureMap<IHttpResponseFeature>(feature => feature.Body, (feature, value) => feature.Body = (Stream)value) },
+                { OwinConstants.CommonKeys.OnSendingHeaders, new FeatureMap<IHttpResponseFeature>(feature => new Action<Action<object>, object>(feature.OnSendingHeaders)) },
 
-                { OwinConstants.CommonKeys.LocalPort, new FeatureMap<IHttpConnection>(feature => feature.LocalPort.ToString(CultureInfo.InvariantCulture),
+                { OwinConstants.CommonKeys.LocalPort, new FeatureMap<IHttpConnectionFeature>(feature => feature.LocalPort.ToString(CultureInfo.InvariantCulture),
                     (feature, value) => feature.LocalPort = Convert.ToInt32(value, CultureInfo.InvariantCulture)) },
-                { OwinConstants.CommonKeys.RemotePort, new FeatureMap<IHttpConnection>(feature => feature.RemotePort.ToString(CultureInfo.InvariantCulture),
+                { OwinConstants.CommonKeys.RemotePort, new FeatureMap<IHttpConnectionFeature>(feature => feature.RemotePort.ToString(CultureInfo.InvariantCulture),
                     (feature, value) => feature.RemotePort = Convert.ToInt32(value, CultureInfo.InvariantCulture)) },
 
-                { OwinConstants.CommonKeys.LocalIpAddress, new FeatureMap<IHttpConnection>(feature => feature.LocalIpAddress.ToString(),
+                { OwinConstants.CommonKeys.LocalIpAddress, new FeatureMap<IHttpConnectionFeature>(feature => feature.LocalIpAddress.ToString(),
                     (feature, value) => feature.LocalIpAddress = IPAddress.Parse(Convert.ToString(value))) },
-                { OwinConstants.CommonKeys.RemoteIpAddress, new FeatureMap<IHttpConnection>(feature => feature.RemoteIpAddress.ToString(),
+                { OwinConstants.CommonKeys.RemoteIpAddress, new FeatureMap<IHttpConnectionFeature>(feature => feature.RemoteIpAddress.ToString(),
                     (feature, value) => feature.RemoteIpAddress = IPAddress.Parse(Convert.ToString(value))) },
 
-                { OwinConstants.CommonKeys.IsLocal, new FeatureMap<IHttpConnection>(feature => feature.IsLocal, (feature, value) => feature.IsLocal = Convert.ToBoolean(value)) },
+                { OwinConstants.CommonKeys.IsLocal, new FeatureMap<IHttpConnectionFeature>(feature => feature.IsLocal, (feature, value) => feature.IsLocal = Convert.ToBoolean(value)) },
 
-                { OwinConstants.SendFiles.SendAsync, new FeatureMap<IHttpSendFile>(feature => new SendFileFunc(feature.SendFileAsync)) },
+                { OwinConstants.SendFiles.SendAsync, new FeatureMap<IHttpSendFileFeature>(feature => new SendFileFunc(feature.SendFileAsync)) },
             };
 
             if (context.Request.IsSecure)
             {
-                _entries.Add(OwinConstants.CommonKeys.ClientCertificate, new FeatureMap<IHttpTransportLayerSecurity>(feature => feature.ClientCertificate,
+                _entries.Add(OwinConstants.CommonKeys.ClientCertificate, new FeatureMap<IHttpTransportLayerSecurityFeature>(feature => feature.ClientCertificate,
                     (feature, value) => feature.ClientCertificate = (X509Certificate)value));
-                _entries.Add(OwinConstants.CommonKeys.LoadClientCertAsync, new FeatureMap<IHttpTransportLayerSecurity>(feature => new Func<Task>(feature.LoadAsync)));
+                _entries.Add(OwinConstants.CommonKeys.LoadClientCertAsync, new FeatureMap<IHttpTransportLayerSecurityFeature>(feature => new Func<Task>(feature.LoadAsync)));
             }
 
             _context.Items[typeof(HttpContext).FullName] = _context; // Store for lookup when we transition back out of OWIN

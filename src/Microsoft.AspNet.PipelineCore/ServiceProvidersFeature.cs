@@ -15,27 +15,13 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
-using System.Security.Claims;
-using Microsoft.AspNet.HttpFeature.Security;
+using System;
 
-namespace Microsoft.AspNet.PipelineCore.Security
+namespace Microsoft.AspNet.PipelineCore
 {
-    public class DefaultHttpAuthentication : IHttpAuthentication
+    public class ServiceProvidersFeature : IServiceProvidersFeature
     {
-        public DefaultHttpAuthentication()
-        {
-        }
-
-        public ClaimsPrincipal User
-        {
-            get;
-            set;
-        }
-
-        public IAuthenticationHandler Handler
-        {
-            get;
-            set;
-        }
+        public IServiceProvider ApplicationServices { get; set; }
+        public IServiceProvider RequestServices { get; set; }
     }
 }

@@ -15,16 +15,15 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
-using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
+using System.Security.Claims;
 using Microsoft.Net.Runtime;
 
-namespace Microsoft.AspNet.HttpFeature
+namespace Microsoft.AspNet.HttpFeature.Security
 {
     [AssemblyNeutral]
-    public interface IHttpTransportLayerSecurity
+    public interface IHttpAuthenticationFeature
     {
-        X509Certificate ClientCertificate { get; set; }
-        Task LoadAsync();
+        ClaimsPrincipal User { get; set; }
+        IAuthenticationHandler Handler { get; set; }
     }
 }

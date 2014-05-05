@@ -34,12 +34,12 @@ namespace Microsoft.AspNet.PipelineCore
         private readonly DefaultHttpContext _context;
         private readonly IFeatureCollection _features;
 
-        private FeatureReference<IHttpRequestInformation> _request = FeatureReference<IHttpRequestInformation>.Default;
-        private FeatureReference<IHttpConnection> _connection = FeatureReference<IHttpConnection>.Default;
-        private FeatureReference<IHttpTransportLayerSecurity> _transportLayerSecurity = FeatureReference<IHttpTransportLayerSecurity>.Default;
-        private FeatureReference<ICanHasQuery> _canHasQuery = FeatureReference<ICanHasQuery>.Default;
-        private FeatureReference<ICanHasForm> _canHasForm = FeatureReference<ICanHasForm>.Default;
-        private FeatureReference<ICanHasRequestCookies> _canHasCookies = FeatureReference<ICanHasRequestCookies>.Default;
+        private FeatureReference<IHttpRequestFeature> _request = FeatureReference<IHttpRequestFeature>.Default;
+        private FeatureReference<IHttpConnectionFeature> _connection = FeatureReference<IHttpConnectionFeature>.Default;
+        private FeatureReference<IHttpTransportLayerSecurityFeature> _transportLayerSecurity = FeatureReference<IHttpTransportLayerSecurityFeature>.Default;
+        private FeatureReference<IQueryFeature> _query = FeatureReference<IQueryFeature>.Default;
+        private FeatureReference<IFormFeature> _form = FeatureReference<IFormFeature>.Default;
+        private FeatureReference<IRequestCookiesFeature> _cookies = FeatureReference<IRequestCookiesFeature>.Default;
 
         public DefaultHttpRequest(DefaultHttpContext context, IFeatureCollection features)
         {
@@ -47,54 +47,54 @@ namespace Microsoft.AspNet.PipelineCore
             _features = features;
         }
 
-        private IHttpRequestInformation HttpRequestInformation
+        private IHttpRequestFeature HttpRequestFeature
         {
             get { return _request.Fetch(_features); }
         }
 
-        private IHttpConnection HttpConnection
+        private IHttpConnectionFeature HttpConnectionFeature
         {
             get { return _connection.Fetch(_features); }
         }
 
-        private IHttpTransportLayerSecurity HttpTransportLayerSecurity
+        private IHttpTransportLayerSecurityFeature HttpTransportLayerSecurityFeature
         {
             get { return _transportLayerSecurity.Fetch(_features); }
         }
 
-        private ICanHasQuery CanHasQuery
+        private IQueryFeature QueryFeature
         {
-            get { return _canHasQuery.Fetch(_features) ?? _canHasQuery.Update(_features, new DefaultCanHasQuery(_features)); }
+            get { return _query.Fetch(_features) ?? _query.Update(_features, new QueryFeature(_features)); }
         }
 
-        private ICanHasForm CanHasForm
+        private IFormFeature FormFeature
         {
-            get { return _canHasForm.Fetch(_features) ?? _canHasForm.Update(_features, new DefaultCanHasForm(_features)); }
+            get { return _form.Fetch(_features) ?? _form.Update(_features, new FormFeature(_features)); }
         }
 
-        private ICanHasRequestCookies CanHasRequestCookies
+        private IRequestCookiesFeature RequestCookiesFeature
         {
-            get { return _canHasCookies.Fetch(_features) ?? _canHasCookies.Update(_features, new DefaultCanHasRequestCookies(_features)); }
+            get { return _cookies.Fetch(_features) ?? _cookies.Update(_features, new RequestCookiesFeature(_features)); }
         }
 
         public override HttpContext HttpContext { get { return _context; } }
 
         public override PathString PathBase
         {
-            get { return new PathString(HttpRequestInformation.PathBase); }
-            set { HttpRequestInformation.PathBase = value.Value; }
+            get { return new PathString(HttpRequestFeature.PathBase); }
+            set { HttpRequestFeature.PathBase = value.Value; }
         }
 
         public override PathString Path
         {
-            get { return new PathString(HttpRequestInformation.Path); }
-            set { HttpRequestInformation.Path = value.Value; }
+            get { return new PathString(HttpRequestFeature.Path); }
+            set { HttpRequestFeature.Path = value.Value; }
         }
 
         public override QueryString QueryString
         {
-            get { return new QueryString(HttpRequestInformation.QueryString); }
-            set { HttpRequestInformation.QueryString = value.Value; }
+            get { return new QueryString(HttpRequestFeature.QueryString); }
+            set { HttpRequestFeature.QueryString = value.Value; }
         }
 
         public override long? ContentLength 
@@ -111,20 +111,20 @@ namespace Microsoft.AspNet.PipelineCore
 
         public override Stream Body
         {
-            get { return HttpRequestInformation.Body; }
-            set { HttpRequestInformation.Body = value; }
+            get { return HttpRequestFeature.Body; }
+            set { HttpRequestFeature.Body = value; }
         }
 
         public override string Method
         {
-            get { return HttpRequestInformation.Method; }
-            set { HttpRequestInformation.Method = value; }
+            get { return HttpRequestFeature.Method; }
+            set { HttpRequestFeature.Method = value; }
         }
 
         public override string Scheme
         {
-            get { return HttpRequestInformation.Scheme; }
-            set { HttpRequestInformation.Scheme = value; }
+            get { return HttpRequestFeature.Scheme; }
+            set { HttpRequestFeature.Scheme = value; }
         }
 
         public override bool IsSecure
@@ -140,28 +140,28 @@ namespace Microsoft.AspNet.PipelineCore
 
         public override IReadableStringCollection Query
         {
-            get { return CanHasQuery.Query; }
+            get { return QueryFeature.Query; }
         }
 
         public override Task<IReadableStringCollection> GetFormAsync()
         {
-            return CanHasForm.GetFormAsync();
+            return FormFeature.GetFormAsync();
         }
 
         public override string Protocol
         {
-            get { return HttpRequestInformation.Protocol; }
-            set { HttpRequestInformation.Protocol = value; }
+            get { return HttpRequestFeature.Protocol; }
+            set { HttpRequestFeature.Protocol = value; }
         }
 
         public override IHeaderDictionary Headers
         {
-            get { return new HeaderDictionary(HttpRequestInformation.Headers); }
+            get { return new HeaderDictionary(HttpRequestFeature.Headers); }
         }
 
         public override IReadableStringCollection Cookies
         {
-            get { return CanHasRequestCookies.Cookies; }
+            get { return RequestCookiesFeature.Cookies; }
         }
 
         public override System.Threading.CancellationToken CallCanceled

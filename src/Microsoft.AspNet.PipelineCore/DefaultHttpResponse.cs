@@ -38,9 +38,9 @@ namespace Microsoft.AspNet.PipelineCore
     {
         private readonly DefaultHttpContext _context;
         private readonly IFeatureCollection _features;
-        private FeatureReference<IHttpResponseInformation> _response = FeatureReference<IHttpResponseInformation>.Default;
-        private FeatureReference<ICanHasResponseCookies> _canHasCookies = FeatureReference<ICanHasResponseCookies>.Default;
-        private FeatureReference<IHttpAuthentication> _authentication = FeatureReference<IHttpAuthentication>.Default;
+        private FeatureReference<IHttpResponseFeature> _response = FeatureReference<IHttpResponseFeature>.Default;
+        private FeatureReference<IResponseCookiesFeature> _cookies = FeatureReference<IResponseCookiesFeature>.Default;
+        private FeatureReference<IHttpAuthenticationFeature> _authentication = FeatureReference<IHttpAuthenticationFeature>.Default;
 
         public DefaultHttpResponse(DefaultHttpContext context, IFeatureCollection features)
         {
@@ -48,38 +48,38 @@ namespace Microsoft.AspNet.PipelineCore
             _features = features;
         }
 
-        private IHttpResponseInformation HttpResponseInformation
+        private IHttpResponseFeature HttpResponseFeature
         {
             get { return _response.Fetch(_features); }
         }
 
-        private ICanHasResponseCookies CanHasResponseCookies
+        private IResponseCookiesFeature ResponseCookiesFeature
         {
-            get { return _canHasCookies.Fetch(_features) ?? _canHasCookies.Update(_features, new DefaultCanHasResponseCookies(_features)); }
+            get { return _cookies.Fetch(_features) ?? _cookies.Update(_features, new ResponseCookiesFeature(_features)); }
         }
 
-        private IHttpAuthentication HttpAuthentication
+        private IHttpAuthenticationFeature HttpAuthenticationFeature
         {
-            get { return _authentication.Fetch(_features) ?? _authentication.Update(_features, new DefaultHttpAuthentication()); }
+            get { return _authentication.Fetch(_features) ?? _authentication.Update(_features, new HttpAuthenticationFeature()); }
         }
 
         public override HttpContext HttpContext { get { return _context; } }
 
         public override int StatusCode
         {
-            get { return HttpResponseInformation.StatusCode; }
-            set { HttpResponseInformation.StatusCode = value; }
+            get { return HttpResponseFeature.StatusCode; }
+            set { HttpResponseFeature.StatusCode = value; }
         }
 
         public override IHeaderDictionary Headers
         {
-            get { return new HeaderDictionary(HttpResponseInformation.Headers); }
+            get { return new HeaderDictionary(HttpResponseFeature.Headers); }
         }
 
         public override Stream Body
         {
-            get { return HttpResponseInformation.Body; }
-            set { HttpResponseInformation.Body = value; }
+            get { return HttpResponseFeature.Body; }
+            set { HttpResponseFeature.Body = value; }
         }
 
         public override long? ContentLength
@@ -105,34 +105,34 @@ namespace Microsoft.AspNet.PipelineCore
             {
                 if (string.IsNullOrWhiteSpace(value))
                 {
-                    HttpResponseInformation.Headers.Remove(Constants.Headers.ContentType);
+                    HttpResponseFeature.Headers.Remove(Constants.Headers.ContentType);
                 }
                 else
                 {
-                    HttpResponseInformation.Headers[Constants.Headers.ContentType] = new[] { value };
+                    HttpResponseFeature.Headers[Constants.Headers.ContentType] = new[] { value };
                 }
             }
         }
 
         public override IResponseCookies Cookies
         {
-            get { return CanHasResponseCookies.Cookies; }
+            get { return ResponseCookiesFeature.Cookies; }
         }
 
         public override void OnSendingHeaders(Action<object> callback, object state)
         {
-            HttpResponseInformation.OnSendingHeaders(callback, state);
+            HttpResponseFeature.OnSendingHeaders(callback, state);
         }
 
         public override void Redirect(string location, bool permanent)
         {
             if (permanent)
             {
-                HttpResponseInformation.StatusCode = 301;
+                HttpResponseFeature.StatusCode = 301;
             }
             else
             {
-                HttpResponseInformation.StatusCode = 302;
+                HttpResponseFeature.StatusCode = 302;
             }
 
             Headers.Set(Constants.Headers.Location, location);
@@ -150,8 +150,8 @@ namespace Microsoft.AspNet.PipelineCore
             {
                 throw new ArgumentNullException();
             }
-            HttpResponseInformation.StatusCode = 401;
-            var handler = HttpAuthentication.Handler;
+            HttpResponseFeature.StatusCode = 401;
+            var handler = HttpAuthenticationFeature.Handler;
 
             var challengeContext = new ChallengeContext(authenticationTypes, properties == null ? null : properties.Dictionary);
             if (handler != null)
@@ -173,7 +173,7 @@ namespace Microsoft.AspNet.PipelineCore
             {
                 throw new ArgumentNullException();
             }
-            var handler = HttpAuthentication.Handler;
+            var handler = HttpAuthenticationFeature.Handler;
 
             var signInContext = new SignInContext(identities, properties == null ? null : properties.Dictionary);
             if (handler != null)
@@ -195,7 +195,7 @@ namespace Microsoft.AspNet.PipelineCore
             {
                 throw new ArgumentNullException();
             }
-            var handler = HttpAuthentication.Handler;
+            var handler = HttpAuthenticationFeature.Handler;
 
             var signOutContext = new SignOutContext(authenticationTypes);
             if (handler != null)

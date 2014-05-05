@@ -15,13 +15,15 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
-using System;
+using System.Threading;
+using Microsoft.Net.Runtime;
 
-namespace Microsoft.AspNet.PipelineCore
+namespace Microsoft.AspNet.HttpFeature
 {
-    public interface ICanHasServiceProviders
+    [AssemblyNeutral]
+    public interface IHttpRequestLifetimeFeature
     {
-        IServiceProvider ApplicationServices { get; set; }
-        IServiceProvider RequestServices { get; set; }
+        CancellationToken OnRequestAborted { get; }
+        void Abort();
     }
 }

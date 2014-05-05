@@ -25,7 +25,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.PipelineCore.Tests
 {
-    public class DefaultCanHasFormTests
+    public class FormFeatureTests
     {
         [Fact]
         public async Task GetFormAsync_ReturnsParsedFormCollection()
@@ -33,14 +33,14 @@ namespace Microsoft.AspNet.PipelineCore.Tests
             // Arrange
             var formContent = Encoding.UTF8.GetBytes("foo=bar&baz=2");
             var features = new Mock<IFeatureCollection>();
-            var request = new Mock<IHttpRequestInformation>();
+            var request = new Mock<IHttpRequestFeature>();
             request.SetupGet(r => r.Body).Returns(new MemoryStream(formContent));
 
             object value = request.Object;
-            features.Setup(f => f.TryGetValue(typeof(IHttpRequestInformation), out value))
+            features.Setup(f => f.TryGetValue(typeof(IHttpRequestFeature), out value))
                     .Returns(true);
 
-            var provider = new DefaultCanHasForm(features.Object);
+            var provider = new FormFeature(features.Object);
 
             // Act
             var formCollection = await provider.GetFormAsync();
@@ -57,14 +57,14 @@ namespace Microsoft.AspNet.PipelineCore.Tests
             var formContent1 = Encoding.UTF8.GetBytes("foo=bar&baz=2");
             var formContent2 = Encoding.UTF8.GetBytes("collection2=value");
             var features = new Mock<IFeatureCollection>();
-            var request = new Mock<IHttpRequestInformation>();
+            var request = new Mock<IHttpRequestFeature>();
             request.SetupGet(r => r.Body).Returns(new MemoryStream(formContent1));
 
             object value = request.Object;
-            features.Setup(f => f.TryGetValue(typeof(IHttpRequestInformation), out value))
+            features.Setup(f => f.TryGetValue(typeof(IHttpRequestFeature), out value))
                     .Returns(true);
 
-            var provider = new DefaultCanHasForm(features.Object);
+            var provider = new FormFeature(features.Object);
 
             // Act - 1
             var formCollection = await provider.GetFormAsync();

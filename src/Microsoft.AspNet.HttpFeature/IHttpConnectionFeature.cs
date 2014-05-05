@@ -15,16 +15,18 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
-using System.Threading;
+using System.Net;
 using Microsoft.Net.Runtime;
 
 namespace Microsoft.AspNet.HttpFeature
 {
     [AssemblyNeutral]
-    public interface IHttpApplicationInformation
+    public interface IHttpConnectionFeature
     {
-        string AppName { get; set; }
-        string AppMode { get; set; }
-        CancellationToken OnAppDisposing { get; set; }
+        IPAddress RemoteIpAddress { get; set; }
+        IPAddress LocalIpAddress { get; set; }
+        int RemotePort { get; set; }
+        int LocalPort { get; set; }
+        bool IsLocal { get; set; }
     }
 }

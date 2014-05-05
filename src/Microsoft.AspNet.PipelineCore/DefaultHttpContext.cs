@@ -36,10 +36,10 @@ namespace Microsoft.AspNet.PipelineCore
         private readonly HttpRequest _request;
         private readonly HttpResponse _response;
 
-        private FeatureReference<ICanHasItems> _canHasItems;
-        private FeatureReference<ICanHasServiceProviders> _canHasServiceProviders;
-        private FeatureReference<IHttpAuthentication> _authentication;
-        private FeatureReference<IHttpRequestLifetime> _lifetime;
+        private FeatureReference<IItemsFeature> _items;
+        private FeatureReference<IServiceProvidersFeature> _serviceProviders;
+        private FeatureReference<IHttpAuthenticationFeature> _authentication;
+        private FeatureReference<IHttpRequestLifetimeFeature> _lifetime;
         private IFeatureCollection _features;
 
         public DefaultHttpContext(IFeatureCollection features)
@@ -48,27 +48,27 @@ namespace Microsoft.AspNet.PipelineCore
             _request = new DefaultHttpRequest(this, features);
             _response = new DefaultHttpResponse(this, features);
 
-            _canHasItems = FeatureReference<ICanHasItems>.Default;
-            _canHasServiceProviders = FeatureReference<ICanHasServiceProviders>.Default;
-            _authentication = FeatureReference<IHttpAuthentication>.Default;
+            _items = FeatureReference<IItemsFeature>.Default;
+            _serviceProviders = FeatureReference<IServiceProvidersFeature>.Default;
+            _authentication = FeatureReference<IHttpAuthenticationFeature>.Default;
         }
 
-        ICanHasItems CanHasItems
+        IItemsFeature ItemsFeature
         {
-            get { return _canHasItems.Fetch(_features) ?? _canHasItems.Update(_features, new DefaultCanHasItems()); }
+            get { return _items.Fetch(_features) ?? _items.Update(_features, new ItemsFeature()); }
         }
 
-        ICanHasServiceProviders CanHasServiceProviders
+        IServiceProvidersFeature ServiceProvidersFeature
         {
-            get { return _canHasServiceProviders.Fetch(_features) ?? _canHasServiceProviders.Update(_features, new DefaultCanHasServiceProviders()); }
+            get { return _serviceProviders.Fetch(_features) ?? _serviceProviders.Update(_features, new ServiceProvidersFeature()); }
         }
 
-        private IHttpAuthentication HttpAuthentication
+        private IHttpAuthenticationFeature HttpAuthenticationFeature
         {
-            get { return _authentication.Fetch(_features) ?? _authentication.Update(_features, new DefaultHttpAuthentication()); }
+            get { return _authentication.Fetch(_features) ?? _authentication.Update(_features, new HttpAuthenticationFeature()); }
         }
 
-        private IHttpRequestLifetime Lifetime
+        private IHttpRequestLifetimeFeature LifetimeFeature
         {
             get { return _lifetime.Fetch(_features); }
         }
@@ -81,32 +81,32 @@ namespace Microsoft.AspNet.PipelineCore
         {
             get
             {
-                var user = HttpAuthentication.User;
+                var user = HttpAuthenticationFeature.User;
                 if (user == null)
                 {
                     user = new ClaimsPrincipal(new ClaimsIdentity());
-                    HttpAuthentication.User = user;
+                    HttpAuthenticationFeature.User = user;
                 }
                 return user;
             }
-            set { HttpAuthentication.User = value; }
+            set { HttpAuthenticationFeature.User = value; }
         }
 
         public override IDictionary<object, object> Items
         {
-            get { return CanHasItems.Items; }
+            get { return ItemsFeature.Items; }
         }
 
         public override IServiceProvider ApplicationServices
         {
-            get { return CanHasServiceProviders.ApplicationServices; }
-            set { CanHasServiceProviders.ApplicationServices = value; }
+            get { return ServiceProvidersFeature.ApplicationServices; }
+            set { ServiceProvidersFeature.ApplicationServices = value; }
         }
 
         public override IServiceProvider RequestServices
         {
-            get { return CanHasServiceProviders.RequestServices; }
-            set { CanHasServiceProviders.RequestServices = value; }
+            get { return ServiceProvidersFeature.RequestServices; }
+            set { ServiceProvidersFeature.RequestServices = value; }
         }
 
         public int Revision { get { return _features.Revision; } }
@@ -115,7 +115,7 @@ namespace Microsoft.AspNet.PipelineCore
         {
             get
             {
-                var lifetime = Lifetime;
+                var lifetime = LifetimeFeature;
                 if (lifetime != null)
                 {
                     return lifetime.OnRequestAborted;
@@ -126,7 +126,7 @@ namespace Microsoft.AspNet.PipelineCore
 
         public override void Abort()
         {
-            var lifetime = Lifetime;
+            var lifetime = LifetimeFeature;
             if (lifetime != null)
             {
                 lifetime.Abort();
@@ -152,7 +152,7 @@ namespace Microsoft.AspNet.PipelineCore
 
         public override IEnumerable<AuthenticationDescription> GetAuthenticationTypes()
         {
-            var handler = HttpAuthentication.Handler;
+            var handler = HttpAuthenticationFeature.Handler;
             if (handler == null)
             {
                 return new AuthenticationDescription[0];
@@ -169,7 +169,7 @@ namespace Microsoft.AspNet.PipelineCore
             {
                 throw new ArgumentNullException();
             }
-            var handler = HttpAuthentication.Handler;
+            var handler = HttpAuthenticationFeature.Handler;
 
             var authenticateContext = new AuthenticateContext(authenticationTypes);
             if (handler != null)
@@ -193,7 +193,7 @@ namespace Microsoft.AspNet.PipelineCore
             {
                 throw new ArgumentNullException();
             }
-            var handler = HttpAuthentication.Handler;
+            var handler = HttpAuthenticationFeature.Handler;
 
             var authenticateContext = new AuthenticateContext(authenticationTypes);
             if (handler != null)

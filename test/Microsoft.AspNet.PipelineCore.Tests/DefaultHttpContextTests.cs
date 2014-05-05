@@ -95,11 +95,11 @@ namespace Microsoft.AspNet.PipelineCore.Tests
         private HttpContext CreateContext()
         {
             var context = new DefaultHttpContext(new FeatureCollection());
-            context.SetFeature<IHttpResponseInformation>(new FakeHttpResponse());
+            context.SetFeature<IHttpResponseFeature>(new FakeHttpResponse());
             return context;
         }
 
-        private class FakeHttpResponse : IHttpResponseInformation
+        private class FakeHttpResponse : IHttpResponseFeature
         {
             public int StatusCode { get; set; }
 

@@ -15,13 +15,13 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
-using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.PipelineCore.Collections;
 
 namespace Microsoft.AspNet.PipelineCore
 {
-    public interface ICanHasForm
+    public interface IResponseCookiesFeature
     {
-        Task<IReadableStringCollection> GetFormAsync();
+        IResponseCookies Cookies { get; }
     }
 }

@@ -20,7 +20,7 @@
     <Content Include="Project.json" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ICanHasOwinEnvironment.cs" />
+    <Compile Include="IOwinEnvironmentFeature.cs" />
     <Compile Include="OwinConstants.cs" />
     <Compile Include="OwinEnvironment.cs" />
     <Compile Include="OwinExtensions.cs" />

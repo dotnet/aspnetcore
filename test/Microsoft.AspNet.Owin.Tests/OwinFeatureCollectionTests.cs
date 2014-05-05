@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Owin
             };
             var features = new FeatureObject(new OwinFeatureCollection(env));
 
-            Assert.Equal(Get<IHttpRequestInformation>(features).Method, "POST");
+            Assert.Equal(Get<IHttpRequestFeature>(features).Method, "POST");
         }
 
         [Fact]
@@ -56,8 +56,8 @@ namespace Microsoft.AspNet.Owin
             var keys = features.Keys.ToArray();
             var values = features.Values.ToArray();
 
-            Assert.Contains(typeof(IHttpRequestInformation), keys);
-            Assert.Contains(typeof(IHttpResponseInformation), keys);
+            Assert.Contains(typeof(IHttpRequestFeature), keys);
+            Assert.Contains(typeof(IHttpResponseFeature), keys);
         }
     }
 }

@@ -83,7 +83,7 @@ namespace Microsoft.AspNet
             {
                 var app = middleware(httpContext =>
                 {
-                    return next(httpContext.GetFeature<ICanHasOwinEnvironment>().Environment);
+                    return next(httpContext.GetFeature<IOwinEnvironmentFeature>().Environment);
                 });
 
                 return env =>

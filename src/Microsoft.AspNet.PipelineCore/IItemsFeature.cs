@@ -15,15 +15,12 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Net.Runtime;
+using System.Collections.Generic;
 
-namespace Microsoft.AspNet.HttpFeature
+namespace Microsoft.AspNet.PipelineCore
 {
-    [AssemblyNeutral]
-    public interface IHttpSendFile
+    public interface IItemsFeature
     {
-        Task SendFileAsync(string path, long offset, long? length, CancellationToken cancellation);
+        IDictionary<object, object> Items { get; }
     }
 }

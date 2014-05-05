@@ -15,7 +15,6 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
-using System.Collections.Generic;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.HttpFeature;
@@ -24,29 +23,28 @@ using Microsoft.AspNet.PipelineCore.Infrastructure;
 
 namespace Microsoft.AspNet.PipelineCore
 {
-    public class DefaultCanHasQuery : ICanHasQuery
+    public class ResponseCookiesFeature : IResponseCookiesFeature
     {
         private readonly IFeatureCollection _features;
-        private FeatureReference<IHttpRequestInformation> _request = FeatureReference<IHttpRequestInformation>.Default;
-        private string _queryString;
-        private IReadableStringCollection _query;
+        private readonly FeatureReference<IHttpResponseFeature> _request = FeatureReference<IHttpResponseFeature>.Default;
+        private IResponseCookies _cookiesCollection;
 
-        public DefaultCanHasQuery(IFeatureCollection features)
+        public ResponseCookiesFeature(IFeatureCollection features)
         {
             _features = features;
         }
 
-        public IReadableStringCollection Query
+        public IResponseCookies Cookies
         {
             get
             {
-                var queryString = _request.Fetch(_features).QueryString;
-                if (_query == null || _queryString != queryString)
+                if (_cookiesCollection == null)
                 {
-                    _queryString = queryString;
-                    _query = new ReadableStringCollection(ParsingHelpers.GetQuery(queryString));
+                    var headers = _request.Fetch(_features).Headers;
+                    _cookiesCollection = new ResponseCookies(new HeaderDictionary(headers));
                 }
-                return _query;
+
+                return _cookiesCollection;
             }
         }
     }

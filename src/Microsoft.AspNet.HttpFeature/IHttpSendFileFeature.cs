@@ -15,13 +15,15 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
-using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Net.Runtime;
 
-namespace Microsoft.AspNet.PipelineCore
+namespace Microsoft.AspNet.HttpFeature
 {
-    public class DefaultCanHasServiceProviders : ICanHasServiceProviders
+    [AssemblyNeutral]
+    public interface IHttpSendFileFeature
     {
-        public IServiceProvider ApplicationServices { get; set; }
-        public IServiceProvider RequestServices { get; set; }
+        Task SendFileAsync(string path, long offset, long? length, CancellationToken cancellation);
     }
 }

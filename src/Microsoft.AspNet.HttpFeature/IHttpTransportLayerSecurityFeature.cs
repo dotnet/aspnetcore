@@ -15,15 +15,16 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
-using System.Threading;
+using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
 using Microsoft.Net.Runtime;
 
 namespace Microsoft.AspNet.HttpFeature
 {
     [AssemblyNeutral]
-    public interface IHttpRequestLifetime
+    public interface IHttpTransportLayerSecurityFeature
     {
-        CancellationToken OnRequestAborted { get; }
-        void Abort();
+        X509Certificate ClientCertificate { get; set; }
+        Task LoadAsync();
     }
 }

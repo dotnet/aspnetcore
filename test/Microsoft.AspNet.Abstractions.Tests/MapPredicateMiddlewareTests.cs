@@ -190,8 +190,8 @@ namespace Microsoft.AspNet.Abstractions.Extensions
         private HttpContext CreateRequest()
         {
             HttpContext context = new DefaultHttpContext(new FeatureModel.FeatureCollection());
-            context.SetFeature<IHttpRequestInformation>(new FakeHttpRequestInfo());
-            context.SetFeature<IHttpResponseInformation>(new FakeHttpResponseInfo());
+            context.SetFeature<IHttpRequestFeature>(new FakeHttpRequestFeature());
+            context.SetFeature<IHttpResponseFeature>(new FakeHttpResponseFeature());
             return context;
         }
     }
