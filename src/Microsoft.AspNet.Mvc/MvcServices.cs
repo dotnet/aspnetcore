@@ -24,7 +24,7 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.Razor.Compilation;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Security.Authorization;
+using Microsoft.AspNet.Security;
 
 namespace Microsoft.AspNet.Mvc
 {

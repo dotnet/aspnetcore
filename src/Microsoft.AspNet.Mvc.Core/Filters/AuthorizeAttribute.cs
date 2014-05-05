@@ -22,7 +22,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.DependencyInjection;
-using Microsoft.AspNet.Security.Authorization;
+using Microsoft.AspNet.Security;
 
 namespace Microsoft.AspNet.Mvc
 {

@@ -17,10 +17,11 @@
 
 using System;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Security.Authorization;
+using Microsoft.AspNet.Security;
 using Moq;
 using Xunit;
 
@@ -141,7 +142,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             bool authorizationServiceIsCalled = false;
             var authorizationService = new Mock<IAuthorizationService>();
             authorizationService
-                .Setup(x => x.AuthorizeAsync(null, null))
+                .Setup(x => x.AuthorizeAsync(Enumerable.Empty<Claim>(), null, null))
                 .Returns(() =>
                 {
                     authorizationServiceIsCalled = true;
