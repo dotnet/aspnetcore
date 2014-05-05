@@ -26,16 +26,6 @@ namespace Microsoft.AspNet.Security
             }
         }
 
-        public async Task<bool> AuthorizeAsync(IEnumerable<Claim> claims, ClaimsPrincipal user)
-        {
-            return await AuthorizeAsync(claims, user, null);
-        }
-
-        public bool Authorize(IEnumerable<Claim> claims, ClaimsPrincipal user)
-        {
-            return  AuthorizeAsync(claims, user, null).Result;
-        }
-
         public async Task<bool> AuthorizeAsync(IEnumerable<Claim> claims, ClaimsPrincipal user, object resource)
         {
             var context = new AuthorizationPolicyContext(claims, user, resource);
