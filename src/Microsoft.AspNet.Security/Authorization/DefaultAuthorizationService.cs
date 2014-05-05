@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Security.Authorization
                 {
                     if (context.User != null)
                     {
-                        if (context.Claims.Any(claim => user.HasClaim(claim.Type, claim.Value)))
+                        if (ClaimsMatch(context.Claims, context.UserClaims))
                         {
                             context.Authorized = true;
                         }
@@ -94,6 +94,17 @@ namespace Microsoft.AspNet.Security.Authorization
         public bool Authorize(IEnumerable<Claim> claims, ClaimsPrincipal user, object resource)
         {
             return AuthorizeAsync(claims, user, resource).Result;
+        }
+
+        private bool ClaimsMatch([NotNull] IEnumerable<Claim> x, [NotNull] IEnumerable<Claim> y)
+        {
+            return x.Any(claim => 
+                        y.Any(userClaim => 
+                            string.Equals(claim.Type, userClaim.Type, StringComparison.OrdinalIgnoreCase) &&
+                            string.Equals(claim.Value, userClaim.Value, StringComparison.Ordinal)
+                        )
+                    );
+
         }
     }
 }

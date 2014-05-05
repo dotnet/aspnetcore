@@ -16,6 +16,11 @@ namespace Microsoft.AspNet.Security.Authorization
             Claims = (claims ?? Enumerable.Empty<Claim>()).ToList();
             User = user;
             Resource = resource;
+
+            // user claims are copied to a new and mutable list
+            UserClaims = user != null
+                ? user.Claims.ToList()
+                : new List<Claim>();
         }
 
         /// <summary>
@@ -27,6 +32,14 @@ namespace Microsoft.AspNet.Security.Authorization
         /// The user to check the claims against.
         /// </summary>
         public ClaimsPrincipal User { get; private set; }
+
+        /// <summary>
+        /// The claims of the user.
+        /// </summary>
+        /// <remarks>
+        /// This list can be modified by policies for retries.
+        /// </remarks>
+        public IList<Claim> UserClaims { get; private set; }
 
         /// <summary>
         /// An optional resource associated to the check.

@@ -243,7 +243,7 @@ namespace Microsoft.AspNet.Security.Test
         }
  
         [Fact]
-        public void Check_ApplyCanMutateClaims()
+        public void Check_ApplyCanMutateCheckedClaims()
         {
 
             // Arrange
@@ -268,6 +268,36 @@ namespace Microsoft.AspNet.Security.Test
             
             // Act
             var allowed = authorizationService.Authorize(Enumerable.Empty<Claim>(), user);
+
+            // Assert
+            Assert.True(allowed);
+        }
+
+        [Fact]
+        public void Check_PoliciesCanMutateUsersClaims()
+        {
+
+            // Arrange
+            var user = new ClaimsPrincipal(
+                new ClaimsIdentity(new Claim[0], "Basic")
+                );
+
+            var policies = new IAuthorizationPolicy[] {
+                new FakePolicy() {
+                    ApplyAsyncAction = (context) => { 
+                        if (!context.Authorized) 
+                        {
+                            context.UserClaims.Add(new Claim("Permission", "CanDeleteComments")); 
+                            context.Retry = true;
+                        }
+                    }
+                }
+            };
+
+            var authorizationService = new DefaultAuthorizationService(policies);
+            
+            // Act
+            var allowed = authorizationService.Authorize(new Claim("Permission", "CanDeleteComments"), user);
 
             // Assert
             Assert.True(allowed);
