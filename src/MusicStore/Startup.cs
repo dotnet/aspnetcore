@@ -54,7 +54,7 @@ public class Startup
 #else
             services.AddEntityFramework(s => s.AddInMemoryStore());
 #endif
-            services.AddTransient<MusicStoreContext, MusicStoreContext>();
+            services.AddTransient<MusicStoreContext>();
 
 
             /*
@@ -66,17 +66,25 @@ public class Startup
             //Bug: https://github.com/aspnet/Identity/issues/50
             services.AddIdentity<ApplicationUser, IdentityRole>(s =>
             {
-                // Turn off password defaults since register error display blows up
-                s.UsePasswordValidator(() => new PasswordValidator());
-
                 //s.UseDbContext(() => context);
                 //s.UseUserStore(() => new UserStore(context));
-                s.UseUserStore(() => new InMemoryUserStore<ApplicationUser>());
-                s.UseUserManager<ApplicationUserManager>();
-                s.UseRoleStore(() => new InMemoryRoleStore<IdentityRole>());
-                s.UseRoleManager<ApplicationRoleManager>();
+                s.AddInMemory();
+                s.AddUserManager<ApplicationUserManager>();
+                s.AddRoleManager<ApplicationRoleManager>();
             });
+            services.AddTransient<ApplicationSignInManager>();
+            // Turn off password defaults since register error display blows up
+            services.SetupOptions<IdentityOptions>(
+                options =>
+                {
+                    options.Password.RequireDigit = false;
+                    options.Password.RequireLowercase = false;
+                    options.Password.RequireNonLetterOrDigit = false;
+                    options.Password.RequireUppercase = false;
+                    options.Password.RequiredLength = 0;
+                });
         });
+
 
         /* Error page middleware displays a nice formatted HTML page for any unhandled exceptions in the request pipeline.
          * Note: ErrorPageOptions.ShowAll to be used only at development time. Not recommended for production.

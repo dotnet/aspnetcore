@@ -11,31 +11,15 @@ namespace MusicStore.Controllers
     [Authorize]
     public class AccountController : Controller
     {
-        public AccountController(ApplicationUserManager userManager)
+        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager)
         {
             UserManager = userManager;
+            SignInManager = signInManager;
         }
 
         public UserManager<ApplicationUser> UserManager { get; private set; }
 
-        private SignInManager<ApplicationUser> _signInManager;
-        public SignInManager<ApplicationUser> SignInManager
-        {
-            get
-            {
-                if (_signInManager == null)
-                {
-                    _signInManager = new SignInManager<ApplicationUser>
-                    {
-                        UserManager = UserManager,
-                        Context = Context,
-                        AuthenticationType = DefaultAuthenticationTypes.ApplicationCookie
-                    };
-                }
-                return _signInManager;
-            }
-            set { _signInManager = value; }
-        }
+        public ApplicationSignInManager SignInManager { get; private set; }
 
         //
         // GET: /Account/Login
@@ -96,7 +80,7 @@ namespace MusicStore.Controllers
             //Bug: https://github.com/aspnet/WebFx/issues/247
             //if (ModelState.IsValid == true)
             {
-                var user = new ApplicationUser() { UserName = model.UserName };
+                var user = new ApplicationUser { UserName = model.UserName };
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
