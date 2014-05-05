@@ -24,7 +24,7 @@ namespace MusicStore.Models
         public DbSet<CartItem> CartItems { get; set; }
         public DbSet<OrderDetail> OrderDetails { get; set; }
 
-        protected override void OnConfiguring(EntityConfigurationBuilder builder)
+        protected override void OnConfiguring(DbContextOptions builder)
         {
 #if NET45
             builder.SqlServerConnectionString(_configuration.Get("Data:DefaultConnection:ConnectionString"));
