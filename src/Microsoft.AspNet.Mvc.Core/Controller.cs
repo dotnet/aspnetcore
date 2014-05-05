@@ -19,7 +19,7 @@ using System;
 using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;

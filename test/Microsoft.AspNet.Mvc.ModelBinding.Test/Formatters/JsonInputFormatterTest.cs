@@ -21,7 +21,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Http;
 using Moq;
 using Newtonsoft.Json;
 using Xunit;

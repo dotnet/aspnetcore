@@ -21,9 +21,9 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
-using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.DependencyInjection.Fallback;
+using Microsoft.AspNet.Http;
 using Moq;
 
 namespace Microsoft.AspNet.Mvc.Core.Test

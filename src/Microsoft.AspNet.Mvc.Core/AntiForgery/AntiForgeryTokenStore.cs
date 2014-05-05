@@ -16,8 +16,8 @@
 // permissions and limitations under the License.
 
 using System;
-using Microsoft.AspNet.Abstractions;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Mvc
 {

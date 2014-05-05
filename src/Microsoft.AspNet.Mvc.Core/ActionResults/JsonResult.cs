@@ -19,7 +19,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Http;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.Mvc

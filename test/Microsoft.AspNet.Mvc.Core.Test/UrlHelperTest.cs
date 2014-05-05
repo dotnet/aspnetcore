@@ -16,8 +16,8 @@
 // permissions and limitations under the License.
 
 using System.Collections.Generic;
-using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.DependencyInjection;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing;
 using Moq;
 using Xunit;

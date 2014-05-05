@@ -16,8 +16,8 @@
 // permissions and limitations under the License.
 
 using Microsoft.AspNet;
-using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.DependencyInjection;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
 using MvcSample.Web.Filters;

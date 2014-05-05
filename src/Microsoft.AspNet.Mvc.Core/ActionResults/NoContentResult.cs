@@ -18,7 +18,7 @@
 using System;
 using System.Net;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Mvc
 {

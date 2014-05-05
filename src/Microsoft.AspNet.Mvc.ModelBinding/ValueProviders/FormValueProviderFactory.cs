@@ -18,7 +18,7 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {

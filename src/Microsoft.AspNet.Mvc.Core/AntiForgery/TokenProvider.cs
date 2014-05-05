@@ -18,7 +18,7 @@
 using System;
 using System.Diagnostics.Contracts;
 using System.Security.Principal;
-using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
 using System.Security.Claims;
 
