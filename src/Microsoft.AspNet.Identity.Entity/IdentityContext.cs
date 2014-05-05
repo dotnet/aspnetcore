@@ -19,8 +19,8 @@ using System;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.DependencyInjection.Fallback;
 using Microsoft.Data.Entity;
-using Microsoft.Data.SqlServer;
-using Microsoft.Data.InMemory;
+using Microsoft.Data.Entity.SqlServer;
+using Microsoft.Data.Entity.InMemory;
 using Microsoft.Data.Entity.Metadata;
 
 namespace Microsoft.AspNet.Identity.Entity

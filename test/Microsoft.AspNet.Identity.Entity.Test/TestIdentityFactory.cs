@@ -21,7 +21,7 @@ using Microsoft.AspNet.DependencyInjection.Fallback;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Metadata;
 using Microsoft.Data.Entity.Storage;
-using Microsoft.Data.InMemory;
+using Microsoft.Data.Entity.InMemory;
 using System;
 using System.Linq;
 using System.Security.Claims;

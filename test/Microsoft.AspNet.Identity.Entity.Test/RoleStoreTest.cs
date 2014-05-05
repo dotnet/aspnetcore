@@ -21,7 +21,7 @@ using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.DependencyInjection.Fallback;
 using Microsoft.AspNet.Identity.Test;
 using Microsoft.Data.Entity;
-using Microsoft.Data.InMemory;
+using Microsoft.Data.Entity.InMemory;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.Entity.Test
