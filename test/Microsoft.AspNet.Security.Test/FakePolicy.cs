@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Security.Authorization;
+using Microsoft.AspNet.Security;
 
 namespace Microsoft.AspNet.Security.Test 
 {

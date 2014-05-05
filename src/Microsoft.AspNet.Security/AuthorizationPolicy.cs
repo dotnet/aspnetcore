@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Security.Authorization
+namespace Microsoft.AspNet.Security
 {
     /// <summary>
     /// This class provides a base implementation for <see cref="IAuthorizationPolicy" />
