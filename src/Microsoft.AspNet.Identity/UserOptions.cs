@@ -10,11 +10,6 @@ namespace Microsoft.AspNet.Identity
             //User.RequireUniqueEmail = true; // TODO: app decision?
         }
 
-        public UserOptions(IConfiguration config) : this()
-        {
-            IdentityOptions.Read(this, config);
-        }
-
         /// <summary>
         ///     Only allow [A-Za-z0-9@_] in UserNames
         /// </summary>
