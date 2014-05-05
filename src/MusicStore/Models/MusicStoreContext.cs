@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNet.ConfigurationModel;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Metadata;
-using Microsoft.Data.InMemory;
-using Microsoft.Data.SqlServer;
+using Microsoft.Data.Entity.InMemory;
+using Microsoft.Data.Entity.SqlServer;
 using System;
 
 namespace MusicStore.Models

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Data.Entity;
-using Microsoft.Data.SqlServer;
+using Microsoft.Data.Entity.SqlServer;
 using Microsoft.AspNet.DependencyInjection;
 
 namespace MusicStore.Models
