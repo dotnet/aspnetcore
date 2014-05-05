@@ -237,7 +237,7 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         {
             public DbSet<Artist> Artists { get; set; }
 
-            protected override void OnConfiguring(EntityConfigurationBuilder builder)
+            protected override void OnConfiguring(DbContextOptions builder)
             {
                 builder.UseInMemoryStore();
             }
