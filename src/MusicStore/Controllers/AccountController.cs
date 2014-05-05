@@ -101,7 +101,7 @@ namespace MusicStore.Controllers
         // GET: /Account/Manage
         //Bug: https://github.com/aspnet/WebFx/issues/339
         [HttpGet]
-        public async Task<IActionResult> Manage(ManageMessageId? message)
+        public IActionResult Manage(ManageMessageId? message)
         {
             ViewBag.StatusMessage =
                 message == ManageMessageId.ChangePasswordSuccess ? "Your password has been changed."
