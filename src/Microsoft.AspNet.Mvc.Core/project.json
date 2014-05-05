@@ -6,7 +6,7 @@
   "dependencies": {
     "Newtonsoft.Json": "5.0.8",
     "Microsoft.AspNet.DependencyInjection": "0.1-alpha-*",
-    "Microsoft.AspNet.Abstractions": "0.1-alpha-*",
+    "Microsoft.AspNet.Http": "0.1-alpha-*",
     "Microsoft.AspNet.Routing": "0.1-alpha-*",
     "Microsoft.AspNet.Security": "0.1-alpha-*",
     "Common": "",
