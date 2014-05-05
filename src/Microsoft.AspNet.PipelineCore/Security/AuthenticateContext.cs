@@ -21,7 +21,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Abstractions.Security;
+using Microsoft.AspNet.Http.Security;
 using Microsoft.AspNet.HttpFeature.Security;
 
 namespace Microsoft.AspNet.PipelineCore.Security

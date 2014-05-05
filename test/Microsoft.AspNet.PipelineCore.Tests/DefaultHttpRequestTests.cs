@@ -18,7 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.HttpFeature;
 using Moq;

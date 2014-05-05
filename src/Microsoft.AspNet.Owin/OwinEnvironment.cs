@@ -25,7 +25,7 @@ using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.HttpFeature;
 
 namespace Microsoft.AspNet.Owin

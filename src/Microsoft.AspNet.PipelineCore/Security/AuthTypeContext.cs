@@ -17,7 +17,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Abstractions.Security;
+using Microsoft.AspNet.Http.Security;
 using Microsoft.AspNet.HttpFeature.Security;
 
 namespace Microsoft.AspNet.PipelineCore.Security

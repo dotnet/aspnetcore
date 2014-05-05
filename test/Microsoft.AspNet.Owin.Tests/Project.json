@@ -3,7 +3,7 @@
   "dependencies": {
     "Microsoft.AspNet.Owin": "",
     "Microsoft.AspNet.HttpFeature": "",
-    "Microsoft.AspNet.Abstractions": "",
+    "Microsoft.AspNet.Http": "",
     "Microsoft.AspNet.FeatureModel": "",
     "Microsoft.AspNet.PipelineCore": "",
     "Xunit.KRunner": "0.1-alpha-*",

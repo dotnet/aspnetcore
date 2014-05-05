@@ -17,7 +17,7 @@
 
 using System.Collections;
 using System.Collections.Generic;
-using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.PipelineCore
 {

@@ -3,7 +3,7 @@
   "version": "0.1-alpha-*",
   "dependencies": {
     "Microsoft.AspNet.FeatureModel": "",
-    "Microsoft.AspNet.Abstractions": "",
+    "Microsoft.AspNet.Http": "",
     "Microsoft.AspNet.HttpFeature": ""
   },
   "configurations": {

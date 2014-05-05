@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30401.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.21628.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A5A15F1C-885A-452A-A731-B0173DDBD913}"
 EndProject
@@ -9,7 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{F31FF137-3
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.PipelineCore", "src\Microsoft.AspNet.PipelineCore\Microsoft.AspNet.PipelineCore.kproj", "{BCF0F967-8753-4438-BD07-AADCA9CE509A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Abstractions", "src\Microsoft.AspNet.Abstractions\Microsoft.AspNet.Abstractions.kproj", "{22071333-15BA-4D16-A1D5-4D5B1A83FBDD}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Http", "src\Microsoft.AspNet.Http\Microsoft.AspNet.Http.kproj", "{22071333-15BA-4D16-A1D5-4D5B1A83FBDD}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.HttpFeature", "src\Microsoft.AspNet.HttpFeature\Microsoft.AspNet.HttpFeature.kproj", "{D9128247-8F97-48B8-A863-F1F21A029FCE}"
 EndProject
@@ -19,7 +19,7 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.PipelineCo
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.FeatureModel.Tests", "test\Microsoft.AspNet.FeatureModel.Tests\Microsoft.AspNet.FeatureModel.Tests.kproj", "{C5D2BAE1-E182-48A0-AA74-1AF14B782BF7}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Abstractions.Tests", "test\Microsoft.AspNet.Abstractions.Tests\Microsoft.AspNet.Abstractions.Tests.kproj", "{F16692B8-9F38-4DCA-A582-E43172B989C6}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Http.Tests", "test\Microsoft.AspNet.Http.Tests\Microsoft.AspNet.Http.Tests.kproj", "{F16692B8-9F38-4DCA-A582-E43172B989C6}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Owin", "src\Microsoft.AspNet.Owin\Microsoft.AspNet.Owin.kproj", "{59BED991-F207-48ED-B24C-0A1D9C986C01}"
 EndProject

@@ -20,8 +20,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Microsoft.AspNet.Abstractions;
-using Microsoft.AspNet.Abstractions.Infrastructure;
+using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Infrastructure;
 using Microsoft.AspNet.PipelineCore.Collections;
 
 namespace Microsoft.AspNet.PipelineCore.Infrastructure

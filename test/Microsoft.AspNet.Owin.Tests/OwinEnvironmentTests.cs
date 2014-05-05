@@ -21,8 +21,8 @@ using System.IO;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Abstractions;
-using Microsoft.AspNet.Abstractions.Security;
+using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Security;
 using Microsoft.AspNet.HttpFeature;
 using Xunit;
 

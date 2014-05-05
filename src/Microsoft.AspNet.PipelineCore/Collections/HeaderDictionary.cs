@@ -19,8 +19,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Abstractions.Infrastructure;
-using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Http.Infrastructure;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.PipelineCore.Infrastructure;
 
 namespace Microsoft.AspNet.PipelineCore.Collections

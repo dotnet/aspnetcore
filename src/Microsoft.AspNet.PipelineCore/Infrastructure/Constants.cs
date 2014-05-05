@@ -15,7 +15,7 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
-namespace Microsoft.AspNet.Abstractions.Infrastructure
+namespace Microsoft.AspNet.Http.Infrastructure
 {
     internal static class Constants
     {

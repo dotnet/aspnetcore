@@ -16,8 +16,8 @@
 // permissions and limitations under the License.
 
 using System;
-using Microsoft.AspNet.Abstractions;
-using Microsoft.AspNet.Abstractions.Infrastructure;
+using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Infrastructure;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.PipelineCore.Collections;
