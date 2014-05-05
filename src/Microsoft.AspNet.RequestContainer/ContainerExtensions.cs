@@ -19,7 +19,7 @@ using System;
 using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.DependencyInjection.Fallback;
 using Microsoft.AspNet.RequestContainer;

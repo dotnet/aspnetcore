@@ -16,7 +16,7 @@
 // permissions and limitations under the License.
 
 using Microsoft.AspNet;
-using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Http;
 
 namespace KWebStartup
 {

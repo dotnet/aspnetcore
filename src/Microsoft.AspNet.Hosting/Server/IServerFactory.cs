@@ -17,7 +17,7 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.ConfigurationModel;
 
 namespace Microsoft.AspNet.Hosting.Server

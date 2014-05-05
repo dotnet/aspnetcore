@@ -22,7 +22,7 @@ using Microsoft.AspNet.HttpFeature;
 
 namespace Microsoft.AspNet.TestHost
 {
-    internal class RequestInformation : IHttpRequestInformation
+    internal class RequestInformation : IHttpRequestFeature
     {
         public RequestInformation()
         {

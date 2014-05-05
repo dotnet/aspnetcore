@@ -21,7 +21,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.PipelineCore;
@@ -56,8 +56,8 @@ namespace Microsoft.AspNet.TestHost
             var response = new ResponseInformation();
 
             var features = new FeatureCollection();
-            features.Add(typeof(IHttpRequestInformation), request);
-            features.Add(typeof(IHttpResponseInformation), response);
+            features.Add(typeof(IHttpRequestFeature), request);
+            features.Add(typeof(IHttpResponseFeature), response);
             var httpContext = new DefaultHttpContext(features);
 
             if (onSendingRequest != null)
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.TestHost
             return httpContext.Response;
         }
 
-        private static IHttpRequestInformation CreateRequest(
+        private static IHttpRequestFeature CreateRequest(
             string method,
             Uri uri,
             IDictionary<string, string[]> headers,

@@ -20,7 +20,7 @@ using System;
 using System.Runtime.Remoting.Messaging;
 #endif
 using System.Threading.Tasks;
-using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.DependencyInjection;
 
 namespace Microsoft.AspNet.RequestContainer
