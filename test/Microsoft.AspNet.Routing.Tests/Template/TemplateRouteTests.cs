@@ -17,10 +17,10 @@
 
 #if NET45
 using System;
-using Microsoft.AspNet.Testing;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Testing;
 using Moq;
 using Xunit;
 
@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
         #endregion
 
-        #region Route Binding
+#region Route Binding
 
         [Fact]
         public void GetVirtualPath_Success()
@@ -397,7 +397,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
         #endregion
 
-        #region Route Registration
+#region Route Registration
 
         [Fact]
         public void RegisteringRouteWithInvalidConstraints_Throws()

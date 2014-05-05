@@ -17,7 +17,7 @@
 
 using System.Text.RegularExpressions;
 using Microsoft.AspNet;
-using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing;
 
 namespace RoutingSample.Web

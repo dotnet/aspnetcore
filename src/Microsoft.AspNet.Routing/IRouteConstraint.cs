@@ -16,7 +16,7 @@
 // permissions and limitations under the License.
 
 using System.Collections.Generic;
-using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Routing
 {

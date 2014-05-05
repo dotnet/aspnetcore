@@ -16,12 +16,13 @@
 // permissions and limitations under the License.
 
 #if NET45
-using Moq;
+
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Threading;
+using Microsoft.AspNet.Http;
+using Moq;
 using Xunit;
-using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.Routing.Tests
 {
