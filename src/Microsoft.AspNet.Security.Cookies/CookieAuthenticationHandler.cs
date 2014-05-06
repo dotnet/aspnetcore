@@ -3,8 +3,8 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Logging;
 using Microsoft.AspNet.Security.Infrastructure;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Security.Cookies
 {

@@ -1,13 +1,13 @@
 {
   "version": "0.1-alpha-*",
   "dependencies": {
-    "Microsoft.AspNet.DependencyInjection": "0.1-alpha-*",
     "Microsoft.AspNet.PipelineCore": "0.1-alpha-*",
     "Microsoft.AspNet.Http": "0.1-alpha-*",
     "Microsoft.AspNet.FeatureModel": "0.1-alpha-*",
     "Microsoft.AspNet.HttpFeature": "0.1-alpha-*",
-    "Microsoft.AspNet.Logging": "0.1-alpha-*",
-    "Microsoft.AspNet.Security.DataProtection": "0.1-alpha-*"
+    "Microsoft.AspNet.Security.DataProtection": "0.1-alpha-*",
+    "Microsoft.Framework.DependencyInjection": "0.1-alpha-*",
+    "Microsoft.Framework.Logging": "0.1-alpha-*"
   },
   "configurations": {
     "net45": {},

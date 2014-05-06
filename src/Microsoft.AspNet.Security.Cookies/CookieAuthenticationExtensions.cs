@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Logging;
 using Microsoft.AspNet.Security.Cookies;
 using Microsoft.AspNet.Security.DataProtection;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Builder
 {

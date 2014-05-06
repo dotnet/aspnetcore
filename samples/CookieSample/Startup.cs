@@ -2,12 +2,12 @@ using System;
 using System.Security.Claims;
 using Microsoft.AspNet;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.DependencyInjection;
-using Microsoft.AspNet.DependencyInjection.Fallback;
-using Microsoft.AspNet.Logging;
 using Microsoft.AspNet.Security.Cookies;
 using Microsoft.AspNet.RequestContainer;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.Fallback;
+using Microsoft.Framework.Logging;
 
 namespace CookieSample
 {
@@ -43,7 +43,7 @@ namespace CookieSample
         }
 
         // TODO: Temp workaround until the host reliably provides logging.
-        // If ILoggerFactory is never guaranteed, move this fallback into Microsoft.AspNet.Logging.
+        // If ILoggerFactory is never guaranteed, move this fallback into Microsoft.Framework.Logging.
         private class NullLoggerFactory : ILoggerFactory
         {
             public ILogger Create(string name)
