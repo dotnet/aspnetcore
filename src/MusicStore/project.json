@@ -36,7 +36,7 @@
         "Microsoft.Framework.ConfigurationModel.Json": "0.1-alpha-*",
         "Microsoft.AspNet.Security": "0.1-alpha-*",
         "Microsoft.AspNet.Security.Cookies": "0.1-alpha-*",
-        "Microsoft.AspNet.Logging": "0.1-alpha-*"
+        "Microsoft.Framework.Logging": "0.1-alpha-*"
     },
     "commands": {
         "web": "Microsoft.AspNet.Hosting server.name=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5002",

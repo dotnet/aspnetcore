@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNet.Logging;
+﻿using Microsoft.Framework.Logging;
+
 namespace MusicStore.Logging
 {
     public class NullLoggerFactory : ILoggerFactory

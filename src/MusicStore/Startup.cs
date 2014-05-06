@@ -9,7 +9,7 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Entity;
 using Microsoft.AspNet.Identity.InMemory;
 using Microsoft.AspNet.Identity.Security;
-using Microsoft.AspNet.Logging;
+using Microsoft.Framework.Logging;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.RequestContainer;
 using Microsoft.AspNet.Routing;
