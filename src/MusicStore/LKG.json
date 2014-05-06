@@ -5,7 +5,7 @@
     "Microsoft.AspNet.Abstractions": "0.1-alpha-320",
     "Microsoft.AspNet.Mvc": "0.1-alpha-811",
     "Microsoft.AspNet.Razor": "0.1-alpha-182",
-    "Microsoft.AspNet.ConfigurationModel": "0.1-alpha-190",
+    "Microsoft.Framework.ConfigurationModel": "0.1-alpha-190",
     "Microsoft.AspNet.DependencyInjection": "0.1-alpha-291",
     "Microsoft.AspNet.RequestContainer": "0.1-alpha-361",
     "Microsoft.AspNet.Routing": "0.1-alpha-350",
@@ -28,7 +28,7 @@
     "Microsoft.AspNet.Diagnostics": "0.1-alpha-272",
     "Microsoft.AspNet.Hosting": "0.1-alpha-361",
     "Microsoft.AspNet.Server.WebListener": "0.1-alpha-308",
-    "Microsoft.AspNet.ConfigurationModel.Json": "0.1-alpha-190",
+    "Microsoft.Framework.ConfigurationModel.Json": "0.1-alpha-190",
     "Microsoft.AspNet.Security": "0.1-alpha-246",
     "Microsoft.AspNet.Security.Cookies": "0.1-alpha-246",
     "Microsoft.AspNet.Logging": "0.1-alpha-160"

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNet.ConfigurationModel;
+﻿using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Metadata;
 using Microsoft.Data.Entity.InMemory;
