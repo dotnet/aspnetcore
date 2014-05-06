@@ -32,7 +32,7 @@ using System.Runtime.InteropServices;
 using System.Security.Authentication.ExtendedProtection;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Logging;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.Net.Server
 {

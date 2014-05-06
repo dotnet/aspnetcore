@@ -42,7 +42,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting.Server;
-using Microsoft.AspNet.Logging;
+using Microsoft.Framework.Logging;
 using Microsoft.Net.Server;
 
 namespace Microsoft.AspNet.Server.WebListener

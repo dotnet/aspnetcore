@@ -19,7 +19,7 @@ using System;
 using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Logging;
+using Microsoft.Framework.Logging;
 using Microsoft.Net.Server;
 
 namespace Microsoft.AspNet.Server.WebListener
