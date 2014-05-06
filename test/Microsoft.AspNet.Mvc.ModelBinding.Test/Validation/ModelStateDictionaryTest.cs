@@ -121,9 +121,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void IsValidFieldReturnsTrueIfModelStateDoesNotContainErrors()
         {
             // Arrange
-            var msd = new ModelStateDictionary()
+            var validState = new ModelState
             {
-                { "foo", new ModelState() { Value = new ValueProviderResult(null, null, null), IsValid = true } }
+                Value = new ValueProviderResult(null, null, null),
+                ValidationState = ModelValidationState.Valid
+            };
+            var msd = new ModelStateDictionary
+            {
+                { "foo", validState }
             };
 
             // Act
@@ -137,19 +142,30 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void IsValidPropertyReturnsFalseIfErrors()
         {
             // Arrange
-            var errorState = new ModelState() { Value = GetValueProviderResult("quux", "quux"), IsValid = false };
+            var errorState = new ModelState
+            {
+                Value = GetValueProviderResult("quux", "quux"),
+                ValidationState = ModelValidationState.Invalid
+            };
+            var validState = new ModelState
+            {
+                Value = GetValueProviderResult("bar", "bar"),
+                ValidationState = ModelValidationState.Valid
+            };
             errorState.Errors.Add("some error");
             var dictionary = new ModelStateDictionary()
             {
-                { "foo", new ModelState() { Value = GetValueProviderResult("bar", "bar"), IsValid = true } },
+                { "foo", validState },
                 { "baz", errorState }
             };
 
             // Act
             var isValid = dictionary.IsValid;
+            var validationState = dictionary.ValidationState;
 
             // Assert
-            Assert.Equal(false, isValid);
+            Assert.False(isValid);
+            Assert.Equal(ModelValidationState.Invalid, validationState);
         }
 
         [Fact]
@@ -158,15 +174,58 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Arrange
             var dictionary = new ModelStateDictionary()
             {
-                { "foo", new ModelState() { IsValid = true, Value = GetValueProviderResult("bar", "bar") } },
-                { "baz", new ModelState() { IsValid = true, Value = GetValueProviderResult("quux", "bar") } }
+                { "foo", new ModelState
+                        {
+                            ValidationState = ModelValidationState.Valid, 
+                            Value = GetValueProviderResult("bar", "bar") 
+                        }
+                },
+                { "baz", new ModelState 
+                         { 
+                             ValidationState = ModelValidationState.Valid, 
+                             Value = GetValueProviderResult("quux", "bar") 
+                         } 
+                }
             };
 
             // Act
             var isValid = dictionary.IsValid;
+            var validationState = dictionary.ValidationState;
 
             // Assert
-            Assert.Equal(true, isValid);
+            Assert.True(isValid);
+            Assert.Equal(ModelValidationState.Valid, validationState);
+        }
+
+        [Fact]
+        public void IsValidPropertyReturnsFalse_IfSomeFieldsAreNotValidated()
+        {
+            // Arrange
+            var errorState = new ModelState
+            {
+                Value = GetValueProviderResult("quux", "quux"),
+                ValidationState = ModelValidationState.Invalid
+            };
+            var validState = new ModelState
+            {
+                Value = GetValueProviderResult("bar", "bar"),
+                ValidationState = ModelValidationState.Valid
+            };
+            errorState.Errors.Add("some error");
+            var dictionary = new ModelStateDictionary()
+            {
+                { "foo", validState },
+                { "baz", errorState },
+                { "qux", new ModelState { Value = GetValueProviderResult() }}
+            };
+
+            // Act
+            var isValid = dictionary.IsValid;
+            var validationState = dictionary.ValidationState;
+
+            // Assert
+            Assert.False(isValid);
+            Assert.Equal(ModelValidationState.Unvalidated, validationState);
         }
 
         [Fact]
@@ -254,7 +313,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var dictionary = new ModelStateDictionary();
-            dictionary["user.Address"] = new ModelState { IsValid = true };
+            dictionary["user.Address"] = new ModelState { ValidationState = ModelValidationState.Valid };
             dictionary.SetModelValue("user.Name", GetValueProviderResult());
             dictionary.AddModelError("user.Age", "Age is not a valid int");
 
@@ -272,8 +331,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var dictionary = new ModelStateDictionary();
-            dictionary["user.Address"] = new ModelState { IsValid = true };
-            dictionary["user.Name"] = new ModelState { IsValid = true };
+            dictionary["user.Address"] = new ModelState { ValidationState = ModelValidationState.Valid };
+            dictionary["user.Name"] = new ModelState { ValidationState = ModelValidationState.Valid };
             dictionary.AddModelError("user.Age", "Age is not a valid int");
 
             // Act
@@ -288,8 +347,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var dictionary = new ModelStateDictionary();
-            dictionary["user.Address"] = new ModelState { IsValid = true };
-            dictionary["user.Name"] = new ModelState { IsValid = true };
+            dictionary["user.Address"] = new ModelState { ValidationState = ModelValidationState.Valid };
+            dictionary["user.Name"] = new ModelState { ValidationState = ModelValidationState.Valid };
 
             // Act
             var isValidField = dictionary.IsValidField("user");
@@ -300,8 +359,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private static ValueProviderResult GetValueProviderResult(object rawValue = null, string attemptedValue = null)
         {
-            return new ValueProviderResult(rawValue ?? "some value", 
-                                           attemptedValue ?? "some value", 
+            return new ValueProviderResult(rawValue ?? "some value",
+                                           attemptedValue ?? "some value",
                                            CultureInfo.InvariantCulture);
         }
     }

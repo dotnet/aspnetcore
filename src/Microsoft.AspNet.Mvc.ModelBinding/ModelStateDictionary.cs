@@ -61,9 +61,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
         #endregion
 
-        public bool? IsValid
+        public bool IsValid
         {
-            get { return GetValidity(_innerDictionary); }
+            get { return ValidationState == ModelValidationState.Valid; }
+        }
+
+        public ModelValidationState ValidationState
+        {
+            get {  return GetValidity(_innerDictionary); }
         }
 
         public ModelState this[[NotNull] string key]
@@ -87,14 +92,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void AddModelError([NotNull] string key, [NotNull] Exception exception)
         {
             var modelState = GetModelStateForKey(key);
-            modelState.IsValid = false;
+            modelState.ValidationState = ModelValidationState.Invalid;
             modelState.Errors.Add(exception);
         }
 
         public void AddModelError([NotNull] string key, [NotNull] string errorMessage)
         {
             var modelState = GetModelStateForKey(key);
-            modelState.IsValid = false;
+            modelState.ValidationState = ModelValidationState.Invalid;
             modelState.Errors.Add(errorMessage);
         }
 
@@ -106,19 +111,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return null;
             }
 
-            return GetValidity(entries);
+            var validity = GetValidity(entries);
+            if (validity == ModelValidationState.Unvalidated)
+            {
+                return null;
+            }
+
+            return validity == ModelValidationState.Valid;
         }
 
         public void MarkFieldValid([NotNull] string key)
         {
             var modelState = GetModelStateForKey(key);
-            if (modelState.IsValid == false)
+            if (modelState.ValidationState == ModelValidationState.Invalid)
             {
-                // TODO We should never end up here from our code
                 throw new InvalidOperationException(Resources.Validation_InvalidFieldCannotBeReset);
             }
 
-            modelState.IsValid = true;
+            modelState.ValidationState = ModelValidationState.Valid;
         }
 
         public void Merge(ModelStateDictionary dictionary)
@@ -151,23 +161,23 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return modelState;
         }
 
-        private static bool? GetValidity(IEnumerable<KeyValuePair<string, ModelState>> entries)
+        private static ModelValidationState GetValidity(IEnumerable<KeyValuePair<string, ModelState>> entries)
         {
-            var state = true;
+            var validationState = ModelValidationState.Valid;
             foreach (var entry in entries)
             {
-                var entryState = entry.Value.IsValid;
-                if (entryState == null)
+                var entryState = entry.Value.ValidationState;
+                if (entryState == ModelValidationState.Unvalidated)
                 {
                     // If any entries of a field is unvalidated, we'll treat the tree as unvalidated.
-                    return null;
+                    return entryState;
                 }
-                else if (!entryState.Value)
+                else if (entryState == ModelValidationState.Invalid)
                 {
-                    state = false;
+                    validationState = entryState;
                 }
             }
-            return state;
+            return validationState;
         }
 
         #region IDictionary members

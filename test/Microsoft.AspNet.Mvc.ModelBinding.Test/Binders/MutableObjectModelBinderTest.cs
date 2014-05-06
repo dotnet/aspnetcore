@@ -402,12 +402,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             ModelState modelState;
             Assert.True(modelStateDictionary.TryGetValue("theModel.Name", out modelState));
             Assert.Equal(0, modelState.Errors.Count);
-            Assert.Equal(true, modelState.IsValid);
+            Assert.Equal(ModelValidationState.Valid, modelState.ValidationState);
 
             // Check Age error.
             Assert.True(modelStateDictionary.TryGetValue("theModel.Age", out modelState));
             Assert.Equal(1, modelState.Errors.Count);
-            Assert.Equal(false, modelState.IsValid);
+            Assert.Equal(ModelValidationState.Invalid, modelState.ValidationState);
 
             var modelError = modelState.Errors[0];
             Assert.Null(modelError.Exception);

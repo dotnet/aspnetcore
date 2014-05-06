@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc.
+﻿// Copyright (c) Microsoft Open Technologies, Inc.
 // All Rights Reserved
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,17 +17,10 @@
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
-    public class ModelState
+    public enum ModelValidationState
     {
-        private readonly ModelErrorCollection _errors = new ModelErrorCollection();
-
-        public ValueProviderResult Value { get; set; }
-
-        public ModelErrorCollection Errors
-        {
-            get { return _errors; }
-        }
-
-        public ModelValidationState ValidationState { get; set; }
+        Unvalidated,
+        Invalid,
+        Valid,
     }
 }
