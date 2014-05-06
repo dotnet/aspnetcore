@@ -1,6 +1,6 @@
 ﻿using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.AspNet.DependencyInjection.Fallback;
+using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.AspNet.Hosting;
 using System;
 using System.Threading.Tasks;
