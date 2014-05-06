@@ -17,13 +17,13 @@
 
 using System;
 using System.Threading;
-using Microsoft.AspNet.DependencyInjection.Fallback;
+using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Security;
 using Microsoft.AspNet.Identity.InMemory;
 using Microsoft.AspNet.Identity.Test;
-using Microsoft.AspNet.DependencyInjection;
-using Microsoft.AspNet.Logging;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Logging;
 using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Security.Cookies;

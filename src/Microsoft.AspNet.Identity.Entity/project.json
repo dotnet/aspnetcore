@@ -2,7 +2,7 @@
   "version": "0.1-alpha-*",
   "dependencies": {
     "Microsoft.Framework.ConfigurationModel": "0.1-alpha-*",
-    "Microsoft.AspNet.DependencyInjection": "0.1-alpha-*",
+    "Microsoft.Framework.DependencyInjection": "0.1-alpha-*",
     "Microsoft.AspNet.Identity": "",
     "Microsoft.Data.Entity": "0.1-alpha-*",
     "Microsoft.Data.Entity.Relational": "0.1-alpha-*",

@@ -1,5 +1,5 @@
 using System;
-using Microsoft.AspNet.DependencyInjection;
+using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Identity.Test
 {

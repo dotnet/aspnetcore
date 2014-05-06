@@ -3,7 +3,7 @@
   "dependencies": {
     "Microsoft.AspNet.Http" : "0.1-alpha-*",
     "Microsoft.Framework.ConfigurationModel": "0.1-alpha-*",
-    "Microsoft.AspNet.DependencyInjection" : "0.1-alpha-*",
+    "Microsoft.Framework.DependencyInjection" : "0.1-alpha-*",
     "Microsoft.AspNet.Identity" : "0.1-alpha-*",
     "Microsoft.AspNet.Identity.InMemory" : "0.1-alpha-*",
     "Microsoft.AspNet.PipelineCore" : "0.1-alpha-*",

@@ -18,7 +18,7 @@
 using Microsoft.AspNet.Identity;
 using System;
 
-namespace Microsoft.AspNet.DependencyInjection
+namespace Microsoft.Framework.DependencyInjection
 {
     public static class IdentityServiceCollectionExtensions
     {

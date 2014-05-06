@@ -1,5 +1,5 @@
 using Microsoft.AspNet.Identity.Entity;
-using Microsoft.AspNet.DependencyInjection;
+using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Identity
 {

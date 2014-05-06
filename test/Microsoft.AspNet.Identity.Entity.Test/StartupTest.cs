@@ -1,5 +1,5 @@
-using Microsoft.AspNet.DependencyInjection;
-using Microsoft.AspNet.DependencyInjection.Fallback;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity.Entity;
 using Microsoft.AspNet.PipelineCore;
