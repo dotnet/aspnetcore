@@ -6,7 +6,7 @@
   "dependencies": {
     "Helios": "0.1-alpha-*",
     "Microsoft.AspNet.Http": "0.1-alpha-*",
-    "Microsoft.AspNet.ConfigurationModel": "0.1-alpha-*",
+    "Microsoft.Framework.ConfigurationModel": "0.1-alpha-*",
     "Microsoft.AspNet.DependencyInjection": "0.1-alpha-*",
     "Microsoft.AspNet.Routing": "0.1-alpha-*",
     "Microsoft.AspNet.Server.WebListener": "0.1-alpha-*",
