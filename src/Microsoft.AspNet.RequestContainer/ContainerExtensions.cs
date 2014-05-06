@@ -23,9 +23,8 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.DependencyInjection.Fallback;
 using Microsoft.AspNet.RequestContainer;
-using Microsoft.AspNet.Builder;
 
-namespace Microsoft.AspNet
+namespace Microsoft.AspNet.Builder
 {
     public static class ContainerExtensions
     {
