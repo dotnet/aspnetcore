@@ -16,6 +16,7 @@
 // permissions and limitations under the License.
 
 using Microsoft.AspNet;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Server.WebListener;
 using Microsoft.Net.Server;
