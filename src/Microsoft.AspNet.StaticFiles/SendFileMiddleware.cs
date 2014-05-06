@@ -51,15 +51,15 @@ namespace Microsoft.AspNet.StaticFiles
         public Task Invoke(HttpContext context)
         {
             // Check if there is a SendFile feature already present
-            if (context.GetFeature<IHttpSendFile>() == null)
+            if (context.GetFeature<IHttpSendFileFeature>() == null)
             {
-                context.SetFeature<IHttpSendFile>(new SendFileWrapper(context.Response.Body));
+                context.SetFeature<IHttpSendFileFeature>(new SendFileWrapper(context.Response.Body));
             }
 
             return _next(context);
         }
 
-        private class SendFileWrapper : IHttpSendFile
+        private class SendFileWrapper : IHttpSendFileFeature
         {
             private readonly Stream _output;
 

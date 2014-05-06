@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.StaticFiles
             {
                 throw new ArgumentNullException("response");
             }
-            return response.HttpContext.GetFeature<IHttpSendFile>() != null;
+            return response.HttpContext.GetFeature<IHttpSendFileFeature>() != null;
         }
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.StaticFiles
             {
                 throw new ArgumentNullException("response");
             }
-            IHttpSendFile sendFile = response.HttpContext.GetFeature<IHttpSendFile>();
+            var sendFile = response.HttpContext.GetFeature<IHttpSendFileFeature>();
             if (sendFile == null)
             {
                 throw new NotSupportedException(Resources.Exception_SendFileNotSupported);
