@@ -16,10 +16,10 @@
 // permissions and limitations under the License.
 
 using System;
-using Microsoft.AspNet.Http;
-using Microsoft.Framework.ConfigurationModel;
-using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Hosting.Server;
+using Microsoft.Framework.ConfigurationModel;
 
 namespace Microsoft.AspNet.Hosting
 {
