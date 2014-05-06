@@ -1,5 +1,5 @@
 ﻿using System;
-using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Security;
