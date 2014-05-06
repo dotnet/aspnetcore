@@ -6,13 +6,13 @@ namespace Microsoft.AspNet.Security.Infrastructure
 {
     internal static class HttpContextExtensions
     {
-        internal static IHttpAuthentication GetAuthentication(this HttpContext context)
+        internal static IHttpAuthenticationFeature GetAuthentication(this HttpContext context)
         {
-            var auth = context.GetFeature<IHttpAuthentication>();
+            var auth = context.GetFeature<IHttpAuthenticationFeature>();
             if (auth == null)
             {
-                auth = new DefaultHttpAuthentication();
-                context.SetFeature<IHttpAuthentication>(auth);
+                auth = new HttpAuthenticationFeature();
+                context.SetFeature<IHttpAuthenticationFeature>(auth);
             }
             return auth;
         }
