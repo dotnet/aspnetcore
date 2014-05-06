@@ -10,7 +10,7 @@
     "Microsoft.Framework.DependencyInjection": "0.1-alpha-*",
     "Microsoft.AspNet.Routing": "0.1-alpha-*",
     "Microsoft.AspNet.Server.WebListener": "0.1-alpha-*",
-    "Microsoft.ComponentModel.DataAnnotations": "0.1-alpha-*",
+    "Microsoft.DataAnnotations": "0.1-alpha-*",
     "Microsoft.AspNet.Mvc.ModelBinding": "",
     "Microsoft.AspNet.Mvc.Core": "",
     "Microsoft.AspNet.Mvc": "",
