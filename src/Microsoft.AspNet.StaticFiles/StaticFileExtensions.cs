@@ -16,10 +16,10 @@
 // permissions and limitations under the License.
 
 using System;
-using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.StaticFiles;
 
-namespace Microsoft.AspNet
+namespace Microsoft.AspNet.Builder
 {
     /// <summary>
     /// Extension methods for the StaticFileMiddleware

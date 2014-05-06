@@ -17,7 +17,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Builder;
 
 namespace Microsoft.AspNet.StaticFiles
 {

@@ -17,8 +17,9 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.StaticFiles
 {

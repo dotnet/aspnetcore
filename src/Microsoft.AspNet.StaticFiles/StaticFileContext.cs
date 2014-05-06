@@ -20,10 +20,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.StaticFiles.Infrastructure;
 
