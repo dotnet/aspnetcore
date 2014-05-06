@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using Microsoft.AspNet.Abstractions.Security;
+using Microsoft.AspNet.Http.Security;
 
 namespace Microsoft.AspNet.Security.DataHandler.Serializer
 {

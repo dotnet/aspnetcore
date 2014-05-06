@@ -1,13 +1,10 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Security.Infrastructure;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Logging;
-using Microsoft.AspNet.PipelineCore.Collections;
-using Microsoft.AspNet.Abstractions;
-using Microsoft.AspNet.HttpFeature.Security;
+using Microsoft.AspNet.Security.Infrastructure;
 
 namespace Microsoft.AspNet.Security.Cookies
 {

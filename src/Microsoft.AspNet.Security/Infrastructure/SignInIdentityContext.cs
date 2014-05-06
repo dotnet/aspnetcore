@@ -1,5 +1,5 @@
 ﻿using System.Security.Claims;
-using Microsoft.AspNet.Abstractions.Security;
+using Microsoft.AspNet.Http.Security;
 
 namespace Microsoft.AspNet.Security.Infrastructure
 {

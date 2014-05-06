@@ -2,8 +2,8 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
-using Microsoft.AspNet.Abstractions;
-using Microsoft.AspNet.Abstractions.Security;
+using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Security;
 
 namespace Microsoft.AspNet.Security.Notifications
 {

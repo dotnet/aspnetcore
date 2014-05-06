@@ -2,7 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Abstractions.Security;
+using Microsoft.AspNet.Http.Security;
 using Microsoft.AspNet.HttpFeature.Security;
 using Microsoft.AspNet.PipelineCore.Security;
 

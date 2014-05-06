@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.DependencyInjection;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Logging;
 using Microsoft.AspNet.Security.Cookies;
 using Microsoft.AspNet.Security.DataProtection;
