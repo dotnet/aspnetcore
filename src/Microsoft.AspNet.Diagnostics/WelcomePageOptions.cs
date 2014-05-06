@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Diagnostics
 {

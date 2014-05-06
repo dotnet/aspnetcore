@@ -4,7 +4,7 @@
     "Helios" :  "0.1-alpha-*",
     "Microsoft.AspNet.Diagnostics": "",
     "Microsoft.AspNet.HttpFeature": "0.1-alpha-*",
-    "Microsoft.AspNet.Abstractions": "0.1-alpha-*",
+    "Microsoft.AspNet.Http": "0.1-alpha-*",
     "Microsoft.AspNet.Server.WebListener": "0.1-alpha-*",
     "Microsoft.AspNet.Hosting": "0.1-alpha-*"
   },

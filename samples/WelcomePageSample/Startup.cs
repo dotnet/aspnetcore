@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNet;
-using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Builder;
 
 namespace WelcomePageSample
 {

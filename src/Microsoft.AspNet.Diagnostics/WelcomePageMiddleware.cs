@@ -4,7 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Diagnostics.Views;
-using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Diagnostics
 {

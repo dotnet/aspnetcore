@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Abstractions;
 using System;
 using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Diagnostics.Views
 {

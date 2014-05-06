@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Diagnostics;
+using Microsoft.AspNet.Http;
 
-namespace Microsoft.AspNet
+namespace Microsoft.AspNet.Builder
 {
     /// <summary>
     /// IBuilder extension methods for the ErrorPageMiddleware.

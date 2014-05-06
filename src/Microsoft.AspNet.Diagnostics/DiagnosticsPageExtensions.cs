@@ -5,7 +5,7 @@ using System;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Diagnostics;
 
-namespace Microsoft.AspNet
+namespace Microsoft.AspNet.Builder
 {
     /// <summary>
     /// IBuilder extensions for the DiagnosticsPageMiddleware.

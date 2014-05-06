@@ -7,8 +7,9 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics.Views;
-using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Diagnostics
 {
