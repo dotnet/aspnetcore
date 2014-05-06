@@ -17,9 +17,9 @@
 
 using System;
 using System.Threading;
-using Microsoft.AspNet.Abstractions;
-using Microsoft.AspNet.Abstractions.Security;
 using Microsoft.AspNet.DependencyInjection.Fallback;
+using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Security;
 using Microsoft.AspNet.Identity.InMemory;
 using Microsoft.AspNet.Identity.Test;
 using Microsoft.AspNet.DependencyInjection;
