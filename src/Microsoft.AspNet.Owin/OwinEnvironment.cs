@@ -238,12 +238,12 @@ namespace Microsoft.AspNet.Owin
 
         public class FeatureMap
         {
-            internal FeatureMap(Type featureInterface, Func<object, object> getter)
+            public FeatureMap(Type featureInterface, Func<object, object> getter)
                 : this(featureInterface, getter, null)
             {
             }
 
-            internal FeatureMap(Type featureInterface, Func<object, object> getter, Action<object, object> setter)
+            public FeatureMap(Type featureInterface, Func<object, object> getter, Action<object, object> setter)
             {
                 FeatureInterface = featureInterface;
                 Getter = getter;
@@ -272,12 +272,12 @@ namespace Microsoft.AspNet.Owin
 
         public class FeatureMap<T> : FeatureMap
         {
-            internal FeatureMap(Func<T, object> getter)
+            public FeatureMap(Func<T, object> getter)
                 : base(typeof(T), feature => getter((T)feature))
             {
             }
 
-            internal FeatureMap(Func<T, object> getter, Action<T, object> setter)
+            public FeatureMap(Func<T, object> getter, Action<T, object> setter)
                 : base(typeof(T), feature => getter((T)feature), (feature, value) => setter((T)feature, value))
             {
             }
