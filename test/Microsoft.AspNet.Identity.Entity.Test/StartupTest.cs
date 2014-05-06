@@ -1,8 +1,8 @@
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity.Entity;
 using Microsoft.AspNet.PipelineCore;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.Fallback;
 using System;
 using System.Threading.Tasks;
 using Microsoft.Data.Entity;

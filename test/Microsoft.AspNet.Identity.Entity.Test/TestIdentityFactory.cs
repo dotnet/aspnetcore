@@ -16,12 +16,12 @@
 // permissions and limitations under the License.
 
 using Microsoft.AspNet.Testing;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Metadata;
 using Microsoft.Data.Entity.Storage;
 using Microsoft.Data.Entity.InMemory;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.Fallback;
 using System;
 using System.Linq;
 using System.Security.Claims;

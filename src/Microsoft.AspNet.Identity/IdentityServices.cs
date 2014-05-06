@@ -15,10 +15,10 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
-using Microsoft.Framework.ConfigurationModel;
-using Microsoft.Framework.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Identity
 {

@@ -18,11 +18,11 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity.Test;
 using Microsoft.AspNet.PipelineCore;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.Fallback;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.InMemory.Test

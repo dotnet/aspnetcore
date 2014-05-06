@@ -16,12 +16,12 @@
 // permissions and limitations under the License.
 
 using System;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.SqlServer;
 using Microsoft.Data.Entity.InMemory;
 using Microsoft.Data.Entity.Metadata;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.Fallback;
 
 namespace Microsoft.AspNet.Identity.Entity
 {

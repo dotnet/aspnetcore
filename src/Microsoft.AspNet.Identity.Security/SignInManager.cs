@@ -15,12 +15,12 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
-using Microsoft.Framework.DependencyInjection;
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Security;
+using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Identity.Security
 {

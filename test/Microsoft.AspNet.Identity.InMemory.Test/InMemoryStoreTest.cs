@@ -20,9 +20,9 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Identity.Test;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
-using Microsoft.AspNet.Identity.Test;
 
 namespace Microsoft.AspNet.Identity.InMemory.Test
 {
