@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNet;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Builder;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.DependencyInjection.Fallback;
