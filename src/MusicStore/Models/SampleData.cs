@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.SqlServer;
-using Microsoft.AspNet.DependencyInjection;
+using Microsoft.Framework.DependencyInjection;
 
 namespace MusicStore.Models
 {

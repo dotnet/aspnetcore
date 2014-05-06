@@ -1,6 +1,6 @@
 ﻿using System;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.DependencyInjection;
+using Microsoft.Framework.DependencyInjection;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Security;
 

@@ -1,5 +1,5 @@
 ﻿using Microsoft.Framework.ConfigurationModel;
-using Microsoft.AspNet.DependencyInjection;
+using Microsoft.Framework.DependencyInjection;
 using Microsoft.AspNet.DependencyInjection.Fallback;
 using Microsoft.AspNet.Hosting;
 using System;

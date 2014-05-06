@@ -11,7 +11,7 @@
         "Microsoft.AspNet.Mvc": "0.1-alpha-*",
         "Microsoft.AspNet.Razor": "0.1-alpha-*",
         "Microsoft.Framework.ConfigurationModel": "0.1-alpha-*",
-        "Microsoft.AspNet.DependencyInjection": "0.1-alpha-*",
+        "Microsoft.Framework.DependencyInjection": "0.1-alpha-*",
         "Microsoft.AspNet.RequestContainer": "0.1-alpha-*",
         "Microsoft.AspNet.Routing": "0.1-alpha-*",
         "Microsoft.AspNet.Mvc.ModelBinding": "0.1-alpha-*",
