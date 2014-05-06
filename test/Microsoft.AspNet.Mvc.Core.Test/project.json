@@ -10,8 +10,6 @@
     "Microsoft.AspNet.Routing": "0.1-alpha-*",
     "Microsoft.AspNet.Testing": "0.1-alpha-*",
     "Microsoft.AspNet.Mvc.ModelBinding": "",
-    "Microsoft.AspNet.Routing": "0.1-alpha-*",
-    "Microsoft.AspNet.Mvc.ModelBinding" : "",
     "Microsoft.Framework.DependencyInjection": "0.1-alpha-*",
     "Moq": "4.2.1312.1622",
     "Xunit.KRunner": "0.1-alpha-*",
