@@ -23,23 +23,22 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants.cs" />
-    <Compile Include="ContentTypes\FileExtensionContentTypeProvider.cs" />
-    <Compile Include="ContentTypes\IContentTypeProvider.cs" />
     <Compile Include="DefaultFilesExtensions.cs" />
     <Compile Include="DefaultFilesMiddleware.cs" />
     <Compile Include="DefaultFilesOptions.cs" />
     <Compile Include="DirectoryBrowserExtensions.cs" />
     <Compile Include="DirectoryBrowserMiddleware.cs" />
     <Compile Include="DirectoryBrowserOptions.cs" />
-    <Compile Include="DirectoryFormatters\HtmlDirectoryFormatter.cs" />
-    <Compile Include="DirectoryFormatters\IDirectoryFormatter.cs" />
+    <Compile Include="FileExtensionContentTypeProvider.cs" />
     <Compile Include="FileServerExtensions.cs" />
     <Compile Include="FileServerOptions.cs" />
     <Compile Include="Helpers.cs" />
+    <Compile Include="HtmlDirectoryFormatter.cs" />
+    <Compile Include="IContentTypeProvider.cs" />
+    <Compile Include="IDirectoryFormatter.cs" />
     <Compile Include="Infrastructure\RangeHelpers.cs" />
     <Compile Include="Infrastructure\SharedOptions.cs" />
     <Compile Include="Infrastructure\SharedOptionsBase.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources.Designer.cs" />
     <Compile Include="SendFileExtensions.cs" />
     <Compile Include="SendFileMiddleware.cs" />

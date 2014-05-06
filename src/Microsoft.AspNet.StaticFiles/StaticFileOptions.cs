@@ -16,7 +16,6 @@
 // permissions and limitations under the License.
 
 using System;
-using Microsoft.AspNet.StaticFiles.ContentTypes;
 using Microsoft.AspNet.StaticFiles.Infrastructure;
 
 namespace Microsoft.AspNet.StaticFiles

@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.Http;
 
-namespace Microsoft.AspNet.StaticFiles.DirectoryFormatters
+namespace Microsoft.AspNet.StaticFiles
 {
     /// <summary>
     /// Generates the view for a directory

@@ -15,11 +15,8 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
-using System;
-using System.IO;
-using Microsoft.AspNet;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.FileSystems;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.StaticFiles;
 
 namespace StaticFilesSample

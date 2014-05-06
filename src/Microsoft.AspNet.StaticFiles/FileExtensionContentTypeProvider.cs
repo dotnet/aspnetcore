@@ -19,7 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Microsoft.AspNet.StaticFiles.ContentTypes
+namespace Microsoft.AspNet.StaticFiles
 {
     /// <summary>
     /// Provides a mapping between file extensions and MIME types.
