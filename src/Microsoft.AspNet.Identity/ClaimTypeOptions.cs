@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Security.Claims;
-using Microsoft.AspNet.ConfigurationModel;
+using Microsoft.Framework.ConfigurationModel;
 
 namespace Microsoft.AspNet.Identity
 {

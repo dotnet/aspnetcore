@@ -1,5 +1,5 @@
 using System.Reflection;
-using Microsoft.AspNet.ConfigurationModel;
+using Microsoft.Framework.ConfigurationModel;
 
 namespace Microsoft.AspNet.Identity
 {

@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
-using Microsoft.AspNet.ConfigurationModel;
-using Microsoft.AspNet.ConfigurationModel.Sources;
+using Microsoft.Framework.ConfigurationModel;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.Test

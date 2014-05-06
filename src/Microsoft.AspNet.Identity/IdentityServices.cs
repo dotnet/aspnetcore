@@ -15,7 +15,7 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
-using Microsoft.AspNet.ConfigurationModel;
+using Microsoft.Framework.ConfigurationModel;
 using Microsoft.AspNet.DependencyInjection;
 using System;
 using System.Collections.Generic;
