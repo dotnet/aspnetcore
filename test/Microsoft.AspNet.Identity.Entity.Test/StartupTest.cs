@@ -1,6 +1,6 @@
-using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.DependencyInjection.Fallback;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity.Entity;
 using Microsoft.AspNet.Identity.Test;
 using Microsoft.AspNet.PipelineCore;
