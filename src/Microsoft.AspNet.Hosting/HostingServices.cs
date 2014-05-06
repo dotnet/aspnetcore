@@ -15,6 +15,7 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Hosting.Builder;
 using Microsoft.AspNet.Hosting.Server;
@@ -22,6 +23,7 @@ using Microsoft.AspNet.Hosting.Startup;
 using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Hosting
 {
@@ -47,6 +49,9 @@ namespace Microsoft.AspNet.Hosting
 
             yield return describer.Transient<ITypeActivator, TypeActivator>();
 
+            // TODO: We expect this to be provide by the runtime eventually.
+            yield return describer.Instance<ILoggerFactory>(new NullLoggerFactory());
+
             yield return new ServiceDescriptor
             {
                 ServiceType = typeof(IContextAccessor<>),
@@ -67,6 +72,24 @@ namespace Microsoft.AspNet.Hosting
                 // is deferred until the first call to Protect / Unprotect. It's up to an IIS-based host to
                 // replace this service as part of application initialization.
                 yield return describer.Instance<IDataProtectionProvider>(DataProtectionProvider.CreateFromDpapi());
+            }
+        }
+
+        // TODO: Temp workaround until the runtime reliably provides logging.
+        // If ILoggerFactory is never guaranteed, move this fallback into Microsoft.AspNet.Logging.
+        private class NullLoggerFactory : ILoggerFactory
+        {
+            public ILogger Create(string name)
+            {
+                return new NullLogger();
+            }
+        }
+
+        private class NullLogger : ILogger
+        {
+            public bool WriteCore(TraceType eventType, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+            {
+                return false;
             }
         }
     }

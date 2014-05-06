@@ -7,6 +7,7 @@
     "Microsoft.AspNet.Security.DataProtection": "0.1-alpha-*",
     "Microsoft.Framework.ConfigurationModel": "0.1-alpha-*",
     "Microsoft.Framework.DependencyInjection": "0.1-alpha-*",
+    "Microsoft.Framework.Logging": "0.1-alpha-*",
     "Microsoft.Net.Runtime.Interfaces":  "0.1-alpha-*"
   },
   "configurations": {
