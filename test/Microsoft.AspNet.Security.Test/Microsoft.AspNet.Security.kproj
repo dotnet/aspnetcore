@@ -21,9 +21,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DefaultAuthorizationServiceTests.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
+    <Compile Include="FakePolicy.cs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>

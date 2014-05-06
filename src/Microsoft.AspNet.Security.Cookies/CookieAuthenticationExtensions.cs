@@ -6,7 +6,7 @@ using Microsoft.AspNet.Logging;
 using Microsoft.AspNet.Security.Cookies;
 using Microsoft.AspNet.Security.DataProtection;
 
-namespace Microsoft.AspNet
+namespace Microsoft.AspNet.Builder
 {
     /// <summary>
     /// Extension methods provided by the cookies authentication middleware
