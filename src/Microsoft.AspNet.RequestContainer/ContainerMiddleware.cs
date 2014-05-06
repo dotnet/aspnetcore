@@ -22,6 +22,7 @@ using System.Runtime.Remoting.Messaging;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.DependencyInjection;
+using Microsoft.AspNet.Builder;
 
 namespace Microsoft.AspNet.RequestContainer
 {

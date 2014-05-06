@@ -25,6 +25,7 @@ using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.DependencyInjection.Fallback;
 using Microsoft.Net.Runtime;
 using Xunit;
+using Microsoft.AspNet.Builder;
 
 namespace Microsoft.AspNet.TestHost.Tests
 {

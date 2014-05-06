@@ -27,6 +27,7 @@ using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Hosting.Startup;
 using Microsoft.Net.Runtime;
+using Microsoft.AspNet.Builder;
 
 namespace Microsoft.AspNet.TestHost
 {

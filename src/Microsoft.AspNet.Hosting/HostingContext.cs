@@ -19,6 +19,7 @@ using System;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.AspNet.Hosting.Server;
+using Microsoft.AspNet.Builder;
 
 namespace Microsoft.AspNet.Hosting
 {

@@ -24,6 +24,7 @@ using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.DependencyInjection.Fallback;
 using Microsoft.AspNet.Hosting.Server;
 using Xunit;
+using Microsoft.AspNet.Builder;
 
 namespace Microsoft.AspNet.Hosting
 {

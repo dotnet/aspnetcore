@@ -16,6 +16,7 @@
 // permissions and limitations under the License.
 
 using System;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Hosting.Builder
@@ -31,7 +32,7 @@ namespace Microsoft.AspNet.Hosting.Builder
 
         public IBuilder CreateBuilder()
         {
-            return new PipelineCore.Builder(_serviceProvider);
+            return new Microsoft.AspNet.Builder.Builder(_serviceProvider);
         }
     }
 }
