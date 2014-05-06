@@ -21,7 +21,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BuilderExtensions.cs" />
-    <Compile Include="ServiceCollectionExtensions.cs" />
+    <Compile Include="MvcServiceCollectionExtensions.cs" />
     <Compile Include="MvcServices.cs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />

@@ -20,7 +20,7 @@ using Microsoft.Framework.ConfigurationModel;
 
 namespace Microsoft.Framework.DependencyInjection
 {
-    public static class ServiceCollectionExtensions
+    public static class MvcServiceCollectionExtensions
     {
         public static IServiceCollection AddMvc(this IServiceCollection services)
         {
