@@ -38,13 +38,10 @@ body .location {
 
 #header {
     font-size: 18px;
-    padding-left: 0px;
-    padding-right: 0px;
-    padding-top: 15px;
-    padding-bottom: 15px;
+    padding: 15px 0;
     border-top: 1px #ddd solid;
     border-bottom: 1px #ddd solid;
-    margin-bottom: 0px;
+    margin-bottom: 0;
 }
 
     #header li {
@@ -60,7 +57,7 @@ body .location {
             color: #fff;
         }
 
-        #header li.selected {
+        #header .selected {
             background: #44c5f2;
             color: #fff;
         }
@@ -99,7 +96,7 @@ body .location {
     }
 
 #stackpage .source {
-    padding: 0px;
+    padding: 0;
 }
 
     #stackpage .source ol li {
@@ -107,16 +104,7 @@ body .location {
         white-space: pre;
     }
 
-    #stackpage .source ol.highlight li {
-        /*color: #e22;*/
-        /*font-weight: bold;*/
-    }
-
-        #stackpage .source ol.highlight li span {
-            /*color: #000;*/
-        }
-
-#stackpage .frame:hover .source ol.highlight li span {
+#stackpage .frame:hover .source .highlight li span {
     color: #fff;
     background: #b20000;
 }
@@ -159,7 +147,7 @@ body .location {
         border-right: 1px transparent solid;
     }
 
-    .page td.length {
+    .page .length {
         text-align: right;
     }
 

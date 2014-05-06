@@ -135,7 +135,7 @@
                 if (el.addEventListener) { // DOM Events
                     el.addEventListener(eventName, callback, false);
                 } else if (el.attachEvent) { // IE8 events
-                    el.attachEvent("on" + eventName, callback)
+                    el.attachEvent("on" + eventName, callback);
                 } else {
                     el["on" + type] = callback;
                 }
@@ -181,7 +181,7 @@
 
     $("#header li")
         .click(function () {
-            tab(this)
+            tab(this);
         })
         .keypress(function (e) {
             if (e.which === 13) {
