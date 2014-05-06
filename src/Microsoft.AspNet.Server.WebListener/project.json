@@ -3,11 +3,11 @@
   "dependencies": {
     "Microsoft.Net.Server" : "",
     "Microsoft.AspNet.Http": "0.1-alpha-*",
-    "Microsoft.Framework.ConfigurationModel": "0.1-alpha-*",
     "Microsoft.AspNet.HttpFeature": "0.1-alpha-*",
     "Microsoft.AspNet.FeatureModel": "0.1-alpha-*",
-    "Microsoft.Framework.Logging": "0.1-alpha-*",
-    "Microsoft.AspNet.Hosting": "0.1-alpha-*"
+    "Microsoft.AspNet.Hosting": "0.1-alpha-*",
+    "Microsoft.Framework.ConfigurationModel": "0.1-alpha-*",
+    "Microsoft.Framework.Logging": "0.1-alpha-*"
   },
   "compilationOptions": {
     "allowUnsafe": true
