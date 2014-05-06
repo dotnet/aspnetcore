@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Identity.Test
                 {"identity:password:RequireDigit", "false"},
                 {"identity:password:RequireLowerCase", "false"}
             };
-            var config = new ConfigurationModel.Configuration { new MemoryConfigurationSource(dic) };
+            var config = new Configuration { new MemoryConfigurationSource(dic) };
             Assert.Equal(roleClaimType, config.Get("identity:claimtype:role"));
             var options = new IdentityOptions(config);
             Assert.Equal(roleClaimType, options.ClaimType.Role);
@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Identity.Test
                 {"userid", useridClaimType},
                 {"securitystamp", securityStampClaimType}
             };
-            var config = new ConfigurationModel.Configuration {new MemoryConfigurationSource(dic)};
+            var config = new Configuration {new MemoryConfigurationSource(dic)};
             Assert.Equal(roleClaimType, config.Get("role"));
             var options = new ClaimTypeOptions(config);
             Assert.Equal(roleClaimType, options.Role);
@@ -111,7 +111,7 @@ namespace Microsoft.AspNet.Identity.Test
                 {"RequireDigit", "false"},
                 {"RequireLowerCase", "false"}
             };
-            var config = new ConfigurationModel.Configuration { new MemoryConfigurationSource(dic) };
+            var config = new Configuration { new MemoryConfigurationSource(dic) };
             var options = new PasswordOptions(config);
             Assert.False(options.RequireDigit);
             Assert.False(options.RequireLowercase);

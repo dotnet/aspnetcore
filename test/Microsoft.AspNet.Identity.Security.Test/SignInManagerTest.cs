@@ -31,6 +31,7 @@ using Moq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
+using Microsoft.AspNet.Builder;
 
 namespace Microsoft.AspNet.Identity.Security.Test
 {
@@ -42,7 +43,7 @@ namespace Microsoft.AspNet.Identity.Security.Test
         [InlineData(false)]
         public async Task VerifyAccountControllerSignIn(bool isPersistent)
         {
-            IBuilder app = new Builder(new ServiceCollection().BuildServiceProvider());
+            IBuilder app = new Microsoft.AspNet.Builder.Builder(new ServiceCollection().BuildServiceProvider());
             app.UseCookieAuthentication(new CookieAuthenticationOptions
             {
                 AuthenticationType = DefaultAuthenticationTypes.ApplicationCookie

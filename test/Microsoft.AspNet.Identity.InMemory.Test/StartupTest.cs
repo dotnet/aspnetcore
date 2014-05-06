@@ -15,13 +15,14 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
+using System;
+using System.Threading.Tasks;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.DependencyInjection.Fallback;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity.Test;
 using Microsoft.AspNet.PipelineCore;
-using System;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.InMemory.Test
@@ -47,7 +48,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         [Fact]
         public void CanCustomizeIdentityOptions()
         {
-            IBuilder builder = new Builder(new ServiceCollection().BuildServiceProvider());
+            IBuilder builder = new Microsoft.AspNet.Builder.Builder(new ServiceCollection().BuildServiceProvider());
             builder.UseServices(services => {
                 services.AddIdentity<IdentityUser>(identityServices => { });
                 services.AddSetup<PasswordsNegativeLengthSetup>();
@@ -70,7 +71,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         [Fact]
         public void CanSetupIdentityOptions()
         {
-            IBuilder app = new Builder(new ServiceCollection().BuildServiceProvider());
+            IBuilder app = new Microsoft.AspNet.Builder.Builder(new ServiceCollection().BuildServiceProvider());
             app.UseServices(services => services.AddIdentity<IdentityUser>(identityServices => identityServices.SetupOptions(options => options.User.RequireUniqueEmail = true)));
 
             var optionsGetter = app.ApplicationServices.GetService<IOptionsAccessor<IdentityOptions>>();
@@ -83,7 +84,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         [Fact]
         public async Task EnsureStartupUsageWorks()
         {
-            IBuilder builder = new Builder(new ServiceCollection().BuildServiceProvider());
+            IBuilder builder = new Microsoft.AspNet.Builder.Builder(new ServiceCollection().BuildServiceProvider());
 
             //builder.UseServices(services => services.AddIdentity<ApplicationUser>(s =>
             //    s.AddEntity<ApplicationDbContext>()

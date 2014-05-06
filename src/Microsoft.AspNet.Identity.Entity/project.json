@@ -3,7 +3,7 @@
   "dependencies": {
     "Microsoft.Framework.ConfigurationModel": "0.1-alpha-*",
     "Microsoft.AspNet.DependencyInjection": "0.1-alpha-*",
-    "Microsoft.AspNet.Identity": "0.1-alpha-*",
+    "Microsoft.AspNet.Identity": "",
     "Microsoft.Data.Entity": "0.1-alpha-*",
     "Microsoft.Data.Entity.Relational": "0.1-alpha-*",
     "Microsoft.Data.Entity.SqlServer": "0.1-alpha-*",
@@ -16,7 +16,7 @@
         "System.Runtime": "",
         "System.Collections": ""
       }
-	},
+    },
     "k10": {
       "dependencies": {
         "System.Collections": "4.0.0.0",
