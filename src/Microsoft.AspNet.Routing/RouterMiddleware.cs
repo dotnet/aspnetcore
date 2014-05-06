@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing;
 
-namespace Microsoft.AspNet
+namespace Microsoft.AspNet.Builder
 {
     public class RouterMiddleware
     {

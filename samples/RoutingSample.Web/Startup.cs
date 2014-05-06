@@ -17,6 +17,7 @@
 
 using System.Text.RegularExpressions;
 using Microsoft.AspNet;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing;
 

@@ -19,7 +19,7 @@ using Microsoft.AspNet;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing;
 
-namespace Microsoft.AspNet
+namespace Microsoft.AspNet.Builder
 {
     public static class BuilderExtensions
     {
