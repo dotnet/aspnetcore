@@ -28,7 +28,7 @@ using Microsoft.Net.Server;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
-    internal class FeatureContext : IHttpRequestInformation, IHttpConnection, IHttpResponseInformation, IHttpSendFile, IHttpTransportLayerSecurity, IHttpRequestLifetime
+    internal class FeatureContext : IHttpRequestFeature, IHttpConnectionFeature, IHttpResponseFeature, IHttpSendFileFeature, IHttpTransportLayerSecurityFeature, IHttpRequestLifetimeFeature
     {
         private RequestContext _requestContext;
         private FeatureCollection _features;
@@ -74,16 +74,16 @@ namespace Microsoft.AspNet.Server.WebListener
 
         private void PopulateFeatures()
         {
-            _features.Add(typeof(IHttpRequestInformation), this);
-            _features.Add(typeof(IHttpConnection), this);
+            _features.Add(typeof(IHttpRequestFeature), this);
+            _features.Add(typeof(IHttpConnectionFeature), this);
             if (Request.IsSecureConnection)
             {
                 // TODO: Should this feature be conditional? Should we add this for HTTP requests?
-                _features.Add(typeof(IHttpTransportLayerSecurity), this);
+                _features.Add(typeof(IHttpTransportLayerSecurityFeature), this);
             }
-            _features.Add(typeof(IHttpResponseInformation), this);
-            _features.Add(typeof(IHttpSendFile), this);
-            _features.Add(typeof(IHttpRequestLifetime), this);
+            _features.Add(typeof(IHttpResponseFeature), this);
+            _features.Add(typeof(IHttpSendFileFeature), this);
+            _features.Add(typeof(IHttpRequestLifetimeFeature), this);
 
             // TODO: 
             // _environment.CallCancelled = _cts.Token;
@@ -98,9 +98,9 @@ namespace Microsoft.AspNet.Server.WebListener
              */
         }
 
-        #region IHttpRequestInformation
+        #region IHttpRequestFeature
 
-        Stream IHttpRequestInformation.Body
+        Stream IHttpRequestFeature.Body
         {
             get
             {
@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.Server.WebListener
             set { _requestBody = value; }
         }
 
-        IDictionary<string, string[]> IHttpRequestInformation.Headers
+        IDictionary<string, string[]> IHttpRequestFeature.Headers
         {
             get
             {
@@ -126,7 +126,7 @@ namespace Microsoft.AspNet.Server.WebListener
             set { _requestHeaders = value; }
         }
 
-        string IHttpRequestInformation.Method
+        string IHttpRequestFeature.Method
         {
             get
             {
@@ -139,7 +139,7 @@ namespace Microsoft.AspNet.Server.WebListener
             set { _httpMethod = value; }
         }
 
-        string IHttpRequestInformation.Path
+        string IHttpRequestFeature.Path
         {
             get
             {
@@ -152,7 +152,7 @@ namespace Microsoft.AspNet.Server.WebListener
             set { _path = value; }
         }
 
-        string IHttpRequestInformation.PathBase
+        string IHttpRequestFeature.PathBase
         {
             get
             {
@@ -165,7 +165,7 @@ namespace Microsoft.AspNet.Server.WebListener
             set { _pathBase = value; }
         }
 
-        string IHttpRequestInformation.Protocol
+        string IHttpRequestFeature.Protocol
         {
             get
             {
@@ -190,7 +190,7 @@ namespace Microsoft.AspNet.Server.WebListener
             set { _httpProtocolVersion = value; }
         }
 
-        string IHttpRequestInformation.QueryString
+        string IHttpRequestFeature.QueryString
         {
             get
             {
@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.Server.WebListener
             set { _query = value; }
         }
 
-        string IHttpRequestInformation.Scheme
+        string IHttpRequestFeature.Scheme
         {
             get
             {
@@ -216,8 +216,8 @@ namespace Microsoft.AspNet.Server.WebListener
             set { _scheme = value; }
         }
         #endregion
-        #region IHttpConnection
-        bool IHttpConnection.IsLocal
+        #region IHttpConnectionFeature
+        bool IHttpConnectionFeature.IsLocal
         {
             get
             {
@@ -230,7 +230,7 @@ namespace Microsoft.AspNet.Server.WebListener
             set { _isLocal = value; }
         }
 
-        IPAddress IHttpConnection.LocalIpAddress
+        IPAddress IHttpConnectionFeature.LocalIpAddress
         {
             get
             {
@@ -243,7 +243,7 @@ namespace Microsoft.AspNet.Server.WebListener
             set { _localIpAddress = value; }
         }
 
-        IPAddress IHttpConnection.RemoteIpAddress
+        IPAddress IHttpConnectionFeature.RemoteIpAddress
         {
             get
             {
@@ -256,7 +256,7 @@ namespace Microsoft.AspNet.Server.WebListener
             set { _remoteIpAddress = value; }
         }
 
-        int IHttpConnection.LocalPort
+        int IHttpConnectionFeature.LocalPort
         {
             get
             {
@@ -269,7 +269,7 @@ namespace Microsoft.AspNet.Server.WebListener
             set { _localPort = value; }
         }
 
-        int IHttpConnection.RemotePort
+        int IHttpConnectionFeature.RemotePort
         {
             get
             {
@@ -282,8 +282,8 @@ namespace Microsoft.AspNet.Server.WebListener
             set { _remotePort = value; }
         }
         #endregion
-        #region IHttpTransportLayerSecurity
-        X509Certificate IHttpTransportLayerSecurity.ClientCertificate
+        #region IHttpTransportLayerSecurityFeature
+        X509Certificate IHttpTransportLayerSecurityFeature.ClientCertificate
         {
             get
             {
@@ -296,7 +296,7 @@ namespace Microsoft.AspNet.Server.WebListener
             set { _clientCert = value; }
         }
 
-        async Task IHttpTransportLayerSecurity.LoadAsync()
+        async Task IHttpTransportLayerSecurityFeature.LoadAsync()
         {
             if (_clientCert == null)
             {
@@ -304,8 +304,8 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
         #endregion
-        #region IHttpResponseInformation
-        Stream IHttpResponseInformation.Body
+        #region IHttpResponseFeature
+        Stream IHttpResponseFeature.Body
         {
             get
             {
@@ -318,7 +318,7 @@ namespace Microsoft.AspNet.Server.WebListener
             set { _responseStream = value; }
         }
 
-        IDictionary<string, string[]> IHttpResponseInformation.Headers
+        IDictionary<string, string[]> IHttpResponseFeature.Headers
         {
             get
             {
@@ -331,24 +331,24 @@ namespace Microsoft.AspNet.Server.WebListener
             set { _responseHeaders = value; }
         }
 
-        void IHttpResponseInformation.OnSendingHeaders(Action<object> callback, object state)
+        void IHttpResponseFeature.OnSendingHeaders(Action<object> callback, object state)
         {
             Response.OnSendingHeaders(callback, state);
         }
 
-        string IHttpResponseInformation.ReasonPhrase
+        string IHttpResponseFeature.ReasonPhrase
         {
             get { return Response.ReasonPhrase; }
             set { Response.ReasonPhrase = value; }
         }
 
-        int IHttpResponseInformation.StatusCode
+        int IHttpResponseFeature.StatusCode
         {
             get { return Response.StatusCode; }
             set { Response.StatusCode = value; }
         }
         #endregion
-        Task IHttpSendFile.SendFileAsync(string path, long offset, long? length, CancellationToken cancellation)
+        Task IHttpSendFileFeature.SendFileAsync(string path, long offset, long? length, CancellationToken cancellation)
         {
             return Response.SendFileAsync(path, offset, length, cancellation);
         }

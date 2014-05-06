@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Server.WebListener
             using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
-                var responseInfo = httpContext.GetFeature<IHttpResponseInformation>();
+                var responseInfo = httpContext.GetFeature<IHttpResponseFeature>();
                 var responseHeaders = responseInfo.Headers;
                 responseHeaders["WWW-Authenticate"] = new string[] { "custom1" };
                 return Task.FromResult(0);
@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Server.WebListener
             using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
-                var responseInfo = httpContext.GetFeature<IHttpResponseInformation>();
+                var responseInfo = httpContext.GetFeature<IHttpResponseFeature>();
                 var responseHeaders = responseInfo.Headers;
                 responseHeaders["WWW-Authenticate"] = new string[] { "custom1, and custom2", "custom3" };
                 return Task.FromResult(0);
@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.Server.WebListener
             using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
-                var responseInfo = httpContext.GetFeature<IHttpResponseInformation>();
+                var responseInfo = httpContext.GetFeature<IHttpResponseFeature>();
                 var responseHeaders = responseInfo.Headers;
                 responseHeaders["Custom-Header1"] = new string[] { "custom1, and custom2", "custom3" };
                 return Task.FromResult(0);
@@ -128,7 +128,7 @@ namespace Microsoft.AspNet.Server.WebListener
             using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
-                var responseInfo = httpContext.GetFeature<IHttpResponseInformation>();
+                var responseInfo = httpContext.GetFeature<IHttpResponseFeature>();
                 var responseHeaders = responseInfo.Headers;
                 responseHeaders["Connection"] = new string[] { "Close" };
                 return Task.FromResult(0);
@@ -205,7 +205,7 @@ namespace Microsoft.AspNet.Server.WebListener
             using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
-                var responseInfo = httpContext.GetFeature<IHttpResponseInformation>();
+                var responseInfo = httpContext.GetFeature<IHttpResponseFeature>();
                 var responseHeaders = responseInfo.Headers;
                 responseHeaders["Transfer-Encoding"] = new string[] { "chunked" };
                 return responseInfo.Body.WriteAsync(new byte[10], 0, 10);
@@ -233,7 +233,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 env =>
                 {
                     var httpContext = new DefaultHttpContext((IFeatureCollection)env);
-                    var responseInfo = httpContext.GetFeature<IHttpResponseInformation>();
+                    var responseInfo = httpContext.GetFeature<IHttpResponseFeature>();
                     var responseHeaders = responseInfo.Headers;
                     responseHeaders.Add("Custom1", new string[] { "value1a", "value1b" });
                     responseHeaders.Add("Custom2", new string[] { "value2a, value2b" });
@@ -263,7 +263,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 async env =>
                 {
                     var httpContext = new DefaultHttpContext((IFeatureCollection)env);
-                    var responseInfo = httpContext.GetFeature<IHttpResponseInformation>();
+                    var responseInfo = httpContext.GetFeature<IHttpResponseFeature>();
                     var responseHeaders = responseInfo.Headers;
                     responseHeaders.Add("Custom1", new string[] { "value1a", "value1b" });
                     responseHeaders.Add("Custom2", new string[] { "value2a, value2b" });

@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Server.WebListener
                     // General keys
                     // TODO: Assert.True(env.Get<CancellationToken>("owin.CallCancelled").CanBeCanceled);
 
-                    var requestInfo = httpContext.GetFeature<IHttpRequestInformation>();
+                    var requestInfo = httpContext.GetFeature<IHttpRequestFeature>();
 
                     // Request Keys
                     Assert.Equal("GET", requestInfo.Method);
@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Server.WebListener
                     // Server Keys
                     // TODO: Assert.NotNull(env.Get<IDictionary<string, object>>("server.Capabilities"));
 
-                    var connectionInfo = httpContext.GetFeature<IHttpConnection>();
+                    var connectionInfo = httpContext.GetFeature<IHttpConnectionFeature>();
                     Assert.Equal("::1", connectionInfo.RemoteIpAddress.ToString());
                     Assert.NotEqual(0, connectionInfo.RemotePort);
                     Assert.Equal("::1", connectionInfo.LocalIpAddress.ToString());
@@ -96,8 +96,8 @@ namespace Microsoft.AspNet.Server.WebListener
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 try
                 {
-                    var requestInfo = httpContext.GetFeature<IHttpRequestInformation>();
-                    var connectionInfo = httpContext.GetFeature<IHttpConnection>();
+                    var requestInfo = httpContext.GetFeature<IHttpRequestFeature>();
+                    var connectionInfo = httpContext.GetFeature<IHttpConnectionFeature>();
 
                     // Request Keys
                     Assert.Equal("http", requestInfo.Scheme);
@@ -137,7 +137,7 @@ namespace Microsoft.AspNet.Server.WebListener
             using (CreateServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
-                var requestInfo = httpContext.GetFeature<IHttpRequestInformation>();
+                var requestInfo = httpContext.GetFeature<IHttpRequestFeature>();
                 try
                 {
                     Assert.Equal(expectedPath, requestInfo.Path);
