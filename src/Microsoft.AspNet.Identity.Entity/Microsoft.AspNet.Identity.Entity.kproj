@@ -22,12 +22,10 @@
   <ItemGroup>
     <Compile Include="EntityRole.cs" />
     <Compile Include="EntityUser.cs" />
+    <Compile Include="IdentityBuilderExtensions.cs" />
     <Compile Include="IdentityContext.cs" />
     <Compile Include="RoleStore.cs" />
     <Compile Include="UserStore.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>

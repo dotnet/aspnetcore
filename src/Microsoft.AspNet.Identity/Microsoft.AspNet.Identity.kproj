@@ -22,6 +22,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClaimsIdentityFactory.cs" />
+    <Compile Include="ClaimTypeOptions.cs" />
     <Compile Include="Crypto.cs" />
     <Compile Include="IClaimsIdentityFactory.cs" />
     <Compile Include="IdentityBuilder.cs" />
@@ -31,7 +32,6 @@
     <Compile Include="IdentityRole.cs" />
     <Compile Include="IdentityServiceCollectionExtensions.cs" />
     <Compile Include="IdentityServices.cs" />
-    <Compile Include="IdentitySetup.cs" />
     <Compile Include="IdentityUser.cs" />
     <Compile Include="IdentityUserClaim.cs" />
     <Compile Include="IdentityUserLogin.cs" />
@@ -55,7 +55,10 @@
     <Compile Include="IUserTokenProvider.cs" />
     <Compile Include="IUserTwoFactorStore.cs" />
     <Compile Include="IUserValidator.cs" />
+    <Compile Include="LockoutOptions.cs" />
+    <Compile Include="LockoutPolicy.cs" />
     <Compile Include="PasswordHasher.cs" />
+    <Compile Include="PasswordOptions.cs" />
     <Compile Include="PasswordValidator.cs" />
     <Compile Include="PasswordVerificationResult.cs" />
     <Compile Include="Resources.Designer.cs" />
@@ -64,10 +67,8 @@
     <Compile Include="RoleValidator.cs" />
     <Compile Include="UserLoginInfo.cs" />
     <Compile Include="UserManager.cs" />
+    <Compile Include="UserOptions.cs" />
     <Compile Include="UserValidator.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
