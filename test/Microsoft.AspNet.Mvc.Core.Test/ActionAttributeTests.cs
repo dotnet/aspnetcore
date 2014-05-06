@@ -17,14 +17,14 @@
 
 #if NET45
 
-using Microsoft.AspNet.DependencyInjection.NestedProviders;
-using Microsoft.AspNet.Http;
-using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http;
+using Microsoft.Framework.DependencyInjection.NestedProviders;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Core.Test

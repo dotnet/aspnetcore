@@ -17,8 +17,8 @@
 
 using System;
 using System.Diagnostics.Contracts;
-using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.Filters
 {

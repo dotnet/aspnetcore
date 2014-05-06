@@ -16,15 +16,15 @@
 // permissions and limitations under the License.
 
 using System.Collections.Generic;
-using Microsoft.Framework.ConfigurationModel;
-using Microsoft.AspNet.DependencyInjection;
-using Microsoft.AspNet.DependencyInjection.NestedProviders;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.Razor.Compilation;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Security;
+using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.NestedProviders;
 
 namespace Microsoft.AspNet.Mvc
 {

@@ -5,11 +5,11 @@
   },
   "dependencies": {
     "Microsoft.AspNet.Http": "0.1-alpha-*",
-    "Microsoft.AspNet.DependencyInjection": "0.1-alpha-*",
     "Microsoft.AspNet.PipelineCore": "0.1-alpha-*",
     "Microsoft.AspNet.Testing": "0.1-alpha-*",
     "Microsoft.ComponentModel.DataAnnotations" : "0.1-alpha-*",
     "Microsoft.AspNet.Mvc.ModelBinding" : "",
+    "Microsoft.Framework.DependencyInjection": "0.1-alpha-*",
     "Newtonsoft.Json": "5.0.8",
     "Xunit.KRunner": "0.1-alpha-*",
     "xunit.abstractions": "2.0.0-aspnet-*",

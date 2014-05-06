@@ -5,12 +5,12 @@
   },
   "dependencies": {
     "Newtonsoft.Json": "5.0.8",
-    "Microsoft.AspNet.DependencyInjection": "0.1-alpha-*",
     "Microsoft.AspNet.Http": "0.1-alpha-*",
     "Microsoft.AspNet.Routing": "0.1-alpha-*",
     "Microsoft.AspNet.Security": "0.1-alpha-*",
     "Common": "",
     "Microsoft.AspNet.Mvc.ModelBinding": "",
+    "Microsoft.Framework.DependencyInjection": "0.1-alpha-*",
     "Microsoft.Net.Runtime.Interfaces":  "0.1-alpha-*",
     "Microsoft.AspNet.Security.DataProtection" : "0.1-alpha-*"
   },

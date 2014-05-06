@@ -16,10 +16,10 @@
 // permissions and limitations under the License.
 
 using Microsoft.AspNet;
-using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
+using Microsoft.Framework.DependencyInjection;
 using MvcSample.Web.Filters;
 
 namespace MvcSample.Web

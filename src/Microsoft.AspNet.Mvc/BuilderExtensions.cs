@@ -16,12 +16,10 @@
 // permissions and limitations under the License.
 
 using System;
-using System.Collections.Generic;
-using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
 
-namespace Microsoft.AspNet
+namespace Microsoft.AspNet.Builder
 {
     public static class BuilderExtensions
     {

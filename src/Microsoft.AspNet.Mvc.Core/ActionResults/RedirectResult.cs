@@ -16,8 +16,6 @@
 // permissions and limitations under the License.
 
 using System;
-using System.Threading.Tasks;
-using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Mvc.Core;
 
 namespace Microsoft.AspNet.Mvc

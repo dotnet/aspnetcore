@@ -6,7 +6,7 @@
   "dependencies": {
     "Microsoft.AspNet.Http" : "0.1-alpha-*",
     "Microsoft.Framework.ConfigurationModel" : "0.1-alpha-*",
-    "Microsoft.AspNet.DependencyInjection" : "0.1-alpha-*",
+    "Microsoft.Framework.DependencyInjection" : "0.1-alpha-*",
     "Microsoft.AspNet.FileSystems" : "0.1-alpha-*",
     "Microsoft.AspNet.Razor" : "0.1-alpha-*",
     "Microsoft.AspNet.RequestContainer": "0.1-alpha-*",

@@ -5,9 +5,9 @@
   },
   "dependencies": {
     "Common": "",
-    "Microsoft.AspNet.DependencyInjection": "0.1-alpha-*",
     "Microsoft.AspNet.Http": "0.1-alpha-*",
     "Microsoft.ComponentModel.DataAnnotations": "0.1-alpha-*",
+    "Microsoft.Framework.DependencyInjection": "0.1-alpha-*",
     "Newtonsoft.Json": "5.0.8"
   },
   "configurations": {
