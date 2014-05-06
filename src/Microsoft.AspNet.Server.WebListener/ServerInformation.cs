@@ -16,7 +16,7 @@
 // permissions and limitations under the License.
 
 using System.Reflection;
-using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
