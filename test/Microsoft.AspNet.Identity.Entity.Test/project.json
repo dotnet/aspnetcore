@@ -2,12 +2,19 @@
   "version": "0.1-alpha-*",
   "dependencies": {
     "Microsoft.AspNet.Http": "0.1-alpha-*",
+    "Microsoft.AspNet.Identity": "",
     "Microsoft.AspNet.Identity.Entity": "",
     "Microsoft.AspNet.PipelineCore": "0.1-alpha-*",
     "Microsoft.AspNet.RequestContainer": "0.1-alpha-*",
     "Microsoft.AspNet.Security.DataProtection": "0.1-alpha-*",
     "Microsoft.AspNet.Testing": "0.1-alpha-*",
     "Microsoft.Bcl.Immutable": "1.1.18-beta-*",
+    "Microsoft.Data.Entity": "0.1-alpha-*",
+    "Microsoft.Data.Entity.InMemory": "0.1-alpha-*",
+    "Microsoft.Data.Entity.Migrations": "0.1-alpha-*",
+    "Microsoft.Data.Entity.Relational": "0.1-alpha-*",
+    "Microsoft.Data.Entity.SqlServer": "0.1-alpha-*",
+    "Remotion.Linq": "1.15.13.0",
     "Microsoft.Framework.ConfigurationModel": "0.1-alpha-*",
     "Microsoft.Framework.DependencyInjection": "0.1-alpha-*",
     "Microsoft.Framework.Logging": "0.1-alpha-*",
@@ -18,6 +25,7 @@
     "xunit.core": "2.0.0-aspnet-*",
     "xunit.execution": "2.0.0-aspnet-*"
   },
+  "code": "**\\*.cs;..\\Shared\\*.cs",
   "configurations": {
     "net45": {
       "dependencies": {

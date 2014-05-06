@@ -1,13 +1,10 @@
 using System;
 using System.Reflection;
-using Microsoft.AspNet.ConfigurationModel;
-using Microsoft.AspNet.DependencyInjection;
+using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Identity
 {
-    /// <summary>
-    ///     Configuration for lockout
-    /// </summary>
     public class IdentityOptionsSetup : IOptionsSetup<IdentityOptions>
     {
         private readonly IConfiguration _config;
@@ -27,7 +24,7 @@ namespace Microsoft.AspNet.Identity
             ReadProperties(options.Lockout, _config.GetSubKey("identity:lockout"));
         }
 
-        // TODO: Move this somewhere common (Config?)
+        // TODO: Move this somewhere common (Config?) or at least the config.Get conversion
         public static void ReadProperties(object obj, IConfiguration config)
         {
             if (obj == null || config == null)
@@ -59,6 +56,14 @@ namespace Microsoft.AspNet.Identity
                     // TODO: what do we do about errors?
                 }
             }
+        }
+    }
+
+    public static class ConfigExtensions
+    {
+        public static T Get<T>(this IConfiguration config, string key)
+        {
+            
         }
     }
 }

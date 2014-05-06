@@ -98,44 +98,6 @@ namespace Microsoft.AspNet.Identity.Test
         //    const string usernameClaimType = "namez";
         //    const string useridClaimType = "idz";
         //    const string securityStampClaimType = "stampz";
-
-<<<<<<< HEAD
-            var dic = new Dictionary<string, string>
-            { 
-                {"role", roleClaimType},
-                {"username", usernameClaimType},
-                {"userid", useridClaimType},
-                {"securitystamp", securityStampClaimType}
-            };
-            var config = new Configuration {new MemoryConfigurationSource(dic)};
-            Assert.Equal(roleClaimType, config.Get("role"));
-            var options = new ClaimTypeOptions(config);
-            Assert.Equal(roleClaimType, options.Role);
-            Assert.Equal(useridClaimType, options.UserId);
-            Assert.Equal(usernameClaimType, options.UserName);
-            Assert.Equal(securityStampClaimType, options.SecurityStamp);
-        }
-
-        [Fact]
-        public void PasswordOptionsFromConfig()
-        {
-            var dic = new Dictionary<string, string>
-            { 
-                {"RequiredLength", "10"},
-                {"RequireNonLetterOrDigit", "false"},
-                {"RequireUpperCase", "false"},
-                {"RequireDigit", "false"},
-                {"RequireLowerCase", "false"}
-            };
-            var config = new Configuration { new MemoryConfigurationSource(dic) };
-            var options = new PasswordOptions(config);
-            Assert.False(options.RequireDigit);
-            Assert.False(options.RequireLowercase);
-            Assert.False(options.RequireNonLetterOrDigit);
-            Assert.False(options.RequireUppercase);
-            Assert.Equal(10, options.RequiredLength);
-        }
-=======
         //    var dic = new Dictionary<string, string>
         //    { 
         //        {"role", roleClaimType},
@@ -171,7 +133,5 @@ namespace Microsoft.AspNet.Identity.Test
         //    Assert.False(options.RequireUppercase);
         //    Assert.Equal(10, options.RequiredLength);
         //}
->>>>>>> Implement Config options
-
     }
 }
