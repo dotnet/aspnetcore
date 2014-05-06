@@ -14,7 +14,7 @@
 // NON-INFRINGEMENT.
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
-
+/*
 #if NET45
 using Microsoft.AspNet.WebSockets;
 
@@ -29,3 +29,4 @@ namespace Owin
     }
 }
 #endif
+*/

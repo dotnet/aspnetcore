@@ -7,7 +7,6 @@
      {
             "net45" : {
                  "dependencies": {
-                      "Owin": "1.0"
                  }
             }
      }

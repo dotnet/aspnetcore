@@ -54,7 +54,6 @@
     <Compile Include="NativeInterop\SSPIHandle.cs" />
     <Compile Include="NativeInterop\UnsafeNativeMethods.cs" />
     <Compile Include="WebListener.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RequestProcessing\BoundaryType.cs" />
     <Compile Include="RequestProcessing\ClientCertLoader.cs" />
     <Compile Include="RequestProcessing\HeaderEncoding.cs" />

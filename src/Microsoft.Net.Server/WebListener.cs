@@ -39,7 +39,7 @@ namespace Microsoft.Net.Server
     using AppFunc = Func<object, Task>;
 
     /// <summary>
-    /// An HTTP server wrapping the Http.Sys APIs that accepts requests and passes them on to the given OWIN application.
+    /// An HTTP server wrapping the Http.Sys APIs that accepts requests.
     /// </summary>
     public sealed class WebListener : IDisposable
     {

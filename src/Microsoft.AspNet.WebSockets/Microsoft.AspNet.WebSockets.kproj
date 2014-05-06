@@ -40,7 +40,6 @@
     <Compile Include="NativeInterop\SafeWebSocketHandle.cs" />
     <Compile Include="NativeInterop\UnsafeNativeMethods.cs" />
     <Compile Include="OwinWebSocketWrapper.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServerWebSocket.cs" />
     <Compile Include="WebSocket.cs" />
     <Compile Include="WebSocketBase.cs" />
