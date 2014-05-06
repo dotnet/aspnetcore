@@ -18,9 +18,9 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Extensions;
+using Microsoft.AspNet.Builder.Extensions;
 
-namespace Microsoft.AspNet
+namespace Microsoft.AspNet.Builder
 {
     using Predicate = Func<HttpContext, bool>;
     using PredicateAsync = Func<HttpContext, Task<bool>>;

@@ -17,12 +17,13 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.PipelineCore;
 using Shouldly;
 using Xunit;
 
-namespace Microsoft.AspNet.Http.Extensions
+namespace Microsoft.AspNet.Builder.Extensions
 {
     public class MapPathMiddlewareTests
     {

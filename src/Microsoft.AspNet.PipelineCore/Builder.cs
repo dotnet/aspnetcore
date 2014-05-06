@@ -21,7 +21,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 
-namespace Microsoft.AspNet.PipelineCore
+namespace Microsoft.AspNet.Builder
 {
     public class Builder : IBuilder
     {

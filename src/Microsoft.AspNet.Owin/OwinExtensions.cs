@@ -23,7 +23,7 @@ using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Owin;
 using Microsoft.AspNet.PipelineCore;
 
-namespace Microsoft.AspNet
+namespace Microsoft.AspNet.Builder
 {
     using AppFunc = Func<IDictionary<string, object>, Task>;
     using CreateMiddleware = Func<

@@ -19,7 +19,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 
-namespace Microsoft.AspNet
+namespace Microsoft.AspNet.Builder
 {
     public static class UseExtensions
     {

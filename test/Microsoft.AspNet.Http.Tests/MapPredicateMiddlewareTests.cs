@@ -18,11 +18,12 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.PipelineCore;
 using Xunit;
 
-namespace Microsoft.AspNet.Http.Extensions
+namespace Microsoft.AspNet.Builder.Extensions
 {
     using AppFunc = Func<IDictionary<string, object>, Task>;
     using Predicate = Func<HttpContext, bool>;

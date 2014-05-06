@@ -17,9 +17,9 @@
 
 using System;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Extensions;
+using Microsoft.AspNet.Builder.Extensions;
 
-namespace Microsoft.AspNet
+namespace Microsoft.AspNet.Builder
 {
     public static class MapExtensions
     {

@@ -16,8 +16,9 @@
 // permissions and limitations under the License.
 
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http;
 
-namespace Microsoft.AspNet.Http.Extensions
+namespace Microsoft.AspNet.Builder.Extensions
 {
     public class MapWhenMiddleware
     {

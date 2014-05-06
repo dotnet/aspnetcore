@@ -18,7 +18,7 @@
 using Microsoft.AspNet.Http;
 using Xunit;
 
-namespace Microsoft.AspNet.PipelineCore.Tests
+namespace Microsoft.AspNet.Builder.Tests
 {
     public class BuilderTests
     {

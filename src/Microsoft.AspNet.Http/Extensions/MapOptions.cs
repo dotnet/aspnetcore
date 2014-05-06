@@ -15,7 +15,9 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
-namespace Microsoft.AspNet.Http.Extensions
+using Microsoft.AspNet.Http;
+
+namespace Microsoft.AspNet.Builder.Extensions
 {
     /// <summary>
     /// Options for the Map middleware

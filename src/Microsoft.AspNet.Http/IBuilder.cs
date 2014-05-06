@@ -17,7 +17,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Http
+namespace Microsoft.AspNet.Builder
 {
     public interface IBuilder
     {

@@ -18,7 +18,7 @@
 using System;
 using Microsoft.AspNet.Http;
 
-namespace Microsoft.AspNet
+namespace Microsoft.AspNet.Builder
 {
     public static class RunExtensions
     {

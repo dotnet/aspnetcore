@@ -20,7 +20,7 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNet.HttpFeature;
 
-namespace Microsoft.AspNet.Http.Extensions
+namespace Microsoft.AspNet.Builder.Extensions
 {
     public class FakeHttpRequestFeature : IHttpRequestFeature
     {

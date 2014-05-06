@@ -17,8 +17,9 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http;
 
-namespace Microsoft.AspNet.Http.Extensions
+namespace Microsoft.AspNet.Builder.Extensions
 {
     /// <summary>
     /// Options for the MapWhen middleware
