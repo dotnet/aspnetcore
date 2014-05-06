@@ -58,12 +58,4 @@ namespace Microsoft.AspNet.Identity
             }
         }
     }
-
-    public static class ConfigExtensions
-    {
-        public static T Get<T>(this IConfiguration config, string key)
-        {
-            
-        }
-    }
 }

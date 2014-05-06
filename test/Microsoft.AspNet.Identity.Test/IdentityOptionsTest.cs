@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using Microsoft.Framework.ConfigurationModel;
-using Microsoft.Framework.ConfigurationModel.Sources;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
 using Xunit;
