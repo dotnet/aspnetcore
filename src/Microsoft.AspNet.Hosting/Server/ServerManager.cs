@@ -18,7 +18,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNet.DependencyInjection;
+using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Hosting.Server
 {

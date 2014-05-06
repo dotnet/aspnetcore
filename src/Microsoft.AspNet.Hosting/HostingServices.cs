@@ -16,12 +16,12 @@
 // permissions and limitations under the License.
 
 using System.Collections.Generic;
-using Microsoft.Framework.ConfigurationModel;
-using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Hosting.Builder;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Hosting.Startup;
 using Microsoft.AspNet.Security.DataProtection;
+using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Hosting
 {

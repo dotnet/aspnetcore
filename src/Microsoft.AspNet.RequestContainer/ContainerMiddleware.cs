@@ -20,9 +20,9 @@ using System;
 using System.Runtime.Remoting.Messaging;
 #endif
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Http;
+using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.RequestContainer
 {

@@ -17,17 +17,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.Versioning;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
-using Microsoft.Framework.ConfigurationModel;
-using Microsoft.AspNet.DependencyInjection;
-using Microsoft.AspNet.DependencyInjection.Fallback;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Hosting.Startup;
+using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Net.Runtime;
-using Microsoft.AspNet.Builder;
 
 namespace Microsoft.AspNet.TestHost
 {

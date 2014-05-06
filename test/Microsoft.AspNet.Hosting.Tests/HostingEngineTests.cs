@@ -18,13 +18,12 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
-using Microsoft.Framework.ConfigurationModel;
-using Microsoft.AspNet.DependencyInjection;
-using Microsoft.AspNet.DependencyInjection.Fallback;
-using Microsoft.AspNet.Hosting.Server;
-using Xunit;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Hosting.Server;
+using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.Fallback;
+using Xunit;
 
 namespace Microsoft.AspNet.Hosting
 {

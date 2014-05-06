@@ -1,7 +1,7 @@
 {
   "version": "0.1-alpha-*",
   "dependencies": {
-    "Microsoft.AspNet.DependencyInjection": "0.1-alpha-*",
+    "Microsoft.Framework.DependencyInjection": "0.1-alpha-*",
     "Microsoft.Framework.ConfigurationModel": "0.1-alpha-*",
     "Microsoft.AspNet.PipelineCore": "0.1-alpha-*",
     "Microsoft.AspNet.Http": "0.1-alpha-*",

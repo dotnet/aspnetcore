@@ -17,10 +17,10 @@
 
 using System;
 using System.Threading;
-using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.Hosting.Builder;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Hosting.Startup;
+using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Hosting
 {

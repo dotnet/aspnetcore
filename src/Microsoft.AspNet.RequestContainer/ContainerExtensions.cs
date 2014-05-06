@@ -16,13 +16,12 @@
 // permissions and limitations under the License.
 
 using System;
-using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.DependencyInjection;
-using Microsoft.AspNet.DependencyInjection.Fallback;
+using System.Reflection;
 using Microsoft.AspNet.RequestContainer;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.Fallback;
 
 namespace Microsoft.AspNet.Builder
 {

@@ -16,8 +16,8 @@
 // permissions and limitations under the License.
 
 using System;
-using Microsoft.AspNet.DependencyInjection;
-using Microsoft.AspNet.DependencyInjection.Fallback;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.Fallback;
 
 namespace Microsoft.AspNet.Hosting
 {

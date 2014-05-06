@@ -18,8 +18,8 @@
 using System;
 using System.IO;
 using Microsoft.Framework.ConfigurationModel;
-using Microsoft.AspNet.DependencyInjection;
-using Microsoft.AspNet.DependencyInjection.Fallback;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Net.Runtime;
 
 namespace Microsoft.AspNet.Hosting
