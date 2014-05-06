@@ -12,7 +12,7 @@
           "Microsoft.AspNet.Server.WebListener" : "",
           "Microsoft.Net.Server" : "",
           "Microsoft.AspNet.Http" : "0.1-alpha-*",
-          "Microsoft.AspNet.ConfigurationModel": "0.1-alpha-*",
+          "Microsoft.Framework.ConfigurationModel": "0.1-alpha-*",
           "Microsoft.AspNet.HttpFeature" : "0.1-alpha-*",
           "Microsoft.AspNet.FeatureModel" : "0.1-alpha-*",
           "Microsoft.AspNet.PipelineCore" : "0.1-alpha-*",
