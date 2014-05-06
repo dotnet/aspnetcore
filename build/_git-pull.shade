@@ -2,7 +2,7 @@
 
 default gitBranch=''
 
-var gitCommand='pull ${gitUri}'
-set gitCommand='${gitCommand} ${gitBranch}' if='!string.IsNullOrEmpty(gitBranch)'
+var gitCommand='pull --ff-only ${gitUri}'
+set gitCommand='${gitCommand} ${gitBranch}:${gitBranch}' if='!string.IsNullOrEmpty(gitBranch)'
 
 git 
