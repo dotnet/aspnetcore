@@ -15,23 +15,24 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
+using Microsoft.AspNet.Identity.Test;
 using Microsoft.AspNet.Testing;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Metadata;
 using Microsoft.Data.Entity.InMemory;
 using Microsoft.Data.Entity.SqlServer;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.Fallback;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.Entity.Test
 {
-    public class UserStoreTest
+    public class InMemoryUserStoreTest
     {
         class ApplicationUserManager : UserManager<EntityUser>
         {
@@ -49,7 +50,7 @@ namespace Microsoft.AspNet.Identity.Entity.Test
 #endif
             services.AddSingleton<IOptionsAccessor<IdentityOptions>, OptionsAccessor<IdentityOptions>>();
             services.AddInstance<DbContext>(new IdentityContext());
-            services.AddTransient<IUserStore<EntityUser>, UserStore>();
+            services.AddTransient<IUserStore<EntityUser>, InMemoryInMemoryUserStore>();
             services.AddSingleton<ApplicationUserManager, ApplicationUserManager>();
             var provider = services.BuildServiceProvider();
             var manager = provider.GetService<ApplicationUserManager>();
@@ -67,7 +68,7 @@ namespace Microsoft.AspNet.Identity.Entity.Test
             services.AddEntityFramework(s => s.AddInMemoryStore());
 #endif
             // TODO: this needs to construct a new instance of InMemoryStore
-            var store = new UserStore(new IdentityContext());
+            var store = new InMemoryInMemoryUserStore(new IdentityContext());
             services.AddIdentity<EntityUser, EntityRole>(s =>
             {
                 s.AddUserStore(() => store);
@@ -84,7 +85,7 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         //public async Task CanUseSingletonGenericManagerInstance()
         //{
         //    var services = new ServiceCollection();
-        //    var store = new UserStore(new IdentityContext());
+        //    var store = new EntityUserStore(new IdentityContext());
         //    services.AddIdentity<EntityUser>(s =>
         //    {
         //        s.UseStore(() => store);
@@ -98,9 +99,9 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         //}
 
         [Fact]
-        public async Task UserStoreMethodsThrowWhenDisposedTest()
+        public async Task EntityUserStoreMethodsThrowWhenDisposedTest()
         {
-            var store = new UserStore(new IdentityContext());
+            var store = new InMemoryInMemoryUserStore(new IdentityContext());
             store.Dispose();
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.AddClaimAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.AddLoginAsync(null, null));
@@ -130,10 +131,10 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         }
 
         [Fact]
-        public async Task UserStorePublicNullCheckTest()
+        public async Task EntityUserStorePublicNullCheckTest()
         {
-            Assert.Throws<ArgumentNullException>("context", () => new UserStore(null));
-            var store = new UserStore(new IdentityContext());
+            Assert.Throws<ArgumentNullException>("context", () => new InMemoryInMemoryUserStore(null));
+            var store = new InMemoryInMemoryUserStore(new IdentityContext());
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.GetUserIdAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.GetUserNameAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.SetUserNameAsync(null, null));

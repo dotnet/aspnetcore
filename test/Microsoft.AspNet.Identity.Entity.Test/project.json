@@ -2,12 +2,17 @@
   "version": "0.1-alpha-*",
   "dependencies": {
     "Microsoft.AspNet.Http": "0.1-alpha-*",
+    "Microsoft.AspNet.Identity": "",
     "Microsoft.AspNet.Identity.Entity": "",
     "Microsoft.AspNet.PipelineCore": "0.1-alpha-*",
     "Microsoft.AspNet.RequestContainer": "0.1-alpha-*",
     "Microsoft.AspNet.Security.DataProtection": "0.1-alpha-*",
     "Microsoft.AspNet.Testing": "0.1-alpha-*",
-    "Microsoft.Bcl.Immutable": "1.1.18-beta-*",
+    "Microsoft.Data.Common": "0.1-alpha-*",
+    "Microsoft.Data.Entity": "0.1-alpha-*",
+    "Microsoft.Data.Entity.Relational": "0.1-alpha-*",
+    "Microsoft.Data.Entity.SqlServer": "0.1-alpha-*",
+    "Microsoft.Data.Entity.InMemory": "0.1-alpha-*",
     "Microsoft.Framework.ConfigurationModel": "0.1-alpha-*",
     "Microsoft.Framework.DependencyInjection": "0.1-alpha-*",
     "Microsoft.Framework.Logging": "0.1-alpha-*",
@@ -28,6 +33,7 @@
       }
     }
   },
+  "code": "**\\*.cs;..\\Shared\\*.cs",
   "commands": {
     "test": "Xunit.KRunner"
   }

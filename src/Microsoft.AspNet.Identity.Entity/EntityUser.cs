@@ -45,7 +45,6 @@ namespace Microsoft.AspNet.Identity.Entity
             Claims = new List<TClaim>();
             Roles = new List<TRole>();
             Logins = new List<TLogin>();
-
         }
 
         public virtual TKey Id { get; set; }

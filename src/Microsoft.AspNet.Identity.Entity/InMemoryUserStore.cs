@@ -27,18 +27,18 @@ using Microsoft.Data.Entity;
 
 namespace Microsoft.AspNet.Identity.Entity
 {
-    public class UserStore :
-        UserStore<EntityUser>
+    public class InMemoryInMemoryUserStore :
+        InMemoryUserStore<EntityUser>
     {
-        public UserStore(DbContext context) : base(context) { }
+        public InMemoryInMemoryUserStore(DbContext context) : base(context) { }
     }
 
-    public class UserStore<TUser> : UserStore<TUser, EntityRole, string, IdentityUserLogin, IdentityUserRole, IdentityUserClaim> where TUser:EntityUser
+    public class InMemoryUserStore<TUser> : InMemoryUserStore<TUser, EntityRole, string, IdentityUserLogin, IdentityUserRole, IdentityUserClaim> where TUser:EntityUser
     {
-        public UserStore(DbContext context) : base(context) { }
+        public InMemoryUserStore(DbContext context) : base(context) { }
     }
 
-    public class UserStore<TUser, TRole, TKey, TUserLogin, TUserRole, TUserClaim> :
+    public class InMemoryUserStore<TUser, TRole, TKey, TUserLogin, TUserRole, TUserClaim> :
         IUserLoginStore<TUser>,
         IUserClaimStore<TUser>,
         IUserRoleStore<TUser>,
@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Identity.Entity
     {
         private bool _disposed;
 
-        public UserStore(DbContext context)
+        public InMemoryUserStore(DbContext context)
         {
             if (context == null)
             {

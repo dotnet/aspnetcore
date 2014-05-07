@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Identity.Entity.Test
 {
     public static class TestIdentityFactory
     {
-        public static DbContext CreateContext()
+        public static IdentityContext CreateContext()
         {
             var serviceProvider = new ServiceCollection()
 //#if NET45
@@ -46,10 +46,10 @@ namespace Microsoft.AspNet.Identity.Entity.Test
             var db = new IdentityContext(serviceProvider);
              
             // TODO: Recreate DB, doesn't support String ID or Identity context yet
-            //if (!db.Database.Exists())
-            //{
-            //    db.Database.Create();
-            //}
+            if (!db.Database.Exists())
+            {
+                db.Database.Create();
+            }
 
             // TODO: CreateAsync DB?
             return db;
@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Identity.Entity.Test
             var services = new ServiceCollection();
             services.AddTransient<IUserValidator<EntityUser>, UserValidator<EntityUser>>();
             services.AddTransient<IPasswordValidator<IdentityUser>, PasswordValidator<IdentityUser>>();
-            services.AddInstance<IUserStore<EntityUser>>(new UserStore<EntityUser>(context));
+            services.AddInstance<IUserStore<EntityUser>>(new InMemoryUserStore<EntityUser>(context));
             services.AddSingleton<UserManager<EntityUser>, UserManager<EntityUser>>();
             var options = new IdentityOptions
             {
@@ -92,7 +92,7 @@ namespace Microsoft.AspNet.Identity.Entity.Test
             var optionsAccessor = new OptionsAccessor<IdentityOptions>(new[] { new TestSetup(options) });
             //services.AddInstance<IOptionsAccessor<IdentityOptions>>(new OptionsAccessor<IdentityOptions>(new[] { new TestSetup(options) }));
             //return services.BuildServiceProvider().GetService<UserManager<EntityUser>>();
-            return new UserManager<EntityUser>(services.BuildServiceProvider(), new UserStore<EntityUser>(context), optionsAccessor);
+            return new UserManager<EntityUser>(services.BuildServiceProvider(), new InMemoryUserStore<EntityUser>(context), optionsAccessor);
         }
 
         public static UserManager<EntityUser> CreateManager()
@@ -104,9 +104,9 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         {
             var services = new ServiceCollection();
             services.AddTransient<IRoleValidator<EntityRole>, RoleValidator<EntityRole>>();
-            services.AddInstance<IRoleStore<EntityRole>>(new RoleStore<EntityRole, string>(context));
+            services.AddInstance<IRoleStore<EntityRole>>(new EntityRoleStore<EntityRole, string>(context));
 //            return services.BuildServiceProvider().GetService<RoleManager<EntityRole>>();
-            return new RoleManager<EntityRole>(services.BuildServiceProvider(), new RoleStore<EntityRole, string>(context));
+            return new RoleManager<EntityRole>(services.BuildServiceProvider(), new EntityRoleStore<EntityRole, string>(context));
         }
 
         public static RoleManager<EntityRole> CreateRoleManager()

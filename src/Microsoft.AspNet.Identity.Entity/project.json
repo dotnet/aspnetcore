@@ -14,7 +14,8 @@
     "net45": {
       "dependencies": {
         "System.Runtime": "",
-        "System.Collections": ""
+        "System.Collections": "",
+        "System.Data": ""
       }
     },
     "k10": {

@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Identity
             Errors = errors;
         }
 
-        private IdentityResult(bool success)
+        protected IdentityResult(bool success)
         {
             Succeeded = success;
             Errors = new string[0];
