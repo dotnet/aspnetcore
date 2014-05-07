@@ -2,9 +2,9 @@
   "version": "0.1-alpha-*",
   "dependencies": {
     "Microsoft.AspNet.DependencyInjection": "0.1-alpha-*",
-    "Microsoft.AspNet.PipelineCore": "0.1-alpha-*",
+    "Microsoft.AspNet.FeatureModel": "0.1-alpha-*",
     "Microsoft.AspNet.Http": "0.1-alpha-*",
-    "Microsoft.AspNet.FeatureModel": "0.1-alpha-*"
+    "Microsoft.AspNet.PipelineCore": "0.1-alpha-*"
   },
   "configurations": {
     "net45": {},

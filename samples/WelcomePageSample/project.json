@@ -3,18 +3,18 @@
   "dependencies": {
     "Helios" :  "0.1-alpha-*",
     "Microsoft.AspNet.Diagnostics": "",
-    "Microsoft.AspNet.HttpFeature": "0.1-alpha-*",
+    "Microsoft.AspNet.Hosting": "0.1-alpha-*",
     "Microsoft.AspNet.Http": "0.1-alpha-*",
-    "Microsoft.AspNet.Server.WebListener": "0.1-alpha-*",
-    "Microsoft.AspNet.Hosting": "0.1-alpha-*"
+    "Microsoft.AspNet.HttpFeature": "0.1-alpha-*",
+    "Microsoft.AspNet.Server.WebListener": "0.1-alpha-*"
   },
   "commands": { "web": "Microsoft.AspNet.Hosting server.name=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001" },
   "configurations": {
     "net45": { },
     "k10": {
       "dependencies": {
-        "System.Console": "4.0.0.0",
         "System.Collections": "4.0.0.0",
+        "System.Console": "4.0.0.0",
         "System.Diagnostics.Debug": "4.0.10.0",
         "System.Diagnostics.Tools": "4.0.0.0",
         "System.Globalization": "4.0.10.0",
@@ -25,9 +25,9 @@
         "System.Runtime": "4.0.20.0",
         "System.Runtime.Extensions": "4.0.10.0",
         "System.Runtime.InteropServices": "4.0.20.0",
+        "System.Security.Claims":  "0.1-alpha-*",
         "System.Text.Encoding": "4.0.20.0",
-        "System.Threading.Tasks": "4.0.10.0",
-        "System.Security.Claims":  "0.1-alpha-*"
+        "System.Threading.Tasks": "4.0.10.0"
       }
     }
   }
