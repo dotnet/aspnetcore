@@ -13,8 +13,7 @@ functions
                 return "t" + DateTime.UtcNow.ToString("yyMMddHHmmss");
             }
 
-            buildNumber = "000" + buildNumber;
-            buildNumber = buildNumber.Substring(buildNumber.Length - 3);
+            buildNumber = "build-" + buildNumber.PadLeft(4, (char)'0');
 
             return buildNumber;
                    
