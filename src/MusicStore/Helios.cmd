@@ -1,3 +1,5 @@
+SET KRE_HOME=%USERPROFILE%\.kre\
+
 REM copy the AspNet.Loader.dll to the bin folder
 call CopyAspNetLoader.cmd
 
