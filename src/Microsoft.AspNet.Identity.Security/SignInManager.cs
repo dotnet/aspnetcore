@@ -167,7 +167,7 @@ namespace Microsoft.AspNet.Identity.Security
             {
                 return SignInStatus.Failure;
             }
-            if (await UserManager.IsLockedOutAsync(user))
+            if (UserManager.SupportsUserLockout && await UserManager.IsLockedOutAsync(user))
             {
                 return SignInStatus.LockedOut;
             }
@@ -177,7 +177,7 @@ namespace Microsoft.AspNet.Identity.Security
                 return SignInStatus.Success;
                 //TODO: return await SignInOrTwoFactor(user, isPersistent);
             }
-            if (shouldLockout)
+            if (UserManager.SupportsUserLockout && shouldLockout)
             {
                 // If lockout is requested, increment access failed count which might lock out the user
                 await UserManager.AccessFailedAsync(user);

@@ -180,6 +180,7 @@ namespace Microsoft.AspNet.Identity.Security.Test
             // Setup
             var user = new TestUser { UserName = "Foo" };
             var manager = MockHelpers.MockUserManager<TestUser>();
+            manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
             manager.Setup(m => m.IsLockedOutAsync(user, CancellationToken.None)).ReturnsAsync(true).Verifiable();
             manager.Setup(m => m.FindByNameAsync(user.UserName, CancellationToken.None)).ReturnsAsync(user).Verifiable();
             var context = new Mock<HttpContext>();
@@ -203,6 +204,7 @@ namespace Microsoft.AspNet.Identity.Security.Test
             // Setup
             var user = new TestUser { UserName = "Foo" };
             var manager = MockHelpers.MockUserManager<TestUser>();
+            manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
             manager.Setup(m => m.IsLockedOutAsync(user, CancellationToken.None)).ReturnsAsync(false).Verifiable();
             manager.Setup(m => m.FindByNameAsync(user.UserName, CancellationToken.None)).ReturnsAsync(user).Verifiable();
             manager.Setup(m => m.CheckPasswordAsync(user, "password", CancellationToken.None)).ReturnsAsync(true).Verifiable();
@@ -258,6 +260,7 @@ namespace Microsoft.AspNet.Identity.Security.Test
             // Setup
             var user = new TestUser { UserName = "Foo" };
             var manager = MockHelpers.MockUserManager<TestUser>();
+            manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
             manager.Setup(m => m.IsLockedOutAsync(user, CancellationToken.None)).ReturnsAsync(false).Verifiable();
             manager.Setup(m => m.FindByNameAsync(user.UserName, CancellationToken.None)).ReturnsAsync(user).Verifiable();
             manager.Setup(m => m.CheckPasswordAsync(user, "bogus", CancellationToken.None)).ReturnsAsync(false).Verifiable();
@@ -305,6 +308,7 @@ namespace Microsoft.AspNet.Identity.Security.Test
                 lockedout = true;
                 return Task.FromResult(IdentityResult.Success);
             }).Verifiable();
+            manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
             manager.Setup(m => m.IsLockedOutAsync(user, CancellationToken.None)).Returns(() => Task.FromResult(lockedout));
             manager.Setup(m => m.FindByNameAsync(user.UserName, CancellationToken.None)).ReturnsAsync(user).Verifiable();
             manager.Setup(m => m.CheckPasswordAsync(user, "bogus", CancellationToken.None)).ReturnsAsync(false).Verifiable();
