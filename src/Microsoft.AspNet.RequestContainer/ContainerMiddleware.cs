@@ -23,7 +23,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection;
-
+#if NET45
+using System.Runtime.Remoting;
+#endif
 namespace Microsoft.AspNet.RequestContainer
 {
     public class ContainerMiddleware
@@ -64,7 +66,8 @@ namespace Microsoft.AspNet.RequestContainer
         private HttpContext AccessRootHttpContext()
         {
 #if NET45
-            return CallContext.LogicalGetData(LogicalDataKey) as HttpContext;
+            var handle = CallContext.LogicalGetData(LogicalDataKey) as ObjectHandle;
+            return handle != null ? handle.Unwrap() as HttpContext : null;
 #else
             throw new Exception("TODO: CallContext not available");
 #endif 
@@ -73,9 +76,9 @@ namespace Microsoft.AspNet.RequestContainer
         private HttpContext ExchangeRootHttpContext(HttpContext httpContext)
         {
 #if NET45
-            var prior = CallContext.LogicalGetData(LogicalDataKey) as HttpContext;
-            CallContext.LogicalSetData(LogicalDataKey, httpContext);
-            return prior;
+            var prior = CallContext.LogicalGetData(LogicalDataKey) as ObjectHandle;
+            CallContext.LogicalSetData(LogicalDataKey, new ObjectHandle(httpContext));
+            return prior != null ? prior.Unwrap() as HttpContext : null;
 #else
             return null;
 #endif
