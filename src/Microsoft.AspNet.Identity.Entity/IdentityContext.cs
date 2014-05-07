@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Identity.Entity
         protected override void OnConfiguring(DbContextOptions builder)
         {
 //#if NET45
-//            builder.SqlServerConnectionString(@"Server=(localdb)\v11.0;Database=IdentityDb3;Trusted_Connection=True;");
+//            builder.UseSqlServer(@"Server=(localdb)\v11.0;Database=IdentityDb3;Trusted_Connection=True;");
 //#else
             builder.UseInMemoryStore();
 //#endif
