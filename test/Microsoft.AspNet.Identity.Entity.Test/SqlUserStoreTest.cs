@@ -16,6 +16,7 @@
 //// permissions and limitations under the License.
 
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Identity.Test;
 using Microsoft.AspNet.Testing;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Metadata;
@@ -83,7 +84,7 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         }
 
         [Fact]
-        public async Task CanCreateUserUsingEF()
+        public void CanCreateUserUsingEF()
         {
             using (var db = CreateContext())
             {

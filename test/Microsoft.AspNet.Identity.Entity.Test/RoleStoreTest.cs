@@ -17,6 +17,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Identity.Test;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.InMemory;
 using Microsoft.Framework.DependencyInjection;

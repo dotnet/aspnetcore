@@ -1,13 +1,11 @@
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Identity.Entity;
-using Microsoft.AspNet.PipelineCore;
+using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Identity.Test;
+using Microsoft.Data.Entity;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
 using System;
 using System.Threading.Tasks;
-using Microsoft.Data.Entity;
 using Xunit;
-using Microsoft.AspNet.Builder;
 
 namespace Microsoft.AspNet.Identity.Entity.Test
 {
