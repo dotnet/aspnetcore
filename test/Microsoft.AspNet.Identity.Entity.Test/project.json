@@ -8,11 +8,12 @@
     "Microsoft.AspNet.RequestContainer": "0.1-alpha-*",
     "Microsoft.AspNet.Security.DataProtection": "0.1-alpha-*",
     "Microsoft.AspNet.Testing": "0.1-alpha-*",
-    "Microsoft.Data.Common": "0.1-alpha-*",
     "Microsoft.Data.Entity": "0.1-alpha-*",
+    "Microsoft.Data.Entity.InMemory": "0.1-alpha-*",
+    "Microsoft.Data.Entity.Migrations": "0.1-alpha-*",
     "Microsoft.Data.Entity.Relational": "0.1-alpha-*",
     "Microsoft.Data.Entity.SqlServer": "0.1-alpha-*",
-    "Microsoft.Data.Entity.InMemory": "0.1-alpha-*",
+    "Remotion.Linq": "1.15.13.0",
     "Microsoft.Framework.ConfigurationModel": "0.1-alpha-*",
     "Microsoft.Framework.DependencyInjection": "0.1-alpha-*",
     "Microsoft.Framework.Logging": "0.1-alpha-*",
@@ -23,6 +24,7 @@
     "xunit.core": "2.0.0-aspnet-*",
     "xunit.execution": "2.0.0-aspnet-*"
   },
+  "code": "**\\*.cs;..\\Shared\\*.cs",
   "configurations": {
     "net45": {
       "dependencies": {

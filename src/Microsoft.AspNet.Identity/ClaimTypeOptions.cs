@@ -20,11 +20,6 @@ namespace Microsoft.AspNet.Identity
             UserName = ClaimTypes.Name;
         }
 
-        public ClaimTypeOptions(IConfiguration config) : this()
-        {
-            IdentityOptions.Read(this, config);
-        }
-
         /// <summary>
         ///     Claim type used for role claims
         /// </summary>

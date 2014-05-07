@@ -13,11 +13,6 @@ namespace Microsoft.AspNet.Identity
             RequiredLength = 6;
         }
 
-        public PasswordOptions(IConfiguration config) : this()
-        {
-            IdentityOptions.Read(this, config);
-        }
-
         /// <summary>
         ///     Minimum required length
         /// </summary>

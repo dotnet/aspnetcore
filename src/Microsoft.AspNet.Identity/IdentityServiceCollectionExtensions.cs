@@ -28,6 +28,7 @@ namespace Microsoft.Framework.DependencyInjection
         {
             services.Add(IdentityServices.GetDefaultUserServices<TUser>());
             services.Add(IdentityServices.GetDefaultRoleServices<TRole>());
+            services.AddTransient<IOptionsSetup<IdentityOptions>, IdentityOptionsSetup>();
             services.AddSingleton<IOptionsAccessor<IdentityOptions>, OptionsAccessor<IdentityOptions>>();
             actionBuilder(new IdentityBuilder<TUser, TRole>(services));
             return services;

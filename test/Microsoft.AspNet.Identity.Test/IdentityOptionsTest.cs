@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.Fallback;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.Test
@@ -57,11 +59,21 @@ namespace Microsoft.AspNet.Identity.Test
                 {"identity:password:RequireNonLetterOrDigit", "false"},
                 {"identity:password:RequireUpperCase", "false"},
                 {"identity:password:RequireDigit", "false"},
-                {"identity:password:RequireLowerCase", "false"}
+                {"identity:password:RequireLowerCase", "false"},
+                {"identity:lockout:EnabledByDefault", "TRUe"},
+                {"identity:lockout:MaxFailedAccessAttempts", "1000"}
             };
             var config = new Configuration { new MemoryConfigurationSource(dic) };
             Assert.Equal(roleClaimType, config.Get("identity:claimtype:role"));
-            var options = new IdentityOptions(config);
+
+            var setup = new IdentityOptionsSetup(config);
+            var services = new ServiceCollection();
+            services.AddInstance<IConfiguration>(config);
+            services.AddTransient<IOptionsSetup<IdentityOptions>, IdentityOptionsSetup>();
+            services.AddTransient<IOptionsAccessor<IdentityOptions>, OptionsAccessor<IdentityOptions>>();
+            var accessor = services.BuildServiceProvider().GetService<IOptionsAccessor<IdentityOptions>>();
+            Assert.NotNull(accessor);
+            var options = accessor.Options;
             Assert.Equal(roleClaimType, options.ClaimType.Role);
             Assert.Equal(useridClaimType, options.ClaimType.UserId);
             Assert.Equal(usernameClaimType, options.ClaimType.UserName);
@@ -74,51 +86,51 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.False(options.Password.RequireNonLetterOrDigit);
             Assert.False(options.Password.RequireUppercase);
             Assert.Equal(10, options.Password.RequiredLength);
+            Assert.True(options.Lockout.EnabledByDefault);
+            Assert.Equal(1000, options.Lockout.MaxFailedAccessAttempts);
         }
 
-        [Fact]
-        public void ClaimTypeOptionsFromConfig()
-        {
-            const string roleClaimType = "rolez";
-            const string usernameClaimType = "namez";
-            const string useridClaimType = "idz";
-            const string securityStampClaimType = "stampz";
+        //[Fact]
+        //public void ClaimTypeOptionsFromConfig()
+        //{
+        //    const string roleClaimType = "rolez";
+        //    const string usernameClaimType = "namez";
+        //    const string useridClaimType = "idz";
+        //    const string securityStampClaimType = "stampz";
+        //    var dic = new Dictionary<string, string>
+        //    { 
+        //        {"role", roleClaimType},
+        //        {"username", usernameClaimType},
+        //        {"userid", useridClaimType},
+        //        {"securitystamp", securityStampClaimType}
+        //    };
+        //    var config = new ConfigurationModel.Configuration {new MemoryConfigurationSource(dic)};
+        //    Assert.Equal(roleClaimType, config.Get("role"));
+        //    var options = new ClaimTypeOptions(config);
+        //    Assert.Equal(roleClaimType, options.Role);
+        //    Assert.Equal(useridClaimType, options.UserId);
+        //    Assert.Equal(usernameClaimType, options.UserName);
+        //    Assert.Equal(securityStampClaimType, options.SecurityStamp);
+        //}
 
-            var dic = new Dictionary<string, string>
-            { 
-                {"role", roleClaimType},
-                {"username", usernameClaimType},
-                {"userid", useridClaimType},
-                {"securitystamp", securityStampClaimType}
-            };
-            var config = new Configuration {new MemoryConfigurationSource(dic)};
-            Assert.Equal(roleClaimType, config.Get("role"));
-            var options = new ClaimTypeOptions(config);
-            Assert.Equal(roleClaimType, options.Role);
-            Assert.Equal(useridClaimType, options.UserId);
-            Assert.Equal(usernameClaimType, options.UserName);
-            Assert.Equal(securityStampClaimType, options.SecurityStamp);
-        }
-
-        [Fact]
-        public void PasswordOptionsFromConfig()
-        {
-            var dic = new Dictionary<string, string>
-            { 
-                {"RequiredLength", "10"},
-                {"RequireNonLetterOrDigit", "false"},
-                {"RequireUpperCase", "false"},
-                {"RequireDigit", "false"},
-                {"RequireLowerCase", "false"}
-            };
-            var config = new Configuration { new MemoryConfigurationSource(dic) };
-            var options = new PasswordOptions(config);
-            Assert.False(options.RequireDigit);
-            Assert.False(options.RequireLowercase);
-            Assert.False(options.RequireNonLetterOrDigit);
-            Assert.False(options.RequireUppercase);
-            Assert.Equal(10, options.RequiredLength);
-        }
-
+        //[Fact]
+        //public void PasswordOptionsFromConfig()
+        //{
+        //    var dic = new Dictionary<string, string>
+        //    { 
+        //        {"RequiredLength", "10"},
+        //        {"RequireNonLetterOrDigit", "false"},
+        //        {"RequireUpperCase", "false"},
+        //        {"RequireDigit", "false"},
+        //        {"RequireLowerCase", "false"}
+        //    };
+        //    var config = new ConfigurationModel.Configuration { new MemoryConfigurationSource(dic) };
+        //    var options = new PasswordOptions(config);
+        //    Assert.False(options.RequireDigit);
+        //    Assert.False(options.RequireLowercase);
+        //    Assert.False(options.RequireNonLetterOrDigit);
+        //    Assert.False(options.RequireUppercase);
+        //    Assert.Equal(10, options.RequiredLength);
+        //}
     }
 }
