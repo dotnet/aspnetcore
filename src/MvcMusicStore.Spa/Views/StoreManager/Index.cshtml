@@ -1,0 +1,25 @@
+﻿@model IEnumerable<MvcMusicStore.Models.Album>
+
+@{
+    ViewBag.Title = "Index";
+    ViewBag.ngApp = "MusicStore.Admin";
+}
+
+<h1>Store Manager</h1>
+
+<div class="ng-view"></div>
+
+@Html.InlineData("Lookup", "ArtistsApi")
+@Html.InlineData("Lookup", "GenresApi")
+
+@section Scripts {
+
+<script src="~/js/angular.js"></script>
+<script src="~/js/angular-route.js"></script>
+<script src="~/js/ui-bootstrap.js"></script>
+<script src="~/js/ui-bootstrap-tpls.js"></script>
+@* TODO: This is currently all the compiled TypeScript, non-minified. Need to explore options
+    for alternate loading schemes, e.g. AMD loader of individual modules, min vs. non-min, etc. *@
+<script src="~/js/@(ViewBag.ngApp).js"></script>
+
+}

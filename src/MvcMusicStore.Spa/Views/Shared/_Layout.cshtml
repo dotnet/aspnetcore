@@ -1,0 +1,51 @@
+﻿<!DOCTYPE html>
+<html ng-app="@ViewBag.ngApp" data-url-base="@Url.Content("~/")">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title – MVC Music Store</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+    <script src="~/js/respond.src.js"></script>
+    <script src="~/js/modernizr.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                @Html.ActionLink("ASP.NET MVC Music Store", "Index", "Home", null, new { @class = "navbar-brand" })
+            </div>
+            <div class="collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <li>@Html.ActionLink("Home", "Index", "Home")</li>
+                    
+                    @RenderSection("NavBarItems", required: false)
+
+                    @Html.Action("CartSummary", "ShoppingCart")
+                </ul>
+                @Html.Partial("_LoginPartial")
+            </div>
+        </div>
+    </nav>
+    <div class="container body-content">
+        @RenderBody()
+        <hr />
+        <footer class="navbar navbar-fixed-bottom navbar-default text-center">
+            <p><a href="http://mvcmusicstore.codeplex.com">mvcmusicstore.codeplex.com</a></p>
+            <small>@Html.ActionLink("admin", "Index", "StoreManager")</small>
+        </footer>
+    </div>
+
+    @* TODO: Need to figure out best way to switch these to min links for release, e.g. new helper,
+        Grunt task to replace, CDN support, etc. *@
+    <script src="~/js/jquery.js"></script>
+    @*<script src="~/js/jquery.validate.js"></script>*@
+    <script src="~/js/bootstrap.js"></script>
+
+    @RenderSection("scripts", required: false)
+</body>
+</html>

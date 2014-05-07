@@ -1,0 +1,77 @@
+﻿@model MvcMusicStore.Models.Album
+
+<div ng-controller="MusicStore.Admin.Catalog.AlbumListController as viewModel">
+    <h2>Albums</h2>
+    <p>
+        <a class="btn btn-default" href="#/albums/new">Create new</a>
+    </p>
+
+    <alert ng-show="viewModel.alert" type="viewModel.alert.type" close="viewModel.clearAlert()">
+        {{ viewModel.alert.message }}
+        <ul ng-show="viewModel.alert.modelErrors">
+            <li ng-repeat="modelError in viewModel.alert.modelErrors">{{ modelError.ErrorMessage }}</li>
+        </ul>
+    </alert>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    <a title="Sort by this column" href="#/albums" ng-click="viewModel.sortBy('@Html.NameFor(m => m.Genre.Name)')">@Html.DisplayNameFor(m => m.Genre)</a>
+                    
+                    <span class="glyphicon glyphicon-sort-by-alphabet" title="Sorted ascending" ng-show="viewModel.sortColumn == '@Html.NameFor(m => m.Genre.Name)' && !viewModel.sortDescending"></span>
+                    <span class="glyphicon glyphicon-sort-by-alphabet-alt" title="Sorted descending" ng-show="viewModel.sortColumn == '@Html.NameFor(m => m.Genre.Name)' && viewModel.sortDescending"></span>
+                </th>
+                <th>
+                    <a title="Sort by this column" href="#/albums" ng-click="viewModel.sortBy('@Html.NameFor(m => m.Artist.Name)')">@Html.DisplayNameFor(m => m.Artist)</a>
+
+                    <span class="glyphicon glyphicon-sort-by-alphabet" title="Sorted ascending" ng-show="viewModel.sortColumn == '@Html.NameFor(m => m.Artist.Name)' && !viewModel.sortDescending"></span>
+                    <span class="glyphicon glyphicon-sort-by-alphabet-alt" title="Sorted descending" ng-show="viewModel.sortColumn == '@Html.NameFor(m => m.Artist.Name)' && viewModel.sortDescending"></span>
+                </th>
+                <th>
+                    <a title="Sort by this column" href="#/albums" ng-click="viewModel.sortBy('@Html.NameFor(m => m.Title)')">@Html.DisplayNameFor(m => m.Title)</a>
+
+                    <span class="glyphicon glyphicon-sort-by-alphabet" title="Sorted ascending" ng-show="viewModel.sortColumn == '@Html.NameFor(m => m.Title)' && !viewModel.sortDescending"></span>
+                    <span class="glyphicon glyphicon-sort-by-alphabet-alt" title="Sorted descending" ng-show="viewModel.sortColumn == '@Html.NameFor(m => m.Title)' && viewModel.sortDescending"></span>
+                </th>
+                <th>
+                    <a title="Sort by this column" href="#/albums" ng-click="viewModel.sortBy('@Html.NameFor(m => m.Price)')">@Html.DisplayNameFor(m => m.Price)</a>
+
+                    <span class="glyphicon glyphicon-sort-by-alphabet" title="Sorted ascending" ng-show="viewModel.sortColumn == '@Html.NameFor(m => m.Price)' && !viewModel.sortDescending"></span>
+                    <span class="glyphicon glyphicon-sort-by-alphabet-alt" title="Sorted descending" ng-show="viewModel.sortColumn == '@Html.NameFor(m => m.Price)' && viewModel.sortDescending"></span>
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-repeat="album in viewModel.albums">
+                <td>
+                    {{ album.Genre.Name }}
+                </td>
+                <td>
+                    {{ album.Artist.Name | truncate:25 }}
+                </td>
+                <td>
+                    {{ album.Title | truncate:25 }}
+                </td>
+                <td>
+                    {{ album.Price | currency }}
+                </td>
+                <td>
+                    <div class="btn-group btn-group-xs">
+                        <a ng-href="#/albums/{{ album.AlbumId }}/details" class="btn btn-default">Details</a>
+                        <a ng-href="#/albums/{{ album.AlbumId }}/edit" class="btn btn-default">Edit</a>
+                        <a ng-click="viewModel.deleteAlbum(album)" class="btn btn-default">Delete</a>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <pagination class="pagination-sm" on-select-page="viewModel.loadPage(page)"
+                page="viewModel.currentPage" items-per-page="viewModel.pageSize"
+                total-items="viewModel.totalCount" max-size="6"
+                rotate="false" boundary-links="true"></pagination>
+    <p>
+        {{ viewModel.totalCount }} total albums
+    </p>
+</div>

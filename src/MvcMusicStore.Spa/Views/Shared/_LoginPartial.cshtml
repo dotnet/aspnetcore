@@ -1,0 +1,45 @@
+﻿@using Microsoft.AspNet.Identity
+
+@{
+    Func<string, IHtmlString> js = input => Html.Raw(HttpUtility.JavaScriptStringEncode(input, false));
+}
+
+@if (Request.IsAuthenticated)
+{
+    using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
+    {
+    @Html.AntiForgeryToken()
+
+    <ul class="nav navbar-nav navbar-right">
+        <li>
+            @Html.ActionLink("Hello " + User.Identity.GetUserName() + "!", "Manage", "Account", routeValues: null, htmlAttributes: new { title = "Manage" })
+        </li>
+        <li><a href="javascript:document.getElementById('logoutForm').submit()">Log off</a></li>
+    </ul>
+    
+    @Html.Json(new {
+        isAuthenticated = true,
+        userName = User.Identity.GetUserName(),
+        userId = User.Identity.GetUserId(),
+        roles = ((System.Security.Claims.ClaimsPrincipal)User).Claims
+            .Where(c => c.Type == System.Security.Claims.ClaimTypes.Role)
+            .Select(role => role.Value)
+        },
+        new { id = "userDetails" })
+    }
+}
+else
+{
+    <ul class="nav navbar-nav navbar-right">
+        <li>@Html.ActionLink("Register", "Register", "Account", routeValues: null, htmlAttributes: new { id = "registerLink" })</li>
+        <li>@Html.ActionLink("Log in", "Login", "Account", routeValues: null, htmlAttributes: new { id = "loginLink", app_login_link = "" })</li>
+    </ul>
+    
+    @Html.Json(new {
+        isAuthenticated = false,
+        userName = (string)null,
+        userId = (string)null,
+        roles = Enumerable.Empty<string>()
+        },
+        new { id = "userDetails" })
+}

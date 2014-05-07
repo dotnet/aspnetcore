@@ -73,6 +73,8 @@
     <Content Include="Views\Store\Details.cshtml" />
     <Content Include="Views\Store\Index.cshtml" />
     <Content Include="web.config" />
+    <Content Include="web.Debug.config" />
+    <Content Include="web.Release.config" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Components\CartSummaryComponent.cs" />

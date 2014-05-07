@@ -1,0 +1,16 @@
+﻿{
+    "name": "MvcMusicStore",
+    "version": "0.0.0",
+    "devDependencies": {
+        "grunt": "~0.4.2",
+        "grunt-contrib-jshint": "~0.6.3",
+        "grunt-contrib-uglify": "~0.2.2",
+        "grunt-contrib-watch": "~0.5.3",
+        "grunt-contrib-copy": "~0.5.0",
+        "grunt-contrib-clean": "~0.5.0",
+        "grunt-contrib-less": "~0.9.0",
+        "grunt-typescript": "~0.2.8",
+        "grunt-tslint": "~0.4.1",
+        "grunt-tsng": "~0.1.3"
+    }
+}

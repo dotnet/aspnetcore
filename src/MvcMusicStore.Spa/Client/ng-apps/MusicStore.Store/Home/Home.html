@@ -1,0 +1,15 @@
+﻿<div class="jumbotron">
+    <h1>MVC Music Store</h1>
+    <img src="Images/home-showcase.png" />
+</div>
+
+<div ng-controller="MusicStore.Store.Home.HomeController as viewModel">
+    <ul class="row list-unstyled" id="album-list">
+        <li ng-repeat="album in viewModel.albums" class="col-lg-2 col-md-2 col-sm-2 col-xs-4 container">
+            <a ng-href="#/albums/{{ album.AlbumId }}">
+                <img ng-alt="{{ album.Title }}" ng-src="{{ album.AlbumArtUrl }}" />
+                <h4>{{ album.Title }}</h4>
+            </a>
+        </li>
+    </ul>
+</div>

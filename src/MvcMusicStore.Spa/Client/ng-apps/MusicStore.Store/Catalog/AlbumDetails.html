@@ -1,0 +1,26 @@
+﻿<div ng-controller="MusicStore.Store.Catalog.AlbumDetailsController as viewModel">
+    <h2>{{ viewModel.album.Title }}</h2>
+
+    <p>
+        <img ng-alt="{{ viewModel.album.Title }}" ng-src="{{ viewModel.album.AlbumArtUrl}}" />
+    </p>
+
+    <div id="album-details">
+        <p>
+            <em>Genre:</em>
+            {{ viewModel.album.Genre.Name }}
+        </p>
+        <p>
+            <em>Artist:</em>
+            {{ viewModel.album.Artist.Name }}
+        </p>
+        <p>
+            <em>Price:</em>
+            {{ viewModel.album.Price | currency }}
+        </p>
+        <p class="button">
+            <!-- TODO: Shopping cart functionality -->
+            Add to cart
+        </p>
+    </div>
+</div>

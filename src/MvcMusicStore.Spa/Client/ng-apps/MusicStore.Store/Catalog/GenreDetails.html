@@ -1,0 +1,12 @@
+﻿<div ng-controller="MusicStore.Store.Catalog.GenreDetailsController as viewModel" class="genre">
+    <h3><em>{{ viewModel.genre.Name }}</em> Albums</h3>
+
+    <ul id="album-list" class="list-unstyled">
+        <li ng-repeat="album in viewModel.albums" class="col-lg-2 col-md-2 col-sm-2 col-xs-4 container">
+            <a ng-href="#/albums/{{ album.AlbumId }}">
+                <img ng-show="album.AlbumArtUrl" ng-alt="{{ album.Title }}" ng-src="{{ album.AlbumArtUrl }}" />
+                <h5 class="control-label">{{ album.Title }}</h5>
+            </a>
+        </li>
+    </ul>
+</div>

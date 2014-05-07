@@ -1,0 +1,58 @@
+﻿@model MvcMusicStore.Models.Album
+
+<div ng-controller="MusicStore.Admin.Catalog.AlbumDetailsController as viewModel">
+    <h2>Album <small>Details</small></h2>
+    <hr />
+    
+    <form class="form-horizontal" role="form">
+        <div class="form-group">
+            @Html.LabelFor(m => m.Artist, new { @class = "col-md-2 control-label" })
+            <div class="col-md-10">
+                <p class="form-control-static">{{ viewModel.album.Artist.Name }}</p>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(m => m.Genre, new { @class = "col-md-2 control-label" })
+            <div class="col-md-10">
+                <p class="form-control-static">{{ viewModel.album.Genre.Name }}</p>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(m => m.Title, new { @class = "col-md-2 control-label" })
+            <div class="col-md-10">
+                <p class="form-control-static">{{ viewModel.album.Title }}</p>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(m => m.Price, new { @class = "col-md-2 control-label" })
+            <div class="col-md-10">
+                <p class="form-control-static">{{ viewModel.album.Price | currency }}</p>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(m => m.AlbumArtUrl, new { @class = "col-md-2 control-label" })
+            <div class="col-md-10">
+                <p class="form-control-static">{{ viewModel.album.AlbumArtUrl }}</p>
+            </div>
+        </div>
+
+        <div class="form-group" ng-show="viewModel.album.AlbumArtUrl">
+            <label class="col-md-2 control-label">Album Art</label>
+            <div class="col-md-10">
+                <p class="form-control-static"><img ng-src="{{ viewModel.album.AlbumArtUrl }}" alt="Album Art" /></p>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <a class="btn btn-primary" ng-href="#/albums/{{ viewModel.album.AlbumId }}/edit">Edit</a>
+                <button type="button" class="btn btn-danger" ng-click="viewModel.deleteAlbum()">Delete</button>
+                <a class="btn btn-default" ng-href="#/albums">Back to List</a>
+            </div>
+        </div>
+    </form>
+</div>

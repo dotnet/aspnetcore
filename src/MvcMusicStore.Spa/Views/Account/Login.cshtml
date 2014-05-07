@@ -1,0 +1,100 @@
+﻿@model MvcMusicStore.Models.LoginViewModel
+
+@{
+    ViewBag.Title = "Log in";
+    ViewBag.ngApp = "MusicStore.Store";
+}
+
+@section NavBarItems {
+
+<li app-genre-menu></li>
+@Html.InlineData("GenreMenuList", "GenresApi")
+
+}
+
+<h2>@ViewBag.Title.</h2>
+
+<div class="row">
+    <div class="col-md-8">
+        <section id="loginForm">
+            @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post,
+                new { @class = "form-horizontal", role = "form", novalidate = "", name = "login",
+                      app_prevent_submit = "login.$invalid",
+                      ng_submit = "login.submitAttempted=true" }))
+            {
+                @Html.AntiForgeryToken()
+                <h4>Use a local account to log in.</h4>
+                <hr />
+                @Html.ValidationSummary(true)
+
+                <div class="form-group" ng-class="@Html.ngValidationClassFor(m => m.UserName, formName: "login", className: "has-error")">
+                    @Html.LabelFor(m => m.UserName, new { @class = "col-md-2 control-label" })
+                    <div class="col-md-10">
+                        <div class="row">
+                            <div class="col-md-4">
+                                @Html.ngTextBoxFor(m => m.UserName, new { @class = "form-control" })
+                            </div>
+                        </div>
+                        @Html.ngValidationMessageFor(m => m.UserName, "login", new { @class = "help-block field-validation-error" })
+                    </div>
+                </div>
+
+                @*  What this might look like using Tag Helpers:
+                    <@div class="form-group" validation-for="UserName" validation-form-name="login" validation-class="has-error">
+                        <@label for="UserName" class="col-md-2 control-label"></@label>
+                        <div class="col-md-10">
+                            <@input for="UserName" class="form-control" />
+                            <@span validation-for="UserName" validation-form-name="login" class="field-validation-error"></@span>
+                        </div>
+                    </@div>
+                *@
+
+                <div class="form-group" ng-class="@Html.ngValidationClassFor(m => m.Password, formName: "login", className: "has-error")">
+                    @Html.LabelFor(m => m.Password, new { @class = "col-md-2 control-label" })
+                    <div class="col-md-10">
+                        <div class="row">
+                            <div class="col-md-4">
+                                @Html.ngPasswordFor(m => m.Password, new { @class = "form-control" })
+                            </div>
+                        </div>
+                        @Html.ngValidationMessageFor(m => m.Password, "login", new { @class = "help-block field-validation-error" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-offset-2 col-md-10">
+                        <div class="checkbox">
+                            @Html.CheckBoxFor(m => m.RememberMe)
+                            @Html.LabelFor(m => m.RememberMe)
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="col-md-offset-2 col-md-10">
+                        <button type="submit" class="btn btn-default">Log in</button>
+                    </div>
+                </div>
+                
+                <p>
+                    @Html.ActionLink("Register", "Register") if you don't have a local account.
+                </p>
+            }
+        </section>
+    </div>
+    <div class="col-md-4">
+        <section id="socialLoginForm">
+            @Html.Partial("_ExternalLoginsListPartial", new { Action = "ExternalLogin", ReturnUrl = ViewBag.ReturnUrl })
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+
+    <script src="~/js/angular.js"></script>
+    <script src="~/js/angular-route.js"></script>
+    @* TODO: This is currently all the compiled TypeScript, non-minified. Need to explore options
+        for alternate loading schemes, e.g. AMD loader of individual modules, min vs. non-min, etc. *@
+    <script src="~/js/MusicStore.Store.js"></script>
+
+}
