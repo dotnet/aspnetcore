@@ -27,7 +27,7 @@ namespace MusicStore.Models
         protected override void OnConfiguring(DbContextOptions builder)
         {
 #if NET45
-            builder.SqlServerConnectionString(_configuration.Get("Data:DefaultConnection:ConnectionString"));
+            builder.UseSqlServer(_configuration.Get("Data:DefaultConnection:ConnectionString"));
 #else
             builder.UseInMemoryStore(persist: true);
 #endif
