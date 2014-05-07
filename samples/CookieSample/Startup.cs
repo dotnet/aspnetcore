@@ -7,7 +7,6 @@ using Microsoft.AspNet.RequestContainer;
 using Microsoft.AspNet.Builder;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
-using Microsoft.Framework.Logging;
 
 namespace CookieSample
 {
@@ -15,12 +14,6 @@ namespace CookieSample
     {
         public void Configuration(IBuilder app)
         {
-            app.UseServices(services =>
-            {
-                // TODO: Move to host.
-                services.AddInstance<ILoggerFactory>(new NullLoggerFactory());
-            });
-
             app.UseCookieAuthentication(new CookieAuthenticationOptions()
             {
 
@@ -40,24 +33,6 @@ namespace CookieSample
                 context.Response.ContentType = "text/plain";
                 await context.Response.WriteAsync("Hello old timer");
             });
-        }
-
-        // TODO: Temp workaround until the host reliably provides logging.
-        // If ILoggerFactory is never guaranteed, move this fallback into Microsoft.Framework.Logging.
-        private class NullLoggerFactory : ILoggerFactory
-        {
-            public ILogger Create(string name)
-            {
-                return new NullLongger();
-            }
-        }
-
-        private class NullLongger : ILogger
-        {
-            public bool WriteCore(TraceType eventType, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
-            {
-                return false;
-            }
         }
     }
 }
