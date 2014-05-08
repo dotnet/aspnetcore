@@ -3,9 +3,9 @@
   "dependencies": {
     "Microsoft.AspNet.Identity": "",
     "Microsoft.Data.Entity": "0.1-alpha-*",
+    "Microsoft.Data.Entity.InMemory": "0.1-alpha-*",
     "Microsoft.Data.Entity.Relational": "0.1-alpha-*",
     "Microsoft.Data.Entity.SqlServer": "0.1-alpha-*",
-    "Microsoft.Data.Entity.InMemory": "0.1-alpha-*",
     "Microsoft.Framework.ConfigurationModel": "0.1-alpha-*",
     "Microsoft.Framework.DependencyInjection": "0.1-alpha-*",
     "System.Security.Claims" : "0.1-alpha-*"
@@ -13,9 +13,9 @@
   "configurations": {
     "net45": {
       "dependencies": {
-        "System.Runtime": "",
         "System.Collections": "",
-        "System.Data": ""
+        "System.Data": "",
+        "System.Runtime": ""
       }
     },
     "k10": {

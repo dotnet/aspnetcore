@@ -5,19 +5,19 @@
     "Microsoft.AspNet.Testing" : "0.1-alpha-*",
     "Microsoft.Framework.ConfigurationModel" : "0.1-alpha-*",
     "Microsoft.Framework.DependencyInjection" : "0.1-alpha-*",
-    "Xunit.KRunner": "0.1-alpha-*",
     "xunit.abstractions": "2.0.0-aspnet-*",
     "xunit.assert": "2.0.0-aspnet-*",
     "xunit.core": "2.0.0-aspnet-*",
-    "xunit.execution": "2.0.0-aspnet-*"
+    "xunit.execution": "2.0.0-aspnet-*",
+    "Xunit.KRunner": "0.1-alpha-*"
   },
   "code": "**\\*.cs;..\\Shared\\*.cs",
   "configurations": {
     "net45": {
       "dependencies": {
         "Moq" : "4.2.1312.1622",
-        "System.Runtime": "",
-        "System.Collections": ""
+        "System.Collections": "",
+        "System.Runtime": ""
       }
     }
   },
