@@ -303,15 +303,16 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 string designTimeAssignment = "__o = ";
                 Writer.ResetIndent();
 
+                var documentLocation = firstChild.Association.Start;
                 // This is only here to enable accurate formatting by the C# editor.
-                Writer.WriteLineNumberDirective(1, "------------------------------------------");
+                Writer.WriteLineNumberDirective(documentLocation.LineIndex + 1, Context.SourceFile);
 
                 // We build the padding with an offset of the design time assignment statement.
                 Writer.Write(_paddingBuilder.BuildExpressionPadding((Span)firstChild.Association, designTimeAssignment.Length))
                       .Write(designTimeAssignment);
 
                 // We map the first line of code but do not write the line pragmas associated with it.
-                CreateRawCodeMapping(firstChild.Code, firstChild.Association.Start);
+                CreateRawCodeMapping(firstChild.Code, documentLocation);
 
                 // Render all but the first child.
                 // The reason why we render the other children differently is because when formatting the C# code
