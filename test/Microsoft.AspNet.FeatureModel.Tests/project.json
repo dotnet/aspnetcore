@@ -1,14 +1,14 @@
 {
   "version": "0.1-alpha-*",
   "dependencies": {
-    "Microsoft.AspNet.HttpFeature": "",
-    "Microsoft.AspNet.Http": "",
     "Microsoft.AspNet.FeatureModel": "",
-    "Xunit.KRunner": "0.1-alpha-*",
+    "Microsoft.AspNet.Http": "",
+    "Microsoft.AspNet.HttpFeature": "",
     "xunit.abstractions": "2.0.0-aspnet-*",
     "xunit.assert": "2.0.0-aspnet-*",
     "xunit.core": "2.0.0-aspnet-*",
-    "xunit.execution": "2.0.0-aspnet-*"
+    "xunit.execution": "2.0.0-aspnet-*",
+    "Xunit.KRunner": "0.1-alpha-*"
   },
   "commands": {
     "test": "Xunit.KRunner"

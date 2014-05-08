@@ -1,16 +1,16 @@
 {
   "version": "0.1-alpha-*",
   "dependencies": {
-    "Microsoft.AspNet.Owin": "",
-    "Microsoft.AspNet.HttpFeature": "",
-    "Microsoft.AspNet.Http": "",
     "Microsoft.AspNet.FeatureModel": "",
+    "Microsoft.AspNet.Http": "",
+    "Microsoft.AspNet.HttpFeature": "",
+    "Microsoft.AspNet.Owin": "",
     "Microsoft.AspNet.PipelineCore": "",
-    "Xunit.KRunner": "0.1-alpha-*",
     "xunit.abstractions": "2.0.0-aspnet-*",
     "xunit.assert": "2.0.0-aspnet-*",
     "xunit.core": "2.0.0-aspnet-*",
-    "xunit.execution": "2.0.0-aspnet-*"
+    "xunit.execution": "2.0.0-aspnet-*",
+    "Xunit.KRunner": "0.1-alpha-*"
   },
   "commands": {
     "test": "Xunit.KRunner"
@@ -18,8 +18,8 @@
   "configurations": {
     "net45": {
       "dependencies": {
-        "System.Runtime":  "",
-        "Shouldly": "1.1.1.1"
+        "Shouldly": "1.1.1.1",
+        "System.Runtime":  ""
       }
     }
   }
