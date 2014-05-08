@@ -1,8 +1,8 @@
 {
   "version": "0.1-alpha-*",
   "dependencies": {
-    "Microsoft.AspNet.Http": "0.1-alpha-*",
     "Microsoft.AspNet.Hosting": "",
+    "Microsoft.AspNet.Http": "0.1-alpha-*",
     "Microsoft.AspNet.Server.WebListener": "0.1-alpha-*"
   },
   "commands": { "web": "Microsoft.AspNet.Hosting server.name=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001" },
@@ -11,8 +11,8 @@
     },
     "k10": {
       "dependencies": {
-        "System.Console": "4.0.0.0",
         "System.Collections": "4.0.0.0",
+        "System.Console": "4.0.0.0",
         "System.Diagnostics.Debug": "4.0.10.0",
         "System.Diagnostics.Tools": "4.0.0.0",
         "System.Globalization": "4.0.10.0",
