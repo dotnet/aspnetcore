@@ -108,7 +108,7 @@ public class Startup
         SampleData.InitializeIdentityDatabaseAsync(app.ApplicationServices).Wait();
 
         //Creates a Store manager user who can manage the store.
-        //CreateAdminUser(app.ApplicationServices).Wait(); // todo: sql identity doesn't support roles yet
+        CreateAdminUser(app.ApplicationServices).Wait();
     }
 
     /// <summary>
