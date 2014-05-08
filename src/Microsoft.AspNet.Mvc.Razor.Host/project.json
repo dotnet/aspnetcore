@@ -15,14 +15,16 @@
     "Microsoft.CodeAnalysis.CSharp" : "0.7-beta-*",
     "Microsoft.Framework.DependencyInjection": "0.1-alpha-*",
     "Microsoft.Net.Runtime.Interfaces":  "0.1-alpha-*",
-    "System.Reflection.Metadata.Ecma335": "0.7-beta-*"},
+    "System.Reflection.Metadata.Ecma335": "0.7-beta-*"
+  },
   "configurations": {
     "net45": {
       "dependencies": {
         "System.Collections": "",
         "System.Runtime": "",
         "System.Xml": "",
-        "System.Xml.Linq": ""}
+        "System.Xml.Linq": ""
+      }
     },
     "k10": {
       "dependencies": {
