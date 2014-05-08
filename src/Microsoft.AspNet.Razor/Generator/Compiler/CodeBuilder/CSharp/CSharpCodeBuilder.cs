@@ -57,9 +57,13 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                     // Add space inbetween constructor and method body
                     writer.WriteLine();
 
-                    using (writer.BuildMethodDeclaration("public override async", "Task", Host.GeneratedClassContext.ExecuteMethodName))
+                    // 1998 is to not warn about empty async methods.
+                    using (writer.BuildDisableWarningScope(1998))
                     {
-                        new CSharpCodeVisitor(writer, Context).Accept(Tree.Chunks);
+                        using (writer.BuildMethodDeclaration("public override async", "Task", Host.GeneratedClassContext.ExecuteMethodName))
+                        {
+                            new CSharpCodeVisitor(writer, Context).Accept(Tree.Chunks);
+                        }
                     }
                 }
             }

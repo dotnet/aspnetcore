@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             {
                 using (Writer.BuildMethodDeclaration("private", "void", "@" + DesignTimeHelperMethodName))
                 {
-                    using (Writer.BuildDisableWarningScope())
+                    using (Writer.BuildDisableWarningScope(219))
                     {
                         Accept(tree.Chunks);
                     }

@@ -226,11 +226,6 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             return WriteStartMethodInvocation(methodName).Write(string.Join(", ", parameters)).WriteEndMethodInvocation(endLine);
         }
 
-        public CSharpDisableWarningScope BuildDisableWarningScope()
-        {
-            return new CSharpDisableWarningScope(this, 219);
-        }
-
         public CSharpDisableWarningScope BuildDisableWarningScope(int warning)
         {
             return new CSharpDisableWarningScope(this, warning);
