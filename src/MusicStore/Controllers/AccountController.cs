@@ -39,7 +39,7 @@ namespace MusicStore.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model, string returnUrl)
         {
-            if (ModelState.IsValid == true)
+            if (ModelState.IsValid)
             {
                 var signInStatus = await SignInManager.PasswordSignInAsync(model.UserName, model.Password, model.RememberMe, shouldLockout: false);
                 switch (signInStatus)
@@ -77,8 +77,7 @@ namespace MusicStore.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            //Bug: https://github.com/aspnet/WebFx/issues/247
-            //if (ModelState.IsValid == true)
+            if (ModelState.IsValid)
             {
                 var user = new ApplicationUser { UserName = model.UserName };
                 var result = await UserManager.CreateAsync(user, model.Password);
@@ -118,8 +117,7 @@ namespace MusicStore.Controllers
         public async Task<IActionResult> Manage(ManageUserViewModel model)
         {
             ViewBag.ReturnUrl = Url.Action("Manage");
-            //Bug: https://github.com/aspnet/WebFx/issues/247
-            //if (ModelState.IsValid == true)
+            if (ModelState.IsValid)
             {
                 var user = await GetCurrentUserAsync();
                 var result = await UserManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);

@@ -66,7 +66,7 @@ namespace MusicStore.Controllers
         [HttpPost]
         public IActionResult Create(Album album)
         {
-            if (ModelState.IsValid == true)
+            if (ModelState.IsValid)
             {
                 db.Albums.Add(album);
                 db.SaveChanges();
@@ -100,7 +100,7 @@ namespace MusicStore.Controllers
         [HttpPost]
         public IActionResult Edit(Album album)
         {
-            if (ModelState.IsValid == true)
+            if (ModelState.IsValid)
             {
                 db.ChangeTracker.Entry(album).State = EntityState.Modified;
                 db.SaveChanges();
