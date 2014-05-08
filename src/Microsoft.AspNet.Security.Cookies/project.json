@@ -1,23 +1,23 @@
 {
   "version": "0.1-alpha-*",
   "dependencies": {
-    "Newtonsoft.Json": "5.0.8",
-    "Microsoft.AspNet.Security": "0.1-alpha-*",
-    "Microsoft.AspNet.PipelineCore": "0.1-alpha-*",
-    "Microsoft.AspNet.Http": "0.1-alpha-*",
     "Microsoft.AspNet.FeatureModel": "0.1-alpha-*",
+    "Microsoft.AspNet.Http": "0.1-alpha-*",
     "Microsoft.AspNet.HttpFeature": "0.1-alpha-*",
+    "Microsoft.AspNet.PipelineCore": "0.1-alpha-*",
+    "Microsoft.AspNet.Security": "0.1-alpha-*",
     "Microsoft.AspNet.Security.DataProtection": "0.1-alpha-*",
     "Microsoft.Framework.DependencyInjection": "0.1-alpha-*",
-    "Microsoft.Framework.Logging": "0.1-alpha-*"
+    "Microsoft.Framework.Logging": "0.1-alpha-*",
+    "Newtonsoft.Json": "5.0.8"
   },
   "configurations": {
     "net45": {},
     "k10": {
       "dependencies": {
         "System.Collections": "4.0.0.0",
-        "System.Console": "4.0.0.0",
         "System.ComponentModel": "4.0.0.0",
+        "System.Console": "4.0.0.0",
         "System.Diagnostics.Debug": "4.0.10.0",
         "System.Diagnostics.Tools": "4.0.0.0",
         "System.Globalization": "4.0.10.0",
