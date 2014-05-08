@@ -27,10 +27,11 @@ namespace Microsoft.AspNet.Builder
         {
             return app.UseMvc(routes =>
             {
-                routes.MapRoute(null, "{area}/{controller}/{action}", new { controller = "Home", action = "Index" });
-                routes.MapRoute(null, "{area}/{controller}", new { controller = "Home" });
-                routes.MapRoute(null, "{controller}/{action}", new { controller = "Home", action = "Index" });
-                routes.MapRoute(null, "{controller}", new { controller = "Home" });
+                // Action style actions
+                routes.MapRoute(null, "{controller}/{action}/{id?}", new { controller = "Home" , action = "Index" });
+
+                // Rest style actions
+                routes.MapRoute(null, "{controller}/{id?}");
             });
         }
 
@@ -41,7 +42,6 @@ namespace Microsoft.AspNet.Builder
                 DefaultHandler = new MvcRouteHandler()
             };
 
-            // REVIEW: Consider adding UseMvc() that automagically adds the default MVC route
             configureRoutes(routes);
 
             return app.UseRouter(routes);
