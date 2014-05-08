@@ -1,9 +1,12 @@
 ﻿{
     "DefaultAdminUsername": "Administrator",
-    "DefaultAdminPassword": "YouShouldChangeThisPassword",
+    "DefaultAdminPassword": "YouShouldChangeThisPassword1!",
     "Data": {
         "DefaultConnection": {
             "Connectionstring": "Server=(localdb)\\v11.0;Database=MusicStore;Trusted_Connection=True;"
+        },
+        "IdentityConnection": {
+            "Connectionstring": "Server=(localdb)\\v11.0;Database=MusicStoreIdentity;Trusted_Connection=True;"
         }
     }
 }

@@ -50,11 +50,8 @@ public class Startup
 
             /*Add all EF related services to IoC.
             Using an InMemoryStore in K until SQL server is available.*/
-#if NET45
             services.AddEntityFramework(s => s.AddSqlServer());
-#else
             services.AddEntityFramework(s => s.AddInMemoryStore());
-#endif
             services.AddTransient<MusicStoreContext>();
 
 
@@ -63,27 +60,18 @@ public class Startup
              * Using an InMemory store to store membership data until SQL server is available. 
              * Users created will be lost on application shutdown.
              */
+            services.AddTransient<DbContext, ApplicationDbContext>();
 
             //Bug: https://github.com/aspnet/Identity/issues/50
             services.AddIdentity<ApplicationUser, IdentityRole>(s =>
             {
                 //s.UseDbContext(() => context);
                 //s.UseUserStore(() => new UserStore(context));
-                s.AddInMemory();
+                s.AddEntity();
                 s.AddUserManager<ApplicationUserManager>();
                 s.AddRoleManager<ApplicationRoleManager>();
             });
             services.AddTransient<ApplicationSignInManager>();
-            // Turn off password defaults since register error display blows up
-            services.SetupOptions<IdentityOptions>(
-                options =>
-                {
-                    options.Password.RequireDigit = false;
-                    options.Password.RequireLowercase = false;
-                    options.Password.RequireNonLetterOrDigit = false;
-                    options.Password.RequireUppercase = false;
-                    options.Password.RequiredLength = 0;
-                });
         });
 
 
@@ -117,9 +105,10 @@ public class Startup
 
         //Populates the MusicStore sample data
         SampleData.InitializeMusicStoreDatabaseAsync(app.ApplicationServices).Wait();
+        SampleData.InitializeIdentityDatabaseAsync(app.ApplicationServices).Wait();
 
         //Creates a Store manager user who can manage the store.
-        CreateAdminUser(app.ApplicationServices).Wait();
+        //CreateAdminUser(app.ApplicationServices).Wait(); // todo: sql identity doesn't support roles yet
     }
 
     /// <summary>
@@ -132,22 +121,22 @@ public class Startup
         var configuration = serviceProvider.GetService<IConfiguration>();
         var userName = configuration.Get("DefaultAdminUsername");
         var password = configuration.Get("DefaultAdminPassword");
-        const string adminRole = "Administrator";
+        //const string adminRole = "Administrator";
 
         var userManager = serviceProvider.GetService<ApplicationUserManager>();
-        var roleManager = serviceProvider.GetService<ApplicationRoleManager>();
-
-        if (!await roleManager.RoleExistsAsync(adminRole))
-        {
-            await roleManager.CreateAsync(new IdentityRole(adminRole));
-        }
+        // Todo: identity sql does not support roles yet
+        //var roleManager = serviceProvider.GetService<ApplicationRoleManager>();
+        //if (!await roleManager.RoleExistsAsync(adminRole))
+        //{
+        //    await roleManager.CreateAsync(new IdentityRole(adminRole));
+        //}
 
         var user = await userManager.FindByNameAsync(userName);
         if (user == null)
         {
             user = new ApplicationUser { UserName = userName };
             await userManager.CreateAsync(user, password);
-            await userManager.AddToRoleAsync(user, adminRole);
+            //await userManager.AddToRoleAsync(user, adminRole);
             await userManager.AddClaimAsync(user, new Claim("ManageStore", "Allowed"));
         }
     }

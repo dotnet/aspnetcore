@@ -64,6 +64,7 @@
                 "System.Diagnostics.Tools": "4.0.0.0",
                 "Microsoft.DataAnnotations": "0.1-alpha-*",
                 "System.Reflection": "4.0.10.0",
+                "System.Reflection.Compatibility": "4.0.0.0",
                 "System.Reflection.Extensions": "4.0.0.0",
                 "System.IO": "4.0.0.0"
             }
