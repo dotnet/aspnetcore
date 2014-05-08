@@ -4,20 +4,20 @@
           "test": "Xunit.KRunner"
      },
      "dependencies": {
+          "Microsoft.AspNet.Logging": "0.1-alpha-*",
+          "Microsoft.Net.Server" : "",
           "Xunit.KRunner": "0.1-alpha-*",
           "xunit.abstractions": "2.0.0-aspnet-*",
           "xunit.assert": "2.0.0-aspnet-*",
           "xunit.core": "2.0.0-aspnet-*",
-          "xunit.execution": "2.0.0-aspnet-*",
-          "Microsoft.Net.Server" : "",
-          "Microsoft.AspNet.Logging": "0.1-alpha-*"
+          "xunit.execution": "2.0.0-aspnet-*"
      },
      "configurations": {
         "net45": {
             "dependencies": {
-                "System.Runtime": "",
                 "System.Net.Http": "",
-                "System.Net.Http.WebRequest": ""
+                "System.Net.Http.WebRequest": "",
+                "System.Runtime": ""
             }
         }
      }
