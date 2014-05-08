@@ -21,7 +21,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.Razor;
-using Microsoft.Net.Runtime;
+using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {

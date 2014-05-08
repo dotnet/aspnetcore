@@ -20,7 +20,7 @@ using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.Net.Runtime;
+using Microsoft.Framework.Runtime;
 using Moq;
 using Xunit;
 

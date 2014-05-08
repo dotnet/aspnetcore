@@ -17,7 +17,7 @@
 
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.Net.Runtime
+namespace Microsoft.Framework.Runtime
 {
     [AssemblyNeutral]
     public interface IRoslynMetadataReference : IMetadataReference

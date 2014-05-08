@@ -19,7 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Net.Runtime;
+using Microsoft.Framework.Runtime;
 using Moq;
 using Xunit;
 

@@ -19,7 +19,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.Net.Runtime;
+using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
