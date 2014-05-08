@@ -10,6 +10,7 @@
     "net45": {},
     "k10": {
       "dependencies": {
+        "Microsoft.Win32.Primitives": "4.0.0.0",
         "System.Collections": "4.0.0.0",
         "System.Collections.Concurrent": "4.0.0.0",
         "System.Diagnostics.Contracts": "4.0.0.0",
@@ -25,8 +26,8 @@
         "System.Resources.ResourceManager": "4.0.0.0",
         "System.Runtime": "4.0.20.0",
         "System.Runtime.Extensions": "4.0.10.0",
-        "System.Runtime.InteropServices": "4.0.20.0",
         "System.Runtime.Handles":  "4.0.0.0",
+        "System.Runtime.InteropServices": "4.0.20.0",
         "System.Security.Cryptography.X509Certificates": "4.0.0.0",
         "System.Security.Principal": "4.0.0.0",
         "System.Text.Encoding": "4.0.20.0",
@@ -34,8 +35,7 @@
         "System.Threading": "4.0.0.0",
         "System.Threading.Overlapped": "4.0.0.0",
         "System.Threading.Tasks": "4.0.10.0",
-        "System.Threading.ThreadPool": "4.0.10.0",
-        "Microsoft.Win32.Primitives": "4.0.0.0"
+        "System.Threading.ThreadPool": "4.0.10.0"
       }
     }
   }

@@ -4,27 +4,27 @@
           "test": "Xunit.KRunner"
      },
      "dependencies": {
-          "Xunit.KRunner": "0.1-alpha-*",
+          "Microsoft.AspNet.FeatureModel" : "0.1-alpha-*",
+          "Microsoft.AspNet.Hosting": "0.1-alpha-*",
+          "Microsoft.AspNet.Http" : "0.1-alpha-*",
+          "Microsoft.AspNet.HttpFeature" : "0.1-alpha-*",
+          "Microsoft.AspNet.PipelineCore" : "0.1-alpha-*",
+          "Microsoft.AspNet.Server.WebListener" : "",
+          "Microsoft.Framework.ConfigurationModel": "0.1-alpha-*",
+          "Microsoft.Framework.Logging": "0.1-alpha-*",
+          "Microsoft.Net.Server" : "",
           "xunit.abstractions": "2.0.0-aspnet-*",
           "xunit.assert": "2.0.0-aspnet-*",
           "xunit.core": "2.0.0-aspnet-*",
           "xunit.execution": "2.0.0-aspnet-*",
-          "Microsoft.AspNet.Server.WebListener" : "",
-          "Microsoft.Net.Server" : "",
-          "Microsoft.AspNet.Http" : "0.1-alpha-*",
-          "Microsoft.AspNet.HttpFeature" : "0.1-alpha-*",
-          "Microsoft.AspNet.FeatureModel" : "0.1-alpha-*",
-          "Microsoft.AspNet.PipelineCore" : "0.1-alpha-*",
-          "Microsoft.AspNet.Hosting": "0.1-alpha-*",
-          "Microsoft.Framework.ConfigurationModel": "0.1-alpha-*",
-          "Microsoft.Framework.Logging": "0.1-alpha-*"
+          "Xunit.KRunner": "0.1-alpha-*"
      },
      "configurations": {
         "net45": {
             "dependencies": {
-                "System.Runtime": "",
                 "System.Net.Http": "",
-                "System.Net.Http.WebRequest": ""
+                "System.Net.Http.WebRequest": "",
+                "System.Runtime": ""
             }
         }
      }
