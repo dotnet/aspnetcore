@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         {
             var services = new ServiceCollection();
             services.AddEntityFramework().AddSqlServer();
-            var services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider();
 
             var db = new IdentitySqlContext(serviceProvider);
 
