@@ -28,6 +28,10 @@ namespace Microsoft.AspNet.TestHost
         {
             Headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
             Body = new MemoryStream();
+
+            // 200 is the default status code all the way down to the host, so we set it
+            // here to be consistent with the rest of the hosts when writing tests.
+            StatusCode = 200;
         }
 
         public int StatusCode { get; set; }

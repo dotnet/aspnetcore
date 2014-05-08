@@ -20,6 +20,7 @@
     <Content Include="Project.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RequestInformation.cs" />
     <Compile Include="ResponseInformation.cs" />
     <Compile Include="TestClient.cs" />

@@ -21,6 +21,8 @@
     <Content Include="Project.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ResponseInformationTests.cs" />
     <Compile Include="TestApplicationEnvironment.cs" />
     <Compile Include="TestClientTests.cs" />
     <Compile Include="TestServerTests.cs" />
