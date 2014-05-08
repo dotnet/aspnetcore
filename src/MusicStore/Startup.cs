@@ -18,7 +18,6 @@ using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.InMemory;
 using Microsoft.Data.Entity.SqlServer;
 using Microsoft.Net.Runtime;
-using MusicStore.Logging;
 using MusicStore.Models;
 using System;
 using System.Collections.Generic;
@@ -41,9 +40,6 @@ public class Startup
             configuration.AddJsonFile(Path.Combine(applicationEnvironment.ApplicationBasePath, "LocalConfig.json"));
             configuration.AddEnvironmentVariables(); //All environment variables in the process's context flow in as configuration values.
             services.AddInstance<IConfiguration>(configuration);
-
-            //Bug: https://github.com/aspnet/Hosting/issues/20
-            services.AddInstance<ILoggerFactory>(new NullLoggerFactory());
 
             //Add all MVC related services to IoC.
             services.AddMvc();
