@@ -13,7 +13,7 @@
     "Microsoft.AspNet.Mvc.Razor.Host" : "",
     "Microsoft.AspNet.Mvc.ModelBinding" : "",
     "K.Roslyn" : "0.1-alpha-*",
-    "Microsoft.Net.Runtime.Interfaces":  "0.1-alpha-*"
+    "Microsoft.Framework.Runtime.Interfaces":  "0.1-alpha-*"
   },
   "configurations": {
     "net45": {

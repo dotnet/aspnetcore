@@ -11,7 +11,7 @@
     "Microsoft.AspNet.Mvc.Core" : "",
     "Microsoft.AspNet.Mvc.ModelBinding" : "",
     "Microsoft.Framework.DependencyInjection": "0.1-alpha-*",
-    "Microsoft.Net.Runtime.Interfaces":  "0.1-alpha-*"
+    "Microsoft.Framework.Runtime.Interfaces":  "0.1-alpha-*"
   },
   "configurations": {
     "net45": {
