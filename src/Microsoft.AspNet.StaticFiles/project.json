@@ -1,17 +1,17 @@
 {
   "version": "0.1-alpha-*",
   "dependencies": {
+    "Microsoft.AspNet.FileSystems": "0.1-alpha-*",
     "Microsoft.AspNet.Http": "0.1-alpha-*",
-    "Microsoft.AspNet.HttpFeature": "0.1-alpha-*",
-    "Microsoft.AspNet.FileSystems": "0.1-alpha-*"
+    "Microsoft.AspNet.HttpFeature": "0.1-alpha-*"
   },
   "configurations": {
     "net45": {},
     "k10": {
       "dependencies": {
         "System.Collections": "4.0.0.0",
-        "System.Diagnostics.Debug": "4.0.10.0",
         "System.Diagnostics.Contracts": "4.0.0.0",
+        "System.Diagnostics.Debug": "4.0.10.0",
         "System.Diagnostics.Tools": "4.0.0.0",
         "System.Globalization": "4.0.10.0",
         "System.IO": "4.0.0.0",

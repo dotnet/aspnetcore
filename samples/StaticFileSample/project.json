@@ -2,8 +2,8 @@
   "dependencies": {
     "Helios": "0.1-alpha-*",
     "Microsoft.AspNet.FileSystems": "0.1-alpha-*",
-    "Microsoft.AspNet.StaticFiles": "",
-    "Microsoft.AspNet.Http": "0.1-alpha-*"
+    "Microsoft.AspNet.Http": "0.1-alpha-*",
+    "Microsoft.AspNet.StaticFiles": ""
   },
   "configurations": {
     "net45": {
