@@ -4,7 +4,6 @@
           "test": "Xunit.KRunner"
      },
      "dependencies": {
-          "Microsoft.AspNet.Logging": "0.1-alpha-*",
           "Microsoft.Net.Server" : "",
           "Xunit.KRunner": "0.1-alpha-*",
           "xunit.abstractions": "2.0.0-aspnet-*",
