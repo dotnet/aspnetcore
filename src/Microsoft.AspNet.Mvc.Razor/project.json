@@ -4,24 +4,24 @@
     "warningsAsErrors": false
   },
   "dependencies": {
+    "Common": "",
+    "K.Roslyn" : "0.1-alpha-*",
     "Microsoft.AspNet.FileSystems": "0.1-alpha-*",
     "Microsoft.AspNet.Http": "0.1-alpha-*",
+    "Microsoft.AspNet.Mvc.Core" : "",
+    "Microsoft.AspNet.Mvc.ModelBinding" : "",
+    "Microsoft.AspNet.Mvc.Razor.Host" : "",
     "Microsoft.AspNet.Razor": "0.1-alpha-*",
     "Microsoft.Framework.DependencyInjection": "0.1-alpha-*",
-    "Common": "",
-    "Microsoft.AspNet.Mvc.Core" : "",
-    "Microsoft.AspNet.Mvc.Razor.Host" : "",
-    "Microsoft.AspNet.Mvc.ModelBinding" : "",
-    "K.Roslyn" : "0.1-alpha-*",
     "Microsoft.Framework.Runtime.Interfaces":  "0.1-alpha-*"
   },
   "configurations": {
     "net45": {
       "dependencies": {
-        "System.Xml.Linq": "",
-        "System.Xml": "",
+        "System.Collections": "",
         "System.Runtime": "",
-        "System.Collections": ""
+        "System.Xml": "",
+        "System.Xml.Linq": ""
       }
     },
     "k10": {

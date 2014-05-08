@@ -4,15 +4,15 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "Newtonsoft.Json": "5.0.8",
+    "Common": "",
     "Microsoft.AspNet.Http": "0.1-alpha-*",
+    "Microsoft.AspNet.Mvc.ModelBinding": "",
     "Microsoft.AspNet.Routing": "0.1-alpha-*",
     "Microsoft.AspNet.Security": "0.1-alpha-*",
-    "Common": "",
-    "Microsoft.AspNet.Mvc.ModelBinding": "",
+    "Microsoft.AspNet.Security.DataProtection" : "0.1-alpha-*",
     "Microsoft.Framework.DependencyInjection": "0.1-alpha-*",
     "Microsoft.Framework.Runtime.Interfaces":  "0.1-alpha-*",
-    "Microsoft.AspNet.Security.DataProtection" : "0.1-alpha-*"
+    "Newtonsoft.Json": "5.0.8"
   },
   "configurations": {
     "net45": {},
