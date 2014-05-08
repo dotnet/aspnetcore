@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Runtime.Versioning;
 
-namespace Microsoft.Net.Runtime
+namespace Microsoft.Framework.Runtime
 {
     [AssemblyNeutral]
     [AttributeUsage(AttributeTargets.All, Inherited = false, AllowMultiple = true)]

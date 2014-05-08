@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNet;
+using Microsoft.AspNet;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Builder;
 using Microsoft.Framework.ConfigurationModel;
@@ -17,7 +17,7 @@ using Microsoft.AspNet.Security.Cookies;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.InMemory;
 using Microsoft.Data.Entity.SqlServer;
-using Microsoft.Net.Runtime;
+using Microsoft.Framework.Runtime;
 using MusicStore.Models;
 using System;
 using System.Collections.Generic;

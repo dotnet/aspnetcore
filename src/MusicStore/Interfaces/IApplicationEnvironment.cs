@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Runtime.Versioning;
 
-namespace Microsoft.Net.Runtime
+namespace Microsoft.Framework.Runtime
 {
     /// <summary>
     /// Service provided by the host containing application environment details.
