@@ -4,6 +4,7 @@ using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using MvcSample.Web.Filters;
+using MvcSample.Web.Services;
 
 namespace MvcSample.Web
 {
@@ -16,6 +17,7 @@ namespace MvcSample.Web
                 services.AddMvc();
                 services.AddSingleton<PassThroughAttribute>();
                 services.AddSingleton<UserNameService>();
+                services.AddTransient<ITestService, TestService>();
             });
 
             app.UseMvc(routes =>

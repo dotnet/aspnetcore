@@ -120,7 +120,10 @@
   <data name="MvcRazorCodeParser_CannotHaveModelAndInheritsKeyword" xml:space="preserve">
     <value>The 'inherits' keyword is not allowed when a '{0}' keyword is used.</value>
   </data>
-  <data name="MvcRazorCodeParser_ModelKeywordMustBeFollowedByTypeName" xml:space="preserve">
+  <data name="MvcRazorCodeParser_InjectDirectivePropertyNameRequired" xml:space="preserve">
+    <value>A property name must be specified when using the '{0}' statement. Format for a '{0}' statement is '@{0} &lt;Type Name&gt; &lt;Property Name&gt;'.</value>
+  </data>
+  <data name="MvcRazorCodeParser_KeywordMustBeFollowedByTypeName" xml:space="preserve">
     <value>The '{0}' keyword must be followed by a type name on the same line.</value>
   </data>
   <data name="MvcRazorCodeParser_OnlyOneModelStatementIsAllowed" xml:space="preserve">

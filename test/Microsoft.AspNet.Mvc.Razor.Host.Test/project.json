@@ -1,0 +1,22 @@
+{
+  "version" : "0.1-alpha-*",
+  "compilationOptions": {
+    "warningsAsErrors": false
+  },
+  "resources": "TestFiles\\**",
+  "dependencies": {
+    "Microsoft.AspNet.Mvc.Razor.Host" : "",
+    "xunit.assert": "2.0.0-aspnet-*",
+    "Xunit.KRunner": "0.1-alpha-*"
+  },
+  "commands": {
+    "test": "Xunit.KRunner"
+  },
+  "configurations": {
+    "net45": {
+      "dependencies": {
+        "Moq": "4.2.1312.1622"
+      }
+    }
+  }
+}

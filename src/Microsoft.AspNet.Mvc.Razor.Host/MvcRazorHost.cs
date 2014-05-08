@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser;
 
 namespace Microsoft.AspNet.Mvc.Razor
@@ -57,7 +58,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         public GeneratorResults GenerateCode(string rootRelativePath, Stream inputStream)
         {
-            string className = ParserHelpers.SanitizeClassName(rootRelativePath);
+            var className = ParserHelpers.SanitizeClassName(rootRelativePath);
             using (var reader = new StreamReader(inputStream))
             {
                 var engine = new RazorTemplateEngine(this);
@@ -68,6 +69,11 @@ namespace Microsoft.AspNet.Mvc.Razor
         public override ParserBase DecorateCodeParser(ParserBase incomingCodeParser)
         {
             return new MvcRazorCodeParser(_baseType);
+        }
+
+        public override CodeBuilder DecorateCodeBuilder(CodeBuilder incomingBuilder, CodeGeneratorContext context)
+        {
+            return new MvcCSharpCodeBuilder(context);
         }
     }
 }

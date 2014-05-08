@@ -27,19 +27,35 @@ namespace Microsoft.AspNet.Mvc.Razor.Host
         }
 
         /// <summary>
-        /// The '{0}' keyword must be followed by a type name on the same line.
+        /// A property name must be specified when using the '{0}' statement. Format for a '{0}' statement is  '@{0} &lt;TypeName&gt; &lt;PropertyName&gt;'.
         /// </summary>
-        internal static string MvcRazorCodeParser_ModelKeywordMustBeFollowedByTypeName
+        internal static string MvcRazorCodeParser_InjectDirectivePropertyNameRequired
         {
-            get { return GetString("MvcRazorCodeParser_ModelKeywordMustBeFollowedByTypeName"); }
+            get { return GetString("MvcRazorCodeParser_InjectDirectivePropertyNameRequired"); }
+        }
+
+        /// <summary>
+        /// A property name must be specified when using the '{0}' statement. Format for a '{0}' statement is  '@{0} &lt;TypeName&gt; &lt;PropertyName&gt;'.
+        /// </summary>
+        internal static string FormatMvcRazorCodeParser_InjectDirectivePropertyNameRequired(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("MvcRazorCodeParser_InjectDirectivePropertyNameRequired"), p0);
         }
 
         /// <summary>
         /// The '{0}' keyword must be followed by a type name on the same line.
         /// </summary>
-        internal static string FormatMvcRazorCodeParser_ModelKeywordMustBeFollowedByTypeName(object p0)
+        internal static string MvcRazorCodeParser_KeywordMustBeFollowedByTypeName
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("MvcRazorCodeParser_ModelKeywordMustBeFollowedByTypeName"), p0);
+            get { return GetString("MvcRazorCodeParser_KeywordMustBeFollowedByTypeName"); }
+        }
+
+        /// <summary>
+        /// The '{0}' keyword must be followed by a type name on the same line.
+        /// </summary>
+        internal static string FormatMvcRazorCodeParser_KeywordMustBeFollowedByTypeName(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("MvcRazorCodeParser_KeywordMustBeFollowedByTypeName"), p0);
         }
 
         /// <summary>
