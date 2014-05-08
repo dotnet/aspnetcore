@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
-using Microsoft.Net.Runtime;
+using Microsoft.Framework.Runtime;
 using Xunit;
 
 namespace Microsoft.AspNet.TestHost.Tests

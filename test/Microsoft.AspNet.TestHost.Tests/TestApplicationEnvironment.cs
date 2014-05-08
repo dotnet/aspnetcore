@@ -17,7 +17,7 @@
 
 using System;
 using System.Runtime.Versioning;
-using Microsoft.Net.Runtime;
+using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.TestHost.Tests
 {

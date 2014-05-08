@@ -20,7 +20,7 @@ using System.IO;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
-using Microsoft.Net.Runtime;
+using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Hosting
 {
