@@ -32,6 +32,7 @@
     <Content Include="Images\logo.svg" />
     <Content Include="Images\placeholder.png" />
     <Content Include="Images\placeholder.svg" />
+    <Content Include="k.ini" />
     <Content Include="LKG.json" />
     <Content Include="LocalConfig.json" />
     <Content Include="Project.json" />

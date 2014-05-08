@@ -36,7 +36,7 @@ namespace MusicStore.Controllers
         // POST: /Account/Login
         [HttpPost]
         [AllowAnonymous]
-        //[ValidateAntiForgeryToken]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model, string returnUrl)
         {
             if (ModelState.IsValid == true)
@@ -74,7 +74,7 @@ namespace MusicStore.Controllers
         // POST: /Account/Register
         [HttpPost]
         [AllowAnonymous]
-        //[ValidateAntiForgeryToken]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
             //Bug: https://github.com/aspnet/WebFx/issues/247
@@ -114,7 +114,7 @@ namespace MusicStore.Controllers
         //
         // POST: /Account/Manage
         [HttpPost]
-        //[ValidateAntiForgeryToken]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Manage(ManageUserViewModel model)
         {
             ViewBag.ReturnUrl = Url.Action("Manage");
@@ -140,7 +140,7 @@ namespace MusicStore.Controllers
         //
         // POST: /Account/LogOff
         [HttpPost]
-        //[ValidateAntiForgeryToken]
+        [ValidateAntiForgeryToken]
         public IActionResult LogOff()
         {
             SignInManager.SignOut();
