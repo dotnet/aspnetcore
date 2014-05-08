@@ -46,6 +46,7 @@ Foo() {
         {
         }
 
+        #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
 #line 2 "DesignTime.cshtml"
@@ -99,5 +100,6 @@ __o = bar;
             }
             ));
         }
+        #pragma warning restore 1998
     }
 }

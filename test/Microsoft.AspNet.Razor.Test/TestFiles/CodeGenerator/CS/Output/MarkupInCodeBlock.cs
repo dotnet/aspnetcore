@@ -10,6 +10,7 @@ namespace TestOutput
         {
         }
 
+        #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
 #line 1 "MarkupInCodeBlock.cshtml"
@@ -37,5 +38,6 @@ namespace TestOutput
 
             WriteLiteral("\r\n");
         }
+        #pragma warning restore 1998
     }
 }

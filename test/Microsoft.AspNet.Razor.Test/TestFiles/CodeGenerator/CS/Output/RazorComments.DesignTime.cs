@@ -16,6 +16,7 @@ namespace TestOutput
         {
         }
 
+        #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
 #line 4 "RazorComments.cshtml"
@@ -64,5 +65,6 @@ __o = a
 #line default
 #line hidden
         }
+        #pragma warning restore 1998
     }
 }

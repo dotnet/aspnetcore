@@ -16,6 +16,7 @@ namespace TestOutput
         {
         }
 
+        #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
 #line 1 "ParserError.cshtml"
@@ -29,5 +30,6 @@ int j =20;
 #line hidden
 
         }
+        #pragma warning restore 1998
     }
 }

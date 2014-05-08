@@ -10,9 +10,11 @@ namespace TestOutput
         {
         }
 
+        #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
             Layout = "~/Foo/Bar/Baz";
         }
+        #pragma warning restore 1998
     }
 }

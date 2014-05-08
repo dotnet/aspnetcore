@@ -16,6 +16,7 @@ namespace TestOutput
         {
         }
 
+        #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
 #line 1 "UnfinishedExpressionInCode.cshtml"
@@ -36,5 +37,6 @@ __o = DateTime.;
 #line hidden
 
         }
+        #pragma warning restore 1998
     }
 }

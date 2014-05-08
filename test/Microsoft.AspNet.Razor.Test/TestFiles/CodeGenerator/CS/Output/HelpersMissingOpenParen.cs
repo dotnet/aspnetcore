@@ -54,6 +54,7 @@ Italic
         {
         }
 
+        #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
             WriteLiteral("\r\n");
@@ -66,5 +67,6 @@ Italic
             );
 
         }
+        #pragma warning restore 1998
     }
 }

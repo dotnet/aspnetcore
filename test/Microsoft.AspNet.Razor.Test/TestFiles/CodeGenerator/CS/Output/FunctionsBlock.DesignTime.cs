@@ -31,6 +31,7 @@ namespace TestOutput
         {
         }
 
+        #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
 #line 12 "FunctionsBlock.cshtml"
@@ -39,5 +40,6 @@ namespace TestOutput
 #line default
 #line hidden
         }
+        #pragma warning restore 1998
     }
 }

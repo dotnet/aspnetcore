@@ -10,6 +10,7 @@ namespace TestOutput
         {
         }
 
+        #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
 #line 1 "ExpressionsInCode.cshtml"
@@ -75,5 +76,6 @@ namespace TestOutput
 
             WriteLiteral("</p>");
         }
+        #pragma warning restore 1998
     }
 }

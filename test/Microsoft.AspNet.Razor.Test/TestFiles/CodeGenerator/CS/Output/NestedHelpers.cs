@@ -92,6 +92,7 @@ Bold(string s) {
         {
         }
 
+        #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
             WriteLiteral("\r\n");
@@ -104,5 +105,6 @@ Bold(string s) {
             );
 
         }
+        #pragma warning restore 1998
     }
 }

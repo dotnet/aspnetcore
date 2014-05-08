@@ -10,6 +10,7 @@ namespace TestOutput
         {
         }
 
+        #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
             WriteLiteral("\r\n<p>This should  be shown</p>\r\n\r\n");
@@ -68,5 +69,6 @@ namespace TestOutput
 
             WriteLiteral("\r\n");
         }
+        #pragma warning restore 1998
     }
 }

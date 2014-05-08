@@ -24,8 +24,10 @@ string foo(string input) {
         {
         }
 
+        #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
         }
+        #pragma warning restore 1998
     }
 }

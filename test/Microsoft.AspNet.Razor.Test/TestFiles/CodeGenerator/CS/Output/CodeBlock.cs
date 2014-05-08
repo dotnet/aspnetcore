@@ -10,6 +10,7 @@ namespace TestOutput
         {
         }
 
+        #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
 #line 1 "CodeBlock.cshtml"
@@ -22,5 +23,6 @@ namespace TestOutput
 #line hidden
 
         }
+        #pragma warning restore 1998
     }
 }

@@ -22,6 +22,7 @@ namespace TestOutput
         {
         }
 
+        #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
             WriteLiteral("\r\n");
@@ -164,5 +165,6 @@ namespace TestOutput
 
             WriteLiteral("\r\n</ul> ");
         }
+        #pragma warning restore 1998
     }
 }

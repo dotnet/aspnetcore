@@ -15,6 +15,7 @@
         {
         }
 
+        #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
 #line 1 "C:\This\Path\Is\Just\For\Line\Pragmas.cshtml"
@@ -47,5 +48,6 @@
 #line hidden
 
         }
+        #pragma warning restore 1998
     }
 }

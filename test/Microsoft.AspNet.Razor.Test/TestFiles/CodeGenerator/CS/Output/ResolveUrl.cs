@@ -10,6 +10,7 @@ namespace TestOutput
         {
         }
 
+        #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
             WriteLiteral("<a");
@@ -145,5 +146,6 @@ namespace TestOutput
             }
             ));
         }
+        #pragma warning restore 1998
     }
 }

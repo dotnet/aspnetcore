@@ -10,6 +10,7 @@ namespace TestOutput
         {
         }
 
+        #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
             WriteLiteral("1 + 1 = ");
@@ -22,5 +23,6 @@ namespace TestOutput
             );
 
         }
+        #pragma warning restore 1998
     }
 }

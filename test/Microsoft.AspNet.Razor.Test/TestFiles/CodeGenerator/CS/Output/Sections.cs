@@ -10,6 +10,7 @@ namespace TestOutput
         {
         }
 
+        #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
 #line 1 "Sections.cshtml"
@@ -30,5 +31,6 @@ namespace TestOutput
             }
             ));
         }
+        #pragma warning restore 1998
     }
 }

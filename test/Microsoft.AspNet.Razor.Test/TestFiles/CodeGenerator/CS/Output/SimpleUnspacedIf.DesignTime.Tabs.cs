@@ -16,6 +16,7 @@ namespace TestOutput
         {
         }
 
+        #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
 #line 1 "SimpleUnspacedIf.cshtml"
@@ -34,5 +35,6 @@ if (true)
 #line hidden
 
         }
+        #pragma warning restore 1998
     }
 }

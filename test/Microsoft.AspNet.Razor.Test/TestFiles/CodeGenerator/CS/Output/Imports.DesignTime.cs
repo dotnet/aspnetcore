@@ -33,6 +33,7 @@ using System
         {
         }
 
+        #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
 #line 5 "Imports.cshtml"
@@ -46,5 +47,6 @@ using System
 #line default
 #line hidden
         }
+        #pragma warning restore 1998
     }
 }

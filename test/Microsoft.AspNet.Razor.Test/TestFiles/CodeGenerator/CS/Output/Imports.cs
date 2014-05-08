@@ -27,6 +27,7 @@ using System
         {
         }
 
+        #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
             WriteLiteral("\r\n<p>Path\'s full type name is ");
@@ -49,5 +50,6 @@ using System
 
             WriteLiteral("</p>");
         }
+        #pragma warning restore 1998
     }
 }
