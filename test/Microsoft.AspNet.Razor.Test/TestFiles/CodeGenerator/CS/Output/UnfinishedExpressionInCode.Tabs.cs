@@ -27,7 +27,7 @@ namespace TestOutput
 #line default
 #line hidden
 
-#line 1 "------------------------------------------"
+#line 2 "UnfinishedExpressionInCode.cshtml"
 __o = DateTime.;
 
 #line default

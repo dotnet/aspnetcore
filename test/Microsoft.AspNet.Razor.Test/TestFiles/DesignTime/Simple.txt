@@ -24,7 +24,7 @@
 #line default
 #line hidden
 
-#line 1 "------------------------------------------"
+#line 11 "C:\This\Path\Is\Just\For\Line\Pragmas.cshtml"
       __o = hello;
 
 #line default
@@ -35,7 +35,7 @@
 #line default
 #line hidden
 
-#line 1 "------------------------------------------"
+#line 13 "C:\This\Path\Is\Just\For\Line\Pragmas.cshtml"
                                   __o = c;
 
 #line default

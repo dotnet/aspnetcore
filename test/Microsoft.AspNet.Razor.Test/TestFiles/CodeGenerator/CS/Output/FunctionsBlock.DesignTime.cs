@@ -36,7 +36,7 @@ namespace TestOutput
 
         public override async Task ExecuteAsync()
         {
-#line 1 "------------------------------------------"
+#line 12 "FunctionsBlock.cshtml"
                    __o = RandomInt();
 
 #line default

@@ -58,7 +58,7 @@ Foo() {
 #line default
 #line hidden
 
-#line 1 "------------------------------------------"
+#line 3 "DesignTime.cshtml"
                 __o = i;
 
 #line default
@@ -70,14 +70,14 @@ Foo() {
 #line default
 #line hidden
 
-#line 1 "------------------------------------------"
+#line 8 "DesignTime.cshtml"
 __o = Foo(Bar.Baz);
 
 #line default
 #line hidden
-#line 1 "------------------------------------------"
+#line 9 "DesignTime.cshtml"
 __o = Foo(item => new Template((__razor_template_writer) => {
-#line 1 "------------------------------------------"
+#line 9 "DesignTime.cshtml"
         __o = baz;
 
 #line default
@@ -94,7 +94,7 @@ __o = Foo(item => new Template((__razor_template_writer) => {
 #line default
 #line hidden
             DefineSection("Footer", new Template((__razor_template_writer) => {
-#line 1 "------------------------------------------"
+#line 14 "DesignTime.cshtml"
 __o = bar;
 
 #line default

@@ -38,12 +38,12 @@ using System
 
         public override async Task ExecuteAsync()
         {
-#line 1 "------------------------------------------"
+#line 5 "Imports.cshtml"
                        __o = typeof(Path).FullName;
 
 #line default
 #line hidden
-#line 1 "------------------------------------------"
+#line 6 "Imports.cshtml"
                              __o = typeof(Foo).FullName;
 
 #line default

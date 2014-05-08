@@ -30,12 +30,12 @@ namespace TestOutput
 
         public override async Task ExecuteAsync()
         {
-#line 1 "------------------------------------------"
+#line 10 "Await.cshtml"
 								 __o = await Foo();
 
 #line default
 #line hidden
-#line 1 "------------------------------------------"
+#line 11 "Await.cshtml"
 								__o = await Foo();
 
 #line default
@@ -52,7 +52,7 @@ namespace TestOutput
 #line default
 #line hidden
 
-#line 1 "------------------------------------------"
+#line 13 "Await.cshtml"
 											 __o = await Foo();
 
 #line default
@@ -63,17 +63,17 @@ namespace TestOutput
 #line default
 #line hidden
 
-#line 1 "------------------------------------------"
+#line 14 "Await.cshtml"
 										   __o = await;
 
 #line default
 #line hidden
-#line 1 "------------------------------------------"
+#line 19 "Await.cshtml"
 									__o = await Foo(1, 2);
 
 #line default
 #line hidden
-#line 1 "------------------------------------------"
+#line 20 "Await.cshtml"
 								   __o = await Foo("bob", true);
 
 #line default
@@ -90,7 +90,7 @@ namespace TestOutput
 #line default
 #line hidden
 
-#line 1 "------------------------------------------"
+#line 22 "Await.cshtml"
 												__o = await Foo(boolValue: false);
 
 #line default
@@ -101,7 +101,7 @@ namespace TestOutput
 #line default
 #line hidden
 
-#line 1 "------------------------------------------"
+#line 23 "Await.cshtml"
 											  __o = await ("wrrronggg");
 
 #line default

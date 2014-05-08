@@ -28,7 +28,7 @@ namespace TestOutput
 #line default
 #line hidden
 
-#line 1 "------------------------------------------"
+#line 2 "EmptyImplicitExpressionInCode.cshtml"
 __o = ;
 
 #line default
