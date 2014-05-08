@@ -4,18 +4,18 @@
     "warningsAsErrors": false
   },
   "dependencies": {
-    "Microsoft.AspNet.Http": "0.1-alpha-*",
     "Microsoft.AspNet.FileSystems": "0.1-alpha-*",
-    "Microsoft.AspNet.Razor": "0.1-alpha-*",
-    "Microsoft.AspNet.Routing": "0.1-alpha-*",
+    "Microsoft.AspNet.Http": "0.1-alpha-*",
     "Microsoft.AspNet.Mvc.Core" : "",
     "Microsoft.AspNet.Mvc.Razor" : "",
+    "Microsoft.AspNet.Razor": "0.1-alpha-*",
+    "Microsoft.AspNet.Routing": "0.1-alpha-*",
     "Microsoft.AspNet.Testing" : "0.1-alpha-*",
-    "Xunit.KRunner": "0.1-alpha-*",
     "xunit.abstractions": "2.0.0-aspnet-*",
     "xunit.assert": "2.0.0-aspnet-*",
     "xunit.core": "2.0.0-aspnet-*",
-    "xunit.execution": "2.0.0-aspnet-*"
+    "xunit.execution": "2.0.0-aspnet-*",
+    "Xunit.KRunner": "0.1-alpha-*"
   },
   "commands": {
     "test": "Xunit.KRunner"
