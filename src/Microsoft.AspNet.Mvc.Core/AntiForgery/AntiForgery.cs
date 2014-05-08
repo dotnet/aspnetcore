@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Security.DataProtection;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -20,10 +20,10 @@ namespace Microsoft.AspNet.Mvc
 
         public AntiForgery([NotNull] IClaimUidExtractor claimUidExtractor,
                            [NotNull] IDataProtectionProvider dataProtectionProvider,
-                           [NotNull] IAntiForgeryAdditionalDataProvider additionalDataProvider)
+                           [NotNull] IAntiForgeryAdditionalDataProvider additionalDataProvider,
+                           [NotNull] IOptionsAccessor<MvcOptions> mvcOptions)
         {
-            // TODO: This is temporary till we figure out how to flow configs using DI.
-            var config = new AntiForgeryConfigWrapper();
+            var config = mvcOptions.Options.AntiForgeryOptions;
             var serializer = new AntiForgeryTokenSerializer(dataProtectionProvider.CreateProtector(_purpose));
             var tokenStore = new AntiForgeryTokenStore(config, serializer);
             var tokenProvider = new TokenProvider(config, claimUidExtractor, additionalDataProvider);

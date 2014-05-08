@@ -139,7 +139,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// The anti-forgery system has the configuration value AntiForgeryConfig.RequireSsl = true, but the current request is not an SSL request.
+        /// The anti-forgery system has the configuration value AntiForgeryOptions.RequireSsl = true, but the current request is not an SSL request.
         /// </summary>
         internal static string AntiForgeryWorker_RequireSSL
         {
@@ -147,7 +147,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// The anti-forgery system has the configuration value AntiForgeryConfig.RequireSsl = true, but the current request is not an SSL request.
+        /// The anti-forgery system has the configuration value AntiForgeryOptions.RequireSsl = true, but the current request is not an SSL request.
         /// </summary>
         internal static string FormatAntiForgeryWorker_RequireSSL()
         {

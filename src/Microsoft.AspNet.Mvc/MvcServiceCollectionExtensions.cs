@@ -4,6 +4,7 @@
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.Framework.DependencyInjection
 {

@@ -29,6 +29,8 @@
     <Compile Include="ActionResults\RedirectToRouteResultTest.cs" />
     <Compile Include="ActionResults\RedirectResultTest.cs" />
     <Compile Include="ActionSelectionConventionTests.cs" />
+    <Compile Include="AntiXsrf\AntiForgeryOptionsTests.cs" />
+    <Compile Include="MvcOptionsTests.cs" />
     <Compile Include="AntiXsrf\AntiForgeryTokenSerializerTest.cs" />
     <Compile Include="AntiXsrf\ITokenProvider.cs" />
     <Compile Include="AntiXsrf\ValidateAntiForgeryTokenAttributeTest.cs" />
@@ -39,7 +41,6 @@
     <Compile Include="AntiXsrf\AntiForgeryWorkerTests.cs" />
     <Compile Include="AntiXsrf\BinaryBlobTest.cs" />
     <Compile Include="AntiXsrf\ClaimUidExtractorTest.cs" />
-    <Compile Include="AntiXsrf\MockAntiForgeryConfig.cs" />
     <Compile Include="AntiXsrf\MockClaimsIdentity.cs" />
     <Compile Include="AntiXsrf\TokenProviderTests.cs" />
     <Compile Include="ControllerTests.cs" />

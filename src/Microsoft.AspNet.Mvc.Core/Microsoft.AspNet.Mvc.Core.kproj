@@ -44,8 +44,7 @@
     <Compile Include="ActionResults\RedirectToRouteResult.cs" />
     <Compile Include="ActionResults\ViewResult.cs" />
     <Compile Include="AntiForgery\AntiForgery.cs" />
-    <Compile Include="AntiForgery\AntiForgeryConfig.cs" />
-    <Compile Include="AntiForgery\AntiForgeryConfigWrapper.cs" />
+    <Compile Include="AntiForgery\AntiForgeryOptions.cs" />
     <Compile Include="AntiForgery\AntiForgeryToken.cs" />
     <Compile Include="AntiForgery\AntiForgeryTokenSerializer.cs" />
     <Compile Include="AntiForgery\AntiForgeryTokenSet.cs" />
@@ -55,7 +54,6 @@
     <Compile Include="AntiForgery\DefaultClaimUidExtractor.cs" />
     <Compile Include="AntiForgery\DefaultAntiForgeryAdditionalDataProvider.cs" />
     <Compile Include="AntiForgery\IAntiForgeryAdditionalDataProvider.cs" />
-    <Compile Include="AntiForgery\IAntiForgeryConfig.cs" />
     <Compile Include="AntiForgery\IAntiForgeryTokenSerializer.cs" />
     <Compile Include="AntiForgery\IClaimUidExtractor.cs" />
     <Compile Include="AntiForgery\ITokenGenerator.cs" />
@@ -140,6 +138,7 @@
     <Compile Include="IParameterDescriptorFactory.cs" />
     <Compile Include="IUrlHelper.cs" />
     <Compile Include="JsonOutputFormatter.cs" />
+    <Compile Include="MvcOptions.cs" />
     <Compile Include="MvcRouteHandler.cs" />
     <Compile Include="NonActionAttribute.cs" />
     <Compile Include="ParameterBindingInfo.cs" />

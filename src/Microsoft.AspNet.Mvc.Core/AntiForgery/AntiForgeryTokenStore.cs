@@ -10,10 +10,10 @@ namespace Microsoft.AspNet.Mvc
     // Saves anti-XSRF tokens split between HttpRequest.Cookies and HttpRequest.Form
     internal sealed class AntiForgeryTokenStore : ITokenStore
     {
-        private readonly IAntiForgeryConfig _config;
+        private readonly AntiForgeryOptions _config;
         private readonly IAntiForgeryTokenSerializer _serializer;
 
-        internal AntiForgeryTokenStore([NotNull] IAntiForgeryConfig config,
+        internal AntiForgeryTokenStore([NotNull] AntiForgeryOptions config, 
                                        [NotNull] IAntiForgeryTokenSerializer serializer)
         {
             _config = config;

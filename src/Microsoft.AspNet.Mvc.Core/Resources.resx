@@ -142,7 +142,7 @@
     <value>The provided anti-forgery token was meant for user "{0}", but the current user is "{1}".</value>
   </data>
   <data name="AntiForgeryWorker_RequireSSL" xml:space="preserve">
-    <value>The anti-forgery system has the configuration value AntiForgeryConfig.RequireSsl = true, but the current request is not an SSL request.</value>
+    <value>The anti-forgery system has the configuration value AntiForgeryOptions.RequireSsl = true, but the current request is not an SSL request.</value>
   </data>
   <data name="ActionExecutor_WrappedTaskInstance" xml:space="preserve">
     <value>The method '{0}' on type '{1}' returned an instance of '{2}'. Make sure to call Unwrap on the returned value to avoid unobserved faulted Task.</value>

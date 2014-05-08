@@ -1,15 +1,24 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using Microsoft.AspNet.Mvc.Core;
+
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
     /// Provides programmatic configuration for the anti-forgery token system.
     /// </summary>
-    public static class AntiForgeryConfig
+    public class AntiForgeryOptions
     {
-        internal const string AntiForgeryTokenFieldName = "__RequestVerificationToken";
-        private static string _cookieName;
+        private const string AntiForgeryTokenFieldName = "__RequestVerificationToken";
+        private string _cookieName;
+        private string _formFieldName = AntiForgeryTokenFieldName;
+
+        public AntiForgeryOptions()
+        {
+            _cookieName = GetAntiForgeryCookieName();
+        }
 
         /// <summary>
         /// Specifies the name of the cookie that is used by the anti-forgery
@@ -19,19 +28,46 @@ namespace Microsoft.AspNet.Mvc
         /// If an explicit name is not provided, the system will automatically
         /// generate a name.
         /// </remarks>
-        public static string CookieName
+        public string CookieName
         {
             get
             {
-                if (_cookieName == null)
-                {
-                    _cookieName = GetAntiForgeryCookieName();
-                }
                 return _cookieName;
             }
+
             set
             {
+                if (value == null)
+                {
+                    throw new ArgumentNullException("value",
+                                                    Resources.FormatPropertyOfTypeCannotBeNull(
+                                                                "CookieName", typeof(AntiForgeryOptions)));
+                }
+
                 _cookieName = value;
+            }
+        }
+
+        /// <summary>
+        /// Specifies the name of the anti-forgery token field that is used by the anti-forgery system.
+        /// </summary>
+        public string FormFieldName
+        {
+            get
+            {
+                return _formFieldName;
+            }
+
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException("value", 
+                                                    Resources.FormatPropertyOfTypeCannotBeNull(
+                                                                "FormFieldName", typeof(AntiForgeryOptions)));
+                }
+
+                _formFieldName = value;
             }
         }
 
@@ -40,7 +76,7 @@ namespace Microsoft.AspNet.Mvc
         /// to operate. If this setting is 'true' and a non-SSL request
         /// comes into the system, all anti-forgery APIs will fail.
         /// </summary>
-        public static bool RequireSsl
+        public bool RequireSSL
         {
             get;
             set;
@@ -52,14 +88,14 @@ namespace Microsoft.AspNet.Mvc
         /// header is generated with the value SAMEORIGIN. If this setting is 'true',
         /// the X-Frame-Options header will not be generated for the response.
         /// </summary>
-        public static bool SuppressXFrameOptionsHeader
+        public bool SuppressXFrameOptionsHeader
         {
             get;
             set;
         }
 
         // TODO: Replace the stub.
-        private static string GetAntiForgeryCookieName()
+        private string GetAntiForgeryCookieName()
         {
             return AntiForgeryTokenFieldName;
         }

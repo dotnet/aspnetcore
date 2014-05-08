@@ -6,6 +6,7 @@ using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.AspNet.Security.DataProtection;
 using Moq;
 using Xunit;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.Core.Test
 {
@@ -33,9 +34,12 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var claimExtractor = new Mock<IClaimUidExtractor>();
             var dataProtectionProvider = new Mock<IDataProtectionProvider>();
             var additionalDataProvider = new Mock<IAntiForgeryAdditionalDataProvider>();
+            var optionsAccessor = new Mock<IOptionsAccessor<MvcOptions>>();
+            optionsAccessor.SetupGet(o => o.Options).Returns(new MvcOptions());
             return new AntiForgery(claimExtractor.Object,
                                    dataProtectionProvider.Object,
-                                   additionalDataProvider.Object);
+                                   additionalDataProvider.Object,
+                                   optionsAccessor.Object);
         }
     }
 }

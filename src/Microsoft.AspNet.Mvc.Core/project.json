@@ -12,6 +12,7 @@
     "Microsoft.AspNet.Security.DataProtection" : "0.1-alpha-*",
     "Microsoft.Framework.DependencyInjection": "0.1-alpha-*",
     "Microsoft.Framework.Runtime.Interfaces":  "0.1-alpha-*",
+    "Microsoft.Framework.OptionsModel": "0.1-alpha-*",
     "Newtonsoft.Json": "5.0.8"
   },
   "configurations": {

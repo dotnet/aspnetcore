@@ -12,10 +12,10 @@ namespace Microsoft.AspNet.Mvc
     internal sealed class TokenProvider : ITokenValidator, ITokenGenerator
     {
         private readonly IClaimUidExtractor _claimUidExtractor;
-        private readonly IAntiForgeryConfig _config;
+        private readonly AntiForgeryOptions _config;
         private readonly IAntiForgeryAdditionalDataProvider _additionalDataProvider;
 
-        internal TokenProvider(IAntiForgeryConfig config,
+        internal TokenProvider(AntiForgeryOptions config, 
                                IClaimUidExtractor claimUidExtractor,
                                IAntiForgeryAdditionalDataProvider additionalDataProvider)
         {

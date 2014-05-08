@@ -14,14 +14,14 @@ namespace Microsoft.AspNet.Mvc
 {
     internal sealed class AntiForgeryWorker
     {
-        private readonly IAntiForgeryConfig _config;
+        private readonly AntiForgeryOptions _config;
         private readonly IAntiForgeryTokenSerializer _serializer;
         private readonly ITokenStore _tokenStore;
         private readonly ITokenValidator _validator;
         private readonly ITokenGenerator _generator;
 
         internal AntiForgeryWorker([NotNull] IAntiForgeryTokenSerializer serializer,
-                                   [NotNull] IAntiForgeryConfig config,
+                                   [NotNull] AntiForgeryOptions config,
                                    [NotNull] ITokenStore tokenStore,
                                    [NotNull] ITokenGenerator generator,
                                    [NotNull] ITokenValidator validator)
