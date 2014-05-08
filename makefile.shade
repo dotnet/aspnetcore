@@ -31,7 +31,7 @@ var repos='${new Dictionary<string,string> {
     {"Routing",               gitHubUriPrefix + "Routing.git"},
     {"Hosting",               gitHubUriPrefix + "Hosting.git"},
     {"Helios",                gitHubUriPrefix + "Helios.git"},
-    {"WebFx",                 gitHubUriPrefix + "WebFx.git"},
+    {"Mvc",                   gitHubUriPrefix + "Mvc.git"},
     {"WebListener",           gitHubUriPrefix + "WebListener.git"},
     {"Entropy",               gitHubUriPrefix + "Entropy.git"},
     {"Testing",               gitHubUriPrefix + "Testing.git"},
