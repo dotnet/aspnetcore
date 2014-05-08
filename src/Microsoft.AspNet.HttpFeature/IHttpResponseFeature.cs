@@ -18,7 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.Net.Runtime;
+using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.HttpFeature
 {

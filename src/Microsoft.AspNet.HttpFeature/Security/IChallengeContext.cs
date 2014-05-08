@@ -16,7 +16,7 @@
 // permissions and limitations under the License.
 
 using System.Collections.Generic;
-using Microsoft.Net.Runtime;
+using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.HttpFeature.Security
 {

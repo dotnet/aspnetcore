@@ -17,7 +17,7 @@
 
 using System.Collections.Generic;
 using System.Security.Claims;
-using Microsoft.Net.Runtime;
+using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.HttpFeature.Security
 {

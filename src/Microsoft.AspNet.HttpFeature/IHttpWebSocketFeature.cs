@@ -18,7 +18,7 @@
 #if NET45
 using System.Net.WebSockets;
 using System.Threading.Tasks;
-using Microsoft.Net.Runtime;
+using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.HttpFeature
 {

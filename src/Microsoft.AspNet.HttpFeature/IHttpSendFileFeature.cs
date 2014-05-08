@@ -17,7 +17,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Net.Runtime;
+using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.HttpFeature
 {
