@@ -1,8 +1,6 @@
-using Microsoft.AspNet;
-using Microsoft.AspNet.Abstractions;
-using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
-using Microsoft.AspNet.Diagnostics;
+using Microsoft.AspNet.Builder;
+using Microsoft.Framework.DependencyInjection;
 
 namespace KWebStartup
 {
@@ -19,7 +17,7 @@ namespace KWebStartup
 
             app.UseMvc(routes =>
             {
-                routes.MapRoute("{controller}/{action}", new { controller = "Home", action = "Index" });
+                routes.MapRoute(null, "{controller}/{action}", new { controller = "Home", action = "Index" });
             });
 
             app.UseWelcomePage();
