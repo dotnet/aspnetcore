@@ -38,9 +38,9 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         {
             var services = new ServiceCollection();
 #if NET45
-            //            services.AddEntityFramework(s => s.AddSqlServer());
+            //            services.AddEntityFramework().AddSqlServer();
             //#else
-            services.AddEntityFramework(s => s.AddInMemoryStore());
+            services.AddEntityFramework().AddInMemoryStore();
 #endif
             // TODO: this should construct a new instance of InMemoryStore
             var store = new EntityRoleStore<EntityRole>(new IdentityContext());
@@ -60,9 +60,9 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         {
             var services = new ServiceCollection();
 #if NET45
-//            services.AddEntityFramework(s => s.AddSqlServer());
+//            services.AddEntityFramework().AddSqlServer())
 //#else
-            services.AddEntityFramework(s => s.AddInMemoryStore());
+            services.AddEntityFramework().AddInMemoryStore();
 #endif
             services.AddTransient<DbContext, IdentityContext>();
             services.AddTransient<IRoleStore<EntityRole>, EntityRoleStore<EntityRole>>();

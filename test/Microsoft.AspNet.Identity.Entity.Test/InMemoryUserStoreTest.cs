@@ -44,9 +44,9 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         {
             var services = new ServiceCollection();
 #if NET45
-            //            services.AddEntityFramework(s => s.AddSqlServer());
+            //            services.AddEntityFramework().AddSqlServer();
             //#else
-            services.AddEntityFramework(s => s.AddInMemoryStore());
+            services.AddEntityFramework().AddInMemoryStore();
 #endif
             services.AddSingleton<IOptionsAccessor<IdentityOptions>, OptionsAccessor<IdentityOptions>>();
             services.AddInstance<DbContext>(new IdentityContext());
@@ -63,9 +63,9 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         {
             var services = new ServiceCollection();
 #if NET45
-            //            services.AddEntityFramework(s => s.AddSqlServer());
+            //            services.AddEntityFramework().AddSqlServer();
             //#else
-            services.AddEntityFramework(s => s.AddInMemoryStore());
+            services.AddEntityFramework().AddInMemoryStore();
 #endif
             // TODO: this needs to construct a new instance of InMemoryStore
             var store = new InMemoryInMemoryUserStore(new IdentityContext());
@@ -205,7 +205,9 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         {
             // TODO: Should be possible to do this without creating the provider externally, but
             // that is currently not working. Will be investigated.
-            var provider = new ServiceCollection().AddEntityFramework(s => s.AddInMemoryStore()).BuildServiceProvider();
+            var services = new ServiceCollection();
+            services.AddEntityFramework().AddInMemoryStore();
+            var provider = services.BuildServiceProvider();
 
             using (var db = new IdentityContext(provider))
             {

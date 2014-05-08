@@ -97,9 +97,9 @@ namespace Microsoft.AspNet.Identity.Entity.Test
 
         public static IdentitySqlContext CreateContext()
         {
-            var serviceProvider = new ServiceCollection()
-                .AddEntityFramework(s => s.AddSqlServer())
-                .BuildServiceProvider();
+            var services = new ServiceCollection();
+            services.AddEntityFramework().AddSqlServer();
+            var services.BuildServiceProvider();
 
             var db = new IdentitySqlContext(serviceProvider);
 
@@ -115,9 +115,9 @@ namespace Microsoft.AspNet.Identity.Entity.Test
 
         public static ApplicationDbContext CreateAppContext()
         {
-            var serviceProvider = new ServiceCollection()
-                .AddEntityFramework(s => s.AddSqlServer())
-                .BuildServiceProvider();
+            var services = new ServiceCollection();
+            services.AddEntityFramework().AddSqlServer();
+            var serviceProvider = services.BuildServiceProvider();
 
             var db = new ApplicationDbContext(serviceProvider);
 

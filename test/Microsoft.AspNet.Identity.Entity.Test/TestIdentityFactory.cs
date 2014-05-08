@@ -35,13 +35,14 @@ namespace Microsoft.AspNet.Identity.Entity.Test
     {
         public static IdentityContext CreateContext()
         {
-            var serviceProvider = new ServiceCollection()
+            var services = new ServiceCollection();
+            
 //#if NET45
-//                .AddEntityFramework(s => s.AddSqlServer())
+//            services.AddEntityFramework().AddSqlServer();
 //#else
-                .AddEntityFramework(s => s.AddInMemoryStore())
+            services.AddEntityFramework().AddInMemoryStore();
 //#endif
-                .BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider();
 
             var db = new IdentityContext(serviceProvider);
              
