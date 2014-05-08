@@ -12,10 +12,7 @@
     "Microsoft.AspNet.Mvc.Core" : "",
     "Microsoft.AspNet.Mvc.Razor.Host" : "",
     "Microsoft.AspNet.Mvc.ModelBinding" : "",
-    "Microsoft.CodeAnalysis.Common" : "0.7-beta-*",
-    "Microsoft.CodeAnalysis.CSharp" : "0.7-beta-*",
-    "System.Reflection.Metadata.Ecma335": "0.7-beta-*",
-    "Microsoft.Bcl.Immutable": "1.1.18-beta-*",
+    "K.Roslyn" : "0.1-alpha-*",
     "Microsoft.Net.Runtime.Interfaces":  "0.1-alpha-*"
   },
   "configurations": {
