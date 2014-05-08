@@ -37,7 +37,8 @@ namespace Microsoft.AspNet.Identity.Entity
     public class UserStore<TUser> :
         //IUserRoleStore<TUser>,
         IUserPasswordStore<TUser>,
-        IQueryableUserStore<TUser>
+        IQueryableUserStore<TUser>,
+        IUserClaimStore<TUser>
         where TUser : User
     {
         private bool _disposed;
@@ -346,6 +347,53 @@ namespace Microsoft.AspNet.Identity.Entity
         public void Dispose()
         {
             _disposed = true;
+        }
+
+        private DbSet<IdentityUserClaim> UserClaims { get { return Context.Set<IdentityUserClaim>(); } }
+
+        public Task<IList<Claim>> GetClaimsAsync(TUser user, CancellationToken cancellationToken = new CancellationToken())
+        {
+            ThrowIfDisposed();
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            IList<Claim> result = UserClaims.Where(uc => uc.UserId == user.Id).Select(c => new Claim(c.ClaimType, c.ClaimValue)).ToList();
+            return Task.FromResult(result);
+        }
+
+        public Task AddClaimAsync(TUser user, Claim claim, CancellationToken cancellationToken = new CancellationToken())
+        {
+            ThrowIfDisposed();
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            if (claim == null)
+            {
+                throw new ArgumentNullException("claim");
+            }
+            UserClaims.Add(new IdentityUserClaim { UserId = user.Id, ClaimType = claim.Type, ClaimValue = claim.Value });
+            return Task.FromResult(0);
+        }
+
+        public Task RemoveClaimAsync(TUser user, Claim claim, CancellationToken cancellationToken = new CancellationToken())
+        {
+            ThrowIfDisposed();
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            if (claim == null)
+            {
+                throw new ArgumentNullException("claim");
+            }
+            var claims = UserClaims.Where(uc => uc.ClaimValue == claim.Value && uc.ClaimType == claim.Type).ToList();
+            foreach (var c in claims)
+            {
+                UserClaims.Remove(c);
+            }
+            return Task.FromResult(0);
         }
     }
 }

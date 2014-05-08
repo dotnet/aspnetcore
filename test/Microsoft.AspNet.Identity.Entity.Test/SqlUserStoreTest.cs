@@ -214,8 +214,8 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         [Fact]
         public async Task CanChangePassword()
         {
-            var manager = TestIdentityFactory.CreateManager();
-            var user = new EntityUser("ChangePasswordTest");
+            var manager = CreateManager();
+            var user = new User("ChangePasswordTest");
             const string password = "password";
             const string newPassword = "newpassword";
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, password));
@@ -229,5 +229,42 @@ namespace Microsoft.AspNet.Identity.Entity.Test
             IdentityResultAssert.IsSuccess(await manager.DeleteAsync(user));
         }
 
+        [Fact]
+        public async Task ClaimsIdentityCreatesExpectedClaims()
+        {
+            var manager = CreateManager();
+            //var role = TestIdentityFactory.CreateRoleManager(context);
+            var user = new User("Hao");
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+            //IdentityResultAssert.IsSuccess(await role.CreateAsync(new EntityRole("Admin")));
+            //IdentityResultAssert.IsSuccess(await role.CreateAsync(new EntityRole("Local")));
+            //IdentityResultAssert.IsSuccess(await manager.AddToRoleAsync(user, "Admin"));
+            //IdentityResultAssert.IsSuccess(await manager.AddToRoleAsync(user, "Local"));
+            Claim[] userClaims =
+            {
+                new Claim("Whatever", "Value"),
+                new Claim("Whatever2", "Value2")
+            };
+            foreach (var c in userClaims)
+            {
+                IdentityResultAssert.IsSuccess(await manager.AddClaimAsync(user, c));
+            }
+
+            var identity = await manager.CreateIdentityAsync(user, "test");
+            var claimsFactory = (ClaimsIdentityFactory<User>)manager.ClaimsIdentityFactory;
+            Assert.NotNull(claimsFactory);
+            var claims = identity.Claims.ToList();
+            Assert.NotNull(claims);
+            Assert.True(
+                claims.Any(c => c.Type == manager.Options.ClaimType.UserName && c.Value == user.UserName));
+            Assert.True(claims.Any(c => c.Type == manager.Options.ClaimType.UserId && c.Value == user.Id.ToString()));
+            //Assert.True(claims.Any(c => c.Type == manager.Options.ClaimType.Role && c.Value == "Admin"));
+            //Assert.True(claims.Any(c => c.Type == manager.Options.ClaimType.Role && c.Value == "Local"));
+            foreach (var cl in userClaims)
+            {
+                Assert.True(claims.Any(c => c.Type == cl.Type && c.Value == cl.Value));
+            }
+            IdentityResultAssert.IsSuccess(await manager.DeleteAsync(user));
+        }
     }
 }

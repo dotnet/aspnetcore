@@ -36,6 +36,7 @@ namespace Microsoft.AspNet.Identity.Entity
     {
 
         public DbSet<TUser> Users { get; set; }
+        public DbSet<IdentityUserClaim> UserClaims { get; set; }
         //public DbSet<TRole> Roles { get; set; }
 
         public IdentitySqlContext(IServiceProvider serviceProvider)
@@ -46,7 +47,7 @@ namespace Microsoft.AspNet.Identity.Entity
         protected override void OnConfiguring(DbContextOptions builder)
         {
             // TODO: pull connection string from config
-            builder.UseSqlServer(@"Server=(localdb)\v11.0;Database=SimpleIdentity3;Trusted_Connection=True;");
+            builder.UseSqlServer(@"Server=(localdb)\v11.0;Database=SimpleIdentity5;Trusted_Connection=True;");
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -55,6 +56,12 @@ namespace Microsoft.AspNet.Identity.Entity
                 .Key(u => u.Id)
                 .Properties(ps => ps.Property(u => u.UserName))
                 .ToTable("AspNetUsers");
+
+            builder.Entity<IdentityUserClaim>()
+                .Key(uc => uc.Id)
+                // TODO: this throws a length exception currently, investigate
+                //.ForeignKeys(fk => fk.ForeignKey<TUser>(f => f.UserId))
+                .ToTable("AspNetUserClaims");
         }
     }
 }

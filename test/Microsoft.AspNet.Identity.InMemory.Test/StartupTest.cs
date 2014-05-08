@@ -111,6 +111,40 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             await CreateAdminUser(builder.ApplicationServices);
         }
 
+        [Fact]
+        public void VerifyUseInMemoryLifetimes()
+        {
+            IBuilder builder = new Microsoft.AspNet.Builder.Builder(new ServiceCollection().BuildServiceProvider());
+            builder.UseServices(services =>
+            {
+                services.AddIdentity<ApplicationUser>(s => s.AddInMemory());
+                services.AddTransient<ApplicationUserManager>();
+                services.AddTransient<ApplicationRoleManager>();
+
+            });
+
+            var userStore = builder.ApplicationServices.GetService<IUserStore<ApplicationUser>>();
+            var roleStore = builder.ApplicationServices.GetService<IRoleStore<IdentityRole>>();
+            var userManager = builder.ApplicationServices.GetService<ApplicationUserManager>();
+            var roleManager = builder.ApplicationServices.GetService<ApplicationRoleManager>();
+
+            Assert.NotNull(userStore);
+            Assert.NotNull(userManager);
+            Assert.NotNull(roleStore);
+            Assert.NotNull(roleManager);
+
+            var userStore2 = builder.ApplicationServices.GetService<IUserStore<ApplicationUser>>();
+            var roleStore2 = builder.ApplicationServices.GetService<IRoleStore<IdentityRole>>();
+            var userManager2 = builder.ApplicationServices.GetService<ApplicationUserManager>();
+            var roleManager2 = builder.ApplicationServices.GetService<ApplicationRoleManager>();
+
+            Assert.Equal(userStore, userStore2);
+            Assert.NotEqual(userManager, userManager2);
+            Assert.Equal(roleStore, roleStore2);
+            Assert.NotEqual(roleManager, roleManager2);
+        }
+
+
         private static async Task CreateAdminUser(IServiceProvider serviceProvider)
         {
             const string userName = "admin";
