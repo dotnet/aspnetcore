@@ -2,7 +2,7 @@
 
 In the next version of ASP.NET we are working with multiple teams around Microsoft to create a lean, composable .NET stack that provides a familiar and modern framework for web and cloud scenarios.
 
-The Preview repository is a place for the ASP.NET Insiders to log issues and discuss ASP.NET vNext with the product team. It contains some samples and some documentation in the [wiki](https://github.com/aspnet/Preview/wiki).
+The Preview repository is a place for the ASP.NET Insiders to log issues and discuss ASP.NET vNext with the product team. It contains some samples and some documentation in the [wiki](https://github.com/aspnet/Home/wiki).
 
 The samples provided are designed to show some of the features of the new framework as well as setting up a sandbox for you to try out new drops of functionality as they come out. The NuGet.config file in the repo points to a private MyGet feed that has all the packages being developed. The feed is updated every time a full build succeeds.
 
@@ -12,7 +12,7 @@ The first thing we need to do is setup the tools required to build and run an ap
 
 * Clone the repository
 * On the command line execute ```kvm setup``` 
-* This command will download the latest version of the SDK and put it on your path so that you can run the rest of the commands in the readme. If you want to know more about what this is doing then you can read the [KVM page](https://github.com/aspnet/Preview/wiki/version-manager) of the wiki.
+* This command will download the latest version of the SDK and put it on your path so that you can run the rest of the commands in the readme. If you want to know more about what this is doing then you can read the [KVM page](https://github.com/aspnet/Home/wiki/version-manager) of the wiki.
 * Navigate to samples\HelloConsole
 * Run ```K run```
 * You should see some compiler output and a message saying "Hello World"
@@ -23,9 +23,9 @@ The first thing we need to do is setup the tools required to build and run an ap
 
 These samples, in this repo, are just basic starting points for you to experiment with features. Since there is no File->New Project we thought some simple samples to take the place of scaffolding would be convenient.
 
-+ [ConsoleApp](https://github.com/aspnet/Preview/tree/master/samples/ConsoleApp). This is just basic console app if you want to use it as a starting point. Use it the same as the console app from our earlier samples
-+ [HelloWeb](https://github.com/aspnet/Preview/tree/master/samples/HelloWeb). This is a minimal startup class that shows welcome page and static file middleware. This is mostly for you to run through the steps in the readme and make sure you have everything setup and working correctly.
-+ [HelloWebFx](https://github.com/aspnet/Preview/tree/master/samples/HelloWebFx). This sample is a basic MVC app. It is not designed to show all the functionality of the new web stack, but to give you a starting point to play with features.
++ [ConsoleApp](https://github.com/aspnet/Home/tree/master/samples/ConsoleApp). This is just basic console app if you want to use it as a starting point. Use it the same as the console app from our earlier samples
++ [HelloWeb](https://github.com/aspnet/Home/tree/master/samples/HelloWeb). This is a minimal startup class that shows welcome page and static file middleware. This is mostly for you to run through the steps in the readme and make sure you have everything setup and working correctly.
++ [HelloWebFx](https://github.com/aspnet/Home/tree/master/samples/HelloWebFx). This sample is a basic MVC app. It is not designed to show all the functionality of the new web stack, but to give you a starting point to play with features.
 
 **NOTE: The samples are pinned to a specific version of the packages. If you want to try the latest builds then update the project.json and replace the number at the end of the version with a '\*', so '0.1-alpha-267' becomes '0.1-alpha-\*', and then run ```K restore``` to pull down the latest packages**
 
