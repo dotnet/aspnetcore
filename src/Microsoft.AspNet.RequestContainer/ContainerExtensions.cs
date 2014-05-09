@@ -27,6 +27,11 @@ namespace Microsoft.AspNet.Builder
 {
     public static class ContainerExtensions
     {
+        public static IBuilder UseMiddleware<T>(this IBuilder builder, params object[] args)
+        {
+            return builder.UseMiddleware(typeof(T), args);
+        }
+
         public static IBuilder UseMiddleware(this IBuilder builder, Type middleware, params object[] args)
         {
             // TODO: move this ext method someplace nice
@@ -34,7 +39,7 @@ namespace Microsoft.AspNet.Builder
             {
                 var typeActivator = builder.ApplicationServices.GetService<ITypeActivator>();
                 var instance = typeActivator.CreateInstance(builder.ApplicationServices, middleware, new[] { next }.Concat(args).ToArray());
-                var methodinfo = middleware.GetTypeInfo().GetDeclaredMethod("Invoke");
+                var methodinfo = middleware.GetRuntimeMethods().Single(info => info.Name.Equals("Invoke"));
                 return (RequestDelegate)methodinfo.CreateDelegate(typeof(RequestDelegate), instance);
             });
         }

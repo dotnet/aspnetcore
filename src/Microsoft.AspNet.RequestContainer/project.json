@@ -13,6 +13,7 @@
         "System.Diagnostics.Debug": "4.0.10.0",
         "System.Linq": "4.0.0.0",
         "System.Reflection": "4.0.10.0",
+        "System.Reflection.Extensions": "4.0.0.0",
         "System.Runtime": "4.0.20.0",
         "System.Runtime.Extensions": "4.0.10.0",
         "System.Threading": "4.0.0.0",
