@@ -35,9 +35,8 @@ public class Startup
              * Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources, 
              * then the later source will win. By this way a Local config can be overridden by a different setting while deployed remotely.
             */
-            var applicationEnvironment = app.ApplicationServices.GetService<IApplicationEnvironment>();
             var configuration = new Configuration();
-            configuration.AddJsonFile(Path.Combine(applicationEnvironment.ApplicationBasePath, "LocalConfig.json"));
+            configuration.AddJsonFile("LocalConfig.json");
             configuration.AddEnvironmentVariables(); //All environment variables in the process's context flow in as configuration values.
             services.AddInstance<IConfiguration>(configuration);
 
