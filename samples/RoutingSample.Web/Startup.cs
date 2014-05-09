@@ -8,7 +8,7 @@ namespace RoutingSample.Web
 {
     public class Startup
     {
-        public void Configuration(IBuilder builder)
+        public void Configure(IBuilder builder)
         {
             var routes = new RouteCollection();
             builder.UseRouter(routes);
