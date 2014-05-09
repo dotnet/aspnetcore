@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Builder
             {
                 var typeActivator = builder.ApplicationServices.GetService<ITypeActivator>();
                 var instance = typeActivator.CreateInstance(builder.ApplicationServices, middleware, new[] { next }.Concat(args).ToArray());
-                var methodinfo = middleware.GetRuntimeMethods().Single(info => info.Name.Equals("Invoke"));
+                var methodinfo = middleware.GetMethod("Invoke", BindingFlags.Instance | BindingFlags.Public);
                 return (RequestDelegate)methodinfo.CreateDelegate(typeof(RequestDelegate), instance);
             });
         }
