@@ -1,6 +1,3 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
 namespace Microsoft.AspNet.Diagnostics.Views
 {
 #line 1 "WelcomePage.cshtml"
@@ -3688,69 +3685,11 @@ using System
 #line hidden
             );
 
-            WriteLiteral("</div>\r\n        <a class=\"bodyCTA\" href=\"http://go.microsoft.com/fwlink/?LinkID=3" +
-"13397&amp;clcid=0x409\">");
+            WriteLiteral("</div>\r\n        <a class=\"bodyCTA longer\" href=\"http://go.microsoft.com/fwlink/?L" +
+"inkID=398596&amp;clcid=0x409\">");
             Write(
 #line 311 "WelcomePage.cshtml"
-                                                                                                 Resources.WelcomeLearnOwin
-
-#line default
-#line hidden
-            );
-
-            WriteLiteral("\r\n            <div>\r\n                <img src=\"data:image/png;base64,iVBORw0KGgoA" +
-"AAANSUhEUgAAADoAAAAdCAYAAAD7En+mAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccll" +
-"PAAAAyRpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVN" +
-"ME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8i" +
-"IHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1" +
-"NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAy" +
-"LzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1w" +
-"PSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2Jl" +
-"LmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9z" +
-"VHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNiAoTWFj" +
-"aW50b3NoKSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozMjVCMDEwM0FBQkExMUUyQjdGNEEwODg0" +
-"RjhFODY4OCIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozMjVCMDEwNEFBQkExMUUyQjdGNEEwODg0" +
-"RjhFODY4OCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjMyNUIw" +
-"MTAxQUFCQTExRTJCN0Y0QTA4ODRGOEU4Njg4IiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjMyNUIw" +
-"MTAyQUFCQTExRTJCN0Y0QTA4ODRGOEU4Njg4Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+" +
-"IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+I1MZRAAAA4FJREFUeNq8md1x2kAQx3UaCoAK" +
-"Ag0YkgYQHTgV2KoAeMqjncfkBbsCSAd0AK5AOA1Y6YAOyJ7mf5rV6T4l8M3c2ALd/fZ/u/exh0gCy+Vy" +
-"yeiPrHPtqzPVd6p7IcTJ0rbxTO8FMe++/vIy/xY/TiF9CY+4If1ZUV1SHQb0V1L9Q/WFxJy7CCVxnZkk" +
-"+hwtlIyTsCcGk53sMZJ8FGcY8Ux7NydB+xihJLI3k8Tug4TCi1uq92zEfpJxu4DwfoShY3y0o3a5Tyi8" +
-"2GKS0buA8G4xqV3uFAqRB4xYAoHPSURBH08IvwosR9omFCIbTDI0iok+GkxdrC5UjuqjHnpdCry7xaOc" +
-"s2uLkQ2mLfQCBTeY1Ne6JRRzcoPH731EWsQuqM+jYU7WzD4iLWIX1GfFTLVwU+HaG4gQ3WExSRhcDzcV" +
-"rldhYl63mAJCnwEtybiJx0tjNvETtCk9c/YDq2OuFjUSWjPJuInHSy0mtSk9c7ZmSvEpvntQIxswaGeE" +
-"2wG1IDEzh1fl+694XLKvejFJzMzh1RZTwMhCdkZGjSJWVr5SnjEHT44o+MDjaPrt91gxyahRxMraYtpO" +
-"RoiCmpmyvesYMfcqCNvEKyNsnkVoq3ezLkx4qcW0eRahXTOl0C94eI9caGxiM0uTEzvVdGI6xHqZAzbJ" +
-"T4aQO8ADoUWJzQ0nqX/sfyuTjO7EpHa54SRVM1Ntwl+rbALf+zTmwDDKJtf7SqYZvwhs92nMATrOTFDb" +
-"sY2F9gwrITdywVM0Vqbae0YmP7ZZVlMj05KiTXnoqjieRx7vFHAYIDJh28KxK5OJHAaIbDCFvsc5DO0s" +
-"ku3VMkqEvse5EuauIvF+gSgRqbbHrW7gSX4i2hn2uNUNPNliCi3LkA0nIV6NDPFCz2BYllExQ7waGeIF" +
-"z2BSlmWUGLHtFUXy/o48TcOed3Umu62omI00DUVl5PdIwK+1t81UUm34vmYiAb8ZUzgS5eq+p4cnN7g5" +
-"cCbyWqJsvO+J8GSDyXNc0+XYlr18RA5ZRt7/btjSnqsFwXE51mK68k3L/W+DqR8HRcAViFq5Xm1pGBP4" +
-"wAyu751Crjs1z9ZM1wU1BLaYptsK4VktN9pRq0R9Y5/NMZL8slmC1ioSIu51ezNtkSACQ3HJckjXAX1v" +
-"8nzsTxLwVBTT99OEiFxkMsNIVpu/J6yjhBpEG5mhv7vI8l+AAQB7WiwH/DuungAAAABJRU5ErkJggg==" +
-"\"");
-            WriteAttribute("alt", Tuple.Create("\r\n                    alt=\"", 287010), Tuple.Create("\"", 287078), 
-            Tuple.Create(Tuple.Create("", 287037), Tuple.Create<System.Object, System.Int32>(
-#line 314 "WelcomePage.cshtml"
-                          Resources.WelcomePageImageText_LearnMore
-
-#line default
-#line hidden
-            , 287037), false));
-            WriteAttribute("title", Tuple.Create(" title=\"", 287079), Tuple.Create("\"", 287128), 
-            Tuple.Create(Tuple.Create("", 287087), Tuple.Create<System.Object, System.Int32>(
-#line 314 "WelcomePage.cshtml"
-                                                                            Resources.WelcomePageImageText_LearnMore
-
-#line default
-#line hidden
-            , 287087), false));
-            WriteLiteral(" width=\"58\" height=\"29\" /></div>\r\n        </a>\r\n        <a class=\"bodyCTA longer\"" +
-" href=\"http://go.microsoft.com/fwlink/?LinkID=313398&amp;clcid=0x409\">");
-            Write(
-#line 316 "WelcomePage.cshtml"
-                                                                                                        Resources.WelcomeLearnMicrosoftOwin
+                                                                                                        Resources.WelcomeLearnMicrosoftAspNet
 
 #line default
 #line hidden
@@ -3787,22 +3726,22 @@ using System
 "Nc0+XYlr18RA5ZRt7/btjSnqsFwXE51mK68k3L/W+DqR8HRcAViFq5Xm1pGBP4wAyu751Crjs1z9ZM1w" +
 "U1BLaYptsK4VktN9pRq0R9Y5/NMZL8slmC1ioSIu51ezNtkSACQ3HJckjXAX1v8nzsTxLwVBTT99OEiF" +
 "xkMsNIVpu/J6yjhBpEG5mhv7vI8l+AAQB7WiwH/DuungAAAABJRU5ErkJggg==\"");
-            WriteAttribute("alt", Tuple.Create("\r\n                alt=\"", 289780), Tuple.Create("\"", 289844), 
-            Tuple.Create(Tuple.Create("", 289803), Tuple.Create<System.Object, System.Int32>(
-#line 318 "WelcomePage.cshtml"
+            WriteAttribute("alt", Tuple.Create("\r\n                alt=\"", 287010), Tuple.Create("\"", 287074), 
+            Tuple.Create(Tuple.Create("", 287033), Tuple.Create<System.Object, System.Int32>(
+#line 313 "WelcomePage.cshtml"
                       Resources.WelcomePageImageText_LearnMore
 
 #line default
 #line hidden
-            , 289803), false));
-            WriteAttribute("title", Tuple.Create(" title=\"", 289845), Tuple.Create("\"", 289894), 
-            Tuple.Create(Tuple.Create("", 289853), Tuple.Create<System.Object, System.Int32>(
-#line 318 "WelcomePage.cshtml"
+            , 287033), false));
+            WriteAttribute("title", Tuple.Create(" title=\"", 287075), Tuple.Create("\"", 287124), 
+            Tuple.Create(Tuple.Create("", 287083), Tuple.Create<System.Object, System.Int32>(
+#line 313 "WelcomePage.cshtml"
                                                                         Resources.WelcomePageImageText_LearnMore
 
 #line default
 #line hidden
-            , 289853), false));
+            , 287083), false));
             WriteLiteral(" width=\"58\" height=\"29\" /></div>\r\n        </a>\r\n    </div>\r\n\r\n</body>\r\n</html>\r\n");
         }
     }

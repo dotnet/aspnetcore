@@ -239,22 +239,13 @@ namespace Microsoft.AspNet.Diagnostics {
                 return ResourceManager.GetString("WelcomeHeader", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///   Looks up a localized string similar to Learn more about the Microsoft OWIN components.
+        ///   Looks up a localized string similar to Learn more about the Microsoft Asp.Net vNext components.
         /// </summary>
-        internal static string WelcomeLearnMicrosoftOwin {
+        internal static string WelcomeLearnMicrosoftAspNet {
             get {
-                return ResourceManager.GetString("WelcomeLearnMicrosoftOwin", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Learn more about OWIN.
-        /// </summary>
-        internal static string WelcomeLearnOwin {
-            get {
-                return ResourceManager.GetString("WelcomeLearnOwin", resourceCulture);
+                return ResourceManager.GetString("WelcomeLearnMicrosoftAspNet", resourceCulture);
             }
         }
         
@@ -295,16 +286,16 @@ namespace Microsoft.AspNet.Diagnostics {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Your OWIN application has been successfully started.
+        ///   Looks up a localized string similar to Your Asp.Net vNext application has been successfully started.
         /// </summary>
         internal static string WelcomeStarted {
             get {
                 return ResourceManager.GetString("WelcomeStarted", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///   Looks up a localized string similar to Your OWIN application has been successfully started..
+        ///   Looks up a localized string similar to Your Asp.Net vNext application has been successfully started..
         /// </summary>
         internal static string WelcomeTitle {
             get {

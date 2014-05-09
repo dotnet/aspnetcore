@@ -138,7 +138,7 @@
   </data>
   <data name="ErrorPageHtml_EnvironmentButton" xml:space="preserve">
     <value>Environment</value>
-    <comment>as in OWIN environment dictionary</comment>
+    <comment>as in environment dictionary</comment>
   </data>
   <data name="ErrorPageHtml_HeadersButton" xml:space="preserve">
     <value>Headers</value>
@@ -185,11 +185,8 @@
   <data name="WelcomeHeader" xml:space="preserve">
     <value>Welcome</value>
   </data>
-  <data name="WelcomeLearnMicrosoftOwin" xml:space="preserve">
-    <value>Learn more about the Microsoft OWIN components</value>
-  </data>
-  <data name="WelcomeLearnOwin" xml:space="preserve">
-    <value>Learn more about OWIN</value>
+  <data name="WelcomeLearnMicrosoftAspNet" xml:space="preserve">
+    <value>Learn more about the Microsoft Asp.Net vNext components</value>
   </data>
   <data name="WelcomePageImageText_Browser" xml:space="preserve">
     <value>Browser</value>
@@ -204,9 +201,9 @@
     <value>Skyline</value>
   </data>
   <data name="WelcomeStarted" xml:space="preserve">
-    <value>Your OWIN application has been successfully started</value>
+    <value>Your Asp.Net vNext application has been successfully started</value>
   </data>
   <data name="WelcomeTitle" xml:space="preserve">
-    <value>Your OWIN application has been successfully started.</value>
+    <value>Your Asp.Net vNext application has been successfully started.</value>
   </data>
 </root>
