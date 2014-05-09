@@ -39,7 +39,7 @@
         "System.Security.Principal": "4.0.0.0"
     },
     "commands": {
-        "web": "Microsoft.AspNet.Hosting server.name=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5002",
+        "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5002",
         "run": "run server.urls=http://localhost:5003"
     },
     "configurations": {
