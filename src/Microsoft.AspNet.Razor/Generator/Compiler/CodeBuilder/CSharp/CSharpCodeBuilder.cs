@@ -10,6 +10,8 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 {
     public class CSharpCodeBuilder : CodeBuilder
     {
+        private const int DisableAsyncWarning = 1998;
+
         public CSharpCodeBuilder(CodeGeneratorContext context)
             : base(context)
         {
@@ -57,8 +59,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                     // Add space inbetween constructor and method body
                     writer.WriteLine();
 
-                    // 1998 is to not warn about empty async methods.
-                    using (writer.BuildDisableWarningScope(1998))
+                    using (writer.BuildDisableWarningScope(DisableAsyncWarning))
                     {
                         using (writer.BuildMethodDeclaration("public override async", "Task", Host.GeneratedClassContext.ExecuteMethodName))
                         {

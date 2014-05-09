@@ -117,6 +117,7 @@
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\CodeTree.cs" />
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\Await.cs" />
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\Await.DesignTime.cs" />
+    <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\CSharpCodeBuilder.cs" />
     <Compile Include="Text\BufferingTextReaderTest.cs" />
     <Compile Include="Text\LineTrackingStringBufferTest.cs" />
     <Compile Include="Text\LookaheadTextReaderTestBase.cs" />
@@ -135,6 +136,7 @@
     <Compile Include="Tokenizer\HtmlTokenizerTestBase.cs" />
     <Compile Include="Tokenizer\TokenizerLookaheadTest.cs" />
     <Compile Include="Tokenizer\TokenizerTestBase.cs" />
+    <Compile Include="Utils\BaselineWriter.cs" />
     <Compile Include="Utils\DisposableActionTest.cs" />
     <Compile Include="Utils\MiscUtils.cs" />
     <EmbeddedResource Include="TestFiles\CodeGenerator\CS\Output\UnfinishedExpressionInCode.Tabs.cs" />

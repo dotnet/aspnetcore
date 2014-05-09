@@ -8,6 +8,8 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         internal const string InheritsHelper = "__inheritsHelper";
         internal const string DesignTimeHelperMethodName = "__RazorDesignTimeHelpers__";
 
+        private const int DisableVariableNamingWarnings = 219;
+
         public CSharpDesignTimeHelpersVisitor(CSharpCodeWriter writer, CodeGeneratorContext context)
             : base(writer, context) { }
 
@@ -17,7 +19,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             {
                 using (Writer.BuildMethodDeclaration("private", "void", "@" + DesignTimeHelperMethodName))
                 {
-                    using (Writer.BuildDisableWarningScope(219))
+                    using (Writer.BuildDisableWarningScope(DisableVariableNamingWarnings))
                     {
                         Accept(tree.Chunks);
                     }

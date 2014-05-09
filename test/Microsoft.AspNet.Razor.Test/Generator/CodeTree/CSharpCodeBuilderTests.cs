@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Web.WebPages.TestUtils;
 using Microsoft.AspNet.Razor.Generator;
-using Microsoft.AspNet.Razor.Generator.Compiler;
-using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNet.Razor.Test.Utils;
 using Microsoft.TestCommon;
 using Moq;
 
@@ -25,37 +25,13 @@ namespace Microsoft.AspNet.Razor.Test.Generator.CodeTree
 
             // Act
             var result = codeBuilder.Build();
+
+            BaselineWriter.WriteBaseline(@"test\Microsoft.AspNet.Razor.Test\TestFiles\CodeGenerator\CS\Output\CSharpCodeBuilder.cs", result.Code);
+
+            var expectedOutput = TestFile.Create("CodeGenerator.CS.Output.CSharpCodeBuilder.cs").ReadAllText();
+
             // Assert
-            Assert.Equal(@"namespace TestNamespace
-{
-#line 1 """"
-using FakeNamespace1
-
-#line default
-#line hidden
-    ;
-#line 1 """"
-using FakeNamespace2.SubNamespace
-
-#line default
-#line hidden
-    ;
-    using System.Threading.Tasks;
-
-    public class TestClass
-    {
-        #line hidden
-        public TestClass()
-        {
-        }
-
-        #pragma warning disable 1998
-        public override async Task ExecuteAsync()
-        {
-        }
-        #pragma warning restore 1998
-    }
-}", result.Code.TrimEnd());
+            Assert.Equal(expectedOutput, result.Code);
         }
     }
 }

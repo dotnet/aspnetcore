@@ -5,10 +5,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Web.WebPages.TestUtils;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler;
@@ -145,7 +142,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             }
 
             // Only called if GENERATE_BASELINES is set, otherwise compiled out.
-            WriteBaseline(String.Format(@"test\Microsoft.AspNet.Razor.Test\TestFiles\CodeGenerator\{0}\Output\{1}.{2}", LanguageName, baselineName, BaselineExtension), results.GeneratedCode);
+            BaselineWriter.WriteBaseline(String.Format(@"test\Microsoft.AspNet.Razor.Test\TestFiles\CodeGenerator\{0}\Output\{1}.{2}", LanguageName, baselineName, BaselineExtension), results.GeneratedCode);
 
 #if !GENERATE_BASELINES
             string textOutput = results.GeneratedCode;
@@ -188,34 +185,6 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                         }
                     }
                 }
-            }
-        }
-
-        [Conditional("GENERATE_BASELINES")]
-        private void WriteBaseline(string baselineFile, string output)
-        {
-            string root = RecursiveFind("Razor.sln", Path.GetFullPath("."));
-            string baselinePath = Path.Combine(root, baselineFile);
-
-            // Update baseline
-            // IMPORTANT! Replace this path with the local path on your machine to the baseline files!
-            if (File.Exists(baselinePath))
-            {
-                File.Delete(baselinePath);
-            }
-            File.WriteAllText(baselinePath, output.ToString());
-        }
-
-        private string RecursiveFind(string path, string start)
-        {
-            string test = Path.Combine(start, path);
-            if (File.Exists(test))
-            {
-                return start;
-            }
-            else
-            {
-                return RecursiveFind(path, new DirectoryInfo(start).Parent.FullName);
             }
         }
 
