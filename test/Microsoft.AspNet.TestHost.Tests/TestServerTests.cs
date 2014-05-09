@@ -40,23 +40,23 @@ namespace Microsoft.AspNet.TestHost.Tests
             Assert.DoesNotThrow(() => TestServer.Create(services, app => { }));
         }
 
-        [Fact]
-        public async Task CreateWithGeneric()
-        {
-            // Arrange
-            var services = new ServiceCollection()
-                .AddSingleton<IApplicationEnvironment, TestApplicationEnvironment>()
-                .BuildServiceProvider();
+        //[Fact]
+        //public async Task CreateWithGeneric()
+        //{
+        //    // Arrange
+        //    var services = new ServiceCollection()
+        //        .AddSingleton<IApplicationEnvironment, TestApplicationEnvironment>()
+        //        .BuildServiceProvider();
 
-            var server = TestServer.Create<Startup>(services);
-            var client = server.Handler;
+        //    var server = TestServer.Create<Startup>(services);
+        //    var client = server.Handler;
 
-            // Act
-            var response = await client.GetAsync("http://any");
+        //    // Act
+        //    var response = await client.GetAsync("http://any");
 
-            // Assert
-            Assert.Equal("Startup", new StreamReader(response.Body).ReadToEnd());
-        }
+        //    // Assert
+        //    Assert.Equal("Startup", new StreamReader(response.Body).ReadToEnd());
+        //}
 
         [Fact]
         public void ThrowsIfNoApplicationEnvironmentIsRegisteredWithTheProvider()
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.TestHost.Tests
             // Act & Assert
             Assert.Throws<ArgumentException>(
                 "serviceProvider",
-                () => TestServer.Create<Startup>(services));
+                () => TestServer.Create(services, new Startup().Configuration));
         }
 
         public class Startup

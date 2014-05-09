@@ -20,18 +20,14 @@ using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Hosting.Fakes
 {
-    public class FakeStartupWithServices
+    public class Startup
     {
-        private readonly IFakeStartupCallback _fakeStartupCallback;
-
-        public FakeStartupWithServices(IFakeStartupCallback fakeStartupCallback)
+        public Startup()
         {
-            _fakeStartupCallback = fakeStartupCallback;
         }
 
-        public void Configuration(IBuilder builder)
+        public void Configure(IBuilder builder)
         {
-            _fakeStartupCallback.ConfigurationMethodCalled(this);
         }
     }
 }

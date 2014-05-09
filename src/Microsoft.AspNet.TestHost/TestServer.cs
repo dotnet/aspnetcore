@@ -57,13 +57,13 @@ namespace Microsoft.AspNet.TestHost
             var disposable = engine.Start(hostContext);
         }
 
-        public static TestServer Create<TStartup>(IServiceProvider provider)
-        {
-            var startupLoader = new StartupLoader(provider, new NullStartupLoader());
-            var name = typeof(TStartup).AssemblyQualifiedName;
-            var diagnosticMessages = new List<string>();
-            return Create(provider, startupLoader.LoadStartup(name, diagnosticMessages));
-        }
+        //public static TestServer Create<TStartup>(IServiceProvider provider)
+        //{
+        //    var startupLoader = new StartupLoader(provider, new NullStartupLoader());
+        //    var name = typeof(TStartup).AssemblyQualifiedName;
+        //    var diagnosticMessages = new List<string>();
+        //    return Create(provider, startupLoader.LoadStartup(name, "Test", diagnosticMessages));
+        //}
 
         public static TestServer Create(IServiceProvider provider, Action<IBuilder> app)
         {

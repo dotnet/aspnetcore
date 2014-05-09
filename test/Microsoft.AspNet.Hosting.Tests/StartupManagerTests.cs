@@ -30,21 +30,6 @@ namespace Microsoft.AspNet.Hosting
         private readonly IList<object> _configurationMethodCalledList = new List<object>();
 
         [Fact]
-        public void DefaultServicesLocateStartupByNameAndNamespace()
-        {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.Add(HostingServices.GetDefaultServices());
-            var services = serviceCollection.BuildServiceProvider();
-
-            var manager = services.GetService<IStartupManager>();
-
-            var startup = manager.LoadStartup("Microsoft.AspNet.Hosting.Fakes.FakeStartup, Microsoft.AspNet.Hosting.Tests");
-
-            Assert.IsType<StartupManager>(manager);
-            Assert.NotNull(startup);
-        }
-
-        [Fact]
         public void StartupClassMayHaveHostingServicesInjected()
         {
             var serviceCollection = new ServiceCollection();
@@ -54,11 +39,11 @@ namespace Microsoft.AspNet.Hosting
 
             var manager = services.GetService<IStartupManager>();
 
-            var startup = manager.LoadStartup("Microsoft.AspNet.Hosting.Fakes.FakeStartupWithServices, Microsoft.AspNet.Hosting.Tests");
+            var startup = manager.LoadStartup("Microsoft.AspNet.Hosting.Tests", "WithServices");
 
             startup.Invoke(null);
 
-            Assert.Equal(1, _configurationMethodCalledList.Count);
+            Assert.Equal(2, _configurationMethodCalledList.Count);
         }
 
         public void ConfigurationMethodCalled(object instance)
