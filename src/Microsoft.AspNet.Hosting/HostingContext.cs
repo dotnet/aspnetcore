@@ -31,6 +31,7 @@ namespace Microsoft.AspNet.Hosting
         public IBuilder Builder { get; set; }
 
         public string ApplicationName { get; set; }
+        public string EnvironmentName { get; set; }
         public Action<IBuilder> ApplicationStartup { get; set; }
         public RequestDelegate ApplicationDelegate { get; set; }
 

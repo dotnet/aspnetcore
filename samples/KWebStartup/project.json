@@ -5,7 +5,7 @@
     "Microsoft.AspNet.Http": "0.1-alpha-*",
     "Microsoft.AspNet.Server.WebListener": "0.1-alpha-*"
   },
-  "commands": { "web": "Microsoft.AspNet.Hosting server.name=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001" },
+  "commands": { "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001" },
   "configurations": {
     "net45": {
     },

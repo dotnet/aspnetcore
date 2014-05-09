@@ -18,17 +18,18 @@
 using Microsoft.AspNet;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.Framework.Runtime;
 
 namespace KWebStartup
 {
     public class Startup
     {
-        public void Configuration(IBuilder app)
+        public void Configure(IBuilder app, IApplicationEnvironment env)
         {
             app.Run(async context =>
             {
                 context.Response.ContentType = "text/plain";
-                await context.Response.WriteAsync("Hello world");
+                await context.Response.WriteAsync("Hello world, from " + env.ApplicationName);
             });
         }
     }

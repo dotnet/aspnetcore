@@ -32,7 +32,9 @@ namespace Microsoft.AspNet.Hosting.Startup
             _providers = providers;
         }
 
-        public Action<IBuilder> LoadStartup(string applicationName)
+        public Action<IBuilder> LoadStartup(
+            string applicationName,
+            string environmentName)
         {
             // build ordered chain of application loaders
             var chain = _providers
@@ -41,7 +43,7 @@ namespace Microsoft.AspNet.Hosting.Startup
 
             // invoke chain to acquire application entrypoint and diagnostic messages
             var diagnosticMessages = new List<string>();
-            var application = chain.LoadStartup(applicationName, diagnosticMessages);
+            var application = chain.LoadStartup(applicationName, environmentName, diagnosticMessages);
 
             if (application == null)
             {

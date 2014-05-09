@@ -30,42 +30,49 @@ namespace Microsoft.AspNet.Hosting.Startup
         private readonly IServiceProvider _services;
         private readonly IStartupLoader _next;
 
-        public StartupLoader(IServiceProvider services, IStartupLoader next)
+        public StartupLoader(
+            IServiceProvider services,
+            IStartupLoader next)
         {
             _services = services;
             _next = next;
         }
 
-        public Action<IBuilder> LoadStartup(string applicationName, IList<string> diagnosticMessages)
+        public Action<IBuilder> LoadStartup(
+            string applicationName,
+            string environmentName,
+            IList<string> diagnosticMessages)
         {
             if (String.IsNullOrEmpty(applicationName))
             {
-                return _next.LoadStartup(applicationName, diagnosticMessages);
+                return _next.LoadStartup(applicationName, environmentName, diagnosticMessages);
             }
 
-            var nameParts = Utilities.SplitTypeName(applicationName);
-            string typeName = nameParts.Item1;
-            string assemblyName = nameParts.Item2;
-
-            var assembly = Assembly.Load(new AssemblyName(assemblyName));
+            var assembly = Assembly.Load(new AssemblyName(applicationName));
             if (assembly == null)
             {
-                throw new Exception(String.Format("TODO: assembly {0} failed to load message", assemblyName));
+                throw new Exception(String.Format("TODO: assembly {0} failed to load message", applicationName));
             }
 
-            Type type = null;
-            if (string.IsNullOrEmpty(typeName))
-            {
-                typeName = "Startup";
-            }
+            var startupName1 = "Startup" + environmentName;
+            var startupName2 = "Startup";
 
             // Check the most likely places first
-            type = assembly.GetType(typeName) ?? assembly.GetType(assembly.GetName().Name + "." + typeName);
+            var type =
+                assembly.GetType(startupName1) ??
+                assembly.GetType(applicationName + "." + startupName1) ??
+                assembly.GetType(startupName2) ??
+                assembly.GetType(applicationName + "." + startupName2);
 
             if (type == null)
             {
                 // Full scan
-                var typeInfo = assembly.DefinedTypes.FirstOrDefault(aType => aType.Name.Equals(typeName, StringComparison.OrdinalIgnoreCase));
+                var definedTypes = assembly.DefinedTypes.ToList();
+
+                var startupType1 = definedTypes.Where(info => info.Name.Equals(startupName1, StringComparison.Ordinal));
+                var startupType2 = definedTypes.Where(info => info.Name.Equals(startupName2, StringComparison.Ordinal));
+
+                var typeInfo = startupType1.Concat(startupType2).FirstOrDefault();
                 if (typeInfo != null)
                 {
                     type = typeInfo.AsType();
@@ -74,18 +81,30 @@ namespace Microsoft.AspNet.Hosting.Startup
 
             if (type == null)
             {
-                throw new Exception(String.Format("TODO: type {0} failed to load message", typeName));
+                throw new Exception(String.Format("TODO: {0} or {1} class not found in assembly {2}", 
+                    startupName1,
+                    startupName2,
+                    applicationName));
             }
 
-            var methodInfo = type.GetTypeInfo().GetDeclaredMethod("Configuration");
+            var configureMethod1 = "Configure" + environmentName;
+            var configureMethod2 = "Configure";
+            var methodInfo = type.GetTypeInfo().GetDeclaredMethod(configureMethod1);
             if (methodInfo == null)
             {
-                throw new Exception("TODO: Configuration method not found");
+                methodInfo = type.GetTypeInfo().GetDeclaredMethod(configureMethod2);
+            }
+            if (methodInfo == null)
+            {
+                throw new Exception(string.Format("TODO: {0} or {1} method not found",
+                    configureMethod1,
+                    configureMethod2));
             }
 
             if (methodInfo.ReturnType != typeof(void))
             {
-                throw new Exception("TODO: Configuration method isn't void-returning.");
+                throw new Exception(string.Format("TODO: {0} method isn't void-returning.",
+                    methodInfo.Name));
             }
 
             object instance = null;
@@ -93,7 +112,35 @@ namespace Microsoft.AspNet.Hosting.Startup
             {
                 instance = ActivatorUtilities.GetServiceOrCreateInstance(_services, type);
             }
-            return builder => methodInfo.Invoke(instance, new object[] { builder });
+
+            return builder =>
+            {
+                var parameterInfos = methodInfo.GetParameters();
+                var parameters = new object[parameterInfos.Length];
+                for (var index = 0; index != parameterInfos.Length; ++index)
+                {
+                    var parameterInfo = parameterInfos[index];
+                    if (parameterInfo.ParameterType == typeof(IBuilder))
+                    {
+                        parameters[index] = builder;
+                    }
+                    else
+                    {
+                        try
+                        {
+                            parameters[index] = _services.GetService(parameterInfo.ParameterType);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new Exception(string.Format(
+                                "TODO: Unable to resolve service for startup method {0} {1}",
+                                parameterInfo.Name,
+                                parameterInfo.ParameterType.FullName));
+                        }
+                    }
+                }
+                methodInfo.Invoke(instance, parameters);
+            };
         }
     }
 }

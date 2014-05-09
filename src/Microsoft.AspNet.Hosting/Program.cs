@@ -38,12 +38,12 @@ namespace Microsoft.AspNet.Hosting
         public void Main(string[] args)
         {
             var config = new Configuration();
-            config.AddCommandLine(args);
             if (File.Exists(HostingIniFile))
             {
                 config.AddIniFile(HostingIniFile);
             }
             config.AddEnvironmentVariables();
+            config.AddCommandLine(args);
 
             var serviceCollection = new ServiceCollection();
             serviceCollection.Add(HostingServices.GetDefaultServices(config));
@@ -55,9 +55,10 @@ namespace Microsoft.AspNet.Hosting
             {
                 Services = services,
                 Configuration = config,
-                ServerName = config.Get("server.name"), // TODO: Key names
-                ApplicationName = config.Get("app.name")  // TODO: Key names
+                ServerName = config.Get("server"), // TODO: Key names
+                ApplicationName = config.Get("app")  // TODO: Key names
                     ?? appEnvironment.ApplicationName,
+                EnvironmentName = config.Get("env") ?? "Development"
             };
 
             var engine = services.GetService<IHostingEngine>();

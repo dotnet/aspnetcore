@@ -31,7 +31,10 @@ namespace Microsoft.AspNet.Hosting.Startup
 
         public static IStartupLoader Instance { get; private set; }
 
-        public Action<IBuilder> LoadStartup(string applicationName, IList<string> diagnosticMessages)
+        public Action<IBuilder> LoadStartup(
+            string applicationName, 
+            string environmentName,
+            IList<string> diagnosticMessages)
         {
             return null;
         }

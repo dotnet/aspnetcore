@@ -117,7 +117,9 @@ namespace Microsoft.AspNet.Hosting
                 return;
             }
 
-            context.ApplicationStartup = _startupManager.LoadStartup(context.ApplicationName);
+            context.ApplicationStartup = _startupManager.LoadStartup(
+                context.ApplicationName,
+                context.EnvironmentName);
         }
 
         private class Disposable : IDisposable
