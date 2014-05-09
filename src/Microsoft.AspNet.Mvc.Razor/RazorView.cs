@@ -10,6 +10,7 @@ using System.Net;
 using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.Framework.DependencyInjection;
 
@@ -22,7 +23,20 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         public IViewComponentHelper Component { get; private set; }
 
-        public ViewContext Context { get; set; }
+        public HttpContext Context
+        {
+            get
+            {
+                if (ViewContext == null)
+                {
+                    return null;
+                }
+
+                return ViewContext.HttpContext;
+            }
+        }
+
+        public ViewContext ViewContext { get; set; }
 
         public string Layout { get; set; }
 
@@ -34,12 +48,12 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             get
             {
-                if (Context == null || Context.HttpContext == null)
+                if (Context == null)
                 {
                     return null;
                 }
 
-                return Context.HttpContext.User;
+                return Context.User;
             }
         }
 
@@ -47,7 +61,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             get
             {
-                return (Context == null) ? null : Context.ViewBag;
+                return (ViewContext == null) ? null : ViewContext.ViewBag;
             }
         }
 
@@ -60,7 +74,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public virtual async Task RenderAsync([NotNull] ViewContext context)
         {
             SectionWriters = new Dictionary<string, HelperResult>(StringComparer.OrdinalIgnoreCase);
-            Context = context;
+            ViewContext = context;
 
             InitHelpers();
 
@@ -100,16 +114,17 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private void InitHelpers()
         {
+            Contract.Assert(ViewContext != null);
             Contract.Assert(Context != null);
 
-            Url = Context.HttpContext.RequestServices.GetService<IUrlHelper>();
+            Url = Context.RequestServices.GetService<IUrlHelper>();
 
-            Component = Context.HttpContext.RequestServices.GetService<IViewComponentHelper>();
+            Component = Context.RequestServices.GetService<IViewComponentHelper>();
 
             var contextable = Component as ICanHasViewContext;
             if (contextable != null)
             {
-                contextable.Contextualize(Context);
+                contextable.Contextualize(ViewContext);
             }
         }
 
