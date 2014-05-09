@@ -201,5 +201,19 @@ namespace Microsoft.AspNet.Razor
             }
             return incomingCodeGenerator;
         }
+
+        /// <summary>
+        /// Gets an instance of the code builder and is provided an opportunity to decorate or replace it
+        /// </summary>
+        /// <param name="incomingBuilder">The code builder</param>
+        /// <returns>Either the same code builder, after modifications, or a different code builder.</returns>
+        public virtual CodeBuilder DecorateCodeBuilder(CodeBuilder incomingBuilder, CodeGeneratorContext context)
+        {
+            if (incomingBuilder == null)
+            {
+                throw new ArgumentNullException("incomingBuilder");
+            }
+            return incomingBuilder;
+        }
     }
 }

@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading;
 using System.Web.WebPages.TestUtils;
 using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.TestCommon;
@@ -99,6 +100,29 @@ namespace Microsoft.AspNet.Razor.Test
 
             // Act
             RazorCodeGenerator actual = engine.CreateCodeGenerator("Foo", "Bar", "Baz");
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void CreateCodeBuilder_PassesCodeGeneratorThroughDecorateMethodOnHost()
+        {
+            // Arrange
+            var mockHost = new Mock<RazorEngineHost>(new CSharpRazorCodeLanguage()) { CallBase = true };
+            var context = CodeGeneratorContext.Create(mockHost.Object,
+                                                      "different-class",
+                                                      "different-ns",
+                                                      string.Empty,
+                                                      shouldGenerateLinePragmas: true);
+            var expected = new CSharpCodeBuilder(context);
+
+            mockHost.Setup(h => h.DecorateCodeBuilder(It.IsAny<CSharpCodeBuilder>(), context))
+                    .Returns(expected);
+            var engine = new RazorTemplateEngine(mockHost.Object);
+
+            // Act
+            var actual = engine.CreateCodeBuilder(context);
 
             // Assert
             Assert.Equal(expected, actual);

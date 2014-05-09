@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
             }
         }
 
-        public void Accept(Chunk chunk)
+        public virtual void Accept(Chunk chunk)
         {
             if (chunk == null)
             {
@@ -104,10 +104,6 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
             else if(chunk is SessionStateChunk)
             {
                 Visit((SessionStateChunk)chunk);
-            }
-            else
-            {
-                throw new InvalidOperationException("Unknown chunk type " + chunk.GetType().Name);
             }
         }
 

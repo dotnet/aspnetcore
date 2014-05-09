@@ -167,7 +167,7 @@ namespace Microsoft.AspNet.Razor
             generator.DesignTimeMode = Host.DesignTimeMode;
             generator.Visit(results);
 
-            var builder = Host.CodeLanguage.CreateCodeBuilder(generator.Context);
+            var builder = CreateCodeBuilder(generator.Context);
             var builderResult = builder.Build();
 
             // Collect results and return
@@ -190,6 +190,12 @@ namespace Microsoft.AspNet.Razor
             {
                 DesignTimeMode = Host.DesignTimeMode
             };
+        }
+
+        protected internal virtual CodeBuilder CreateCodeBuilder(CodeGeneratorContext context)
+        {
+            return Host.DecorateCodeBuilder(Host.CodeLanguage.CreateCodeBuilder(context), 
+                                            context);
         }
     }
 }

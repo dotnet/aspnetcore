@@ -162,7 +162,7 @@ namespace Microsoft.AspNet.Razor.Parser
             }
         }
 
-        private bool NamespaceOrTypeName()
+        protected bool NamespaceOrTypeName()
         {
             if (Optional(CSharpSymbolType.Identifier) || Optional(CSharpSymbolType.Keyword))
             {

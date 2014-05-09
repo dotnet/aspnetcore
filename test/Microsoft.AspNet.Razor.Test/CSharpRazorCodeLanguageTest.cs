@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
 using Microsoft.AspNet.Razor.Parser;
-using Microsoft.CSharp;
 using Microsoft.TestCommon;
 
 namespace Microsoft.AspNet.Razor.Test
@@ -41,6 +41,25 @@ namespace Microsoft.AspNet.Razor.Test
             Assert.Equal("Bar", generator.RootNamespaceName);
             Assert.Equal("Baz", generator.SourceFileName);
             Assert.Same(host, generator.Host);
+        }
+
+        [Fact]
+        public void CreateCodeBuilder_ReturnsNewCSharpCodeBuilder()
+        {
+            // Arrange
+            var language = new CSharpRazorCodeLanguage();
+            var host = new RazorEngineHost(language);
+            var context = CodeGeneratorContext.Create(host,
+                                                      "myclass",
+                                                      "myns",
+                                                      string.Empty,
+                                                      shouldGenerateLinePragmas: false);
+
+            // Act
+            var generator = language.CreateCodeBuilder(context);
+
+            // Assert
+            Assert.IsType<CSharpCodeBuilder>(generator);
         }
     }
 }

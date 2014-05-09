@@ -67,6 +67,7 @@
     <Compile Include="Framework\ParserTestBase.cs" />
     <Compile Include="Framework\RawTextSymbol.cs" />
     <Compile Include="Framework\TestSpanBuilder.cs" />
+    <Compile Include="Generator\CodeTree\ChunkVisitorTests.cs" />
     <Compile Include="Generator\CodeTree\CodeTreeGenerationTest.cs" />
     <Compile Include="Generator\CodeTree\CSharpCodeBuilderTests.cs" />
     <Compile Include="Generator\CodeTree\CSharpPaddingBuilderTests.cs" />
