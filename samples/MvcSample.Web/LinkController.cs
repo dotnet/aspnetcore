@@ -17,8 +17,8 @@ namespace MvcSample.Web
 
         public string Get()
         {
-            // Creates a url like: http://localhost:58195/Home/Details#CoolBeans!
-            return Url.RouteUrl("CoolBeansRoute", new { controller = "Home", action = "Details" }, protocol: "http", host: null, fragment: "CoolBeans!");
+            // Creates a url like: http://localhost:58195/Home/Create#CoolBeans!
+            return Url.RouteUrl(null, new { controller = "Home", action = "Create" }, protocol: "http", host: null, fragment: "CoolBeans!");
         }
 
         public string Link1()
