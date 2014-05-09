@@ -1,18 +1,12 @@
-using System;
 using System.Security.Claims;
-using Microsoft.AspNet;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Security.Cookies;
-using Microsoft.AspNet.RequestContainer;
 using Microsoft.AspNet.Builder;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
+using Microsoft.AspNet.Security.Cookies;
 
 namespace CookieSample
 {
     public class Startup
     {
-        public void Configuration(IBuilder app)
+        public void Configure(IBuilder app)
         {
             app.UseCookieAuthentication(new CookieAuthenticationOptions()
             {
