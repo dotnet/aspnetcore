@@ -150,7 +150,7 @@
         <p style="padding: 0px 10px;">'@ViewBag.Title' should match page heading (still)</p>
     </div>
     <div style="float: left; border: thick solid lightskyblue; margin: 5px; padding: 7px;">
-        @using (Html.BeginForm(controllerName: "Home", actionName: "Hello", method: FormMethod.Post))
+        @using (Html.BeginForm())
         {
             @Html.HiddenFor(m => m.Age)
             <table>
