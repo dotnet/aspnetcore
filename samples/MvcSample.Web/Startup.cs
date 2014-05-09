@@ -9,13 +9,13 @@ namespace MvcSample.Web
 {
     public class Startup
     {
-        public void Configuration(IBuilder app)
+        public void Configure(IBuilder app)
         {
             app.UseServices(services =>
             {
                 services.AddMvc();
-                services.AddSingleton<PassThroughAttribute, PassThroughAttribute>();
-                services.AddSingleton<UserNameService, UserNameService>();
+                services.AddSingleton<PassThroughAttribute>();
+                services.AddSingleton<UserNameService>();
             });
 
             app.UseMvc(routes =>

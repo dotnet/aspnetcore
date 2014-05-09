@@ -19,6 +19,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <DevelopmentServerPort>57394</DevelopmentServerPort>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DevelopmentServerPort>42750</DevelopmentServerPort>
+  </PropertyGroup>
   <ItemGroup>
     <Content Include="Areas\Travel\Views\Flight\Fly.cshtml" />
     <Content Include="Content\bootstrap.min.css" />
