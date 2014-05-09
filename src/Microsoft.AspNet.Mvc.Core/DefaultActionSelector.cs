@@ -34,6 +34,24 @@ namespace Microsoft.AspNet.Mvc
             var allDescriptors = GetActions();
 
             var matching = allDescriptors.Where(ad => Match(ad, context)).ToList();
+
+            var matchesWithConstraints = new List<ActionDescriptor>();
+            foreach (var match in matching)
+            {
+                if (match.DynamicConstraints != null && match.DynamicConstraints.Any() ||
+                    match.MethodConstraints != null && match.MethodConstraints.Any())
+                {
+                    matchesWithConstraints.Add(match);
+                }
+            }
+
+            // If any action that's applicable has constraints, this is considered better than 
+            // an action without.
+            if (matchesWithConstraints.Any())
+            {
+                matching = matchesWithConstraints;
+            }
+
             if (matching.Count == 0)
             {
                 return null;
@@ -96,12 +114,6 @@ namespace Microsoft.AspNet.Mvc
                     }
                 }
 
-                if (action.DynamicConstraints != null && action.DynamicConstraints.Any() ||
-                    action.MethodConstraints != null && action.MethodConstraints.Any())
-                {
-                    candidate.HasNonRouteConstraints = true;
-                }
-
                 if (isApplicable)
                 {
                     applicableCandiates.Add(candidate);
@@ -113,14 +125,8 @@ namespace Microsoft.AspNet.Mvc
                 return null;
             }
 
-            var bestByConstraints = 
+            var mostParametersSatisfied =
                 applicableCandiates
-                .GroupBy(c => c.HasNonRouteConstraints ? 1 : 0)
-                .OrderByDescending(g => g.Key)
-                .First();
-
-            var mostParametersSatisfied = 
-                bestByConstraints
                 .GroupBy(c => c.FoundParameters)
                 .OrderByDescending(g => g.Key)
                 .First();
@@ -346,9 +352,6 @@ namespace Microsoft.AspNet.Mvc
         private class ActionDescriptorCandidate
         {
             public ActionDescriptor Action { get; set; }
-
-            // Actions with HTTP method constraints or dynamic constraints are better than those without.
-            public bool HasNonRouteConstraints { get; set; }
 
             public int FoundParameters { get; set; }
 
