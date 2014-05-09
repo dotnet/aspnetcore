@@ -16,6 +16,9 @@
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DevelopmentServerPort>57504</DevelopmentServerPort>
+  </PropertyGroup>
   <ItemGroup>
     <Content Include="App.config" />
     <Content Include="Project.json" />
