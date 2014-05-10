@@ -68,6 +68,12 @@ namespace MusicStore.Controllers
         {
             if (ModelState.IsValid)
             {
+                // TODO [EF] Swap to store generated identity key when supported
+                var nextId = db.Albums.Any()
+                    ? db.Albums.Max(o => o.AlbumId) + 1
+                    : 1;
+
+                album.AlbumId = nextId;
                 db.Albums.Add(album);
                 db.SaveChanges();
                 return RedirectToAction("Index");
