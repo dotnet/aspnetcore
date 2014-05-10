@@ -7,6 +7,7 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 
@@ -56,10 +57,6 @@ namespace Microsoft.AspNet.Mvc
             {
                 return null;
             }
-            else if (matching.Count == 1)
-            {
-                return matching[0];
-            }
             else
             {
                 return await SelectBestCandidate(context, matching);
@@ -99,6 +96,11 @@ namespace Microsoft.AspNet.Mvc
 
                 foreach (var parameter in action.Parameters.Where(p => p.ParameterBindingInfo != null))
                 {
+                    if (!ValueProviderResult.CanConvertFromString(parameter.ParameterBindingInfo.ParameterType))
+                    {
+                        continue;
+                    }
+
                     if (await actionBindingContext.ValueProvider.ContainsPrefixAsync(parameter.ParameterBindingInfo.Prefix))
                     {
                         candidate.FoundParameters++;
