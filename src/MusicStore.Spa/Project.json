@@ -1,0 +1,26 @@
+﻿{
+    "compilationOptions" : { "define" : ["DEBUG"] },
+    "dependencies": {
+        "Helios" : "0.1-alpha-*",
+        "Microsoft.AspNet.Mvc" : "0.1-alpha-*",
+        "Microsoft.AspNet.StaticFiles" : "0.1-alpha-*",
+        "Microsoft.Data.Entity.Relational": "0.1-alpha-*",
+        "Microsoft.Data.Entity.InMemory": "0.1-alpha-*",
+        "Microsoft.Data.Entity.SqlServer": "0.1-alpha-*",
+        "Microsoft.AspNet.Security.Cookies": "0.1-alpha-*",
+        "Microsoft.AspNet.Identity.Security": "0.1-alpha-*",
+        "Microsoft.AspNet.Identity.Entity": "0.1-alpha-*",
+        "Microsoft.Framework.ConfigurationModel": "0.1-alpha-*",
+        "Microsoft.Framework.ConfigurationModel.Json": "0.1-alpha-build-*"
+    },
+    "configurations" : {
+        "net45" : {
+            "dependencies": {
+                "System.Runtime" : "",
+                "System.Data": "",
+                "System.ComponentModel.DataAnnotations": ""
+            }
+        },
+        "k10" : { }
+    }
+}

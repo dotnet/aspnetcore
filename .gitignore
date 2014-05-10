@@ -34,3 +34,5 @@ bower_components
 node_modules
 *.sln.ide
 */*.Spa/public/*
+*/*.Spa/wwwroot/*
+*.ng.ts

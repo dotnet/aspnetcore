@@ -247,46 +247,45 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Views\ArtistsApi\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="Client\ng-apps\components\ArtistApi\ArtistApiService.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\GenreMenu\GenreMenuDirective.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Models\IAlert.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Models\IApiResult.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Models\IGenreLookup.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Models\IModelError.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Models\IPagedList.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\TitleCase\TitleCaseFilter.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Truncate\TruncateFilter.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\ViewMessage\ViewAlertService.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Visited\VisitedDirective.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\MusicStore.Admin\Catalog\AlbumDeleteModalController.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\MusicStore.Admin\Catalog\AlbumDetailsController.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\MusicStore.Admin\Catalog\AlbumListController.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\AlbumApi\AlbumApiService.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\InlineData\InlineDataDirective.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\GenreApi\GenreApiService.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\LoginLink\LoginLinkDirective.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\PreventSubmit\PreventSubmitDirective.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\UrlResolver\UrlResolverService.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\MusicStore.Admin\MusicStore.Admin.app.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\MusicStore.Admin\Catalog\AlbumEditController.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\MusicStore.Store\Home\HomeController.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Models\IAlbum.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Models\IArtist.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Models\IGenre.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\MusicStore.Store\MusicStore.Store.app.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\MusicStore.Store\Catalog\AlbumDetailsController.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\MusicStore.Store\Catalog\GenreDetailsController.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\MusicStore.Store\Catalog\GenreListController.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\GenreMenu\GenreMenuController.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Models\IUserDetails.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\UserDetails\UserDetailsService.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\references.ts" />
+    <None Include="Client\ng-apps\components\ArtistApi\ArtistApiService.ts" />
+    <None Include="Client\ng-apps\components\GenreMenu\GenreMenuDirective.ts" />
+    <None Include="Client\ng-apps\components\Models\IAlert.ts" />
+    <None Include="Client\ng-apps\components\Models\IApiResult.ts" />
+    <None Include="Client\ng-apps\components\Models\IGenreLookup.ts" />
+    <None Include="Client\ng-apps\components\Models\IModelError.ts" />
+    <None Include="Client\ng-apps\components\Models\IPagedList.ts" />
+    <None Include="Client\ng-apps\components\TitleCase\TitleCaseFilter.ts" />
+    <None Include="Client\ng-apps\components\Truncate\TruncateFilter.ts" />
+    <None Include="Client\ng-apps\components\ViewMessage\ViewAlertService.ts" />
+    <None Include="Client\ng-apps\components\Visited\VisitedDirective.ts" />
+    <None Include="Client\ng-apps\MusicStore.Admin\Catalog\AlbumDeleteModalController.ts" />
+    <None Include="Client\ng-apps\MusicStore.Admin\Catalog\AlbumDetailsController.ts" />
+    <None Include="Client\ng-apps\MusicStore.Admin\Catalog\AlbumListController.ts" />
+    <None Include="Client\ng-apps\components\AlbumApi\AlbumApiService.ts" />
+    <None Include="Client\ng-apps\components\InlineData\InlineDataDirective.ts" />
+    <None Include="Client\ng-apps\components\GenreApi\GenreApiService.ts" />
+    <None Include="Client\ng-apps\components\LoginLink\LoginLinkDirective.ts" />
+    <None Include="Client\ng-apps\components\PreventSubmit\PreventSubmitDirective.ts" />
+    <None Include="Client\ng-apps\components\UrlResolver\UrlResolverService.ts" />
+    <None Include="Client\ng-apps\MusicStore.Admin\MusicStore.Admin.app.ts" />
+    <None Include="Client\ng-apps\MusicStore.Admin\Catalog\AlbumEditController.ts" />
+    <None Include="Client\ng-apps\MusicStore.Store\Home\HomeController.ts" />
+    <None Include="Client\ng-apps\components\Models\IAlbum.ts" />
+    <None Include="Client\ng-apps\components\Models\IArtist.ts" />
+    <None Include="Client\ng-apps\components\Models\IGenre.ts" />
+    <None Include="Client\ng-apps\MusicStore.Store\MusicStore.Store.app.ts" />
+    <None Include="Client\ng-apps\MusicStore.Store\Catalog\AlbumDetailsController.ts" />
+    <None Include="Client\ng-apps\MusicStore.Store\Catalog\GenreDetailsController.ts" />
+    <None Include="Client\ng-apps\MusicStore.Store\Catalog\GenreListController.ts" />
+    <None Include="Client\ng-apps\components\GenreMenu\GenreMenuController.ts" />
+    <None Include="Client\ng-apps\components\Models\IUserDetails.ts" />
+    <None Include="Client\ng-apps\components\UserDetails\UserDetailsService.ts" />
+    <None Include="Client\ng-apps\references.ts" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

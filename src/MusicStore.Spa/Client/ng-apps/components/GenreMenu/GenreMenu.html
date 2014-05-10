@@ -1,0 +1,12 @@
+﻿<li class="dropdown" ng-controller="MusicStore.GenreMenu.GenreMenuController as viewModel">
+    <a class="dropdown-toggle" data-toggle="dropdown">Store <b class="caret"></b></a>
+    <ul class="dropdown-menu">
+        <li ng-repeat="genre in viewModel.genres">
+            <a ng-href="{{ viewModel.urlBase }}#/albums/genres/{{ genre.GenreId }}" title="{{ genre.Description }}">{{ genre.Name }}</a>
+        </li>
+        <li class="divider"></li>
+        <li>
+            <a href="{{ viewModel.urlBase }}#/albums/genres">More…</a>
+        </li>
+    </ul>
+</li>

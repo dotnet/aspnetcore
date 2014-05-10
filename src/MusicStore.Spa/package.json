@@ -1,0 +1,16 @@
+﻿{
+    "name": "MusicStore",
+    "version": "0.0.0",
+    "devDependencies": {
+        "grunt": "~0.4.2",
+        "grunt-contrib-jshint": "~0.10.0",
+        "grunt-contrib-uglify": "~0.4.0",
+        "grunt-contrib-watch": "~0.6.1",
+        "grunt-contrib-copy": "~0.5.0",
+        "grunt-contrib-clean": "~0.5.0",
+        "grunt-contrib-less": "~0.11.0",
+        "grunt-typescript": "~0.3.6",
+        "grunt-tslint": "~0.4.1",
+        "grunt-tsng": "~0.1.3"
+    }
+}
