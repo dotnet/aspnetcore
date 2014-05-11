@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc
             return new ParameterDescriptor
             {
                 Name = parameter.Name,
-                IsOptional = parameter.IsOptional,
+                IsOptional = parameter.IsOptional || parameter.HasDefaultValue,
                 ParameterBindingInfo = isFromBody ? null : GetParameterBindingInfo(parameter),
                 BodyParameterInfo = isFromBody ? GetBodyParameterInfo(parameter) : null
             };
