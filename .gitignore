@@ -2,6 +2,7 @@
 [Bb]in/
 TestResults/
 .nuget/
+*.sln.ide/
 _ReSharper.*/
 packages/
 artifacts/
