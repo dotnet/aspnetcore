@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.AspNet.Razor;
-using Microsoft.Net.Runtime;
+using Microsoft.Framework.Runtime;
 
 namespace PageGenerator
 {
