@@ -1,14 +1,12 @@
-using Microsoft.AspNet;
-using Microsoft.AspNet.Abstractions;
-using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
-using Microsoft.AspNet.Diagnostics;
+using Microsoft.AspNet.Builder;
+using Microsoft.Framework.DependencyInjection;
 
 namespace KWebStartup
 {
     public class Startup
     {
-        public void Configuration(IBuilder app)
+        public void Configure(IBuilder app)
         {
             app.UseErrorPage();
 
@@ -17,10 +15,7 @@ namespace KWebStartup
                 services.AddMvc();
             });
 
-            app.UseMvc(routes =>
-            {
-                routes.MapRoute("{controller}/{action}", new { controller = "Home", action = "Index" });
-            });
+            app.UseMvc();
 
             app.UseWelcomePage();
         }       
