@@ -15,10 +15,7 @@ namespace KWebStartup
                 services.AddMvc();
             });
 
-            app.UseMvc(routes =>
-            {
-                routes.MapRoute(null, "{controller}/{action}", new { controller = "Home", action = "Index" });
-            });
+            app.UseMvc();
 
             app.UseWelcomePage();
         }       
