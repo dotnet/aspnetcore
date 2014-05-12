@@ -19,7 +19,6 @@ namespace Microsoft.AspNet.Razor.Parser
 
         internal static ISet<string> DefaultKeywords = new HashSet<string>()
         {
-            "await",
             "if",
             "do",
             "try",
@@ -76,6 +75,13 @@ namespace Microsoft.AspNet.Razor.Parser
         protected bool TryGetDirectiveHandler(string directive, out Action handler)
         {
             return _directiveParsers.TryGetValue(directive, out handler);
+        }
+
+        private void MapExpressionKeyword(Action<bool> handler, CSharpKeyword keyword)
+        {
+            _keywordParsers.Add(keyword, handler);
+
+            // Expression keywords don't belong in the regular keyword list
         }
 
         private void MapKeywords(Action<bool> handler, params CSharpKeyword[] keywords)

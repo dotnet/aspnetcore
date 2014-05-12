@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Razor.Parser
     {
         private void SetUpExpressions()
         {
-            MapKeywords(AwaitExpression, CSharpKeyword.Await);
+            MapExpressionKeyword(AwaitExpression, CSharpKeyword.Await);
         }
 
         private void AwaitExpression(bool topLevel)
@@ -22,11 +22,6 @@ namespace Microsoft.AspNet.Razor.Parser
             
             // Accept 1 or more spaces between the await and the following code.
             AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
-
-            // Accept a single code piece to await. This will accept up until a method "call" signature.
-            // Ex: "@await |Foo|()" Inbetween the pipes is what is accepted.  The Statement/ImplicitExpression
-            // handling capture method calls and the parameters passed in.
-            AcceptWhile(CSharpSymbolType.Identifier);
 
             // Top level basically indicates if we're within an expression or statement.
             // Ex: topLevel true = @await Foo()  |  topLevel false = @{ await Foo(); }
