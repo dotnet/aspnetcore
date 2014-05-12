@@ -83,9 +83,18 @@ namespace TestOutput
 #line hidden
             );
 
-            WriteLiteral("</p>\r\n    <p>Advanced Asynchronous Template: ");
+            WriteLiteral("</p>\r\n    <p>Advanced Asynchronous Expression Extended: ");
             Write(
 #line 20 "Await.cshtml"
+                                                   await Foo.Bar(1, 2)
+
+#line default
+#line hidden
+            );
+
+            WriteLiteral("</p>\r\n    <p>Advanced Asynchronous Template: ");
+            Write(
+#line 21 "Await.cshtml"
                                          await Foo("bob", true)
 
 #line default
@@ -93,15 +102,22 @@ namespace TestOutput
             );
 
             WriteLiteral("</p>\r\n    <p>Advanced Asynchronous Statement: ");
-#line 21 "Await.cshtml"
+#line 22 "Await.cshtml"
                                            await Foo(something, hello: "world"); 
+
+#line default
+#line hidden
+
+            WriteLiteral("</p>\r\n    <p>Advanced Asynchronous Statement Extended: ");
+#line 23 "Await.cshtml"
+                                                    await Foo.Bar(1, 2) 
 
 #line default
 #line hidden
 
             WriteLiteral("</p>\r\n    <p>Advanced Asynchronous Statement Nested:  <b>");
             Write(
-#line 22 "Await.cshtml"
+#line 24 "Await.cshtml"
                                                       await Foo(boolValue: false)
 
 #line default
@@ -109,7 +125,7 @@ namespace TestOutput
             );
 
             WriteLiteral("</b> ");
-#line 22 "Await.cshtml"
+#line 24 "Await.cshtml"
                                                                                       
 
 #line default
@@ -117,7 +133,7 @@ namespace TestOutput
 
             WriteLiteral("</p>\r\n    <p>Advanced Incomplete Asynchronous Statement: ");
             Write(
-#line 23 "Await.cshtml"
+#line 25 "Await.cshtml"
                                                     await ("wrrronggg")
 
 #line default

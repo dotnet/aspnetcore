@@ -72,34 +72,45 @@ namespace TestOutput
 #line default
 #line hidden
 #line 20 "Await.cshtml"
-								   __o = await Foo("bob", true);
+											 __o = await Foo.Bar(1, 2);
 
 #line default
 #line hidden
 #line 21 "Await.cshtml"
+								   __o = await Foo("bob", true);
+
+#line default
+#line hidden
+#line 22 "Await.cshtml"
 										   await Foo(something, hello: "world"); 
 
 #line default
 #line hidden
 
-#line 22 "Await.cshtml"
+#line 23 "Await.cshtml"
+												    await Foo.Bar(1, 2) 
+
+#line default
+#line hidden
+
+#line 24 "Await.cshtml"
 												  
 
 #line default
 #line hidden
 
-#line 22 "Await.cshtml"
+#line 24 "Await.cshtml"
 												__o = await Foo(boolValue: false);
 
 #line default
 #line hidden
-#line 22 "Await.cshtml"
+#line 24 "Await.cshtml"
 																					  
 
 #line default
 #line hidden
 
-#line 23 "Await.cshtml"
+#line 25 "Await.cshtml"
 											  __o = await ("wrrronggg");
 
 #line default

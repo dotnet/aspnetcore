@@ -17,8 +17,10 @@
 <section>
     <h1>Advanced Asynchronous Expression Test</h1>
     <p>Advanced Asynchronous Expression: @await Foo(1, 2)</p>
+    <p>Advanced Asynchronous Expression Extended: @await Foo.Bar(1, 2)</p>
     <p>Advanced Asynchronous Template: @(await Foo("bob", true))</p>
     <p>Advanced Asynchronous Statement: @{ await Foo(something, hello: "world"); }</p>
+    <p>Advanced Asynchronous Statement Extended: @{ await Foo.Bar(1, 2) }</p>
     <p>Advanced Asynchronous Statement Nested: @{ <b>@await Foo(boolValue: false)</b> }</p>
     <p>Advanced Incomplete Asynchronous Statement: @await ("wrrronggg")</p>
 </section>
