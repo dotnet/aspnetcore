@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Globalization;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -11,7 +9,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     {
         private static readonly object _cacheKey = new object();
 
-        public Task<IValueProvider> GetValueProviderAsync([NotNull] RequestContext requestContext)
+        public IValueProvider GetValueProvider([NotNull] RequestContext requestContext)
         {
             // Process the query collection once-per request. 
             var storage = requestContext.HttpContext.Items;
@@ -27,7 +25,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 provider = (ReadableStringCollectionValueProvider)value;
             }
-            return Task.FromResult(provider);
+            return provider;
         }
     }
 }

@@ -29,14 +29,12 @@ namespace Microsoft.AspNet.Mvc
             _validatorProviders = validatorProviders;
         }
 
-        public async Task<ActionBindingContext> GetActionBindingContextAsync(ActionContext actionContext)
+        public Task<ActionBindingContext> GetActionBindingContextAsync(ActionContext actionContext)
         {
             var requestContext = new RequestContext(actionContext.HttpContext, actionContext.RouteValues);
-            var valueProviders = await Task.WhenAll(_valueProviderFactories.Select(factory => factory.GetValueProviderAsync(requestContext)));
-            valueProviders = valueProviders.Where(vp => vp != null)
-                                            .ToArray();
-
-            return new ActionBindingContext(
+            var valueProviders = _valueProviderFactories.Select(factory => factory.GetValueProvider(requestContext))
+                                                        .Where(vp => vp != null);
+            var context = new ActionBindingContext(
                 actionContext,
                 _modelMetadataProvider,
                 new CompositeModelBinder(_modelBinders),
@@ -44,6 +42,8 @@ namespace Microsoft.AspNet.Mvc
                 _inputFormatterProvider,
                 _validatorProviders
             );
+
+            return Task.FromResult(context);
         }
     }
 }

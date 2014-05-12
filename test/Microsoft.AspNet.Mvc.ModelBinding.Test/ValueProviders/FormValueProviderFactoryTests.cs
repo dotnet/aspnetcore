@@ -14,14 +14,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
     public class FormValueProviderFactoryTests
     {
         [Fact]
-        public async Task GetValueProvider_ReturnsNull_WhenContentTypeIsNotFormUrlEncoded()
+        public void GetValueProvider_ReturnsNull_WhenContentTypeIsNotFormUrlEncoded()
         {
             // Arrange
             var requestContext = CreateRequestContext("some-content-type");
             var factory = new FormValueProviderFactory();
             
             // Act
-            var result = await factory.GetValueProviderAsync(requestContext);
+            var result = factory.GetValueProvider(requestContext);
 
             // Assert
             Assert.Null(result);
@@ -30,14 +30,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         [Theory]
         [InlineData("application/x-www-form-urlencoded")]
         [InlineData("application/x-www-form-urlencoded;charset=utf-8")]
-        public async Task GetValueProvider_ReturnsValueProviderInstaceWithInvariantCulture(string contentType)
+        public void GetValueProvider_ReturnsValueProviderInstaceWithInvariantCulture(string contentType)
         {
             // Arrange
             var requestContext = CreateRequestContext(contentType);
             var factory = new FormValueProviderFactory();
 
             // Act
-            var result = await factory.GetValueProviderAsync(requestContext);
+            var result = factory.GetValueProvider(requestContext);
 
             // Assert
             var valueProvider = Assert.IsType<ReadableStringCollectionValueProvider>(result);

@@ -12,6 +12,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </summary>
         /// <param name="requestContext">RequestContext that value provider will populate from</param>
         /// <returns>a value provider instance or null</returns>
-        Task<IValueProvider> GetValueProviderAsync(RequestContext requestContext);
+        IValueProvider GetValueProvider(RequestContext requestContext);
     }
 }

@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         public virtual async Task<bool> ContainsPrefixAsync(string prefix)
         {
-            for (int i = 0; i < Count; i++)
+            for (var i = 0; i < Count; i++)
             {
                 if (await this[i].ContainsPrefixAsync(prefix))
                 {
@@ -39,11 +39,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Performance-sensitive
             // Caching the count is faster for IList<T>
-            int itemCount = Items.Count;
-            for (int i = 0; i < itemCount; i++)
+            var itemCount = Items.Count;
+            for (var i = 0; i < itemCount; i++)
             {
-                IValueProvider vp = Items[i];
-                ValueProviderResult result = await vp.GetValueAsync(key);
+                var valueProvider = Items[i];
+                var result = await valueProvider.GetValueAsync(key);
                 if (result != null)
                 {
                     return result;
@@ -52,11 +52,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return null;
         }
 
-        public virtual IDictionary<string, string> GetKeysFromPrefix(string prefix)
+        public virtual async Task<IDictionary<string, string>> GetKeysFromPrefixAsync(string prefix)
         {
-            foreach (IValueProvider vp in this)
+            foreach (var valueProvider in this)
             {
-                IDictionary<string, string> result = GetKeysFromPrefixFromProvider(vp, prefix);
+                var result = await GetKeysFromPrefixFromProvider(valueProvider, prefix);
                 if (result != null && result.Count > 0)
                 {
                     return result;
@@ -65,10 +65,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
-        internal static IDictionary<string, string> GetKeysFromPrefixFromProvider(IValueProvider provider, string prefix)
+        private static Task<IDictionary<string, string>> GetKeysFromPrefixFromProvider(IValueProvider provider, 
+                                                                                       string prefix)
         {
-            IEnumerableValueProvider enumeratedProvider = provider as IEnumerableValueProvider;
-            return (enumeratedProvider != null) ? enumeratedProvider.GetKeysFromPrefix(prefix) : null;
+            var enumeratedProvider = provider as IEnumerableValueProvider;
+            return (enumeratedProvider != null) ? enumeratedProvider.GetKeysFromPrefixAsync(prefix) : null;
         }
 
         protected override void InsertItem(int index, [NotNull] IValueProvider item)

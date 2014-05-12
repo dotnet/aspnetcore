@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,7 +16,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     {
         private readonly CultureInfo _culture;
         private PrefixContainer _prefixContainer;
-        private readonly IReadableStringCollection _values;
+        private readonly Func<Task<IReadableStringCollection>> _valuesFactory;
+        private IReadableStringCollection _values;
 
         /// <summary>
         /// Creates a NameValuePairsProvider wrapping an existing set of key value pairs.
@@ -27,6 +30,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             _culture = culture;
         }
 
+        public ReadableStringCollectionValueProvider([NotNull] Func<Task<IReadableStringCollection>> valuesFactory,
+                                                     CultureInfo culture)
+        {
+            _valuesFactory = valuesFactory;
+            _culture = culture;
+        }
+
         public CultureInfo Culture
         {
             get
@@ -35,35 +45,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
-        private PrefixContainer PrefixContainer
+        public virtual async Task<bool> ContainsPrefixAsync(string prefix)
         {
-            get
-            {
-                if (_prefixContainer == null)
-                {
-                    // Initialization race is OK providing data remains read-only and object identity is not significant
-                    // TODO: Figure out if we can have IReadableStringCollection expose Keys, Count etc
-
-                    _prefixContainer = new PrefixContainer(_values.Select(v => v.Key).ToArray());
-                }
-                return _prefixContainer;
-            }
+            var prefixContainer = await GetPrefixContainerAsync();
+            return prefixContainer.ContainsPrefix(prefix);
         }
 
-        public virtual Task<bool> ContainsPrefixAsync(string prefix)
+        public virtual async Task<IDictionary<string, string>> GetKeysFromPrefixAsync([NotNull] string prefix)
         {
-            return Task.FromResult(PrefixContainer.ContainsPrefix(prefix));
+            var prefixContainer = await GetPrefixContainerAsync();
+            return prefixContainer.GetKeysFromPrefix(prefix);
         }
 
-        public virtual IDictionary<string, string> GetKeysFromPrefix([NotNull] string prefix)
+        public virtual async Task<ValueProviderResult> GetValueAsync([NotNull] string key)
         {
-            return PrefixContainer.GetKeysFromPrefix(prefix);
-        }
+            var collection = await GetValueCollectionAsync();
+            var values = collection.GetValues(key);
 
-        public virtual Task<ValueProviderResult> GetValueAsync([NotNull] string key)
-        {
             ValueProviderResult result;
-            var values = _values.GetValues(key);
             if (values == null)
             {
                 result = null;
@@ -78,7 +77,31 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 result = new ValueProviderResult(values, _values.Get(key), _culture);
             }
 
-            return Task.FromResult(result);
+            return result;
+        }
+
+        private async Task<IReadableStringCollection> GetValueCollectionAsync()
+        {
+            if (_values == null)
+            {
+                Contract.Assert(_valuesFactory != null);
+                _values = await _valuesFactory();
+            }
+
+            return _values;
+        }
+
+        private async Task<PrefixContainer> GetPrefixContainerAsync()
+        {
+            if (_prefixContainer == null)
+            {
+                // Initialization race is OK providing data remains read-only and object identity is not significant
+                // TODO: Fix this once https://github.com/aspnet/HttpAbstractions/issues/3 is sorted out.
+
+                var collection = await GetValueCollectionAsync();
+                _prefixContainer = new PrefixContainer(collection.Select(v => v.Key).ToArray());
+            }
+            return _prefixContainer;
         }
     }
 }

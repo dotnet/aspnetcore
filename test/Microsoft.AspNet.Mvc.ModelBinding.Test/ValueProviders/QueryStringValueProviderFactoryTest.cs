@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using System.Globalization;
-using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 #if NET45
 using Moq;
@@ -18,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
 #if NET45
         [Fact]
-        public async Task GetValueProvider_ReturnsQueryStringValueProviderInstaceWithInvariantCulture()
+        public void GetValueProvider_ReturnsQueryStringValueProviderInstaceWithInvariantCulture()
         {
             // Arrange
             var request = new Mock<HttpRequest>();
@@ -29,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var requestContext = new RequestContext(context.Object, new Dictionary<string, object>());
 
             // Act
-            var result = await _factory.GetValueProviderAsync(requestContext);
+            var result = _factory.GetValueProvider(requestContext);
 
             // Assert
             var valueProvider = Assert.IsType<ReadableStringCollectionValueProvider>(result);

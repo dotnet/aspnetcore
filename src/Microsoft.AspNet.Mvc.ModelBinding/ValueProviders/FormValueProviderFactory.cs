@@ -12,15 +12,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     {
         private const string FormEncodedContentType = "application/x-www-form-urlencoded";
 
-        public async Task<IValueProvider> GetValueProviderAsync(RequestContext requestContext)
+        public IValueProvider GetValueProvider(RequestContext requestContext)
         {
             var request = requestContext.HttpContext.Request;
             
             if (IsSupportedContentType(request))
             {
-                var queryCollection = await request.GetFormAsync();
                 var culture = GetCultureInfo(request);
-                return new ReadableStringCollectionValueProvider(queryCollection, culture);
+                return new ReadableStringCollectionValueProvider(request.GetFormAsync, culture);
             }
 
             return null;

@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
 
         [Fact]
-        public async Task ContainsPrefix_WithEmptyCollection_ReturnsFalseForEmptyPrefix()
+        public async Task ContainsPrefixAsync_WithEmptyCollection_ReturnsFalseForEmptyPrefix()
         {
             // Arrange
             var backingStore = new ReadableStringCollection(new Dictionary<string, string[]>());
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public async Task ContainsPrefix_WithNonEmptyCollection_ReturnsTrueForEmptyPrefix()
+        public async Task ContainsPrefixAsync_WithNonEmptyCollection_ReturnsTrueForEmptyPrefix()
         {
             // Arrange
             var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, null);
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public async Task ContainsPrefix_WithNonEmptyCollection_ReturnsTrueForKnownPrefixes()
+        public async Task ContainsPrefixAsync_WithNonEmptyCollection_ReturnsTrueForKnownPrefixes()
         {
             // Arrange
             var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, null);
@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public async Task ContainsPrefix_WithNonEmptyCollection_ReturnsFalseForUnknownPrefix()
+        public async Task ContainsPrefixAsync_WithNonEmptyCollection_ReturnsFalseForUnknownPrefix()
         {
             // Arrange
             var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, null);
@@ -76,13 +76,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public void GetKeysFromPrefix_EmptyPrefix_ReturnsAllPrefixes()
+        public async Task GetKeysFromPrefixAsync_EmptyPrefix_ReturnsAllPrefixes()
         {
             // Arrange
             var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, null);
 
             // Act
-            IDictionary<string, string> result = valueProvider.GetKeysFromPrefix("");
+            var result = await valueProvider.GetKeysFromPrefixAsync("");
 
             // Assert
             Assert.Equal<KeyValuePair<string, string>>(
@@ -91,35 +91,35 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public void GetKeysFromPrefix_UnknownPrefix_ReturnsEmptyDictionary()
+        public async Task GetKeysFromPrefixAsync_UnknownPrefix_ReturnsEmptyDictionary()
         {
             // Arrange
             var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, null);
 
             // Act
-            IDictionary<string, string> result = valueProvider.GetKeysFromPrefix("abc");
+            var result = await valueProvider.GetKeysFromPrefixAsync("abc");
 
             // Assert
             Assert.Empty(result);
         }
 
         [Fact]
-        public void GetKeysFromPrefix_KnownPrefix_ReturnsMatchingItems()
+        public async Task GetKeysFromPrefixAsync_KnownPrefix_ReturnsMatchingItems()
         {
             // Arrange
             var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, null);
 
             // Act
-            IDictionary<string, string> result = valueProvider.GetKeysFromPrefix("bar");
+            var result = await valueProvider.GetKeysFromPrefixAsync("bar");
 
             // Assert
-            KeyValuePair<string, string> kvp = Assert.Single(result);
+            var kvp = Assert.Single(result);
             Assert.Equal("baz", kvp.Key);
             Assert.Equal("bar.baz", kvp.Value);
         }
 
         [Fact]
-        public async Task GetValue_SingleValue()
+        public async Task GetValueAsync_SingleValue()
         {
             // Arrange
             var culture = new CultureInfo("fr-FR");
@@ -136,7 +136,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public async Task GetValue_MultiValue()
+        public async Task GetValueAsync_MultiValue()
         {
             // Arrange
             var culture = new CultureInfo("fr-FR");
@@ -174,7 +174,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         //}
 
         [Fact]
-        public async Task GetValue_NullMultipleValue()
+        public async Task GetValueAsync_NullMultipleValue()
         {
             // Arrange
             var backingStore = new ReadableStringCollection(
@@ -194,7 +194,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public async Task GetValue_ReturnsNullIfKeyNotFound()
+        public async Task GetValueAsync_ReturnsNullIfKeyNotFound()
         {
             // Arrange
             var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, null);
