@@ -17,7 +17,10 @@ The first thing we need to do is setup the tools required to build and run an ap
 * Execute ```kvm upgrade```. This command will download the latest version of the SDK and put it on your user profile ready to use. You could also install a specific version here instead of getting the latest, see the [KVM page](https://github.com/aspnet/Home/wiki/version-manager)
 * Navigate to samples\HelloConsole
 * Run ```K run```
-* You should see some compiler output and a message saying "Hello World"
+* You should see a message saying "Hello World"
+* Type ```SET KRE_TRACE=1```
+* Run ```K run```
+* You should now see compiler output as well as the "Hello World" message
 
 #Samples
 
