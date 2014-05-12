@@ -56,14 +56,14 @@ If you can do all of the above then everything should be working. You can try ou
 
 #Switching to Core CLR
 
-By default when running the applications you are running against Desktop CLR (4.5), you can change that by setting the TARGET_FRAMEWORK variable:
+By default when running the applications you are running against Desktop CLR (4.5), you can change that using the KVM command.
 
-1. Run ```set TARGET_FRAMEWORK=k10```
+1. Run ```kvm upgrade -svrc50``` This command gets the latest Core CLR version of the k runtime and sets it as your default. The -svrc50 switch tells it to use Core CLR, you can use -svr50 to target desktop again.
 2. Run ```K web```
 3. The first line of your output should say "Loaded Module: klr.core45.dll" instead of "Loaded Module: klr.net45.dll"
 4. The HelloWeb app should work the same as when running on Desktop CLR.
 
-**NOTE: There are going to be parts of the stack that work on Desktop but do not work on Core CLR. This set should get smaller and smaller as time goes on, but it is entirely likely as you use Core CLR you will hit errors that can't be worked around as the Core CLR surface area just does not exist yet. An example of this type of problem is using Entity Framework with a database. There are not currently any real database providers that work on Core CLR, so you will be restricted to in-memory EF on Core CLR.**
+**NOTE: There are going to be parts of the stack that work on Desktop but do not work on Core CLR. This set should get smaller and smaller as time goes on, but it is entirely likely as you use Core CLR you will hit errors that can't be worked around as the Core CLR surface area just does not exist yet.**
 
 #Core CLR Packages
 
@@ -71,7 +71,7 @@ Currently the BCL is split into some fairly fine grained packages, which was one
 
 #OS Requirements
 
-Today Core CLR will only work on Windows 8 and above, otherwise we support Windows 7 and above. Before RTM Core CLR will support Windows 7 as well.
+Windows 7 and above, though Core CLR will only work on Windows 8 today. So if using Core CLR you will need to be on Windows 8 or above. Before RTM Core CLR will support Windows 7 as well.
 
 #Feedback
 
