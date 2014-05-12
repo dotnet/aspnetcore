@@ -769,7 +769,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 // parameters. Also reachable in the even-more-unusual case that user called another BeginForm()
                 // overload with default argument values.
                 var request = ViewContext.HttpContext.Request;
-                formAction = request.PathBase.Add(request.Path).Add(request.QueryString);
+                formAction = request.PathBase + request.Path + request.QueryString;
             }
             else
             {
