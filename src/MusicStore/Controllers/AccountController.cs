@@ -11,7 +11,7 @@ namespace MusicStore.Controllers
     [Authorize]
     public class AccountController : Controller
     {
-        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager)
+        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
         {
             UserManager = userManager;
             SignInManager = signInManager;
@@ -19,14 +19,14 @@ namespace MusicStore.Controllers
 
         public UserManager<ApplicationUser> UserManager { get; private set; }
 
-        public ApplicationSignInManager SignInManager { get; private set; }
+        public SignInManager<ApplicationUser> SignInManager { get; private set; }
 
         //
         // GET: /Account/Login
         [AllowAnonymous]
         //Bug: https://github.com/aspnet/WebFx/issues/339
         [HttpGet]
-        public IActionResult Login(string returnUrl)
+        public IActionResult Login(string returnUrl=null)
         {
             ViewBag.ReturnUrl = returnUrl;
             return View();
@@ -37,7 +37,7 @@ namespace MusicStore.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model, string returnUrl)
+        public async Task<IActionResult> Login(LoginViewModel model, string returnUrl=null)
         {
             if (ModelState.IsValid)
             {
@@ -100,7 +100,7 @@ namespace MusicStore.Controllers
         // GET: /Account/Manage
         //Bug: https://github.com/aspnet/WebFx/issues/339
         [HttpGet]
-        public IActionResult Manage(ManageMessageId? message)
+        public IActionResult Manage(ManageMessageId? message=null)
         {
             ViewBag.StatusMessage =
                 message == ManageMessageId.ChangePasswordSuccess ? "Your password has been changed."

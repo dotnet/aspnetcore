@@ -1,27 +1,15 @@
-using Microsoft.AspNet;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Builder;
-using Microsoft.Framework.ConfigurationModel;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.AspNet.Diagnostics;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.Entity;
-using Microsoft.AspNet.Identity.InMemory;
 using Microsoft.AspNet.Identity.Security;
-using Microsoft.Framework.Logging;
-using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.RequestContainer;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Security.Cookies;
 using Microsoft.Data.Entity;
-using Microsoft.Data.Entity.InMemory;
-using Microsoft.Data.Entity.SqlServer;
-using Microsoft.Framework.Runtime;
+using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.DependencyInjection;
 using MusicStore.Models;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -47,20 +35,13 @@ public class Startup
             services.AddEntityFramework().AddSqlServer();
             services.AddTransient<MusicStoreContext>();
 
-
-            /*
-             * Add all Identity related services to IoC. 
-             */
+            //Add all Identity related services to IoC. 
             services.AddTransient<DbContext, ApplicationDbContext>();
-
-            //Bug: https://github.com/aspnet/Identity/issues/50
             services.AddIdentity<ApplicationUser, IdentityRole>(s =>
             {
                 s.AddEntity();
-                s.AddUserManager<ApplicationUserManager>();
-                s.AddRoleManager<ApplicationRoleManager>();
             });
-            services.AddTransient<ApplicationSignInManager>();
+            services.AddTransient<SignInManager<ApplicationUser>>();
         });
 
 
@@ -106,9 +87,9 @@ public class Startup
         var password = configuration.Get("DefaultAdminPassword");
         //const string adminRole = "Administrator";
 
-        var userManager = serviceProvider.GetService<ApplicationUserManager>();
+        var userManager = serviceProvider.GetService<UserManager<ApplicationUser>>();
         // Todo: identity sql does not support roles yet
-        //var roleManager = serviceProvider.GetService<ApplicationRoleManager>();
+        //var roleManager = serviceProvider.GetService<RoleManager<IdentityRole>>();
         //if (!await roleManager.RoleExistsAsync(adminRole))
         //{
         //    await roleManager.CreateAsync(new IdentityRole(adminRole));
