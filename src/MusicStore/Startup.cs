@@ -43,10 +43,8 @@ public class Startup
             //Add all MVC related services to IoC.
             services.AddMvc();
 
-            /*Add all EF related services to IoC.
-            Using an InMemoryStore in K until SQL server is available.*/
+            /*Add all EF related services to IoC.*/
             services.AddEntityFramework().AddSqlServer();
-            services.AddEntityFramework().AddInMemoryStore();
             services.AddTransient<MusicStoreContext>();
 
 

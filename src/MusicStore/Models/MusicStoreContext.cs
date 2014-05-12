@@ -1,7 +1,6 @@
 ﻿using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Metadata;
-using Microsoft.Data.Entity.InMemory;
 using Microsoft.Data.Entity.SqlServer;
 using System;
 
@@ -26,11 +25,7 @@ namespace MusicStore.Models
 
         protected override void OnConfiguring(DbContextOptions builder)
         {
-#if NET45
             builder.UseSqlServer(_configuration.Get("Data:DefaultConnection:ConnectionString"));
-#else
-            builder.UseInMemoryStore(persist: true);
-#endif
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
