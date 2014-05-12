@@ -1,4 +1,4 @@
-#ASP.NET vNext Preview
+#ASP.NET vNext Home
 
 In the next version of ASP.NET we are working with multiple teams around Microsoft to create a lean, composable .NET stack that provides a familiar and modern framework for web and cloud scenarios.
 
