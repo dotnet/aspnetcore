@@ -1,73 +1,73 @@
 {
-    "name": "MusicStore",
-    "authors": [
-        "Microsoft"
-    ],
-    "description": "Music store application on K",
-    "version": "0.1-alpha-*",
-    "dependencies": {
-        "Helios": "0.1-alpha-*",
-        "Microsoft.AspNet.Diagnostics": "0.1-alpha-*",
-        "Microsoft.AspNet.Hosting": "0.1-alpha-*",
-        "Microsoft.AspNet.Http": "0.1-alpha-*",
-        "Microsoft.AspNet.Identity": "0.1-alpha-*",
-        "Microsoft.AspNet.Identity.Entity": "0.1-alpha-*",
-        "Microsoft.AspNet.Identity.InMemory": "0.1-alpha-*",
-        "Microsoft.AspNet.Identity.Security": "0.1-alpha-*",
-        "Microsoft.AspNet.Mvc": "0.1-alpha-*",
-        "Microsoft.AspNet.Mvc.Core": "0.1-alpha-*",
-        "Microsoft.AspNet.Mvc.ModelBinding": "0.1-alpha-*",
-        "Microsoft.AspNet.Mvc.Razor": "0.1-alpha-*",
-        "Microsoft.AspNet.Razor": "0.1-alpha-*",
-        "Microsoft.AspNet.RequestContainer": "0.1-alpha-*",
-        "Microsoft.AspNet.Routing": "0.1-alpha-*",
-        "Microsoft.AspNet.Security": "0.1-alpha-*",
-        "Microsoft.AspNet.Security.Cookies": "0.1-alpha-*",
-        "Microsoft.AspNet.Security.DataProtection": "0.1-alpha-*",
-        "Microsoft.AspNet.Server.WebListener": "0.1-alpha-*",
-        "Microsoft.AspNet.StaticFiles": "0.1-alpha-*",
-        "Microsoft.Data.Entity": "0.1-alpha-*",
-        "Microsoft.Data.Entity.InMemory": "0.1-alpha-*",
-        "Microsoft.Data.Entity.Migrations": "0.1-alpha-*",
-        "Microsoft.Data.Entity.Relational": "0.1-alpha-*",
-        "Microsoft.Data.Entity.SqlServer": "0.1-alpha-*",
-        "Microsoft.Framework.ConfigurationModel": "0.1-alpha-*",
-        "Microsoft.Framework.ConfigurationModel.Json": "0.1-alpha-*",
-        "Microsoft.Framework.DependencyInjection": "0.1-alpha-*",
-        "Microsoft.Framework.Logging": "0.1-alpha-*",
-        "System.Security.Claims": "0.1-alpha-*",
-        "System.Security.Principal": "4.0.0.0"
+  "name": "MusicStore",
+  "authors": [
+    "Microsoft"
+  ],
+  "description": "Music store application on K",
+  "version": "0.1-alpha-*",
+  "dependencies": {
+    "Helios": "0.1-alpha-build-0538",
+    "Microsoft.AspNet.Diagnostics": "0.1-alpha-build-0623",
+    "Microsoft.AspNet.Hosting": "0.1-alpha-build-0519",
+    "Microsoft.AspNet.Http": "0.1-alpha-build-0413",
+    "Microsoft.AspNet.Identity": "0.1-alpha-build-0933",
+    "Microsoft.AspNet.Identity.Entity": "0.1-alpha-build-0933",
+    "Microsoft.AspNet.Identity.InMemory": "0.1-alpha-build-0933",
+    "Microsoft.AspNet.Identity.Security": "0.1-alpha-build-0933",
+    "Microsoft.AspNet.Mvc": "0.1-alpha-build-1140",
+    "Microsoft.AspNet.Mvc.Core": "0.1-alpha-build-1140",
+    "Microsoft.AspNet.Mvc.ModelBinding": "0.1-alpha-build-1140",
+    "Microsoft.AspNet.Mvc.Razor": "0.1-alpha-build-1140",
+    "Microsoft.AspNet.Razor": "0.1-alpha-build-0193",
+    "Microsoft.AspNet.RequestContainer": "0.1-alpha-build-0519",
+    "Microsoft.AspNet.Routing": "0.1-alpha-build-0525",
+    "Microsoft.AspNet.Security": "0.1-alpha-build-0453",
+    "Microsoft.AspNet.Security.Cookies": "0.1-alpha-build-0453",
+    "Microsoft.AspNet.Security.DataProtection": "0.1-alpha-build-0150",
+    "Microsoft.AspNet.Server.WebListener": "0.1-alpha-build-0469",
+    "Microsoft.AspNet.StaticFiles": "0.1-alpha-build-0402",
+    "Microsoft.Data.Entity": "0.1-alpha-build-0766",
+    "Microsoft.Data.Entity.InMemory": "0.1-alpha-build-0766",
+    "Microsoft.Data.Entity.Migrations": "0.1-alpha-build-0766",
+    "Microsoft.Data.Entity.Relational": "0.1-alpha-build-0766",
+    "Microsoft.Data.Entity.SqlServer": "0.1-alpha-build-0766",
+    "Microsoft.Framework.ConfigurationModel": "0.1-alpha-build-0223",
+    "Microsoft.Framework.ConfigurationModel.Json": "0.1-alpha-build-0223",
+    "Microsoft.Framework.DependencyInjection": "0.1-alpha-build-0362",
+    "Microsoft.Framework.Logging": "0.1-alpha-build-0168",
+    "System.Security.Claims": "0.1-alpha-build-0257",
+    "System.Security.Principal": "4.0.0.0"
+  },
+  "commands": {
+    "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5002",
+    "run": "run server.urls=http://localhost:5003"
+  },
+  "configurations": {
+    "net45": {
+      "dependencies": {
+        "System.ComponentModel.DataAnnotations": "",
+        "System.Data": "",
+        "System.Runtime": ""
+      }
     },
-    "commands": {
-        "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5002",
-        "run": "run server.urls=http://localhost:5003"
-    },
-    "configurations": {
-        "net45": {
-            "dependencies": {
-                "System.ComponentModel.DataAnnotations": "",
-                "System.Data": "",
-                "System.Runtime": ""
-            }
-        },
-        "k10": {
-            "dependencies": {
-                "Microsoft.DataAnnotations": "0.1-alpha-*",
-                "System.Collections": "4.0.0.0",
-                "System.ComponentModel": "4.0.0.0",
-                "System.Console": "4.0.0.0",
-                "System.Diagnostics.Debug": "4.0.10.0",
-                "System.Diagnostics.Tools": "4.0.0.0",
-                "System.Dynamic.Runtime": "4.0.0.0",
-                "System.IO": "4.0.0.0",
-                "System.Linq": "4.0.0.0",
-                "System.Reflection": "4.0.10.0",
-                "System.Reflection.Compatibility": "4.0.0.0",
-                "System.Reflection.Extensions": "4.0.0.0",
-                "System.Runtime": "4.0.20.0",
-                "System.Runtime.Extensions": "4.0.10.0",
-                "System.Threading.Tasks": "4.0.10.0"
-            }
-        }
+    "k10": {
+      "dependencies": {
+        "Microsoft.DataAnnotations": "0.1-alpha-build-0099",
+        "System.Collections": "4.0.0.0",
+        "System.ComponentModel": "4.0.0.0",
+        "System.Console": "4.0.0.0",
+        "System.Diagnostics.Debug": "4.0.10.0",
+        "System.Diagnostics.Tools": "4.0.0.0",
+        "System.Dynamic.Runtime": "4.0.0.0",
+        "System.IO": "4.0.0.0",
+        "System.Linq": "4.0.0.0",
+        "System.Reflection": "4.0.10.0",
+        "System.Reflection.Compatibility": "4.0.0.0",
+        "System.Reflection.Extensions": "4.0.0.0",
+        "System.Runtime": "4.0.20.0",
+        "System.Runtime.Extensions": "4.0.10.0",
+        "System.Threading.Tasks": "4.0.10.0"
+      }
     }
+  }
 }
