@@ -6,7 +6,7 @@
     "Microsoft.AspNet.Server.WebListener": "0.1-alpha-build-0452",
     "Microsoft.AspNet.StaticFiles": "0.1-alpha-build-0388"
   },
- "commands": { 
+  "commands": { 
     "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001" 
   },
   "configurations": {
