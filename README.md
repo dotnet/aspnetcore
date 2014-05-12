@@ -72,9 +72,13 @@ By default when running the applications you are running against Desktop CLR (4.
 
 Currently the BCL is split into some fairly fine grained packages, which was one of the goals of this effort. However, the packages that exist today do not necessarily represent the list of packages that we will end up with. We are still experimenting with what makes sense to be a package and what the experience should be.
 
-#OS Requirements
+#Minimum Requirements
 
-Windows 7 and above, though Core CLR will only work on Windows 8 today. So if using Core CLR you will need to be on Windows 8 or above. Before RTM Core CLR will support Windows 7 as well.
+These are the current minimum requirements, they do not necesarilly represent our RTM minimum.
+
+* Windows 7 or greater, though Core CLR will only work on Windows 8 today. If using Core CLR you will need to be on Windows 8 or above. Before RTM Core CLR will support Windows 7 as well.
+* .NET 4.5.1 for hosting in IIS
+* Powershell 4. KVM is a Powershell script that makes use of types that older verisons of Powershell cannot load
 
 #Feedback
 
