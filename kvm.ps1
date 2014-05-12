@@ -63,8 +63,7 @@ function Kvm-Global-Setup {
         $arguments = "& '$scriptPath' setup $(Requested-Switches) -persistent"
         Start-Process "$psHome\powershell.exe" -Verb runAs -ArgumentList $arguments -Wait
         Write-Host "Setup complete"
-        Kvm-Alias-List
-        Kvm-List
+        Kvm-Help
         break
     }
 
@@ -99,8 +98,8 @@ function Kvm-Global-Setup {
     $machineKreHome = Change-Path $machineKreHome $globalKrePath ($globalKrePath)
     [Environment]::SetEnvironmentVariable("KRE_HOME", $machineKreHome, [System.EnvironmentVariableTarget]::Machine)
 
-#    $persistent = $false
-#    Kvm-Global-Upgrade
+    Write-Host "Press any key to continue ..."
+    $x = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown,AllowCtrlC")
 }
 
 function Kvm-Global-Upgrade {
@@ -155,7 +154,8 @@ param(
     $kreFile = "$kreFolder\$kreFullName.nupkg"
 
     If (Test-Path $kreFolder) {
-        Remove-Item $kreFolder -Force -Recurse
+      Write-Host "$kreFullName already installed."
+      return;
     }
 
     Write-Host "Downloading" $kreFullName "from https://www.myget.org/F/aspnetvnext/api/v2/"
