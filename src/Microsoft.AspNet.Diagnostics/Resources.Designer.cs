@@ -241,7 +241,7 @@ namespace Microsoft.AspNet.Diagnostics {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to Learn more about the Microsoft Asp.Net vNext components.
+        ///   Looks up a localized string similar to Learn more about the Microsoft ASP.NET vNext components.
         /// </summary>
         internal static string WelcomeLearnMicrosoftAspNet {
             get {
@@ -286,7 +286,7 @@ namespace Microsoft.AspNet.Diagnostics {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Your Asp.Net vNext application has been successfully started.
+        ///   Looks up a localized string similar to Your ASP.NET vNext application has been successfully started.
         /// </summary>
         internal static string WelcomeStarted {
             get {
@@ -295,7 +295,7 @@ namespace Microsoft.AspNet.Diagnostics {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to Your Asp.Net vNext application has been successfully started..
+        ///   Looks up a localized string similar to Your ASP.NET vNext application has been successfully started..
         /// </summary>
         internal static string WelcomeTitle {
             get {

@@ -186,7 +186,7 @@
     <value>Welcome</value>
   </data>
   <data name="WelcomeLearnMicrosoftAspNet" xml:space="preserve">
-    <value>Learn more about the Microsoft Asp.Net vNext components</value>
+    <value>Learn more about the Microsoft ASP.NET vNext components</value>
   </data>
   <data name="WelcomePageImageText_Browser" xml:space="preserve">
     <value>Browser</value>
@@ -201,9 +201,9 @@
     <value>Skyline</value>
   </data>
   <data name="WelcomeStarted" xml:space="preserve">
-    <value>Your Asp.Net vNext application has been successfully started</value>
+    <value>Your ASP.NET vNext application has been successfully started</value>
   </data>
   <data name="WelcomeTitle" xml:space="preserve">
-    <value>Your Asp.Net vNext application has been successfully started.</value>
+    <value>Your ASP.NET vNext application has been successfully started.</value>
   </data>
 </root>
