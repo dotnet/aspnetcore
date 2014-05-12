@@ -4,14 +4,17 @@
 
 The first thing we need to do is setup the tools required to build and run an application.
 
-* Clone the repository
-* On the command line execute ```kvm setup``` 
+* Clone UpdateToLates branch from [Home] (https://github.com/aspnet/Home) repository
+* On the command line, cd to Home repository and execute ```kvm setup``` 
 * This command will download the latest version of the SDK and put it on your path so that you can run the rest of the commands in the readme. If you want to know more about what this is doing then you can read the [KVM page](https://github.com/aspnet/Home/wiki/version-manager) of the wiki.
+* On the command line execute ```kvm install 0.1-alpha-build-0421```
+* This command will install Desktop flavor of KRE build 0421
 * If you already have ```kvm``` installed on the machine ignore above steps.
+* Clone this repository
 
 ### Run the application:
-1. Run ```build.cmd``` to restore all the necessary packages and generate project files
-2. Open a command prompt and cd ```\src\<AppFolder>\```
+1. Open a command prompt and cd ```\src\<AppFolder>\```
+2. Run ```kpm restore``` to restore all the necessary packages and generate project files
 3. **[Helios]:**
 	4. ```Helios.cmd``` to launch the app on IISExpress (Application started at URL **http://localhost:5001/**).
 4. **[SelfHost]:**
