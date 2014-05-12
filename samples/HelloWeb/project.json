@@ -1,13 +1,13 @@
 {
   "version": "0.1-alpha-*",
   "dependencies": {
-    "Microsoft.AspNet.Diagnostics": "0.1-alpha-build-0591",
-    "Microsoft.AspNet.Hosting": "0.1-alpha-build-0502",
-    "Microsoft.AspNet.Server.WebListener": "0.1-alpha-build-0452",
-    "Microsoft.AspNet.StaticFiles": "0.1-alpha-build-0388"
+    "Microsoft.AspNet.Diagnostics": "0.1-alpha-build-0623",
+    "Microsoft.AspNet.Hosting": "0.1-alpha-build-0519",
+    "Microsoft.AspNet.Server.WebListener": "0.1-alpha-build-0469",
+    "Microsoft.AspNet.StaticFiles": "0.1-alpha-build-0402"
   },
-  "commands": { 
-    "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001" 
+  "commands": {
+    "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001"
   },
   "configurations": {
     "net45": {},
