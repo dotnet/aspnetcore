@@ -15,6 +15,7 @@ using System
         {
         }
 
+        #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
 #line 2 "WelcomePage.cshtml"
@@ -3744,5 +3745,6 @@ using System
             , 287083), false));
             WriteLiteral(" width=\"58\" height=\"29\" /></div>\r\n        </a>\r\n    </div>\r\n\r\n</body>\r\n</html>\r\n");
         }
+        #pragma warning restore 1998
     }
 }

@@ -24,6 +24,7 @@ using System.Globalization
         {
         }
 
+        #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
 #line 3 "DiagnosticsPage.cshtml"
@@ -100,5 +101,6 @@ using System.Globalization
             , 811), false));
             WriteLiteral(">throw InvalidOperationException</a></p>\r\n    </div>\r\n</body>\r\n</html>\r\n");
         }
+        #pragma warning restore 1998
     }
 }
