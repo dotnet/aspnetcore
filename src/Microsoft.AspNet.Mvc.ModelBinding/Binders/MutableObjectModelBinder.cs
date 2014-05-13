@@ -116,8 +116,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 var validationNode = (ModelValidationNode)sender;
                 var modelState = e.ValidationContext.ModelState;
+                var validationState = modelState.GetFieldValidationState(validationNode.ModelStateKey);
 
-                if (modelState.IsValidField(validationNode.ModelStateKey) == null)
+                if (validationState == ModelValidationState.Unvalidated)
                 {
                     // TODO: Revive ModelBinderConfig
                     // string errorMessage =  ModelBinderConfig.ValueRequiredErrorMessageProvider(e.ValidationContext, modelMetadata, incomingValue);
@@ -270,7 +271,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             if (value == null)
             {
                 var modelStateKey = dtoResult.ValidationNode.ModelStateKey;
-                if (bindingContext.ModelState.IsValidField(modelStateKey) == null)
+                var validationState = bindingContext.ModelState.GetFieldValidationState(modelStateKey);
+                if (validationState == ModelValidationState.Unvalidated)
                 {
                     if (requiredValidator != null)
                     {
@@ -299,7 +301,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                         ex = targetInvocationException.InnerException;
                     }
                     var modelStateKey = dtoResult.ValidationNode.ModelStateKey;
-                    if (bindingContext.ModelState.IsValidField(modelStateKey) == null)
+                    var validationState = bindingContext.ModelState.GetFieldValidationState(modelStateKey);
+                    if (validationState == ModelValidationState.Unvalidated)
                     {
                         bindingContext.ModelState.AddModelError(modelStateKey, ex);
                     }
@@ -309,7 +312,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 // trying to set a non-nullable value type to null, need to make sure there's a message
                 var modelStateKey = dtoResult.ValidationNode.ModelStateKey;
-                if (bindingContext.ModelState.IsValidField(modelStateKey) == null)
+                var validationState = bindingContext.ModelState.GetFieldValidationState(modelStateKey);
+                if (validationState == ModelValidationState.Unvalidated)
                 {
                     dtoResult.ValidationNode.Validated += CreateNullCheckFailedHandler(propertyMetadata, value);
                 }

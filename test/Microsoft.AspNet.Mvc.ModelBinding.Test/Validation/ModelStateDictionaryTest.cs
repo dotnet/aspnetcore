@@ -63,48 +63,48 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Fact]
-        public void IsValidFieldReturnsNullIfDictionaryDoesNotContainKey()
+        public void GetFieldValidationState_ReturnsUnvalidatedIfDictionaryDoesNotContainKey()
         {
             // Arrange
             var msd = new ModelStateDictionary();
 
             // Act
-            var isValid = msd.IsValidField("foo");
+            var validationState = msd.GetFieldValidationState("foo");
 
             // Assert
-            Assert.Null(isValid);
+            Assert.Equal(ModelValidationState.Unvalidated, validationState);
         }
 
         [Fact]
-        public void IsValidFieldReturnsFalseIfKeyChildContainsErrors()
+        public void GetFieldValidationState_ReturnsInvalidIfKeyChildContainsErrors()
         {
             // Arrange
             var msd = new ModelStateDictionary();
             msd.AddModelError("foo.bar", "error text");
 
             // Act
-            var isValid = msd.IsValidField("foo");
+            var validationState = msd.GetFieldValidationState("foo");
 
             // Assert
-            Assert.Equal(false, isValid);
+            Assert.Equal(ModelValidationState.Invalid, validationState);
         }
 
         [Fact]
-        public void IsValidFieldReturnsFalseIfKeyContainsErrors()
+        public void GetFieldValidationState_ReturnsInvalidIfKeyContainsErrors()
         {
             // Arrange
             var msd = new ModelStateDictionary();
             msd.AddModelError("foo", "error text");
 
             // Act
-            var isValid = msd.IsValidField("foo");
+            var validationState = msd.GetFieldValidationState("foo");
 
             // Assert
-            Assert.Equal(false, isValid);
+            Assert.Equal(ModelValidationState.Invalid, validationState);
         }
 
         [Fact]
-        public void IsValidFieldReturnsTrueIfModelStateDoesNotContainErrors()
+        public void GetFieldValidationState_ReturnsValidIfModelStateDoesNotContainErrors()
         {
             // Arrange
             var validState = new ModelState
@@ -118,10 +118,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             };
 
             // Act
-            var isValid = msd.IsValidField("foo");
+            var validationState = msd.GetFieldValidationState("foo");
 
             // Assert
-            Assert.Equal(true, isValid);
+            Assert.Equal(ModelValidationState.Valid, validationState);
         }
 
         [Fact]
@@ -288,10 +288,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             dictionary.SetModelValue("user.Name", GetValueProviderResult());
 
             // Act
-            var isValidField = dictionary.IsValidField("not-user");
+            var validationState = dictionary.GetFieldValidationState("not-user");
 
             // Assert
-            Assert.Equal(null, isValidField);
+            Assert.Equal(ModelValidationState.Unvalidated, validationState);
         }
 
         [Fact]
@@ -304,10 +304,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             dictionary.AddModelError("user.Age", "Age is not a valid int");
 
             // Act
-            var isValidField = dictionary.IsValidField("user");
+            var validationState = dictionary.GetFieldValidationState("user");
 
             // Assert
-            Assert.Equal(null, isValidField);
+            Assert.Equal(ModelValidationState.Unvalidated, validationState);
         }
 
         [Theory]
@@ -322,10 +322,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             dictionary.AddModelError("user.Age", "Age is not a valid int");
 
             // Act
-            var isValidField = dictionary.IsValidField(key);
+            var validationState = dictionary.GetFieldValidationState(key);
 
             // Assert
-            Assert.Equal(false, isValidField);
+            Assert.Equal(ModelValidationState.Invalid, validationState);
         }
 
         [Fact]
@@ -337,10 +337,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             dictionary["user.Name"] = new ModelState { ValidationState = ModelValidationState.Valid };
 
             // Act
-            var isValidField = dictionary.IsValidField("user");
+            var validationState = dictionary.GetFieldValidationState("user");
 
             // Assert
-            Assert.Equal(true, isValidField);
+            Assert.Equal(ModelValidationState.Valid, validationState);
         }
 
         private static ValueProviderResult GetValueProviderResult(object rawValue = null, string attemptedValue = null)

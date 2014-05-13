@@ -89,21 +89,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             modelState.Errors.Add(errorMessage);
         }
 
-        public bool? IsValidField([NotNull] string key)
+        public ModelValidationState GetFieldValidationState([NotNull] string key)
         {
             var entries = DictionaryHelper.FindKeysWithPrefix(this, key);
             if (!entries.Any())
             {
-                return null;
+                return ModelValidationState.Unvalidated;
             }
 
-            var validity = GetValidity(entries);
-            if (validity == ModelValidationState.Unvalidated)
-            {
-                return null;
-            }
-
-            return validity == ModelValidationState.Valid;
+            return GetValidity(entries);
         }
 
         public void MarkFieldValid([NotNull] string key)

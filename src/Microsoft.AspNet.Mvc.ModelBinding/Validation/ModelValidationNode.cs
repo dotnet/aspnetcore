@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             OnValidated(validatedEventArgs);
 
             var modelState = validationContext.ModelState;
-            if (modelState.IsValidField(ModelStateKey) != false)
+            if (modelState.GetFieldValidationState(ModelStateKey) != ModelValidationState.Invalid)
             {
                 // If a node or its subtree were not marked invalid, we can consider it valid at this point.
                 modelState.MarkFieldValid(ModelStateKey);
@@ -159,7 +159,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 // else we could end up with duplicate or irrelevant error messages.
                 var propertyKeyRoot = ModelBindingHelper.CreatePropertyModelName(ModelStateKey, propertyMetadata.PropertyName);
 
-                if (modelState.IsValidField(propertyKeyRoot) == null)
+                if (modelState.GetFieldValidationState(propertyKeyRoot) == ModelValidationState.Unvalidated)
                 {
                     var propertyValidators = GetValidators(validationContext, propertyMetadata);
                     var propertyValidationContext = new ModelValidationContext(validationContext, propertyMetadata);
@@ -178,7 +178,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private void ValidateThis(ModelValidationContext validationContext, ModelValidationNode parentNode)
         {
             var modelState = validationContext.ModelState;
-            if (modelState.IsValidField(ModelStateKey) == false)
+            if (modelState.GetFieldValidationState(ModelStateKey) == ModelValidationState.Invalid)
             {
                 // If any item in the key's subtree has been identified as invalid, short-circuit
                 return;
