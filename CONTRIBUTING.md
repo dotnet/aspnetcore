@@ -1,7 +1,7 @@
 ## Filing issues
 
 The GitHub issue list is for bugs, not discussions. If you have a question you want to ask you have many alternatives:
-- [Stackoverflow](http://stackoverflow.com/questions/tagged/asp.net-vnext)
+- [StackOverflow](http://stackoverflow.com/questions/tagged/asp.net-vnext)
 - [The JabbR chat room](https://jabbr.net/#/rooms/aspnetvnext)
 
 When filing issues, please use our [bug filing templates](https://github.com/aspnet/Home/wiki/Functional-bug-template).
