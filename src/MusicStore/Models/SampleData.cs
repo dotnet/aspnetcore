@@ -19,9 +19,8 @@ namespace MusicStore.Models
                 var sqlServerDataStore = db.Configuration.DataStore as SqlServerDataStore;
                 if (sqlServerDataStore != null)
                 {
-                    if (!await db.Database.ExistsAsync())
+                    if (await db.Database.EnsureCreatedAsync())
                     {
-                        await db.Database.CreateAsync();
                         await InsertTestData(serviceProvider);
                     }
                 }
@@ -39,10 +38,7 @@ namespace MusicStore.Models
                 var sqlServerDataStore = db.Configuration.DataStore as SqlServerDataStore;
                 if (sqlServerDataStore != null)
                 {
-                    if (!await db.Database.ExistsAsync())
-                    {
-                        await db.Database.CreateAsync();
-                    }
+                    await db.Database.EnsureCreatedAsync();
                 }
             }
         }
