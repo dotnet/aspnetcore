@@ -14,8 +14,8 @@ The first thing we need to do is setup the tools required to build and run an ap
 * Clone the repository
 * On the command line execute ```kvmsetup.cmd``` 
 * This command will setup your environment, getting it ready to install a version of the runtime. It adds kvm to your path and puts it in your user profile.
-* Execute ```kvm upgrade```. This command will download the latest version of the SDK and put it on your user profile ready to use. You could also install a specific version here instead of getting the latest, see the [KVM page](https://github.com/aspnet/Home/wiki/version-manager)
-* Navigate to samples\HelloConsole
+* Execute ```kvm install 0.1-alpha-build-0421```. This command will download the named version of the KRE and put it on your user profile ready to use. You can get the latest version by running ```kvm upgrade``` but 0421 was the last version explicityl tested. see the [KVM page](https://github.com/aspnet/Home/wiki/version-manager) for more information on KVM.
+* Navigate to samples\ConsoleApp
 * Run ```K run```
 * You should see a message saying "Hello World"
 * Type ```SET KRE_TRACE=1```
@@ -30,7 +30,7 @@ These samples, in this repo, are just basic starting points for you to experimen
 
 + [ConsoleApp](https://github.com/aspnet/Home/tree/master/samples/ConsoleApp). This is just basic console app if you want to use it as a starting point.
 + [HelloWeb](https://github.com/aspnet/Home/tree/master/samples/HelloWeb). This is a minimal startup class that shows welcome page and static file middleware. This is mostly for you to run through the steps in the readme and make sure you have everything setup and working correctly.
-+ [HelloWebFx](https://github.com/aspnet/Home/tree/master/samples/HelloWebFx). This sample is a basic MVC app. It is not designed to show all the functionality of the new web stack, but to give you a starting point to play with features.
++ [HelloMvc](https://github.com/aspnet/Home/tree/master/samples/HelloMvc). This sample is a basic MVC app. It is not designed to show all the functionality of the new web stack, but to give you a starting point to play with features.
 
 **NOTE: The samples are pinned to a specific version of the packages. If you want to try the latest builds then update the project.json and replace the last part of the version with a '\*', so '0.1-alpha-build-267' becomes '0.1-alpha-\*', and then run ```kpm restore``` to pull down the latest packages**
 
@@ -61,7 +61,7 @@ If you can do all of the above then everything should be working. You can try ou
 
 By default when running the applications you are running against Desktop CLR (4.5), you can change that using the KVM command.
 
-1. Run ```kvm upgrade -svrc50``` This command gets the latest Core CLR version of the k runtime and sets it as your default. The -svrc50 switch tells it to use Core CLR, you can use -svr50 to target desktop again.
+1. Run ```kvm install 0.1-alpha-build-0421 -svrc50``` This command gets the latest Core CLR version of the k runtime and sets it as your default. The -svrc50 switch tells it to use Core CLR, you can use -svr50 to target desktop again.
 2. Run ```K web```
 3. The first line of your output should say "Loaded Module: klr.core45.dll" instead of "Loaded Module: klr.net45.dll"
 4. The HelloWeb app should work the same as when running on Desktop CLR.
@@ -79,6 +79,11 @@ These are the current minimum requirements, they do not necesarilly represent ou
 * Windows 7 or greater, though Core CLR will only work on Windows 8 today. If using Core CLR you will need to be on Windows 8 or above. Before RTM Core CLR will support Windows 7 as well.
 * .NET 4.5.1 for hosting in IIS
 * Powershell 4. KVM is a Powershell script that makes use of types that older verisons of Powershell cannot load
+
+#Known Issues
+
+* Core CLR doesn't currently work on Windows Server 2012
+* Core CLR doesn't currently work on pre Windows 8
 
 #Feedback
 
