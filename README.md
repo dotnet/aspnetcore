@@ -44,4 +44,4 @@ By default the app runs on desktop CLR. To switch to run the app on CoreCLR foll
 
 ### Note:
 1. Application is started on different ports on different hosts. To change the port or URL modify ```Helios.cmd``` or project.json commands section in case of self-host and customhost. 
-2. Use Visual Studio only for editing & Intellisense. Don't try to build or run the app from Visual Studio.
+
