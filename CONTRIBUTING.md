@@ -18,6 +18,6 @@ Here are questions you can answer before you file a bug to make sure you're not 
 
 GitHub supports [markdown](http://github.github.com/github-flavored-markdown/), so when filing bugs make sure you check the formatting before clicking submit.
 
-## Contributing code
+## Contributing code and content
 
-We are actively working to allow community code contributions. We can't accept code contributions yet, but check back soon for updates.
+We are actively working to allow community code and content contributions. We can't accept code and content contributions yet, but check back soon for updates.
