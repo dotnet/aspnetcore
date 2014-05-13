@@ -33,10 +33,7 @@ namespace Microsoft.AspNet.Identity.Entity.Test
             var db = new IdentityContext(serviceProvider);
              
             // TODO: Recreate DB, doesn't support String ID or Identity context yet
-            if (!db.Database.Exists())
-            {
-                db.Database.Create();
-            }
+            db.Database.EnsureCreated();
 
             // TODO: CreateAsync DB?
             return db;
