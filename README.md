@@ -16,7 +16,7 @@ The first thing we need to do is setup the tools required to build and run an ap
 * This command will setup your environment, getting it ready to install a version of the runtime. It adds kvm to your path and puts it in your user profile.
 * Execute ```kvm install 0.1-alpha-build-0421```. This command will download the named version of the KRE and put it on your user profile ready to use. You can get the latest version by running ```kvm upgrade``` but 0421 was the last version explicitly tested. see the [KVM page](https://github.com/aspnet/Home/wiki/version-manager) for more information on KVM.
 * Navigate to samples\ConsoleApp
-* Run ```kpm restore``` this downloads the System.Console package so the app can do Console.WriteLine
+* Run ```kpm restore```. This downloads the System.Console package so the app can do Console.WriteLine
 * Run ```K run```
 * You should see a message saying "Hello World"
 * Type ```SET KRE_TRACE=1```
