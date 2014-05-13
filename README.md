@@ -1,7 +1,9 @@
 Universe
 =========
 
-Getting started
+This repo is to build the whole ASP.NET vNext stack.
+
+## Getting started
 
     git clone git@github.com:aspnet/Universe.git
     cd Universe
@@ -28,3 +30,6 @@ The last output is a list of which repos succeeded or failed.
 any nupkg produced by the repo are copied into the local `.nuget` folder to be picked up by subsequent 
 repositories. The subfolders are built in dependency order.
 
+
+
+This project is part of ASP.NET vNext. You can find samples, documentation and getting started instructions for ASP.NET vNext at the [Home](https://github.com/aspnet/home) repo.
