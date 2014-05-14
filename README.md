@@ -6,6 +6,15 @@ The Home repository is the starting point for people to learn about ASP.NET vNex
 
 The samples provided are designed to show some of the features of the new framework as well as setting up a sandbox for you to try out some of the new features. The NuGet.config file in the repo points to a MyGet feed that has all the packages being developed. The feed is updated every time a full build succeeds.
 
+
+#Minimum Requirements
+
+These are the current minimum requirements, they do not necesarilly represent our RTM minimum.
+
+* Windows 7 or greater, though Core CLR will only work on Windows 8 today. If using Core CLR you will need to be on Windows 8 or above. Before RTM Core CLR will support Windows 7 as well.
+* .NET 4.5.1 for hosting in IIS
+* Powershell 4. KVM is a Powershell script that makes use of types that older verisons of Powershell cannot load
+ 
 #Getting Started
 
 The first thing we need to do is setup the tools required to build and run an application. We will start out by getting the [K Version Manager (KVM)](https://github.com/aspnet/Home/wiki/version-manager)
@@ -71,14 +80,6 @@ By default when running the applications you are running against Desktop CLR (4.
 #Core CLR Packages
 
 Currently the BCL is split into some fairly fine grained packages, which was one of the goals of this effort. However, the packages that exist today do not necessarily represent the list of packages that we will end up with. We are still experimenting with what makes sense to be a package and what the experience should be.
-
-#Minimum Requirements
-
-These are the current minimum requirements, they do not necesarilly represent our RTM minimum.
-
-* Windows 7 or greater, though Core CLR will only work on Windows 8 today. If using Core CLR you will need to be on Windows 8 or above. Before RTM Core CLR will support Windows 7 as well.
-* .NET 4.5.1 for hosting in IIS
-* Powershell 4. KVM is a Powershell script that makes use of types that older verisons of Powershell cannot load
 
 #Known Issues
 
