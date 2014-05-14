@@ -90,10 +90,7 @@ namespace Microsoft.AspNet.Identity.Entity.Test
             var db = new IdentitySqlContext(serviceProvider);
 
             // TODO: Recreate DB, doesn't support String ID or Identity context yet
-            if (!db.Database.Exists())
-            {
-                db.Database.Create();
-            }
+            db.Database.EnsureCreated();
 
             // TODO: CreateAsync DB?
             return db;
@@ -108,10 +105,7 @@ namespace Microsoft.AspNet.Identity.Entity.Test
             var db = new ApplicationDbContext(serviceProvider);
 
             // TODO: Recreate DB, doesn't support String ID or Identity context yet
-            if (!db.Database.Exists())
-            {
-                db.Database.Create();
-            }
+            db.Database.EnsureCreated();
 
             // TODO: CreateAsync DB?
             return db;
