@@ -14,6 +14,24 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
     public class CSharpPartialParsingTest : PartialParsingTestBase<CSharpRazorCodeLanguage>
     {
         [Fact]
+        public void AwaitPeriodInsertionAcceptedProvisionally()
+        {
+            // Arrange
+            SpanFactory factory = SpanFactory.CreateCsHtml();
+            StringTextBuffer changed = new StringTextBuffer("foo @await Html. baz");
+            StringTextBuffer old = new StringTextBuffer("foo @await Html baz");
+
+            // Act and Assert
+            RunPartialParseTest(new TextChange(15, 0, old, 1, changed),
+                new MarkupBlock(
+                    factory.Markup("foo "),
+                    new ExpressionBlock(
+                        factory.CodeTransition(),
+                        factory.Code("await Html.").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharacters.WhiteSpace | AcceptedCharacters.NonWhiteSpace)),
+                    factory.Markup(" baz")), additionalFlags: PartialParseResult.Provisional);
+        }
+
+        [Fact]
         public void ImplicitExpressionAcceptsInnerInsertionsInStatementBlock()
         {
             // Arrange
