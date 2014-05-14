@@ -15,9 +15,9 @@
 <section class="validationSummary">
     @Html.ValidationSummary()
     @Html.ValidationSummary(excludePropertyErrors: true)
-    @Html.ValidationSummary(message: "Hello from validation message summary 1.")
+    @Html.ValidationSummary(message: "Hello from validation message summary 1.", tag: "h2")
     @Html.ValidationSummary(excludePropertyErrors: true, message: "Hello from validation message summary 2")
     @Html.ValidationSummary(message: "Hello from validation message summary 3", htmlAttributes: new { style = "color: red" })
     @Html.ValidationSummary(excludePropertyErrors: true, message: "Hello from validation message summary 4", htmlAttributes: new { style = "color: green" })
-    @Html.ValidationSummary(message: "Hello from validation message summary 5", htmlAttributes: new Dictionary<string, object> { { "style", "color: blue" } })
+    @Html.ValidationSummary(message: "Hello from validation message summary 5", htmlAttributes: new Dictionary<string, object> { { "style", "color: blue" } }, tag: "h1")
 </section>
