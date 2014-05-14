@@ -5,6 +5,7 @@ var VERSION='0.2.1-dev'
 use namespace='System'
 use namespace='System.IO'
 use namespace='System.Collections.Generic'
+use namespace='System.Net'
 use namespace='System.Text.RegularExpressions'
 use import="BuildEnv"
 
@@ -65,9 +66,25 @@ var repos='${new Dictionary<string,string> {
             {
                 GitPull(repo.Value, "dev", repo.Key);
             } 
-            else 
+            else
             {
-                GitClone(repo.Value, "dev");
+                if (IsHttpsUrl(repo.Value) && 
+                    !IsAccessible(repo.Key))
+                {
+                    Log.Warn(string.Format("The repo at '{0}' is not accessible. If you do not have access to this repository, skip the git prompt" +
+                                           " for credentials to skip cloning this repository. To avoid this prompt, re-clone the Universe repository over ssh.",
+                                           repo.Value));
+                }
+
+                try
+                {
+                    GitClone(repo.Value, "dev");
+                }
+                catch (Exception ex)
+                {
+                    Log.Warn(string.Format("Unable to clone repository at '{0}'.", repo.Value));
+                    continue;
+                }
                 GitConfig("bugtraq.url", "http://github.com/aspnet/" + repo.Key + "/issues/%BUGID%", repo.Key);
                 GitConfig("bugtraq.logregex", @"#(\d+)", repo.Key);
             }
@@ -254,5 +271,26 @@ functions
             }
 
             return url.StartsWith("https://", System.StringComparison.OrdinalIgnoreCase);
+        }
+        
+        static bool IsAccessible(string key)
+        {
+            var req = WebRequest.CreateHttp("https://github.com/aspnet/" + key);
+            req.Method = "HEAD";
+            try
+            {
+                using (req.GetResponse());
+            }
+            catch (WebException ex)
+            {
+                if (ex.Response != null && 
+                    ((HttpWebResponse)ex.Response).StatusCode == HttpStatusCode.NotFound)
+                {
+                    return false;
+                }
+                
+                // Ignore any other exception. They should surface as part of git clone with well-known messages.
+            }
+            return true;
         }
     }
