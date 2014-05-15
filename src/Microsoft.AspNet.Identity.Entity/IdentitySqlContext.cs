@@ -2,10 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Data.Entity;
-using Microsoft.Data.Entity.SqlServer;
 using Microsoft.Data.Entity.Metadata;
 
 namespace Microsoft.AspNet.Identity.Entity
@@ -33,7 +30,7 @@ namespace Microsoft.AspNet.Identity.Entity
         protected override void OnConfiguring(DbContextOptions builder)
         {
             // TODO: pull connection string from config
-            builder.UseSqlServer(@"Server=(localdb)\v11.0;Database=SimpleIdentity5;Trusted_Connection=True;");
+            builder.UseSqlServer(@"Server=(localdb)\v11.0;Database=SimpleIdentity;Trusted_Connection=True;");
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
