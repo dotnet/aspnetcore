@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Identity.Entity;
+using Microsoft.Data.Entity;
 using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Identity
@@ -24,6 +25,14 @@ namespace Microsoft.AspNet.Identity
         {
             builder.Services.AddScoped<IUserStore<TUser>, UserStore<TUser>>();
             builder.Services.AddScoped<UserManager<TUser>>();
+            return builder;
+        }
+        public static IdentityBuilder<TUser, IdentityRole> AddEntity<TUser, TContext>(this IdentityBuilder<TUser, IdentityRole> builder)
+            where TUser : User where TContext : DbContext
+        {
+            builder.Services.AddScoped<IUserStore<TUser>, UserStore<TUser, TContext>>();
+            builder.Services.AddScoped<UserManager<TUser>>();
+            builder.Services.AddScoped<TContext>();
             return builder;
         }
     }

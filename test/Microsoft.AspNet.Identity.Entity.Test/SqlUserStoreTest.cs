@@ -22,14 +22,6 @@ namespace Microsoft.AspNet.Identity.Entity.Test
     public class SqlUserStoreTest
     {
         public class ApplicationUser : User { }
-        public class ApplicationUserManager : UserManager<ApplicationUser>
-        {
-            public ApplicationUserManager(IServiceProvider services, IUserStore<ApplicationUser> store, IOptionsAccessor<IdentityOptions> options) : base(services, store, options) { }
-        }
-        public class ApplicationRoleManager : RoleManager<EntityRole>
-        {
-            public ApplicationRoleManager(IServiceProvider services, IRoleStore<EntityRole> store) : base(services, store) { }
-        }
 
         public class ApplicationDbContext : IdentitySqlContext<ApplicationUser>
         {
@@ -39,25 +31,17 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         [Fact]
         public async Task EnsureStartupUsageWorks()
         {
-            IBuilder builder = new Microsoft.AspNet.Builder.Builder(new ServiceCollection().BuildServiceProvider());
-
-            //builder.UseServices(services => services.AddIdentity<ApplicationUser>(s =>
-            //    s.AddEntity<ApplicationDbContext>()
-            //{
+            EnsureDatabase();
+            IBuilder builder = new Builder.Builder(new ServiceCollection().BuildServiceProvider());
 
             builder.UseServices(services =>
             {
-                services.AddEntityFramework();
-                services.AddInstance<DbContext>(CreateAppContext());
-                services.AddIdentity<ApplicationUser>(s =>
-                {
-                    s.AddEntity();
-                    s.AddUserManager<ApplicationUserManager>();
-                });
+                services.AddEntityFramework().AddSqlServer();
+                services.AddIdentity<ApplicationUser>().AddEntity<ApplicationUser, ApplicationDbContext>();
             });
 
             var userStore = builder.ApplicationServices.GetService<IUserStore<ApplicationUser>>();
-            var userManager = builder.ApplicationServices.GetService<ApplicationUserManager>();
+            var userManager = builder.ApplicationServices.GetService<UserManager<ApplicationUser>>();
 
             Assert.NotNull(userStore);
             Assert.NotNull(userManager);
@@ -88,12 +72,14 @@ namespace Microsoft.AspNet.Identity.Entity.Test
             var serviceProvider = services.BuildServiceProvider();
 
             var db = new IdentitySqlContext(serviceProvider);
-
-            // TODO: Recreate DB, doesn't support String ID or Identity context yet
             db.Database.EnsureCreated();
 
-            // TODO: CreateAsync DB?
             return db;
+        }
+
+        public static void EnsureDatabase()
+        {
+            CreateContext();
         }
 
         public static ApplicationDbContext CreateAppContext()

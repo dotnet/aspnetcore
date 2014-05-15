@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Identity.Security.Test
         [InlineData(false)]
         public async Task VerifyAccountControllerSignIn(bool isPersistent)
         {
-            IBuilder app = new Microsoft.AspNet.Builder.Builder(new ServiceCollection().BuildServiceProvider());
+            IBuilder app = new Builder.Builder(new ServiceCollection().BuildServiceProvider());
             app.UseCookieAuthentication(new CookieAuthenticationOptions
             {
                 AuthenticationType = DefaultAuthenticationTypes.ApplicationCookie
@@ -48,10 +48,7 @@ namespace Microsoft.AspNet.Identity.Security.Test
                 services.AddIdentity<ApplicationUser, IdentityRole>(s =>
                 {
                     s.AddInMemory();
-                    s.AddUserManager<ApplicationUserManager>();
-                    s.AddRoleManager<ApplicationRoleManager>();
-                });
-                services.AddTransient<ApplicationSignInManager>();
+                }).AddSecurity<ApplicationUser>();
             });
 
             // Act
@@ -60,8 +57,8 @@ namespace Microsoft.AspNet.Identity.Security.Test
                 UserName = "Yolo"
             };
             const string password = "Yol0Sw@g!";
-            var userManager = app.ApplicationServices.GetService<ApplicationUserManager>();
-            var signInManager = app.ApplicationServices.GetService<ApplicationSignInManager>();
+            var userManager = app.ApplicationServices.GetService<UserManager<ApplicationUser>>();
+            var signInManager = app.ApplicationServices.GetService<SignInManager<ApplicationUser>>();
 
             IdentityResultAssert.IsSuccess(await userManager.CreateAsync(user, password));
             var result = await signInManager.PasswordSignInAsync(user.UserName, password, isPersistent, false);

@@ -13,23 +13,22 @@ using Microsoft.Data.Entity;
 
 namespace Microsoft.AspNet.Identity.Entity
 {
-    // Real Sql implementation
-    public class SqlUserStore :
-        UserStore<User>
+    public class UserStore<TUser> : UserStore<TUser, DbContext> where TUser : User
     {
-        public SqlUserStore(DbContext context) : base(context) { }
+        public UserStore(DbContext context) : base(context) { }
     }
 
-    public class UserStore<TUser> :
+    public class UserStore<TUser, TContext> :
         //IUserRoleStore<TUser>,
         IUserPasswordStore<TUser>,
         IQueryableUserStore<TUser>,
         IUserClaimStore<TUser>
         where TUser : User
+        where TContext : DbContext
     {
         private bool _disposed;
 
-        public UserStore(DbContext context)
+        public UserStore(TContext context)
         {
             if (context == null)
             {
@@ -39,7 +38,7 @@ namespace Microsoft.AspNet.Identity.Entity
             AutoSaveChanges = true;
         }
 
-        public DbContext Context { get; private set; }
+        public TContext Context { get; private set; }
 
         /// <summary>
         ///     If true will call SaveChanges after CreateAsync/UpdateAsync/DeleteAsync

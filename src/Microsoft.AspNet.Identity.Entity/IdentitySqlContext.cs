@@ -12,20 +12,22 @@ namespace Microsoft.AspNet.Identity.Entity
     {
         public IdentitySqlContext() { }
         public IdentitySqlContext(IServiceProvider serviceProvider) : base(serviceProvider) { }
+        public IdentitySqlContext(ImmutableDbContextOptions options) : base(options) { }
+        public IdentitySqlContext(IServiceProvider serviceProvider, ImmutableDbContextOptions options) : base(serviceProvider, options) { }
     }
 
     public class IdentitySqlContext<TUser> : DbContext
         where TUser : User
     {
-
         public DbSet<TUser> Users { get; set; }
         public DbSet<IdentityUserClaim> UserClaims { get; set; }
         //public DbSet<TRole> Roles { get; set; }
 
-        public IdentitySqlContext(IServiceProvider serviceProvider)
-        : base(serviceProvider) { }
-
         public IdentitySqlContext() { }
+        public IdentitySqlContext(IServiceProvider serviceProvider) : base(serviceProvider) { }
+        public IdentitySqlContext(ImmutableDbContextOptions options) : base(options) { }
+        public IdentitySqlContext(IServiceProvider serviceProvider, ImmutableDbContextOptions options) : base(serviceProvider, options) { }
+
 
         protected override void OnConfiguring(DbContextOptions builder)
         {
