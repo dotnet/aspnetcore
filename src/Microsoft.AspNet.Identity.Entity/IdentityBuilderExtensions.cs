@@ -14,9 +14,7 @@ namespace Microsoft.AspNet.Identity
             where TRole : EntityRole
         {
             builder.Services.AddScoped<IUserStore<TUser>, InMemoryUserStore<TUser>>();
-            builder.Services.AddScoped<UserManager<TUser>, UserManager<TUser>>();
             builder.Services.AddScoped<IRoleStore<TRole>, EntityRoleStore<TRole>>();
-            builder.Services.AddScoped<RoleManager<TRole>, RoleManager<TRole>>();
             return builder;
         }
 
@@ -27,6 +25,7 @@ namespace Microsoft.AspNet.Identity
             builder.Services.AddScoped<UserManager<TUser>>();
             return builder;
         }
+
         public static IdentityBuilder<TUser, IdentityRole> AddEntity<TUser, TContext>(this IdentityBuilder<TUser, IdentityRole> builder)
             where TUser : User where TContext : DbContext
         {
@@ -35,5 +34,6 @@ namespace Microsoft.AspNet.Identity
             builder.Services.AddScoped<TContext>();
             return builder;
         }
+
     }
 }

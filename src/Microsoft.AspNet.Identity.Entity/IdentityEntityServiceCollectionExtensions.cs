@@ -9,20 +9,13 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public static class IdentityEntityServiceCollectionExtensions
     {
-        //public static IdentityBuilder<TUser, IdentityRole> AddEntity<TUser>(this ServiceCollection services)
-        //    where TUser : User
-        //{
-        //    services.AddScoped<IUserStore<TUser>, UserStore<TUser>>();
-        //    services.AddScoped<UserManager<TUser>>();
-        //    return services;
-        //}
-
-        //public static ServiceCollection AddEntity<TUser, TContext>(this ServiceCollection services)
-        //    where TUser : User where TContext : DbContext
-        //{
-        //    services.AddEntity<TUser>();
-        //    services.AddScoped<DbContext, TContext>();
-        //    return services;
-        //}
+        public static IdentityBuilder<TUser, IdentityRole> AddIdentityEntityFramework<TContext, TUser>(this ServiceCollection services)
+            where TUser : User where TContext : DbContext
+        {
+            var builder = services.AddIdentity<TUser, IdentityRole>();
+            services.AddScoped<TContext>();
+            services.AddScoped<IUserStore<TUser>, UserStore<TUser, TContext>>();
+            return builder;
+        }
     }
 }

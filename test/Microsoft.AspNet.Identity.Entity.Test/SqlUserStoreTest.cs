@@ -3,17 +3,12 @@
 
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Identity.Test;
-using Microsoft.AspNet.Testing;
 using Microsoft.Data.Entity;
-using Microsoft.Data.Entity.Metadata;
-using Microsoft.Data.Entity.InMemory;
-using Microsoft.Data.Entity.SqlServer;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
 using System;
 using System.Linq;
 using System.Security.Claims;
-using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -37,7 +32,7 @@ namespace Microsoft.AspNet.Identity.Entity.Test
             builder.UseServices(services =>
             {
                 services.AddEntityFramework().AddSqlServer();
-                services.AddIdentity<ApplicationUser>().AddEntity<ApplicationUser, ApplicationDbContext>();
+                services.AddIdentityEntityFramework<ApplicationDbContext, ApplicationUser>();
             });
 
             var userStore = builder.ApplicationServices.GetService<IUserStore<ApplicationUser>>();
