@@ -3,7 +3,7 @@
   "dependencies": {
     "Microsoft.AspNet.Diagnostics": "0.1-alpha-build-0623",
     "Microsoft.AspNet.Hosting": "0.1-alpha-build-0519",
-    "Microsoft.AspNet.Mvc": "0.1-alpha-build-1140",
+    "Microsoft.AspNet.Mvc": "0.1-alpha-build-1146",
     "Microsoft.AspNet.Server.WebListener": "0.1-alpha-build-0469"
   },
   "commands": {
