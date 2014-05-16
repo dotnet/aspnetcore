@@ -82,7 +82,7 @@ var repos='${new Dictionary<string,string> {
                 }
                 catch (Exception ex)
                 {
-                    Log.Warn(string.Format("Unable to clone repository at '{0}'.", repo.Value));
+                    Log.Warn(string.Format("Unable to clone repository at '{0}': {1}", repo.Value, ex.Message));
                     continue;
                 }
                 GitConfig("bugtraq.url", "http://github.com/aspnet/" + repo.Key + "/issues/%BUGID%", repo.Key);
