@@ -11,9 +11,10 @@ The samples provided are designed to show some of the features of the new framew
 
 These are the current minimum requirements, they do not necesarilly represent our RTM minimum.
 
-* Windows 7 or greater, though Core CLR will only work on Windows 8 today. If using Core CLR you will need to be on Windows 8 or above. Before RTM Core CLR will support Windows 7 as well.
+* Windows 7 or greater, though Core CLR will only work on Windows 8 today. If using Core CLR you will need to be on Windows 8 or above. At RTM the whole stack will support Windows 7+ and Windows Server 2008 R2+.
 * .NET 4.5.1 for hosting in IIS
 * Powershell 4. KVM is a Powershell script that makes use of types that older verisons of Powershell cannot load
+
  
 #Getting Started
 
