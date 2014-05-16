@@ -59,14 +59,6 @@ namespace Microsoft.AspNet.Hosting
                 Lifecycle = LifecycleKind.Scoped
             };
 
-            // TODO: Review whether this is the right long term home, and whether Scoped is correct lifetime
-            yield return new ServiceDescriptor
-            {
-                ServiceType = typeof(IOptionsAccessor<>),
-                ImplementationType = typeof(OptionsAccessor<>),
-                Lifecycle = LifecycleKind.Scoped
-            };
-
             if (PlatformHelper.IsMono)
             {
 #if NET45

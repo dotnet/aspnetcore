@@ -64,6 +64,15 @@ namespace Microsoft.AspNet.Builder
         public static IBuilder UseServices(this IBuilder builder, Action<ServiceCollection> configureServices)
         {
             var serviceCollection = new ServiceCollection();
+
+            // TODO: Review whether this is the right long term home, and whether Scoped is correct lifetime
+            serviceCollection.Add(new ServiceDescriptor
+            {
+                ServiceType = typeof(IOptionsAccessor<>),
+                ImplementationType = typeof(OptionsAccessor<>),
+                Lifecycle = LifecycleKind.Scoped
+            });
+
             configureServices(serviceCollection);
             builder.ApplicationServices = serviceCollection.BuildServiceProvider(builder.ApplicationServices);
 
