@@ -7,6 +7,7 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public static class SecurityServiceCollectionExtensions
     {
+        // todo: remove?
         public static ServiceCollection AddSecurity<TUser>(this ServiceCollection services)
             where TUser : class
         {

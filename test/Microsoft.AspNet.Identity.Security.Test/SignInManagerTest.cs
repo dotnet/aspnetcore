@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Identity.Security.Test
                 services.AddIdentity<ApplicationUser, IdentityRole>(s =>
                 {
                     s.AddInMemory();
-                }).AddSecurity<ApplicationUser>();
+                }).AddHttpSignIn<ApplicationUser>();
             });
 
             // Act

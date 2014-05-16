@@ -26,6 +26,7 @@ namespace Microsoft.AspNet.Identity
             return builder;
         }
 
+        // todo: remove
         public static IdentityBuilder<TUser, IdentityRole> AddEntity<TUser, TContext>(this IdentityBuilder<TUser, IdentityRole> builder)
             where TUser : User where TContext : DbContext
         {
@@ -35,5 +36,14 @@ namespace Microsoft.AspNet.Identity
             return builder;
         }
 
+        // todo: add overloads
+        public static IdentityBuilder<TUser, IdentityRole> AddEntityFramework<TUser, TContext>(this IdentityBuilder<TUser, IdentityRole> builder)
+            where TUser : User where TContext : DbContext
+        {
+            builder.Services.AddScoped<IUserStore<TUser>, UserStore<TUser, TContext>>();
+            builder.Services.AddScoped<UserManager<TUser>>();
+            builder.Services.AddScoped<TContext>();
+            return builder;
+        }
     }
 }
