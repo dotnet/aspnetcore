@@ -22,7 +22,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BuilderExtensions.cs" />
+    <Compile Include="Constraints\CompositeRouteConstraint.cs" />
+    <Compile Include="Constraints\IntRouteConstraint.cs" />
+    <Compile Include="DefaultInlineConstraintResolver.cs" />
+    <Compile Include="IInlineConstraintResolver.cs" />
     <Compile Include="INamedRouter.cs" />
+    <Compile Include="InlineRouteParameterParser.cs" />
     <Compile Include="IRouteCollection.cs" />
     <Compile Include="IRouteConstraint.cs" />
     <Compile Include="IRouter.cs" />

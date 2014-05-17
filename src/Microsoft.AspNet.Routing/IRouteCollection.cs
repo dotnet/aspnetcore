@@ -7,6 +7,8 @@ namespace Microsoft.AspNet.Routing
     {
         IRouter DefaultHandler { get; set; }
 
+        IInlineConstraintResolver InlineConstraintResolver { get; set; }
+
         void Add(IRouter router);
     }
 }

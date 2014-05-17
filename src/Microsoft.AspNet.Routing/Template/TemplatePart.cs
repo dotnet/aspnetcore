@@ -17,7 +17,11 @@ namespace Microsoft.AspNet.Routing.Template
             };
         }
 
-        public static TemplatePart CreateParameter(string name, bool isCatchAll, bool isOptional)
+        public static TemplatePart CreateParameter([NotNull] string name, 
+                                                   bool isCatchAll,
+                                                   bool isOptional,
+                                                   object defaultValue,
+                                                   IRouteConstraint inlineConstraint)
         {
             return new TemplatePart()
             {
@@ -25,6 +29,8 @@ namespace Microsoft.AspNet.Routing.Template
                 Name = name,
                 IsCatchAll = isCatchAll,
                 IsOptional = isOptional,
+                DefaultValue = defaultValue,
+                InlineConstraint = inlineConstraint,
             };
         }
 
@@ -34,6 +40,8 @@ namespace Microsoft.AspNet.Routing.Template
         public bool IsOptional { get; private set; }
         public string Name { get; private set; }
         public string Text { get; private set; }
+        public object DefaultValue { get; private set; }
+        public IRouteConstraint InlineConstraint { get; private set; }
 
         internal string DebuggerToString()
         {

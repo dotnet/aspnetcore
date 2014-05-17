@@ -3,10 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
-using System.Linq;
 
 namespace Microsoft.AspNet.Routing.Template
 {
@@ -18,7 +16,7 @@ namespace Microsoft.AspNet.Routing.Template
         private const char EqualsSign = '=';
         private const char QuestionMark = '?';
         
-        public static Template Parse(string routeTemplate)
+        public static Template Parse(string routeTemplate, IInlineConstraintResolver constraintResolver)
         {
             if (routeTemplate == null)
             {
@@ -30,7 +28,7 @@ namespace Microsoft.AspNet.Routing.Template
                 throw new ArgumentException(Resources.TemplateRoute_InvalidRouteTemplate, "routeTemplate");
             }
 
-            var context = new TemplateParserContext(routeTemplate);
+            var context = new TemplateParserContext(routeTemplate, constraintResolver);
             var segments = new List<TemplateSegment>();
 
             while (context.Next())
@@ -174,24 +172,35 @@ namespace Microsoft.AspNet.Routing.Template
                 }
             }
 
-            var rawName = context.Capture();
+            var rawParameter = context.Capture();
 
-            var isCatchAll = rawName.StartsWith("*", StringComparison.Ordinal);
-            var isOptional = rawName.EndsWith("?", StringComparison.Ordinal);
+            // At this point, we need to parse the raw name for inline constraint, 
+            // default values and optional parameters. 
+            var templatePart = InlineRouteParameterParser.ParseRouteParameter(rawParameter,
+                                                                              context.ConstraintResolver);
 
-            if (isCatchAll && isOptional)
+            
+
+            if (templatePart.IsCatchAll && templatePart.IsOptional)
             {
                 context.Error = Resources.TemplateRoute_CatchAllCannotBeOptional;
                 return false;
             }
 
-            rawName = isCatchAll ? rawName.Substring(1) : rawName;
-            rawName = isOptional ? rawName.Substring(0, rawName.Length - 1) : rawName;
+            if (templatePart.IsOptional && templatePart.DefaultValue != null)
+            {
+                // Cannot be optional and have a default value.
+                // The only way to declare an optional parameter is to have a ? at the end, 
+                // hence we cannot have both default value and optional parameter within the template. 
+                // A workaround is to add it as a separate entry in the defaults argument.
+                context.Error = Resources.TemplateRoute_OptionalCannotHaveDefaultValue;
+                return false;
+            }
 
-            var parameterName = rawName;
+            var parameterName = templatePart.Name; 
             if (IsValidParameterName(context, parameterName))
             {
-                segment.Parts.Add(TemplatePart.CreateParameter(parameterName, isCatchAll, isOptional));
+                segment.Parts.Add(templatePart);
                 return true;
             }
             else
@@ -392,12 +401,13 @@ namespace Microsoft.AspNet.Routing.Template
 
             private HashSet<string> _parameterNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            public TemplateParserContext(string template)
+            public TemplateParserContext(string template, IInlineConstraintResolver constraintResolver)
             {
                 Contract.Assert(template != null);
                 _template = template;
 
                 _index = -1;
+                ConstraintResolver = constraintResolver;
             }
 
             public char Current
@@ -414,6 +424,12 @@ namespace Microsoft.AspNet.Routing.Template
             public HashSet<string> ParameterNames
             { 
                 get { return _parameterNames; } 
+            }
+
+            public IInlineConstraintResolver ConstraintResolver
+            {
+                get;
+                private set;
             }
 
             public bool Back()

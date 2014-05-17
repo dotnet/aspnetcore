@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Routing
             = new ResourceManager("Microsoft.AspNet.Routing.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// The supplied route name '{0}' is ambiguous and matched more than one routes.
+        /// The supplied route name '{0}' is ambiguous and matched more than one route.
         /// </summary>
         internal static string NamedRoutes_AmbiguousRoutesFound
         {
@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <summary>
-        /// The supplied route name '{0}' is ambiguous and matched more than one routes.
+        /// The supplied route name '{0}' is ambiguous and matched more than one route.
         /// </summary>
         internal static string FormatNamedRoutes_AmbiguousRoutesFound(object p0)
         {
@@ -40,6 +40,54 @@ namespace Microsoft.AspNet.Routing
         internal static string FormatDefaultHandler_MustBeSet()
         {
             return GetString("DefaultHandler_MustBeSet");
+        }
+
+        /// <summary>
+        /// The constructor to use for activating the constraint type '{0}' is ambiguous. Multiple constructors were found with the following number of parameters: {1}.
+        /// </summary>
+        internal static string DefaultInlineConstraintResolver_AmbiguousCtors
+        {
+            get { return GetString("DefaultInlineConstraintResolver_AmbiguousCtors"); }
+        }
+
+        /// <summary>
+        /// The constructor to use for activating the constraint type '{0}' is ambiguous. Multiple constructors were found with the following number of parameters: {1}.
+        /// </summary>
+        internal static string FormatDefaultInlineConstraintResolver_AmbiguousCtors(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("DefaultInlineConstraintResolver_AmbiguousCtors"), p0, p1);
+        }
+
+        /// <summary>
+        /// Could not find a constructor for constraint type '{0}' with the following number of parameters: {1}.
+        /// </summary>
+        internal static string DefaultInlineConstraintResolver_CouldNotFindCtor
+        {
+            get { return GetString("DefaultInlineConstraintResolver_CouldNotFindCtor"); }
+        }
+
+        /// <summary>
+        /// Could not find a constructor for constraint type '{0}' with the following number of parameters: {1}.
+        /// </summary>
+        internal static string FormatDefaultInlineConstraintResolver_CouldNotFindCtor(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("DefaultInlineConstraintResolver_CouldNotFindCtor"), p0, p1);
+        }
+
+        /// <summary>
+        /// The constraint type '{0}' which is mapped to constraint key '{1}' must implement the '{2}' interface.
+        /// </summary>
+        internal static string DefaultInlineConstraintResolver_TypeNotConstraint
+        {
+            get { return GetString("DefaultInlineConstraintResolver_TypeNotConstraint"); }
+        }
+
+        /// <summary>
+        /// The constraint type '{0}' which is mapped to constraint key '{1}' must implement the '{2}' interface.
+        /// </summary>
+        internal static string FormatDefaultInlineConstraintResolver_TypeNotConstraint(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("DefaultInlineConstraintResolver_TypeNotConstraint"), p0, p1, p2);
         }
 
         /// <summary>
@@ -72,6 +120,22 @@ namespace Microsoft.AspNet.Routing
         internal static string FormatTemplateRoute_CannotHaveCatchAllInMultiSegment()
         {
             return GetString("TemplateRoute_CannotHaveCatchAllInMultiSegment");
+        }
+
+        /// <summary>
+        /// The route parameter '{0}' has both an inline deafult value and an explicit default value specified. A route parameter cannot contain an inline default value when a default value is specified explicitly. Consider removing one of them.
+        /// </summary>
+        internal static string TemplateRoute_CannotHaveDefaultValueSpecifiedInlineAndExplicitly
+        {
+            get { return GetString("TemplateRoute_CannotHaveDefaultValueSpecifiedInlineAndExplicitly"); }
+        }
+
+        /// <summary>
+        /// The route parameter '{0}' has both an inline deafult value and an explicit default value specified. A route parameter cannot contain an inline default value when a default value is specified explicitly. Consider removing one of them.
+        /// </summary>
+        internal static string FormatTemplateRoute_CannotHaveDefaultValueSpecifiedInlineAndExplicitly(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TemplateRoute_CannotHaveDefaultValueSpecifiedInlineAndExplicitly"), p0);
         }
 
         /// <summary>
@@ -136,6 +200,22 @@ namespace Microsoft.AspNet.Routing
         internal static string FormatTemplateRoute_CatchAllCannotBeOptional()
         {
             return GetString("TemplateRoute_CatchAllCannotBeOptional");
+        }
+
+        /// <summary>
+        /// An optional parameter cannot have default value.
+        /// </summary>
+        internal static string TemplateRoute_OptionalCannotHaveDefaultValue
+        {
+            get { return GetString("TemplateRoute_OptionalCannotHaveDefaultValue"); }
+        }
+
+        /// <summary>
+        /// An optional parameter cannot have default value.
+        /// </summary>
+        internal static string FormatTemplateRoute_OptionalCannotHaveDefaultValue()
+        {
+            return GetString("TemplateRoute_OptionalCannotHaveDefaultValue");
         }
 
         /// <summary>
@@ -250,12 +330,28 @@ namespace Microsoft.AspNet.Routing
             return string.Format(CultureInfo.CurrentCulture, GetString("TemplateRoute_ValidationMustBeStringOrCustomConstraint"), p0, p1, p2);
         }
 
+        /// <summary>
+        /// The inline constraint resolver of type '{0}' was unable to resolve the following inline constraint: '{1}'.
+        /// </summary>
+        internal static string InlineRouteParser_CouldNotResolveConstraint
+        {
+            get { return GetString("InlineRouteParser_CouldNotResolveConstraint"); }
+        }
+
+        /// <summary>
+        /// The inline constraint resolver of type '{0}' was unable to resolve the following inline constraint: '{1}'.
+        /// </summary>
+        internal static string FormatInlineRouteParser_CouldNotResolveConstraint(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("InlineRouteParser_CouldNotResolveConstraint"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
 
             System.Diagnostics.Debug.Assert(value != null);
-    
+
             if (formatterNames != null)
             {
                 for (var i = 0; i < formatterNames.Length; i++)

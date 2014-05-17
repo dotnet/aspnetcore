@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Routing.Constraints;
 using Microsoft.AspNet.Testing;
 using Moq;
 using Xunit;

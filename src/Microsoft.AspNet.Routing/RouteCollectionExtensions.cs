@@ -30,14 +30,23 @@ namespace Microsoft.AspNet.Routing
                 throw new InvalidOperationException(Resources.DefaultHandler_MustBeSet);
             }
 
-            routes.Add(new TemplateRoute(routes.DefaultHandler, name, template, defaults, constraints: null));
+            routes.Add(new TemplateRoute(routes.DefaultHandler,
+                                         name,
+                                         template,
+                                         defaults,
+                                         constraints: null,
+                                         inlineConstraintResolver: routes.InlineConstraintResolver));
             return routes;
         }
 
         public static IRouteCollection MapRoute(this IRouteCollection routes, string name, string template,
                                             object defaults, object constraints)
         {
-            MapRoute(routes, name, template, new RouteValueDictionary(defaults), new RouteValueDictionary(constraints));
+            MapRoute(routes,
+                     name,
+                     template,
+                     new RouteValueDictionary(defaults),
+                     new RouteValueDictionary(constraints));
             return routes;
         }
 
@@ -55,15 +64,23 @@ namespace Microsoft.AspNet.Routing
             return routes;
         }
 
-        public static IRouteCollection MapRoute(this IRouteCollection routes, string name, string template,
-                                                IDictionary<string, object> defaults, IDictionary<string, object> constraints)
+        public static IRouteCollection MapRoute(this IRouteCollection routes,
+                                                string name,
+                                                string template,
+                                                IDictionary<string, object> defaults,
+                                                IDictionary<string, object> constraints)
         {
             if (routes.DefaultHandler == null)
             {
                 throw new InvalidOperationException(Resources.DefaultHandler_MustBeSet);
             }
-
-            routes.Add(new TemplateRoute(routes.DefaultHandler, name, template, defaults, constraints));
+            
+            routes.Add(new TemplateRoute(routes.DefaultHandler,
+                                         name,
+                                         template,
+                                         defaults,
+                                         constraints,
+                                         routes.InlineConstraintResolver));
             return routes;
         }
     }

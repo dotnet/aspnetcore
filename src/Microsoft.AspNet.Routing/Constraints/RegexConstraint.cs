@@ -7,7 +7,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.AspNet.Http;
 
-namespace Microsoft.AspNet.Routing
+namespace Microsoft.AspNet.Routing.Constraints
 {
     public class RegexConstraint : IRouteConstraint
     {

@@ -123,11 +123,23 @@
   <data name="DefaultHandler_MustBeSet" xml:space="preserve">
     <value>A default handler must be set on the RouteCollection.</value>
   </data>
+  <data name="DefaultInlineConstraintResolver_AmbiguousCtors" xml:space="preserve">
+    <value>The constructor to use for activating the constraint type '{0}' is ambiguous. Multiple constructors were found with the following number of parameters: {1}.</value>
+  </data>
+  <data name="DefaultInlineConstraintResolver_CouldNotFindCtor" xml:space="preserve">
+    <value>Could not find a constructor for constraint type '{0}' with the following number of parameters: {1}.</value>
+  </data>
+  <data name="DefaultInlineConstraintResolver_TypeNotConstraint" xml:space="preserve">
+    <value>The constraint type '{0}' which is mapped to constraint key '{1}' must implement the '{2}' interface.</value>
+  </data>
   <data name="GeneralConstraints_ValidationMustBeStringOrCustomConstraint" xml:space="preserve">
     <value>The constraint entry '{0}' must have a string value or be of a type which implements '{1}'.</value>
   </data>
   <data name="TemplateRoute_CannotHaveCatchAllInMultiSegment" xml:space="preserve">
     <value>A path segment that contains more than one section, such as a literal section or a parameter, cannot contain a catch-all parameter.</value>
+  </data>
+  <data name="TemplateRoute_CannotHaveDefaultValueSpecifiedInlineAndExplicitly" xml:space="preserve">
+    <value>The route parameter '{0}' has both an inline default value and an explicit default value specified. A route parameter cannot contain an inline default value when a default value is specified explicitly. Consider removing one of them.</value>
   </data>
   <data name="TemplateRoute_CannotHaveConsecutiveParameters" xml:space="preserve">
     <value>A path segment cannot contain two consecutive parameters. They must be separated by a '/' or by a literal string.</value>
@@ -140,6 +152,9 @@
   </data>
   <data name="TemplateRoute_CatchAllCannotBeOptional" xml:space="preserve">
     <value>A catch-all parameter cannot be marked optional.</value>
+  </data>
+  <data name="TemplateRoute_OptionalCannotHaveDefaultValue" xml:space="preserve">
+    <value>An optional parameter cannot have default value.</value>
   </data>
   <data name="TemplateRoute_CatchAllMustBeLast" xml:space="preserve">
     <value>A catch-all parameter can only appear as the last segment of the route template.</value>
@@ -161,5 +176,8 @@
   </data>
   <data name="TemplateRoute_ValidationMustBeStringOrCustomConstraint" xml:space="preserve">
     <value>The constraint entry '{0}' on the route with route template '{1}' must have a string value or be of a type which implements '{2}'.</value>
+  </data>
+  <data name="InlineRouteParser_CouldNotResolveConstraint" xml:space="preserve">
+    <value>The inline constraint resolver of type '{0}' was unable to resolve the following inline constraint: '{1}'.</value>
   </data>
 </root>

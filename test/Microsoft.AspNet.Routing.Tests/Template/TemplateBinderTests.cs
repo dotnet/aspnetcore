@@ -127,7 +127,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             string expected)
         {
             // Arrange
-            var binder = new TemplateBinder(TemplateParser.Parse(template), defaults);
+            var binder = new TemplateBinder(TemplateParser.Parse(template, new DefaultInlineConstraintResolver()),
+                                            defaults);
 
             // Act & Assert
             var acceptedValues = binder.GetAcceptedValues(null, values);
@@ -960,7 +961,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             string expected)
         {
             // Arrange
-            var binder = new TemplateBinder(TemplateParser.Parse(template), defaults);
+            var binder = new TemplateBinder(TemplateParser.Parse(template, new DefaultInlineConstraintResolver()), defaults);
 
             // Act & Assert
             var acceptedValues = binder.GetAcceptedValues(ambientValues, values);

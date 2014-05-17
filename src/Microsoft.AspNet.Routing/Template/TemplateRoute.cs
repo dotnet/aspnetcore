@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Routing.Constraints;
 
 namespace Microsoft.AspNet.Routing.Template
 {
@@ -18,16 +18,17 @@ namespace Microsoft.AspNet.Routing.Template
         private readonly TemplateMatcher _matcher;
         private readonly TemplateBinder _binder;
 
-        public TemplateRoute(IRouter target, string routeTemplate)
-            : this(target, routeTemplate, null, null)
+        public TemplateRoute(IRouter target, string routeTemplate, IInlineConstraintResolver inlineConstraintResolver)
+            : this(target, routeTemplate, null, null, inlineConstraintResolver)
         {
         }
 
         public TemplateRoute([NotNull] IRouter target,
                              string routeTemplate,
                              IDictionary<string, object> defaults,
-                             IDictionary<string, object> constraints)
-            : this(target, null, routeTemplate, defaults, constraints)
+                             IDictionary<string, object> constraints,
+                             IInlineConstraintResolver inlineConstraintResolver)
+            : this(target, null, routeTemplate, defaults, constraints, inlineConstraintResolver)
         {
         }
 
@@ -35,17 +36,20 @@ namespace Microsoft.AspNet.Routing.Template
                              string routeName,
                              string routeTemplate,
                              IDictionary<string, object> defaults,
-                             IDictionary<string, object> constraints)
+                             IDictionary<string, object> constraints,
+                             IInlineConstraintResolver inlineConstraintResolver)
         {
             _target = target;
             _routeTemplate = routeTemplate ?? string.Empty;
             Name = routeName;
             _defaults = defaults ?? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-            _constraints = RouteConstraintBuilder.BuildConstraints(constraints, _routeTemplate);
+            _constraints = RouteConstraintBuilder.BuildConstraints(constraints, _routeTemplate) ?? 
+                                                            new Dictionary<string, IRouteConstraint>();
 
             // The parser will throw for invalid routes.
-            _parsedTemplate = TemplateParser.Parse(RouteTemplate);
-
+            _parsedTemplate = TemplateParser.Parse(RouteTemplate, inlineConstraintResolver);
+            UpdateInlineDefaultValuesAndConstraints();
+            
             _matcher = new TemplateMatcher(_parsedTemplate);
             _binder = new TemplateBinder(_parsedTemplate, _defaults);
         }
@@ -169,6 +173,40 @@ namespace Microsoft.AspNet.Routing.Template
             {
                 ProvidedValues = providedValues,
             };
+        }
+
+        private void UpdateInlineDefaultValuesAndConstraints()
+        {
+            foreach (var parameter in _parsedTemplate.Parameters)
+            {
+                if (parameter.InlineConstraint != null)
+                {
+                    IRouteConstraint constraint;
+                    if (_constraints.TryGetValue(parameter.Name, out constraint))
+                    {
+                        _constraints[parameter.Name] = 
+                            new CompositeRouteConstraint(new []{ constraint, parameter.InlineConstraint });
+                    }
+                    else
+                    {
+                        _constraints[parameter.Name] = parameter.InlineConstraint;
+                    }
+                }
+
+                if (parameter.DefaultValue != null)
+                {
+                    if (_defaults.ContainsKey(parameter.Name))
+                    {
+                        throw new InvalidOperationException(
+                            Resources.
+                             FormatTemplateRoute_CannotHaveDefaultValueSpecifiedInlineAndExplicitly(parameter.Name));
+                    }
+                    else
+                    {
+                        _defaults[parameter.Name] = parameter.DefaultValue;
+                    }
+                }
+            }
         }
     }
 }
