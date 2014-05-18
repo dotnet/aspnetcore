@@ -1,5 +1,5 @@
-using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 
 namespace KWebStartup
