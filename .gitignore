@@ -23,3 +23,4 @@ nuget.exe
 *.ncrunchsolution
 *.*sdf
 *.ipch
+*.sln.ide
