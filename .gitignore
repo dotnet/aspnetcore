@@ -25,3 +25,4 @@ nuget.exe
 *.ipch
 *.sln.ide
 node_modules
+*.sln.ide
