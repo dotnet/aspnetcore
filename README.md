@@ -84,7 +84,6 @@ Currently the BCL is split into some fairly fine grained packages, which was one
 
 #Known Issues
 
-* Core CLR doesn't currently work on Windows Server 2012
 * Core CLR doesn't currently work on pre Windows 8
 
 #Feedback
