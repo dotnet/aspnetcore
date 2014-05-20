@@ -3,7 +3,6 @@ use namespace="System"
 use namespace="System.IO"
 use import="Files"
 use import="BuildEnv"
-use import="FileWatcher"
 use import="Environment"
 
 default BASE_DIR='${Directory.GetCurrentDirectory()}'
@@ -18,7 +17,6 @@ default Configuration='Release'
 
 #repo-initialize target='initialize'
   k-restore
-  k-generate-projects solutionPath='${BASE_DIR}' if='!IsMono'
 
 #target-dir-clean target='clean'
   directory delete="${TARGET_DIR}"
@@ -75,67 +73,11 @@ default Configuration='Release'
         UpdateResx(file);
      }
    }
-  
-#watch
-  @{
-    var watcher = new FileWatcher(BASE_DIR);
-
-    foreach (var file in Directory.EnumerateFiles(BASE_DIR, "*.json", SearchOption.AllDirectories))
-    {
-        watcher.WatchFile(file);
-    }
-
-    foreach (var file in Directory.EnumerateFiles(BASE_DIR, "*.cs", SearchOption.AllDirectories))
-    {
-        watcher.WatchFile(file);
-    }
-    
-    foreach (var file in Directory.EnumerateFiles(BASE_DIR, "*.resx", SearchOption.AllDirectories))
-    {
-        watcher.WatchFile(file);
-    }
-    
-    foreach (var dir in Directory.EnumerateDirectories(BASE_DIR, "*.*", SearchOption.AllDirectories))
-    {
-        watcher.WatchDirectory(dir, ".cs");
-        watcher.WatchDirectory(dir, ".json");
-    }
-
-    watcher.OnChanged += path => 
-    {
-      Log.Info("Change detected in " + path);
-      bool restore = path.EndsWith("project.json");
-      
-      if(path.EndsWith(".resx"))
-      {
-        UpdateResx(path);
-        return;
-      }          
-        
-      try
-      {
-        UpdateProjects(BASE_DIR, restore);
-      }
-      catch (Exception ex)
-      {
-        Log.Warn(ex.Message);
-      }
-
-      Log.Info("Waiting for changes...");
-    };
-
-    Log.Info("Waiting for changes...");
-    Console.ReadLine();
-  }
 
 functions @{
     string E(string key) { return Environment.GetEnvironmentVariable(key); }
     void E(string key, string value) { Environment.SetEnvironmentVariable(key, value); }
 }
-
-macro name='UpdateProjects' basePath='string' restore='bool'
-    k command='restore' prefetch='${false}' if='restore'
-    k-generate-projects solutionPath='${basePath}' skipNet45='${!restore}'
 
 macro name='Exec' program='string' commandline='string'
     exec

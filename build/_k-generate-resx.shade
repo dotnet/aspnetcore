@@ -2,6 +2,7 @@ use namespace="System"
 use namespace="System.Collections.Generic"
 use namespace="System.IO"
 use namespace="System.Linq"
+use namespace="System.Text"
 use namespace="System.Xml.Linq"
 
 default resxFile=''
