@@ -11,6 +11,8 @@ namespace Microsoft.AspNet.Mvc.Razor
 {
     public class MvcRazorHost : RazorEngineHost, IMvcRazorHost
     {
+        private const string ViewNamespace = "ASP";
+
         private static readonly string[] _defaultNamespaces = new[] 
         { 
             "System",
@@ -53,13 +55,13 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
-        public GeneratorResults GenerateCode(string rootNamespace, string rootRelativePath, Stream inputStream)
+        public GeneratorResults GenerateCode(string rootRelativePath, Stream inputStream)
         {
             string className = ParserHelpers.SanitizeClassName(rootRelativePath);
             using (var reader = new StreamReader(inputStream))
             {
                 var engine = new RazorTemplateEngine(this);
-                return engine.GenerateCode(reader, className, rootNamespace, rootRelativePath);
+                return engine.GenerateCode(reader, className, ViewNamespace, rootRelativePath);
             }
         }
 

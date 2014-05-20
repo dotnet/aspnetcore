@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             env.SetupGet(e => e.ApplicationName).Returns("MyTestApplication");
             env.SetupGet(e => e.ApplicationBasePath).Returns(appPath);
             var host = new Mock<IMvcRazorHost>();
-            host.Setup(h => h.GenerateCode("MyTestApplication", @"views\index\home.cshtml", It.IsAny<Stream>()))
+            host.Setup(h => h.GenerateCode(@"views\index\home.cshtml", It.IsAny<Stream>()))
                 .Returns(new GeneratorResults(new Block(new BlockBuilder { Type = BlockType.Comment }), new RazorError[0], new CodeBuilderResult("", new LineMapping[0])))
                 .Verifiable();
             var compiler = new Mock<ICompilationService>();

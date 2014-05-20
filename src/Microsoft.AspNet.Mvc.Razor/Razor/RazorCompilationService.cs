@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 Contract.Assert(file.PhysicalPath.StartsWith(_appRoot, StringComparison.OrdinalIgnoreCase));
                 var rootRelativePath = file.PhysicalPath.Substring(_appRoot.Length);
-                results = _razorHost.GenerateCode(_environment.ApplicationName, rootRelativePath, inputStream);
+                results = _razorHost.GenerateCode(rootRelativePath, inputStream);
             }
 
             if (!results.Success)
