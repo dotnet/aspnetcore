@@ -4,10 +4,10 @@
     "warningsAsErrors": false
   },
   "dependencies": {
-    "Common": "",
     "K.Roslyn" : "0.1-alpha-*",
     "Microsoft.AspNet.FileSystems": "0.1-alpha-*",
     "Microsoft.AspNet.Http": "0.1-alpha-*",
+    "Microsoft.AspNet.Mvc.Common" : "",
     "Microsoft.AspNet.Mvc.Core" : "",
     "Microsoft.AspNet.Mvc.ModelBinding" : "",
     "Microsoft.AspNet.Mvc.Razor.Host" : "",

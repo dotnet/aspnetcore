@@ -4,7 +4,7 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "Common": "",
+    "Microsoft.AspNet.Mvc.Common": "",
     "Microsoft.AspNet.Razor": "0.1-alpha-*"
   },
   "configurations": {

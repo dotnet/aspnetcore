@@ -17,7 +17,7 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Core",
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.ModelBinding", "src\Microsoft.AspNet.Mvc.ModelBinding\Microsoft.AspNet.Mvc.ModelBinding.kproj", "{FA915D3D-22C3-4478-97F2-A81D28B6C503}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Common", "src\Common\Common.kproj", "{F3DF6D0B-16FE-4402-B92C-7243A75CF1FD}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Common", "src\Microsoft.AspNet.Mvc.Common\Microsoft.AspNet.Mvc.Common.kproj", "{F3DF6D0B-16FE-4402-B92C-7243A75CF1FD}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.ModelBinding.Test", "test\Microsoft.AspNet.Mvc.ModelBinding.Test\Microsoft.AspNet.Mvc.ModelBinding.Test.kproj", "{3B8DC0C0-6C55-4034-AD96-DE1000928E6B}"
 EndProject
