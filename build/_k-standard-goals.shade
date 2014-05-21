@@ -88,6 +88,11 @@ default Configuration='Release'
   -// Find all dirs that contain a gruntfile.js file
   var gruntDirs = '${GetDirectoriesContaining(Directory.GetCurrentDirectory(), "gruntfile.js")}'
   grunt each='var gruntDir in gruntDirs'
+  
+#stylecop
+  stylecop-setup
+  stylecop-run each='var projectFile in Files.Include("src/**/project.json")'
+  stylecop-run each='var projectFile in Files.Include("test/**/project.json")'
 
 functions @{
     string E(string key) { return Environment.GetEnvironmentVariable(key); }
