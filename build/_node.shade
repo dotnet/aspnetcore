@@ -1,0 +1,6 @@
+default currentDir = '${Directory.GetCurrentDirectory()}'
+default nodeDir = '${Path.Combine(currentDir, "bin", "node")}'
+var nodeExePath = '${Path.Combine(nodeDir, "node.exe")}'
+
+node-install once='installNode'
+exec program='${nodeExePath}' commandline='${nodeCommand}'

@@ -1,0 +1,7 @@
+default currentDir = '${Directory.GetCurrentDirectory()}'
+default nodeDir = '${Path.Combine(currentDir, "bin", "nodejs")}'
+default npmDir = '${currentDir}'
+var npmCmd = '${Path.Combine(nodeDir, "npm.cmd")}'
+
+node-install once='installNode'
+exec program='${npmCmd}' commandline='${npmCommand}' workingdir='${npmDir}'

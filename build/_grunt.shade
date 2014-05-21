@@ -1,0 +1,9 @@
+default currentDir = '${Directory.GetCurrentDirectory()}'
+default nodeDir = '${Path.Combine(currentDir, "bin", "nodejs")}'
+var gruntCliInstalled = '${Directory.Exists(Path.Combine(nodeDir, "node_modules", "grunt-cli"))}'
+
+-// Install grunt-cli locally
+npm npmCommand='install --prefix ${nodeDir} grunt-cli' if='!gruntCliInstalled' once='installGruntCli'
+
+-// Run grunt
+node nodeCommand='${Path.Combine(nodeDir, "node_modules", "grunt-cli", "bin", "grunt")}' workingdir='${gruntDir}'

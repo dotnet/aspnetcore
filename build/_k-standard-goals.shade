@@ -74,9 +74,33 @@ default Configuration='Release'
      }
    }
 
+#restore-npm-modules
+  -// Find all dirs that contain a package.json file
+  var npmDirs = '${GetDirectoriesContaining(Directory.GetCurrentDirectory(), "package.json")}'
+  npm npmCommand='install' each='var npmDir in npmDirs'
+
+#restore-bower-components
+  -// Find all dirs that contain a bower.json file
+  var bowerDirs = '${GetDirectoriesContaining(Directory.GetCurrentDirectory(), "bower.json")}'
+  bower each='var bowerDir in bowerDirs' bowerCommand='install'
+
+#run-grunt .restore-npm-modules .restore-bower-components target='compile'
+  -// Find all dirs that contain a gruntfile.js file
+  var gruntDirs = '${GetDirectoriesContaining(Directory.GetCurrentDirectory(), "gruntfile.js")}'
+  grunt each='var gruntDir in gruntDirs'
+
 functions @{
     string E(string key) { return Environment.GetEnvironmentVariable(key); }
     void E(string key, string value) { Environment.SetEnvironmentVariable(key, value); }
+    IEnumerable<string> GetDirectoriesContaining(string path, string searchPattern) {
+      var sep = Path.DirectorySeparatorChar;
+      // Don't include directories that are children of a node_modules or bower_components directory
+      return Directory.GetFiles(path, searchPattern, SearchOption.AllDirectories)
+                      .Where(p => p.IndexOf(sep + "node_modules" + sep) < 0 &&
+                                  p.IndexOf(sep + "bower_components" + sep) < 0)
+                      .Select(p => Path.GetDirectoryName(p))
+                      .Distinct();
+    }
 }
 
 macro name='Exec' program='string' commandline='string'
