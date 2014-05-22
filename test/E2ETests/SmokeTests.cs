@@ -27,6 +27,7 @@ namespace E2ETests
                 //Request to base address and check if various parts of the body are rendered
                 var response = httpClient.GetAsync(string.Empty).Result;
                 var responseContent = response.Content.ReadAsStringAsync().Result;
+                Console.WriteLine("Response from the server: {0}", responseContent);
                 Assert.Equal<HttpStatusCode>(HttpStatusCode.OK, response.StatusCode);
                 Assert.Contains("ASP.NET MVC Music Store", responseContent, StringComparison.OrdinalIgnoreCase);
                 Assert.Contains("Register", responseContent, StringComparison.OrdinalIgnoreCase);
