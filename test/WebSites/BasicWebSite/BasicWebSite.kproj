@@ -30,6 +30,7 @@
   <ItemGroup>
     <Compile Include="ActionDescriptorCreationCounter.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\MonitorController.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>

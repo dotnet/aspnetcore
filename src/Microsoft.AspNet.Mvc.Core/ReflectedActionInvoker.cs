@@ -261,7 +261,7 @@ namespace Microsoft.AspNet.Mvc
             await InvokeActionMethodFilter();
         }
 
-        private async Task<IDictionary<string, object>> GetActionArguments(ModelStateDictionary modelState)
+        internal async Task<IDictionary<string, object>> GetActionArguments(ModelStateDictionary modelState)
         {
             var actionBindingContext = await _bindingProvider.GetActionBindingContextAsync(_actionContext);
             var parameters = _descriptor.Parameters;
@@ -304,8 +304,10 @@ namespace Microsoft.AspNet.Mvc
                         HttpContext = actionBindingContext.ActionContext.HttpContext,
                         FallbackToEmptyPrefix = true
                     };
-                    await actionBindingContext.ModelBinder.BindModelAsync(modelBindingContext);
-                    parameterValues[parameter.Name] = modelBindingContext.Model;
+                    if (await actionBindingContext.ModelBinder.BindModelAsync(modelBindingContext))
+                    {
+                        parameterValues[parameter.Name] = modelBindingContext.Model;
+                    }
                 }
             }
 
