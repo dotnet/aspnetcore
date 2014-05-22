@@ -9,23 +9,23 @@ using Microsoft.AspNet.Routing.Template;
 
 namespace Microsoft.AspNet.Routing
 {
-    internal static class InlineRouteParameterParser
+    public static class InlineRouteParameterParser
     {
         // One or more characters, matches "id"
-        private const string ParameterNameRegex = @"(?<parameterName>.+?)";
+        private const string ParameterNamePattern = @"(?<parameterName>.+?)";
 
         // Zero or more inline constraints that start with a colon followed by zero or more characters
         // Optionally the constraint can have arguments within parentheses
         //      - necessary to capture characters like ":" and "}"
         // Matches ":int", ":length(2)", ":regex(\})", ":regex(:)" zero or more times
-        private const string ConstraintRegex = @"(:(?<constraint>.*?(\(.*?\))?))*";
+        private const string ConstraintPattern = @"(:(?<constraint>.*?(\(.*?\))?))*";
 
         // A default value with an equal sign followed by zero or more characters
         // Matches "=", "=abc"
-        private const string DefaultValueRegex = @"(?<defaultValue>(=.*?))?";
+        private const string DefaultValueParameter = @"(?<defaultValue>(=.*?))?";
 
         private static readonly Regex _parameterRegex = new Regex(
-           "^" + ParameterNameRegex + ConstraintRegex + DefaultValueRegex + "$",
+           "^" + ParameterNamePattern + ConstraintPattern + DefaultValueParameter + "$",
             RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
         public static TemplatePart ParseRouteParameter([NotNull] string routeParameter,
                                                        [NotNull] IInlineConstraintResolver constraintResolver)
@@ -37,7 +37,17 @@ namespace Microsoft.AspNet.Routing
             routeParameter = isOptional ? routeParameter.Substring(0, routeParameter.Length - 1) : routeParameter;
 
             var parameterMatch = _parameterRegex.Match(routeParameter);
-            string parameterName = parameterMatch.Groups["parameterName"].Value;
+            if (!parameterMatch.Success)
+            {
+                return TemplatePart.CreateParameter(name: string.Empty,
+                                                    isCatchAll: isCatchAll,
+                                                    isOptional: isOptional,
+                                                    defaultValue: null,
+                                                    inlineConstraint: null
+                                                    );
+            }
+
+            var parameterName = parameterMatch.Groups["parameterName"].Value;
             
             // Add the default value if present
             var defaultValueGroup = parameterMatch.Groups["defaultValue"];
@@ -54,11 +64,11 @@ namespace Microsoft.AspNet.Routing
                                                 inlineConstraint); 
         }
 
-        private static object GetDefaultValue(Group defaultValueGroup)
+        private static string GetDefaultValue(Group defaultValueGroup)
         {
             if (defaultValueGroup.Success)
             {
-                string defaultValueMatch = defaultValueGroup.Value;
+                var defaultValueMatch = defaultValueGroup.Value;
 
                 // Strip out the equal sign at the beginning
                 Contract.Assert(defaultValueMatch.StartsWith("=", StringComparison.Ordinal));
@@ -74,13 +84,13 @@ namespace Microsoft.AspNet.Routing
             var parameterConstraints = new List<IRouteConstraint>();
             foreach (Capture constraintCapture in constraintGroup.Captures)
             {
-                string inlineConstraint = constraintCapture.Value;
+                var inlineConstraint = constraintCapture.Value;
                 var constraint = constraintResolver.ResolveConstraint(inlineConstraint);
                 if (constraint == null)
                 {
                     throw new InvalidOperationException(
-                        Resources.FormatInlineRouteParser_CouldNotResolveConstraint(constraintResolver.GetType().Name,
-                                                                                    inlineConstraint));
+                        Resources.FormatInlineRouteParser_CouldNotResolveConstraint(
+                                        constraintResolver.GetType().Name, inlineConstraint));
                 }
 
                 parameterConstraints.Add(constraint);

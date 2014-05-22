@@ -191,6 +191,7 @@ namespace Microsoft.AspNet.Routing.Template
                     {
                         _constraints[parameter.Name] = parameter.InlineConstraint;
                     }
+                    }
                 }
 
                 if (parameter.DefaultValue != null)

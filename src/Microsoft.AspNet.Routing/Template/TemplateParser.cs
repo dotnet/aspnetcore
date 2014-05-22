@@ -173,7 +173,7 @@ namespace Microsoft.AspNet.Routing.Template
             }
 
             var rawParameter = context.Capture();
-         
+
             // At this point, we need to parse the raw name for inline constraint, 
             // default values and optional parameters. 
             var templatePart = InlineRouteParameterParser.ParseRouteParameter(rawParameter,
