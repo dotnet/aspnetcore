@@ -22,8 +22,11 @@
   <ItemGroup>
     <Compile Include="ConstraintMatcherTests.cs" />
     <Compile Include="ConstraintsBuilderTests.cs" />
+    <Compile Include="DefaultInlineConstraintResolverTest.cs" />
     <Compile Include="RegexConstraintTests.cs" />
     <Compile Include="RouteCollectionTest.cs" />
+    <Compile Include="InlineRouteParameterParserTests.cs" />
+    <Compile Include="RouteConstraintsTests.cs" />
     <Compile Include="RouteValueDictionaryTests.cs" />
     <Compile Include="Template\TemplateBinderTests.cs" />
     <Compile Include="Template\TemplateMatcherTests.cs" />

@@ -196,10 +196,6 @@ namespace Microsoft.AspNet.Routing.Template
                 context.Error = Resources.TemplateRoute_OptionalCannotHaveDefaultValue;
                 return false;
             }
-                // A workaround is to add it as a separate entry in the defaults argument.
-                context.Error = Resources.TemplateRoute_OptionalCannotHaveDefaultValue;
-                return false;
-            }
 
             var parameterName = templatePart.Name; 
             if (IsValidParameterName(context, parameterName))

@@ -4,6 +4,7 @@
 #if NET45
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing.Constraints;
@@ -423,6 +424,49 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             Assert.Equal(2, constraints.Count);
             Assert.IsType<RegexConstraint>(constraints["controller"]);
             Assert.Equal(mockConstraint, constraints["action"]);
+        }
+
+        [Fact]
+        public void RegisteringRouteWithOneInlineConstraintAndOneUsingConstraintArgument()
+        {
+            // Arrange
+            var collection = new RouteCollection();
+            collection.DefaultHandler = new Mock<IRouter>().Object;
+            collection.InlineConstraintResolver = new DefaultInlineConstraintResolver();
+
+            collection.MapRoute("mockName",
+                "{controller}/{action}/{id:int}",
+                defaults: null,
+                constraints: new { id = "1*" });
+
+            var constraints = ((TemplateRoute)collection[0]).Constraints;
+
+            // Assert
+            Assert.Equal(1, constraints.Count);
+            var constraint = (CompositeRouteConstraint)constraints["id"];
+            Assert.IsType<CompositeRouteConstraint>(constraint);
+            Assert.IsType<RegexConstraint>(constraint.Constraints.ElementAt(0));
+            Assert.IsType<IntRouteConstraint>(constraint.Constraints.ElementAt(1));
+        }
+
+        [Fact]
+        public void RegisteringRoute_WithOneInlineConstraint_AddsItToConstraintCollection()
+        {
+            // Arrange
+            var collection = new RouteCollection();
+            collection.DefaultHandler = new Mock<IRouter>().Object;
+            collection.InlineConstraintResolver = new DefaultInlineConstraintResolver();
+
+            collection.MapRoute("mockName",
+                "{controller}/{action}/{id:int}",
+                defaults: null,
+                constraints: null);
+
+            var constraints = ((TemplateRoute)collection[0]).Constraints;
+
+            // Assert
+            Assert.Equal(1, constraints.Count);
+            Assert.IsType<IntRouteConstraint>(constraints["id"]);
         }
 
         [Fact]

@@ -43,13 +43,13 @@ namespace Microsoft.AspNet.Routing.Template
             _routeTemplate = routeTemplate ?? string.Empty;
             Name = routeName;
             _defaults = defaults ?? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-            _constraints = RouteConstraintBuilder.BuildConstraints(constraints, _routeTemplate) ?? 
+            _constraints = RouteConstraintBuilder.BuildConstraints(constraints, _routeTemplate) ??
                                                             new Dictionary<string, IRouteConstraint>();
 
             // The parser will throw for invalid routes.
             _parsedTemplate = TemplateParser.Parse(RouteTemplate, inlineConstraintResolver);
             UpdateInlineDefaultValuesAndConstraints();
-            
+
             _matcher = new TemplateMatcher(_parsedTemplate);
             _binder = new TemplateBinder(_parsedTemplate, _defaults);
         }
@@ -184,13 +184,12 @@ namespace Microsoft.AspNet.Routing.Template
                     IRouteConstraint constraint;
                     if (_constraints.TryGetValue(parameter.Name, out constraint))
                     {
-                        _constraints[parameter.Name] = 
-                            new CompositeRouteConstraint(new []{ constraint, parameter.InlineConstraint });
+                        _constraints[parameter.Name] =
+                            new CompositeRouteConstraint(new[] { constraint, parameter.InlineConstraint });
                     }
                     else
                     {
                         _constraints[parameter.Name] = parameter.InlineConstraint;
-                    }
                     }
                 }
 

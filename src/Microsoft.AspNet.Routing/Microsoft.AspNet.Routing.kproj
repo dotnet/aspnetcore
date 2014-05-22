@@ -24,6 +24,7 @@
     <Compile Include="BuilderExtensions.cs" />
     <Compile Include="Constraints\CompositeRouteConstraint.cs" />
     <Compile Include="Constraints\IntRouteConstraint.cs" />
+    <Compile Include="Constraints\RegexConstraint.cs" />
     <Compile Include="DefaultInlineConstraintResolver.cs" />
     <Compile Include="IInlineConstraintResolver.cs" />
     <Compile Include="INamedRouter.cs" />
@@ -33,7 +34,6 @@
     <Compile Include="IRouter.cs" />
     <Compile Include="NotNullAttribute.cs" />
     <Compile Include="Properties\Resources.Designer.cs" />
-    <Compile Include="RegexConstraint.cs" />
     <Compile Include="RouteCollection.cs" />
     <Compile Include="RouteCollectionExtensions.cs" />
     <Compile Include="RouteConstraintBuilder.cs" />
