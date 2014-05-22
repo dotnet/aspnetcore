@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Text.RegularExpressions;
 using Microsoft.AspNet.Routing.Template;
-using Microsoft.AspNet.Routing.Constraints;
 
 namespace Microsoft.AspNet.Routing
 {
