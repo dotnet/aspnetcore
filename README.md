@@ -32,6 +32,21 @@ The first thing we need to do is setup the tools required to build and run an ap
 * Run ```K run```
 * You should now see compiler output as well as the "Hello World" message
 
+```
+:: getting started
+git clone https://github.com/aspnet/Home.git
+cd Home
+kvmsetup
+kvm install 0.1-alpha-build-0421 -p
+
+cd samples\ConsoleApp
+kpm restore
+k run
+
+SET KRE_TRACE=1
+k run
+```
+
 #Samples
 
 ##Sandbox Samples
