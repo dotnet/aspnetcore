@@ -5,7 +5,16 @@ default workingdir='${Directory.GetCurrentDirectory()}'
 default expectedHash = ''
 
 @{
-    var signToolExe = "signtool.exe";
+    Log.Info(string.Format("Verifying Authenticode signature of {0}", verifyFilePath));
+
+    var signToolExePaths = new [] { "C:\Program Files (x86)\Windows Kits\8.1\bin\x86\signtool.exe", "C:\Program Files\Windows Kits\8.1\bin\x86\signtool.exe" };
+    var signToolExe = signToolExePaths.FirstOrDefault(File.Exists);
+
+    if (string.IsNullOrEmpty(signToolExe))
+    {
+        throw new Exception("Could not find signtool.exe on this machine. Ensure Visual Studio is installed.");
+    }
+
     var processStartInfo = new ProcessStartInfo {
         UseShellExecute = false,
         WorkingDirectory = workingdir,
@@ -13,8 +22,6 @@ default expectedHash = ''
         RedirectStandardOutput = true,
         Arguments = "verify /pa /v " + verifyFilePath,
     };
-
-    Log.Info(string.Format("Verifying Authenticode signature of {0}", verifyFilePath));
 
     var signTool = Process.Start(processStartInfo);
     var stdout = signTool.StandardOutput.ReadToEnd();
