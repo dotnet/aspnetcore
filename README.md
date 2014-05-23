@@ -18,7 +18,7 @@ These are the current minimum requirements, they do not necesarilly represent ou
  
 #Getting Started
 
-The first thing we need to do is setup the tools required to build and run an application. We will start out by getting the [K Version Manager (KVM)](https://github.com/aspnet/Home/wiki/version-manager)
+The first thing we need to do is setup the tools required to build and run an application. We will start out by getting the [k Version Manager (KVM)](https://github.com/aspnet/Home/wiki/version-manager)
 
 * Clone the repository
 * On the command line execute ```kvmsetup.cmd``` 
@@ -26,10 +26,10 @@ The first thing we need to do is setup the tools required to build and run an ap
 * Execute ```kvm install 0.1-alpha-build-0421```. This command will download the named version of the KRE and put it on your user profile ready to use. You can get the latest version by running ```kvm upgrade``` but 0421 was the last version explicitly tested. see the [KVM page](https://github.com/aspnet/Home/wiki/version-manager) for more information on KVM.
 * Navigate to samples\ConsoleApp
 * Run ```kpm restore```. This downloads the System.Console package so the app can do Console.WriteLine
-* Run ```K run```
+* Run ```k run```
 * You should see a message saying "Hello World"
 * Type ```SET KRE_TRACE=1```
-* Run ```K run```
+* Run ```k run```
 * You should now see compiler output as well as the "Hello World" message
 
 ```
@@ -72,8 +72,8 @@ The [Entropy repo](https://github.com/aspnet/Entropy) contains samples of specif
 1. Clone the repository
 2. Change directory to Samples\HelloWeb
 3. Run ```kpm restore```
-4. You should see a bunch of output as all the dependencies of the app are downloaded from MyGet. The K commands all operate on the app that is in the current directory.
-5. Run ```K web```
+4. You should see a bunch of output as all the dependencies of the app are downloaded from MyGet. The k commands all operate on the app that is in the current directory.
+5. Run ```k web```
 6. You should see build output and a message to show the site is now started
 7. Navigate to "http://localhost:5001"
 8. You should see the welcome page
@@ -85,9 +85,8 @@ If you can do all of the above then everything should be working. You can try ou
 #Switching to Core CLR
 
 By default when running the applications you are running against Desktop CLR (4.5), you can change that using the KVM command.
-
 1. Run ```kvm install 0.1-alpha-build-0421 -svrc50``` This command gets the latest Core CLR version of the k runtime and sets it as your default. The -svrc50 switch tells it to use Core CLR, you can use -svr50 to target desktop again.
-2. Run ```K web```
+2. Run ```k web```
 3. The first line of your output should say "Loaded Module: klr.core45.dll" instead of "Loaded Module: klr.net45.dll"
 4. The HelloWeb app should work the same as when running on Desktop CLR.
 
