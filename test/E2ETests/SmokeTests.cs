@@ -43,7 +43,6 @@ namespace E2ETests
                 //Register a user - Need a way to get the antiforgery token and send it in the request as a form encoded parameter
                 response = httpClient.GetAsync("/Account/Register").Result;
                 responseContent = response.Content.ReadAsStringAsync().Result;
-                var antiForgeryToken = HtmlDOMHelper.RetrieveAntiForgeryToken(responseContent, "/Account/Register");
 
                 var generatedUserName = Guid.NewGuid().ToString().Replace("-", string.Empty);
                 Console.WriteLine("Creating a new user with name '{0}'", generatedUserName);
@@ -52,7 +51,7 @@ namespace E2ETests
                     new KeyValuePair<string, string>("UserName", generatedUserName),
                     new KeyValuePair<string, string>("Password", "Password~1"),
                     new KeyValuePair<string, string>("ConfirmPassword", "Password~1"),
-                    new KeyValuePair<string, string>("__RequestVerificationToken", antiForgeryToken),
+                    new KeyValuePair<string, string>("__RequestVerificationToken", HtmlDOMHelper.RetrieveAntiForgeryToken(responseContent, "/Account/Register")),
                 };
 
                 var content = new FormUrlEncodedContent(formParameters.ToArray());
@@ -74,10 +73,9 @@ namespace E2ETests
 
                 //Logout from this user session - This should take back to the home page
                 Console.WriteLine("Signing out from '{0}''s session", generatedUserName);
-                antiForgeryToken = HtmlDOMHelper.RetrieveAntiForgeryToken(responseContent, "/Account/LogOff");
                 formParameters = new List<KeyValuePair<string, string>>
                 {
-                    new KeyValuePair<string, string>("__RequestVerificationToken", antiForgeryToken),
+                    new KeyValuePair<string, string>("__RequestVerificationToken", HtmlDOMHelper.RetrieveAntiForgeryToken(responseContent, "/Account/LogOff")),
                 };
 
                 content = new FormUrlEncodedContent(formParameters.ToArray());
@@ -90,18 +88,17 @@ namespace E2ETests
                 Assert.Contains("/Images/home-showcase.png", responseContent, StringComparison.OrdinalIgnoreCase);
                 //Verify cookie cleared on logout
                 Assert.Null(httpClientHandler.CookieContainer.GetCookies(new Uri(applicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.Security.Application"));
-                Console.WriteLine("Successfully signed out of '{0}''s session");
+                Console.WriteLine("Successfully signed out of '{0}''s session", generatedUserName);
 
                 //Login as an admin user
                 Console.WriteLine("Signing in as '{0}'", "Administrator");
                 response = httpClient.GetAsync("/Account/Login").Result;
                 responseContent = response.Content.ReadAsStringAsync().Result;
-                antiForgeryToken = HtmlDOMHelper.RetrieveAntiForgeryToken(responseContent, "/Account/Login");
                 formParameters = new List<KeyValuePair<string, string>>
                 {
                     new KeyValuePair<string, string>("UserName", "Administrator"),
                     new KeyValuePair<string, string>("Password", "YouShouldChangeThisPassword1!"),
-                    new KeyValuePair<string, string>("__RequestVerificationToken", antiForgeryToken),
+                    new KeyValuePair<string, string>("__RequestVerificationToken", HtmlDOMHelper.RetrieveAntiForgeryToken(responseContent, "/Account/Login")),
                 };
 
                 content = new FormUrlEncodedContent(formParameters.ToArray());
@@ -123,10 +120,9 @@ namespace E2ETests
                 Console.WriteLine("Trying to create an album with name '{0}'", albumName);
                 response = httpClient.GetAsync("/StoreManager/create").Result;
                 responseContent = response.Content.ReadAsStringAsync().Result;
-                antiForgeryToken = HtmlDOMHelper.RetrieveAntiForgeryToken(responseContent, "/StoreManager/create");
                 formParameters = new List<KeyValuePair<string, string>>
                 {
-                    new KeyValuePair<string, string>("__RequestVerificationToken", antiForgeryToken),
+                    new KeyValuePair<string, string>("__RequestVerificationToken", HtmlDOMHelper.RetrieveAntiForgeryToken(responseContent, "/StoreManager/create")),
                     new KeyValuePair<string, string>("GenreId", "1"),
                     new KeyValuePair<string, string>("ArtistId", "1"),
                     new KeyValuePair<string, string>("Title", albumName),
@@ -143,10 +139,9 @@ namespace E2ETests
 
                 //Logout from this user session - This should take back to the home page
                 Console.WriteLine("Signing out of '{0}''s session", "Administrator");
-                antiForgeryToken = HtmlDOMHelper.RetrieveAntiForgeryToken(responseContent, "/Account/LogOff");
                 formParameters = new List<KeyValuePair<string, string>>
                 {
-                    new KeyValuePair<string, string>("__RequestVerificationToken", antiForgeryToken),
+                    new KeyValuePair<string, string>("__RequestVerificationToken", HtmlDOMHelper.RetrieveAntiForgeryToken(responseContent, "/Account/LogOff")),
                 };
 
                 content = new FormUrlEncodedContent(formParameters.ToArray());
