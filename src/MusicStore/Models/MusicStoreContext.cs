@@ -1,19 +1,16 @@
-﻿using Microsoft.Framework.ConfigurationModel;
+﻿using System;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Metadata;
-using Microsoft.Data.Entity.SqlServer;
-using System;
+using Microsoft.Framework.DependencyInjection;
 
 namespace MusicStore.Models
 {
     public class MusicStoreContext : DbContext
     {
-        private readonly IConfiguration _configuration;
-
-        public MusicStoreContext(IServiceProvider serviceProvider, IConfiguration configuration)
-            : base(serviceProvider)
+        public MusicStoreContext(IServiceProvider serviceProvider, IOptionsAccessor<MusicStoreDbContextOptions> optionsAccessor)
+                    : base(serviceProvider, optionsAccessor.Options.BuildConfiguration())
         {
-            _configuration = configuration;
+
         }
 
         public DbSet<Album> Albums { get; set; }
@@ -23,10 +20,6 @@ namespace MusicStore.Models
         public DbSet<CartItem> CartItems { get; set; }
         public DbSet<OrderDetail> OrderDetails { get; set; }
 
-        protected override void OnConfiguring(DbContextOptions builder)
-        {
-            builder.UseSqlServer(_configuration.Get("Data:DefaultConnection:ConnectionString"));
-        }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -37,5 +30,10 @@ namespace MusicStore.Models
             builder.Entity<CartItem>().Key(c => c.CartItemId);
             builder.Entity<OrderDetail>().Key(o => o.OrderDetailId);
         }
+    }
+
+    public class MusicStoreDbContextOptions : DbContextOptions
+    {
+
     }
 }

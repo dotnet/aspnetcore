@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Security;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.ModelBinding;
 using MusicStore.Models;
 using System.Security.Principal;
 using System.Threading.Tasks;
@@ -24,8 +23,6 @@ namespace MusicStore.Controllers
         //
         // GET: /Account/Login
         [AllowAnonymous]
-        //Bug: https://github.com/aspnet/WebFx/issues/339
-        [HttpGet]
         public IActionResult Login(string returnUrl=null)
         {
             ViewBag.ReturnUrl = returnUrl;
@@ -63,8 +60,6 @@ namespace MusicStore.Controllers
         //
         // GET: /Account/Register
         [AllowAnonymous]
-        //Bug: https://github.com/aspnet/WebFx/issues/339
-        [HttpGet]
         public IActionResult Register()
         {
             return View();
@@ -98,8 +93,6 @@ namespace MusicStore.Controllers
 
         //
         // GET: /Account/Manage
-        //Bug: https://github.com/aspnet/WebFx/issues/339
-        [HttpGet]
         public IActionResult Manage(ManageMessageId? message=null)
         {
             ViewBag.StatusMessage =

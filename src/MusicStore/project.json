@@ -1,46 +1,30 @@
 {
-  "name": "MusicStore",
-  "authors": [
-    "Microsoft"
-  ],
-  "description": "Music store application on K",
-  "version": "0.1-alpha-*",
-  "dependencies": {
-    "Helios": "0.1-alpha-*",
-    "Microsoft.AspNet.Hosting": "0.1-alpha-*",
-    "Microsoft.AspNet.Server.WebListener": "0.1-alpha-*",
-    "Microsoft.AspNet.Mvc": "0.1-alpha-*",
-    "Microsoft.AspNet.Diagnostics": "0.1-alpha-*",
-    "Microsoft.AspNet.Identity.Entity": "0.1-alpha-*",
-    "Microsoft.AspNet.Identity.Security": "0.1-alpha-*",
-    "Microsoft.AspNet.Security.Cookies": "0.1-alpha-*",
-    "Microsoft.AspNet.Security.DataProtection": "0.1-alpha-*",
-    "Microsoft.AspNet.RequestContainer": "0.1-alpha-*",
-    "Microsoft.AspNet.StaticFiles": "0.1-alpha-*",
-    "Microsoft.Data.Entity.SqlServer": "0.1-alpha-*",
-    "Microsoft.Framework.ConfigurationModel.Json": "0.1-alpha-*"
-  },
-  "commands": {
-    "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5002",
-    "run": "run server.urls=http://localhost:5003"
-  },
-  "configurations": {
-    "net45": {
-      "dependencies": {
-        "System.ComponentModel.DataAnnotations": "",
-        "System.Data": "",
-        "System.Runtime": ""
-      }
+    "name": "MusicStore",
+    "authors": [
+        "Microsoft"
+    ],
+    "description": "Music store application on K",
+    "version": "0.1-alpha-*",
+    "dependencies": {
+        "Helios": "0.1-alpha-*",
+        "Microsoft.AspNet.Mvc": "0.1-alpha-*",
+        "Microsoft.AspNet.Server.WebListener": "0.1-alpha-*",
+        "Microsoft.AspNet.Diagnostics": "0.1-alpha-*",
+        "Microsoft.AspNet.Identity.Entity": "0.1-alpha-*",
+        "Microsoft.AspNet.Identity.Security": "0.1-alpha-*",
+        "Microsoft.AspNet.Security.Cookies": "0.1-alpha-*",
+        "Microsoft.AspNet.StaticFiles": "0.1-alpha-*",
+        "Microsoft.Data.Entity.SqlServer": "0.1-alpha-*",
+        "Microsoft.Framework.ConfigurationModel.Json": "0.1-alpha-*"
     },
-    "k10": {
-      "dependencies": {
-        "Microsoft.DataAnnotations": "0.1-alpha-*",
-        "System.Collections": "4.0.0.0",
-        "System.ComponentModel": "4.0.0.0",
-        "System.Console": "4.0.0.0",
-        "System.Runtime": "4.0.20.0",
-        "System.Threading.Tasks": "4.0.10.0"
-      }
+    "commands": {
+        "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5002",
+        "run": "run server.urls=http://localhost:5003"
+    },
+    "configurations": {
+        "net45": {
+        },
+        "k10": {
+        }
     }
-  }
 }
