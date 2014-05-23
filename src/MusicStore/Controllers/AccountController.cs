@@ -23,7 +23,7 @@ namespace MusicStore.Controllers
         //
         // GET: /Account/Login
         [AllowAnonymous]
-        public IActionResult Login(string returnUrl=null)
+        public IActionResult Login(string returnUrl = null)
         {
             ViewBag.ReturnUrl = returnUrl;
             return View();
@@ -34,7 +34,7 @@ namespace MusicStore.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model, string returnUrl=null)
+        public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null)
         {
             if (ModelState.IsValid)
             {
@@ -93,7 +93,7 @@ namespace MusicStore.Controllers
 
         //
         // GET: /Account/Manage
-        public IActionResult Manage(ManageMessageId? message=null)
+        public IActionResult Manage(ManageMessageId? message = null)
         {
             ViewBag.StatusMessage =
                 message == ManageMessageId.ChangePasswordSuccess ? "Your password has been changed."
