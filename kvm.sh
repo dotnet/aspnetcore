@@ -6,9 +6,6 @@ SCRIPTPATH="$_"
 
 #Exit script when any command returns non 0 exit code
 
-set -e
-set -o pipefail
-
 _kvm_has() {
   type "$1" > /dev/null 2>&1
   return $?
@@ -21,11 +18,13 @@ if _kvm_has "unsetopt"; then
   KVM_CD_FLAGS="-q"
 fi
 
+
 eval USERKREPATH=~/.kre
 USERKREPACKAGES="$USERKREPATH/packages"
 MONO45=
 X86=
 X64=
+NUGETAPIURL="https://www.myget.org/F/aspnetvnext/api/v2"
 
 # Traverse up in directory tree to find containing folder
 _kvm_find_up() {
@@ -54,8 +53,6 @@ _kvm_rc_version() {
 }
 
 _kvm_find_latest() {
-  echo "Determining latest version"
-
   local platform="mono45"
   local architecture="x86"
 
@@ -64,7 +61,7 @@ _kvm_find_latest() {
     return 1
   fi
 
-  local url="https://www.myget.org/F/aspnetvnext/api/v2/GetUpdates()?packageIds=%27KRE-$platform-$architecture%27&versions=%270.0%27&includePrerelease=true&includeAllVersions=false"
+  local url="$NUGETAPIURL/GetUpdates()?packageIds=%27KRE-$platform-$architecture%27&versions=%270.0%27&includePrerelease=true&includeAllVersions=false"
   local xml=$(curl -silent -L -u aspnetreadonly:4d8a2d9c-7b80-4162-9978-47e918c9658c $url)
 
   version=$(echo $xml | sed "s/.*<[a-zA-Z]:Version>\([^<]*\).*/\1/")
@@ -73,7 +70,7 @@ _kvm_find_latest() {
 }
 
 _kvm_strip_path() {
-  echo "$1" | sed -e "s#$KVM_DIR/[^/]*$2[^:]*:##g" -e "s#:$KVM_DIR/[^/]*$2[^:]*##g" -e "s#$KVM_DIR/[^/]*$2[^:]*##g"
+  echo "$1" | sed -e "s#$USERKREPACKAGES/[^/]*$2[^:]*:##g" -e "s#:$USERKREPACKAGES/[^/]*$2[^:]*##g" -e "s#$USERKREPACKAGES/[^/]*$2[^:]*##g"
 }
 
 _kvm_prepend_path() {
@@ -90,7 +87,7 @@ _kvm_download() {
 
   local pkgName=$(echo "$kreFullName" | sed "s/\([^.]*\).*/\1/")
   local pkgVersion=$(echo "$kreFullName" | sed "s/[^.]*.\(.*\)/\1/")
-  local url="https://www.myget.org/F/aspnetvnext/api/v2/package/$pkgName/$pkgVersion"
+  local url="$NUGETAPIURL/package/$pkgName/$pkgVersion"
   local kreFile="$kreFolder/$kreFullName.nupkg"
 
   if [ -e "$kreFolder" ]; then
@@ -98,7 +95,7 @@ _kvm_download() {
     return 0
   fi
 
-  echo "Downloading" $kreFullName "from https://www.myget.org/F/aspnetvnext/api/v2/"
+  echo "Downloading $kreFullName from $NUGETAPIURL"
 
   if ! _kvm_has "curl"; then
     echo "KVM Needs curl to proceed." >&2;
@@ -107,7 +104,10 @@ _kvm_download() {
 
   mkdir -p "$kreFolder" > /dev/null 2>&1
 
-  curl -silent -L -u aspnetreadonly:4d8a2d9c-7b80-4162-9978-47e918c9658c "$url" -o "$kreFile"
+  local httpResult=$(curl -L -D - -u aspnetreadonly:4d8a2d9c-7b80-4162-9978-47e918c9658c "$url" -o "$kreFile" 2>/dev/null | grep "^HTTP/1.1" | head -n 1 | sed "s/HTTP.1.1 \([0-9]*\).*/\1/")
+
+  [[ $httpResult == "404" ]] && echo "$kreFullName was not found in repository $NUGETAPIURL" && return 1
+  [[ $httpResult != "302" ]] && echo "Http Error $httpResult fetching $kreFullName from $NUGETAPIURL" && return 1
 
   _kvm_unpack $kreFile $kreFolder
 }
@@ -130,6 +130,10 @@ _kvm_unpack() {
   [ -e "$kreFolder/_rels/" ] && rm -rf "$kreFolder/_rels/"
 
   [ -e "$kreFolder/package/" ] && rm -rf "$kreFolder/_package/"
+
+  #Set shell commands as executable
+  find "$kreFolder/bin/" -type f \
+    -exec sh -c "head -c 11 {} | grep '/bin/bash' > /dev/null"  \; -print | xargs chmod 775
 
 }
 
@@ -225,8 +229,9 @@ kvm()
 
     "upgrade" )
       [ $# -ne 1 ] && kvm help && return
-
+      echo "Determining latest version"
       local version=$(_kvm_find_latest mono45 x86)
+  
       kvm install $version
       kvm alias default $version
     ;;
@@ -250,8 +255,8 @@ kvm()
         fi
 
         echo "Adding $kreBin to current PATH"
-        PATH=`_kvm_strip_path "$PATH" "/bin"`
-        PATH=`_kvm_prepend_path "$PATH" "$kreBin"`
+        PATH=$(_kvm_strip_path "$PATH" "/bin")
+        PATH=(_kvm_prepend_path "$PATH" "$kreBin")
       else
         local kreFullName="$(_kvm_requested_version_or_alias $versionOrAlias)"
         local kreFolder="$USERKREPACKAGES/$kreFullName"
@@ -310,14 +315,32 @@ kvm()
     ;;
 
     "alias" )
-      [ $# -gt 4 ] && kvm help && return
+      [ $# -gt 3 ] && kvm help && return
 
-      local alias="$2"
+      if [[ $# == 1 ]]; then
+        for f in $(find "$USERKREPATH/alias" -name *.alias); do echo -n "$(basename $f | sed 's/.alias//'): "; cat "$f"; done
+        echo ""
+        return;
+      fi
+
+      local name="$2"
+
+      if [[ $# == 2 ]]; then
+        [[ ! -e "$USERKREPATH/alias/$name.alias" ]] && echo "There is no alias called '$name'" && return
+        cat "$USERKREPATH/alias/$name.alias"
+        echo ""
+        return
+      fi
+
       local semver="$3"
+      local kreFullName="KRE-$(_kvm_requested_platform mono45)-$(_kvm_requested_architecture x86).$semver"
 
-      echo "alias $alias $semver - TBD ..."
+      echo "Setting alias '$name' to '$kreFullName'"
+      [[ ! -e "$USERKREPATH/alias/" ]] && mkdir "$USERKREPATH/alias/" > /dev/null
 
+      echo "$kreFullName" > "$USERKREPATH/alias/$name.alias"
     ;;
+
     "list" )
       # TBD, this lets our persistant impl work for now
       echo "default"
