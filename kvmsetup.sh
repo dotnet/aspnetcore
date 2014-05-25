@@ -73,4 +73,3 @@ else
 fi
 
 echo "=> Close and reopen your terminal to start using kvm"
-echo "=> then type \"kvm upgrade\" to install the latest version of the K Runtime Environment"
