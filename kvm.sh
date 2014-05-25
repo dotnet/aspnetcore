@@ -163,17 +163,16 @@ _kvm_requested_version_or_alias() {
   local versionOrAlias="$1"
 
   if [ -e "$USERKREPATH/alias/$versionOrAlias.alias" ]; then
-    local aliasValue=$(cat "$USERKREPATH/alias/$versionOrAlias.alias")
+    local kreFullName=$(cat "$USERKREPATH/alias/$versionOrAlias.alias")
     local pkgName=$(echo $kreFullName | sed "s/\([^.]*\).*/\1/")
-    local pkgVersion=$(echo $kreFullName | sed "s/[^.]*\(.*\)/\1/")
-    local pkgPlatform=$(echo $pgkName | sed "s/.*-\([^-]*\).*/\1/" | _kvm_requested_platform)
-    local pkgArchitecture=$(echo $pgkName | sed "s/.*-.*-\([^-]*\).*/\1/" | _kvm_requested_architecture)
+    local pkgVersion=$(echo $kreFullName | sed "s/[^.]*.\(.*\)/\1/")
+    local pkgPlatform=$(_kvm_requested_platform $(echo "$pkgName" | sed "s/KRE-\([^-]*\).*/\1/"))
+    local pkgArchitecture=$(_kvm_requested_architecture $(echo "$pkgName" | sed "s/.*-.*-\([^-]*\).*/\1/"))
   else
     local pkgVersion=$versionOrAlias
     local pkgPlatform=$(_kvm_requested_platform "mono45")
     local pkgArchitecture=$(_kvm_requested_architecture "x86")
   fi
-
   echo "KRE-$pkgPlatform-$pkgArchitecture.$pkgVersion"
 }
 
@@ -231,7 +230,7 @@ kvm()
       [ $# -ne 1 ] && kvm help && return
       echo "Determining latest version"
       local version=$(_kvm_find_latest mono45 x86)
-  
+
       kvm install $version
       kvm alias default $version
     ;;
@@ -318,7 +317,7 @@ kvm()
       [ $# -gt 3 ] && kvm help && return
 
       if [[ $# == 1 ]]; then
-        for f in $(find "$USERKREPATH/alias" -name *.alias); do echo -n "$(basename $f | sed 's/.alias//'): "; cat "$f"; done
+        for f in $(find "$USERKREPATH/alias" -name *.alias); do printf "%-20s %s\n" "$(basename $f | sed 's/.alias//')" "$(cat $f)"; done
         echo ""
         return;
       fi
@@ -342,10 +341,31 @@ kvm()
     ;;
 
     "list" )
-      # TBD, this lets our persistant impl work for now
-      echo "default"
+      [ $# -gt 2 ] && kvm help && return
+
+      local searchGlob="KRE-*"
+      if [ $# == 2 ]; then
+        local versionOrAlias=$2
+        local searchGlob=$(_kvm_requested_version_or_alias "$versionOrAlias")
+        echo $searchGlob
+      fi
+
+      for f in $(find $USERKREPACKAGES/* -name $searchGlob -type d -prune -exec basename {} \;); do
+        #TODO: Format, extract package, version arch etc
+        echo -n $f
+        if [[ $PATH == *"$USERKREPACKAGES/$f/bin"* ]]; then
+          echo " *"
+        else
+          echo ""
+        fi
+        [[ $# == 2 ]] && echo "" &&  return 0
+      done
+
       echo ""
+      [[ $# == 2 ]] && return 1 # kvm list xxx - xxx was not found
   esac
+
+  echo ""
 }
 
 kvm list default >/dev/null && kvm use default >/dev/null || true
