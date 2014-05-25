@@ -18,13 +18,15 @@ if _kvm_has "unsetopt"; then
   KVM_CD_FLAGS="-q"
 fi
 
+if [ -z "$KRE_USER_HOME" ]; then
+  eval KRE_USER_HOME=~/.kre
+fi
 
-eval USERKREPATH=~/.kre
-USERKREPACKAGES="$USERKREPATH/packages"
-MONO45=
-X86=
-X64=
-NUGETAPIURL="https://www.myget.org/F/aspnetvnext/api/v2"
+KRE_USER_PAKAGES="$KRE_USER_HOME/packages"
+KRE_MONO45=
+KRE_X86=
+KRE_X64=
+KRE_NUGET_API_URL="https://www.myget.org/F/aspnetvnext/api/v2"
 
 # Traverse up in directory tree to find containing folder
 _kvm_find_up() {
@@ -53,7 +55,7 @@ _kvm_rc_version() {
 }
 
 _kvm_find_latest() {
-  local platform="mono45"
+  local platform="KRE_MONO45"
   local architecture="x86"
 
   if ! _kvm_has "curl"; then
@@ -61,7 +63,7 @@ _kvm_find_latest() {
     return 1
   fi
 
-  local url="$NUGETAPIURL/GetUpdates()?packageIds=%27KRE-$platform-$architecture%27&versions=%270.0%27&includePrerelease=true&includeAllVersions=false"
+  local url="$KRE_NUGET_API_URL/GetUpdates()?packageIds=%27KRE-$platform-$architecture%27&versions=%270.0%27&includePrerelease=true&includeAllVersions=false"
   local xml=$(curl -silent -L -u aspnetreadonly:4d8a2d9c-7b80-4162-9978-47e918c9658c $url)
 
   version=$(echo $xml | sed "s/.*<[a-zA-Z]:Version>\([^<]*\).*/\1/")
@@ -70,7 +72,7 @@ _kvm_find_latest() {
 }
 
 _kvm_strip_path() {
-  echo "$1" | sed -e "s#$USERKREPACKAGES/[^/]*$2[^:]*:##g" -e "s#:$USERKREPACKAGES/[^/]*$2[^:]*##g" -e "s#$USERKREPACKAGES/[^/]*$2[^:]*##g"
+  echo "$1" | sed -e "s#$KRE_USER_PAKAGES/[^/]*$2[^:]*:##g" -e "s#:$KRE_USER_PAKAGES/[^/]*$2[^:]*##g" -e "s#$KRE_USER_PAKAGES/[^/]*$2[^:]*##g"
 }
 
 _kvm_prepend_path() {
@@ -87,7 +89,7 @@ _kvm_download() {
 
   local pkgName=$(echo "$kreFullName" | sed "s/\([^.]*\).*/\1/")
   local pkgVersion=$(echo "$kreFullName" | sed "s/[^.]*.\(.*\)/\1/")
-  local url="$NUGETAPIURL/package/$pkgName/$pkgVersion"
+  local url="$KRE_NUGET_API_URL/package/$pkgName/$pkgVersion"
   local kreFile="$kreFolder/$kreFullName.nupkg"
 
   if [ -e "$kreFolder" ]; then
@@ -95,7 +97,7 @@ _kvm_download() {
     return 0
   fi
 
-  echo "Downloading $kreFullName from $NUGETAPIURL"
+  echo "Downloading $kreFullName from $KRE_NUGET_API_URL"
 
   if ! _kvm_has "curl"; then
     echo "KVM Needs curl to proceed." >&2;
@@ -106,8 +108,8 @@ _kvm_download() {
 
   local httpResult=$(curl -L -D - -u aspnetreadonly:4d8a2d9c-7b80-4162-9978-47e918c9658c "$url" -o "$kreFile" 2>/dev/null | grep "^HTTP/1.1" | head -n 1 | sed "s/HTTP.1.1 \([0-9]*\).*/\1/")
 
-  [[ $httpResult == "404" ]] && echo "$kreFullName was not found in repository $NUGETAPIURL" && return 1
-  [[ $httpResult != "302" ]] && echo "Http Error $httpResult fetching $kreFullName from $NUGETAPIURL" && return 1
+  [[ $httpResult == "404" ]] && echo "$kreFullName was not found in repository $KRE_NUGET_API_URL" && return 1
+  [[ $httpResult != "302" ]] && echo "Http Error $httpResult fetching $kreFullName from $KRE_NUGET_API_URL" && return 1
 
   _kvm_unpack $kreFile $kreFolder
 }
@@ -141,7 +143,7 @@ _kvm_unpack() {
 _kvm_requested_platform() {
   local default=$1
 
-  [[ $MONO45 ]] && echo "mono45" && return
+  [[ $KRE_MONO45 ]] && echo "KRE_MONO45" && return
 
   echo $default
 }
@@ -150,11 +152,11 @@ _kvm_requested_platform() {
 _kvm_requested_architecture() {
   local default=$1
 
-  [[ $X86 && $X64 ]] && echo "This command cannot accept both -x86 and -x64" && return 1
+  [[ $KRE_X86 && $KRE_X64 ]] && echo "This command cannot accept both -x86 and -x64" && return 1
 
-  [[ $X86 ]] && echo "x86" && return
+  [[ $KRE_X86 ]] && echo "x86" && return
 
-  [[ $X64 ]] && echo "x64" && return
+  [[ $KRE_X64 ]] && echo "x64" && return
 
   echo $default
 }
@@ -162,15 +164,15 @@ _kvm_requested_architecture() {
 _kvm_requested_version_or_alias() {
   local versionOrAlias="$1"
 
-  if [ -e "$USERKREPATH/alias/$versionOrAlias.alias" ]; then
-    local kreFullName=$(cat "$USERKREPATH/alias/$versionOrAlias.alias")
+  if [ -e "$KRE_USER_HOME/alias/$versionOrAlias.alias" ]; then
+    local kreFullName=$(cat "$KRE_USER_HOME/alias/$versionOrAlias.alias")
     local pkgName=$(echo $kreFullName | sed "s/\([^.]*\).*/\1/")
     local pkgVersion=$(echo $kreFullName | sed "s/[^.]*.\(.*\)/\1/")
     local pkgPlatform=$(_kvm_requested_platform $(echo "$pkgName" | sed "s/KRE-\([^-]*\).*/\1/"))
     local pkgArchitecture=$(_kvm_requested_architecture $(echo "$pkgName" | sed "s/.*-.*-\([^-]*\).*/\1/"))
   else
     local pkgVersion=$versionOrAlias
-    local pkgPlatform=$(_kvm_requested_platform "mono45")
+    local pkgPlatform=$(_kvm_requested_platform "KRE_MONO45")
     local pkgArchitecture=$(_kvm_requested_architecture "x86")
   fi
   echo "KRE-$pkgPlatform-$pkgArchitecture.$pkgVersion"
@@ -180,7 +182,7 @@ _kvm_requested_version_or_alias() {
 _kvm_locate_kre_bin_from_full_name() {
   local kreFullName=$1
 
-  [ -e "$USERKREPACKAGES/$kreFullName/bin" ] && echo "$USERKREPACKAGES/$kreFullName/bin" && return
+  [ -e "$KRE_USER_PAKAGES/$kreFullName/bin" ] && echo "$KRE_USER_PAKAGES/$kreFullName/bin" && return
 }
 
 kvm()
@@ -229,7 +231,7 @@ kvm()
     "upgrade" )
       [ $# -ne 1 ] && kvm help && return
       echo "Determining latest version"
-      local version=$(_kvm_find_latest mono45 x86)
+      local version=$(_kvm_find_latest KRE_MONO45 x86)
 
       kvm install $version
       kvm alias default $version
@@ -242,7 +244,7 @@ kvm()
 
       if [ "$versionOrAlias" == *.nupkg ]; then
         local kreFullName=$(echo $versionOrAlias | sed "s/\(.*\)\.nupkg/\1/")
-        local kreFolder="$USERKREPACKAGES/$kreFullName"
+        local kreFolder="$KRE_USER_PAKAGES/$kreFullName"
         local kreFile="$kreFolder/$kreFullName.nupkg"
 
         if [ -e "$kreFolder" ]; then
@@ -258,7 +260,7 @@ kvm()
         PATH=(_kvm_prepend_path "$PATH" "$kreBin")
       else
         local kreFullName="$(_kvm_requested_version_or_alias $versionOrAlias)"
-        local kreFolder="$USERKREPACKAGES/$kreFullName"
+        local kreFolder="$KRE_USER_PAKAGES/$kreFullName"
         _kvm_download "$kreFullName" "$kreFolder"
         kvm use "$versionOrAlias"
       fi
@@ -286,10 +288,10 @@ kvm()
         # Strip other version from PATH
         PATH=`_kvm_strip_path "$PATH" "/bin"`
 
-        if [[ $persistent&& -e "$USERKREPATH/alias/default.alias" ]]; then
+        if [[ $persistent&& -e "$KRE_USER_HOME/alias/default.alias" ]]; then
             echo "Setting default KRE to none"
 
-            rm "$USERKREPATH/alias/default.alias"
+            rm "$KRE_USER_HOME/alias/default.alias"
         fi
         return 0
       fi
@@ -317,7 +319,7 @@ kvm()
       [ $# -gt 3 ] && kvm help && return
 
       if [[ $# == 1 ]]; then
-        for f in $(find "$USERKREPATH/alias" -name *.alias); do printf "%-20s %s\n" "$(basename $f | sed 's/.alias//')" "$(cat $f)"; done
+        for f in $(find "$KRE_USER_HOME/alias" -name *.alias); do printf "%-20s %s\n" "$(basename $f | sed 's/.alias//')" "$(cat $f)"; done
         echo ""
         return;
       fi
@@ -325,23 +327,25 @@ kvm()
       local name="$2"
 
       if [[ $# == 2 ]]; then
-        [[ ! -e "$USERKREPATH/alias/$name.alias" ]] && echo "There is no alias called '$name'" && return
-        cat "$USERKREPATH/alias/$name.alias"
+        [[ ! -e "$KRE_USER_HOME/alias/$name.alias" ]] && echo "There is no alias called '$name'" && return
+        cat "$KRE_USER_HOME/alias/$name.alias"
         echo ""
         return
       fi
 
       local semver="$3"
-      local kreFullName="KRE-$(_kvm_requested_platform mono45)-$(_kvm_requested_architecture x86).$semver"
+      local kreFullName="KRE-$(_kvm_requested_platform KRE_MONO45)-$(_kvm_requested_architecture x86).$semver"
 
       echo "Setting alias '$name' to '$kreFullName'"
-      [[ ! -e "$USERKREPATH/alias/" ]] && mkdir "$USERKREPATH/alias/" > /dev/null
+      [[ ! -e "$KRE_USER_HOME/alias/" ]] && mkdir "$KRE_USER_HOME/alias/" > /dev/null
 
-      echo "$kreFullName" > "$USERKREPATH/alias/$name.alias"
+      echo "$kreFullName" > "$KRE_USER_HOME/alias/$name.alias"
     ;;
 
     "list" )
       [ $# -gt 2 ] && kvm help && return
+
+      [ ! -d $KRE_USER_PAKAGES ] && echo "KRE is not installed." && return 1
 
       local searchGlob="KRE-*"
       if [ $# == 2 ]; then
@@ -350,10 +354,11 @@ kvm()
         echo $searchGlob
       fi
 
-      for f in $(find $USERKREPACKAGES/* -name $searchGlob -type d -prune -exec basename {} \;); do
+
+      for f in $(find $KRE_USER_PAKAGES/* -name $searchGlob -type d -prune -exec basename {} \;); do
         #TODO: Format, extract package, version arch etc
         echo -n $f
-        if [[ $PATH == *"$USERKREPACKAGES/$f/bin"* ]]; then
+        if [[ $PATH == *"$KRE_USER_PAKAGES/$f/bin"* ]]; then
           echo " *"
         else
           echo ""
