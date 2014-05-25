@@ -40,7 +40,7 @@ echo
 if [ -z "$PROFILE" ]; then
   if [ -f "$HOME/.bash_profile" ]; then
     PROFILE="$HOME/.bash_profile"
-  if [ -f "$HOME/.bashrc" ]; then
+  elif [ -f "$HOME/.bashrc" ]; then
     PROFILE="$HOME/.bashrc"
   elif [ -f "$HOME/.zshrc" ]; then
     PROFILE="$HOME/.zshrc"
