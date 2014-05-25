@@ -30,7 +30,7 @@ fi
 
 curl -s "$KVM_SOURCE" -o "$KRE_USER_HOME/kvm/kvm.sh" || {
   echo >&2 "Failed to download '$KVM_SOURCE'.."
-  return 1
+  return 1`
 }
 
 
@@ -47,7 +47,7 @@ if [ -z "$PROFILE" ]; then
   fi
 fi
 
-SOURCE_STR="[ -s \"$KRE_USER_HOME/kvm/kvm.sh\" ] && . \"$KRE_USER_HOME/kvm/kvm.sh\"  # This loads kvm"
+SOURCE_STR="[ -s \"$KRE_USER_HOME/kvm/kvm.sh\" ] && . \"$KRE_USER_HOME/kvm/kvm.sh\"  
 
 if [ -z "$PROFILE" ] || [ ! -f "$PROFILE" ] ; then
   if [ -z $PROFILE ]; then
@@ -73,3 +73,4 @@ else
 fi
 
 echo "=> Close and reopen your terminal to start using kvm"
+echo "=> then type 'kvm upgrade' to install the latest version of the K Runtime Environment"
