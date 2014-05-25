@@ -210,7 +210,7 @@ kvm()
       echo "kvm use <semver>|<alias>|none [-p -persistent]"
       echo "<semver>|<alias>  add KRE bin to path of current command line   "
       echo "none              remove KRE bin from path of current command line"
-      echo "-p -persistent   persist selected version to .kvmrc"
+      echo "-p -persistent   set selected version as default"
       echo ""
       echo "kvm list"
       echo "list KRE versions installed "
