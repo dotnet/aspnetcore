@@ -11,25 +11,35 @@ The samples provided are designed to show some of the features of the new framew
 
 These are the current minimum requirements, they do not necesarilly represent our RTM minimum.
 
-* Windows 7 or greater, though Core CLR will only work on Windows 8 today. If using Core CLR you will need to be on Windows 8 or above. At RTM the whole stack will support Windows 7+ and Windows Server 2008 R2+.
-* .NET 4.5.1 for hosting in IIS
-* Powershell 4. KVM is a Powershell script that makes use of types that older verisons of Powershell cannot load
+### Windows
+ * Windows 7 or greater, though Core CLR will only work on Windows 8 today. If using Core CLR you will need to be on Windows 8 or above. At RTM the whole stack will support Windows 7+ and Windows Server 2008 R2+.
+ * .NET 4.5.1 for hosting in IIS
+ * Powershell 4. KVM is a Powershell script that makes use of types that older verisons of Powershell cannot load
 
- 
+
+### OSX/Linux
+ * Mono > 3.4.0 - Currently this means compiling mono from source from https://github.com/mono/mono
+  * On Linux, you may need to run `mozroots --import` after installing mono
+ * bash/zsh and curl
+
 #Getting Started
 
 The first thing we need to do is setup the tools required to build and run an application. We will start out by getting the [K Version Manager (KVM)](https://github.com/aspnet/Home/wiki/version-manager)
 
 * Clone the repository
-* On the command line execute ```kvmsetup.cmd``` 
+* On the command line execute
+ * ```kvmsetup.cmd``` on Windows or
+ * ```sh kvmsetup.sh && source ~/.kre/kvm/kvm.sh``` on OSX/Linux
 * This command will setup your environment, getting it ready to install a version of the runtime. It adds kvm to your path and puts it in your user profile.
 * Execute ```kvm install 0.1-alpha-build-0421```. This command will download the named version of the KRE and put it on your user profile ready to use. You can get the latest version by running ```kvm upgrade``` but 0421 was the last version explicitly tested. see the [KVM page](https://github.com/aspnet/Home/wiki/version-manager) for more information on KVM.
 * Navigate to samples\ConsoleApp
 * Run ```kpm restore```. This downloads the System.Console package so the app can do Console.WriteLine
-* Run ```K run```
+* Run ```k run```
 * You should see a message saying "Hello World"
-* Type ```SET KRE_TRACE=1```
-* Run ```K run```
+* Type
+ * ```SET KRE_TRACE=1``` on Windows or
+ * ```export KRE_TRACE=1``` on OSX/Linux
+* Run ```k run```
 * You should now see compiler output as well as the "Hello World" message
 
 ```
@@ -84,6 +94,7 @@ If you can do all of the above then everything should be working. You can try ou
 
 #Switching to Core CLR
 
+
 By default when running the applications you are running against Desktop CLR (4.5), you can change that using the KVM command.
 
 1. Run ```kvm install 0.1-alpha-build-0421 -svrc50``` This command gets the latest Core CLR version of the k runtime and sets it as your default. The -svrc50 switch tells it to use Core CLR, you can use -svr50 to target desktop again.
@@ -92,6 +103,8 @@ By default when running the applications you are running against Desktop CLR (4.
 4. The HelloWeb app should work the same as when running on Desktop CLR.
 
 **NOTE: There are going to be parts of the stack that work on Desktop but do not work on Core CLR. This set should get smaller and smaller as time goes on, but it is entirely likely as you use Core CLR you will hit errors that can't be worked around as the Core CLR surface area just does not exist yet.**
+
+**NOTE: There is no Core CLR currently on OSX/Linux. There is only a single platform (mono45) and a single architecture (x86).**
 
 #Core CLR Packages
 

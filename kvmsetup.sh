@@ -74,4 +74,4 @@ else
   fi
 fi
 
-echo "=> Close and reopen your terminal to start using kvm"
+echo "=> Type 'source $KRE_USER_HOME/kvm/kvm.sh' to start using kvm"
