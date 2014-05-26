@@ -19,8 +19,8 @@ These are the current minimum requirements, they do not necesarilly represent ou
 
 ### OSX/Linux
  * Mono > 3.4.0 - Currently this means compiling mono from source from https://github.com/mono/mono
-  * On Linux, you may need to run `mozroots --import` after installing mono
- * bash/zsh and curl
+ * On Linux, you may need to run `mozroots --import --sync` after installing mono
+ * bash or zsh and curl
 
 #Getting Started
 
