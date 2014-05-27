@@ -12,8 +12,8 @@ namespace Microsoft.AspNet.Identity.Entity
     {
         public IdentitySqlContext() { }
         public IdentitySqlContext(IServiceProvider serviceProvider) : base(serviceProvider) { }
-        public IdentitySqlContext(ImmutableDbContextOptions options) : base(options) { }
-        public IdentitySqlContext(IServiceProvider serviceProvider, ImmutableDbContextOptions options) : base(serviceProvider, options) { }
+        public IdentitySqlContext(DbContextOptions options) : base(options) { }
+        public IdentitySqlContext(IServiceProvider serviceProvider, DbContextOptions options) : base(serviceProvider, options) { }
     }
 
     public class IdentitySqlContext<TUser> : DbContext
@@ -25,8 +25,8 @@ namespace Microsoft.AspNet.Identity.Entity
 
         public IdentitySqlContext() { }
         public IdentitySqlContext(IServiceProvider serviceProvider) : base(serviceProvider) { }
-        public IdentitySqlContext(ImmutableDbContextOptions options) : base(options) { }
-        public IdentitySqlContext(IServiceProvider serviceProvider, ImmutableDbContextOptions options) : base(serviceProvider, options) { }
+        public IdentitySqlContext(DbContextOptions options) : base(options) { }
+        public IdentitySqlContext(IServiceProvider serviceProvider, DbContextOptions options) : base(serviceProvider, options) { }
 
 
         protected override void OnConfiguring(DbContextOptions builder)
