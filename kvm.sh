@@ -64,8 +64,9 @@ _kvm_find_latest() {
   fi
 
   local url="$KRE_NUGET_API_URL/GetUpdates()?packageIds=%27KRE-$platform-$architecture%27&versions=%270.0%27&includePrerelease=true&includeAllVersions=false"
-  local xml=$(curl -silent -L -u aspnetreadonly:4d8a2d9c-7b80-4162-9978-47e918c9658c $url)
-  version=$(echo $xml | sed "s/.*<[a-zA-Z]:Version>\([^<]*\).*/\1/")
+  local cmd=
+  local xml="$(curl $url 2>/dev/null)"
+  version="$(echo $xml | sed 's/.*<[a-zA-Z]:Version>\([^<]*\).*/\1/')"
   [[ $xml == $version ]] && return 1
   echo $version
 }
@@ -142,7 +143,7 @@ _kvm_unpack() {
 _kvm_requested_platform() {
   local default=$1
 
-  [[ $KRE_MONO45 ]] && echo "mono45" && return
+  [[ -z $KRE_MONO45 ]] && echo "mono45" && return
 
   echo $default
 }
@@ -151,11 +152,11 @@ _kvm_requested_platform() {
 _kvm_requested_architecture() {
   local default=$1
 
-  [[ $KRE_X86 && $KRE_X64 ]] && echo "This command cannot accept both -x86 and -x64" && return 1
+  [[ -n $KRE_X86 && -n $KRE_X64 ]] && echo "This command cannot accept both -x86 and -x64" && return 1
 
-  [[ $KRE_X86 ]] && echo "x86" && return
+  [[ -z $KRE_X86 ]] && echo "x86" && return
 
-  [[ $KRE_X64 ]] && echo "x64" && return
+  [[ -z $KRE_X64 ]] && echo "x64" && return
 
   echo $default
 }
@@ -287,7 +288,7 @@ kvm()
         # Strip other version from PATH
         PATH=`_kvm_strip_path "$PATH" "/bin"`
 
-        if [[ $persistent&& -e "$KRE_USER_HOME/alias/default.alias" ]]; then
+        if [[ -n $persistent && -e "$KRE_USER_HOME/alias/default.alias" ]]; then
             echo "Setting default KRE to none"
 
             rm "$KRE_USER_HOME/alias/default.alias"
@@ -298,7 +299,7 @@ kvm()
       local kreFullName=$(_kvm_requested_version_or_alias "$versionOrAlias")
       local kreBin=$(_kvm_locate_kre_bin_from_full_name "$kreFullName")
 
-      if [[ ! $kreBin ]]; then
+      if [[ -z $kreBin ]]; then
         echo "Cannot find $kreFullName, do you need to run 'kvm install $versionOrAlias'?"
         return 1
       fi
@@ -308,14 +309,14 @@ kvm()
       PATH=`_kvm_strip_path "$PATH" "/bin"`
       PATH=`_kvm_prepend_path "$PATH" "$kreBin"`
 
-      if [[ $persistent ]]; then
+      if [[ -n $persistent ]]; then
           echo "Setting  $kreBin as default KRE"
           kvm alias default "$versionOrAlias"
       fi
     ;;
 
     "alias" )
-      [ $# -gt 3 ] && kvm help && return
+      [[ $# -gt 3 ]] && kvm help && return
 
       if [[ $# == 1 ]]; then
         for f in $(find "$KRE_USER_HOME/alias" -name *.alias); do printf "%-20s %s\n" "$(basename $f | sed 's/.alias//')" "$(cat $f)"; done
@@ -342,9 +343,9 @@ kvm()
     ;;
 
     "list" )
-      [ $# -gt 2 ] && kvm help && return
+      [[ $# -gt 2 ]] && kvm help && return
 
-      [ ! -d $KRE_USER_PACKAGES ] && echo "KRE is not installed." && return 1
+      [[ ! -d $KRE_USER_PACKAGES ]] && echo "KRE is not installed." && return 1
 
       local searchGlob="KRE-*"
       if [ $# == 2 ]; then
@@ -352,7 +353,6 @@ kvm()
         local searchGlob=$(_kvm_requested_version_or_alias "$versionOrAlias")
         echo $searchGlob
       fi
-
 
       for f in $(find $KRE_USER_PACKAGES/* -name $searchGlob -type d -prune -exec basename {} \;); do
         #TODO: Format, extract package, version arch etc
@@ -367,6 +367,11 @@ kvm()
 
       echo ""
       [[ $# == 2 ]] && return 1 # kvm list xxx - xxx was not found
+      ;;
+
+    *)
+      echo "Unknown command $1"
+      return 1
   esac
 }
 
