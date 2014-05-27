@@ -10,7 +10,7 @@ namespace MusicStore.Models
     public class ApplicationDbContext : IdentitySqlContext<ApplicationUser>
     {
         public ApplicationDbContext(IServiceProvider serviceProvider, IOptionsAccessor<IdentityDbContextOptions> optionsAccessor)
-                   : base(serviceProvider, optionsAccessor.Options.BuildConfiguration())
+                   : base(serviceProvider, optionsAccessor.Options)
         {
         }
     }
