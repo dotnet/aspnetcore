@@ -64,7 +64,7 @@ fi
 
 SOURCE_STR="[ -s \"$KRE_USER_HOME/kvm/kvm.sh\" ] && . \"$KRE_USER_HOME/kvm/kvm.sh\" # this loads kvm"
 
-if [ -z "$PROFILE" && -z "$ZPROFILE" ] || [ ! -f "$PROFILE" && ! -f "$ZPROFILE" ] ; then
+if [ -z "$PROFILE" -a -z "$ZPROFILE" ] || [ ! -f "$PROFILE" -a ! -f "$ZPROFILE" ] ; then
   if [ -z "$PROFILE" ]; then
     echo "=> Profile not found. Tried ~/.bash_profile ~/.zshrc and ~/.profile."
     echo "=> Create one of them and run this script again"
