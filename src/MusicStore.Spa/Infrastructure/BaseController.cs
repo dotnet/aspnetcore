@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 
@@ -12,6 +13,10 @@ namespace Microsoft.AspNet.Mvc
         private IModelMetadataProvider _modelMetadataProvider;
         private IEnumerable<IModelValidatorProvider> _validatorProviders;
         private IEnumerable<IValueProviderFactory> _valueProviderFactories;
+        private CompositeModelBinder _modelBinder;
+        private CompositeValueProvider _compositeValueProvider;
+        private bool _modelBinderInitialized;
+        private object _modelBinderInitLocker = new object();
 
         public BaseController()
         {
@@ -32,21 +37,25 @@ namespace Microsoft.AspNet.Mvc
 
         protected Task<bool> TryUpdateModelAsync<TModel>(TModel model)
         {
-            var binder = new CompositeModelBinder(_modelBinders);
-            var requestContext = new RequestContext(Context, ActionContext.RouteValues);
+            LazyInitializer.EnsureInitialized(ref _modelBinder, ref _modelBinderInitialized, ref _modelBinderInitLocker, () =>
+            {
+                var requestContext = new RequestContext(Context, ActionContext.RouteValues);
+                _compositeValueProvider = new CompositeValueProvider(_valueProviderFactories.Select(vpf => vpf.GetValueProvider(requestContext)));
+                return new CompositeModelBinder(_modelBinders);
+            });
+
             var bindingContext = new ModelBindingContext
             {
                 MetadataProvider = _modelMetadataProvider,
                 Model = model,
                 ModelState = ModelState,
                 ValidatorProviders = _validatorProviders,
-                ModelBinder = binder,
+                ModelBinder = _modelBinder,
                 HttpContext = Context,
-                ValueProvider = new CompositeValueProvider(_valueProviderFactories.Select(
-                    vpf => vpf.GetValueProviderAsync(requestContext).Result))
+                ValueProvider = _compositeValueProvider
             };
 
-            return binder.BindModelAsync(bindingContext);
+            return _modelBinder.BindModelAsync(bindingContext);
         }
     }
 }

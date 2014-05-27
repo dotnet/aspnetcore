@@ -20,12 +20,10 @@ namespace System.ComponentModel.DataAnnotations
 
         public override bool IsValid(object value)
         {
-            return value == null || !value.Equals(FailValue);
-            // BUG: #ifdefs not working in editor
 #if DEBUG
             return value == null || !value.Equals(FailValue);
 #else
-            //return true;
+            return true;
 #endif
         }
     }
