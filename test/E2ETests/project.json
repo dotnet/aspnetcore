@@ -18,7 +18,8 @@
                 "System.Net.Http": "",
                 "System.Net.Http.WebRequest": "",
                 "System.Diagnostics.Process": "",
-                "System.Xml": ""
+                "System.Xml": "",
+                "System.Data": ""
             }
         }
     }

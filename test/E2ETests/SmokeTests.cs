@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Net;
 using System.Net.Http;
 using Xunit;
@@ -9,12 +10,22 @@ namespace E2ETests
     public class SmokeTests
     {
         private string ApplicationBaseUrl = null;
+        private const string Connection_string_Format = "Server=(localdb)\\v11.0;Database={0};Trusted_Connection=True;MultipleActiveResultSets=true";
 
         [Theory]
         [InlineData(HostType.Helios, KreFlavor.DesktopClr, "http://localhost:5001/")]
         //[InlineData(HostType.SelfHost, KreFlavor.DesktopClr, "http://localhost:5002/")]
         public void SmokeTestSuite(HostType hostType, KreFlavor kreFlavor, string applicationBaseUrl)
         {
+            var musicStoreDbName = Guid.NewGuid().ToString().Replace("-", string.Empty);
+            var musicStoreIdentityDbName = Guid.NewGuid().ToString().Replace("-", string.Empty);
+
+            Console.WriteLine("Pointing MusicStore DB to '{0}'", string.Format(Connection_string_Format, musicStoreDbName));
+            Console.WriteLine("Pointing MusicStoreIdentity DB to '{0}'", string.Format(Connection_string_Format, musicStoreIdentityDbName));
+
+            Environment.SetEnvironmentVariable("SQLAZURECONNSTR_DefaultConnection", string.Format(Connection_string_Format, musicStoreDbName));
+            Environment.SetEnvironmentVariable("SQLAZURECONNSTR_IdentityConnection", string.Format(Connection_string_Format, musicStoreIdentityDbName));
+
             ApplicationBaseUrl = applicationBaseUrl;
             var hostProcess = DeploymentUtility.StartApplication(hostType, kreFlavor);
 
@@ -72,6 +83,27 @@ namespace E2ETests
             {
                 //Shutdown the host process
                 hostProcess.Kill();
+
+                try
+                {
+                    Console.WriteLine("Trying to drop the databases created during the test run");
+                    using (var conn = new SqlConnection(@"Server=(localdb)\v11.0;Database=master;Trusted_Connection=True;"))
+                    {
+                        conn.Open();
+                        var cmd = conn.CreateCommand();
+                        cmd.CommandText = string.Format("DROP DATABASE {0}", musicStoreDbName);
+                        cmd.ExecuteNonQuery();
+
+                        cmd = conn.CreateCommand();
+                        cmd.CommandText = string.Format("DROP DATABASE {0}", musicStoreIdentityDbName);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                catch (Exception exception)
+                {
+                    //Ignore if there is failure in cleanup.
+                    Console.WriteLine("Error occured while dropping the databases", exception);
+                }
             }
         }
 
