@@ -53,8 +53,6 @@ namespace MusicStore.Controllers
 
         //
         // GET: /StoreManager/Create
-        //Bug: https://github.com/aspnet/WebFx/issues/339
-        [HttpGet]
         public IActionResult Create()
         {
             ViewBag.GenreId = new SelectList(db.Genres, "GenreId", "Name");
@@ -86,8 +84,6 @@ namespace MusicStore.Controllers
 
         //
         // GET: /StoreManager/Edit/5
-        //Bug: https://github.com/aspnet/WebFx/issues/339
-        [HttpGet]
         public IActionResult Edit(int id = 0)
         {
             Album album = db.Albums.Single(a => a.AlbumId == id);
@@ -119,9 +115,6 @@ namespace MusicStore.Controllers
 
         //
         // GET: /StoreManager/Delete/5
-
-        //Bug: https://github.com/aspnet/WebFx/issues/339
-        [HttpGet]
         public IActionResult Delete(int id = 0)
         {
             Album album = db.Albums.Single(a => a.AlbumId == id);
@@ -142,6 +135,16 @@ namespace MusicStore.Controllers
             db.ChangeTracker.Entry(album).State = EntityState.Deleted;
             db.SaveChanges();
             return RedirectToAction("Index");
+        }
+
+        //
+        // GET: /StoreManager/GetAlbumIdFromName
+        // Note: Added for automated testing purpose. Application does not use this.
+        [HttpGet]
+        public int GetAlbumIdFromName(string albumName)
+        {
+            var album = db.Albums.Single(a => a.Title == albumName);
+            return album.AlbumId;
         }
     }
 }

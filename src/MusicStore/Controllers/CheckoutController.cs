@@ -22,8 +22,6 @@ namespace MusicStore.Controllers
         //
         // GET: /Checkout/
 
-        //Bug: https://github.com/aspnet/WebFx/issues/339
-        [HttpGet]
         public IActionResult AddressAndPayment()
         {
             return View();
