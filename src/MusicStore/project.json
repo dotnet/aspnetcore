@@ -23,7 +23,7 @@
         "run": "run server.urls=http://localhost:5003"
     },
     "configurations": {
-        "net45": {
+        "net451": {
         },
         "k10": {
         }

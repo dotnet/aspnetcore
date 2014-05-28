@@ -14,7 +14,7 @@
         "Microsoft.Framework.ConfigurationModel.Json": "0.1-alpha-build-*"
     },
     "configurations" : {
-        "net45" : {
+        "net451" : {
             "dependencies": {
                 "System.Runtime" : "",
                 "System.Data": "",
