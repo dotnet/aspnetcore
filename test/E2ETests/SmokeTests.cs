@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Net;
 using System.Net.Http;
 using Xunit;
@@ -78,7 +77,11 @@ namespace E2ETests
                 AccessStoreWithPermissions();
 
                 //Create an album
-                CreateAlbum();
+                var albumName = CreateAlbum();
+                var albumId = FetchAlbumIdFromName(albumName);
+
+                //Get details of the album
+                VerifyAlbumDetails(albumId, albumName);
 
                 //Logout from this user session - This should take back to the home page
                 SignOutUser("Administrator");
@@ -88,26 +91,8 @@ namespace E2ETests
                 //Shutdown the host process
                 hostProcess.Kill();
 
-                try
-                {
-                    Console.WriteLine("Trying to drop the databases created during the test run");
-                    using (var conn = new SqlConnection(@"Server=(localdb)\v11.0;Database=master;Trusted_Connection=True;"))
-                    {
-                        conn.Open();
-                        var cmd = conn.CreateCommand();
-                        cmd.CommandText = string.Format("DROP DATABASE {0}", musicStoreDbName);
-                        cmd.ExecuteNonQuery();
-
-                        cmd = conn.CreateCommand();
-                        cmd.CommandText = string.Format("DROP DATABASE {0}", musicStoreIdentityDbName);
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-                catch (Exception exception)
-                {
-                    //Ignore if there is failure in cleanup.
-                    Console.WriteLine("Error occured while dropping the databases", exception);
-                }
+                DbUtils.DropDatabase(musicStoreDbName);
+                DbUtils.DropDatabase(musicStoreIdentityDbName);
             }
         }
 
@@ -169,7 +154,7 @@ namespace E2ETests
             response = httpClient.PostAsync("/Account/Register", content).Result;
             responseContent = response.Content.ReadAsStringAsync().Result;
             Assert.Null(httpClientHandler.CookieContainer.GetCookies(new Uri(ApplicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.Security.Application"));
-            Assert.Contains("The password and confirmation password do not match.", responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("<div class=\"validation-summary-errors\" data-valmsg-summary=\"true\"><ul><li>The password and confirmation password do not match.</li>", responseContent, StringComparison.OrdinalIgnoreCase);
             Console.WriteLine("Server side model validator rejected the user '{0}''s registration as passwords do not match.", generatedUserName);
         }
 
@@ -216,7 +201,6 @@ namespace E2ETests
             var content = new FormUrlEncodedContent(formParameters.ToArray());
             response = httpClient.PostAsync("/Account/Register", content).Result;
             responseContent = response.Content.ReadAsStringAsync().Result;
-            //Bug? Registering the same user again does not throw this error
             Assert.Contains(string.Format("Name {0} is already taken.", userName), responseContent, StringComparison.OrdinalIgnoreCase);
             Console.WriteLine("Identity threw a valid exception that user '{0}' already exists in the system", userName);
         }
@@ -307,7 +291,7 @@ namespace E2ETests
             Console.WriteLine("Successfully changed the password for user '{0}'", userName);
         }
 
-        private void CreateAlbum()
+        private string CreateAlbum()
         {
             var albumName = Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 12);
             Console.WriteLine("Trying to create an album with name '{0}'", albumName);
@@ -320,7 +304,7 @@ namespace E2ETests
                     new KeyValuePair<string, string>("ArtistId", "1"),
                     new KeyValuePair<string, string>("Title", albumName),
                     new KeyValuePair<string, string>("Price", "9.99"),
-                    new KeyValuePair<string, string>("AlbumArtUrl", "TestUrl"),
+                    new KeyValuePair<string, string>("AlbumArtUrl", "http://myapp/testurl"),
                 };
 
             var content = new FormUrlEncodedContent(formParameters.ToArray());
@@ -329,6 +313,27 @@ namespace E2ETests
             Assert.Equal<string>(ApplicationBaseUrl + "StoreManager", response.RequestMessage.RequestUri.AbsoluteUri);
             Assert.Contains(albumName, responseContent);
             Console.WriteLine("Successfully created an album with name '{0}' in the store", albumName);
+            return albumName;
+        }
+
+        private string FetchAlbumIdFromName(string albumName)
+        {
+            Console.WriteLine("Fetching the album id of '{0}'", albumName);
+            var response = httpClient.GetAsync(string.Format("/StoreManager/GetAlbumIdFromName?albumName={0}", albumName)).Result;
+            var albumId = response.Content.ReadAsStringAsync().Result;
+            Console.WriteLine("Album id for album '{0}' is '{1}'", albumName, albumId);
+            return albumId;
+        }
+
+        private void VerifyAlbumDetails(string albumId, string albumName)
+        {
+            Console.WriteLine("Getting details of album with Id '{0}'", albumId);
+            var response = httpClient.GetAsync(string.Format("/StoreManager/Details?id={0}", albumId)).Result;
+            var responseContent = response.Content.ReadAsStringAsync().Result;
+            Assert.Contains(albumName, responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("http://myapp/testurl", responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("<a href=\"/StoreManager/Edit/463\">Edit</a>", responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("<a href=\"/StoreManager\">Back to List</a>", responseContent, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
