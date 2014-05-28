@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.AspNet.Identity.Entity;
 using Microsoft.Data.Entity;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.OptionsModel;
 
 namespace MusicStore.Models
 {

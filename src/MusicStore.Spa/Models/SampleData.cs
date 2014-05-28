@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Identity;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.SqlServer;
-using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.DependencyInjection;
 
 namespace MusicStore.Models

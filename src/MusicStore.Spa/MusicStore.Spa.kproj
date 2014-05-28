@@ -3499,7 +3499,6 @@
     <Content Include="node_modules\grunt\node_modules\minimatch\test\caching.js" />
     <Content Include="node_modules\grunt\node_modules\minimatch\test\defaults.js" />
     <Content Include="node_modules\grunt\node_modules\minimatch\test\extglob-ending-with-state-char.js" />
-    <Content Include="node_modules\grunt\node_modules\nopt\.npmignore" />
     <Content Include="node_modules\grunt\node_modules\nopt\bin\nopt.js" />
     <Content Include="node_modules\grunt\node_modules\nopt\examples\my-program.js" />
     <Content Include="node_modules\grunt\node_modules\nopt\lib\nopt.js" />
