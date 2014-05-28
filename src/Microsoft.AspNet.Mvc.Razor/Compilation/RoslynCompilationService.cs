@@ -71,14 +71,16 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                     }
 
                     Assembly assembly = null;
+                    ms.Seek(0, SeekOrigin.Begin);
 
                     if (PlatformHelper.IsMono)
                     {
-                       assembly = _loader.LoadBytes(ms.ToArray(), pdbBytes: null);
+                        assembly = _loader.LoadStream(ms, pdbStream: null);
                     }
                     else
                     {
-                        assembly = _loader.LoadBytes(ms.ToArray(), pdb.ToArray());
+                        pdb.Seek(0, SeekOrigin.Begin);
+                        assembly = _loader.LoadStream(ms, pdb);
                     }
 
                     var type = assembly.GetExportedTypes()
