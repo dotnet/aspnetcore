@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Identity.Entity
         protected override void OnConfiguring(DbContextOptions builder)
         {
             // TODO: pull connection string from config
-            builder.UseSqlServer(@"Server=(localdb)\v11.0;Database=SimpleIdentity;Trusted_Connection=True;");
+            builder.UseSqlServer(@"Server=(localdb)\v11.0;Database=SimpleIdentity-5-28;Trusted_Connection=True;");
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
