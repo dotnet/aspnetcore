@@ -8,5 +8,15 @@ namespace BasicWebSite.Controllers
         {
             return View();
         }        
+
+        public IActionResult PlainView()
+        {
+            return View();
+        }
+
+        public IActionResult NoContentResult()
+        {
+            return new HttpStatusCodeResult(204);
+        }
     }
 }

@@ -69,6 +69,39 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task CanRender_SimpleViews()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.Handler;
+            var expectedContent = await _resourcesAssembly.ReadResourceAsStringAsync("BasicWebSite.Home.PlainView.html");
+
+            // Act
+            var result = await client.GetAsync("http://localhost/Home/PlainView");
+            Assert.Equal(200, result.StatusCode);
+            Assert.Equal(result.ContentType, "text/html; charset=utf-8");
+            var responseContent = await result.ReadBodyAsStringAsync();
+
+            // Assert
+            Assert.Equal(expectedContent, responseContent);
+        }
+
+        [Fact]
+        public async Task CanReturn_ResultsWithoutContent()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.Handler;
+
+            // Act
+            var result = await client.GetAsync("http://localhost/Home/NoContentResult");
+
+            // Assert
+            Assert.Equal(204, result.StatusCode);
+            Assert.Equal("", await result.ReadBodyAsStringAsync());
+        }
+
+        [Fact]
         public async Task ActionDescriptors_CreatedOncePerRequest()
         {
             // Arrange
