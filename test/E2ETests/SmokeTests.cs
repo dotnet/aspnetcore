@@ -19,6 +19,7 @@ namespace E2ETests
         //[InlineData(HostType.SelfHost, KreFlavor.DesktopClr, "http://localhost:5002/")]
         public void SmokeTestSuite(HostType hostType, KreFlavor kreFlavor, string applicationBaseUrl)
         {
+            var testStartTime = DateTime.Now;
             var musicStoreDbName = Guid.NewGuid().ToString().Replace("-", string.Empty);
             var musicStoreIdentityDbName = Guid.NewGuid().ToString().Replace("-", string.Empty);
 
@@ -39,6 +40,9 @@ namespace E2ETests
 
                 //Request to base address and check if various parts of the body are rendered
                 VerifyHomePage();
+
+                var initializationCompleteTime = DateTime.Now;
+                Console.WriteLine("[Time]: Approximate time taken for application initialization : '{0}' seconds", (initializationCompleteTime - testStartTime).TotalSeconds);
 
                 //Making a request to a protected resource should automatically redirect to login page
                 AccessStoreWithoutPermissions();
@@ -90,6 +94,10 @@ namespace E2ETests
 
                 //Logout from this user session - This should take back to the home page
                 SignOutUser("Administrator");
+
+                var testCompletionTime = DateTime.Now;
+                Console.WriteLine("[Time]: All tests completed in '{0}' seconds", (testCompletionTime - initializationCompleteTime).TotalSeconds);
+                Console.WriteLine("[Time]: Total time taken for this test variation '{0}' seconds", (testCompletionTime - testStartTime).TotalSeconds);
             }
             finally
             {
