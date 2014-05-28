@@ -23,11 +23,7 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         public async Task CanCreateUsingAddRoleManager()
         {
             var services = new ServiceCollection();
-#if NET45
-            //            services.AddEntityFramework().AddSqlServer();
-            //#else
             services.AddEntityFramework().AddInMemoryStore();
-#endif
             // TODO: this should construct a new instance of InMemoryStore
             var store = new EntityRoleStore<EntityRole>(new IdentityContext());
             services.AddIdentity<EntityUser, EntityRole>(s =>
@@ -45,11 +41,7 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         public async Task CanCreateRoleWithSingletonManager()
         {
             var services = new ServiceCollection();
-#if NET45
-//            services.AddEntityFramework().AddSqlServer())
-//#else
             services.AddEntityFramework().AddInMemoryStore();
-#endif
             services.AddTransient<DbContext, IdentityContext>();
             services.AddTransient<IRoleStore<EntityRole>, EntityRoleStore<EntityRole>>();
             //todo: services.AddSingleton<RoleManager<EntityRole>, RoleManager<EntityRole>>();
