@@ -10,9 +10,9 @@ namespace E2ETests
     {
         private const string Connection_string_Format = "Server=(localdb)\\v11.0;Database={0};Trusted_Connection=True;MultipleActiveResultSets=true";
 
-        private string ApplicationBaseUrl = null;
-        private HttpClient httpClient = null;
-        private HttpClientHandler httpClientHandler = null;
+        private string ApplicationBaseUrl;
+        private HttpClient httpClient;
+        private HttpClientHandler httpClientHandler;
 
         [Theory]
         [InlineData(HostType.Helios, KreFlavor.DesktopClr, "http://localhost:5001/")]
@@ -56,13 +56,18 @@ namespace E2ETests
                 SignOutUser(generatedUserName);
 
                 //Sign in scenarios: Invalid password - Expected an invalid user name password error.
-                SignInWithInvalidPassword(generatedUserName);
+                SignInWithInvalidPassword(generatedUserName, "InvalidPassword~1");
 
                 //Sign in scenarios: Valid user name & password.
                 SignInWithUser(generatedUserName, "Password~1");
 
                 //Change password scenario
                 ChangePassword(generatedUserName);
+
+                //SignIn with old password and verify old password is not allowed and new password is allowed
+                SignOutUser(generatedUserName);
+                SignInWithInvalidPassword(generatedUserName, "Password~1");
+                SignInWithUser(generatedUserName, "Password~2");
 
                 //Making a request to a protected resource that this user does not have access to - should automatically redirect to login page again
                 AccessStoreWithoutPermissions(generatedUserName);
@@ -228,7 +233,7 @@ namespace E2ETests
             Console.WriteLine("Successfully signed out of '{0}''s session", userName);
         }
 
-        private void SignInWithInvalidPassword(string userName)
+        private void SignInWithInvalidPassword(string userName, string invalidPassword)
         {
             var response = httpClient.GetAsync("/Account/Login").Result;
             var responseContent = response.Content.ReadAsStringAsync().Result;
@@ -236,7 +241,7 @@ namespace E2ETests
             var formParameters = new List<KeyValuePair<string, string>>
                 {
                     new KeyValuePair<string, string>("UserName", userName),
-                    new KeyValuePair<string, string>("Password", "InvalidPassword~1"),
+                new KeyValuePair<string, string>("Password", invalidPassword),
                     new KeyValuePair<string, string>("__RequestVerificationToken", HtmlDOMHelper.RetrieveAntiForgeryToken(responseContent, "/Account/Login")),
                 };
 
