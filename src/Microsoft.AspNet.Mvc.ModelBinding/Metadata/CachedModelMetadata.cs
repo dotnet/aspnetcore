@@ -20,12 +20,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private string _description;
         private bool _isReadOnly;
         private bool _isComplexType;
+        private bool _isRequired;
 
         private bool _convertEmptyStringToNullComputed;
         private bool _nullDisplayTextComputed;
         private bool _descriptionComputed;
         private bool _isReadOnlyComputed;
         private bool _isComplexTypeComputed;
+        private bool _isRequiredComputed;
 
         // Constructor for creating real instances of the metadata class based on a prototype
         protected CachedModelMetadata(CachedModelMetadata<TPrototypeCache> prototype, Func<object> modelAccessor)
@@ -125,6 +127,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
+        public sealed override bool IsRequired
+        {
+            get
+            {
+                if (!_isRequiredComputed)
+                {
+                    _isRequired = ComputeIsRequired();
+                    _isRequiredComputed = true;
+                }
+                return _isRequired;
+            }
+            set
+            {
+                _isRequired = value;
+                _isRequiredComputed = true;
+            }
+        }
+
         public sealed override bool IsComplexType
         {
             get
@@ -158,6 +178,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         protected virtual bool ComputeIsReadOnly()
         {
             return base.IsReadOnly;
+        }
+
+        protected virtual bool ComputeIsRequired()
+        {
+            return base.IsRequired;
         }
 
         protected virtual bool ComputeIsComplexType()

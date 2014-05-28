@@ -92,6 +92,49 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.False(new ModelMetadata(provider.Object, null, null, typeof(int), null).IsNullableValueType);
         }
 
+        // IsRequired
+
+        [Theory]
+        [InlineData(typeof(string))]        
+        [InlineData(typeof(IDisposable))]
+        [InlineData(typeof(Nullable<int>))]
+        public void IsRequired_ReturnsFalse_ForNullableTypes(Type modelType)
+        {
+            // Arrange
+            var provider = new Mock<IModelMetadataProvider>();
+            var metadata = new ModelMetadata(provider.Object, 
+                                             containerType: null, 
+                                             modelAccessor: null, 
+                                             modelType: modelType, 
+                                             propertyName: null);
+
+            // Act
+            var isRequired = metadata.IsRequired;
+            
+            // Assert
+            Assert.False(isRequired); 
+        }
+
+        [Theory]
+        [InlineData(typeof(int))]
+        [InlineData(typeof(DayOfWeek))]
+        public void IsRequired_ReturnsTrue_ForNonNullableTypes(Type modelType)
+        {
+            // Arrange
+            var provider = new Mock<IModelMetadataProvider>();
+            var metadata = new ModelMetadata(provider.Object,
+                                             containerType: null,
+                                             modelAccessor: null,
+                                             modelType: modelType,
+                                             propertyName: null);
+
+            // Act
+            var isRequired = metadata.IsRequired;
+
+            // Assert
+            Assert.True(isRequired);
+        }
+
         // Properties
 
         [Fact]

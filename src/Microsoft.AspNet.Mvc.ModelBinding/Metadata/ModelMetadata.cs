@@ -38,6 +38,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             _modelAccessor = modelAccessor;
             _modelType = modelType;
             _propertyName = propertyName;
+            IsRequired = !modelType.AllowsNullValue();
         }
 
         public Type ContainerType
@@ -70,6 +71,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         public virtual bool IsReadOnly { get; set; }
+
+        public virtual bool IsRequired { get; set; }
 
         public virtual int Order
         {

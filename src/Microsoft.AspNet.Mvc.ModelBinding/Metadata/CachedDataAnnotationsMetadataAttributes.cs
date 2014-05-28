@@ -15,6 +15,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Display = attributes.OfType<DisplayAttribute>().FirstOrDefault();
             DisplayFormat = attributes.OfType<DisplayFormatAttribute>().FirstOrDefault();
             Editable = attributes.OfType<EditableAttribute>().FirstOrDefault();
+            Required = attributes.OfType<RequiredAttribute>().FirstOrDefault();
         }
 
         public DisplayAttribute Display { get; protected set; }
@@ -22,5 +23,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public DisplayFormatAttribute DisplayFormat { get; protected set; }
 
         public EditableAttribute Editable { get; protected set; }
+
+        public RequiredAttribute Required { get; protected set; }
     }
 }

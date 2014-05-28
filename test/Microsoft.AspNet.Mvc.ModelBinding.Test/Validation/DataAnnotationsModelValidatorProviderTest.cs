@@ -16,6 +16,41 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     {
         private readonly DataAnnotationsModelMetadataProvider _metadataProvider = new DataAnnotationsModelMetadataProvider();
 
+        [Fact]
+        public void GetValidators_ReturnsValidatorForIValidatableObject()
+        {
+            // Arrange
+            var provider = new DataAnnotationsModelValidatorProvider();
+            var mockValidatable = Mock.Of<IValidatableObject>();
+            var metadata = _metadataProvider.GetMetadataForType(() => null, mockValidatable.GetType());
+
+            // Act
+            var validators = provider.GetValidators(metadata);
+
+            // Assert
+            var validator = Assert.Single(validators);
+            Assert.IsType<ValidatableObjectAdapter>(validator);
+
+        }
+
+        [Fact]
+        public void GetValidators_DoesNotAddRequiredAttribute_ForNonNullableValueTypes_IfAttributeIsSpecifiedExplicitly()
+        {
+            // Arrange
+            var provider = new DataAnnotationsModelValidatorProvider();
+            var metadata = _metadataProvider.GetMetadataForProperty(() => null,
+                                                                    typeof(DummyRequiredAttributeHelperClass),
+                                                                    "WithAttribute");
+
+            // Act
+            var validators = provider.GetValidators(metadata);
+
+            // Assert
+            var validator = Assert.Single(validators);
+            var adapter = Assert.IsType<RequiredAttributeAdapter>(validator);
+            Assert.Equal("Custom Required Message", adapter.Attribute.ErrorMessage);
+        }
+
         public static IEnumerable<object[]> DataAnnotationAdapters
         {
             get
@@ -197,6 +232,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 get { return base.MyProperty; }
                 set { base.MyProperty = value; }
             }
+        }
+
+        private class DummyRequiredAttributeHelperClass
+        {
+            [Required(ErrorMessage = "Custom Required Message")]
+            public int WithAttribute { get; set; }
+
+            public int WithoutAttribute { get; set; }
         }
     }
 }

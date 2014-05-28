@@ -58,6 +58,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return base.ComputeIsReadOnly();
         }
 
+        protected override bool ComputeIsRequired()
+        {
+            return (PrototypeCache.Required != null) || base.ComputeIsRequired();
+        }
+
         public override string GetDisplayName()
         {
             // DisplayAttribute doesn't require you to set a name, so this could be null. 
