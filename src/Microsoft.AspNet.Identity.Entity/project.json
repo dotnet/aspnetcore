@@ -11,7 +11,7 @@
     "System.Security.Claims" : "0.1-alpha-*"
   },
   "configurations": {
-    "net45": {
+    "net451": {
       "dependencies": {
         "System.Collections": "",
         "System.Data": "",

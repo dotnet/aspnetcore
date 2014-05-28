@@ -27,7 +27,7 @@
   },
   "code": "**\\*.cs;..\\Shared\\*.cs",
   "configurations": {
-    "net45": {
+    "net451": {
       "dependencies": {
         "Moq" : "4.2.1312.1622",
         "System.Collections": "",
