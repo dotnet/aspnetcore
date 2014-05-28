@@ -32,6 +32,7 @@ namespace Microsoft.AspNet.Identity.Entity.Test
 
             builder.UseServices(services =>
             {
+                services.Add(OptionsServices.GetDefaultServices());
                 services.AddEntityFramework().AddSqlServer();
                 services.AddIdentityEntityFramework<ApplicationDbContext, ApplicationUser>();
             });

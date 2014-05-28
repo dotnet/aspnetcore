@@ -38,8 +38,9 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         [Fact]
         public void CanCustomizeIdentityOptions()
         {
-            IBuilder builder = new Microsoft.AspNet.Builder.Builder(new ServiceCollection().BuildServiceProvider());
+            IBuilder builder = new Builder.Builder(new ServiceCollection().BuildServiceProvider());
             builder.UseServices(services => {
+                services.Add(OptionsServices.GetDefaultServices());
                 services.AddIdentity<IdentityUser>(identityServices => { });
                 services.AddSetup<PasswordsNegativeLengthSetup>();
             });
@@ -61,8 +62,11 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         [Fact]
         public void CanSetupIdentityOptions()
         {
-            IBuilder app = new Microsoft.AspNet.Builder.Builder(new ServiceCollection().BuildServiceProvider());
-            app.UseServices(services => services.AddIdentity<IdentityUser>(identityServices => identityServices.SetupOptions(options => options.User.RequireUniqueEmail = true)));
+            IBuilder app = new Builder.Builder(new ServiceCollection().BuildServiceProvider());
+            app.UseServices(services => {
+                services.Add(OptionsServices.GetDefaultServices());
+                services.AddIdentity<IdentityUser>(identityServices => identityServices.SetupOptions(options => options.User.RequireUniqueEmail = true));
+            });
 
             var optionsGetter = app.ApplicationServices.GetService<IOptionsAccessor<IdentityOptions>>();
             Assert.NotNull(optionsGetter);
@@ -74,14 +78,11 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         [Fact]
         public async Task EnsureStartupUsageWorks()
         {
-            IBuilder builder = new Microsoft.AspNet.Builder.Builder(new ServiceCollection().BuildServiceProvider());
-
-            //builder.UseServices(services => services.AddIdentity<ApplicationUser>(s =>
-            //    s.AddEntity<ApplicationDbContext>()
-            //{
+            IBuilder builder = new Builder.Builder(new ServiceCollection().BuildServiceProvider());
 
             builder.UseServices(services =>
             {
+                services.Add(OptionsServices.GetDefaultServices());
                 services.AddEntityFramework();
                 services.AddTransient<DbContext, IdentityContext>();
                 services.AddIdentity<ApplicationUser, EntityRole>(s =>

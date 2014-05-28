@@ -5,14 +5,12 @@ using System;
 using System.Threading;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Security;
-using Microsoft.AspNet.Identity.InMemory;
 using Microsoft.AspNet.Identity.Test;
-using Microsoft.AspNet.PipelineCore;
-using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Security.Cookies;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.OptionsModel;
 using Moq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -43,6 +41,7 @@ namespace Microsoft.AspNet.Identity.Security.Test
             contextAccessor.Setup(a => a.Value).Returns(context.Object);
             app.UseServices(services =>
             {
+                services.Add(OptionsServices.GetDefaultServices());
                 services.AddInstance(contextAccessor.Object);
                 services.AddInstance<ILoggerFactory>(new NullLoggerFactory());
                 services.AddIdentity<ApplicationUser, IdentityRole>(s =>

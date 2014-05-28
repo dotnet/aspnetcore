@@ -28,11 +28,7 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         public async Task CanUseAddedManagerInstance()
         {
             var services = new ServiceCollection();
-#if NET45
-            //            services.AddEntityFramework().AddSqlServer();
-            //#else
             services.AddEntityFramework().AddInMemoryStore();
-#endif
             services.AddSingleton<IOptionsAccessor<IdentityOptions>, OptionsAccessor<IdentityOptions>>();
             services.AddInstance<DbContext>(new IdentityContext());
             services.AddTransient<IUserStore<EntityUser>, InMemoryInMemoryUserStore>();
@@ -47,13 +43,11 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         public async Task CanCreateUsingAddUserManager()
         {
             var services = new ServiceCollection();
-#if NET45
-            //            services.AddEntityFramework().AddSqlServer();
-            //#else
             services.AddEntityFramework().AddInMemoryStore();
-#endif
+
             // TODO: this needs to construct a new instance of InMemoryStore
             var store = new InMemoryInMemoryUserStore(new IdentityContext());
+            services.Add(OptionsServices.GetDefaultServices());
             services.AddIdentity<EntityUser, EntityRole>(s =>
             {
                 s.AddUserStore(() => store);

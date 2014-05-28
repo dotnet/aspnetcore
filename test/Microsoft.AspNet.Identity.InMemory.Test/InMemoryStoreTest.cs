@@ -13,6 +13,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         protected override UserManager<IdentityUser> CreateManager()
         {
             var services = new ServiceCollection();
+            services.Add(OptionsServices.GetDefaultServices());
             services.AddTransient<IUserValidator<IdentityUser>, UserValidator<IdentityUser>>();
             services.AddTransient<IPasswordValidator<IdentityUser>, PasswordValidator<IdentityUser>>();
             var options = new IdentityOptions
