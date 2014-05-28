@@ -21,6 +21,27 @@ namespace Microsoft.AspNet.Mvc
 
         private readonly JsonResult _result = new JsonResult(new { message = "Hello, world!" });
 
+        private struct SampleStruct
+        {
+            public int x;
+        }
+
+        public static IEnumerable<object[]> CreateActionResultData
+        {
+            get
+            {
+                yield return new object[] { new { x1 = 10, y1 = "Hello" } };
+                yield return new object[] { 5 };
+                yield return new object[] { "sample input" };
+
+                SampleStruct test;
+                test.x = 10;
+                yield return new object[] { test };
+
+                yield return new object[] { new Task(() => Console.WriteLine("Test task")) };
+            }
+        }
+
         [Fact]
         public async Task InvokeAction_DoesNotInvokeExceptionFilter_WhenActionDoesNotThrow()
         {
@@ -1190,6 +1211,57 @@ namespace Microsoft.AspNet.Mvc
             resultFilter2.Verify(f => f.OnResultExecuting(It.IsAny<ResultExecutingContext>()), Times.Once());
         }
 
+        [Fact]
+        public void CreateActionResult_ReturnsSameActionResult()
+        {
+            // Arrange
+            var mockActionResult = new Mock<IActionResult>();
+
+            // Assert
+            var result = ReflectedActionInvoker.CreateActionResult(
+                mockActionResult.Object.GetType(), mockActionResult.Object);
+
+            // Act
+            Assert.Same(mockActionResult.Object, result);
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public void CreateActionResult_NullActionResultReturnValueThrows()
+        {
+            // Arrange, Act & Assert
+            ExceptionAssert.Throws<InvalidOperationException>(
+                () => ReflectedActionInvoker.CreateActionResult(typeof(IActionResult), null),
+                "Cannot return null from an action method with a return type of '"
+                    + typeof(IActionResult)
+                    + "'.");
+        }
+
+        [Theory]
+        [InlineData(typeof(void), typeof(NoContentResult))]
+        [InlineData(typeof(string), typeof(ObjectContentResult))]
+        public void CreateActionResult_Types_ReturnsAppropriateResults(Type type, Type returnType)
+        {
+            // Arrange & Act
+            var result = ReflectedActionInvoker.CreateActionResult(type, null).GetType();
+
+            // Assert
+            Assert.Equal(returnType, result);
+        }
+
+        [Theory]
+        [MemberData("CreateActionResultData")]
+        public void CreateActionResult_ReturnsObjectContentResult(object input)
+        {
+            // Arrange & Act
+            var actualResult = ReflectedActionInvoker.CreateActionResult(input.GetType(), input)
+                as ObjectContentResult;
+            
+            // Assert
+            Assert.NotNull(actualResult);
+            Assert.Equal(input, actualResult.Value);
+        }
+
         private ReflectedActionInvoker CreateInvoker(IFilter filter, bool actionThrows = false)
         {
             return CreateInvoker(new[] { filter }, actionThrows);
@@ -1223,11 +1295,6 @@ namespace Microsoft.AspNet.Mvc
                 routeValues: null,
                 actionDescriptor: actionDescriptor);
 
-            var actionResultFactory = new Mock<IActionResultFactory>(MockBehavior.Strict);
-            actionResultFactory
-                .Setup(arf => arf.CreateActionResult(It.IsAny<Type>(), It.IsAny<object>(), It.IsAny<ActionContext>()))
-                .Returns<Type, object, ActionContext>((t, o, ac) => (IActionResult)o);
-
             var controllerFactory = new Mock<IControllerFactory>(MockBehavior.Strict);
             controllerFactory.Setup(c => c.CreateController(It.IsAny<ActionContext>())).Returns(this);
 
@@ -1245,7 +1312,6 @@ namespace Microsoft.AspNet.Mvc
             var invoker = new ReflectedActionInvoker(
                 actionContext,
                 actionDescriptor,
-                actionResultFactory.Object,
                 controllerFactory.Object,
                 actionBindingContextProvider.Object,
                 filterProvider.Object);

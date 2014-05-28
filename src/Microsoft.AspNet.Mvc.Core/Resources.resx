@@ -303,4 +303,7 @@
   <data name="UnobtrusiveJavascript_ValidationTypeMustBeUnique" xml:space="preserve">
     <value>Validation type names in unobtrusive client validation rules must be unique. The following validation type was seen more than once: {0}</value>
   </data>
+  <data name="ActionResult_ActionReturnValueCannotBeNull" xml:space="preserve">
+    <value>Cannot return null from an action method with a return type of '{0}'.</value>
+  </data>
 </root>

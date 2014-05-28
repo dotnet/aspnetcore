@@ -8,19 +8,16 @@ namespace Microsoft.AspNet.Mvc
 {
     public class ReflectedActionInvokerProvider : IActionInvokerProvider
     {
-        private readonly IActionResultFactory _actionResultFactory;
         private readonly IServiceProvider _serviceProvider;
         private readonly IControllerFactory _controllerFactory;
         private readonly IActionBindingContextProvider _bindingProvider;
         private readonly INestedProviderManager<FilterProviderContext> _filterProvider;
 
-        public ReflectedActionInvokerProvider(IActionResultFactory actionResultFactory,
-                                              IControllerFactory controllerFactory,
+        public ReflectedActionInvokerProvider(IControllerFactory controllerFactory,
                                               IActionBindingContextProvider bindingProvider,
                                               INestedProviderManager<FilterProviderContext> filterProvider,
                                               IServiceProvider serviceProvider)
         {
-            _actionResultFactory = actionResultFactory;
             _controllerFactory = controllerFactory;
             _bindingProvider = bindingProvider;
             _filterProvider = filterProvider;
@@ -41,7 +38,6 @@ namespace Microsoft.AspNet.Mvc
                 context.Result = new ReflectedActionInvoker(
                                     context.ActionContext,
                                     actionDescriptor,
-                                    _actionResultFactory,
                                     _controllerFactory,
                                     _bindingProvider,
                                     _filterProvider);

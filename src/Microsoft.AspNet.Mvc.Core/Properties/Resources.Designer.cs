@@ -1002,6 +1002,22 @@ namespace Microsoft.AspNet.Mvc.Core
             return string.Format(CultureInfo.CurrentCulture, GetString("UnobtrusiveJavascript_ValidationTypeMustBeUnique"), p0);
         }
 
+        /// </summary>
+        /// Cannot return null from an action method with a return type of '{0}'.
+        /// </summary>
+        internal static string ActionResult_ActionReturnValueCannotBeNull
+        {
+            get { return GetString("ActionResult_ActionReturnValueCannotBeNull"); }
+        }
+
+        /// <summary>
+        /// Cannot return null from an action method with a return type of '{0}'.
+        /// </summary>
+        internal static string FormatActionResult_ActionReturnValueCannotBeNull(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ActionResult_ActionReturnValueCannotBeNull"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
