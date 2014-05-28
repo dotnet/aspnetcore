@@ -21,7 +21,6 @@
     <Content Include="project.json" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IdentityResultAssert.cs" />
     <Compile Include="InMemoryStoreTest.cs" />
     <Compile Include="StartupTest.cs" />
   </ItemGroup>

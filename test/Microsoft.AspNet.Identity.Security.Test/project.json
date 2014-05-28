@@ -14,6 +14,7 @@
     "Microsoft.AspNet.Testing" : "0.1-alpha-*",
     "Microsoft.Framework.ConfigurationModel": "0.1-alpha-*",
     "Microsoft.Framework.DependencyInjection" : "0.1-alpha-*",
+    "Microsoft.Framework.OptionsModel" : "0.1-alpha-*",
     "Microsoft.Framework.Logging" : "0.1-alpha-*",
     "System.Security.Claims" : "0.1-alpha-*",
     "xunit.abstractions": "2.0.0-aspnet-*",

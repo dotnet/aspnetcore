@@ -15,6 +15,7 @@
     "Microsoft.Data.Entity.SqlServer": "0.1-alpha-*",
     "Microsoft.Framework.ConfigurationModel": "0.1-alpha-*",
     "Microsoft.Framework.DependencyInjection": "0.1-alpha-*",
+    "Microsoft.Framework.OptionsModel" : "0.1-alpha-*",
     "Microsoft.Framework.Logging": "0.1-alpha-*",
     "Remotion.Linq": "1.15.13.0",
     "System.Security.Claims": "0.1-alpha-*",

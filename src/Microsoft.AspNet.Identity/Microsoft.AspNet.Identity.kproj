@@ -56,7 +56,6 @@
     <Compile Include="IUserTwoFactorStore.cs" />
     <Compile Include="IUserValidator.cs" />
     <Compile Include="LockoutOptions.cs" />
-    <Compile Include="LockoutPolicy.cs" />
     <Compile Include="PasswordHasher.cs" />
     <Compile Include="PasswordOptions.cs" />
     <Compile Include="PasswordValidator.cs" />

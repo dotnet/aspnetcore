@@ -7,6 +7,7 @@ using System.Security.Claims;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
+using Microsoft.Framework.OptionsModel;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.Test
@@ -69,11 +70,8 @@ namespace Microsoft.AspNet.Identity.Test
             var config = new Configuration { new MemoryConfigurationSource(dic) };
             Assert.Equal(roleClaimType, config.Get("identity:claimtype:role"));
 
-            var setup = new IdentityOptionsSetup(config);
-            var services = new ServiceCollection();
-            services.AddInstance<IConfiguration>(config);
-            services.AddTransient<IOptionsSetup<IdentityOptions>, IdentityOptionsSetup>();
-            services.AddTransient<IOptionsAccessor<IdentityOptions>, OptionsAccessor<IdentityOptions>>();
+            var services = new ServiceCollection {OptionsServices.GetDefaultServices()};
+            services.AddIdentity(config.GetSubKey("identity"));
             var accessor = services.BuildServiceProvider().GetService<IOptionsAccessor<IdentityOptions>>();
             Assert.NotNull(accessor);
             var options = accessor.Options;

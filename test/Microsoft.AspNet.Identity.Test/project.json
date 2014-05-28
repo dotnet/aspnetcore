@@ -5,6 +5,7 @@
     "Microsoft.AspNet.Testing" : "0.1-alpha-*",
     "Microsoft.Framework.ConfigurationModel" : "0.1-alpha-*",
     "Microsoft.Framework.DependencyInjection" : "0.1-alpha-*",
+    "Microsoft.Framework.OptionsModel" : "0.1-alpha-*",
     "xunit.abstractions": "2.0.0-aspnet-*",
     "xunit.assert": "2.0.0-aspnet-*",
     "xunit.core": "2.0.0-aspnet-*",

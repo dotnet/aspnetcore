@@ -21,11 +21,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EntityRole.cs" />
+    <Compile Include="EntityRoleStore.cs" />
     <Compile Include="EntityUser.cs" />
     <Compile Include="IdentityBuilderExtensions.cs" />
     <Compile Include="IdentityContext.cs" />
+    <Compile Include="IdentityEntityServiceCollectionExtensions.cs" />
+    <Compile Include="IdentitySqlContext.cs" />
+    <Compile Include="InMemoryUserStore.cs" />
     <Compile Include="RoleStore.cs" />
-    <Compile Include="UserStore.cs" />
+    <Compile Include="SqlUserStore.cs" />
+    <Compile Include="User.cs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
