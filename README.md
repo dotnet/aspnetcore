@@ -23,7 +23,7 @@ The first thing we need to do is setup the tools required to build and run an ap
 * Clone the repository
 * On the command line execute ```kvmsetup.cmd``` 
 * This command will setup your environment, getting it ready to install a version of the runtime. It adds kvm to your path and puts it in your user profile.
-* Execute ```kvm install 0.1-alpha-build-0421```. This command will download the named version of the KRE and put it on your user profile ready to use. You can get the latest version by running ```kvm upgrade``` but 0421 was the last version explicitly tested. see the [KVM page](https://github.com/aspnet/Home/wiki/version-manager) for more information on KVM.
+* Execute ```kvm install 0.1-alpha-build-0446```. This command will download the named version of the KRE and put it on your user profile ready to use. You can get the latest version by running ```kvm upgrade``` but 0446 was the last version explicitly tested. see the [KVM page](https://github.com/aspnet/Home/wiki/version-manager) for more information on KVM.
 * Navigate to samples\ConsoleApp
 * Run ```kpm restore```. This downloads the System.Console package so the app can do Console.WriteLine
 * Run ```K run```
@@ -37,7 +37,7 @@ The first thing we need to do is setup the tools required to build and run an ap
 git clone https://github.com/aspnet/Home.git
 cd Home
 kvmsetup
-kvm install 0.1-alpha-build-0421 -p
+kvm install 0.1-alpha-build-0446 -p
 
 cd samples\ConsoleApp
 kpm restore
@@ -86,7 +86,7 @@ If you can do all of the above then everything should be working. You can try ou
 
 By default when running the applications you are running against Desktop CLR (4.5), you can change that using the KVM command.
 
-1. Run ```kvm install 0.1-alpha-build-0421 -svrc50``` This command gets the latest Core CLR version of the k runtime and sets it as your default. The -svrc50 switch tells it to use Core CLR, you can use -svr50 to target desktop again.
+1. Run ```kvm install 0.1-alpha-build-0446 -svrc50``` This command gets the latest Core CLR version of the k runtime and sets it as your default. The -svrc50 switch tells it to use Core CLR, you can use -svr50 to target desktop again.
 2. Run ```K web```
 3. The first line of your output should say "Loaded Module: klr.core45.dll" instead of "Loaded Module: klr.net45.dll"
 4. The HelloWeb app should work the same as when running on Desktop CLR.
