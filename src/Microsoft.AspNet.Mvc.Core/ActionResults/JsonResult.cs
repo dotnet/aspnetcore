@@ -4,18 +4,19 @@
 using System;
 using System.IO;
 using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.Mvc
 {
     public class JsonResult : ActionResult
     {
+        private const int BufferSize = 1024;
+        private static readonly Encoding UTF8EncodingWithoutBOM 
+            = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
         private readonly object _returnValue;
 
         private JsonSerializerSettings _jsonSerializerSettings;
-        private Encoding _encoding = Encoding.UTF8;
+        private Encoding _encoding = UTF8EncodingWithoutBOM;
 
         public JsonResult(object returnValue)
         {
@@ -64,16 +65,15 @@ namespace Microsoft.AspNet.Mvc
 
         public override void ExecuteResult([NotNull] ActionContext context)
         {
-            HttpResponse response = context.HttpContext.Response;
-
-            Stream writeStream = response.Body;
+            var response = context.HttpContext.Response;
+            var writeStream = response.Body;
 
             if (response.ContentType == null)
             {
                 response.ContentType = "application/json";
             }
 
-            using (var writer = new StreamWriter(writeStream, Encoding, 1024, leaveOpen: true))
+            using (var writer = new StreamWriter(writeStream, Encoding, BufferSize, leaveOpen: true))
             {
                 var formatter = new JsonOutputFormatter(SerializerSettings, Indent);
                 formatter.WriteObject(writer, _returnValue);
