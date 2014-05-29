@@ -1,8 +1,32 @@
-## Filing issues
+## How to contribute
 
-The GitHub issue list is for bugs, not discussions. If you have a question or want to start a discussion you have several options:
-- Post a question on [StackOverflow](http://stackoverflow.com/questions/tagged/asp.net-vnext)
-- Start a discussion in our [ASP.NET vNext forum](http://forums.asp.net/1255.aspx/1?ASP+NET+vNext) or [JabbR chat room](https://jabbr.net/#/rooms/aspnetvnext)
+One of the easiest ways to contribute is to participate in discussions and discuss issues.
+
+## General feedback and discussions?
+
+Please start a discussion on the [Home repo issue tracker](https://github.com/aspnet/Home/issues).
+
+## Bugs and feature requests?
+Please log a new issue in the appropriate GitHub repo. Here are some of the most common repos:
+
+* [DependencyInjection](https://github.com/aspnet/DependencyInjection)
+* [EntityFramework](https://github.com/aspnet/EntityFramework)
+* [Identity](https://github.com/aspnet/Identity)
+* [KRuntime](https://github.com/aspnet/KRuntime)
+* [MVC](https://github.com/aspnet/Mvc)
+* [SignalR-Server](https://github.com/aspnet/SignalR-Server)
+
+The full repo list is [here](https://github.com/aspnet).
+
+## Other discussions
+Our team members also monitor several other discussion forums:
+
+* [ASP.NET vNext forum](http://forums.asp.net/1255.aspx/1?ASP+NET+vNext)
+* [StackOverflow](http://stackoverflow.com/questions/tagged/asp.net-vnext) with the `asp.net-vnext` tag
+* [JabbR chat room](https://jabbr.net/#/rooms/aspnetvnext) for real-time discussions with the community and the people who work on the project
+
+
+## Filing issues
 
 When filing issues, please use our [bug filing templates](https://github.com/aspnet/Home/wiki/Functional-bug-template).
 The best way to get your bug fixed is to be as detailed as you can be about the problem.
