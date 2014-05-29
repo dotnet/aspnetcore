@@ -103,4 +103,4 @@ Currently the BCL is split into some fairly fine grained packages, which was one
 
 #Feedback
 
-You can log issues in this repo in order to start discussions, ask questions, make suggestions, etc.
+Check out the [contributing](https://github.com/aspnet/Home/blob/master/CONTRIBUTING.md) page to see the best places to log issues and start discussions.
