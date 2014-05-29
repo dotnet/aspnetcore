@@ -52,8 +52,8 @@ namespace Microsoft.AspNet.Mvc
             if (descriptor.MethodInfo == null)
             {
                 throw new ArgumentException(
-                    Resources.FormatPropertyOfTypeCannotBeNull(typeof(ReflectedActionDescriptor),
-                                                               "MethodInfo"),
+                    Resources.FormatPropertyOfTypeCannotBeNull("MethodInfo",
+                                                               typeof(ReflectedActionDescriptor)),
                     "descriptor");
             }
         }
