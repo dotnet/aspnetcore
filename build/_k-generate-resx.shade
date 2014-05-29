@@ -107,7 +107,7 @@ functions @{
     {
         builder.Append("        /// <summary>")
                .AppendLine();
-        foreach (var line in resourceString.Value.Split(new[] { Environment.NewLine }, StringSplitOptions.None))
+        foreach (var line in resourceString.Value.Split(new[] { '\n' }, StringSplitOptions.None))
         {
             builder.AppendFormat("        /// {0}", new XText(line))
                    .AppendLine();
