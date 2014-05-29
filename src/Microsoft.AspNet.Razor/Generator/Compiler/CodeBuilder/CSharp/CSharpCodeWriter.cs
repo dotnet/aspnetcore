@@ -18,42 +18,42 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
         public LineMappingManager LineMappingManager { get; private set; }
 
-        public CSharpCodeWriter Write(string data)
+        public new CSharpCodeWriter Write(string data)
         {
             return (CSharpCodeWriter)base.Write(data);
         }
 
-        public CSharpCodeWriter Indent(int size)
+        public new CSharpCodeWriter Indent(int size)
         {
             return (CSharpCodeWriter)base.Indent(size);
         }
 
-        public CSharpCodeWriter ResetIndent()
+        public new CSharpCodeWriter ResetIndent()
         {
             return (CSharpCodeWriter)base.ResetIndent();
         }
-        
-        public CSharpCodeWriter SetIndent(int size)
+
+        public new CSharpCodeWriter SetIndent(int size)
         {
             return (CSharpCodeWriter)base.SetIndent(size);
         }
 
-        public CSharpCodeWriter IncreaseIndent(int size)
+        public new CSharpCodeWriter IncreaseIndent(int size)
         {
             return (CSharpCodeWriter)base.IncreaseIndent(size);
         }
 
-        public CSharpCodeWriter DecreaseIndent(int size)
+        public new CSharpCodeWriter DecreaseIndent(int size)
         {
             return (CSharpCodeWriter)base.DecreaseIndent(size);
         }
 
-        public CSharpCodeWriter WriteLine(string data)
+        public new CSharpCodeWriter WriteLine(string data)
         {
             return (CSharpCodeWriter)base.WriteLine(data);
         }
 
-        public CSharpCodeWriter WriteLine()
+        public new CSharpCodeWriter WriteLine()
         {
             return (CSharpCodeWriter)base.WriteLine();
         }
