@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing.Constraints;
 using Microsoft.AspNet.Testing;
+using Microsoft.Framework.DependencyInjection;
 using Moq;
 using Xunit;
 
@@ -391,11 +392,10 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         public void RegisteringRouteWithInvalidConstraints_Throws()
         {
             // Arrange
-            var collection = new RouteCollection();
-            collection.DefaultHandler = new Mock<IRouter>().Object;
+            var routeBuilder = CreateRouteBuilder();
 
             // Assert
-            ExceptionAssert.Throws<InvalidOperationException>(() => collection.MapRoute("mockName", 
+            ExceptionAssert.Throws<InvalidOperationException>(() => routeBuilder.MapRoute("mockName", 
                 "{controller}/{action}",
                 defaults: null,
                 constraints: new { controller = "a.*", action = new Object() }),
@@ -408,17 +408,16 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         public void RegisteringRouteWithTwoConstraints()
         {
             // Arrange
-            var collection = new RouteCollection();
-            collection.DefaultHandler = new Mock<IRouter>().Object;
+            var routeBuilder = CreateRouteBuilder();
 
             var mockConstraint = new Mock<IRouteConstraint>().Object;
 
-            collection.MapRoute("mockName",
+            routeBuilder.MapRoute("mockName",
                 "{controller}/{action}",
                 defaults: null,
                 constraints: new { controller = "a.*", action = mockConstraint });
 
-            var constraints = ((TemplateRoute)collection[0]).Constraints;
+            var constraints = ((TemplateRoute)routeBuilder.Routes[0]).Constraints;
 
             // Assert
             Assert.Equal(2, constraints.Count);
@@ -430,18 +429,16 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         public void RegisteringRouteWithOneInlineConstraintAndOneUsingConstraintArgument()
         {
             // Arrange
-            var collection = new RouteCollection();
-            collection.DefaultHandler = new Mock<IRouter>().Object;
-            collection.InlineConstraintResolver = new DefaultInlineConstraintResolver();
+            var routeBuilder = CreateRouteBuilder();
 
-            collection.MapRoute("mockName",
+            // Act
+            routeBuilder.MapRoute("mockName",
                 "{controller}/{action}/{id:int}",
                 defaults: null,
                 constraints: new { id = "1*" });
 
-            var constraints = ((TemplateRoute)collection[0]).Constraints;
-
             // Assert
+            var constraints = ((TemplateRoute)routeBuilder.Routes[0]).Constraints;
             Assert.Equal(1, constraints.Count);
             var constraint = (CompositeRouteConstraint)constraints["id"];
             Assert.IsType<CompositeRouteConstraint>(constraint);
@@ -453,18 +450,16 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         public void RegisteringRoute_WithOneInlineConstraint_AddsItToConstraintCollection()
         {
             // Arrange
-            var collection = new RouteCollection();
-            collection.DefaultHandler = new Mock<IRouter>().Object;
-            collection.InlineConstraintResolver = new DefaultInlineConstraintResolver();
+            var routeBuilder = CreateRouteBuilder();
 
-            collection.MapRoute("mockName",
+            // Act
+            routeBuilder.MapRoute("mockName",
                 "{controller}/{action}/{id:int}",
                 defaults: null,
                 constraints: null);
 
-            var constraints = ((TemplateRoute)collection[0]).Constraints;
-
             // Assert
+            var constraints = ((TemplateRoute)routeBuilder.Routes[0]).Constraints;
             Assert.Equal(1, constraints.Count);
             Assert.IsType<IntRouteConstraint>(constraints["id"]);
         }
@@ -473,13 +468,12 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         public void RegisteringRouteWithRouteName_WithNullDefaults_AddsTheRoute()
         {
             // Arrange
-            var collection = new RouteCollection();
-            collection.DefaultHandler = new Mock<IRouter>().Object;
+            var routeBuilder = CreateRouteBuilder();
 
-            collection.MapRoute(name: "RouteName", template: "{controller}/{action}", defaults: null);
+            routeBuilder.MapRoute(name: "RouteName", template: "{controller}/{action}", defaults: null);
 
             // Act
-            var name = ((TemplateRoute)collection[0]).Name;
+            var name = ((TemplateRoute)routeBuilder.Routes[0]).Name;
 
             // Assert
             Assert.Equal("RouteName", name);
@@ -489,22 +483,35 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         public void RegisteringRouteWithRouteName_WithNullDefaultsAndConstraints_AddsTheRoute()
         {
             // Arrange
-            var collection = new RouteCollection();
-            collection.DefaultHandler = new Mock<IRouter>().Object;
+            var routeBuilder = CreateRouteBuilder();
 
-            collection.MapRoute(name: "RouteName",
+            routeBuilder.MapRoute(name: "RouteName",
                                 template: "{controller}/{action}",
                                 defaults: null,
                                 constraints: null);
 
             // Act
-            var name = ((TemplateRoute)collection[0]).Name;
+            var name = ((TemplateRoute)routeBuilder.Routes[0]).Name;
 
             // Assert
             Assert.Equal("RouteName", name);
         }
 
         #endregion
+
+        private static IRouteBuilder CreateRouteBuilder()
+        {
+            var routeBuilder = new RouteBuilder();
+
+            routeBuilder.DefaultHandler = new Mock<IRouter>().Object;
+
+            var serviceProviderMock = new Mock<IServiceProvider>();
+            serviceProviderMock.Setup(o => o.GetService(typeof(IInlineConstraintResolver)))
+                               .Returns(new DefaultInlineConstraintResolver());
+            routeBuilder.ServiceProvider = serviceProviderMock.Object;
+
+            return routeBuilder;
+        }
 
         private static TemplateRoute CreateRoute(string template, bool accept = true)
         {

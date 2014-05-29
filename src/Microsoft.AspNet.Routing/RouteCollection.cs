@@ -24,10 +24,6 @@ namespace Microsoft.AspNet.Routing
             get { return _routes.Count; }
         }
 
-        public IRouter DefaultHandler { get; set; }
-
-        public IInlineConstraintResolver InlineConstraintResolver { get; set; }
-
         public void Add([NotNull] IRouter router)
         {
             var namedRouter = router as INamedRouter;

@@ -1,7 +1,8 @@
 {
   "version": "0.1-alpha-*",
   "dependencies": {
-    "Microsoft.AspNet.Http": "0.1-alpha-*"
+    "Microsoft.AspNet.Http": "0.1-alpha-*",
+    "Microsoft.Framework.DependencyInjection" : "0.1-alpha-*"
   },
   "configurations": {
     "net45": {},

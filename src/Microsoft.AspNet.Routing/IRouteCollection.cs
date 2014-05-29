@@ -5,10 +5,6 @@ namespace Microsoft.AspNet.Routing
 {
     public interface IRouteCollection : IRouter
     {
-        IRouter DefaultHandler { get; set; }
-
-        IInlineConstraintResolver InlineConstraintResolver { get; set; }
-
         void Add(IRouter router);
     }
 }
