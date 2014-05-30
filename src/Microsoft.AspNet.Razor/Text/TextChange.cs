@@ -28,19 +28,19 @@ namespace Microsoft.AspNet.Razor.Text
         {
             if (oldPosition < 0)
             {
-                throw new ArgumentOutOfRangeException("oldPosition", CommonResources.Argument_Must_Be_GreaterThanOrEqualTo(0));
+                throw new ArgumentOutOfRangeException("oldPosition", CommonResources.FormatArgument_Must_Be_GreaterThanOrEqualTo(0));
             }
             if (newPosition < 0)
             {
-                throw new ArgumentOutOfRangeException("newPosition", CommonResources.Argument_Must_Be_GreaterThanOrEqualTo(0));
+                throw new ArgumentOutOfRangeException("newPosition", CommonResources.FormatArgument_Must_Be_GreaterThanOrEqualTo(0));
             }
             if (oldLength < 0)
             {
-                throw new ArgumentOutOfRangeException("oldLength", CommonResources.Argument_Must_Be_GreaterThanOrEqualTo(0));
+                throw new ArgumentOutOfRangeException("oldLength", CommonResources.FormatArgument_Must_Be_GreaterThanOrEqualTo(0));
             }
             if (newLength < 0)
             {
-                throw new ArgumentOutOfRangeException("newLength", CommonResources.Argument_Must_Be_GreaterThanOrEqualTo(0));
+                throw new ArgumentOutOfRangeException("newLength", CommonResources.FormatArgument_Must_Be_GreaterThanOrEqualTo(0));
             }
             if (oldBuffer == null)
             {

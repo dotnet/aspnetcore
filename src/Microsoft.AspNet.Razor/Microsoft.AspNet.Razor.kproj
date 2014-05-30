@@ -1,0 +1,203 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+  </PropertyGroup>
+  <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.Props" Condition="'$(VSToolsPath)' != ''" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>eda30434-c567-44dc-b8b6-2566a7f77163</ProjectGuid>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(OutputType) == 'Console'">
+    <DebuggerFlavor>ConsoleDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(OutputType) == 'Web'">
+    <DebuggerFlavor>WebDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'" Label="Configuration">
+  </PropertyGroup>
+  <PropertyGroup>
+    <SchemaVersion>2.0</SchemaVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Common\HashCodeCombiner.cs" />
+    <Compile Include="CSharpRazorCodeLanguage.cs" />
+    <Compile Include="DocumentParseCompleteEventArgs.cs" />
+    <Compile Include="Editor\AutoCompleteEditHandler.cs" />
+    <Compile Include="Editor\BackgroundParser.cs" />
+    <Compile Include="Editor\EditorHints.cs" />
+    <Compile Include="Editor\EditResult.cs" />
+    <Compile Include="Editor\ImplicitExpressionEditHandler.cs" />
+    <Compile Include="Editor\RazorEditorTrace.cs" />
+    <Compile Include="Editor\SingleLineMarkupEditHandler.cs" />
+    <Compile Include="Editor\SpanEditHandler.cs" />
+    <Compile Include="GeneratorResults.cs" />
+    <Compile Include="Generator\AddImportCodeGenerator.cs" />
+    <Compile Include="Generator\AttributeBlockCodeGenerator.cs" />
+    <Compile Include="Generator\BlockCodeGenerator.cs" />
+    <Compile Include="Generator\CodeGeneratorContext.cs" />
+    <Compile Include="Generator\Compiler\CodeBuilder\ChunkVisitor.cs" />
+    <Compile Include="Generator\Compiler\CodeBuilder\CodeBuilder.cs" />
+    <Compile Include="Generator\Compiler\CodeBuilder\CodeBuilderResult.cs" />
+    <Compile Include="Generator\Compiler\CodeBuilder\CodeVisitor.cs" />
+    <Compile Include="Generator\Compiler\CodeBuilder\CodeWriter.cs" />
+    <Compile Include="Generator\Compiler\CodeBuilder\CSharp\CSharpCodeBuilder.cs" />
+    <Compile Include="Generator\Compiler\CodeBuilder\CSharp\CSharpCodeWriter.cs" />
+    <Compile Include="Generator\Compiler\CodeBuilder\CSharp\CSharpCodeWritingScope.cs" />
+    <Compile Include="Generator\Compiler\CodeBuilder\CSharp\CSharpDisableWarningScope.cs" />
+    <Compile Include="Generator\Compiler\CodeBuilder\CSharp\CSharpLineMappingWriter.cs" />
+    <Compile Include="Generator\Compiler\CodeBuilder\CSharp\CSharpPaddingBuilder.cs" />
+    <Compile Include="Generator\Compiler\CodeBuilder\CSharp\Visitors\CSharpBaseTypeVisitor.cs" />
+    <Compile Include="Generator\Compiler\CodeBuilder\CSharp\Visitors\CSharpClassAttributeVisitor.cs" />
+    <Compile Include="Generator\Compiler\CodeBuilder\CSharp\Visitors\CSharpCodeVisitor.cs" />
+    <Compile Include="Generator\Compiler\CodeBuilder\CSharp\Visitors\CSharpDesignTimeHelpersVisitor.cs" />
+    <Compile Include="Generator\Compiler\CodeBuilder\CSharp\Visitors\CSharpHelperVisitor.cs" />
+    <Compile Include="Generator\Compiler\CodeBuilder\CSharp\Visitors\CSharpTypeMemberVisitor.cs" />
+    <Compile Include="Generator\Compiler\CodeBuilder\CSharp\Visitors\CSharpUsingVisitor.cs" />
+    <Compile Include="Generator\Compiler\CodeBuilder\IChunkVisitor.cs" />
+    <Compile Include="Generator\Compiler\CodeTree\Chunks\Chunk.cs" />
+    <Compile Include="Generator\Compiler\CodeTree\Chunks\ChunkBlock.cs" />
+    <Compile Include="Generator\Compiler\CodeTree\Chunks\CodeAttributeChunk.cs" />
+    <Compile Include="Generator\Compiler\CodeTree\Chunks\DynamicCodeAttributeChunk.cs" />
+    <Compile Include="Generator\Compiler\CodeTree\Chunks\ExpressionBlockChunk.cs" />
+    <Compile Include="Generator\Compiler\CodeTree\Chunks\ExpressionChunk.cs" />
+    <Compile Include="Generator\Compiler\CodeTree\Chunks\HelperChunk.cs" />
+    <Compile Include="Generator\Compiler\CodeTree\Chunks\LiteralChunk.cs" />
+    <Compile Include="Generator\Compiler\CodeTree\Chunks\LiteralCodeAttributeChunk.cs" />
+    <Compile Include="Generator\Compiler\CodeTree\Chunks\ResolveUrlChunk.cs" />
+    <Compile Include="Generator\Compiler\CodeTree\Chunks\SectionChunk.cs" />
+    <Compile Include="Generator\Compiler\CodeTree\Chunks\SessionStateChunk.cs" />
+    <Compile Include="Generator\Compiler\CodeTree\Chunks\SetBaseTypeChunk.cs" />
+    <Compile Include="Generator\Compiler\CodeTree\Chunks\SetLayoutChunk.cs" />
+    <Compile Include="Generator\Compiler\CodeTree\Chunks\StatementChunk.cs" />
+    <Compile Include="Generator\Compiler\CodeTree\Chunks\TemplateChunk.cs" />
+    <Compile Include="Generator\Compiler\CodeTree\Chunks\TypeMemberChunk.cs" />
+    <Compile Include="Generator\Compiler\CodeTree\Chunks\UsingChunk.cs" />
+    <Compile Include="Generator\Compiler\CodeTree\CodeTree.cs" />
+    <Compile Include="Generator\Compiler\CodeTree\CodeTreeBuilder.cs" />
+    <Compile Include="Generator\Compiler\LineMappings\LineMapping.cs" />
+    <Compile Include="Generator\Compiler\LineMappings\LineMappingManager.cs" />
+    <Compile Include="Generator\Compiler\LineMappings\MappingLocation.cs" />
+    <Compile Include="Generator\CSharpRazorCodeGenerator.cs" />
+    <Compile Include="Generator\DynamicAttributeBlockCodeGenerator.cs" />
+    <Compile Include="Generator\ExpressionCodeGenerator.cs" />
+    <Compile Include="Generator\ExpressionRenderingMode.cs" />
+    <Compile Include="Generator\GeneratedClassContext.cs" />
+    <Compile Include="Generator\HelperCodeGenerator.cs" />
+    <Compile Include="Generator\HybridCodeGenerator.cs" />
+    <Compile Include="Generator\IBlockCodeGenerator.cs" />
+    <Compile Include="Generator\ISpanCodeGenerator.cs" />
+    <Compile Include="Generator\LiteralAttributeCodeGenerator.cs" />
+    <Compile Include="Generator\MarkupCodeGenerator.cs" />
+    <Compile Include="Generator\RazorCodeGenerator.cs" />
+    <Compile Include="Generator\RazorCommentCodeGenerator.cs" />
+    <Compile Include="Generator\RazorDirectiveAttributeCodeGenerator.cs" />
+    <Compile Include="Generator\ResolveUrlCodeGenerator.cs" />
+    <Compile Include="Generator\SectionCodeGenerator.cs" />
+    <Compile Include="Generator\SetBaseTypeCodeGenerator.cs" />
+    <Compile Include="Generator\SetLayoutCodeGenerator.cs" />
+    <Compile Include="Generator\SpanCodeGenerator.cs" />
+    <Compile Include="Generator\StatementCodeGenerator.cs" />
+    <Compile Include="Generator\TemplateBlockCodeGenerator.cs" />
+    <Compile Include="Generator\TypeMemberCodeGenerator.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="ParserResults.cs" />
+    <Compile Include="Parser\BalancingModes.cs" />
+    <Compile Include="Parser\CallbackVisitor.cs" />
+    <Compile Include="Parser\ConditionalAttributeCollapser.cs" />
+    <Compile Include="Parser\CSharpCodeParser.cs" />
+    <Compile Include="Parser\CSharpCodeParser.Directives.cs" />
+    <Compile Include="Parser\CSharpCodeParser.Expressions.cs" />
+    <Compile Include="Parser\CSharpCodeParser.Statements.cs" />
+    <Compile Include="Parser\CSharpLanguageCharacteristics.cs" />
+    <Compile Include="Parser\HtmlLanguageCharacteristics.cs" />
+    <Compile Include="Parser\HtmlMarkupParser.Block.cs" />
+    <Compile Include="Parser\HtmlMarkupParser.cs" />
+    <Compile Include="Parser\HtmlMarkupParser.Document.cs" />
+    <Compile Include="Parser\HtmlMarkupParser.Section.cs" />
+    <Compile Include="Parser\ISyntaxTreeRewriter.cs" />
+    <Compile Include="Parser\LanguageCharacteristics.cs" />
+    <Compile Include="Parser\MarkupCollapser.cs" />
+    <Compile Include="Parser\MarkupRewriter.cs" />
+    <Compile Include="Parser\ParserBase.cs" />
+    <Compile Include="Parser\ParserContext.cs" />
+    <Compile Include="Parser\ParserHelpers.cs" />
+    <Compile Include="Parser\ParserVisitor.cs" />
+    <Compile Include="Parser\ParserVisitorExtensions.cs" />
+    <Compile Include="Parser\RazorParser.cs" />
+    <Compile Include="Parser\SyntaxConstants.cs" />
+    <Compile Include="Parser\SyntaxTree\AcceptedCharacters.cs" />
+    <Compile Include="Parser\SyntaxTree\Block.cs" />
+    <Compile Include="Parser\SyntaxTree\BlockBuilder.cs" />
+    <Compile Include="Parser\SyntaxTree\BlockType.cs" />
+    <Compile Include="Parser\SyntaxTree\EquivalenceComparer.cs" />
+    <Compile Include="Parser\SyntaxTree\RazorError.cs" />
+    <Compile Include="Parser\SyntaxTree\Span.cs" />
+    <Compile Include="Parser\SyntaxTree\SpanBuilder.cs" />
+    <Compile Include="Parser\SyntaxTree\SpanKind.cs" />
+    <Compile Include="Parser\SyntaxTree\SyntaxTreeNode.cs" />
+    <Compile Include="Parser\TextReaderExtensions.cs" />
+    <Compile Include="Parser\TokenizerBackedParser.cs" />
+    <Compile Include="Parser\TokenizerBackedParser.Helpers.cs" />
+    <Compile Include="Parser\WhitespaceRewriter.cs" />
+    <Compile Include="PartialParseResult.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\CommonResources.Designer.cs" />
+    <Compile Include="Properties\RazorResources.Designer.cs" />
+    <Compile Include="RazorCodeLanguage.cs" />
+    <Compile Include="RazorDebugHelpers.cs" />
+    <Compile Include="RazorDirectiveAttribute.cs" />
+    <Compile Include="RazorEditorParser.cs" />
+    <Compile Include="RazorEngineHost.cs" />
+    <Compile Include="RazorTemplateEngine.cs" />
+    <Compile Include="StateMachine.cs" />
+    <Compile Include="Text\BufferingTextReader.cs" />
+    <Compile Include="Text\ITextBuffer.cs" />
+    <Compile Include="Text\LineTrackingStringBuffer.cs" />
+    <Compile Include="Text\LocationTagged.cs" />
+    <Compile Include="Text\LookaheadTextReader.cs" />
+    <Compile Include="Text\LookaheadToken.cs" />
+    <Compile Include="Text\SeekableTextReader.cs" />
+    <Compile Include="Text\SourceLocation.cs" />
+    <Compile Include="Text\SourceLocationTracker.cs" />
+    <Compile Include="Text\SourceSpan.cs" />
+    <Compile Include="Text\TextBufferReader.cs" />
+    <Compile Include="Text\TextChange.cs" />
+    <Compile Include="Text\TextChangeType.cs" />
+    <Compile Include="Text\TextDocumentReader.cs" />
+    <Compile Include="Text\TextExtensions.cs" />
+    <Compile Include="Tokenizer\CSharpHelpers.cs" />
+    <Compile Include="Tokenizer\CSharpKeywordDetector.cs" />
+    <Compile Include="Tokenizer\CSharpTokenizer.cs" />
+    <Compile Include="Tokenizer\HtmlTokenizer.cs" />
+    <Compile Include="Tokenizer\ITokenizer.cs" />
+    <Compile Include="Tokenizer\Symbols\CSharpKeyword.cs" />
+    <Compile Include="Tokenizer\Symbols\CSharpSymbol.cs" />
+    <Compile Include="Tokenizer\Symbols\CSharpSymbolType.cs" />
+    <Compile Include="Tokenizer\Symbols\HtmlSymbol.cs" />
+    <Compile Include="Tokenizer\Symbols\HtmlSymbolType.cs" />
+    <Compile Include="Tokenizer\Symbols\ISymbol.cs" />
+    <Compile Include="Tokenizer\Symbols\KnownSymbolType.cs" />
+    <Compile Include="Tokenizer\Symbols\SymbolBase.cs" />
+    <Compile Include="Tokenizer\Symbols\SymbolExtensions.cs" />
+    <Compile Include="Tokenizer\Symbols\SymbolTypeSuppressions.cs" />
+    <Compile Include="Tokenizer\Tokenizer.cs" />
+    <Compile Include="Tokenizer\TokenizerView.cs" />
+    <Compile Include="Tokenizer\XmlHelpers.cs" />
+    <Compile Include="Utils\CharUtils.cs" />
+    <Compile Include="Utils\DisposableAction.cs" />
+    <Compile Include="Utils\EnumeratorExtensions.cs" />
+    <Compile Include="Utils\EnumUtil.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="CommonResources.resx" />
+    <Content Include="project.json" />
+    <Content Include="RazorResources.resx" />
+  </ItemGroup>
+  <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
+</Project>

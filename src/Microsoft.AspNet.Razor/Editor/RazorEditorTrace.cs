@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Razor.Editor
 #if NET45
                     // No Trace in CoreCLR
 
-                    Trace.WriteLine(RazorResources.Trace_Startup(
+                    Trace.WriteLine(RazorResources.FormatTrace_Startup(
                         enabled ? RazorResources.Trace_Enabled : RazorResources.Trace_Disabled));
 #endif
                     _enabled = enabled;
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Razor.Editor
 #if NET45
                 // No Trace in CoreCLR
 
-                Trace.WriteLine(RazorResources.Trace_Format(
+                Trace.WriteLine(RazorResources.FormatTrace_Format(
                     String.Format(CultureInfo.CurrentCulture, format, args)));
 #endif
             }

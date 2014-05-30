@@ -1,19 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+# Visual Studio 14
+VisualStudioVersion = 14.0.21722.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3C0D6505-79B3-49D0-B4C3-176F0F1836ED}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{92463391-81BE-462B-AC3C-78C6C760741F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Razor.Test", "test\Microsoft.AspNet.Razor.Test\Microsoft.AspNet.Razor.Test.csproj", "{0BB62A1D-E6B5-49FA-9E3C-6AF679A66DFE}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Razor", "src\Microsoft.AspNet.Razor\Microsoft.AspNet.Razor.kproj", "{EDA30434-C567-44DC-B8B6-2566A7F77163}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.TestCommon", "test\Microsoft.TestCommon\Microsoft.TestCommon.csproj", "{FCCC4CB7-BAF7-4A57-9F89-E5766FE536C0}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Razor.net45", "src\Microsoft.AspNet.Razor\Microsoft.AspNet.Razor.net45.csproj", "{8B129FF9-0B8F-4E0C-8DFC-0137D8550FB7}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Razor.k10", "src\Microsoft.AspNet.Razor\Microsoft.AspNet.Razor.k10.csproj", "{F5A44105-08E2-4602-8231-DAFDDC9A146E}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Razor.Test", "test\Microsoft.AspNet.Razor.Test\Microsoft.AspNet.Razor.Test.kproj", "{87C7338B-0C06-4C7B-BE75-A2368AE26797}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,30 +17,20 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{0BB62A1D-E6B5-49FA-9E3C-6AF679A66DFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0BB62A1D-E6B5-49FA-9E3C-6AF679A66DFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0BB62A1D-E6B5-49FA-9E3C-6AF679A66DFE}.Release|Any CPU.ActiveCfg = Debug|Any CPU
-		{0BB62A1D-E6B5-49FA-9E3C-6AF679A66DFE}.Release|Any CPU.Build.0 = Debug|Any CPU
-		{FCCC4CB7-BAF7-4A57-9F89-E5766FE536C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FCCC4CB7-BAF7-4A57-9F89-E5766FE536C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FCCC4CB7-BAF7-4A57-9F89-E5766FE536C0}.Release|Any CPU.ActiveCfg = Debug|Any CPU
-		{FCCC4CB7-BAF7-4A57-9F89-E5766FE536C0}.Release|Any CPU.Build.0 = Debug|Any CPU
-		{8B129FF9-0B8F-4E0C-8DFC-0137D8550FB7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8B129FF9-0B8F-4E0C-8DFC-0137D8550FB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8B129FF9-0B8F-4E0C-8DFC-0137D8550FB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8B129FF9-0B8F-4E0C-8DFC-0137D8550FB7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F5A44105-08E2-4602-8231-DAFDDC9A146E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F5A44105-08E2-4602-8231-DAFDDC9A146E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F5A44105-08E2-4602-8231-DAFDDC9A146E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F5A44105-08E2-4602-8231-DAFDDC9A146E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EDA30434-C567-44DC-B8B6-2566A7F77163}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EDA30434-C567-44DC-B8B6-2566A7F77163}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EDA30434-C567-44DC-B8B6-2566A7F77163}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EDA30434-C567-44DC-B8B6-2566A7F77163}.Release|Any CPU.Build.0 = Release|Any CPU
+		{87C7338B-0C06-4C7B-BE75-A2368AE26797}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87C7338B-0C06-4C7B-BE75-A2368AE26797}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87C7338B-0C06-4C7B-BE75-A2368AE26797}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87C7338B-0C06-4C7B-BE75-A2368AE26797}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{8B129FF9-0B8F-4E0C-8DFC-0137D8550FB7} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
-		{F5A44105-08E2-4602-8231-DAFDDC9A146E} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
-		{0BB62A1D-E6B5-49FA-9E3C-6AF679A66DFE} = {92463391-81BE-462B-AC3C-78C6C760741F}
-		{FCCC4CB7-BAF7-4A57-9F89-E5766FE536C0} = {92463391-81BE-462B-AC3C-78C6C760741F}
+		{EDA30434-C567-44DC-B8B6-2566A7F77163} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
+		{87C7338B-0C06-4C7B-BE75-A2368AE26797} = {92463391-81BE-462B-AC3C-78C6C760741F}
 	EndGlobalSection
 EndGlobal

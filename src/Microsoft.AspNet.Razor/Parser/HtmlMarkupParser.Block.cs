@@ -666,7 +666,7 @@ namespace Microsoft.AspNet.Razor.Parser
             bool seenClose = Optional(HtmlSymbolType.CloseAngle);
             if (!seenClose)
             {
-                Context.OnError(tag.Item2, RazorResources.ParseError_UnfinishedTag(tag.Item1.Content));
+                Context.OnError(tag.Item2, RazorResources.FormatParseError_UnfinishedTag(tag.Item1.Content));
             }
             else
             {
@@ -744,7 +744,7 @@ namespace Microsoft.AspNet.Razor.Parser
                         SkipToAndParseCode(HtmlSymbolType.CloseAngle);
                         if (!Optional(HtmlSymbolType.CloseAngle))
                         {
-                            Context.OnError(tagStart, RazorResources.ParseError_UnfinishedTag("script"));
+                            Context.OnError(tagStart, RazorResources.FormatParseError_UnfinishedTag("script"));
                         }
                         seenEndScript = true;
                     }
@@ -781,11 +781,11 @@ namespace Microsoft.AspNet.Razor.Parser
             }
             if (currentTag != null)
             {
-                Context.OnError(currentTag.Item2, RazorResources.ParseError_MissingEndTag(currentTag.Item1.Content));
+                Context.OnError(currentTag.Item2, RazorResources.FormatParseError_MissingEndTag(currentTag.Item1.Content));
             }
             else
             {
-                Context.OnError(tagStart, RazorResources.ParseError_UnexpectedEndTag(tagName));
+                Context.OnError(tagStart, RazorResources.FormatParseError_UnexpectedEndTag(tagName));
             }
             return false;
         }
@@ -800,7 +800,7 @@ namespace Microsoft.AspNet.Razor.Parser
                     tags.Pop();
                 }
                 Tuple<HtmlSymbol, SourceLocation> tag = tags.Pop();
-                Context.OnError(tag.Item2, RazorResources.ParseError_MissingEndTag(tag.Item1.Content));
+                Context.OnError(tag.Item2, RazorResources.FormatParseError_MissingEndTag(tag.Item1.Content));
             }
             else if (complete)
             {

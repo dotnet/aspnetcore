@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ActiveParser_Must_Be_Code_Or_Markup_Parser" xml:space="preserve">
-    <value>The active parser must the same as either the markup or code parser.</value>
+    <value>The active parser must be the same as either the markup or code parser.</value>
   </data>
   <data name="BlockName_Code" xml:space="preserve">
     <value>code</value>

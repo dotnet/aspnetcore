@@ -139,12 +139,12 @@ namespace Microsoft.AspNet.Razor.Parser
                 }
                 else
                 {
-                    error = RazorResources.ErrorComponent_Character(CurrentSymbol.Content);
+                    error = RazorResources.FormatErrorComponent_Character(CurrentSymbol.Content);
                 }
 
                 Context.OnError(
                     CurrentLocation,
-                    RazorResources.ParseError_Unexpected_Character_At_Helper_Name_Start(error));
+                    RazorResources.FormatParseError_Unexpected_Character_At_Helper_Name_Start(error));
                 PutCurrentBack();
                 Output(SpanKind.MetaCode);
                 return;
@@ -161,7 +161,7 @@ namespace Microsoft.AspNet.Razor.Parser
             AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true)); // Don't accept newlines.
 
             // Expecting an identifier (helper name)
-            bool errorReported = !Required(CSharpSymbolType.Identifier, errorIfNotFound: true, errorBase: RazorResources.ParseError_Unexpected_Character_At_Helper_Name_Start);
+            bool errorReported = !Required(CSharpSymbolType.Identifier, errorIfNotFound: true, errorBase: RazorResources.FormatParseError_Unexpected_Character_At_Helper_Name_Start);
             if (!errorReported)
             {
                 Assert(CSharpSymbolType.Identifier);
@@ -179,7 +179,7 @@ namespace Microsoft.AspNet.Razor.Parser
                     errorReported = true;
                     Context.OnError(
                         CurrentLocation,
-                        RazorResources.ParseError_MissingCharAfterHelperName("("));
+                        RazorResources.FormatParseError_MissingCharAfterHelperName("("));
                 }
             }
             else
@@ -218,7 +218,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 {
                     Context.OnError(
                         errorLocation,
-                        RazorResources.ParseError_MissingCharAfterHelperParameters(
+                        RazorResources.FormatParseError_MissingCharAfterHelperParameters(
                             Language.GetSample(CSharpSymbolType.LeftBrace)));
                 }
             }
@@ -292,7 +292,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
             if (nested)
             {
-                Context.OnError(CurrentLocation, RazorResources.ParseError_Sections_Cannot_Be_Nested(RazorResources.SectionExample_CS));
+                Context.OnError(CurrentLocation, RazorResources.FormatParseError_Sections_Cannot_Be_Nested(RazorResources.SectionExample_CS));
                 errorReported = true;
             }
 
@@ -302,7 +302,7 @@ namespace Microsoft.AspNet.Razor.Parser
             string sectionName = String.Empty;
             if (!Required(CSharpSymbolType.Identifier,
                           errorIfNotFound: true,
-                          errorBase: RazorResources.ParseError_Unexpected_Character_At_Section_Name_Start))
+                          errorBase: RazorResources.FormatParseError_Unexpected_Character_At_Section_Name_Start))
             {
                 if (!errorReported)
                 {
@@ -363,7 +363,7 @@ namespace Microsoft.AspNet.Razor.Parser
             {
                 editHandler.AutoCompleteString = "}";
                 Context.OnError(CurrentLocation,
-                                RazorResources.ParseError_Expected_X(
+                                RazorResources.FormatParseError_Expected_X(
                                     Language.GetSample(CSharpSymbolType.RightBrace)));
             }
             else
@@ -390,7 +390,7 @@ namespace Microsoft.AspNet.Razor.Parser
             if (!At(CSharpSymbolType.LeftBrace))
             {
                 Context.OnError(CurrentLocation,
-                                RazorResources.ParseError_Expected_X(Language.GetSample(CSharpSymbolType.LeftBrace)));
+                                RazorResources.FormatParseError_Expected_X(Language.GetSample(CSharpSymbolType.LeftBrace)));
                 CompleteBlock();
                 Output(SpanKind.MetaCode);
                 return;
@@ -415,7 +415,7 @@ namespace Microsoft.AspNet.Razor.Parser
             if (!At(CSharpSymbolType.RightBrace))
             {
                 editHandler.AutoCompleteString = "}";
-                Context.OnError(block.Start, RazorResources.ParseError_Expected_EndOfBlock_Before_EOF(block.Name, "}", "{"));
+                Context.OnError(block.Start, RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF(block.Name, "}", "{"));
                 CompleteBlock();
                 Output(SpanKind.Code);
             }

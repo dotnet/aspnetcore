@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
         protected virtual void ReservedDirective(bool topLevel)
         {
-            Context.OnError(CurrentLocation, RazorResources.ParseError_ReservedWord(CurrentSymbol.Content));
+            Context.OnError(CurrentLocation, RazorResources.FormatParseError_ReservedWord(CurrentSymbol.Content));
             AcceptAndMoveNext();
             Span.EditHandler.AcceptedCharacters = AcceptedCharacters.None;
             Span.CodeGenerator = SpanCodeGenerator.Null;
@@ -319,7 +319,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 if (!At(CSharpSymbolType.LeftBrace))
                 {
                     Context.OnError(CurrentLocation,
-                                    RazorResources.ParseError_SingleLine_ControlFlowStatements_Not_Allowed(
+                                    RazorResources.FormatParseError_SingleLine_ControlFlowStatements_Not_Allowed(
                                         Language.GetSample(CSharpSymbolType.LeftBrace),
                                         CurrentSymbol.Content));
                 }
@@ -510,7 +510,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 if (At(CSharpSymbolType.Keyword))
                 {
                     Context.OnError(CurrentLocation,
-                                    RazorResources.ParseError_Unexpected_Keyword_After_At(
+                                    RazorResources.FormatParseError_Unexpected_Keyword_After_At(
                                         CSharpLanguageCharacteristics.GetKeyword(CurrentSymbol.Keyword.Value)));
                 }
                 else if (At(CSharpSymbolType.LeftBrace))
@@ -604,7 +604,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
             if (EndOfFile)
             {
-                Context.OnError(block.Start, RazorResources.ParseError_Expected_EndOfBlock_Before_EOF(block.Name, '}', '{'));
+                Context.OnError(block.Start, RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF(block.Name, '}', '{'));
             }
             else if (acceptTerminatingBrace)
             {

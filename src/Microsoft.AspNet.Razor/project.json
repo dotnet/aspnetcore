@@ -1,9 +1,6 @@
 {
-  "version": "0.1-alpha-*",
-  "configurations": {
-    "net45": {},
-    "k10": {
-      "dependencies": {
+    "version": "0.1-alpha-*",
+    "dependencies": {
         "System.Collections": "4.0.0.0",
         "System.Diagnostics.Debug": "4.0.10.0",
         "System.Diagnostics.Tools": "4.0.0.0",
@@ -19,7 +16,9 @@
         "System.Threading": "4.0.0.0",
         "System.Threading.Tasks": "4.0.10.0",
         "System.Threading.Thread": "4.0.0.0"
-      }
+    },
+    "configurations": {
+        "net45": { },
+        "k10": { }
     }
-  }
 }

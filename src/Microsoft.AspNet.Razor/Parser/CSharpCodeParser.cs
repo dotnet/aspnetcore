@@ -264,7 +264,7 @@ namespace Microsoft.AspNet.Razor.Parser
                     }
                     else
                     {
-                        Context.OnError(CurrentLocation, RazorResources.ParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS(CurrentSymbol.Content));
+                        Context.OnError(CurrentLocation, RazorResources.FormatParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS(CurrentSymbol.Content));
                     }
                 }
                 finally
@@ -501,7 +501,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 if (!success)
                 {
                     AcceptUntil(CSharpSymbolType.LessThan);
-                    Context.OnError(block.Start, RazorResources.ParseError_Expected_EndOfBlock_Before_EOF(block.Name, ")", "("));
+                    Context.OnError(block.Start, RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF(block.Name, ")", "("));
                 }
 
                 // If necessary, put an empty-content marker symbol here

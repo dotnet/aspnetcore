@@ -131,10 +131,10 @@ namespace Microsoft.AspNet.Razor
             Stopwatch sw = new Stopwatch();
             sw.Start();
 #endif
-            RazorEditorTrace.TraceLine(RazorResources.Trace_EditorReceivedChange(Path.GetFileName(FileName), change));
+            RazorEditorTrace.TraceLine(RazorResources.FormatTrace_EditorReceivedChange(Path.GetFileName(FileName), change));
             if (change.NewBuffer == null)
             {
-                throw new ArgumentException(RazorResources.Structure_Member_CannotBeNull(
+                throw new ArgumentException(RazorResources.FormatStructure_Member_CannotBeNull(
                                                           "Buffer",
                                                           "TextChange"), "change");
             }
@@ -171,7 +171,7 @@ namespace Microsoft.AspNet.Razor
             sw.Reset();
 #endif
             RazorEditorTrace.TraceLine(
-                RazorResources.Trace_EditorProcessedChange(
+                RazorResources.FormatTrace_EditorProcessedChange(
                             Path.GetFileName(FileName), 
                             changeString, elapsedMs.HasValue ? elapsedMs.Value.ToString(CultureInfo.InvariantCulture) : "?", 
                             result.ToString()));

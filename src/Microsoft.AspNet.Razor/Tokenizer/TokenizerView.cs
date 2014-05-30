@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             {
                 // We've already passed this symbol
                 throw new InvalidOperationException(
-                    RazorResources.TokenizerView_CannotPutBack(
+                    RazorResources.FormatTokenizerView_CannotPutBack(
                         symbol.Start.AbsoluteIndex + symbol.Content.Length,
                         Source.Position));
             }

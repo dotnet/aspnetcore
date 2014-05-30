@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.Razor.Parser
             if (EndOfFile && !mode.HasFlag(BalancingModes.NoErrorOnFailure))
             {
                 Context.OnError(start,
-                                RazorResources.ParseError_Expected_CloseBracket_Before_EOF(
+                                RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF(
                                     Language.GetSample(left),
                                     Language.GetSample(right)));
             }
@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.Razor.Parser
                     if (!mode.HasFlag(BalancingModes.NoErrorOnFailure))
                     {
                         Context.OnError(start,
-                                        RazorResources.ParseError_Expected_CloseBracket_Before_EOF(
+                                        RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF(
                                             Language.GetSample(left),
                                             Language.GetSample(right)));
                     }
@@ -353,7 +353,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 }
                 else
                 {
-                    error = RazorResources.ErrorComponent_Character(CurrentSymbol.Content);
+                    error = RazorResources.FormatErrorComponent_Character(CurrentSymbol.Content);
                 }
 
                 Context.OnError(

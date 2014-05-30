@@ -191,7 +191,7 @@ namespace Microsoft.AspNet.Razor.Editor
 
             public void QueueChange(TextChange change)
             {
-                RazorEditorTrace.TraceLine(RazorResources.Trace_QueuingParse(Path.GetFileName(_fileName), change));
+                RazorEditorTrace.TraceLine(RazorResources.FormatTrace_QueuingParse(Path.GetFileName(_fileName), change));
                 EnsureOnThread();
                 lock (_stateLock)
                 {
@@ -306,7 +306,7 @@ namespace Microsoft.AspNet.Razor.Editor
 
                 try
                 {
-                    RazorEditorTrace.TraceLine(RazorResources.Trace_BackgroundThreadStart(fileNameOnly));
+                    RazorEditorTrace.TraceLine(RazorResources.FormatTrace_BackgroundThreadStart(fileNameOnly));
                     EnsureOnThread();
 
 #if K10
@@ -319,7 +319,7 @@ namespace Microsoft.AspNet.Razor.Editor
                         WorkParcel parcel = _main.GetParcel();
                         if (parcel.Changes.Any())
                         {
-                            RazorEditorTrace.TraceLine(RazorResources.Trace_ChangesArrived(fileNameOnly, parcel.Changes.Count));
+                            RazorEditorTrace.TraceLine(RazorResources.FormatTrace_ChangesArrived(fileNameOnly, parcel.Changes.Count));
                             try
                             {
                                 DocumentParseCompleteEventArgs args = null;
@@ -356,7 +356,7 @@ namespace Microsoft.AspNet.Razor.Editor
                                         sw.Reset();
 #endif
                                         RazorEditorTrace.TraceLine(
-                                            RazorResources.Trace_ParseComplete(
+                                            RazorResources.FormatTrace_ParseComplete(
                                             fileNameOnly,
                                             elapsedMs.HasValue ? elapsedMs.Value.ToString(CultureInfo.InvariantCulture) : "?"));
 
@@ -376,7 +376,7 @@ namespace Microsoft.AspNet.Razor.Editor
                                             sw.Reset();
 #endif
                                             _currentParseTree = results.Document;
-                                            RazorEditorTrace.TraceLine(RazorResources.Trace_TreesCompared(
+                                            RazorEditorTrace.TraceLine(RazorResources.FormatTrace_TreesCompared(
                                                 fileNameOnly,
                                                 elapsedMs.HasValue ? elapsedMs.Value.ToString(CultureInfo.InvariantCulture) : "?",
                                                 treeStructureChanged));
@@ -392,7 +392,7 @@ namespace Microsoft.AspNet.Razor.Editor
                                         else
                                         {
                                             // Parse completed but we were cancelled in the mean time. Add these to the discarded changes set
-                                            RazorEditorTrace.TraceLine(RazorResources.Trace_ChangesDiscarded(fileNameOnly, allChanges.Count));
+                                            RazorEditorTrace.TraceLine(RazorResources.FormatTrace_ChangesDiscarded(fileNameOnly, allChanges.Count));
                                             _previouslyDiscarded = allChanges;
                                         }
 
@@ -426,7 +426,7 @@ namespace Microsoft.AspNet.Razor.Editor
                         }
                         else
                         {
-                            RazorEditorTrace.TraceLine(RazorResources.Trace_NoChangesArrived(fileNameOnly));
+                            RazorEditorTrace.TraceLine(RazorResources.FormatTrace_NoChangesArrived(fileNameOnly));
 #if NET45
                             // No Yield in CoreCLR
 
@@ -444,7 +444,7 @@ namespace Microsoft.AspNet.Razor.Editor
                 }
                 finally
                 {
-                    RazorEditorTrace.TraceLine(RazorResources.Trace_BackgroundThreadShutdown(fileNameOnly));
+                    RazorEditorTrace.TraceLine(RazorResources.FormatTrace_BackgroundThreadShutdown(fileNameOnly));
 
                     // Clean up main thread resources
                     _main.Dispose();
