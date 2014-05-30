@@ -132,6 +132,11 @@ param(
 
     $wc = New-Object System.Net.WebClient
     $wc.Credentials = new-object System.Net.NetworkCredential("aspnetreadonly", "4d8a2d9c-7b80-4162-9978-47e918c9658c")
+
+    $proxy = [System.Net.WebRequest]::GetSystemWebProxy() 
+    $proxy.Credentials = [System.Net.CredentialCache]::DefaultCredentials
+    $wc.Proxy = $proxy
+
     [xml]$xml = $wc.DownloadString($url)
 
     $version = Select-Xml "//d:Version" -Namespace @{d='http://schemas.microsoft.com/ado/2007/08/dataservices'} $xml 
@@ -164,6 +169,11 @@ param(
 
     $wc = New-Object System.Net.WebClient
     $wc.Credentials = new-object System.Net.NetworkCredential("aspnetreadonly", "4d8a2d9c-7b80-4162-9978-47e918c9658c")
+
+    $proxy = [System.Net.WebRequest]::GetSystemWebProxy() 
+    $proxy.Credentials = [System.Net.CredentialCache]::DefaultCredentials
+    $wc.Proxy = $proxy
+
     $wc.DownloadFile($url, $kreFile)
 
     Do-Kvm-Unpack $kreFile $kreFolder
