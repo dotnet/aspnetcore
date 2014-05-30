@@ -46,33 +46,22 @@ namespace Microsoft.AspNet.Hosting
 
         public IDisposable Start(HostingContext context)
         {
-            EnsureLifetime(context);
             EnsureBuilder(context);
             EnsureServerFactory(context);
             InitalizeServerFactory(context);
             EnsureApplicationDelegate(context);
 
+            var applicationLifetime = (ApplicationLifetime)context.Services.GetService<IApplicationLifetime>();
             var pipeline = new PipelineInstance(_httpContextFactory, context.ApplicationDelegate);
             var server = context.ServerFactory.Start(context.Server, pipeline.Invoke);
            
             return new Disposable(() =>
             {
-                context.Lifetime.SignalStopping();
+                applicationLifetime.SignalStopping();
                 server.Dispose();
-                context.Lifetime.SignalStopped();
                 pipeline.Dispose();
+                applicationLifetime.SignalStopped();
             });
-        }
-
-        private void EnsureLifetime(HostingContext context)
-        {
-            if (context.Lifetime == null)
-            {
-                context.Lifetime = new ApplicationLifetime();
-            }
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance<IApplicationLifetime>(context.Lifetime);
-            context.Services = serviceCollection.BuildServiceProvider(context.Services);
         }
 
         private void EnsureBuilder(HostingContext context)

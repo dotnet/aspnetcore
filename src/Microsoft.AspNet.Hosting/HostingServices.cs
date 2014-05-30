@@ -49,6 +49,8 @@ namespace Microsoft.AspNet.Hosting
 
             yield return describer.Transient<ITypeActivator, TypeActivator>();
 
+            yield return describer.Instance<IApplicationLifetime>(new ApplicationLifetime());
+
             // TODO: We expect this to be provide by the runtime eventually.
             yield return describer.Instance<ILoggerFactory>(new NullLoggerFactory());
 

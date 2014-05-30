@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.Hosting
                 shutdownHandle.Set();
             });
 
-            Task ignored = Task.Run(() =>
+            var ignored = Task.Run(() =>
             {
                 Console.WriteLine("Started");
                 Console.ReadLine();
