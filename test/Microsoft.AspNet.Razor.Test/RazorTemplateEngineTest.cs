@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Threading;
 using System.Web.WebPages.TestUtils;
@@ -8,8 +9,8 @@ using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Text;
-using Microsoft.TestCommon;
 using Moq;
+using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test
 {
@@ -18,7 +19,7 @@ namespace Microsoft.AspNet.Razor.Test
         [Fact]
         public void ConstructorRequiresNonNullHost()
         {
-            Assert.ThrowsArgumentNull(() => new RazorTemplateEngine(null), "host");
+            Assert.Throws<ArgumentNullException>("host", () => new RazorTemplateEngine(null));
         }
 
         [Fact]

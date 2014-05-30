@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
-using Microsoft.TestCommon;
+using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Parser
 {
@@ -13,7 +14,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
         [Fact]
         public void Constructor_Requires_NonNull_SymbolConverter()
         {
-            Assert.ThrowsArgumentNull(() => new WhiteSpaceRewriter(null), "markupSpanFactory");
+            Assert.Throws<ArgumentNullException>("markupSpanFactory", () => new WhiteSpaceRewriter(null));
         }
 
         [Fact]

@@ -11,7 +11,8 @@ using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Utils;
-using Microsoft.TestCommon;
+using Microsoft.AspNet.Testing;
+using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Generator
 {
@@ -43,7 +44,6 @@ namespace Microsoft.AspNet.Razor.Test.Generator
 
             if ((tabTest & TabTest.Tabs) == TabTest.Tabs)
             {
-                // CodeDOM will inject its strings into the generated file header, so we force English.
                 using (new CultureReplacer())
                 {
                     RunTestInternal(
@@ -63,7 +63,6 @@ namespace Microsoft.AspNet.Razor.Test.Generator
 
             if ((tabTest & TabTest.NoTabs) == TabTest.NoTabs)
             {
-                // CodeDOM will inject its strings into the generated file header, so we force English.
                 using (new CultureReplacer())
                 {
                     RunTestInternal(
@@ -100,9 +99,13 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 baselineName = name;
             }
 
-            string sourceLocation = String.Format("/CodeGenerator/{1}/Source/{0}.{2}", name, LanguageName, FileExtension);
-            string source = TestFile.Create(String.Format("CodeGenerator.{1}.Source.{0}.{2}", name, LanguageName, FileExtension)).ReadAllText();
-            string expectedOutput = TestFile.Create(String.Format("CodeGenerator.{1}.Output.{0}.{2}", baselineName, LanguageName, BaselineExtension)).ReadAllText();
+            // TODO: When paths are preserved use these.
+            //string sourceLocation = string.Format("/CodeGenerator/{1}/Source/{0}.{2}", name, LanguageName, FileExtension);
+            //string source = TestFile.Create(string.Format("CodeGenerator.{1}.Source.{0}.{2}", name, LanguageName, FileExtension)).ReadAllText();
+            //string expectedOutput = TestFile.Create(string.Format("CodeGenerator.{1}.Output.{0}.{2}", baselineName, LanguageName, BaselineExtension)).ReadAllText();
+            string sourceLocation = string.Format("/CodeGenerator/{1}/Source/{0}.{2}", name, LanguageName, FileExtension);
+            string source = TestFile.Create(string.Format("{0}.{1}", name, FileExtension)).ReadAllText();
+            string expectedOutput = TestFile.Create(string.Format("{0}.{1}", baselineName, BaselineExtension)).ReadAllText();
 
             // Set up the host and engine
             RazorEngineHost host = CreateHost();

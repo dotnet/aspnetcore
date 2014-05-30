@@ -6,7 +6,7 @@ using System.IO;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
-using Microsoft.TestCommon;
+using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Parser
 {
@@ -15,13 +15,13 @@ namespace Microsoft.AspNet.Razor.Test.Parser
         [Fact]
         public void ConstructorRequiresNonNullCodeParser()
         {
-            Assert.ThrowsArgumentNull(() => new RazorParser(null, new HtmlMarkupParser()), "codeParser");
+            Assert.Throws<ArgumentNullException>("codeParser", () => new RazorParser(null, new HtmlMarkupParser()));
         }
 
         [Fact]
         public void ConstructorRequiresNonNullMarkupParser()
         {
-            Assert.ThrowsArgumentNull(() => new RazorParser(new CSharpCodeParser(), null), "markupParser");
+            Assert.Throws<ArgumentNullException>("markupParser", () => new RazorParser(new CSharpCodeParser(), null));
         }
 
         [Fact]

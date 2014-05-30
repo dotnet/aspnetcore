@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 using Microsoft.AspNet.Razor.Parser;
-using Microsoft.TestCommon;
+using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Text
 {
@@ -13,74 +13,74 @@ namespace Microsoft.AspNet.Razor.Test.Text
         [Fact]
         public void ReadUntilWithCharThrowsArgNullIfReaderNull()
         {
-            Assert.ThrowsArgumentNull(() => TextReaderExtensions.ReadUntil(null, '@'), "reader");
+            Assert.Throws<ArgumentNullException>("reader", () => TextReaderExtensions.ReadUntil(null, '@'));
         }
 
         [Fact]
         public void ReadUntilInclusiveWithCharThrowsArgNullIfReaderNull()
         {
-            Assert.ThrowsArgumentNull(() => TextReaderExtensions.ReadUntil(null, '@', inclusive: true), "reader");
+            Assert.Throws<ArgumentNullException>("reader", () => TextReaderExtensions.ReadUntil(null, '@', inclusive: true));
         }
 
         [Fact]
         public void ReadUntilWithMultipleTerminatorsThrowsArgNullIfReaderNull()
         {
-            Assert.ThrowsArgumentNull(() => TextReaderExtensions.ReadUntil(null, '/', '>'), "reader");
+            Assert.Throws<ArgumentNullException>("reader", () => TextReaderExtensions.ReadUntil(null, '/', '>'));
         }
 
         [Fact]
         public void ReadUntilInclusiveWithMultipleTerminatorsThrowsArgNullIfReaderNull()
         {
             // NOTE: Using named parameters would be difficult here, hence the inline comment
-            Assert.ThrowsArgumentNull(() => TextReaderExtensions.ReadUntil(null, /* inclusive */ true, '/', '>'), "reader");
+            Assert.Throws<ArgumentNullException>("reader", () => TextReaderExtensions.ReadUntil(null, /* inclusive */ true, '/', '>'));
         }
 
         [Fact]
         public void ReadUntilWithPredicateThrowsArgNullIfReaderNull()
         {
-            Assert.ThrowsArgumentNull(() => TextReaderExtensions.ReadUntil(null, c => true), "reader");
+            Assert.Throws<ArgumentNullException>("reader", () => TextReaderExtensions.ReadUntil(null, c => true));
         }
 
         [Fact]
         public void ReadUntilInclusiveWithPredicateThrowsArgNullIfReaderNull()
         {
-            Assert.ThrowsArgumentNull(() => TextReaderExtensions.ReadUntil(null, c => true, inclusive: true), "reader");
+            Assert.Throws<ArgumentNullException>("reader", () => TextReaderExtensions.ReadUntil(null, c => true, inclusive: true));
         }
 
         [Fact]
         public void ReadUntilWithPredicateThrowsArgExceptionIfPredicateNull()
         {
-            Assert.ThrowsArgumentNull(() => TextReaderExtensions.ReadUntil(new StringReader("Foo"), (Predicate<char>)null), "condition");
+            Assert.Throws<ArgumentNullException>("condition", () => TextReaderExtensions.ReadUntil(new StringReader("Foo"), (Predicate<char>)null));
         }
 
         [Fact]
         public void ReadUntilInclusiveWithPredicateThrowsArgExceptionIfPredicateNull()
         {
-            Assert.ThrowsArgumentNull(() => TextReaderExtensions.ReadUntil(new StringReader("Foo"), (Predicate<char>)null, inclusive: true), "condition");
+            Assert.Throws<ArgumentNullException>("condition", () => TextReaderExtensions.ReadUntil(new StringReader("Foo"), (Predicate<char>)null, inclusive: true));
         }
 
         [Fact]
         public void ReadWhileWithPredicateThrowsArgNullIfReaderNull()
         {
-            Assert.ThrowsArgumentNull(() => TextReaderExtensions.ReadWhile(null, c => true), "reader");
+            Assert.Throws<ArgumentNullException>("reader", () => TextReaderExtensions.ReadWhile(null, c => true));
         }
 
         [Fact]
         public void ReadWhileInclusiveWithPredicateThrowsArgNullIfReaderNull()
         {
-            Assert.ThrowsArgumentNull(() => TextReaderExtensions.ReadWhile(null, c => true, inclusive: true), "reader");
+            Assert.Throws<ArgumentNullException>("reader", () => TextReaderExtensions.ReadWhile(null, c => true, inclusive: true));
         }
 
         [Fact]
         public void ReadWhileWithPredicateThrowsArgNullIfPredicateNull()
         {
-            Assert.ThrowsArgumentNull(() => TextReaderExtensions.ReadWhile(new StringReader("Foo"), (Predicate<char>)null), "condition");
+            Assert.Throws<ArgumentNullException>("condition", () => TextReaderExtensions.ReadWhile(new StringReader("Foo"), (Predicate<char>)null));
         }
 
         [Fact]
         public void ReadWhileInclusiveWithPredicateThrowsArgNullIfPredicateNull()
         {
-            Assert.ThrowsArgumentNull(() => TextReaderExtensions.ReadWhile(new StringReader("Foo"), (Predicate<char>)null, inclusive: true), "condition");
+            Assert.Throws<ArgumentNullException>("condition", () => TextReaderExtensions.ReadWhile(new StringReader("Foo"), (Predicate<char>)null, inclusive: true));
         }
 
         [Fact]

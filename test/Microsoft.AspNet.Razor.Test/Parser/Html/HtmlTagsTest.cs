@@ -1,11 +1,10 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
-using Microsoft.TestCommon;
+using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Parser.Html
 {
@@ -40,7 +39,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
             ParseBlockTest("<p></> Bar",
                 new MarkupBlock(
                     Factory.Markup("<p></> ").Accepts(AcceptedCharacters.None)),
-                new RazorError(RazorResources.ParseError_MissingEndTag("p"), 0, 0, 0));
+                new RazorError(RazorResources.FormatParseError_MissingEndTag("p"), 0, 0, 0));
         }
 
         [Fact]
@@ -110,7 +109,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         }
 
         [Theory]
-        [PropertyData("VoidElementNames")]
+        [MemberData("VoidElementNames")]
         public void VoidElementFollowedByContent(string tagName)
         {
             ParseBlockTest("<" + tagName + ">foo",
@@ -120,7 +119,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         }
 
         [Theory]
-        [PropertyData("VoidElementNames")]
+        [MemberData("VoidElementNames")]
         public void VoidElementFollowedByOtherTag(string tagName)
         {
             ParseBlockTest("<" + tagName + "><other>foo",
@@ -130,7 +129,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         }
 
         [Theory]
-        [PropertyData("VoidElementNames")]
+        [MemberData("VoidElementNames")]
         public void VoidElementFollowedByCloseTag(string tagName)
         {
             ParseBlockTest("<" + tagName + "> </" + tagName + ">foo",
@@ -140,7 +139,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         }
 
         [Theory]
-        [PropertyData("VoidElementNames")]
+        [MemberData("VoidElementNames")]
         public void IncompleteVoidElementEndTag(string tagName)
         {
             ParseBlockTest("<" + tagName + "></" + tagName,

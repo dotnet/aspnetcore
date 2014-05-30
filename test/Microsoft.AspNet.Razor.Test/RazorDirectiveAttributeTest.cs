@@ -3,7 +3,7 @@
 
 using System;
 using System.Linq;
-using Microsoft.TestCommon;
+using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test
 {
@@ -13,8 +13,8 @@ namespace Microsoft.AspNet.Razor.Test
         public void ConstructorThrowsIfNameIsNullOrEmpty()
         {
             // Act and Assert
-            Assert.ThrowsArgumentNullOrEmptyString(() => new RazorDirectiveAttribute(name: null, value: "blah"), "name");
-            Assert.ThrowsArgumentNullOrEmptyString(() => new RazorDirectiveAttribute(name: "", value: "blah"), "name");
+            Assert.Throws<ArgumentException>("name", () => new RazorDirectiveAttribute(name: null, value: "blah"));
+            Assert.Throws<ArgumentException>("name", () => new RazorDirectiveAttribute(name: "", value: "blah"));
         }
 
         [Fact]

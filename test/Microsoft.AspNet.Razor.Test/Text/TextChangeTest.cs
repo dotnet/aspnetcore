@@ -4,8 +4,8 @@
 using System;
 using System.Web.WebPages.TestUtils;
 using Microsoft.AspNet.Razor.Text;
-using Microsoft.TestCommon;
 using Moq;
+using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Text
 {
@@ -14,37 +14,45 @@ namespace Microsoft.AspNet.Razor.Test.Text
         [Fact]
         public void ConstructorRequiresNonNegativeOldPosition()
         {
-            Assert.ThrowsArgumentOutOfRange(() => new TextChange(-1, 0, new Mock<ITextBuffer>().Object, 0, 0, new Mock<ITextBuffer>().Object), "oldPosition", "Value must be greater than or equal to 0.");
+            var parameterName = "oldPosition";
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(parameterName, () => new TextChange(-1, 0, new Mock<ITextBuffer>().Object, 0, 0, new Mock<ITextBuffer>().Object));
+            ExceptionHelpers.ValidateArgumentException(parameterName, "Value must be greater than or equal to 0.", exception);
         }
 
         [Fact]
         public void ConstructorRequiresNonNegativeNewPosition()
         {
-            Assert.ThrowsArgumentOutOfRange(() => new TextChange(0, 0, new Mock<ITextBuffer>().Object, -1, 0, new Mock<ITextBuffer>().Object), "newPosition", "Value must be greater than or equal to 0.");
+            var parameterName = "newPosition";
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(parameterName, () => new TextChange(0, 0, new Mock<ITextBuffer>().Object, -1, 0, new Mock<ITextBuffer>().Object));
+            ExceptionHelpers.ValidateArgumentException(parameterName, "Value must be greater than or equal to 0.", exception);
         }
 
         [Fact]
         public void ConstructorRequiresNonNegativeOldLength()
         {
-            Assert.ThrowsArgumentOutOfRange(() => new TextChange(0, -1, new Mock<ITextBuffer>().Object, 0, 0, new Mock<ITextBuffer>().Object), "oldLength", "Value must be greater than or equal to 0.");
+            var parameterName = "oldLength";
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(parameterName, () => new TextChange(0, -1, new Mock<ITextBuffer>().Object, 0, 0, new Mock<ITextBuffer>().Object));
+            ExceptionHelpers.ValidateArgumentException(parameterName, "Value must be greater than or equal to 0.", exception);
         }
 
         [Fact]
         public void ConstructorRequiresNonNegativeNewLength()
         {
-            Assert.ThrowsArgumentOutOfRange(() => new TextChange(0, 0, new Mock<ITextBuffer>().Object, 0, -1, new Mock<ITextBuffer>().Object), "newLength", "Value must be greater than or equal to 0.");
+            var parameterName = "newLength";
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(parameterName, () => new TextChange(0, 0, new Mock<ITextBuffer>().Object, 0, -1, new Mock<ITextBuffer>().Object));
+            ExceptionHelpers.ValidateArgumentException(parameterName, "Value must be greater than or equal to 0.", exception);
         }
 
         [Fact]
         public void ConstructorRequiresNonNullOldBuffer()
         {
-            Assert.ThrowsArgumentNull(() => new TextChange(0, 0, null, 0, 0, new Mock<ITextBuffer>().Object), "oldBuffer");
+            Assert.Throws<ArgumentNullException>("oldBuffer", () => new TextChange(0, 0, null, 0, 0, new Mock<ITextBuffer>().Object));
         }
 
         [Fact]
         public void ConstructorRequiresNonNullNewBuffer()
         {
-            Assert.ThrowsArgumentNull(() => new TextChange(0, 0, new Mock<ITextBuffer>().Object, 0, 0, null), "newBuffer");
+            Assert.Throws<ArgumentNullException>("newBuffer", () => new TextChange(0, 0, new Mock<ITextBuffer>().Object, 0, 0, null));
         }
 
         [Fact]

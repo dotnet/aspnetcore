@@ -8,7 +8,7 @@ using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.AspNet.Razor.Text;
-using Microsoft.TestCommon;
+using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Parser.Html
 {
@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                     Factory.Markup("<a"),
                     new MarkupBlock(new AttributeBlockCodeGenerator(name: "href", prefix: new LocationTagged<string>(" href='", 2, 0, 2), suffix: new LocationTagged<string>("'", 12, 0, 12)),
                         Factory.Markup(" href='").With(SpanCodeGenerator.Null),
-                        Factory.Markup("Foo").With(new LiteralAttributeCodeGenerator(prefix: new LocationTagged<string>(String.Empty, 9, 0, 9), value: new LocationTagged<string>("Foo", 9, 0, 9))),
+                        Factory.Markup("Foo").With(new LiteralAttributeCodeGenerator(prefix: new LocationTagged<string>(string.Empty, 9, 0, 9), value: new LocationTagged<string>("Foo", 9, 0, 9))),
                         Factory.Markup("'").With(SpanCodeGenerator.Null)),
                     Factory.Markup(" />").Accepts(AcceptedCharacters.None)));
         }
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                     Factory.Markup("<a"),
                     new MarkupBlock(new AttributeBlockCodeGenerator(name: "href", prefix: new LocationTagged<string>(" href='", 2, 0, 2), suffix: new LocationTagged<string>("'", 20, 0, 20)),
                         Factory.Markup(" href='").With(SpanCodeGenerator.Null),
-                        Factory.Markup("Foo").With(new LiteralAttributeCodeGenerator(prefix: new LocationTagged<string>(String.Empty, 9, 0, 9), value: new LocationTagged<string>("Foo", 9, 0, 9))),
+                        Factory.Markup("Foo").With(new LiteralAttributeCodeGenerator(prefix: new LocationTagged<string>(string.Empty, 9, 0, 9), value: new LocationTagged<string>("Foo", 9, 0, 9))),
                         Factory.Markup(" Bar").With(new LiteralAttributeCodeGenerator(prefix: new LocationTagged<string>(" ", 12, 0, 12), value: new LocationTagged<string>("Bar", 13, 0, 13))),
                         Factory.Markup(" Baz").With(new LiteralAttributeCodeGenerator(prefix: new LocationTagged<string>(" ", 16, 0, 16), value: new LocationTagged<string>("Baz", 17, 0, 17))),
                         Factory.Markup("'").With(SpanCodeGenerator.Null)),
@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                     Factory.Markup("<a"),
                     new MarkupBlock(new AttributeBlockCodeGenerator(name: "href", prefix: new LocationTagged<string>(" href=\"", 2, 0, 2), suffix: new LocationTagged<string>("\"", 20, 0, 20)),
                         Factory.Markup(" href=\"").With(SpanCodeGenerator.Null),
-                        Factory.Markup("Foo").With(new LiteralAttributeCodeGenerator(prefix: new LocationTagged<string>(String.Empty, 9, 0, 9), value: new LocationTagged<string>("Foo", 9, 0, 9))),
+                        Factory.Markup("Foo").With(new LiteralAttributeCodeGenerator(prefix: new LocationTagged<string>(string.Empty, 9, 0, 9), value: new LocationTagged<string>("Foo", 9, 0, 9))),
                         Factory.Markup(" Bar").With(new LiteralAttributeCodeGenerator(prefix: new LocationTagged<string>(" ", 12, 0, 12), value: new LocationTagged<string>("Bar", 13, 0, 13))),
                         Factory.Markup(" Baz").With(new LiteralAttributeCodeGenerator(prefix: new LocationTagged<string>(" ", 16, 0, 16), value: new LocationTagged<string>("Baz", 17, 0, 17))),
                         Factory.Markup("\"").With(SpanCodeGenerator.Null)),
@@ -63,9 +63,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
             ParseBlockTest("<a href=Foo Bar Baz />",
                 new MarkupBlock(
                     Factory.Markup("<a"),
-                    new MarkupBlock(new AttributeBlockCodeGenerator(name: "href", prefix: new LocationTagged<string>(" href=", 2, 0, 2), suffix: new LocationTagged<string>(String.Empty, 11, 0, 11)),
+                    new MarkupBlock(new AttributeBlockCodeGenerator(name: "href", prefix: new LocationTagged<string>(" href=", 2, 0, 2), suffix: new LocationTagged<string>(string.Empty, 11, 0, 11)),
                         Factory.Markup(" href=").With(SpanCodeGenerator.Null),
-                        Factory.Markup("Foo").With(new LiteralAttributeCodeGenerator(prefix: new LocationTagged<string>(String.Empty, 8, 0, 8), value: new LocationTagged<string>("Foo", 8, 0, 8)))),
+                        Factory.Markup("Foo").With(new LiteralAttributeCodeGenerator(prefix: new LocationTagged<string>(string.Empty, 8, 0, 8), value: new LocationTagged<string>("Foo", 8, 0, 8)))),
                     Factory.Markup(" Bar Baz />").Accepts(AcceptedCharacters.None)));
         }
 
@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                     Factory.Markup("<a"),
                     new MarkupBlock(new AttributeBlockCodeGenerator(name: "href", prefix: new LocationTagged<string>(" href='", 2, 0, 2), suffix: new LocationTagged<string>("'", 13, 0, 13)),
                         Factory.Markup(" href='").With(SpanCodeGenerator.Null),
-                        new MarkupBlock(new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(String.Empty, 9, 0, 9), 9, 0, 9),
+                        new MarkupBlock(new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(string.Empty, 9, 0, 9), 9, 0, 9),
                             new ExpressionBlock(
                                 Factory.CodeTransition(),
                                 Factory.Code("foo")
@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                     Factory.Markup("<a"),
                     new MarkupBlock(new AttributeBlockCodeGenerator(name: "href", prefix: new LocationTagged<string>(" href='", 2, 0, 2), suffix: new LocationTagged<string>("'", 22, 0, 22)),
                         Factory.Markup(" href='").With(SpanCodeGenerator.Null),
-                        new MarkupBlock(new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(String.Empty, 9, 0, 9), 9, 0, 9),
+                        new MarkupBlock(new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(string.Empty, 9, 0, 9), 9, 0, 9),
                             new ExpressionBlock(
                                 Factory.CodeTransition(),
                                 Factory.Code("foo")
@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                     Factory.Markup("<a"),
                     new MarkupBlock(new AttributeBlockCodeGenerator(name: "href", prefix: new LocationTagged<string>(" href='", 2, 0, 2), suffix: new LocationTagged<string>("'", 23, 0, 23)),
                         Factory.Markup(" href='").With(SpanCodeGenerator.Null),
-                        new MarkupBlock(new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(String.Empty, 9, 0, 9), 9, 0, 9),
+                        new MarkupBlock(new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(string.Empty, 9, 0, 9), 9, 0, 9),
                             new ExpressionBlock(
                                 Factory.CodeTransition(),
                                 Factory.Code("foo")
@@ -142,9 +142,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
             ParseBlockTest("<input value=@foo />",
                 new MarkupBlock(
                     Factory.Markup("<input"),
-                    new MarkupBlock(new AttributeBlockCodeGenerator(name: "value", prefix: new LocationTagged<string>(" value=", 6, 0, 6), suffix: new LocationTagged<string>(String.Empty, 17, 0, 17)),
+                    new MarkupBlock(new AttributeBlockCodeGenerator(name: "value", prefix: new LocationTagged<string>(" value=", 6, 0, 6), suffix: new LocationTagged<string>(string.Empty, 17, 0, 17)),
                         Factory.Markup(" value=").With(SpanCodeGenerator.Null),
-                        new MarkupBlock(new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(String.Empty, 13, 0, 13), 13, 0, 13),
+                        new MarkupBlock(new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(string.Empty, 13, 0, 13), 13, 0, 13),
                             new ExpressionBlock(
                                 Factory.CodeTransition(),
                                 Factory.Code("foo")
@@ -159,9 +159,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
             ParseDocumentTest("<input value=@foo />",
                 new MarkupBlock(
                     Factory.Markup("<input"),
-                    new MarkupBlock(new AttributeBlockCodeGenerator(name: "value", prefix: new LocationTagged<string>(" value=", 6, 0, 6), suffix: new LocationTagged<string>(String.Empty, 17, 0, 17)),
+                    new MarkupBlock(new AttributeBlockCodeGenerator(name: "value", prefix: new LocationTagged<string>(" value=", 6, 0, 6), suffix: new LocationTagged<string>(string.Empty, 17, 0, 17)),
                         Factory.Markup(" value=").With(SpanCodeGenerator.Null),
-                        new MarkupBlock(new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(String.Empty, 13, 0, 13), 13, 0, 13),
+                        new MarkupBlock(new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(string.Empty, 13, 0, 13), 13, 0, 13),
                             new ExpressionBlock(
                                 Factory.CodeTransition(),
                                 Factory.Code("foo")
@@ -188,7 +188,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                         Factory.Markup("~/Foo/Bar")
                                .WithEditorHints(EditorHints.VirtualPath)
                                .With(new LiteralAttributeCodeGenerator(
-                                   new LocationTagged<string>(String.Empty, 9, 0, 9),
+                                   new LocationTagged<string>(string.Empty, 9, 0, 9),
                                    new LocationTagged<SpanCodeGenerator>(new ResolveUrlCodeGenerator(), 9, 0, 9))),
                         Factory.Markup("'").With(SpanCodeGenerator.Null)),
                     Factory.Markup(" />")));

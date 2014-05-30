@@ -1,8 +1,10 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+
+using System;
 using Microsoft.AspNet.Razor.Utils;
-using Microsoft.TestCommon;
+using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Utils
 {
@@ -11,7 +13,7 @@ namespace Microsoft.AspNet.Razor.Test.Utils
         [Fact]
         public void ConstructorRequiresNonNullAction()
         {
-            Assert.ThrowsArgumentNull(() => new DisposableAction(null), "action");
+            Assert.Throws<ArgumentNullException>("action", () => new DisposableAction(null));
         }
 
         [Fact]

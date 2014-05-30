@@ -7,7 +7,7 @@ using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.AspNet.Razor.Text;
-using Microsoft.TestCommon;
+using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
 {
@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
                     Factory.EmptyHtml()),
                 new RazorError(
-                        RazorResources.ParseError_Unexpected_Character_At_Helper_Name_Start(RazorResources.ErrorComponent_Newline),
+                        RazorResources.FormatParseError_Unexpected_Character_At_Helper_Name_Start(RazorResources.ErrorComponent_Newline),
                     7, 0, 7));
         }
 
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         Factory.MetaCode("helper")),
                     Factory.Markup("{")),
                 new RazorError(
-                        RazorResources.ParseError_Unexpected_Character_At_Helper_Name_Start(RazorResources.ErrorComponent_Character("{")),
+                        RazorResources.FormatParseError_Unexpected_Character_At_Helper_Name_Start(RazorResources.FormatErrorComponent_Character("{")),
                     7, 0, 7));
         }
 
@@ -87,10 +87,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    .AsStatement()
                                    .AutoCompleteWith("}")))),
                 new RazorError(
-                        RazorResources.ParseError_Unexpected_Character_At_Helper_Name_Start(RazorResources.ErrorComponent_Character("(")),
+                        RazorResources.FormatParseError_Unexpected_Character_At_Helper_Name_Start(RazorResources.FormatErrorComponent_Character("(")),
                     8, 0, 8),
                 new RazorError(
-                        RazorResources.ParseError_Expected_EndOfBlock_Before_EOF("helper", "}", "{"),
+                        RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("helper", "}", "{"),
                     1, 0, 1));
         }
 
@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         Factory.MetaCode("helper ").Accepts(AcceptedCharacters.None),
                         Factory.EmptyCSharp().Hidden())),
                 new RazorError(
-                        RazorResources.ParseError_Unexpected_Character_At_Helper_Name_Start(RazorResources.ErrorComponent_EndOfFile),
+                        RazorResources.FormatParseError_Unexpected_Character_At_Helper_Name_Start(RazorResources.ErrorComponent_EndOfFile),
                     8, 0, 8));
         }
 
@@ -119,7 +119,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         Factory.CodeTransition(),
                         Factory.MetaCode("helper").Accepts(AcceptedCharacters.Any))),
                 new RazorError(
-                        RazorResources.ParseError_Unexpected_Character_At_Helper_Name_Start(RazorResources.ErrorComponent_EndOfFile),
+                        RazorResources.FormatParseError_Unexpected_Character_At_Helper_Name_Start(RazorResources.ErrorComponent_EndOfFile),
                     7, 0, 7));
         }
 
@@ -136,7 +136,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         Factory.Code("                      \r\n").Hidden()),
                     Factory.Markup(@"    ")),
                 new RazorError(
-                        RazorResources.ParseError_Unexpected_Character_At_Helper_Name_Start(RazorResources.ErrorComponent_Newline),
+                        RazorResources.FormatParseError_Unexpected_Character_At_Helper_Name_Start(RazorResources.ErrorComponent_Newline),
                     30, 0, 30));
         }
 
@@ -153,7 +153,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         Factory.Code("Foo    \r\n").Hidden()),
                     Factory.Markup("    ")),
                 new RazorError(
-                    RazorResources.ParseError_MissingCharAfterHelperName("("),
+                    RazorResources.FormatParseError_MissingCharAfterHelperName("("),
                     15, 0, 15));
         }
 
@@ -185,7 +185,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         Factory.MetaCode("helper ").Accepts(AcceptedCharacters.None),
                         Factory.Code("Foo(string foo)    \r\n").Hidden())),
                 new RazorError(
-                    RazorResources.ParseError_MissingCharAfterHelperParameters("{"),
+                    RazorResources.FormatParseError_MissingCharAfterHelperParameters("{"),
                     29, 1, 0));
         }
 
@@ -208,7 +208,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                 Factory.Markup("    <p>Foo</p>").Accepts(AcceptedCharacters.None)),
                             Factory.EmptyCSharp().AsStatement()))),
                 new RazorError(
-                        RazorResources.ParseError_Expected_EndOfBlock_Before_EOF("helper", "}", "{"),
+                        RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("helper", "}", "{"),
                     1, 0, 1));
         }
 
@@ -289,7 +289,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                 expectedErrors: new[]
                 {
                     new RazorError(
-                            RazorResources.ParseError_Expected_EndOfBlock_Before_EOF("helper", "}", "{"),
+                            RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("helper", "}", "{"),
                         new SourceLocation(1, 0, 1))
                 });
         }

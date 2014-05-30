@@ -6,7 +6,7 @@ using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
-using Microsoft.TestCommon;
+using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
 {
@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         Factory.CodeTransition(),
                         Factory.MetaCode("section\r\n"))),
                 new RazorError(
-                        RazorResources.ParseError_Unexpected_Character_At_Section_Name_Start(RazorResources.ErrorComponent_EndOfFile),
+                        RazorResources.FormatParseError_Unexpected_Character_At_Section_Name_Start(RazorResources.ErrorComponent_EndOfFile),
                     10, 1, 0));
         }
 
@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         Factory.MetaCode("section         \r\n")),
                     Factory.Markup("    ")),
                 new RazorError(
-                        RazorResources.ParseError_Unexpected_Character_At_Section_Name_Start(RazorResources.ErrorComponent_EndOfFile),
+                        RazorResources.FormatParseError_Unexpected_Character_At_Section_Name_Start(RazorResources.ErrorComponent_EndOfFile),
                     23, 1, 4));
         }
 
@@ -76,12 +76,12 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
             ParseDocumentTest("@section 9 { <p>Foo</p> }",
                 new MarkupBlock(
                     Factory.EmptyHtml(),
-                    new SectionBlock(new SectionCodeGenerator(String.Empty),
+                    new SectionBlock(new SectionCodeGenerator(string.Empty),
                         Factory.CodeTransition(),
                         Factory.MetaCode("section ")),
                     Factory.Markup("9 { <p>Foo</p> }")),
                 new RazorError(
-                        RazorResources.ParseError_Unexpected_Character_At_Section_Name_Start(RazorResources.ErrorComponent_Character("9")),
+                        RazorResources.FormatParseError_Unexpected_Character_At_Section_Name_Start(RazorResources.FormatErrorComponent_Character("9")),
                     9, 0, 9));
         }
 
@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
                     Factory.EmptyHtml()),
                 new RazorError(
-                        RazorResources.ParseError_Sections_Cannot_Be_Nested(RazorResources.SectionExample_CS),
+                        RazorResources.FormatParseError_Sections_Cannot_Be_Nested(RazorResources.SectionExample_CS),
                     23, 0, 23));
         }
 
@@ -137,7 +137,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                .AutoCompleteWith("}", atEndOfSpan: true),
                         new MarkupBlock())),
                 new RazorError(
-                    RazorResources.ParseError_Expected_X("}"),
+                    RazorResources.FormatParseError_Expected_X("}"),
                     14, 0, 14));
         }
 
@@ -152,10 +152,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         Factory.MetaCode("section foo {")
                                .AutoCompleteWith("}", atEndOfSpan: true),
                         new MarkupBlock(
-                // Need to provide the markup span as fragments, since the parser will split the {} into separate symbols.
+                            // Need to provide the markup span as fragments, since the parser will split the {} into separate symbols.
                             Factory.Markup(" <p>Foo", "{", "}", "</p>")))),
                 new RazorError(
-                    RazorResources.ParseError_Expected_X("}"),
+                    RazorResources.FormatParseError_Expected_X("}"),
                     27, 0, 27));
         }
 

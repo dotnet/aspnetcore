@@ -1,11 +1,12 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.TestCommon;
 using Moq;
+using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Parser
 {
@@ -17,14 +18,14 @@ namespace Microsoft.AspNet.Razor.Test.Parser
             ParserVisitor target = null;
             ParserResults results = new ParserResults(new BlockBuilder() { Type = BlockType.Comment }.Build(), new List<RazorError>());
 
-            Assert.ThrowsArgumentNull(() => target.Visit(results), "self");
+            Assert.Throws<ArgumentNullException>("self", () => target.Visit(results));
         }
 
         [Fact]
         public void VisitThrowsOnNullResults()
         {
             ParserVisitor target = new Mock<ParserVisitor>().Object;
-            Assert.ThrowsArgumentNull(() => target.Visit(null), "result");
+            Assert.Throws<ArgumentNullException>("result", () => target.Visit(null));
         }
 
         [Fact]

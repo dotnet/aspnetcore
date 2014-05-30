@@ -2,13 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Web.WebPages.TestUtils;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.AspNet.Razor.Text;
-using Microsoft.TestCommon;
+using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Parser.Html
 {
@@ -23,7 +22,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
             HtmlMarkupParser parser = new HtmlMarkupParser();
 
             // Act and Assert
-            Assert.Throws<InvalidOperationException>(() => parser.ParseDocument(), RazorResources.Parser_Context_Not_Set);
+            var exception = Assert.Throws<InvalidOperationException>(() => parser.ParseDocument());
+            Assert.Equal(RazorResources.Parser_Context_Not_Set, exception.Message);
         }
 
         [Fact]
@@ -33,7 +33,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
             HtmlMarkupParser parser = new HtmlMarkupParser();
 
             // Act and Assert
-            Assert.Throws<InvalidOperationException>(() => parser.ParseSection(null, true), RazorResources.Parser_Context_Not_Set);
+            var exception = Assert.Throws<InvalidOperationException>(() => parser.ParseSection(null, true));
+            Assert.Equal(RazorResources.Parser_Context_Not_Set, exception.Message);
         }
 
         [Fact]

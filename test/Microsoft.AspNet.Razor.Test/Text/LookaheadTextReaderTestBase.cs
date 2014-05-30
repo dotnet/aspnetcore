@@ -4,7 +4,7 @@
 using System;
 using System.Text;
 using Microsoft.AspNet.Razor.Text;
-using Microsoft.TestCommon;
+using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Text
 {
@@ -74,7 +74,8 @@ namespace Microsoft.AspNet.Razor.Test.Text
             LookaheadTextReader reader = CreateReader("abcdefg");
 
             // Act and Assert
-            Assert.Throws<InvalidOperationException>(() => reader.CancelBacktrack(), RazorResources.CancelBacktrack_Must_Be_Called_Within_Lookahead);
+            var exception = Assert.Throws<InvalidOperationException>(() => reader.CancelBacktrack());
+            Assert.Equal(RazorResources.CancelBacktrack_Must_Be_Called_Within_Lookahead, exception.Message);
         }
 
         protected Action<StringBuilder, LookaheadTextReader> CaptureSourceLocation(Action<SourceLocation> capture)

@@ -8,8 +8,8 @@ using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
-using Microsoft.TestCommon;
 using Moq;
+using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Parser
 {
@@ -19,35 +19,35 @@ namespace Microsoft.AspNet.Razor.Test.Parser
         public void ConstructorRequiresNonNullSource()
         {
             var codeParser = new CSharpCodeParser();
-            Assert.ThrowsArgumentNull(() => new ParserContext(null, codeParser, new HtmlMarkupParser(), codeParser), "source");
+            Assert.Throws<ArgumentNullException>("source", () => new ParserContext(null, codeParser, new HtmlMarkupParser(), codeParser));
         }
 
         [Fact]
         public void ConstructorRequiresNonNullCodeParser()
         {
             var codeParser = new CSharpCodeParser();
-            Assert.ThrowsArgumentNull(() => new ParserContext(new SeekableTextReader(TextReader.Null), null, new HtmlMarkupParser(), codeParser), "codeParser");
+            Assert.Throws<ArgumentNullException>("codeParser", () => new ParserContext(new SeekableTextReader(TextReader.Null), null, new HtmlMarkupParser(), codeParser));
         }
 
         [Fact]
         public void ConstructorRequiresNonNullMarkupParser()
         {
             var codeParser = new CSharpCodeParser();
-            Assert.ThrowsArgumentNull(() => new ParserContext(new SeekableTextReader(TextReader.Null), codeParser, null, codeParser), "markupParser");
+            Assert.Throws<ArgumentNullException>("markupParser", () => new ParserContext(new SeekableTextReader(TextReader.Null), codeParser, null, codeParser));
         }
 
         [Fact]
         public void ConstructorRequiresNonNullActiveParser()
         {
-            Assert.ThrowsArgumentNull(() => new ParserContext(new SeekableTextReader(TextReader.Null), new CSharpCodeParser(), new HtmlMarkupParser(), null), "activeParser");
+            Assert.Throws<ArgumentNullException>("activeParser", () => new ParserContext(new SeekableTextReader(TextReader.Null), new CSharpCodeParser(), new HtmlMarkupParser(), null));
         }
 
         [Fact]
         public void ConstructorThrowsIfActiveParserIsNotCodeOrMarkupParser()
         {
-            Assert.ThrowsArgument(() => new ParserContext(new SeekableTextReader(TextReader.Null), new CSharpCodeParser(), new HtmlMarkupParser(), new CSharpCodeParser()),
-                                                    "activeParser",
-                                                    RazorResources.ActiveParser_Must_Be_Code_Or_Markup_Parser);
+            var parameterName = "activeParser";
+            var exception = Assert.Throws<ArgumentException>(parameterName, () => new ParserContext(new SeekableTextReader(TextReader.Null), new CSharpCodeParser(), new HtmlMarkupParser(), new CSharpCodeParser()));
+            ExceptionHelpers.ValidateArgumentException(parameterName, RazorResources.ActiveParser_Must_Be_Code_Or_Markup_Parser, exception);
         }
 
         [Fact]

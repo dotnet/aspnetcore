@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler;
-using Microsoft.TestCommon;
 using Moq;
 using Moq.Protected;
+using Xunit;
 
 namespace Microsoft.AspNet.Razor
 {

@@ -9,7 +9,7 @@ using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
-using Microsoft.TestCommon;
+using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Parser.Html
 {
@@ -22,7 +22,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
             HtmlMarkupParser parser = new HtmlMarkupParser();
 
             // Act and Assert
-            Assert.Throws<InvalidOperationException>(() => parser.ParseBlock(), RazorResources.Parser_Context_Not_Set);
+            var exception = Assert.Throws<InvalidOperationException>(() => parser.ParseBlock());
+            Assert.Equal(RazorResources.Parser_Context_Not_Set, exception.Message);
         }
 
         [Fact]
@@ -39,7 +40,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                         new MarkupBlock(
                             Factory.Markup("<")))),
                 new RazorError(
-                    RazorResources.ParseError_Expected_EndOfBlock_Before_EOF(RazorResources.BlockName_Code, "}", "{"),
+                    RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF(RazorResources.BlockName_Code, "}", "{"),
                     1, 0, 1));
         }
 
@@ -67,8 +68,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                 designTimeParser: true,
                 expectedErrors: new[]
                 {
-                    new RazorError(RazorResources.ParseError_UnexpectedEndTag("html"), 7, 2, 0),
-                    new RazorError(RazorResources.ParseError_Expected_EndOfBlock_Before_EOF("code", "}", "{"), 1, 0, 1)
+                    new RazorError(RazorResources.FormatParseError_UnexpectedEndTag("html"), 7, 2, 0),
+                    new RazorError(RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("code", "}", "{"), 1, 0, 1)
                 });
         }
 
@@ -80,7 +81,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                 new MarkupBlock(
                     Factory.Markup("<                      \r\n   ")),
                 designTimeParser: true,
-                expectedErrors: new RazorError(RazorResources.ParseError_UnfinishedTag(String.Empty), 0, 0, 0));
+                expectedErrors: new RazorError(RazorResources.FormatParseError_UnfinishedTag(string.Empty), 0, 0, 0));
         }
 
         [Fact]
@@ -217,7 +218,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         public void ParseBlockTerminatesAtEOF()
         {
             SingleSpanBlockTest("<foo>", "<foo>", BlockType.Markup, SpanKind.Markup,
-                                new RazorError(RazorResources.ParseError_MissingEndTag("foo"), new SourceLocation(0, 0, 0)));
+                                new RazorError(RazorResources.FormatParseError_MissingEndTag("foo"), new SourceLocation(0, 0, 0)));
         }
 
         [Fact]
@@ -265,7 +266,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                 BlockType.Markup,
                 SpanKind.Markup,
                 AcceptedCharacters.None,
-                new RazorError(RazorResources.ParseError_MissingEndTag("foo"), 0, 0, 0));
+                new RazorError(RazorResources.FormatParseError_MissingEndTag("foo"), 0, 0, 0));
         }
 
 
@@ -360,7 +361,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                 new MarkupBlock(
                     Factory.Markup("<br/")
                 ),
-                new RazorError(RazorResources.ParseError_UnfinishedTag("br"), SourceLocation.Zero));
+                new RazorError(RazorResources.FormatParseError_UnfinishedTag("br"), SourceLocation.Zero));
         }
 
         [Fact]

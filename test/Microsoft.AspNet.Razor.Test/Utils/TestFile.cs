@@ -3,9 +3,9 @@
 
 using System.IO;
 using System.Reflection;
-using Microsoft.TestCommon;
+using Xunit;
 
-namespace System.Web.WebPages.TestUtils
+namespace Microsoft.AspNet.Razor.Test
 {
     public class TestFile
     {
@@ -22,7 +22,9 @@ namespace System.Web.WebPages.TestUtils
 
         public static TestFile Create(string localResourceName)
         {
-            return new TestFile(String.Format(ResourceNameFormat, Assembly.GetCallingAssembly().GetName().Name, localResourceName), Assembly.GetCallingAssembly());
+            // TODO: When paths are preserved use this.
+            //return new TestFile(string.Format(ResourceNameFormat, Assembly.GetCallingAssembly().GetName().Name, localResourceName), Assembly.GetCallingAssembly());
+            return new TestFile(localResourceName, Assembly.GetCallingAssembly());
         }
 
         public Stream OpenRead()
@@ -30,7 +32,7 @@ namespace System.Web.WebPages.TestUtils
             Stream strm = Assembly.GetManifestResourceStream(ResourceName);
             if (strm == null)
             {
-                Assert.True(false, String.Format("Manifest resource: {0} not found", ResourceName));
+                Assert.True(false, string.Format("Manifest resource: {0} not found", ResourceName));
             }
             return strm;
         }

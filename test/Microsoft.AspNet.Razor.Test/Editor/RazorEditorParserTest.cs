@@ -10,37 +10,37 @@ using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.AspNet.Razor.Test.Utils;
 using Microsoft.AspNet.Razor.Text;
-using Microsoft.CSharp;
-using Microsoft.TestCommon;
+using Microsoft.AspNet.Testing;
 using Moq;
+using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Editor
 {
     public class RazorEditorParserTest
     {
-        private static readonly TestFile SimpleCSHTMLDocument = TestFile.Create("DesignTime.Simple.cshtml");
-        private static readonly TestFile SimpleCSHTMLDocumentGenerated = TestFile.Create("DesignTime.Simple.txt");
+        // TODO: When paths are preserved use these.
+        //private static readonly TestFile SimpleCSHTMLDocument = TestFile.Create("DesignTime.Simple.cshtml");
+        //private static readonly TestFile SimpleCSHTMLDocumentGenerated = TestFile.Create("DesignTime.Simple.txt");
+        private static readonly TestFile SimpleCSHTMLDocument = TestFile.Create("Simple.cshtml");
+        private static readonly TestFile SimpleCSHTMLDocumentGenerated = TestFile.Create("Simple.txt");
         private const string TestLinePragmaFileName = "C:\\This\\Path\\Is\\Just\\For\\Line\\Pragmas.cshtml";
 
         [Fact]
         public void ConstructorRequiresNonNullHost()
         {
-            Assert.ThrowsArgumentNull(() => new RazorEditorParser(null, TestLinePragmaFileName),
-                                          "host");
+            Assert.Throws<ArgumentNullException>("host", () => new RazorEditorParser(null, TestLinePragmaFileName));
         }
 
         [Fact]
         public void ConstructorRequiresNonNullPhysicalPath()
         {
-            Assert.ThrowsArgumentNullOrEmptyString(() => new RazorEditorParser(CreateHost(), null),
-                                                 "sourceFileName");
+            Assert.Throws<ArgumentException>("sourceFileName", () => new RazorEditorParser(CreateHost(), null));
         }
 
         [Fact]
         public void ConstructorRequiresNonEmptyPhysicalPath()
         {
-            Assert.ThrowsArgumentNullOrEmptyString(() => new RazorEditorParser(CreateHost(), String.Empty),
-                                                 "sourceFileName");
+            Assert.Throws<ArgumentException>("sourceFileName", () => new RazorEditorParser(CreateHost(), string.Empty));
         }
 
         [Fact]
@@ -100,12 +100,13 @@ namespace Microsoft.AspNet.Razor.Test.Editor
         public void CheckForStructureChangesRequiresNonNullBufferInChange()
         {
             TextChange change = new TextChange();
-            Assert.ThrowsArgument(
+            var parameterName = "change";
+            var exception = Assert.Throws<ArgumentException>(
+                parameterName,
                 () => new RazorEditorParser(
                     CreateHost(),
-                    "C:\\Foo.cshtml").CheckForStructureChanges(change),
-                "change",
-                RazorResources.Structure_Member_CannotBeNull("Buffer", "TextChange"));
+                    "C:\\Foo.cshtml").CheckForStructureChanges(change));
+            ExceptionHelpers.ValidateArgumentException(parameterName, RazorResources.FormatStructure_Member_CannotBeNull("Buffer", "TextChange"), exception);
         }
 
         private static RazorEngineHost CreateHost()

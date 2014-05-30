@@ -1,9 +1,10 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser;
-using Microsoft.TestCommon;
+using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test
 {
@@ -12,14 +13,14 @@ namespace Microsoft.AspNet.Razor.Test
         [Fact]
         public void ConstructorRequiresNonNullCodeLanguage()
         {
-            Assert.ThrowsArgumentNull(() => new RazorEngineHost(null), "codeLanguage");
-            Assert.ThrowsArgumentNull(() => new RazorEngineHost(null, () => new HtmlMarkupParser()), "codeLanguage");
+            Assert.Throws<ArgumentNullException>("codeLanguage", () => new RazorEngineHost(null));
+            Assert.Throws<ArgumentNullException>("codeLanguage", () => new RazorEngineHost(null, () => new HtmlMarkupParser()));
         }
 
         [Fact]
         public void ConstructorRequiresNonNullMarkupParser()
         {
-            Assert.ThrowsArgumentNull(() => new RazorEngineHost(new CSharpRazorCodeLanguage(), null), "markupParserFactory");
+            Assert.Throws<ArgumentNullException>("markupParserFactory", () => new RazorEngineHost(new CSharpRazorCodeLanguage(), null));
         }
 
         [Fact]
@@ -56,19 +57,19 @@ namespace Microsoft.AspNet.Razor.Test
         [Fact]
         public void DecorateCodeParserRequiresNonNullCodeParser()
         {
-            Assert.ThrowsArgumentNull(() => CreateHost().DecorateCodeParser(null), "incomingCodeParser");
+            Assert.Throws<ArgumentNullException>("incomingCodeParser", () => CreateHost().DecorateCodeParser(null));
         }
 
         [Fact]
         public void DecorateMarkupParserRequiresNonNullMarkupParser()
         {
-            Assert.ThrowsArgumentNull(() => CreateHost().DecorateMarkupParser(null), "incomingMarkupParser");
+            Assert.Throws<ArgumentNullException>("incomingMarkupParser", () => CreateHost().DecorateMarkupParser(null));
         }
 
         [Fact]
         public void DecorateCodeGeneratorRequiresNonNullCodeGenerator()
         {
-            Assert.ThrowsArgumentNull(() => CreateHost().DecorateCodeGenerator(null), "incomingCodeGenerator");
+            Assert.Throws<ArgumentNullException>("incomingCodeGenerator", () => CreateHost().DecorateCodeGenerator(null));
         }
 
         [Fact]

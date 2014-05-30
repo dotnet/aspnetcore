@@ -4,7 +4,7 @@
 using System;
 using System.Web.WebPages.TestUtils;
 using Microsoft.AspNet.Razor.Text;
-using Microsoft.TestCommon;
+using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Text
 {
@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Razor.Test.Text
         [Fact]
         public void ConstructorRequiresNonNullTextBuffer()
         {
-            Assert.ThrowsArgumentNull(() => new TextBufferReader(null), "buffer");
+            Assert.Throws<ArgumentNullException>("buffer", () => new TextBufferReader(null));
         }
 
         [Fact]

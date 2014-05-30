@@ -7,7 +7,7 @@ using System.Linq;
 using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.TestCommon;
+using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Generator
 {
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         }
 
         [Theory]
-        [PropertyData("SpacePropertyData")]
+        [MemberData("SpacePropertyData")]
         public void CalculatePaddingForEmptySpanWith4Spaces(bool designTime, bool isIndentingWithTabs, int tabSize)
         {
             // Arrange
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         }
 
         [Theory]
-        [PropertyData("SpacePropertyData")]
+        [MemberData("SpacePropertyData")]
         public void CalculatePaddingForIfSpanWith5Spaces(bool designTime, bool isIndentingWithTabs, int tabSize)
         {
             // Arrange

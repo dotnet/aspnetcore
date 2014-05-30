@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 using Microsoft.AspNet.Razor.Text;
-using Microsoft.TestCommon;
+using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Text
 {
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Razor.Test.Text
         [Fact]
         public void ConstructorRequiresNonNullSourceReader()
         {
-            Assert.ThrowsArgumentNull(() => new BufferingTextReader(null), "source");
+            Assert.Throws<ArgumentNullException>("source", () => new BufferingTextReader(null));
         }
 
         [Fact]

@@ -6,7 +6,7 @@ using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.AspNet.Razor.Text;
-using Microsoft.TestCommon;
+using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
 {
@@ -151,7 +151,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.Code(" { { { { } zoop").AsFunctionsBody()
                                ),
                            new RazorError(
-                               RazorResources.ParseError_Expected_EndOfBlock_Before_EOF("functions", "}", "{"),
+                               RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("functions", "}", "{"),
                                SourceLocation.Zero));
         }
 
@@ -175,7 +175,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                    .Accepts(AcceptedCharacters.NonWhiteSpace)),
                            new RazorError(
-                               RazorResources.ParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS("/"),
+                               RazorResources.FormatParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS("/"),
                                1, 0, 1));
         }
 

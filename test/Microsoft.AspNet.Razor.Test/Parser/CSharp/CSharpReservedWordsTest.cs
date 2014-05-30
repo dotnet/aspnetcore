@@ -1,12 +1,11 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.AspNet.Razor.Text;
-using Microsoft.TestCommon;
+using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
 {
@@ -21,7 +20,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                            new DirectiveBlock(
                                Factory.MetaCode(word).Accepts(AcceptedCharacters.None)
                                ),
-                           new RazorError(RazorResources.ParseError_ReservedWord(word), SourceLocation.Zero));
+                           new RazorError(RazorResources.FormatParseError_ReservedWord(word), SourceLocation.Zero));
         }
 
         [Theory]

@@ -6,7 +6,7 @@ using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.AspNet.Razor.Text;
-using Microsoft.TestCommon;
+using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
 {
@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    .Accepts(AcceptedCharacters.NonWhiteSpace)
                                ),
                            new RazorError(
-                               RazorResources.ParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS('"'),
+                               RazorResources.FormatParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS('"'),
                                1, 0, 1));
         }
 
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    .With(new AutoCompleteEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString) { AutoCompleteString = "}" })
                                ),
                            new RazorError(
-                               RazorResources.ParseError_Expected_EndOfBlock_Before_EOF(RazorResources.BlockName_Code, "}", "{"),
+                               RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF(RazorResources.BlockName_Code, "}", "{"),
                                SourceLocation.Zero));
         }
 
@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                ),
                            new RazorError(RazorResources.ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock, 8, 1, 5),
                            new RazorError(
-                               RazorResources.ParseError_Expected_EndOfBlock_Before_EOF(RazorResources.BlockName_Code, "}", "{"),
+                               RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF(RazorResources.BlockName_Code, "}", "{"),
                                SourceLocation.Zero));
         }
 
@@ -126,7 +126,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                    .Accepts(AcceptedCharacters.NonWhiteSpace)),
                            new RazorError(
-                               RazorResources.ParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS("!"),
+                               RazorResources.FormatParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS("!"),
                                1, 0, 1));
         }
 
@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.Code("foo bar\r\nbaz").AsExpression()
                                ),
                            new RazorError(
-                               RazorResources.ParseError_Expected_EndOfBlock_Before_EOF(RazorResources.BlockName_ExplicitExpression, ')', '('),
+                               RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF(RazorResources.BlockName_ExplicitExpression, ')', '('),
                                new SourceLocation(0, 0, 0)));
         }
 
@@ -156,7 +156,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.Code("foo bar\r\n").AsExpression()
                                ),
                            new RazorError(
-                               RazorResources.ParseError_Expected_EndOfBlock_Before_EOF(RazorResources.BlockName_ExplicitExpression, ')', '('),
+                               RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF(RazorResources.BlockName_ExplicitExpression, ')', '('),
                                new SourceLocation(0, 0, 0)));
         }
 
@@ -170,7 +170,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                ),
                            new RazorError(
-                               RazorResources.ParseError_Expected_CloseBracket_Before_EOF("(", ")"),
+                               RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
                                new SourceLocation(4, 0, 4)));
         }
 
@@ -185,7 +185,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.Code("Foo(Bar(Baz)\r\nBiz\r\nBoz")
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                ),
-                           new RazorError(RazorResources.ParseError_Expected_CloseBracket_Before_EOF("(", ")"),
+                           new RazorError(RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
                                           new SourceLocation(3, 0, 3)));
         }
 
@@ -202,7 +202,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.Code("Foo(Bar(Baz)\r\nBiz\r\n")
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                ),
-                           new RazorError(RazorResources.ParseError_Expected_CloseBracket_Before_EOF("(", ")"),
+                           new RazorError(RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
                                           new SourceLocation(3, 0, 3)));
         }
 
@@ -218,7 +218,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                ),
                            new RazorError(
-                               RazorResources.ParseError_Expected_CloseBracket_Before_EOF("[", "]"),
+                               RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF("[", "]"),
                                new SourceLocation(3, 0, 3)));
         }
 
@@ -236,7 +236,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                ),
                            new RazorError(
-                               RazorResources.ParseError_Expected_CloseBracket_Before_EOF("[", "]"),
+                               RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF("[", "]"),
                                new SourceLocation(3, 0, 3)));
         }
 
@@ -250,7 +250,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.Code(" var foo = bar; if(foo != null) { bar(); } ").AsStatement()
                                ),
                            new RazorError(
-                               RazorResources.ParseError_Expected_EndOfBlock_Before_EOF(RazorResources.BlockName_Code, '}', '{'),
+                               RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF(RazorResources.BlockName_Code, '}', '{'),
                                SourceLocation.Zero));
         }
 
@@ -263,7 +263,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.Code(" var foo = bar; if(foo != null) { bar(); } ").AsFunctionsBody()
                                ),
                            new RazorError(
-                               RazorResources.ParseError_Expected_EndOfBlock_Before_EOF("functions", '}', '{'),
+                               RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("functions", '}', '{'),
                                SourceLocation.Zero));
         }
 
@@ -281,7 +281,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.Code("if(foo) { baz(); } else { var foo = bar; if(foo != null) { bar(); } ").AsStatement()
                                ),
                            new RazorError(
-                               RazorResources.ParseError_Expected_EndOfBlock_Before_EOF("else", '}', '{'),
+                               RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("else", '}', '{'),
                                new SourceLocation(19, 0, 19)));
         }
 
@@ -293,7 +293,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.Code("if(foo) { baz(); } else if { var foo = bar; if(foo != null) { bar(); } ").AsStatement()
                                ),
                            new RazorError(
-                               RazorResources.ParseError_Expected_EndOfBlock_Before_EOF("else if", '}', '{'),
+                               RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("else if", '}', '{'),
                                new SourceLocation(19, 0, 19)));
         }
 
@@ -305,7 +305,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.Code("do { var foo = bar; if(foo != null) { bar(); } ").AsStatement()
                                ),
                            new RazorError(
-                               RazorResources.ParseError_Expected_EndOfBlock_Before_EOF("do", '}', '{'),
+                               RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("do", '}', '{'),
                                SourceLocation.Zero));
         }
 
@@ -317,7 +317,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.Code("try { var foo = bar; if(foo != null) { bar(); } ").AsStatement()
                                ),
                            new RazorError(
-                               RazorResources.ParseError_Expected_EndOfBlock_Before_EOF("try", '}', '{'),
+                               RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("try", '}', '{'),
                                SourceLocation.Zero));
         }
 
@@ -329,7 +329,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.Code("try { baz(); } catch(Foo) { var foo = bar; if(foo != null) { bar(); } ").AsStatement()
                                ),
                            new RazorError(
-                               RazorResources.ParseError_Expected_EndOfBlock_Before_EOF("catch", '}', '{'),
+                               RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("catch", '}', '{'),
                                new SourceLocation(15, 0, 15)));
         }
 
@@ -341,7 +341,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.Code("try { baz(); } finally { var foo = bar; if(foo != null) { bar(); } ").AsStatement()
                                ),
                            new RazorError(
-                               RazorResources.ParseError_Expected_EndOfBlock_Before_EOF("finally", '}', '{'),
+                               RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("finally", '}', '{'),
                                new SourceLocation(15, 0, 15)));
         }
 
@@ -384,7 +384,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         [Fact]
         public void ParseBlockRequiresControlFlowStatementsToHaveBraces()
         {
-            string expectedMessage = RazorResources.ParseError_SingleLine_ControlFlowStatements_Not_Allowed("{", "<");
+            string expectedMessage = RazorResources.FormatParseError_SingleLine_ControlFlowStatements_Not_Allowed("{", "<");
             ParseBlockTest("if(foo) <p>Bar</p> else if(bar) <p>Baz</p> else <p>Boz</p>",
                            new StatementBlock(
                                Factory.Code("if(foo) ").AsStatement(),
@@ -414,7 +414,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.Code("if(foo)) { var bar = foo; }").AsStatement()
                                ),
                            new RazorError(
-                               RazorResources.ParseError_SingleLine_ControlFlowStatements_Not_Allowed("{", ")"),
+                               RazorResources.FormatParseError_SingleLine_ControlFlowStatements_Not_Allowed("{", ")"),
                                new SourceLocation(7, 0, 7)));
         }
 
@@ -445,7 +445,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.Code("if(foo bar\r\n").AsStatement()
                                ),
                            new RazorError(
-                               RazorResources.ParseError_Expected_CloseBracket_Before_EOF("(", ")"),
+                               RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
                                new SourceLocation(2, 0, 2)));
         }
 
@@ -458,7 +458,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.Code("foreach(foo bar\r\n").AsStatement()
                                ),
                            new RazorError(
-                               RazorResources.ParseError_Expected_CloseBracket_Before_EOF("(", ")"),
+                               RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
                                new SourceLocation(7, 0, 7)));
         }
 
@@ -471,7 +471,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.Code("do { } while(foo bar\r\n").AsStatement()
                                ),
                            new RazorError(
-                               RazorResources.ParseError_Expected_CloseBracket_Before_EOF("(", ")"),
+                               RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
                                new SourceLocation(12, 0, 12)));
         }
 
@@ -484,7 +484,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.Code("using(foo bar\r\n").AsStatement()
                                ),
                            new RazorError(
-                               RazorResources.ParseError_Expected_CloseBracket_Before_EOF("(", ")"),
+                               RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
                                new SourceLocation(5, 0, 5)));
         }
 
@@ -501,7 +501,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.Code("}").AsStatement().Accepts(AcceptedCharacters.None)
                                ),
                            new RazorError(
-                               RazorResources.ParseError_Expected_CloseBracket_Before_EOF("(", ")"),
+                               RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
                                new SourceLocation(2, 0, 2)));
         }
 
@@ -521,7 +521,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         {
             SingleSpanBlockTest("if(foo) { var foo = \"blah blah blah blah blah", BlockType.Statement, SpanKind.Code,
                                 new RazorError(RazorResources.ParseError_Unterminated_String_Literal, 20, 0, 20),
-                                new RazorError(RazorResources.ParseError_Expected_EndOfBlock_Before_EOF("if", '}', '{'), SourceLocation.Zero));
+                                new RazorError(RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("if", '}', '{'), SourceLocation.Zero));
         }
 
         [Fact]
@@ -534,7 +534,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                               + "blah",
                                 BlockType.Statement, SpanKind.Code,
                                 new RazorError(RazorResources.ParseError_Unterminated_String_Literal, 20, 0, 20),
-                                new RazorError(RazorResources.ParseError_Expected_EndOfBlock_Before_EOF("if", '}', '{'), SourceLocation.Zero));
+                                new RazorError(RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("if", '}', '{'), SourceLocation.Zero));
         }
 
         [Fact]
@@ -586,7 +586,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
                 expectedErrors: new[] {
                     new RazorError(
-                        RazorResources.ParseError_Expected_CloseBracket_Before_EOF("(", ")"),
+                        RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
                         14, 0, 14)
                 });
 
@@ -595,7 +595,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         private void RunUnterminatedSimpleKeywordBlock(string keyword)
         {
             SingleSpanBlockTest(keyword + " (foo) { var foo = bar; if(foo != null) { bar(); } ", BlockType.Statement, SpanKind.Code,
-                                new RazorError(RazorResources.ParseError_Expected_EndOfBlock_Before_EOF(keyword, '}', '{'), SourceLocation.Zero));
+                                new RazorError(RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF(keyword, '}', '{'), SourceLocation.Zero));
         }
     }
 }

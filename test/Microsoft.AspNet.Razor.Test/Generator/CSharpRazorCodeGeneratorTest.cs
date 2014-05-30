@@ -3,12 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Text;
-using Microsoft.TestCommon;
+using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Generator
 {
@@ -35,19 +34,19 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         [Fact]
         public void ConstructorRequiresNonNullClassName()
         {
-            Assert.ThrowsArgumentNullOrEmptyString(() => new CSharpRazorCodeGenerator(null, TestRootNamespaceName, TestPhysicalPath, CreateHost()), "className");
+            Assert.Throws<ArgumentException>("className", () => new CSharpRazorCodeGenerator(null, TestRootNamespaceName, TestPhysicalPath, CreateHost()));
         }
 
         [Fact]
         public void ConstructorRequiresNonEmptyClassName()
         {
-            Assert.ThrowsArgumentNullOrEmptyString(() => new CSharpRazorCodeGenerator(String.Empty, TestRootNamespaceName, TestPhysicalPath, CreateHost()), "className");
+            Assert.Throws<ArgumentException>("className", () => new CSharpRazorCodeGenerator(string.Empty, TestRootNamespaceName, TestPhysicalPath, CreateHost()));
         }
 
         [Fact]
         public void ConstructorRequiresNonNullRootNamespaceName()
         {
-            Assert.ThrowsArgumentNull(() => new CSharpRazorCodeGenerator("Foo", null, TestPhysicalPath, CreateHost()), "rootNamespaceName");
+            Assert.Throws<ArgumentNullException>("rootNamespaceName", () => new CSharpRazorCodeGenerator("Foo", null, TestPhysicalPath, CreateHost()));
         }
 
         [Fact]
@@ -59,7 +58,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         [Fact]
         public void ConstructorRequiresNonNullHost()
         {
-            Assert.ThrowsArgumentNull(() => new CSharpRazorCodeGenerator("Foo", TestRootNamespaceName, TestPhysicalPath, null), "host");
+            Assert.Throws<ArgumentNullException>("host", () => new CSharpRazorCodeGenerator("Foo", TestRootNamespaceName, TestPhysicalPath, null));
         }
 
         [Theory]
