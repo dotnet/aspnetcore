@@ -4,15 +4,16 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.Rendering;
 
 namespace Microsoft.AspNet.Mvc
 {
     public class ViewResult : ActionResult
     {
+        private const int BufferSize = 1024;
         private readonly IServiceProvider _serviceProvider;
         private readonly IViewEngine _viewEngine;
 
@@ -35,7 +36,8 @@ namespace Microsoft.AspNet.Mvc
             {
                 context.HttpContext.Response.ContentType = "text/html; charset=utf-8";
                 var wrappedStream = new StreamWrapper(context.HttpContext.Response.Body);
-                using (var writer = new StreamWriter(wrappedStream, new UTF8Encoding(false), 1024, leaveOpen: true))
+                var encoding = UTF8EncodingWithoutBOM.Encoding;
+                using (var writer = new StreamWriter(wrappedStream, encoding, BufferSize, leaveOpen: true))
                 {
                     try
                     {
@@ -81,7 +83,7 @@ namespace Microsoft.AspNet.Mvc
                 _wrappedStream = stream;
             }
 
-            public bool BlockWrites { get; set;}
+            public bool BlockWrites { get; set; }
 
             public override bool CanRead
             {

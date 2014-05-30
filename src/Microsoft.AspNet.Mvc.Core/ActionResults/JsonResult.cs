@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Text;
+using Microsoft.AspNet.Mvc.Internal;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.Mvc
@@ -11,12 +12,10 @@ namespace Microsoft.AspNet.Mvc
     public class JsonResult : ActionResult
     {
         private const int BufferSize = 1024;
-        private static readonly Encoding UTF8EncodingWithoutBOM 
-            = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
         private readonly object _returnValue;
 
         private JsonSerializerSettings _jsonSerializerSettings;
-        private Encoding _encoding = UTF8EncodingWithoutBOM;
+        private Encoding _encoding = UTF8EncodingWithoutBOM.Encoding;
 
         public JsonResult(object returnValue)
         {
