@@ -81,6 +81,26 @@ namespace Microsoft.AspNet.Server.WebListener
         }
 
         [Fact]
+        public async Task Server_ShutdownDurringRequest_Success()
+        {
+            Task<string> responseTask;
+            ManualResetEvent received = new ManualResetEvent(false);
+            using (Utilities.CreateHttpServer(env =>
+                {
+                    received.Set();
+                    var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                    httpContext.Response.ContentLength = 11;
+                    return httpContext.Response.WriteAsync("Hello World");
+                }))
+            {
+                responseTask = SendRequestAsync(Address);
+                Assert.True(received.WaitOne(10000));
+            }
+            string response = await responseTask;
+            Assert.Equal("Hello World", response);
+        }
+
+        [Fact]
         public void Server_AppException_ClientReset()
         {
             using (Utilities.CreateHttpServer(env =>
