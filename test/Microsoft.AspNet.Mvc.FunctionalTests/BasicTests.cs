@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 .BuildServiceProvider(originalProvider);
         }
 
-        [Fact(Skip = "Roslyn change needed to unblock build")]
+        [Fact]
         public async Task CanRender_ViewsWithLayout()
         {
             // Arrange
