@@ -21,6 +21,7 @@ using Microsoft.AspNet.Hosting.Builder;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Hosting.Startup;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.Fallback;
 
 namespace Microsoft.AspNet.Hosting
 {
@@ -45,6 +46,7 @@ namespace Microsoft.AspNet.Hosting
 
         public IDisposable Start(HostingContext context)
         {
+            EnsureLifetime(context);
             EnsureBuilder(context);
             EnsureServerFactory(context);
             InitalizeServerFactory(context);
@@ -55,9 +57,22 @@ namespace Microsoft.AspNet.Hosting
            
             return new Disposable(() =>
             {
+                context.Lifetime.SignalStopping();
                 server.Dispose();
+                context.Lifetime.SignalStopped();
                 pipeline.Dispose();
             });
+        }
+
+        private void EnsureLifetime(HostingContext context)
+        {
+            if (context.Lifetime == null)
+            {
+                context.Lifetime = new ApplicationLifetime();
+            }
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddInstance<IApplicationLifetime>(context.Lifetime);
+            context.Services = serviceCollection.BuildServiceProvider(context.Services);
         }
 
         private void EnsureBuilder(HostingContext context)

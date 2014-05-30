@@ -17,6 +17,8 @@
 
 using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
@@ -67,11 +69,29 @@ namespace Microsoft.AspNet.Hosting
                 throw new Exception("TODO: IHostingEngine service not available exception");
             }
 
-            using (engine.Start(context))
+            var appShutdownService = _serviceProvider.GetService<IApplicationShutdown>();
+            if (appShutdownService == null)
+            {
+                throw new Exception("TODO: IApplicationShutdown service not available");
+            }
+            var shutdownHandle = new ManualResetEvent(false);
+
+            var serverShutdown = engine.Start(context);
+
+            appShutdownService.ShutdownRequested.Register(() =>
+            {
+                serverShutdown.Dispose();
+                shutdownHandle.Set();
+            });
+
+            Task ignored = Task.Run(() =>
             {
                 Console.WriteLine("Started");
                 Console.ReadLine();
-            }
+                appShutdownService.RequestShutdown();
+            });
+
+            shutdownHandle.WaitOne();
         }
     }
 }

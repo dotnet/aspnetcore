@@ -27,6 +27,7 @@ namespace Microsoft.AspNet.Hosting
     {
         public IServiceProvider Services { get; set; }
         public IConfiguration Configuration { get; set; }
+        public ApplicationLifetime Lifetime { get; set; }
 
         public IBuilder Builder { get; set; }
 

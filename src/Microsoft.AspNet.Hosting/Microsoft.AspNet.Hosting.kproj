@@ -20,6 +20,7 @@
     <Content Include="project.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApplicationLifetime.cs" />
     <Compile Include="Builder\BuilderFactory.cs" />
     <Compile Include="Builder\HttpContextFactory.cs" />
     <Compile Include="Builder\IBuilderFactory.cs" />
@@ -27,6 +28,7 @@
     <Compile Include="HostingContext.cs" />
     <Compile Include="HostingEngine.cs" />
     <Compile Include="HostingServices.cs" />
+    <Compile Include="IApplicationLifetime.cs" />
     <Compile Include="IHostingEngine.cs" />
     <Compile Include="PipelineInstance.cs" />
     <Compile Include="PlatformHelper.cs" />
