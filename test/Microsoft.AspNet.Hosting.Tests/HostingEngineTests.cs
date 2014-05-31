@@ -55,6 +55,7 @@ namespace Microsoft.AspNet.Hosting
             var context = new HostingContext
             {
                 ServerFactory = this,
+                Services = services,
                 ApplicationName = "Microsoft.AspNet.Hosting.Tests"
             };
 
