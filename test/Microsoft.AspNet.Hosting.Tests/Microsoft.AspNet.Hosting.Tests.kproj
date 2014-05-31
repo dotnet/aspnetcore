@@ -21,8 +21,9 @@
     <Content Include="project.json" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Fakes\FakeStartupWithServices.cs" />
     <Compile Include="Fakes\IFakeStartupCallback.cs" />
+    <Compile Include="Fakes\Startup.cs" />
+    <Compile Include="Fakes\StartupWithServices.cs" />
     <Compile Include="HostingEngineTests.cs" />
     <Compile Include="StartupManagerTests.cs" />
   </ItemGroup>
