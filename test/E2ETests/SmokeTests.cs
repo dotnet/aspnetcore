@@ -16,7 +16,7 @@ namespace E2ETests
 
         [Theory]
         [InlineData(HostType.Helios, KreFlavor.DesktopClr, "http://localhost:5001/")]
-        //[InlineData(HostType.SelfHost, KreFlavor.DesktopClr, "http://localhost:5002/")]
+        [InlineData(HostType.SelfHost, KreFlavor.DesktopClr, "http://localhost:5002/")]
         public void SmokeTestSuite(HostType hostType, KreFlavor kreFlavor, string applicationBaseUrl)
         {
             var testStartTime = DateTime.Now;
@@ -31,18 +31,19 @@ namespace E2ETests
             Environment.SetEnvironmentVariable("SQLAZURECONNSTR_IdentityConnection", string.Format(Connection_string_Format, musicStoreIdentityDbName));
 
             ApplicationBaseUrl = applicationBaseUrl;
-            var hostProcess = DeploymentUtility.StartApplication(hostType, kreFlavor);
+            var hostProcess = DeploymentUtility.StartApplication(hostType, kreFlavor, musicStoreIdentityDbName);
 
             try
             {
                 httpClientHandler = new HttpClientHandler();
                 httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(applicationBaseUrl) };
 
-                //Request to base address and check if various parts of the body are rendered
-                VerifyHomePage();
-
+                //Request to base address and check if various parts of the body are rendered & measure the cold startup time.
+                var response = httpClient.GetAsync(string.Empty).Result;
+                var responseContent = response.Content.ReadAsStringAsync().Result;
                 var initializationCompleteTime = DateTime.Now;
                 Console.WriteLine("[Time]: Approximate time taken for application initialization : '{0}' seconds", (initializationCompleteTime - testStartTime).TotalSeconds);
+                VerifyHomePage(response, responseContent);
 
                 //Making a request to a protected resource should automatically redirect to login page
                 AccessStoreWithoutPermissions();
@@ -109,10 +110,8 @@ namespace E2ETests
             }
         }
 
-        private void VerifyHomePage()
+        private void VerifyHomePage(HttpResponseMessage response, string responseContent)
         {
-            var response = httpClient.GetAsync(string.Empty).Result;
-            var responseContent = response.Content.ReadAsStringAsync().Result;
             Console.WriteLine("Home page content : {0}", responseContent);
             Assert.Equal<HttpStatusCode>(HttpStatusCode.OK, response.StatusCode);
             Assert.Contains("ASP.NET MVC Music Store", responseContent, StringComparison.OrdinalIgnoreCase);

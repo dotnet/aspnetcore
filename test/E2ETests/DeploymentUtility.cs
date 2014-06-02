@@ -43,7 +43,7 @@ namespace E2ETests
 
         private const string APP_RELATIVE_PATH = @"..\..\src\MusicStore\";
 
-        public static Process StartApplication(HostType hostType, KreFlavor kreFlavor)
+        public static Process StartApplication(HostType hostType, KreFlavor kreFlavor, string identityDbName)
         {
             string applicationPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, APP_RELATIVE_PATH));
 
@@ -53,7 +53,7 @@ namespace E2ETests
             }
             else
             {
-                throw new NotImplementedException("Self-Host variation not implemented");
+                return StartSelfHost(applicationPath, identityDbName);
             }
         }
 
@@ -71,29 +71,67 @@ namespace E2ETests
 
             var hostProcess = Process.Start(startInfo);
             Console.WriteLine("Started iisexpress. Process Id : {0}", hostProcess.Id);
-            Thread.Sleep(2 * 1000);
 
             return hostProcess;
         }
 
-        //private static Process StartSelfHost(string applicationPath)
-        //{
-        //    var klrPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @".kre\packges", "KRE-svr50-x86.0.1-alpha-build-0450", @"bin\klr.exe");
-        //    Console.WriteLine(klrPath);
+        private static Process StartSelfHost(string applicationPath, string identityDbName)
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "klr.exe",
+                Arguments = string.Format("--appbase {0} \"Microsoft.Framework.ApplicationHost\" web", applicationPath),
+                UseShellExecute = true,
+                CreateNoWindow = true
+            };
 
-        //    var startInfo = new ProcessStartInfo
-        //    {
-        //        FileName = klrPath,
-        //        Arguments = string.Format("--appbase {0} \"Microsoft.Framework.ApplicationHost\" web", applicationPath),
-        //        UseShellExecute = true,
-        //        CreateNoWindow = true
-        //    };
+            var hostProcess = Process.Start(startInfo);
+            Console.WriteLine("Started klr.exe. Process Id : {0}", hostProcess.Id);
+            WaitTillDbCreated(identityDbName);
 
-        //    var hostProcess = Process.Start(startInfo);
-        //    Console.WriteLine("Started klr.exe. Process Id : {0}", hostProcess.Id);
-        //    Thread.Sleep(10 * 1000);
+            return hostProcess;
+        }
 
-        //    return hostProcess;
-        //}
+        //In case of self-host application activation happens immediately unlike iis where activation happens on first request.
+        //So in self-host case, we need a way to block the first request until the application is initialized. In MusicStore application's case, 
+        //identity DB creation is pretty much the last step of application setup. So waiting on this event will help us wait efficiently.
+        private static void WaitTillDbCreated(string identityDbName)
+        {
+            var identityDBFullPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), identityDbName + ".mdf");
+            if (File.Exists(identityDBFullPath))
+            {
+                Console.WriteLine("Database file '{0}' exists. Proceeding with the tests.", identityDBFullPath);
+                return;
+            }
+
+            Console.WriteLine("Watching for the DB file '{0}'", identityDBFullPath);
+            var dbWatch = new FileSystemWatcher(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), identityDbName + ".mdf");
+            dbWatch.EnableRaisingEvents = true;
+
+            try
+            {
+                if (!File.Exists(identityDBFullPath))
+                {
+                    //Wait for a maximum of 1 minute assuming the slowest cold start.
+                    var watchResult = dbWatch.WaitForChanged(WatcherChangeTypes.Created, 60 * 1000);
+                    if (watchResult.ChangeType == WatcherChangeTypes.Created)
+                    {
+                        Console.WriteLine("Database file created '{0}'. Proceeding with the tests.", identityDBFullPath);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Database file '{0}' not created", identityDBFullPath);
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine("Received this exception while watching for Database file {0}", exception);
+            }
+            finally
+            {
+                dbWatch.Dispose();
+            }
+        }
     }
 }
