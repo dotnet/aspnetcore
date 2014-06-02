@@ -60,8 +60,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // The host is not important as everything runs in memory and tests are isolated from each other.
             var result = await client.GetAsync("http://localhost/");
-            // Guard
-            Assert.NotNull(result);
             var responseContent = await result.ReadBodyAsStringAsync();
 
             // Assert
@@ -80,8 +78,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act
             var result = await client.GetAsync("http://localhost/Home/PlainView");
-            // Guard
-            Assert.NotNull(result);
             var responseContent = await result.ReadBodyAsStringAsync();
 
             // Assert
