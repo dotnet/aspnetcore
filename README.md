@@ -4,6 +4,8 @@ In the next version of ASP.NET we are working with multiple teams around Microso
 
 The Home repository is the starting point for people to learn about ASP.NET vNext, it contains samples and [documentation](https://github.com/aspnet/Home/wiki) to help folks get started and learn more about what we are doing.
 
+These products are actively developed by the ASP.NET team assigned to the Microsoft Open Tech Hub and in collaboration with a community of open source developers. Together we are dedicated to creating the best possible platform for web development.
+
 The samples provided are designed to show some of the features of the new framework as well as setting up a sandbox for you to try out some of the new features. The NuGet.config file in the repo points to a MyGet feed (https://www.myget.org/F/aspnetvnext/) that has all the packages being developed. The feed is updated every time a full build succeeds.
 
 
