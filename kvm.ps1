@@ -21,7 +21,7 @@ $scriptPath = $myInvocation.MyCommand.Definition
 
 function Kvm-Help {
 @"
-K Runtime Environment Version Manager - Build {{BUILD_NUMBER}}
+K Runtime Environment Version Manager - Build 482
 
 USAGE: kvm <command> [options]
 
