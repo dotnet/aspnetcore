@@ -1,4 +1,4 @@
-#ASP.NET vNext Home
+# ASP.NET vNext Home
 
 In the next version of ASP.NET we are working with multiple teams around Microsoft to create a lean, composable .NET stack that provides a familiar and modern framework for web and cloud scenarios.
 
@@ -7,7 +7,7 @@ The Home repository is the starting point for people to learn about ASP.NET vNex
 The samples provided are designed to show some of the features of the new framework as well as setting up a sandbox for you to try out some of the new features. The NuGet.config file in the repo points to a MyGet feed (https://www.myget.org/F/aspnetvnext/) that has all the packages being developed. The feed is updated every time a full build succeeds.
 
 
-#Minimum Requirements
+# Minimum Requirements
 
 These are the current minimum requirements, they do not necesarilly represent our RTM minimum.
 
@@ -16,7 +16,7 @@ These are the current minimum requirements, they do not necesarilly represent ou
 * Powershell 4. KVM is a Powershell script that makes use of types that older verisons of Powershell cannot load
 
  
-#Getting Started
+# Getting Started
 
 The first thing we need to do is setup the tools required to build and run an application. We will start out by getting the [K Version Manager (KVM)](https://github.com/aspnet/Home/wiki/version-manager)
 
@@ -47,9 +47,9 @@ SET KRE_TRACE=1
 k run
 ```
 
-#Samples
+# Samples
 
-##Sandbox Samples
+## Sandbox Samples
 
 These samples, in this repo, are just basic starting points for you to experiment with features. Since there is no File->New Project we thought some simple samples to take the place of scaffolding would be convenient.
 
@@ -59,15 +59,15 @@ These samples, in this repo, are just basic starting points for you to experimen
 
 **NOTE: The samples are pinned to a specific version of the packages. If you want to try the latest builds then update the project.json and replace the last part of the version with a '\*', so '0.1-alpha-build-267' becomes '0.1-alpha-\*', and then run ```kpm restore``` to pull down the latest packages**
 
-##Feature Samples
+## Feature Samples
 The [Entropy repo](https://github.com/aspnet/Entropy) contains samples of specific features in isolation. Each directory contains just enough code to show an aspect of a feature.
 
-##Application Samples
+## Application Samples
 [MVC Music Store](https://github.com/aspnet/MusicStore) and [BugTracker](https://github.com/aspnet/BugTracker) application are both being ported. Each of these have their own repository that you can look at.
 
-#Running the samples
+# Running the samples
 
-##Running HelloWeb
+## Running HelloWeb
 
 1. Clone the repository
 2. Change directory to Samples\HelloWeb
@@ -82,7 +82,7 @@ The [Entropy repo](https://github.com/aspnet/Entropy) contains samples of specif
 
 If you can do all of the above then everything should be working. You can try out the WebFx sample now to see some more of the new stack. You should run ```kpm restore``` before using any sample for the first time.
 
-#Switching to Core CLR
+# Switching to Core CLR
 
 By default when running the applications you are running against Desktop CLR (4.5), you can change that using the KVM command.
 
@@ -93,14 +93,14 @@ By default when running the applications you are running against Desktop CLR (4.
 
 **NOTE: There are going to be parts of the stack that work on Desktop but do not work on Core CLR. This set should get smaller and smaller as time goes on, but it is entirely likely as you use Core CLR you will hit errors that can't be worked around as the Core CLR surface area just does not exist yet.**
 
-#Core CLR Packages
+# Core CLR Packages
 
 Currently the BCL is split into some fairly fine grained packages, which was one of the goals of this effort. However, the packages that exist today do not necessarily represent the list of packages that we will end up with. We are still experimenting with what makes sense to be a package and what the experience should be.
 
-#Known Issues
+# Known Issues
 
-* Core CLR doesn't currently work on pre Windows 8
+* Core CLR doesn't currently work on Windows OSes earlier than Windows 8
 
-#Feedback
+# Feedback
 
 Check out the [contributing](https://github.com/aspnet/Home/blob/master/CONTRIBUTING.md) page to see the best places to log issues and start discussions.
