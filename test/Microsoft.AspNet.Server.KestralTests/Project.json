@@ -1,0 +1,13 @@
+{
+    "version": "0.1-alpha-*",
+    "dependencies": {
+        "Xunit.KRunner": "0.1-*",
+        "xunit.assert": "2.0.0-*",
+        "xunit.abstractions": "2.0.0-*",
+        "Microsoft.AspNet.Server.Kestrel": "0.1-*"
+    },
+    "commands": {
+        "run": "Xunit.KRunner",
+        "test": "Xunit.KRunner"
+    }
+}
