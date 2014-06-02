@@ -55,5 +55,13 @@ namespace Microsoft.Net.Server
         {
             return UnsafeNclNativeMethods.SafeNetHandles.LocalFree(handle) == IntPtr.Zero;
         }
+
+        public override bool IsInvalid
+        {
+            get
+            {
+                return handle == IntPtr.Zero || handle.ToInt32() == -1;
+            }
+        }
     }
 }

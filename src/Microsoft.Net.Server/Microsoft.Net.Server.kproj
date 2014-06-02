@@ -29,7 +29,6 @@
     <Compile Include="fx\System\ExternDll.cs" />
     <Compile Include="fx\System\Runtime\InteropServices\ExternalException.cs" />
     <Compile Include="fx\System\SafeNativeMethods.cs" />
-    <Compile Include="fx\System\Security\Authentication\ExtendedProtection\ChannelBinding.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Helpers.cs" />
     <Compile Include="LogHelper.cs" />
@@ -86,4 +85,3 @@
   </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
-
