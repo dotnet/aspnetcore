@@ -22,6 +22,7 @@ using System.Reflection;
 using Microsoft.AspNet.RequestContainer;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -65,6 +66,7 @@ namespace Microsoft.AspNet.Builder
         {
             var serviceCollection = new ServiceCollection();
 
+            serviceCollection.Add(OptionsServices.GetDefaultServices());
             configureServices(serviceCollection);
             builder.ApplicationServices = serviceCollection.BuildServiceProvider(builder.ApplicationServices);
 
