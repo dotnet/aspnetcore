@@ -56,7 +56,7 @@ if [ -z "$PROFILE" ]; then
     fi
 fi
 
-if [ -z "$PROFILE" ]; then
+if [ -z "$ZPROFILE" ]; then
     if [ -f "$HOME/.zshrc" ]; then
         ZPROFILE="$HOME/.zshrc"
     fi
