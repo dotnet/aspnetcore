@@ -100,7 +100,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(204, result.StatusCode);
             Assert.Null(result.ContentType);
             Assert.Null(result.ContentLength);
-            Assert.Equal("", await result.ReadBodyAsStringAsync());
+            Assert.NotNull(result.Body);
+            Assert.Equal(0, result.Body.Length);
         }
 
         [Fact]
