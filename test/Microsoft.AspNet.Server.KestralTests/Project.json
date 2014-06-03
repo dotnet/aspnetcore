@@ -6,6 +6,9 @@
         "xunit.abstractions": "2.0.0-*",
         "Microsoft.AspNet.Server.Kestrel": "0.1-*"
     },
+    "configurations": {
+        "net45": {}
+    },
     "commands": {
         "run": "Xunit.KRunner",
         "test": "Xunit.KRunner"
