@@ -1,21 +1,12 @@
 # kvm.sh
 # Source this file from your .bash-profile or script to use
-# With inspriation from nvm.sh
-
-SCRIPTPATH="$_"
-
-#Exit script when any command returns non 0 exit code
-
 _kvm_has() {
   type "$1" > /dev/null 2>&1
   return $?
 }
 
-# Make zsh glob matching behave same as bash
-# This fixes the "zsh: no matches found" errors
 if _kvm_has "unsetopt"; then
   unsetopt nomatch 2>/dev/null
-  KVM_CD_FLAGS="-q"
 fi
 
 if [ -z "$KRE_USER_HOME" ]; then
@@ -27,32 +18,6 @@ KRE_MONO45=
 KRE_X86=
 KRE_X64=
 KRE_NUGET_API_URL="https://www.myget.org/F/aspnetvnext/api/v2"
-
-# Traverse up in directory tree to find containing folder
-_kvm_find_up() {
-  local path
-  path=$PWD
-  while [ "$path" != "" ] && [ ! -f "$path/$1" ]; do
-    path=${path%/*}
-  done
-  echo "$path"
-}
-
-_kvm_find_kvmrc() {
-  local dir="$(_kvm_find_up '.kvmrc')"
-  if [ -e "$dir/.kvmrc" ]; then
-        echo "$dir/.kvmrc"
-  fi
-}
-
-# Obtain kvm version from rc file
-_kvm_rc_version() {
-  local KVMRC_PATH="$(_kvm_find_kvmrc)"
-  if [ -e "$KVMRC_PATH" ]; then
-    _kvm_rc_version=`cat "$KVMRC_PATH" | head -n 1`
-    echo "Found '$KVMRC_PATH' with version <$_kvm_rc_version>"
-  fi
-}
 
 _kvm_find_latest() {
   local platform="mono45"
@@ -139,7 +104,7 @@ _kvm_unpack() {
 
 }
 
-# This is not really needed. Placeholder until I get clarification on the supported platforms for mono
+# This is not currently required. Placeholder for the case when we have multiple platforms  (ie if we bundle mono)
 _kvm_requested_platform() {
   local default=$1
 
@@ -148,7 +113,7 @@ _kvm_requested_platform() {
   echo $default
 }
 
-# Ditto - waiting for clarification on mono-x64 packages
+# This is not currently required. Placeholder for the case where we have multiple architectures (ie if we bundle mono)
 _kvm_requested_architecture() {
   local default=$1
 
@@ -181,7 +146,6 @@ _kvm_requested_version_or_alias() {
 # This will be more relevant if we support global installs
 _kvm_locate_kre_bin_from_full_name() {
   local kreFullName=$1
-
   [ -e "$KRE_USER_PACKAGES/$kreFullName/bin" ] && echo "$KRE_USER_PACKAGES/$kreFullName/bin" && return
 }
 
@@ -289,9 +253,9 @@ kvm()
         PATH=`_kvm_strip_path "$PATH" "/bin"`
 
         if [[ -n $persistent && -e "$KRE_USER_HOME/alias/default.alias" ]]; then
-            echo "Setting default KRE to none"
+          echo "Setting default KRE to none"
 
-            rm "$KRE_USER_HOME/alias/default.alias"
+          rm "$KRE_USER_HOME/alias/default.alias"
         fi
         return 0
       fi

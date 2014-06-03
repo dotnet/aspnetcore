@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -e
-
 _kvmsetup_has() {
   type "$1" > /dev/null 2>&1
   return $?
@@ -11,7 +9,7 @@ _kvmsetup_update_profile() {
   local profile="$1"
   local sourceString="$2"
   if ! grep -qc 'kvm.sh' $profile; then
-    echo "=> Appending source string to $profile"
+    echo "Appending source string to $profile"
     echo "" >> "$profile"
     echo $sourceString >> "$profile"
   else
@@ -35,9 +33,9 @@ fi
 # Downloading to $KVM_DIR
 mkdir -p "$KRE_USER_HOME/kvm"
 if [ -s "$KRE_USER_HOME/kvm/kvm.sh" ]; then
-  echo "=> kvm is already installed in $KRE_USER_HOME/kvm, trying to update"
+  echo "kvm is already installed in $KRE_USER_HOME/kvm, trying to update"
 else
-  echo "=> Downloading kvm as script to '$KRE_USER_HOME/kvm'"
+  echo "Downloading kvm as script to '$KRE_USER_HOME/kvm'"
 fi
 
 curl -s "$KVM_SOURCE" -o "$KRE_USER_HOME/kvm/kvm.sh" || {
@@ -58,31 +56,33 @@ if [ -z "$PROFILE" ]; then
   fi
 fi
 
-if [ -f "$HOME/.zshrc" ]; then
-  ZPROFILE="$HOME/.zshrc"
+if [ -z "$PROFILE" ]; then
+  if [ -f "$HOME/.zshrc" ]; then
+    ZPROFILE="$HOME/.zshrc"
+  fi
 fi
 
-SOURCE_STR="[ -s \"$KRE_USER_HOME/kvm/kvm.sh\" ] && . \"$KRE_USER_HOME/kvm/kvm.sh\" # this loads kvm"
+SOURCE_STR="[ -s \"$KRE_USER_HOME/kvm/kvm.sh\" ] && . \"$KRE_USER_HOME/kvm/kvm.sh\" # Load kvm"
 
 if [ -z "$PROFILE" -a -z "$ZPROFILE" ] || [ ! -f "$PROFILE" -a ! -f "$ZPROFILE" ] ; then
   if [ -z "$PROFILE" ]; then
-    echo "=> Profile not found. Tried ~/.bash_profile ~/.zshrc and ~/.profile."
-    echo "=> Create one of them and run this script again"
+    echo "Profile not found. Tried ~/.bash_profile ~/.zshrc and ~/.profile."
+    echo "Create one of them and run this script again"
   elif [ ! -f "$PROFILE" ]; then
-    echo "=> Profile $PROFILE not found"
-    echo "=> Create it (touch $PROFILE) and run this script again"
+    echo "Profile $PROFILE not found"
+    echo "Create it (touch $PROFILE) and run this script again"
   else
-    echo "=> Profile $ZPROFILE not found"
-    echo "=> Create it (touch $ZPROFILE) and run this script again"
+    echo "Profile $ZPROFILE not found"
+    echo "Create it (touch $ZPROFILE) and run this script again"
   fi
-  echo "   OR"
-  echo "=> Append the following line to the correct file yourself:"
+  echo "  OR"
+  echo "Append the following line to the correct file yourself:"
   echo
-  echo "   $SOURCE_STR"
+  echo " $SOURCE_STR"
   echo
 else
   [ -n "$PROFILE" ] && _kvmsetup_update_profile "$PROFILE" "$SOURCE_STR"
   [ -n "$ZPROFILE" ] && _kvmsetup_update_profile "$ZPROFILE" "$SOURCE_STR"
 fi
 
-echo "=> Type 'source $KRE_USER_HOME/kvm/kvm.sh' to start using kvm"
+echo "Type 'source $KRE_USER_HOME/kvm/kvm.sh' to start using kvm"
