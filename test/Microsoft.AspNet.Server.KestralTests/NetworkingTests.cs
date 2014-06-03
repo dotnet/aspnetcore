@@ -71,14 +71,14 @@ namespace Microsoft.AspNet.Server.KestralTests
             var tcp = new UvTcpHandle();
             tcp.Init(loop);
             tcp.Bind(new IPEndPoint(IPAddress.Loopback, 54321));
-            tcp.Listen(10, (status, handle) =>
+            tcp.Listen(10, (stream, status, state) =>
             {
                 var tcp2 = new UvTcpHandle();
                 tcp2.Init(loop);
-                tcp.Accept(tcp2);
+                stream.Accept(tcp2);
                 tcp2.Close();
-                tcp.Close();
-            });
+                stream.Close();
+            }, null);
             var t = Task.Run(async () =>
             {
                 var socket = new Socket(
@@ -108,21 +108,21 @@ namespace Microsoft.AspNet.Server.KestralTests
             var tcp = new UvTcpHandle();
             tcp.Init(loop);
             tcp.Bind(new IPEndPoint(IPAddress.Loopback, 54321));
-            tcp.Listen(10, (status, handle) =>
+            tcp.Listen(10, (_, status, state) =>
             {
                 var tcp2 = new UvTcpHandle();
                 tcp2.Init(loop);
                 tcp.Accept(tcp2);
-                tcp2.ReadStart((nread, data, handle2) =>
+                tcp2.ReadStart((__, nread, data, state2) =>
                 {
                     bytesRead += nread;
                     if (nread == 0)
                     {
                         tcp2.Close();
                     }
-                });
+                }, null);
                 tcp.Close();
-            });
+            }, null);
             var t = Task.Run(async () =>
             {
                 var socket = new Socket(

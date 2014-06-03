@@ -79,6 +79,23 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        delegate void uv_ref(UvHandle handle);
+        uv_ref _uv_ref;
+        public void @ref(UvHandle handle)
+        {
+            _uv_ref(handle);
+        }
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        delegate void uv_unref(UvHandle handle);
+        uv_unref _uv_unref;
+        public void unref(UvHandle handle)
+        {
+            _uv_unref(handle);
+        }
+
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void uv_close_cb(IntPtr handle);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         delegate void uv_close(IntPtr handle, uv_close_cb close_cb);

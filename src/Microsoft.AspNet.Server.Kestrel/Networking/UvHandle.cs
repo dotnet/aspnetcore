@@ -54,5 +54,21 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             }
             Marshal.FreeCoTaskMem(memory);
         }
+
+        unsafe public static THandle FromIntPtr<THandle>(IntPtr handle)
+        {
+            GCHandle gcHandle = GCHandle.FromIntPtr(*(IntPtr*)handle);
+            return (THandle)gcHandle.Target;
+        }
+
+        public void Reference()
+        {
+            _uv.@ref(this);
+        }
+
+        public void Unreference()
+        {
+            _uv.unref(this);
+        }
     }
 }

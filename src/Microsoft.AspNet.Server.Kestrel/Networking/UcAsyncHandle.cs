@@ -12,9 +12,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 
         unsafe static void AsyncCb(IntPtr handle)
         {
-            GCHandle gcHandle = GCHandle.FromIntPtr(*(IntPtr*)handle);
-            var self = (UvAsyncHandle)gcHandle.Target;
-            self._callback.Invoke();
+            FromIntPtr<UvAsyncHandle>(handle)._callback.Invoke();
         }
 
         private Action _callback;
