@@ -1,20 +1,22 @@
-#ASP.NET vNext Home
+# ASP.NET vNext Home
 
 In the next version of ASP.NET we are working with multiple teams around Microsoft to create a lean, composable .NET stack that provides a familiar and modern framework for web and cloud scenarios.
 
 The Home repository is the starting point for people to learn about ASP.NET vNext, it contains samples and [documentation](https://github.com/aspnet/Home/wiki) to help folks get started and learn more about what we are doing.
 
+These products are actively developed by the ASP.NET team assigned to the Microsoft Open Tech Hub and in collaboration with a community of open source developers. Together we are dedicated to creating the best possible platform for web development.
+
 The samples provided are designed to show some of the features of the new framework as well as setting up a sandbox for you to try out some of the new features. The NuGet.config file in the repo points to a MyGet feed (https://www.myget.org/F/aspnetvnext/) that has all the packages being developed. The feed is updated every time a full build succeeds.
 
 
-#Minimum Requirements
+# Minimum Requirements
 
 These are the current minimum requirements, they do not necesarilly represent our RTM minimum.
 
 ### Windows
- * Windows 7 or greater, though Core CLR will only work on Windows 8 today. If using Core CLR you will need to be on Windows 8 or above. At RTM the whole stack will support Windows 7+ and Windows Server 2008 R2+.
- * .NET 4.5.1 for hosting in IIS
- * Powershell 4. KVM is a Powershell script that makes use of types that older verisons of Powershell cannot load
+* Windows 7 or greater, though Core CLR will only work on Windows 8 today. If using Core CLR you will need to be on Windows 8 or above. At RTM the whole stack will support Windows 7+ and Windows Server 2008 R2+.
+* .NET 4.5.1 for hosting in IIS
+* Powershell 4. KVM is a Powershell script that makes use of types that older verisons of Powershell cannot load
 
 
 ### OSX/Linux
@@ -31,7 +33,7 @@ The first thing we need to do is setup the tools required to build and run an ap
  * ```kvmsetup.cmd``` on Windows or
  * ```sh kvmsetup.sh && source ~/.kre/kvm/kvm.sh``` on OSX/Linux
 * This command will setup your environment, getting it ready to install a version of the runtime. It adds kvm to your path and puts it in your user profile.
-* Execute ```kvm install 0.1-alpha-build-0421```. This command will download the named version of the KRE and put it on your user profile ready to use. You can get the latest version by running ```kvm upgrade``` but 0421 was the last version explicitly tested. see the [KVM page](https://github.com/aspnet/Home/wiki/version-manager) for more information on KVM.
+* Execute ```kvm install 0.1-alpha-build-0446```. This command will download the named version of the KRE and put it on your user profile ready to use. You can get the latest version by running ```kvm upgrade``` but 0446 was the last version explicitly tested. see the [KVM page](https://github.com/aspnet/Home/wiki/version-manager) for more information on KVM.
 * Navigate to samples\ConsoleApp
 * Run ```kpm restore```. This downloads the System.Console package so the app can do Console.WriteLine
 * Run ```k run```
@@ -47,7 +49,7 @@ The first thing we need to do is setup the tools required to build and run an ap
 git clone https://github.com/aspnet/Home.git
 cd Home
 kvmsetup
-kvm install 0.1-alpha-build-0421 -p
+kvm install 0.1-alpha-build-0446 -p
 
 cd samples\ConsoleApp
 kpm restore
@@ -57,9 +59,9 @@ SET KRE_TRACE=1
 k run
 ```
 
-#Samples
+# Samples
 
-##Sandbox Samples
+## Sandbox Samples
 
 These samples, in this repo, are just basic starting points for you to experiment with features. Since there is no File->New Project we thought some simple samples to take the place of scaffolding would be convenient.
 
@@ -69,15 +71,15 @@ These samples, in this repo, are just basic starting points for you to experimen
 
 **NOTE: The samples are pinned to a specific version of the packages. If you want to try the latest builds then update the project.json and replace the last part of the version with a '\*', so '0.1-alpha-build-267' becomes '0.1-alpha-\*', and then run ```kpm restore``` to pull down the latest packages**
 
-##Feature Samples
+## Feature Samples
 The [Entropy repo](https://github.com/aspnet/Entropy) contains samples of specific features in isolation. Each directory contains just enough code to show an aspect of a feature.
 
-##Application Samples
+## Application Samples
 [MVC Music Store](https://github.com/aspnet/MusicStore) and [BugTracker](https://github.com/aspnet/BugTracker) application are both being ported. Each of these have their own repository that you can look at.
 
-#Running the samples
+# Running the samples
 
-##Running HelloWeb
+## Running HelloWeb
 
 1. Clone the repository
 2. Change directory to Samples\HelloWeb
@@ -92,12 +94,12 @@ The [Entropy repo](https://github.com/aspnet/Entropy) contains samples of specif
 
 If you can do all of the above then everything should be working. You can try out the WebFx sample now to see some more of the new stack. You should run ```kpm restore``` before using any sample for the first time.
 
-#Switching to Core CLR
+# Switching to Core CLR
 
 
 By default when running the applications you are running against Desktop CLR (4.5), you can change that using the KVM command.
 
-1. Run ```kvm install 0.1-alpha-build-0421 -svrc50``` This command gets the latest Core CLR version of the k runtime and sets it as your default. The -svrc50 switch tells it to use Core CLR, you can use -svr50 to target desktop again.
+1. Run ```kvm install 0.1-alpha-build-0446 -svrc50``` This command gets the latest Core CLR version of the k runtime and sets it as your default. The -svrc50 switch tells it to use Core CLR, you can use -svr50 to target desktop again.
 2. Run ```K web```
 3. The first line of your output should say "Loaded Module: klr.core45.dll" instead of "Loaded Module: klr.net45.dll"
 4. The HelloWeb app should work the same as when running on Desktop CLR.
@@ -110,10 +112,10 @@ By default when running the applications you are running against Desktop CLR (4.
 
 Currently the BCL is split into some fairly fine grained packages, which was one of the goals of this effort. However, the packages that exist today do not necessarily represent the list of packages that we will end up with. We are still experimenting with what makes sense to be a package and what the experience should be.
 
-#Known Issues
+# Known Issues
 
-* Core CLR doesn't currently work on pre Windows 8
+* Core CLR doesn't currently work on Windows OSes earlier than Windows 8
 
-#Feedback
+# Feedback
 
-You can log issues in this repo in order to start discussions, ask questions, make suggestions, etc.
+Check out the [contributing](https://github.com/aspnet/Home/blob/master/CONTRIBUTING.md) page to see the best places to log issues and start discussions.
