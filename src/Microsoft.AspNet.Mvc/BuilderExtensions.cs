@@ -21,16 +21,17 @@ namespace Microsoft.AspNet.Builder
             });
         }
 
-        public static IBuilder UseMvc([NotNull] this IBuilder app, [NotNull] Action<IRouteCollection> configureRoutes)
+        public static IBuilder UseMvc([NotNull] this IBuilder app, [NotNull] Action<IRouteBuilder> configureRoutes)
         {
-            var routes = new RouteCollection
+            var routes = new RouteBuilder
             {
-                DefaultHandler = new MvcRouteHandler()
+                DefaultHandler = new MvcRouteHandler(),
+                ServiceProvider = app.ApplicationServices
             };
 
             configureRoutes(routes);
 
-            return app.UseRouter(routes);
+            return app.UseRouter(routes.Build());
         }
     }
 }

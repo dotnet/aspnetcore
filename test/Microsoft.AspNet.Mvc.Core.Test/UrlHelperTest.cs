@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing;
@@ -394,7 +395,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public void RouteUrlWithRouteNameAndDefaults()
         {
             // Arrange
-            var routeCollection = GetRouteCollection("MyRouteName", "any/url");
+            var routeCollection = GetRouter("MyRouteName", "any/url");
             var urlHelper = CreateUrlHelper("/app", routeCollection);
 
             // Act
@@ -512,25 +513,28 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
         private static UrlHelper CreateUrlHelperWithRouteCollection(string appPrefix)
         {
-            var routeCollection = GetRouteCollection();
+            var routeCollection = GetRouter();
             return CreateUrlHelper("/app", routeCollection);
         }
 
-        private static RouteCollection GetRouteCollection()
+        private static IRouter GetRouter()
         {
-            return GetRouteCollection("mockRoute", "/mockTemplate");
+            return GetRouter("mockRoute", "/mockTemplate");
         }
 
-        private static RouteCollection GetRouteCollection(string mockRouteName, string mockTemplateValue)
+        private static IRouter GetRouter(string mockRouteName, string mockTemplateValue)
         {
-            var rt = new RouteCollection();
+            var rt = new RouteBuilder();
             var target = new Mock<IRouter>(MockBehavior.Strict);
             target
                 .Setup(e => e.GetVirtualPath(It.IsAny<VirtualPathContext>()))
                 .Callback<VirtualPathContext>(c => c.IsBound = true)
                 .Returns<VirtualPathContext>(rc => null);
             rt.DefaultHandler = target.Object;
-
+            var serviceProviderMock = new Mock<IServiceProvider>();
+            serviceProviderMock.Setup(o => o.GetService(typeof(IInlineConstraintResolver)))
+                               .Returns(new DefaultInlineConstraintResolver());
+            rt.ServiceProvider = serviceProviderMock.Object;
             rt.MapRoute(string.Empty,
                         "{controller}/{action}/{id}",
                         new RouteValueDictionary(new { id = "defaultid" }));
@@ -544,8 +548,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                                                                                                   mockRouteName)
                                                                                   )))
                          .Returns(mockTemplateValue);
-            rt.Add(mockHttpRoute.Object);
-            return rt;
+            rt.Routes.Add(mockHttpRoute.Object);
+            return rt.Build();
         }
     }
 }
