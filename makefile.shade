@@ -16,7 +16,6 @@ var useHttps='${UseHttps(BASE_DIR)}'
 var gitHubUriPrefix='${useHttps ? "https://github.com/aspnet/" : "git@github.com:aspnet/"}'
 var repos='${new Dictionary<string,string> {
 /*    {"KRuntime",              gitHubUriPrefix + "KRuntime.git"}, */ // Let's not build the sdk :)
-
     {"Configuration",         gitHubUriPrefix + "Configuration.git"},
     {"DataCommon",            gitHubUriPrefix + "DataCommon.git"},
     {"DataCommon.SQLite",     gitHubUriPrefix + "DataCommon.SQLite.git"},
@@ -30,7 +29,9 @@ var repos='${new Dictionary<string,string> {
     {"Hosting",               gitHubUriPrefix + "Hosting.git"},
     {"HttpAbstractions",      gitHubUriPrefix + "HttpAbstractions.git"},
     {"Identity",              gitHubUriPrefix + "Identity.git"},
+    {"Logging",               gitHubUriPrefix + "Logging.git"},
     {"Mvc",                   gitHubUriPrefix + "Mvc.git"},
+    {"Options",               gitHubUriPrefix + "Options.git"},
     {"Razor",                 gitHubUriPrefix + "Razor.git"},
     {"Routing",               gitHubUriPrefix + "Routing.git"},
     {"Security",              gitHubUriPrefix + "Security.git"},
