@@ -17,9 +17,19 @@ namespace MvcSample.Web.Components
                 .OrderBy(s => Guid.NewGuid().ToString())
                 .ToArray();
 
-        public async Task<IViewComponentResult> InvokeAsync(int count)
+        public async Task<IViewComponentResult> InvokeAsync(int count, string returnAs)
         {
             var tags = await GetTagsAsync(count);
+
+            if (returnAs.Equals("Content", StringComparison.OrdinalIgnoreCase))
+            {
+                return Content(string.Join(", ", tags));
+            }
+            if (returnAs.Equals("Json", StringComparison.OrdinalIgnoreCase))
+            {
+                return Json(tags);
+            }
+
             return View(tags);
         }
 

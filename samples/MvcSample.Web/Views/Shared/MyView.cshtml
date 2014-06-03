@@ -146,7 +146,12 @@
         </table>
     </div>
     <div style="float: left; border: 5px solid red; margin: 5px;">
-        @await Component.InvokeAsync("Tags", 15)
+        <p>Tags from View():</p>
+        @await Component.InvokeAsync("Tags", 5, "View")
+        <p>Tags from Content():</p>
+        <p>@await Component.InvokeAsync("Tags", 5, "Content")</p>
+        <p>Tags from Json():</p>
+        <p>@await Component.InvokeAsync("Tags", 5, "Json")</p>
         <p style="padding: 0px 10px;">'@ViewBag.Title' should match page heading (still)</p>
     </div>
     <div style="float: left; border: thick solid lightskyblue; margin: 5px; padding: 7px;">

@@ -14,17 +14,17 @@ namespace Microsoft.AspNet.Mvc
             _viewEngine = viewEngine;
         }
 
-        public IViewComponentResult Content([NotNull] string content)
+        public virtual ContentViewComponentResult Content([NotNull] string content)
         {
             return new ContentViewComponentResult(content);
         }
 
-        public IViewComponentResult Json([NotNull] object value)
+        public virtual JsonViewComponentResult Json([NotNull] object value)
         {
             return new JsonViewComponentResult(value);
         }
 
-        public IViewComponentResult View([NotNull] string viewName, [NotNull] ViewDataDictionary viewData)
+        public virtual ViewViewComponentResult View([NotNull] string viewName, [NotNull] ViewDataDictionary viewData)
         {
             return new ViewViewComponentResult(_viewEngine, viewName, viewData);
         }

@@ -7,10 +7,10 @@ namespace Microsoft.AspNet.Mvc
 {
     public interface IViewComponentResultHelper
     {
-        IViewComponentResult Content([NotNull] string content);
+        ContentViewComponentResult Content([NotNull] string content);
 
-        IViewComponentResult Json([NotNull] object value);
+        JsonViewComponentResult Json([NotNull] object value);
 
-        IViewComponentResult View([NotNull] string viewName, [NotNull] ViewDataDictionary viewData);
+        ViewViewComponentResult View([NotNull] string viewName, [NotNull] ViewDataDictionary viewData);
     }
 }
