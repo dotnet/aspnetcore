@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -30,10 +31,18 @@ namespace Microsoft.AspNet.Mvc
 
         public override void ExecuteResult([NotNull] ActionContext context)
         {
-            // It is redirected directly to the input URL.
-            // We would use the context to construct the full URL,
-            // only when relative URLs are supported. (Issue - WEBFX-202)
-            context.HttpContext.Response.Redirect(Url, Permanent);
+            var destinationUrl = Url;
+            var urlHelper = context.HttpContext
+                                   .RequestServices
+                                   .GetService<IUrlHelper>();
+
+            // IsLocalUrl is called to handle  Urls starting with '~/'.
+            if (urlHelper.IsLocalUrl(destinationUrl))
+            {
+                destinationUrl = urlHelper.Content(Url);
+            }
+
+            context.HttpContext.Response.Redirect(destinationUrl, Permanent);
         }
     }
 }

@@ -229,9 +229,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         /// <inheritdoc />
         public HtmlString ValidationMessageFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression,
-                                                            string message, object htmlAttributes)
+            string message,
+            object htmlAttributes,
+            string tag)
         {
-            return GenerateValidationMessage(ExpressionHelper.GetExpressionText(expression), message, htmlAttributes);
+            return GenerateValidationMessage(ExpressionHelper.GetExpressionText(expression),
+                message,
+                htmlAttributes,
+                tag);
         }
 
         /// <inheritdoc />
