@@ -36,6 +36,7 @@ namespace Microsoft.Framework.DependencyInjection
             services.Add(IdentityServices.GetDefaultUserServices<TUser>());
             services.Add(IdentityServices.GetDefaultRoleServices<TRole>());
             services.AddScoped<UserManager<TUser>>();
+            services.AddScoped<SignInManager<TUser>>();
             services.AddScoped<RoleManager<TRole>>();
             return new IdentityBuilder<TUser, TRole>(services);
         }

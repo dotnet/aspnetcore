@@ -3,8 +3,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.Test

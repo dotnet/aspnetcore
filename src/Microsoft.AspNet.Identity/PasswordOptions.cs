@@ -40,18 +40,5 @@ namespace Microsoft.AspNet.Identity
         ///     Require a digit ('0' - '9')
         /// </summary>
         public bool RequireDigit { get; set; }
-
-        public virtual void Copy(PasswordOptions options)
-        {
-            if (options == null)
-            {
-                return;
-            }
-            RequireDigit = options.RequireDigit;
-            RequireLowercase = options.RequireLowercase;
-            RequireNonLetterOrDigit = options.RequireNonLetterOrDigit;
-            RequireUppercase = options.RequireUppercase;
-            RequiredLength = options.RequiredLength;
-        }
     }
 }

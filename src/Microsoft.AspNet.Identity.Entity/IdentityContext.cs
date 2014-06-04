@@ -18,6 +18,14 @@ namespace Microsoft.AspNet.Identity.Entity
         public IdentityContext(IServiceProvider serviceProvider) : base(serviceProvider) { }
     }
 
+    public class IdentityContext<TUser> :
+        IdentityContext<TUser, EntityRole, string, IdentityUserLogin, IdentityUserRole, IdentityUserClaim>
+        where TUser : EntityUser<string, IdentityUserLogin, IdentityUserRole, IdentityUserClaim>
+    {
+        public IdentityContext() { }
+        public IdentityContext(IServiceProvider serviceProvider) : base(serviceProvider) { }
+    }
+
     public class IdentityContext<TUser, TRole, TKey, TUserLogin, TUserRole, TUserClaim> : DbContext
         where TUser : EntityUser<TKey, TUserLogin, TUserRole, TUserClaim>
         where TRole : EntityRole<TKey, TUserRole>

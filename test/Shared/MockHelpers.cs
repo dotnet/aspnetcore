@@ -7,11 +7,28 @@ using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.OptionsModel;
 using Moq;
+using System;
 
 namespace Microsoft.AspNet.Identity.Test
 {
     public static class MockHelpers
     {
+        public static UserManager<TUser> CreateManager<TUser>(Func<IUserStore<TUser>> storeFunc) where TUser : class
+        {
+            var services = new ServiceCollection();
+            services.Add(OptionsServices.GetDefaultServices());
+            services.AddIdentity<TUser>(b => b.AddUserStore(storeFunc));
+            services.SetupOptions<IdentityOptions>(options =>
+            {
+                options.Password.RequireDigit = false;
+                options.Password.RequireLowercase = false;
+                options.Password.RequireNonLetterOrDigit = false;
+                options.Password.RequireUppercase = false;
+                options.User.AllowOnlyAlphanumericNames = false;
+            });
+            return services.BuildServiceProvider().GetService<UserManager<TUser>>();
+        }
+
         public static Mock<UserManager<TUser>> MockUserManager<TUser>() where TUser : class
         {
             var store = new Mock<IUserStore<TUser>>();

@@ -13,18 +13,25 @@ using Microsoft.Data.Entity;
 
 namespace Microsoft.AspNet.Identity.Entity
 {
-    public class InMemoryInMemoryUserStore :
-        InMemoryUserStore<EntityUser>
+    public class InMemoryUserStore : InMemoryUserStore<EntityUser, IdentityContext>
     {
-        public InMemoryInMemoryUserStore(DbContext context) : base(context) { }
+        public InMemoryUserStore(IdentityContext context) : base(context) { }
     }
 
-    public class InMemoryUserStore<TUser> : InMemoryUserStore<TUser, EntityRole, string, IdentityUserLogin, IdentityUserRole, IdentityUserClaim> where TUser:EntityUser
+    public class InMemoryUserStore<TUser> : InMemoryUserStore<TUser, IdentityContext>
+        where TUser : EntityUser
     {
-        public InMemoryUserStore(DbContext context) : base(context) { }
+        public InMemoryUserStore(IdentityContext context) : base(context) { }
     }
 
-    public class InMemoryUserStore<TUser, TRole, TKey, TUserLogin, TUserRole, TUserClaim> :
+    public class InMemoryUserStore<TUser, TContext> : InMemoryUserStore<TUser, EntityRole, string, IdentityUserLogin, IdentityUserRole, IdentityUserClaim, TContext> 
+        where TUser:EntityUser
+        where TContext : DbContext
+    {
+        public InMemoryUserStore(TContext context) : base(context) { }
+    }
+
+    public class InMemoryUserStore<TUser, TRole, TKey, TUserLogin, TUserRole, TUserClaim, TContext> :
         IUserLoginStore<TUser>,
         IUserClaimStore<TUser>,
         IUserRoleStore<TUser>,
@@ -41,10 +48,11 @@ namespace Microsoft.AspNet.Identity.Entity
         where TUserLogin : IdentityUserLogin<TKey>, new()
         where TUserRole : IdentityUserRole<TKey>, new()
         where TUserClaim : IdentityUserClaim<TKey>, new()
+        where TContext : DbContext
     {
         private bool _disposed;
 
-        public InMemoryUserStore(DbContext context)
+        public InMemoryUserStore(TContext context)
         {
             if (context == null)
             {
@@ -54,7 +62,7 @@ namespace Microsoft.AspNet.Identity.Entity
             AutoSaveChanges = true;
         }
 
-        public DbContext Context { get; private set; }
+        public TContext Context { get; private set; }
 
         /// <summary>
         ///     If true will call SaveChanges after CreateAsync/UpdateAsync/DeleteAsync

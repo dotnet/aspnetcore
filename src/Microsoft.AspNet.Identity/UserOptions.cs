@@ -22,15 +22,5 @@ namespace Microsoft.AspNet.Identity
         ///     If set, enforces that emails are non empty, valid, and unique
         /// </summary>
         public bool RequireUniqueEmail { get; set; }
-
-        public virtual void Copy(UserOptions options)
-        {
-            if (options == null)
-            {
-                return;
-            }
-            AllowOnlyAlphanumericNames = options.AllowOnlyAlphanumericNames;
-            RequireUniqueEmail = options.RequireUniqueEmail;
-        }
     }
 }

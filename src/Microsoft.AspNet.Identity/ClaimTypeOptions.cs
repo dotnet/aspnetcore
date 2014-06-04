@@ -42,17 +42,5 @@ namespace Microsoft.AspNet.Identity
         ///     Claim type used for the user security stamp
         /// </summary>
         public string SecurityStamp { get; set; }
-
-        public virtual void Copy(ClaimTypeOptions options)
-        {
-            if (options == null)
-            {
-                return;
-            }
-            Role = options.Role;
-            SecurityStamp = options.SecurityStamp;
-            UserId = options.UserId;
-            UserName = options.UserName;
-        }
     }
 }

@@ -12,6 +12,7 @@ namespace Microsoft.AspNet.Identity.Entity
     {
         public IdentitySqlContext() { }
         public IdentitySqlContext(IServiceProvider serviceProvider) : base(serviceProvider) { }
+        public IdentitySqlContext(IServiceProvider serviceProvider, string nameOrConnectionString) : base(serviceProvider, nameOrConnectionString) { }
         public IdentitySqlContext(DbContextOptions options) : base(options) { }
         public IdentitySqlContext(IServiceProvider serviceProvider, DbContextOptions options) : base(serviceProvider, options) { }
     }
@@ -23,16 +24,23 @@ namespace Microsoft.AspNet.Identity.Entity
         public DbSet<IdentityUserClaim> UserClaims { get; set; }
         //public DbSet<TRole> Roles { get; set; }
 
+        private readonly string _nameOrConnectionString;
+
         public IdentitySqlContext() { }
+        public IdentitySqlContext(IServiceProvider serviceProvider, string nameOrConnectionString) : base(serviceProvider)
+        {
+            _nameOrConnectionString = nameOrConnectionString;
+        }
         public IdentitySqlContext(IServiceProvider serviceProvider) : base(serviceProvider) { }
         public IdentitySqlContext(DbContextOptions options) : base(options) { }
         public IdentitySqlContext(IServiceProvider serviceProvider, DbContextOptions options) : base(serviceProvider, options) { }
 
-
         protected override void OnConfiguring(DbContextOptions builder)
         {
-            // TODO: pull connection string from config
-            builder.UseSqlServer(@"Server=(localdb)\v11.0;Database=SimpleIdentity-5-28;Trusted_Connection=True;");
+            if (!string.IsNullOrEmpty(_nameOrConnectionString))
+            {
+                builder.UseSqlServer(_nameOrConnectionString);
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder builder)

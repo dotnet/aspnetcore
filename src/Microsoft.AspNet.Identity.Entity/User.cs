@@ -10,9 +10,6 @@ namespace Microsoft.AspNet.Identity.Entity
         public User()
         {
             Id = Guid.NewGuid().ToString();
-            // TODO: remove when bug is fixed
-            UserName = "";
-            PasswordHash = "";
         }
 
         public User(string userName) : this()

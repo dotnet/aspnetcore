@@ -24,6 +24,8 @@
     <Compile Include="ClaimsIdentityFactory.cs" />
     <Compile Include="ClaimTypeOptions.cs" />
     <Compile Include="Crypto.cs" />
+    <Compile Include="DefaultAuthenticationTypes.cs" />
+    <Compile Include="IAuthenticationManager.cs" />
     <Compile Include="IClaimsIdentityFactory.cs" />
     <Compile Include="IdentityBuilder.cs" />
     <Compile Include="IdentityMessage.cs" />
@@ -64,6 +66,8 @@
     <Compile Include="Rfc6238AuthenticationService.cs" />
     <Compile Include="RoleManager.cs" />
     <Compile Include="RoleValidator.cs" />
+    <Compile Include="SignInManager.cs" />
+    <Compile Include="SignInStatus.cs" />
     <Compile Include="UserLoginInfo.cs" />
     <Compile Include="UserManager.cs" />
     <Compile Include="UserOptions.cs" />

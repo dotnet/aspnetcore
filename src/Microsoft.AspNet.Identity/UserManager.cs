@@ -727,7 +727,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="newPassword"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> ResetPassword(TUser user, string token, string newPassword, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> ResetPasswordAsync(TUser user, string token, string newPassword, CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
             if (user == null)

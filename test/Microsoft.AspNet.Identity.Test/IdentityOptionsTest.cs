@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
+using Microsoft.AspNet.Builder;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
@@ -35,13 +36,6 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.Equal(ClaimTypes.Name, options.ClaimType.UserName);
             Assert.Equal(ClaimTypes.NameIdentifier, options.ClaimType.UserId);
             Assert.Equal(ClaimTypeOptions.DefaultSecurityStampClaimType, options.ClaimType.SecurityStamp);
-        }
-
-        [Fact]
-        public void CopyNullIsNoop()
-        {
-            var options = new IdentityOptions();
-            options.Copy(null);
         }
 
         [Fact]
@@ -91,47 +85,54 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.Equal(1000, options.Lockout.MaxFailedAccessAttempts);
         }
 
-        //[Fact]
-        //public void ClaimTypeOptionsFromConfig()
-        //{
-        //    const string roleClaimType = "rolez";
-        //    const string usernameClaimType = "namez";
-        //    const string useridClaimType = "idz";
-        //    const string securityStampClaimType = "stampz";
-        //    var dic = new Dictionary<string, string>
-        //    { 
-        //        {"role", roleClaimType},
-        //        {"username", usernameClaimType},
-        //        {"userid", useridClaimType},
-        //        {"securitystamp", securityStampClaimType}
-        //    };
-        //    var config = new ConfigurationModel.Configuration {new MemoryConfigurationSource(dic)};
-        //    Assert.Equal(roleClaimType, config.Get("role"));
-        //    var options = new ClaimTypeOptions(config);
-        //    Assert.Equal(roleClaimType, options.Role);
-        //    Assert.Equal(useridClaimType, options.UserId);
-        //    Assert.Equal(usernameClaimType, options.UserName);
-        //    Assert.Equal(securityStampClaimType, options.SecurityStamp);
-        //}
+        public class PasswordsNegativeLengthSetup : IOptionsSetup<IdentityOptions>
+        {
+            public int Order { get { return 0; } }
+            public void Setup(IdentityOptions options)
+            {
+                options.Password.RequiredLength = -1;
+            }
+        }
 
-        //[Fact]
-        //public void PasswordOptionsFromConfig()
-        //{
-        //    var dic = new Dictionary<string, string>
-        //    { 
-        //        {"RequiredLength", "10"},
-        //        {"RequireNonLetterOrDigit", "false"},
-        //        {"RequireUpperCase", "false"},
-        //        {"RequireDigit", "false"},
-        //        {"RequireLowerCase", "false"}
-        //    };
-        //    var config = new ConfigurationModel.Configuration { new MemoryConfigurationSource(dic) };
-        //    var options = new PasswordOptions(config);
-        //    Assert.False(options.RequireDigit);
-        //    Assert.False(options.RequireLowercase);
-        //    Assert.False(options.RequireNonLetterOrDigit);
-        //    Assert.False(options.RequireUppercase);
-        //    Assert.Equal(10, options.RequiredLength);
-        //}
+        [Fact]
+        public void CanCustomizeIdentityOptions()
+        {
+            var builder = new Builder.Builder(new ServiceCollection().BuildServiceProvider());
+            builder.UseServices(services =>
+            {
+                services.AddIdentity<IdentityUser>();
+                services.AddSetup<PasswordsNegativeLengthSetup>();
+            });
+
+            var setup = builder.ApplicationServices.GetService<IOptionsSetup<IdentityOptions>>();
+            Assert.IsType(typeof(PasswordsNegativeLengthSetup), setup);
+            var optionsGetter = builder.ApplicationServices.GetService<IOptionsAccessor<IdentityOptions>>();
+            Assert.NotNull(optionsGetter);
+            setup.Setup(optionsGetter.Options);
+
+            var myOptions = optionsGetter.Options;
+            Assert.True(myOptions.Password.RequireLowercase);
+            Assert.True(myOptions.Password.RequireDigit);
+            Assert.True(myOptions.Password.RequireNonLetterOrDigit);
+            Assert.True(myOptions.Password.RequireUppercase);
+            Assert.Equal(-1, myOptions.Password.RequiredLength);
+        }
+
+        [Fact]
+        public void CanSetupIdentityOptions()
+        {
+            var app = new Builder.Builder(new ServiceCollection().BuildServiceProvider());
+            app.UseServices(services =>
+            {
+                services.AddIdentity<IdentityUser>(identityServices => identityServices.SetupOptions(options => options.User.RequireUniqueEmail = true));
+            });
+
+            var optionsGetter = app.ApplicationServices.GetService<IOptionsAccessor<IdentityOptions>>();
+            Assert.NotNull(optionsGetter);
+
+            var myOptions = optionsGetter.Options;
+            Assert.True(myOptions.User.RequireUniqueEmail);
+        }
+
     }
 }

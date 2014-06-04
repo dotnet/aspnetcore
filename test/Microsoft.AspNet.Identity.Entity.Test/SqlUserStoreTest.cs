@@ -17,11 +17,20 @@ namespace Microsoft.AspNet.Identity.Entity.Test
 {
     public class SqlUserStoreTest
     {
+        private const string ConnectionString = @"Server=(localdb)\v11.0;Database=SqlUserStoreTest;Trusted_Connection=True;";
+
         public class ApplicationUser : User { }
 
         public class ApplicationDbContext : IdentitySqlContext<ApplicationUser>
         {
-            public ApplicationDbContext(IServiceProvider services) : base(services) { }
+            public ApplicationDbContext(IServiceProvider services, IOptionsAccessor<DbContextOptions> options) : base(services, options.Options) { }
+        }
+
+        [TestPriority(0)]
+        [Fact]
+        public void RecreateDatabase()
+        {
+            CreateContext(true);
         }
 
         [Fact]
@@ -32,9 +41,10 @@ namespace Microsoft.AspNet.Identity.Entity.Test
 
             builder.UseServices(services =>
             {
-                services.Add(OptionsServices.GetDefaultServices());
                 services.AddEntityFramework().AddSqlServer();
-                services.AddIdentityEntityFramework<ApplicationDbContext, ApplicationUser>();
+                services.AddIdentity<ApplicationUser>().AddEntityFramework<ApplicationUser, ApplicationDbContext>();
+                services.SetupOptions<DbContextOptions>(options => 
+                    options.UseSqlServer(ConnectionString));
             });
 
             var userStore = builder.ApplicationServices.GetService<IUserStore<ApplicationUser>>();
@@ -58,19 +68,23 @@ namespace Microsoft.AspNet.Identity.Entity.Test
                 var guid = Guid.NewGuid().ToString();
                 db.Users.Add(new User {Id = guid, UserName = guid});
                 db.SaveChanges();
+                Assert.True(db.Users.Any(u => u.UserName == guid));
                 Assert.NotNull(db.Users.FirstOrDefault(u => u.UserName == guid));
             }
         }
 
-        public static IdentitySqlContext CreateContext()
+        public static IdentitySqlContext CreateContext(bool delete = false)
         {
             var services = new ServiceCollection();
             services.AddEntityFramework().AddSqlServer();
             var serviceProvider = services.BuildServiceProvider();
 
-            var db = new IdentitySqlContext(serviceProvider);
+            var db = new IdentitySqlContext(serviceProvider, ConnectionString);
+            if (delete)
+            {
+                db.Database.EnsureDeleted();
+            }
             db.Database.EnsureCreated();
-
             return db;
         }
 
@@ -81,45 +95,20 @@ namespace Microsoft.AspNet.Identity.Entity.Test
 
         public static ApplicationDbContext CreateAppContext()
         {
+            CreateContext();
             var services = new ServiceCollection();
             services.AddEntityFramework().AddSqlServer();
+            services.Add(OptionsServices.GetDefaultServices());
             var serviceProvider = services.BuildServiceProvider();
 
-            var db = new ApplicationDbContext(serviceProvider);
-
-            // TODO: Recreate DB, doesn't support String ID or Identity context yet
+            var db = new ApplicationDbContext(serviceProvider, serviceProvider.GetService<IOptionsAccessor<DbContextOptions>>());
             db.Database.EnsureCreated();
-
-            // TODO: CreateAsync DB?
             return db;
         }
 
         public static UserManager<User> CreateManager(DbContext context)
         {
-            var services = new ServiceCollection();
-            services.AddTransient<IUserValidator<User>, UserValidator<User>>();
-            services.AddTransient<IPasswordValidator<User>, PasswordValidator<User>>();
-            //services.AddInstance<IUserStore<User>>(new UserStore<User>(context));
-            //services.AddSingleton<UserManager<User>>();
-            var options = new IdentityOptions
-            {
-                Password = new PasswordOptions
-                {
-                    RequireDigit = false,
-                    RequireLowercase = false,
-                    RequireNonLetterOrDigit = false,
-                    RequireUppercase = false
-                },
-                User = new UserOptions
-                {
-                    AllowOnlyAlphanumericNames = false
-                }
-
-            };
-            var optionsAccessor = new OptionsAccessor<IdentityOptions>(new[] { new TestIdentityFactory.TestSetup(options) });
-            //services.AddInstance<IOptionsAccessor<IdentityOptions>>(new OptionsAccessor<IdentityOptions>(new[] { new TestSetup(options) }));
-            //return services.BuildServiceProvider().GetService<UserManager<User>>();
-            return new UserManager<User>(services.BuildServiceProvider(), new UserStore<User>(context), optionsAccessor);
+            return MockHelpers.CreateManager(() => new UserStore<User>(context));
         }
 
         public static UserManager<User> CreateManager()
@@ -151,13 +140,14 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         public async Task CanUpdateUserName()
         {
             var manager = CreateManager();
-            var user = new User("UpdateAsync");
+            var oldName = Guid.NewGuid().ToString();
+            var user = new User(oldName);
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
-            Assert.Null(await manager.FindByNameAsync("New"));
-            user.UserName = "New";
+            var newName = Guid.NewGuid().ToString();
+            user.UserName = newName;
             IdentityResultAssert.IsSuccess(await manager.UpdateAsync(user));
-            Assert.NotNull(await manager.FindByNameAsync("New"));
-            Assert.Null(await manager.FindByNameAsync("UpdateAsync"));
+            Assert.NotNull(await manager.FindByNameAsync(newName));
+            Assert.Null(await manager.FindByNameAsync(oldName));
             IdentityResultAssert.IsSuccess(await manager.DeleteAsync(user));
         }
 
@@ -165,12 +155,13 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         public async Task CanSetUserName()
         {
             var manager = CreateManager();
-            var user = new User("UpdateAsync");
+            var oldName = Guid.NewGuid().ToString();
+            var user = new User(oldName);
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
-            Assert.Null(await manager.FindByNameAsync("New"));
-            IdentityResultAssert.IsSuccess(await manager.SetUserNameAsync(user, "New"));
-            Assert.NotNull(await manager.FindByNameAsync("New"));
-            Assert.Null(await manager.FindByNameAsync("UpdateAsync"));
+            var newName = Guid.NewGuid().ToString();
+            IdentityResultAssert.IsSuccess(await manager.SetUserNameAsync(user, newName));
+            Assert.NotNull(await manager.FindByNameAsync(newName));
+            Assert.Null(await manager.FindByNameAsync(oldName));
             IdentityResultAssert.IsSuccess(await manager.DeleteAsync(user));
         }
 

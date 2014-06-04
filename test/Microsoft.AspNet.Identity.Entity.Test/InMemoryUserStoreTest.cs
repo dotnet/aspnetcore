@@ -19,10 +19,6 @@ namespace Microsoft.AspNet.Identity.Entity.Test
 {
     public class InMemoryUserStoreTest
     {
-        class ApplicationUserManager : UserManager<EntityUser>
-        {
-            public ApplicationUserManager(IServiceProvider services, IUserStore<EntityUser> store, IOptionsAccessor<IdentityOptions> options) : base(services, store, options) { }
-        }
 
         [Fact]
         public async Task CanUseAddedManagerInstance()
@@ -30,11 +26,11 @@ namespace Microsoft.AspNet.Identity.Entity.Test
             var services = new ServiceCollection();
             services.AddEntityFramework().AddInMemoryStore();
             services.AddSingleton<IOptionsAccessor<IdentityOptions>, OptionsAccessor<IdentityOptions>>();
-            services.AddInstance<DbContext>(new IdentityContext());
-            services.AddTransient<IUserStore<EntityUser>, InMemoryInMemoryUserStore>();
-            services.AddSingleton<ApplicationUserManager, ApplicationUserManager>();
+            services.AddInstance<IdentityContext>(new IdentityContext());
+            services.AddTransient<IUserStore<EntityUser>, InMemoryUserStore>();
+            services.AddSingleton<UserManager<EntityUser>>();
             var provider = services.BuildServiceProvider();
-            var manager = provider.GetService<ApplicationUserManager>();
+            var manager = provider.GetService<UserManager<EntityUser>>();
             Assert.NotNull(manager);
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(new EntityUser("hello")));
         }
@@ -46,41 +42,23 @@ namespace Microsoft.AspNet.Identity.Entity.Test
             services.AddEntityFramework().AddInMemoryStore();
 
             // TODO: this needs to construct a new instance of InMemoryStore
-            var store = new InMemoryInMemoryUserStore(new IdentityContext());
+            var store = new InMemoryUserStore(new IdentityContext());
             services.Add(OptionsServices.GetDefaultServices());
             services.AddIdentity<EntityUser, EntityRole>(s =>
             {
                 s.AddUserStore(() => store);
-                s.AddUserManager<ApplicationUserManager>();
             });
 
             var provider = services.BuildServiceProvider();
-            var manager = provider.GetService<ApplicationUserManager>();
+            var manager = provider.GetService<UserManager<EntityUser>>();
             Assert.NotNull(manager);
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(new EntityUser("hello2")));
         }
 
-        //[Fact]
-        //public async Task CanUseSingletonGenericManagerInstance()
-        //{
-        //    var services = new ServiceCollection();
-        //    var store = new EntityUserStore(new IdentityContext());
-        //    services.AddIdentity<EntityUser>(s =>
-        //    {
-        //        s.UseStore(() => store);
-        //        s.UseManager<UserManager<EntityUser>>();
-        //    });
-
-        //    var provider = services.BuildServiceProvider();
-        //    var manager = provider.GetService<UserManager<EntityUser>>();
-        //    Assert.NotNull(manager);
-        //    IdentityResultAssert.IsSuccess(await manager.CreateAsync(new EntityUser("hello")));
-        //}
-
         [Fact]
         public async Task EntityUserStoreMethodsThrowWhenDisposedTest()
         {
-            var store = new InMemoryInMemoryUserStore(new IdentityContext());
+            var store = new InMemoryUserStore(new IdentityContext());
             store.Dispose();
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.AddClaimAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.AddLoginAsync(null, null));
@@ -112,8 +90,8 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         [Fact]
         public async Task EntityUserStorePublicNullCheckTest()
         {
-            Assert.Throws<ArgumentNullException>("context", () => new InMemoryInMemoryUserStore(null));
-            var store = new InMemoryInMemoryUserStore(new IdentityContext());
+            Assert.Throws<ArgumentNullException>("context", () => new InMemoryUserStore(null));
+            var store = new InMemoryUserStore(new IdentityContext());
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.GetUserIdAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.GetUserNameAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.SetUserNameAsync(null, null));
@@ -675,7 +653,7 @@ namespace Microsoft.AspNet.Identity.Entity.Test
             Assert.NotNull(stamp);
             var token = await manager.GeneratePasswordResetTokenAsync(user);
             Assert.NotNull(token);
-            IdentityResultAssert.IsSuccess(await manager.ResetPassword(user, token, newPassword));
+            IdentityResultAssert.IsSuccess(await manager.ResetPasswordAsync(user, token, newPassword));
             Assert.Null(await manager.FindByUserNamePasswordAsync(user.UserName, password));
             Assert.Equal(user, await manager.FindByUserNamePasswordAsync(user.UserName, newPassword));
             Assert.NotEqual(stamp, user.SecurityStamp);
@@ -695,7 +673,7 @@ namespace Microsoft.AspNet.Identity.Entity.Test
             var token = await manager.GeneratePasswordResetTokenAsync(user);
             Assert.NotNull(token);
             manager.PasswordValidator = new AlwaysBadValidator();
-            IdentityResultAssert.IsFailure(await manager.ResetPassword(user, token, newPassword),
+            IdentityResultAssert.IsFailure(await manager.ResetPasswordAsync(user, token, newPassword),
                 AlwaysBadValidator.ErrorMessage);
             Assert.NotNull(await manager.FindByUserNamePasswordAsync(user.UserName, password));
             Assert.Equal(user, await manager.FindByUserNamePasswordAsync(user.UserName, password));
@@ -713,7 +691,7 @@ namespace Microsoft.AspNet.Identity.Entity.Test
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, password));
             var stamp = user.SecurityStamp;
             Assert.NotNull(stamp);
-            IdentityResultAssert.IsFailure(await manager.ResetPassword(user, "bogus", newPassword), "Invalid token.");
+            IdentityResultAssert.IsFailure(await manager.ResetPasswordAsync(user, "bogus", newPassword), "Invalid token.");
             Assert.NotNull(await manager.FindByUserNamePasswordAsync(user.UserName, password));
             Assert.Equal(user, await manager.FindByUserNamePasswordAsync(user.UserName, password));
             Assert.Equal(stamp, user.SecurityStamp);

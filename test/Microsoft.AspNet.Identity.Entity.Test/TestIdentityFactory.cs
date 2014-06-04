@@ -1,10 +1,12 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNet.Identity.Test;
 using Microsoft.Data.Entity;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.OptionsModel;
+using System;
 
 namespace Microsoft.AspNet.Identity.Entity.Test
 {
@@ -13,61 +15,18 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         public static IdentityContext CreateContext()
         {
             var services = new ServiceCollection();
-            
-//#if NET45
-//            services.AddEntityFramework().AddSqlServer();
-//#else
             services.AddEntityFramework().AddInMemoryStore();
-//#endif
             var serviceProvider = services.BuildServiceProvider();
 
             var db = new IdentityContext(serviceProvider);
-             
-            // TODO: Recreate DB, doesn't support String ID or Identity context yet
             db.Database.EnsureCreated();
 
-            // TODO: CreateAsync DB?
             return db;
         }
 
-        public class TestSetup : IOptionsSetup<IdentityOptions>
+        public static UserManager<EntityUser> CreateManager(IdentityContext context)
         {
-            private readonly IdentityOptions _options;
-
-            public TestSetup(IdentityOptions options)
-            {
-                _options = options;
-            }
-
-            public int Order { get { return 0; } }
-            public void Setup(IdentityOptions options)
-            {
-                options.Copy(_options);
-            }
-        }
-
-
-        public static UserManager<EntityUser> CreateManager(DbContext context)
-        {
-            var services = new ServiceCollection();
-            services.AddTransient<IUserValidator<EntityUser>, UserValidator<EntityUser>>();
-            services.AddTransient<IPasswordValidator<IdentityUser>, PasswordValidator<IdentityUser>>();
-            services.AddInstance<IUserStore<EntityUser>>(new InMemoryUserStore<EntityUser>(context));
-            services.AddSingleton<UserManager<EntityUser>, UserManager<EntityUser>>();
-            var options = new IdentityOptions
-            {
-                Password = new PasswordOptions
-                {
-                    RequireDigit = false,
-                    RequireLowercase = false,
-                    RequireNonLetterOrDigit = false,
-                    RequireUppercase = false
-                }
-            };
-            var optionsAccessor = new OptionsAccessor<IdentityOptions>(new[] { new TestSetup(options) });
-            //services.AddInstance<IOptionsAccessor<IdentityOptions>>(new OptionsAccessor<IdentityOptions>(new[] { new TestSetup(options) }));
-            //return services.BuildServiceProvider().GetService<UserManager<EntityUser>>();
-            return new UserManager<EntityUser>(services.BuildServiceProvider(), new InMemoryUserStore<EntityUser>(context), optionsAccessor);
+            return MockHelpers.CreateManager<EntityUser>(() => new InMemoryUserStore<EntityUser>(context));
         }
 
         public static UserManager<EntityUser> CreateManager()
@@ -75,13 +34,12 @@ namespace Microsoft.AspNet.Identity.Entity.Test
             return CreateManager(CreateContext());
         }
 
-        public static RoleManager<EntityRole> CreateRoleManager(DbContext context)
+        public static RoleManager<EntityRole> CreateRoleManager(IdentityContext context)
         {
             var services = new ServiceCollection();
-            services.AddTransient<IRoleValidator<EntityRole>, RoleValidator<EntityRole>>();
-            services.AddInstance<IRoleStore<EntityRole>>(new EntityRoleStore<EntityRole, string>(context));
-//            return services.BuildServiceProvider().GetService<RoleManager<EntityRole>>();
-            return new RoleManager<EntityRole>(services.BuildServiceProvider(), new EntityRoleStore<EntityRole, string>(context));
+            services.Add(OptionsServices.GetDefaultServices());
+            services.AddIdentity<EntityUser, EntityRole>(b => b.AddRoleStore(() => new EntityRoleStore<EntityRole>(context)));
+            return services.BuildServiceProvider().GetService<RoleManager<EntityRole>>();
         }
 
         public static RoleManager<EntityRole> CreateRoleManager()

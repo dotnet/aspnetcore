@@ -10,19 +10,28 @@ using Microsoft.Data.Entity;
 
 namespace Microsoft.AspNet.Identity.Entity
 {
-    public class EntityRoleStore<TRole> : EntityRoleStore<TRole, string> where TRole : EntityRole
+    public class EntityRoleStore<TRole> : EntityRoleStore<TRole, IdentityContext>
+        where TRole : EntityRole
     {
-        public EntityRoleStore(DbContext context) : base(context) { }
+        public EntityRoleStore(IdentityContext context) : base(context) { }
     }
 
-    public class EntityRoleStore<TRole, TKey> : 
+    public class EntityRoleStore<TRole, TContext> : EntityRoleStore<TRole, string, TContext> 
+        where TRole : EntityRole
+        where TContext : DbContext
+    {
+        public EntityRoleStore(TContext context) : base(context) { }
+    }
+
+    public class EntityRoleStore<TRole, TKey, TContext> : 
         IQueryableRoleStore<TRole>
         where TRole : EntityRole
         where TKey : IEquatable<TKey>
+        where TContext : DbContext
     {
         private bool _disposed;
 
-        public EntityRoleStore(DbContext context)
+        public EntityRoleStore(TContext context)
         {
             if (context == null)
             {

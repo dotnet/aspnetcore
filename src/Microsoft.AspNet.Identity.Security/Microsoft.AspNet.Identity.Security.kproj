@@ -20,12 +20,9 @@
     <Content Include="project.json" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DefaultAuthenticationTypes.cs" />
+    <Compile Include="HttpAuthenticationManager.cs" />
     <Compile Include="IdentityBuilderExtensions.cs" />
     <Compile Include="IdentityExtensions.cs" />
-    <Compile Include="SecurityServiceCollectionExtensions.cs" />
-    <Compile Include="SignInManager.cs" />
-    <Compile Include="SignInStatus.cs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>

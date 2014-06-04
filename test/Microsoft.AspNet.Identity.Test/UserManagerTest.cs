@@ -503,7 +503,7 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.GeneratePasswordResetTokenAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
-                async () => await manager.ResetPassword(null, null, null));
+                async () => await manager.ResetPasswordAsync(null, null, null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.IsEmailConfirmedAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
@@ -594,7 +594,7 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.UpdateSecurityStampAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GetSecurityStampAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GeneratePasswordResetTokenAsync(null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.ResetPassword(null, null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.ResetPasswordAsync(null, null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GenerateEmailConfirmationTokenAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.IsEmailConfirmedAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.ConfirmEmailAsync(null, null));

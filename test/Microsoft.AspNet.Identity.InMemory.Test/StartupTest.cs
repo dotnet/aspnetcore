@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Identity.Test;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.OptionsModel;
+using System;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.InMemory.Test
@@ -16,56 +16,6 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
     {
         public class ApplicationUser : IdentityUser { }
 
-        public class PasswordsNegativeLengthSetup : IOptionsSetup<IdentityOptions>
-        {
-            public int Order { get { return 0; } }
-            public void Setup(IdentityOptions options)
-            {
-                options.Password.RequiredLength = -1;
-            }
-        }
-
-        [Fact]
-        public void CanCustomizeIdentityOptions()
-        {
-            var builder = new Builder.Builder(new ServiceCollection().BuildServiceProvider());
-            builder.UseServices(services => {
-                services.Add(OptionsServices.GetDefaultServices());
-                services.AddIdentity<IdentityUser>(identityServices => { });
-                services.AddSetup<PasswordsNegativeLengthSetup>();
-            });
-
-            var setup = builder.ApplicationServices.GetService<IOptionsSetup<IdentityOptions>>();
-            Assert.IsType(typeof(PasswordsNegativeLengthSetup), setup);
-            var optionsGetter = builder.ApplicationServices.GetService<IOptionsAccessor<IdentityOptions>>();
-            Assert.NotNull(optionsGetter);
-            setup.Setup(optionsGetter.Options);
-
-            var myOptions = optionsGetter.Options;
-            Assert.True(myOptions.Password.RequireLowercase);
-            Assert.True(myOptions.Password.RequireDigit);
-            Assert.True(myOptions.Password.RequireNonLetterOrDigit);
-            Assert.True(myOptions.Password.RequireUppercase);
-            Assert.Equal(-1, myOptions.Password.RequiredLength);
-        }
-
-        [Fact]
-        public void CanSetupIdentityOptions()
-        {
-            var app = new Builder.Builder(new ServiceCollection().BuildServiceProvider());
-            app.UseServices(services =>
-            {
-                services.Add(OptionsServices.GetDefaultServices());
-                services.AddIdentity<IdentityUser>(identityServices => identityServices.SetupOptions(options => options.User.RequireUniqueEmail = true));
-            });
-
-            var optionsGetter = app.ApplicationServices.GetService<IOptionsAccessor<IdentityOptions>>();
-            Assert.NotNull(optionsGetter);
-
-            var myOptions = optionsGetter.Options;
-            Assert.True(myOptions.User.RequireUniqueEmail);
-        }
-
         [Fact]
         public async Task EnsureStartupUsageWorks()
         {
@@ -73,7 +23,6 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
 
             builder.UseServices(services => services.AddIdentity<ApplicationUser>(s =>
             {
-                services.Add(OptionsServices.GetDefaultServices());
                 s.AddInMemory();
             }));
 
@@ -96,7 +45,6 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             var builder = new Builder.Builder(new ServiceCollection().BuildServiceProvider());
             builder.UseServices(services =>
             {
-                services.Add(OptionsServices.GetDefaultServices());
                 services.AddIdentity<ApplicationUser>(s => s.AddInMemory());
 
             });
@@ -116,6 +64,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             var userManager2 = builder.ApplicationServices.GetService<UserManager<ApplicationUser>>();
             var roleManager2 = builder.ApplicationServices.GetService<RoleManager<IdentityRole>>();
 
+            // Stores are singleton, managers are scoped
             Assert.Equal(userStore, userStore2);
             Assert.Equal(userManager, userManager2);
             Assert.Equal(roleStore, roleStore2);

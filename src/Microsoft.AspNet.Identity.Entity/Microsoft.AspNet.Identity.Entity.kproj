@@ -23,9 +23,8 @@
     <Compile Include="EntityRole.cs" />
     <Compile Include="EntityRoleStore.cs" />
     <Compile Include="EntityUser.cs" />
-    <Compile Include="IdentityBuilderExtensions.cs" />
+    <Compile Include="EntityIdentityBuilderExtensions.cs" />
     <Compile Include="IdentityContext.cs" />
-    <Compile Include="IdentityEntityServiceCollectionExtensions.cs" />
     <Compile Include="IdentitySqlContext.cs" />
     <Compile Include="InMemoryUserStore.cs" />
     <Compile Include="RoleStore.cs" />

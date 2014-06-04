@@ -8,18 +8,11 @@ namespace Microsoft.AspNet.Identity
 {
     public static class IdentityBuilderExtensions
     {
-        // TODO: remove
-        public static IdentityBuilder<TUser, IdentityRole> AddSecurity<TUser>(this IdentityBuilder<TUser, IdentityRole> builder)
-            where TUser : class
-        {
-            builder.Services.AddScoped<SignInManager<TUser>>();
-            return builder;
-        }
-
         public static IdentityBuilder<TUser, IdentityRole> AddHttpSignIn<TUser>(this IdentityBuilder<TUser, IdentityRole> builder)
             where TUser : class
         {
-            builder.Services.AddScoped<SignInManager<TUser>>();
+            // todo: review should this be scoped?
+            builder.Services.AddTransient<IAuthenticationManager, HttpAuthenticationManager>();
             return builder;
         }
     }
