@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             _supportedMediaTypes = new List<string>
             {
-                "application/json", 
+                "application/json",
                 "text/json"
             };
 
@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 var modelType = context.Metadata.ModelType;
                 context.Model = modelType.GetTypeInfo().IsValueType ? Activator.CreateInstance(modelType) :
                                                                       null;
-                return ;
+                return;
             }
 
             // Get the character encoding for the content
@@ -115,7 +115,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return new JsonTextReader(new StreamReader(readStream, effectiveEncoding));
         }
 
-        // <summary>
+        /// <summary>
         /// Called during deserialization to get the <see cref="JsonSerializer"/>.
         /// </summary>
         /// <returns>The <see cref="JsonSerializer"/> used during serialization and deserialization.</returns>
@@ -150,8 +150,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                         var exception = e.ErrorContext.Error;
                         context.ModelState.AddModelError(e.ErrorContext.Path, e.ErrorContext.Error);
                         // Error must always be marked as handled
-                        // Failure to do so can cause the exception to be rethrown at every recursive level and overflow the
-                        // stack for x64 CLR processes
+                        // Failure to do so can cause the exception to be rethrown at every recursive level and 
+                        // overflow the stack for x64 CLR processes
                         e.ErrorContext.Handled = true;
                     };
                     jsonSerializer.Error += errorHandler;

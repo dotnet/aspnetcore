@@ -2,10 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -33,7 +29,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         // Constructor for creating real instances of the metadata class based on a prototype
         protected CachedModelMetadata(CachedModelMetadata<TPrototypeCache> prototype, Func<object> modelAccessor)
-            : base(prototype.Provider, prototype.ContainerType, modelAccessor, prototype.ModelType, prototype.PropertyName)
+            : base(prototype.Provider,
+                   prototype.ContainerType,
+                   modelAccessor,
+                   prototype.ModelType,
+                   prototype.PropertyName)
         {
             CacheKey = prototype.CacheKey;
             PrototypeCache = prototype.PrototypeCache;
@@ -43,8 +43,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         // Constructor for creating the prototype instances of the metadata class
-        protected CachedModelMetadata(DataAnnotationsModelMetadataProvider provider, Type containerType, Type modelType, string propertyName, TPrototypeCache prototypeCache)
-            : base(provider, containerType, null /* modelAccessor */, modelType, propertyName)
+        protected CachedModelMetadata(DataAnnotationsModelMetadataProvider provider,
+                                      Type containerType,
+                                      Type modelType,
+                                      string propertyName,
+                                      TPrototypeCache prototypeCache)
+            : base(provider, containerType, modelAccessor: null, modelType: modelType, propertyName: propertyName)
         {
             PrototypeCache = prototypeCache;
         }

@@ -17,9 +17,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             [NotNull] ClientModelValidationContext context)
         {
             var errorMessage = GetErrorMessage(context.ModelMetadata);
-            return new[] { new ModelClientValidationStringLengthRule(errorMessage, 
-                                                                     Attribute.MinimumLength, 
-                                                                     Attribute.MaximumLength) };
+            var rule = new ModelClientValidationStringLengthRule(errorMessage,
+                                                                 Attribute.MinimumLength,
+                                                                 Attribute.MaximumLength);
+            return new[] { rule };
         }
     }
 }

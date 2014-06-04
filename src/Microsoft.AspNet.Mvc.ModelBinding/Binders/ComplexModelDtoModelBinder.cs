@@ -12,22 +12,27 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             if (bindingContext.ModelType == typeof(ComplexModelDto))
             {
-                ModelBindingHelper.ValidateBindingContext(bindingContext, typeof(ComplexModelDto), allowNullModel: false);
+                ModelBindingHelper.ValidateBindingContext(bindingContext,
+                                                          typeof(ComplexModelDto),
+                                                          allowNullModel: false);
 
-                ComplexModelDto dto = (ComplexModelDto)bindingContext.Model;
-                foreach (ModelMetadata propertyMetadata in dto.PropertyMetadata)
+                var dto = (ComplexModelDto)bindingContext.Model;
+                foreach (var propertyMetadata in dto.PropertyMetadata)
                 {
-                    ModelBindingContext propertyBindingContext = new ModelBindingContext(bindingContext)
+                    var propertyBindingContext = new ModelBindingContext(bindingContext)
                     {
                         ModelMetadata = propertyMetadata,
-                        ModelName = ModelBindingHelper.CreatePropertyModelName(bindingContext.ModelName, propertyMetadata.PropertyName)
+                        ModelName = ModelBindingHelper.CreatePropertyModelName(bindingContext.ModelName,
+                                                                               propertyMetadata.PropertyName)
                     };
 
                     // bind and propagate the values
                     // If we can't bind, then leave the result missing (don't add a null).
                     if (await bindingContext.ModelBinder.BindModelAsync(propertyBindingContext))
                     {
-                        dto.Results[propertyMetadata] = new ComplexModelDtoResult(propertyBindingContext.Model, propertyBindingContext.ValidationNode);
+                        var result = new ComplexModelDtoResult(propertyBindingContext.Model,
+                                                               propertyBindingContext.ValidationNode);
+                        dto.Results[propertyMetadata] = result;
                     }
                 }
 

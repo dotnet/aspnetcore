@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Mvc.ModelBinding.Internal;
@@ -27,10 +26,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private Type _realModelType;
         private string _simpleDisplayText;
 
-        public ModelMetadata([NotNull] IModelMetadataProvider provider, 
-                             Type containerType, 
+        public ModelMetadata([NotNull] IModelMetadataProvider provider,
+                             Type containerType,
                              Func<object> modelAccessor,
-                             [NotNull] Type modelType, 
+                             [NotNull] Type modelType,
                              string propertyName)
         {
             Provider = provider;
@@ -181,7 +180,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "The method is a delegating helper to choose among multiple property values")]
         public virtual string GetDisplayName()
         {
             return PropertyName ?? ModelType.Name;

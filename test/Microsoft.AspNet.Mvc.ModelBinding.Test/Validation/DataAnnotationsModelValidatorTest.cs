@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using Microsoft.AspNet.Testing;
 #if NET45
 using Moq;
 using Moq.Protected;
@@ -15,7 +14,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class DataAnnotationsModelValidatorTest
     {
-        private static DataAnnotationsModelMetadataProvider _metadataProvider = new DataAnnotationsModelMetadataProvider();
+        private static DataAnnotationsModelMetadataProvider _metadataProvider = 
+            new DataAnnotationsModelMetadataProvider();
 
         [Fact]
         public void ValuesSet()
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             get
             {
-                yield return new object[] 
+                yield return new object[]
                 {
                     _metadataProvider.GetMetadataForProperty(() => 15, typeof(string), "Length"),
                     "Length"
@@ -52,7 +52,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 #if NET45
         [Theory]
         [MemberData("ValidateSetsMemberNamePropertyDataSet")]
-        public void ValidateSetsMemberNamePropertyOfValidationContextForProperties(ModelMetadata metadata, string expectedMemberName)
+        public void ValidateSetsMemberNamePropertyOfValidationContextForProperties(ModelMetadata metadata,
+                                                                                   string expectedMemberName)
         {
             // Arrange
             var attribute = new Mock<ValidationAttribute> { CallBase = true };
@@ -120,7 +121,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             attribute.Protected()
                      .Setup<ValidationResult>("IsValid", ItExpr.IsAny<object>(), ItExpr.IsAny<ValidationContext>())
                      .Returns(ValidationResult.Success);
-            DataAnnotationsModelValidator validator = new DataAnnotationsModelValidator(attribute.Object);
+            var validator = new DataAnnotationsModelValidator(attribute.Object);
             var validationContext = CreateValidationContext(metadata);
 
             // Act
@@ -212,14 +213,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return new ModelValidationContext(null, null, null, metadata, null);
         }
 
-        class DerivedRequiredAttribute : RequiredAttribute
+        private class DerivedRequiredAttribute : RequiredAttribute
         {
         }
 
-        class SampleModel
+        private class SampleModel
         {
             public string Name { get; set; }
         }
     }
 }
-

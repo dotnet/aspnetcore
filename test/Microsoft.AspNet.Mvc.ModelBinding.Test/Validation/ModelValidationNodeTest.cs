@@ -51,6 +51,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void CombineWith()
         {
             // Arrange
+            var expected = new[]
+            {
+                "Validating parent1.",
+                "Validating parent2.",
+                "Validated parent1.",
+                "Validated parent2."
+            };
             var log = new List<string>();
 
             var allChildNodes = new[]
@@ -77,7 +84,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             parentNode1.Validate(context);
 
             // Assert
-            Assert.Equal(new[] { "Validating parent1.", "Validating parent2.", "Validated parent1.", "Validated parent2." }, log.ToArray());
+            Assert.Equal(expected, log);
             Assert.Equal(allChildNodes, parentNode1.ChildNodes.ToArray());
         }
 
@@ -131,10 +138,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // 4. OnValidated()
 
             // Arrange
+            var expected = new[]
+            {
+                "In OnValidating()",
+                "In LoggingValidatonAttribute.IsValid()",
+                "In IValidatableObject.Validate()",
+                "In OnValidated()"
+            };
             var log = new List<string>();
             var model = new LoggingValidatableObject(log);
             var modelMetadata = GetModelMetadata(model);
-            var childMetadata = new EmptyModelMetadataProvider().GetMetadataForProperty(() => model, model.GetType(), "ValidStringProperty");
+            var provider = new EmptyModelMetadataProvider();
+            var childMetadata = provider.GetMetadataForProperty(() => model, model.GetType(), "ValidStringProperty");
             var node = new ModelValidationNode(modelMetadata, "theKey");
             node.Validating += (sender, e) => log.Add("In OnValidating()");
             node.Validated += (sender, e) => log.Add("In OnValidated()");
@@ -145,7 +160,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             node.Validate(context);
 
             // Assert
-            Assert.Equal(new[] { "In OnValidating()", "In LoggingValidatonAttribute.IsValid()", "In IValidatableObject.Validate()", "In OnValidated()" }, log.ToArray());
+            Assert.Equal(expected, log);
         }
 
         [Fact]
@@ -154,10 +169,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Because a property validator fails, the model validator shouldn't run
 
             // Arrange
+            var expected = new[]
+            {
+                "In OnValidating()",
+                "In IValidatableObject.Validate()",
+                "In OnValidated()"
+            };
             var log = new List<string>();
             var model = new LoggingValidatableObject(log);
             var modelMetadata = GetModelMetadata(model);
-            var childMetadata = new EmptyModelMetadataProvider().GetMetadataForProperty(() => model, model.GetType(), "InvalidStringProperty");
+            var provider = new EmptyModelMetadataProvider();
+            var childMetadata = provider.GetMetadataForProperty(() => model,
+                                                                model.GetType(),
+                                                                "InvalidStringProperty");
             var node = new ModelValidationNode(modelMetadata, "theKey");
             node.ChildNodes.Add(new ModelValidationNode(childMetadata, "theKey.InvalidStringProperty"));
             node.Validating += (sender, e) => log.Add("In OnValidating()");
@@ -168,8 +192,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             node.Validate(context);
 
             // Assert
-            Assert.Equal(new[] { "In OnValidating()", "In IValidatableObject.Validate()", "In OnValidated()" }, log.ToArray());
-            Assert.Equal("Sample error message", context.ModelState["theKey.InvalidStringProperty"].Errors[0].ErrorMessage);
+            Assert.Equal(expected, log);
+            Assert.Equal("Sample error message",
+                         context.ModelState["theKey.InvalidStringProperty"].Errors[0].ErrorMessage);
         }
 
         [Fact]
@@ -243,8 +268,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.False(context.ModelState.ContainsKey("theKey.RequiredString"));
-            Assert.Equal("existing Error Text", context.ModelState["theKey.RequiredString.Dummy"].Errors[0].ErrorMessage);
-            Assert.Equal("The field RangedInt must be between 10 and 30.", context.ModelState["theKey.RangedInt"].Errors[0].ErrorMessage);
+            Assert.Equal("existing Error Text",
+                         context.ModelState["theKey.RequiredString.Dummy"].Errors[0].ErrorMessage);
+            Assert.Equal("The field RangedInt must be between 10 and 30.",
+                         context.ModelState["theKey.RangedInt"].Errors[0].ErrorMessage);
             Assert.False(context.ModelState.ContainsKey("theKey.ValidString"));
             Assert.False(context.ModelState.ContainsKey("theKey"));
         }
@@ -261,7 +288,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private static ModelValidationContext CreateContext(ModelMetadata metadata = null)
         {
-            var providers = new IModelValidatorProvider[] {
+            var providers = new IModelValidatorProvider[]
+            {
                 new DataAnnotationsModelValidatorProvider(),
                 new DataMemberModelValidatorProvider()
             };

@@ -8,17 +8,22 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class EmptyModelMetadataProvider : AssociatedMetadataProvider<ModelMetadata>
     {
-        protected override ModelMetadata CreateMetadataPrototype(IEnumerable<Attribute> attributes, 
-                                                                 Type containerType, 
-                                                                 Type modelType, 
+        protected override ModelMetadata CreateMetadataPrototype(IEnumerable<Attribute> attributes,
+                                                                 Type containerType,
+                                                                 Type modelType,
                                                                  string propertyName)
         {
             return new ModelMetadata(this, containerType, null, modelType, propertyName);
         }
 
-        protected override ModelMetadata CreateMetadataFromPrototype(ModelMetadata prototype, Func<object> modelAccessor)
+        protected override ModelMetadata CreateMetadataFromPrototype(ModelMetadata prototype,
+                                                                     Func<object> modelAccessor)
         {
-            return new ModelMetadata(this, prototype.ContainerType, modelAccessor, prototype.ModelType, prototype.PropertyName);
+            return new ModelMetadata(this,
+                                     prototype.ContainerType,
+                                     modelAccessor,
+                                     prototype.ModelType,
+                                     prototype.PropertyName);
         }
     }
 }

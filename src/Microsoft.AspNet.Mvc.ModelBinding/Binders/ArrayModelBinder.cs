@@ -19,7 +19,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return base.BindModelAsync(bindingContext);
         }
 
-        protected override bool CreateOrReplaceCollection(ModelBindingContext bindingContext, IList<TElement> newCollection)
+        protected override bool CreateOrReplaceCollection(ModelBindingContext bindingContext,
+                                                          IList<TElement> newCollection)
         {
             bindingContext.Model = newCollection.ToArray();
             return true;

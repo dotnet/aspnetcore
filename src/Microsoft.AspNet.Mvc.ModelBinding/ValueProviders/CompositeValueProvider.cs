@@ -4,16 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
-    [SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix", Justification = "It is more fundamentally a value provider than a collection")]
     public class CompositeValueProvider : Collection<IValueProvider>, IEnumerableValueProvider
     {
-        public CompositeValueProvider() 
+        public CompositeValueProvider()
             : base()
         {
         }
@@ -65,7 +63,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
-        private static Task<IDictionary<string, string>> GetKeysFromPrefixFromProvider(IValueProvider provider, 
+        private static Task<IDictionary<string, string>> GetKeysFromPrefixFromProvider(IValueProvider provider,
                                                                                        string prefix)
         {
             var enumeratedProvider = provider as IEnumerableValueProvider;

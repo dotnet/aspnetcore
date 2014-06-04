@@ -17,8 +17,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
         }
 
-        public ModelValidationNode([NotNull] ModelMetadata modelMetadata, 
-                                   [NotNull] string modelStateKey, 
+        public ModelValidationNode([NotNull] ModelMetadata modelMetadata,
+                                   [NotNull] string modelStateKey,
                                    IEnumerable<ModelValidationNode> childNodes)
         {
             ModelMetadata = modelMetadata;
@@ -151,13 +151,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var modelState = validationContext.ModelState;
 
             var model = ModelMetadata.Model;
-            var updatedMetadata = validationContext.MetadataProvider.GetMetadataForType(() => model, ModelMetadata.ModelType);
+            var updatedMetadata = validationContext.MetadataProvider.GetMetadataForType(() => model,
+                                                                                        ModelMetadata.ModelType);
 
             foreach (var propertyMetadata in updatedMetadata.Properties)
             {
                 // Only want to add errors to ModelState if something doesn't already exist for the property node,
                 // else we could end up with duplicate or irrelevant error messages.
-                var propertyKeyRoot = ModelBindingHelper.CreatePropertyModelName(ModelStateKey, propertyMetadata.PropertyName);
+                var propertyKeyRoot = ModelBindingHelper.CreatePropertyModelName(ModelStateKey,
+                                                                                 propertyMetadata.PropertyName);
 
                 if (modelState.GetFieldValidationState(propertyKeyRoot) == ModelValidationState.Unvalidated)
                 {
@@ -167,7 +169,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     {
                         foreach (var propertyResult in propertyValidator.Validate(propertyValidationContext))
                         {
-                            var thisErrorKey = ModelBindingHelper.CreatePropertyModelName(propertyKeyRoot, propertyResult.MemberName);
+                            var thisErrorKey = ModelBindingHelper.CreatePropertyModelName(propertyKeyRoot,
+                                                                                          propertyResult.MemberName);
                             modelState.AddModelError(thisErrorKey, propertyResult.Message);
                         }
                     }
@@ -187,7 +190,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // If the Model at the current node is null and there is no parent, we cannot validate, and the 
             // DataAnnotationsModelValidator will throw. So we intercept here to provide a catch-all value-required 
             // validation error
-            var modelStateKey = ModelBindingHelper.CreatePropertyModelName(ModelStateKey, ModelMetadata.GetDisplayName());
+            var modelStateKey = ModelBindingHelper.CreatePropertyModelName(ModelStateKey,
+                                                                           ModelMetadata.GetDisplayName());
             if (parentNode == null && ModelMetadata.Model == null)
             {
                 modelState.AddModelError(modelStateKey, Resources.Validation_ValueNotFound);
@@ -201,13 +205,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 var validator = validators[i];
                 foreach (var validationResult in validator.Validate(validationContext))
                 {
-                    var currentModelStateKey = ModelBindingHelper.CreatePropertyModelName(ModelStateKey, validationResult.MemberName);
+                    var currentModelStateKey = ModelBindingHelper.CreatePropertyModelName(ModelStateKey,
+                                                                                          validationResult.MemberName);
                     modelState.AddModelError(currentModelStateKey, validationResult.Message);
                 }
             }
         }
 
-        private static IEnumerable<IModelValidator> GetValidators(ModelValidationContext validationContext, ModelMetadata metadata)
+        private static IEnumerable<IModelValidator> GetValidators(ModelValidationContext validationContext,
+                                                                  ModelMetadata metadata)
         {
             return validationContext.ValidatorProviders.SelectMany(vp => vp.GetValidators(metadata));
         }

@@ -23,38 +23,38 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             var valueProviderResult = await bindingContext.ValueProvider.GetValueAsync(bindingContext.ModelName);
-            var boundCollection = await ((valueProviderResult != null) ?
-                                   BindSimpleCollection(bindingContext, valueProviderResult.RawValue, valueProviderResult.Culture) :
-                                   BindComplexCollection(bindingContext));
+            var bindCollectionTask = valueProviderResult != null ?
+                    BindSimpleCollection(bindingContext, valueProviderResult.RawValue, valueProviderResult.Culture) :
+                    BindComplexCollection(bindingContext);
+            var boundCollection = await bindCollectionTask;
 
             return CreateOrReplaceCollection(bindingContext, boundCollection);
         }
 
-        // TODO: Make this method internal
         // Used when the ValueProvider contains the collection to be bound as a single element, e.g. the raw value
         // is [ "1", "2" ] and needs to be converted to an int[].
-        public async Task<List<TElement>> BindSimpleCollection(ModelBindingContext bindingContext,
-                                                               object rawValue,
-                                                               CultureInfo culture)
+        internal async Task<List<TElement>> BindSimpleCollection(ModelBindingContext bindingContext,
+                                                                 object rawValue,
+                                                                 CultureInfo culture)
         {
             if (rawValue == null)
             {
                 return null; // nothing to do
             }
 
-            List<TElement> boundCollection = new List<TElement>();
+            var boundCollection = new List<TElement>();
 
-            object[] rawValueArray = RawValueToObjectArray(rawValue);
-            foreach (object rawValueElement in rawValueArray)
+            var rawValueArray = RawValueToObjectArray(rawValue);
+            foreach (var rawValueElement in rawValueArray)
             {
-                ModelBindingContext innerBindingContext = new ModelBindingContext(bindingContext)
+                var innerBindingContext = new ModelBindingContext(bindingContext)
                 {
                     ModelMetadata = bindingContext.MetadataProvider.GetMetadataForType(null, typeof(TElement)),
                     ModelName = bindingContext.ModelName,
                     ValueProvider = new CompositeValueProvider
                     {
                         // our temporary provider goes at the front of the list
-                        new ElementalValueProvider(bindingContext.ModelName, rawValueElement, culture), 
+                        new ElementalValueProvider(bindingContext.ModelName, rawValueElement, culture),
                         bindingContext.ValueProvider
                     }
                 };
@@ -74,15 +74,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         // Used when the ValueProvider contains the collection to be bound as multiple elements, e.g. foo[0], foo[1].
         private async Task<List<TElement>> BindComplexCollection(ModelBindingContext bindingContext)
         {
-            string indexPropertyName = ModelBindingHelper.CreatePropertyModelName(bindingContext.ModelName, "index");
-            ValueProviderResult valueProviderResultIndex = await bindingContext.ValueProvider.GetValueAsync(indexPropertyName);
-            IEnumerable<string> indexNames = CollectionModelBinderUtil.GetIndexNamesFromValueProviderResult(valueProviderResultIndex);
+            var indexPropertyName = ModelBindingHelper.CreatePropertyModelName(bindingContext.ModelName, "index");
+            var valueProviderResultIndex = await bindingContext.ValueProvider.GetValueAsync(indexPropertyName);
+            var indexNames = CollectionModelBinderUtil.GetIndexNamesFromValueProviderResult(valueProviderResultIndex);
             return await BindComplexCollectionFromIndexes(bindingContext, indexNames);
         }
 
-        // TODO: Convert to internal
-        public async Task<List<TElement>> BindComplexCollectionFromIndexes(ModelBindingContext bindingContext,
-                                                                           IEnumerable<string> indexNames)
+        internal async Task<List<TElement>> BindComplexCollectionFromIndexes(ModelBindingContext bindingContext,
+                                                                             IEnumerable<string> indexNames)
         {
             bool indexNamesIsFinite;
             if (indexNames != null)
@@ -96,20 +95,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                                        .Select(i => i.ToString(CultureInfo.InvariantCulture));
             }
 
-            List<TElement> boundCollection = new List<TElement>();
-            foreach (string indexName in indexNames)
+            var boundCollection = new List<TElement>();
+            foreach (var indexName in indexNames)
             {
-                string fullChildName = ModelBindingHelper.CreateIndexModelName(bindingContext.ModelName, indexName);
+                var fullChildName = ModelBindingHelper.CreateIndexModelName(bindingContext.ModelName, indexName);
                 var childBindingContext = new ModelBindingContext(bindingContext)
                 {
                     ModelMetadata = bindingContext.MetadataProvider.GetMetadataForType(null, typeof(TElement)),
                     ModelName = fullChildName
                 };
 
-                bool didBind = false;
+                var didBind = false;
                 object boundValue = null;
 
-                Type modelType = bindingContext.ModelType;
+                var modelType = bindingContext.ModelType;
 
                 if (await bindingContext.ModelBinder.BindModelAsync(childBindingContext))
                 {
@@ -134,7 +133,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         // Extensibility point that allows the bound collection to be manipulated or transformed before
         // being returned from the binder.
-        protected virtual bool CreateOrReplaceCollection(ModelBindingContext bindingContext, IList<TElement> newCollection)
+        protected virtual bool CreateOrReplaceCollection(ModelBindingContext bindingContext,
+                                                         IList<TElement> newCollection)
         {
             CreateOrReplaceCollection(bindingContext, newCollection, () => new List<TElement>());
             return true;
@@ -150,13 +150,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return new[] { rawValue };
             }
 
-            object[] rawValueAsObjectArray = rawValue as object[];
+            var rawValueAsObjectArray = rawValue as object[];
             if (rawValueAsObjectArray != null)
             {
                 return rawValueAsObjectArray;
             }
 
-            IEnumerable rawValueAsEnumerable = rawValue as IEnumerable;
+            var rawValueAsEnumerable = rawValue as IEnumerable;
             if (rawValueAsEnumerable != null)
             {
                 return rawValueAsEnumerable.Cast<object>().ToArray();
@@ -170,7 +170,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                                                                  IEnumerable<TElement> incomingElements,
                                                                  Func<ICollection<TElement>> creator)
         {
-            ICollection<TElement> collection = bindingContext.Model as ICollection<TElement>;
+            var collection = bindingContext.Model as ICollection<TElement>;
             if (collection == null || collection.IsReadOnly)
             {
                 collection = creator();
@@ -178,7 +178,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             collection.Clear();
-            foreach (TElement element in incomingElements)
+            foreach (var element in incomingElements)
             {
                 collection.Add(element);
             }

@@ -20,7 +20,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             _errorMessage = errorMessage;
         }
 
-        public bool IsRequired { get { return false; } }
+        public bool IsRequired
+        {
+            get { return false; }
+        }
 
         public IEnumerable<ModelValidationResult> Validate(ModelValidationContext context)
         {

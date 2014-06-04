@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         public ModelError(string errorMessage)
         {
-            ErrorMessage = errorMessage ?? String.Empty;
+            ErrorMessage = errorMessage ?? string.Empty;
         }
 
         public Exception Exception { get; private set; }

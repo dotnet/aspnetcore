@@ -37,7 +37,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             // TODO: Http exception
-            throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, "415: Unsupported content type {0}", contentType));
+            throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, 
+                                                              "415: Unsupported content type {0}", 
+                                                              contentType));
         }
     }
 }

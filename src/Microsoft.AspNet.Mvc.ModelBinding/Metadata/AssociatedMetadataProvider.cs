@@ -14,14 +14,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public abstract class AssociatedMetadataProvider<TModelMetadata> : IModelMetadataProvider
         where TModelMetadata : ModelMetadata
     {
-        private readonly ConcurrentDictionary<Type, TypeInformation> _typeInfoCache = new ConcurrentDictionary<Type, TypeInformation>();
+        private readonly ConcurrentDictionary<Type, TypeInformation> _typeInfoCache =
+                new ConcurrentDictionary<Type, TypeInformation>();
 
         public IEnumerable<ModelMetadata> GetMetadataForProperties(object container, [NotNull] Type containerType)
         {
             return GetMetadataForPropertiesCore(container, containerType);
         }
 
-        public ModelMetadata GetMetadataForProperty(Func<object> modelAccessor, [NotNull] Type containerType, [NotNull] string propertyName)
+        public ModelMetadata GetMetadataForProperty(Func<object> modelAccessor,
+                                                    [NotNull] Type containerType,
+                                                    [NotNull] string propertyName)
         {
             if (string.IsNullOrEmpty(propertyName))
             {
@@ -32,7 +35,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             PropertyInformation propertyInfo;
             if (!typeInfo.Properties.TryGetValue(propertyName, out propertyInfo))
             {
-                throw new ArgumentException(Resources.FormatCommon_PropertyNotFound(containerType, propertyName), "propertyName");
+                var message = Resources.FormatCommon_PropertyNotFound(containerType, propertyName);
+                throw new ArgumentException(message, "propertyName");
             }
 
             return CreatePropertyMetadata(modelAccessor, propertyInfo);
@@ -40,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         public ModelMetadata GetMetadataForType(Func<object> modelAccessor, [NotNull] Type modelType)
         {
-            TModelMetadata prototype = GetTypeInformation(modelType).Prototype;
+            var prototype = GetTypeInformation(modelType).Prototype;
             return CreateMetadataFromPrototype(prototype, modelAccessor);
         }
 
@@ -51,7 +55,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                                                                   string propertyName);
 
         // Override for applying the prototype + modelAccess to yield the final metadata
-        protected abstract TModelMetadata CreateMetadataFromPrototype(TModelMetadata prototype, 
+        protected abstract TModelMetadata CreateMetadataFromPrototype(TModelMetadata prototype,
                                                                       Func<object> modelAccessor);
 
         private IEnumerable<ModelMetadata> GetMetadataForPropertiesCore(object container, Type containerType)
@@ -82,7 +86,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private TypeInformation GetTypeInformation(Type type, IEnumerable<Attribute> associatedAttributes = null)
         {
-            // This retrieval is implemented as a TryGetValue/TryAdd instead of a GetOrAdd to avoid the performance cost of creating instance delegates
+            // This retrieval is implemented as a TryGetValue/TryAdd instead of a GetOrAdd 
+            // to avoid the performance cost of creating instance delegates
             TypeInformation typeInfo;
             if (!_typeInfoCache.TryGetValue(type, out typeInfo))
             {
@@ -102,7 +107,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
             var info = new TypeInformation
             {
-                Prototype = CreateMetadataPrototype(attributes, containerType: null, modelType: type, propertyName: null)
+                Prototype = CreateMetadataPrototype(attributes,
+                                                    containerType: null,
+                                                    modelType: type,
+                                                    propertyName: null)
             };
 
             var properties = new Dictionary<string, PropertyInformation>();
@@ -155,15 +163,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         // Uses Lightweight Code Gen to generate a tiny delegate that gets the property value
         // This is an optimization to avoid having to go through the much slower System.Reflection APIs
         // e.g. generates (object o) => (Person)o.Id
-        private static Func<object, object> CreateDynamicValueAccessor(MethodInfo getMethodInfo, Type declaringType, string propertyName)
+        private static Func<object, object> CreateDynamicValueAccessor(MethodInfo getMethodInfo,
+                                                                       Type declaringType,
+                                                                       string propertyName)
         {
             Contract.Assert(getMethodInfo != null && getMethodInfo.IsPublic && !getMethodInfo.IsStatic);
 
             var declaringTypeInfo = declaringType.GetTypeInfo();
             var propertyType = getMethodInfo.ReturnType;
-            var dynamicMethod = new DynamicMethod("Get" + propertyName + "From" + declaringType.Name, 
-                                                  typeof(object), 
-                                                  new [] { typeof(object) });
+            var dynamicMethod = new DynamicMethod("Get" + propertyName + "From" + declaringType.Name,
+                                                  typeof(object),
+                                                  new[] { typeof(object) });
             var ilg = dynamicMethod.GetILGenerator();
 
             // Load the container onto the stack, convert from object => declaring type for the property

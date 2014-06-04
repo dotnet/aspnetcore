@@ -30,8 +30,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
                 return _sortedValues.Length > 0; // only match empty string when we have some value
             }
 
-            PrefixComparer prefixComparer = new PrefixComparer(prefix);
-            bool containsPrefix = Array.BinarySearch(_sortedValues, prefix, prefixComparer) > -1;
+            var prefixComparer = new PrefixComparer(prefix);
+            var containsPrefix = Array.BinarySearch(_sortedValues, prefix, prefixComparer) > -1;
             if (!containsPrefix)
             {
                 // If there's something in the search boundary that starts with the same name
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
         // - "abc"/"foo[abc]"
         internal IDictionary<string, string> GetKeysFromPrefix(string prefix)
         {
-            IDictionary<string, string> result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var entry in _originalValues)
             {
@@ -79,10 +79,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
 
         private static void GetKeyFromEmptyPrefix(string entry, IDictionary<string, string> results)
         {
-            string key;
-            int dotPosition = entry.IndexOf('.');
-            int bracketPosition = entry.IndexOf('[');
-            int delimiterPosition = -1;
+            var dotPosition = entry.IndexOf('.');
+            var bracketPosition = entry.IndexOf('[');
+            var delimiterPosition = -1;
 
             if (dotPosition == -1)
             {
@@ -103,20 +102,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
                 }
             }
 
-            key = delimiterPosition == -1 ? entry : entry.Substring(0, delimiterPosition);
+            var key = delimiterPosition == -1 ? entry : entry.Substring(0, delimiterPosition);
             results[key] = key;
         }
 
         private static void GetKeyFromNonEmptyPrefix(string prefix, string entry, IDictionary<string, string> results)
         {
-            string key = null;
-            string fullName = null;
-            int keyPosition = prefix.Length + 1;
+            string key;
+            string fullName;
+            var keyPosition = prefix.Length + 1;
 
             switch (entry[prefix.Length])
             {
                 case '.':
-                    int dotPosition = entry.IndexOf('.', keyPosition);
+                    var dotPosition = entry.IndexOf('.', keyPosition);
                     if (dotPosition == -1)
                     {
                         dotPosition = entry.Length;
@@ -127,7 +126,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
                     break;
 
                 case '[':
-                    int bracketPosition = entry.IndexOf(']', keyPosition);
+                    var bracketPosition = entry.IndexOf(']', keyPosition);
                     if (bracketPosition == -1)
                     {
                         // Malformed for dictionary
@@ -189,7 +188,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
 
         private sealed class PrefixComparer : IComparer<String>
         {
-            private string _prefix;
+            private readonly string _prefix;
 
             public PrefixComparer(string prefix)
             {
@@ -198,7 +197,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
 
             public int Compare(string x, string y)
             {
-                string testString = Object.ReferenceEquals(x, _prefix) ? y : x;
+                var testString = object.ReferenceEquals(x, _prefix) ? y : x;
                 if (IsPrefixMatch(_prefix, testString))
                 {
                     return 0;

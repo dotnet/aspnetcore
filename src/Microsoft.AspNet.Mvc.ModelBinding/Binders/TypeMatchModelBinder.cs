@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 
@@ -11,7 +10,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     {
         public async Task<bool> BindModelAsync(ModelBindingContext bindingContext)
         {
-            ValueProviderResult valueProviderResult = await GetCompatibleValueProviderResult(bindingContext);
+            var valueProviderResult = await GetCompatibleValueProviderResult(bindingContext);
             if (valueProviderResult == null)
             {
                 // conversion would have failed
@@ -19,25 +18,25 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             bindingContext.ModelState.SetModelValue(bindingContext.ModelName, valueProviderResult);
-            object model = valueProviderResult.RawValue;
+            var model = valueProviderResult.RawValue;
             ModelBindingHelper.ReplaceEmptyStringWithNull(bindingContext.ModelMetadata, ref model);
             bindingContext.Model = model;
-            
+
             // TODO: Determine if we need IBodyValidator here.
             return true;
         }
 
-        internal static async Task<ValueProviderResult> GetCompatibleValueProviderResult(ModelBindingContext bindingContext)
+        internal static async Task<ValueProviderResult> GetCompatibleValueProviderResult(ModelBindingContext context)
         {
-            ModelBindingHelper.ValidateBindingContext(bindingContext);
+            ModelBindingHelper.ValidateBindingContext(context);
 
-            var valueProviderResult = await bindingContext.ValueProvider.GetValueAsync(bindingContext.ModelName);
+            var valueProviderResult = await context.ValueProvider.GetValueAsync(context.ModelName);
             if (valueProviderResult == null)
             {
                 return null; // the value doesn't exist
             }
 
-            if (!bindingContext.ModelType.IsCompatibleWith(valueProviderResult.RawValue))
+            if (!context.ModelType.IsCompatibleWith(valueProviderResult.RawValue))
             {
                 return null; // value is of incompatible type
             }

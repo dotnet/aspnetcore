@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         public Task<bool> BindModelAsync(ModelBindingContext bindingContext)
         {
-            Type binderType = ResolveBinderType(bindingContext.ModelType);
+            var binderType = ResolveBinderType(bindingContext.ModelType);
             if (binderType != null)
             {
                 var binder = (IModelBinder)_activator.CreateInstance(_serviceProvider, binderType);
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             if (modelType.IsArray)
             {
-                Type elementType = modelType.GetElementType();
+                var elementType = modelType.GetElementType();
                 return typeof(ArrayModelBinder<>).MakeGenericType(elementType);
             }
             return null;
@@ -78,27 +78,29 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                         openBinderType: typeof(KeyValuePairModelBinder<,>));
         }
 
-
         /// <remarks>
-        /// Example: GetGenericBinder(typeof(IList<>), typeof(List<>), typeof(ListBinder<>), ...) means that the ListBinder<T>
-        /// type can update models that implement IList<T>, and if for some reason the existing model instance is not
-        /// updatable the binder will create a List<T> object and bind to that instead. This method will return ListBinder<T>
-        /// or null, depending on whether the type and updatability checks succeed.
+        /// Example: GetGenericBinder(typeof(IList<>), typeof(List<>), typeof(ListBinder<>), ...) means that the 
+        /// ListBinder<T> type can update models that implement IList<T>, and if for some reason the existing model
+        /// instance is not updatable the binder will create a List<T> object and bind to that instead. This method
+        /// will return ListBinder<T> or null, depending on whether the type and updatability checks succeed.
         /// </remarks>
-        private static Type GetGenericBinderType(Type supportedInterfaceType, Type newInstanceType, Type openBinderType, Type modelType)
+        private static Type GetGenericBinderType(Type supportedInterfaceType,
+                                                 Type newInstanceType,
+                                                 Type openBinderType,
+                                                 Type modelType)
         {
             Contract.Assert(supportedInterfaceType != null);
             Contract.Assert(openBinderType != null);
             Contract.Assert(modelType != null);
 
-            Type[] modelTypeArguments = GetGenericBinderTypeArgs(supportedInterfaceType, modelType);
+            var modelTypeArguments = GetGenericBinderTypeArgs(supportedInterfaceType, modelType);
 
             if (modelTypeArguments == null)
             {
                 return null;
             }
 
-            Type closedNewInstanceType = newInstanceType.MakeGenericType(modelTypeArguments);
+            var closedNewInstanceType = newInstanceType.MakeGenericType(modelTypeArguments);
             if (!modelType.GetTypeInfo().IsAssignableFrom(closedNewInstanceType.GetTypeInfo()))
             {
                 return null;
@@ -110,14 +112,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         // Get the generic arguments for the binder, based on the model type. Or null if not compatible.
         private static Type[] GetGenericBinderTypeArgs(Type supportedInterfaceType, Type modelType)
         {
-            TypeInfo modelTypeInfo = modelType.GetTypeInfo();
+            var modelTypeInfo = modelType.GetTypeInfo();
             if (!modelTypeInfo.IsGenericType || modelTypeInfo.IsGenericTypeDefinition)
             {
                 // not a closed generic type
                 return null;
             }
 
-            Type[] modelTypeArguments = modelTypeInfo.GenericTypeArguments;
+            var modelTypeArguments = modelTypeInfo.GenericTypeArguments;
             if (modelTypeArguments.Length != supportedInterfaceType.GetTypeInfo().GenericTypeParameters.Length)
             {
                 // wrong number of generic type arguments
@@ -126,6 +128,5 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             return modelTypeArguments;
         }
-
     }
 }

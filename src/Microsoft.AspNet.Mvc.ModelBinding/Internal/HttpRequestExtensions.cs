@@ -18,12 +18,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 var tokens = headerValue.Split(new[] { ';' }, 2);
                 string charSet = null;
-                if (tokens.Length > 1 && tokens[1].TrimStart().StartsWith(CharSetToken, StringComparison.OrdinalIgnoreCase))
+                if (tokens.Length > 1 &&
+                    tokens[1].TrimStart().StartsWith(CharSetToken, StringComparison.OrdinalIgnoreCase))
                 {
                     charSet = tokens[1].TrimStart().Substring(CharSetToken.Length);
                 }
                 return new ContentTypeHeaderValue(tokens[0], charSet);
-                
             }
             return null;
         }

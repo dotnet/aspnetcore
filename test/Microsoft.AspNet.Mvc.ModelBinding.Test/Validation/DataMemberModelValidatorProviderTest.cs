@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Empty(validators);
         }
 
-        class ClassWithoutAttributes
+        private class ClassWithoutAttributes
         {
             public int TheProperty { get; set; }
         }
@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [DataContract]
-        class ClassWithDataMemberIsRequiredTrue
+        private class ClassWithDataMemberIsRequiredTrue
         {
             [DataMember(IsRequired = true)]
             public int TheProperty { get; set; }
@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [DataContract]
-        class ClassWithDataMemberIsRequiredFalse
+        private class ClassWithDataMemberIsRequiredFalse
         {
             [DataMember(IsRequired = false)]
             public int TheProperty { get; set; }
@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Empty(validators);
         }
 
-        class ClassWithDataMemberIsRequiredTrueWithoutDataContract
+        private class ClassWithDataMemberIsRequiredTrueWithoutDataContract
         {
             [DataMember(IsRequired = true)]
             public int TheProperty { get; set; }

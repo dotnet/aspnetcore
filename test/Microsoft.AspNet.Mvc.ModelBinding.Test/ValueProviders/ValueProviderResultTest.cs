@@ -145,7 +145,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ConvertToReturnsNullIfTrimmedValueIsEmptyString()
         {
             // Arrange
-            var vpr = new ValueProviderResult(rawValue: null, attemptedValue: null, culture: CultureInfo.InvariantCulture);
+            var vpr = new ValueProviderResult(rawValue: null,
+                                              attemptedValue: null,
+                                              culture: CultureInfo.InvariantCulture);
 
             // Act
             var outValue = vpr.ConvertTo(typeof(int[]));
@@ -285,8 +287,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Theory]
-        [InlineData(new object[] { new[] { 1, 0 }})]
-        [InlineData(new object[] { new[] {"Value1", "Value0" }})]
+        [InlineData(new object[] { new[] { 1, 0 } })]
+        [InlineData(new object[] { new[] { "Value1", "Value0" } })]
         public void ConvertTo_ConvertsEnumArrays(object value)
         {
             // Arrange
@@ -395,8 +397,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 yield return new object[] { (double)42.0, 42 };
                 yield return new object[] { "2008-01-01", new DateTime(2008, 01, 01) };
                 yield return new object[] { "00:00:20", TimeSpan.FromSeconds(20) };
-                yield return new object[] { "c6687d3a-51f9-4159-8771-a66d2b7d7038", 
-                                            Guid.Parse("c6687d3a-51f9-4159-8771-a66d2b7d7038") };
+                yield return new object[]
+                {
+                    "c6687d3a-51f9-4159-8771-a66d2b7d7038",
+                    Guid.Parse("c6687d3a-51f9-4159-8771-a66d2b7d7038")
+                };
             }
         }
 

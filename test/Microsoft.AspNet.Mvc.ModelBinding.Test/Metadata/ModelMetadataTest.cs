@@ -9,7 +9,7 @@ using Moq;
 #endif
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding.Test
+namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class ModelMetadataTest
     {
@@ -20,10 +20,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public void DefaultValues()
         {
             // Arrange
-            Mock<IModelMetadataProvider> provider = new Mock<IModelMetadataProvider>();
+            var provider = new Mock<IModelMetadataProvider>();
 
             // Act
-            ModelMetadata metadata = new ModelMetadata(provider.Object, typeof(Exception), () => "model", typeof(string), "propertyName");
+            var metadata = new ModelMetadata(provider.Object, typeof(Exception), () => "model", typeof(string), "propertyName");
 
             // Assert
             Assert.Equal(typeof(Exception), metadata.ContainerType);
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
         // IsComplexType
 
-        struct IsComplexTypeModel
+        private struct IsComplexTypeModel
         {
         }
 
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public void IsComplexTypeTestsReturnsFalseForSimpleTypes(Type type)
         {
             // Arrange
-            Mock<IModelMetadataProvider> provider = new Mock<IModelMetadataProvider>();
+            var provider = new Mock<IModelMetadataProvider>();
 
             // Act
             var modelMetadata = new ModelMetadata(provider.Object, null, null, type, null);
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public void IsComplexTypeTestsReturnsTrueForComplexTypes(Type type)
         {
             // Arrange
-            Mock<IModelMetadataProvider> provider = new Mock<IModelMetadataProvider>();
+            var provider = new Mock<IModelMetadataProvider>();
 
             // Act
             var modelMetadata = new ModelMetadata(provider.Object, null, null, type, null);
@@ -83,7 +83,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public void IsNullableValueTypeTests()
         {
             // Arrange
-            Mock<IModelMetadataProvider> provider = new Mock<IModelMetadataProvider>();
+            var provider = new Mock<IModelMetadataProvider>();
 
             // Act & Assert
             Assert.False(new ModelMetadata(provider.Object, null, null, typeof(string), null).IsNullableValueType);
@@ -98,16 +98,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public void PropertiesCallsProvider()
         {
             // Arrange
-            Type modelType = typeof(string);
-            List<ModelMetadata> propertyMetadata = new List<ModelMetadata>();
-            Mock<IModelMetadataProvider> provider = new Mock<IModelMetadataProvider>();
-            ModelMetadata metadata = new ModelMetadata(provider.Object, null, null, modelType, null);
+            var modelType = typeof(string);
+            var propertyMetadata = new List<ModelMetadata>();
+            var provider = new Mock<IModelMetadataProvider>();
+            var metadata = new ModelMetadata(provider.Object, null, null, modelType, null);
             provider.Setup(p => p.GetMetadataForProperties(null, modelType))
                 .Returns(propertyMetadata)
                 .Verifiable();
 
             // Act
-            IEnumerable<ModelMetadata> result = metadata.Properties;
+            var result = metadata.Properties;
 
             // Assert
             Assert.Equal(propertyMetadata, result.ToList());
@@ -118,31 +118,30 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         [Fact]
         public void PropertiesListGetsResetWhenModelGetsReset()
         {
-            // Dev10 Bug #923263
             // Arrange
-            IModelMetadataProvider provider = new EmptyModelMetadataProvider();
+            var provider = new EmptyModelMetadataProvider();
             var metadata = new ModelMetadata(provider, null, () => new Class1(), typeof(Class1), null);
 
             // Act
-            ModelMetadata[] originalProps = metadata.Properties.ToArray();
+            var originalProps = metadata.Properties.ToArray();
             metadata.Model = new Class2();
-            ModelMetadata[] newProps = metadata.Properties.ToArray();
+            var newProps = metadata.Properties.ToArray();
 
             // Assert
-            ModelMetadata originalProp = Assert.Single(originalProps);
+            var originalProp = Assert.Single(originalProps);
             Assert.Equal(typeof(string), originalProp.ModelType);
             Assert.Equal("Prop1", originalProp.PropertyName);
-            ModelMetadata newProp = Assert.Single(newProps);
+            var newProp = Assert.Single(newProps);
             Assert.Equal(typeof(int), newProp.ModelType);
             Assert.Equal("Prop2", newProp.PropertyName);
         }
 
-        class Class1
+        private class Class1
         {
             public string Prop1 { get; set; }
         }
 
-        class Class2
+        private class Class2
         {
             public int Prop2 { get; set; }
         }
@@ -154,11 +153,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public void ReturnsPropertyNameWhenSetAndDisplayNameIsNull()
         {
             // Arrange
-            Mock<IModelMetadataProvider> provider = new Mock<IModelMetadataProvider>();
-            ModelMetadata metadata = new ModelMetadata(provider.Object, null, null, typeof(object), "PropertyName");
+            var provider = new Mock<IModelMetadataProvider>();
+            var metadata = new ModelMetadata(provider.Object, null, null, typeof(object), "PropertyName");
 
             // Act
-            string result = metadata.GetDisplayName();
+            var result = metadata.GetDisplayName();
 
             // Assert
             Assert.Equal("PropertyName", result);
@@ -168,11 +167,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public void ReturnsTypeNameWhenPropertyNameAndDisplayNameAreNull()
         {
             // Arrange
-            Mock<IModelMetadataProvider> provider = new Mock<IModelMetadataProvider>();
-            ModelMetadata metadata = new ModelMetadata(provider.Object, null, null, typeof(object), null);
+            var provider = new Mock<IModelMetadataProvider>();
+            var metadata = new ModelMetadata(provider.Object, null, null, typeof(object), null);
 
             // Act
-            string result = metadata.GetDisplayName();
+            var result = metadata.GetDisplayName();
 
             // Assert
             Assert.Equal("Object", result);
@@ -186,7 +185,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             public int IntField = 0;
             public string FirstName { get; set; }
             public string LastName { get; set; }
-            public Nullable<int> NullableIntValue { get; set; }
+            public int? NullableIntValue { get; set; }
             public int[] Array { get; set; }
 
             public string this[int index]

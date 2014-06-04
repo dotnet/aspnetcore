@@ -18,9 +18,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             [NotNull] ClientModelValidationContext context)
         {
             var errorMessage = ((CompareAttributeWrapper)Attribute).FormatErrorMessage(context);
-            var clientRule = new ModelClientValidationEqualToRule(errorMessage, 
+            var clientRule = new ModelClientValidationEqualToRule(errorMessage,
                                                                   FormatPropertyForClientValidation(Attribute.OtherProperty));
-            return new [] { clientRule };
+            return new[] { clientRule };
         }
 
         private static string FormatPropertyForClientValidation(string property)
@@ -50,9 +50,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             public string FormatErrorMessage(ClientModelValidationContext context)
             {
                 var displayName = context.ModelMetadata.GetDisplayName();
-                return string.Format(CultureInfo.CurrentCulture, 
-                                     ErrorMessageString, 
-                                     displayName, 
+                return string.Format(CultureInfo.CurrentCulture,
+                                     ErrorMessageString,
+                                     displayName,
                                      GetOtherPropertyDisplayName(context));
             }
 

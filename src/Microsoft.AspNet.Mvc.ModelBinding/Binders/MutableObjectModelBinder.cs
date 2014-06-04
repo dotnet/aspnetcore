@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -88,13 +87,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return true;
         }
 
-        private ComplexModelDto CreateAndPopulateDto(ModelBindingContext bindingContext, IEnumerable<ModelMetadata> propertyMetadatas)
+        private ComplexModelDto CreateAndPopulateDto(ModelBindingContext bindingContext,
+                                                     IEnumerable<ModelMetadata> propertyMetadatas)
         {
             // create a DTO and call into the DTO binder
             var originalDto = new ComplexModelDto(bindingContext.ModelMetadata, propertyMetadatas);
             var dtoBindingContext = new ModelBindingContext(bindingContext)
             {
-                ModelMetadata = bindingContext.MetadataProvider.GetMetadataForType(() => originalDto, typeof(ComplexModelDto)),
+                ModelMetadata = bindingContext.MetadataProvider.GetMetadataForType(() => originalDto,
+                                                                                   typeof(ComplexModelDto)),
                 ModelName = bindingContext.ModelName
             };
 
@@ -104,13 +105,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         protected virtual object CreateModel(ModelBindingContext bindingContext)
         {
-            // If the Activator throws an exception, we want to propagate it back up the call stack, since the application
-            // developer should know that this was an invalid type to try to bind to.
+            // If the Activator throws an exception, we want to propagate it back up the call stack, since the 
+            // application developer should know that this was an invalid type to try to bind to.
             return Activator.CreateInstance(bindingContext.ModelType);
         }
 
         // Called when the property setter null check failed, allows us to add our own error message to ModelState.
-        internal static EventHandler<ModelValidatedEventArgs> CreateNullCheckFailedHandler(ModelMetadata modelMetadata, object incomingValue)
+        internal static EventHandler<ModelValidatedEventArgs> CreateNullCheckFailedHandler(ModelMetadata modelMetadata,
+                                                                                           object incomingValue)
         {
             return (sender, e) =>
             {
@@ -120,8 +122,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
                 if (validationState == ModelValidationState.Unvalidated)
                 {
+                    // Tracked via https://github.com/aspnet/Mvc/issues/450
                     // TODO: Revive ModelBinderConfig
-                    // string errorMessage =  ModelBinderConfig.ValueRequiredErrorMessageProvider(e.ValidationContext, modelMetadata, incomingValue);
+                    // var errorMessage =  ModelBinderConfig.ValueRequiredErrorMessageProvider(e.ValidationContext, 
+                    //                                                                            modelMetadata, 
+                    //                                                                            incomingValue);
                     var errorMessage = "A value is required.";
                     if (errorMessage != null)
                     {
@@ -145,7 +150,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return bindingContext.ModelMetadata.Properties
                                  .Where(propertyMetadata =>
                                     (validationInfo.RequiredProperties.Contains(propertyMetadata.PropertyName) ||
-                                    !validationInfo.SkipProperties.Contains(propertyMetadata.PropertyName)) && 
+                                    !validationInfo.SkipProperties.Contains(propertyMetadata.PropertyName)) &&
                                     CanUpdateProperty(propertyMetadata));
         }
 
@@ -199,7 +204,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         internal void ProcessDto(ModelBindingContext bindingContext, ComplexModelDto dto)
         {
             var validationInfo = GetPropertyValidationInfo(bindingContext);
-            
+
             // Eliminate provided properties from requiredProperties; leaving just *missing* required properties.
             validationInfo.RequiredProperties.ExceptWith(dto.Results.Select(r => r.Key.PropertyName));
 
@@ -240,21 +245,22 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 if (dtoResult != null)
                 {
                     IModelValidator requiredValidator;
-                    validationInfo.RequiredValidators.TryGetValue(propertyMetadata.PropertyName, out requiredValidator);
+                    validationInfo.RequiredValidators.TryGetValue(propertyMetadata.PropertyName,
+                                                                  out requiredValidator);
                     SetProperty(bindingContext, propertyMetadata, dtoResult, requiredValidator);
                     bindingContext.ValidationNode.ChildNodes.Add(dtoResult.ValidationNode);
                 }
             }
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We're recording this exception so that we can act on it later.")]
         protected virtual void SetProperty(ModelBindingContext bindingContext,
                                            ModelMetadata propertyMetadata,
                                            ComplexModelDtoResult dtoResult,
                                            IModelValidator requiredValidator)
         {
+            var bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase;
             var property = bindingContext.ModelType
-                                         .GetProperty(propertyMetadata.PropertyName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
+                                         .GetProperty(propertyMetadata.PropertyName, bindingFlags);
 
             if (property == null || !property.CanWrite)
             {
@@ -264,7 +270,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             var value = dtoResult.Model ?? GetPropertyDefaultValue(property);
             propertyMetadata.Model = value;
-
 
             // 'Required' validators need to run first so that we can provide useful error messages if
             // the property setters throw, e.g. if we're setting entity keys to null. 
@@ -295,7 +300,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 {
                     // don't display a duplicate error message if a binding error has already occurred for this field
                     var targetInvocationException = ex as TargetInvocationException;
-                    if (targetInvocationException != null && 
+                    if (targetInvocationException != null &&
                         targetInvocationException.InnerException != null)
                     {
                         ex = targetInvocationException.InnerException;

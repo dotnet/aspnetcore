@@ -8,12 +8,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
 {
     public static class CollectionModelBinderUtil
     {
-        public static IEnumerable<string> GetIndexNamesFromValueProviderResult(ValueProviderResult valueProviderResultIndex)
+        public static IEnumerable<string> GetIndexNamesFromValueProviderResult(ValueProviderResult valueProviderResult)
         {
             IEnumerable<string> indexNames = null;
-            if (valueProviderResultIndex != null)
+            if (valueProviderResult != null)
             {
-                string[] indexes = (string[])valueProviderResultIndex.ConvertTo(typeof(string[]));
+                var indexes = (string[])valueProviderResult.ConvertTo(typeof(string[]));
                 if (indexes != null && indexes.Length > 0)
                 {
                     indexNames = indexes;
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
             }
 
             collection.Clear();
-            foreach (TElement element in incomingElements)
+            foreach (var element in incomingElements)
             {
                 collection.Add(element);
             }

@@ -26,13 +26,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
 
         internal static string CreatePropertyModelName(string prefix, string propertyName)
         {
-            if (String.IsNullOrEmpty(prefix))
+            if (string.IsNullOrEmpty(prefix))
             {
-                return propertyName ?? String.Empty;
+                return propertyName ?? string.Empty;
             }
-            else if (String.IsNullOrEmpty(propertyName))
+            else if (string.IsNullOrEmpty(propertyName))
             {
-                return prefix ?? String.Empty;
+                return prefix ?? string.Empty;
             }
             else
             {
@@ -40,9 +40,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
             }
         }
 
-        internal static Type GetPossibleBinderInstanceType(Type closedModelType, Type openModelType, Type openBinderType)
+        internal static Type GetPossibleBinderInstanceType(Type closedModelType,
+                                                           Type openModelType,
+                                                           Type openBinderType)
         {
-            Type[] typeArguments = TypeExtensions.GetTypeArgumentsIfMatch(closedModelType, openModelType);
+            var typeArguments = TypeExtensions.GetTypeArgumentsIfMatch(closedModelType, openModelType);
             return (typeArguments != null) ? openBinderType.MakeGenericType(typeArguments) : null;
         }
 
@@ -50,7 +52,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
         {
             if (model is string &&
                 modelMetadata.ConvertEmptyStringToNull &&
-                String.IsNullOrWhiteSpace(model as string))
+                string.IsNullOrWhiteSpace(model as string))
             {
                 model = null;
             }
@@ -64,7 +66,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
             }
         }
 
-        internal static void ValidateBindingContext(ModelBindingContext bindingContext, Type requiredType, bool allowNullModel)
+        internal static void ValidateBindingContext(ModelBindingContext bindingContext,
+                                                    Type requiredType,
+                                                    bool allowNullModel)
         {
             ValidateBindingContext(bindingContext);
 
@@ -80,10 +84,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
                 throw new ArgumentException(message, "bindingContext");
             }
 
-            if (bindingContext.Model != null && !bindingContext.ModelType.GetTypeInfo().IsAssignableFrom(requiredType.GetTypeInfo()))
+            if (bindingContext.Model != null &&
+                !bindingContext.ModelType.GetTypeInfo().IsAssignableFrom(requiredType.GetTypeInfo()))
             {
                 var message = Resources.FormatModelBinderUtil_ModelInstanceIsWrong(
-                    bindingContext.Model.GetType(), 
+                    bindingContext.Model.GetType(),
                     requiredType);
                 throw new ArgumentException(message, "bindingContext");
             }

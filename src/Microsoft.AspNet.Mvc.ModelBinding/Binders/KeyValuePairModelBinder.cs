@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding.Internal;
@@ -12,10 +11,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     {
         public async Task<bool> BindModelAsync(ModelBindingContext bindingContext)
         {
-            ModelBindingHelper.ValidateBindingContext(bindingContext, typeof(KeyValuePair<TKey, TValue>), allowNullModel: true);
+            ModelBindingHelper.ValidateBindingContext(bindingContext,
+                                                      typeof(KeyValuePair<TKey, TValue>),
+                                                      allowNullModel: true);
 
             var keyResult = await TryBindStrongModel<TKey>(bindingContext, "key");
-            var valueResult =  await TryBindStrongModel<TValue>(bindingContext, "value");
+            var valueResult = await TryBindStrongModel<TValue>(bindingContext, "value");
 
             if (keyResult.Success && valueResult.Success)
             {
@@ -27,21 +28,22 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         internal async Task<BindResult<TModel>> TryBindStrongModel<TModel>(ModelBindingContext parentBindingContext,
                                                                           string propertyName)
         {
-            ModelBindingContext propertyBindingContext = new ModelBindingContext(parentBindingContext)
+            var propertyBindingContext = new ModelBindingContext(parentBindingContext)
             {
-                ModelMetadata = parentBindingContext.MetadataProvider.GetMetadataForType(modelAccessor: null, modelType: typeof(TModel)),
+                ModelMetadata = parentBindingContext.MetadataProvider.GetMetadataForType(modelAccessor: null,
+                                                                                        modelType: typeof(TModel)),
                 ModelName = ModelBindingHelper.CreatePropertyModelName(parentBindingContext.ModelName, propertyName)
             };
 
             if (await propertyBindingContext.ModelBinder.BindModelAsync(propertyBindingContext))
             {
-                object untypedModel = propertyBindingContext.Model;
+                var untypedModel = propertyBindingContext.Model;
                 var model = ModelBindingHelper.CastOrDefault<TModel>(untypedModel);
                 parentBindingContext.ValidationNode.ChildNodes.Add(propertyBindingContext.ValidationNode);
-                return new BindResult<TModel>(true, model);
+                return new BindResult<TModel>(success: true, model: model);
             }
 
-            return new BindResult<TModel>(false, default(TModel));
+            return new BindResult<TModel>(success: false, model: default(TModel));
         }
 
         internal sealed class BindResult<TModel>

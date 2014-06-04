@@ -8,8 +8,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
 {
     public static class DictionaryHelper
     {
-        public static IEnumerable<KeyValuePair<string, TValue>> FindKeysWithPrefix<TValue>([NotNull] IDictionary<string, TValue> dictionary, 
-                                                                                           [NotNull] string prefix)
+        public static IEnumerable<KeyValuePair<string, TValue>> FindKeysWithPrefix<TValue>(
+                [NotNull] IDictionary<string, TValue> dictionary,
+                [NotNull] string prefix)
         {
             TValue exactMatchValue;
             if (dictionary.TryGetValue(prefix, out exactMatchValue))

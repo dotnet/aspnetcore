@@ -255,7 +255,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var type = value.GetType();
             if (type != typeof(string))
             {
-                string message = Resources.FormatValueProviderResult_NoConverterExists(type, destinationType);
+                var message = Resources.FormatValueProviderResult_NoConverterExists(type, destinationType);
                 throw new InvalidOperationException(message);
             }
         }

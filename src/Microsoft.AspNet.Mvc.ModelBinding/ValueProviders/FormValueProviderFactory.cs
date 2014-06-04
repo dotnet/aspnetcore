@@ -3,7 +3,6 @@
 
 using System;
 using System.Globalization;
-using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -15,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public IValueProvider GetValueProvider(RequestContext requestContext)
         {
             var request = requestContext.HttpContext.Request;
-            
+
             if (IsSupportedContentType(request))
             {
                 var culture = GetCultureInfo(request);
@@ -34,8 +33,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private static CultureInfo GetCultureInfo(HttpRequest request)
         {
-            // TODO: Tracked via https://github.com/aspnet/HttpAbstractions/issues/10. Determine what's the right way to 
-            // map Accept-Language to culture.
+            // TODO: Tracked via https://github.com/aspnet/HttpAbstractions/issues/10. 
+            // Determine what's the right way to map Accept-Language to culture.
             return CultureInfo.CurrentCulture;
         }
     }

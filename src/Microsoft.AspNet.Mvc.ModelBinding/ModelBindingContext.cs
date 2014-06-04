@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNet.Http;
 
@@ -57,14 +56,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 if (_modelName == null)
                 {
-                    _modelName = String.Empty;
+                    _modelName = string.Empty;
                 }
                 return _modelName;
             }
             set { _modelName = value; }
         }
 
-        [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "This is writeable to support unit testing")]
         public ModelStateDictionary ModelState
         {
             get
@@ -121,7 +119,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 if (_propertyMetadata == null)
                 {
-                    _propertyMetadata = ModelMetadata.Properties.ToDictionary(m => m.PropertyName, StringComparer.OrdinalIgnoreCase);
+                    _propertyMetadata = ModelMetadata.Properties
+                                                     .ToDictionary(m => m.PropertyName,
+                                                                   StringComparer.OrdinalIgnoreCase);
                 }
 
                 return _propertyMetadata;

@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     /// </remarks>
     public class CompositeModelBinder : IModelBinder
     {
-        public CompositeModelBinder(IEnumerable<IModelBinder> binders)
+        public CompositeModelBinder([NotNull] IEnumerable<IModelBinder> binders)
             : this(binders.ToArray())
         {
         }
@@ -31,8 +31,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         public virtual async Task<bool> BindModelAsync([NotNull] ModelBindingContext bindingContext)
         {
-            var newBindingContext = CreateNewBindingContext(bindingContext, 
-                                                            bindingContext.ModelName, 
+            var newBindingContext = CreateNewBindingContext(bindingContext,
+                                                            bindingContext.ModelName,
                                                             reuseValidationNode: true);
 
             var boundSuccessfully = await TryBind(newBindingContext);
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 && bindingContext.FallbackToEmptyPrefix)
             {
                 // fallback to empty prefix?
-                newBindingContext = CreateNewBindingContext(bindingContext, 
+                newBindingContext = CreateNewBindingContext(bindingContext,
                                                             modelName: string.Empty,
                                                             reuseValidationNode: false);
                 boundSuccessfully = await TryBind(newBindingContext);
@@ -53,16 +53,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Only perform validation at the root of the object graph. ValidationNode will recursively walk the graph.
             // Ignore ComplexModelDto since it essentially wraps the primary object.
-            if (newBindingContext.ModelMetadata.ContainerType == null && 
+            if (newBindingContext.ModelMetadata.ContainerType == null &&
                 newBindingContext.ModelMetadata.ModelType != typeof(ComplexModelDto))
             {
                 // run validation and return the model
                 // If we fell back to an empty prefix above and are dealing with simple types,
                 // propagate the non-blank model name through for user clarity in validation errors.
                 // Complex types will reveal their individual properties as model names and do not require this.
-                if (!newBindingContext.ModelMetadata.IsComplexType && string.IsNullOrEmpty(newBindingContext.ModelName))
+                if (!newBindingContext.ModelMetadata.IsComplexType &&
+                    string.IsNullOrEmpty(newBindingContext.ModelName))
                 {
-                    newBindingContext.ValidationNode = new ModelValidationNode(newBindingContext.ModelMetadata, 
+                    newBindingContext.ValidationNode = new ModelValidationNode(newBindingContext.ModelMetadata,
                                                                                bindingContext.ModelName);
                 }
 
@@ -74,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
                 newBindingContext.ValidationNode.Validate(validationContext, parentNode: null);
             }
-                
+
             bindingContext.Model = newBindingContext.Model;
             return true;
         }
@@ -97,7 +98,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return false;
         }
 
-        private static ModelBindingContext CreateNewBindingContext(ModelBindingContext oldBindingContext, 
+        private static ModelBindingContext CreateNewBindingContext(ModelBindingContext oldBindingContext,
                                                                    string modelName,
                                                                    bool reuseValidationNode)
         {
@@ -110,7 +111,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 ValidatorProviders = oldBindingContext.ValidatorProviders,
                 MetadataProvider = oldBindingContext.MetadataProvider,
                 ModelBinder = oldBindingContext.ModelBinder,
-                HttpContext = oldBindingContext.HttpContext               
+                HttpContext = oldBindingContext.HttpContext
             };
 
             // validation is expensive to create, so copy it over if we can

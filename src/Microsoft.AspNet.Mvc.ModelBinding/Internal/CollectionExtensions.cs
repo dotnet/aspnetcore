@@ -10,14 +10,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
     public static class CollectionExtensions
     {
         /// <summary>
-        /// Convert an ICollection to an array, removing null values. Fast path for case where there are no null values.
+        /// Convert an ICollection to an array, removing null values. Fast path for case where 
+        /// there are no null values.
         /// </summary>
         public static T[] ToArrayWithoutNulls<T>(this ICollection<T> collection) where T : class
         {
             Contract.Assert(collection != null);
 
-            T[] result = new T[collection.Count];
-            int count = 0;
+            var result = new T[collection.Count];
+            var count = 0;
             foreach (T value in collection)
             {
                 if (value != null)
@@ -32,7 +33,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
             }
             else
             {
-                T[] trimmedResult = new T[count];
+                var trimmedResult = new T[count];
                 Array.Copy(result, trimmedResult, count);
                 return trimmedResult;
             }

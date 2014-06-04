@@ -20,23 +20,41 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             get
             {
-                yield return new object[] { new RegularExpressionAttribute("abc"),
-                                            typeof(RegularExpressionAttributeAdapter) };
+                yield return new object[]
+                {
+                    new RegularExpressionAttribute("abc"),
+                    typeof(RegularExpressionAttributeAdapter)
+                };
 
-                yield return new object[] { new MaxLengthAttribute(),
-                                            typeof(MaxLengthAttributeAdapter) };
+                yield return new object[]
+                {
+                    new MaxLengthAttribute(),
+                    typeof(MaxLengthAttributeAdapter)
+                };
 
-                yield return new object[] { new MinLengthAttribute(1),
-                                            typeof(MinLengthAttributeAdapter) };
+                yield return new object[]
+                {
+                   new MinLengthAttribute(1),
+                  typeof(MinLengthAttributeAdapter)
+                };
 
-                yield return new object[] { new RangeAttribute(1, 100),
-                                            typeof(RangeAttributeAdapter) };
+                yield return new object[]
+                {
+                    new RangeAttribute(1, 100),
+                    typeof(RangeAttributeAdapter)
+                };
 
-                yield return new object[] { new StringLengthAttribute(6),
-                                            typeof(StringLengthAttributeAdapter) };
+                yield return new object[]
+                {
+                    new StringLengthAttribute(6),
+                    typeof(StringLengthAttributeAdapter)
+                };
 
-                yield return new object[] { new RequiredAttribute(),
-                                            typeof(RequiredAttributeAdapter) };
+                yield return new object[]
+                {
+                    new RequiredAttribute(),
+                    typeof(RequiredAttributeAdapter)
+                };
             }
         }
 

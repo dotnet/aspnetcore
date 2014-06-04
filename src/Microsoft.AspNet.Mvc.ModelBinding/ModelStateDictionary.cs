@@ -11,7 +11,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class ModelStateDictionary : IDictionary<string, ModelState>
     {
-        private readonly IDictionary<string, ModelState> _innerDictionary = new Dictionary<string, ModelState>(StringComparer.OrdinalIgnoreCase);
+        private readonly IDictionary<string, ModelState> _innerDictionary =
+            new Dictionary<string, ModelState>(StringComparer.OrdinalIgnoreCase);
 
         public ModelStateDictionary()
         {
@@ -54,7 +55,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         public ModelValidationState ValidationState
         {
-            get {  return GetValidity(_innerDictionary); }
+            get { return GetValidity(_innerDictionary); }
         }
 
         public ModelState this[[NotNull] string key]
@@ -67,7 +68,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
             set
             {
-                if(value == null)
+                if (value == null)
                 {
                     throw new ArgumentNullException("value");
                 }

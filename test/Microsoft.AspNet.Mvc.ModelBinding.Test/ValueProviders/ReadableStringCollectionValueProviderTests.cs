@@ -16,12 +16,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         private static readonly IReadableStringCollection _backingStore = new ReadableStringCollection(
             new Dictionary<string, string[]>
             {
-                {"foo", new[] { "fooValue1", "fooValue2"} },
-                {"bar.baz", new[] {"someOtherValue" }},
-                {"null_value", null},
-                {"prefix.null_value", null}
+                { "foo", new[] { "fooValue1", "fooValue2"} },
+                { "bar.baz", new[] {"someOtherValue" } },
+                { "null_value", null },
+                { "prefix.null_value", null }
             });
-
 
         [Fact]
         public async Task ContainsPrefixAsync_WithEmptyCollection_ReturnsFalseForEmptyPrefix()
@@ -79,15 +78,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public async Task GetKeysFromPrefixAsync_EmptyPrefix_ReturnsAllPrefixes()
         {
             // Arrange
-            var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, null);
+            var expected = new Dictionary<string, string>
+            {
+                { "bar", "bar" },
+                { "foo", "foo" },
+                { "null_value", "null_value" },
+                { "prefix", "prefix" }
+            };
+            var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, culture: null);
 
             // Act
             var result = await valueProvider.GetKeysFromPrefixAsync("");
 
             // Assert
-            Assert.Equal<KeyValuePair<string, string>>(
-                result.OrderBy(kvp => kvp.Key),
-                new Dictionary<string, string> { { "bar", "bar" }, { "foo", "foo" }, { "null_value", "null_value" }, { "prefix", "prefix" } });
+            Assert.Equal(expected, result.OrderBy(kvp => kvp.Key));
         }
 
         [Fact]
@@ -147,7 +151,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             // Assert
             Assert.NotNull(vpResult);
-            Assert.Equal(new [] { "fooValue1", "fooValue2" }, (IList<string>)vpResult.RawValue);
+            Assert.Equal(new[] { "fooValue1", "fooValue2" }, (IList<string>)vpResult.RawValue);
             Assert.Equal("fooValue1,fooValue2", vpResult.AttemptedValue);
             Assert.Equal(culture, vpResult.Culture);
         }
@@ -179,7 +183,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             // Arrange
             var backingStore = new ReadableStringCollection(
                 new Dictionary<string, string[]>
-                { 
+                {
                     { "key", new string[] { null, null, "value" } }
                 });
             var culture = new CultureInfo("fr-FR");
