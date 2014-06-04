@@ -9,7 +9,6 @@ using Microsoft.AspNet.Security.Cookies;
 using Microsoft.Data.Entity;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.OptionsModel;
 using MusicStore.Models;
 
 namespace MusicStore
@@ -28,7 +27,6 @@ namespace MusicStore
 
             app.UseServices(services =>
             {
-                services.Add(OptionsServices.GetDefaultServices());
                 // Add EF services to the services container
                 services.AddEntityFramework()
                         .AddSqlServer();
