@@ -41,6 +41,7 @@
     <Compile Include="RouteConstraintBuilder.cs" />
     <Compile Include="RouteConstraintMatcher.cs" />
     <Compile Include="RouteContext.cs" />
+    <Compile Include="RouteData.cs" />
     <Compile Include="RouteDirection.cs" />
     <Compile Include="RouterMiddleware.cs" />
     <Compile Include="RouteValueDictionary.cs" />

@@ -32,9 +32,9 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
             // Assert
             Assert.True(context.IsHandled);
-            Assert.Equal(2, context.Values.Count);
-            Assert.Equal("Home", context.Values["controller"]);
-            Assert.Equal("Index", context.Values["action"]);
+            Assert.Equal(2, context.RouteData.Values.Count);
+            Assert.Equal("Home", context.RouteData.Values["controller"]);
+            Assert.Equal("Index", context.RouteData.Values["action"]);
         }
 
         [Fact]
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
             // Assert
             Assert.True(context.IsHandled);
-            Assert.Equal(0, context.Values.Count);
+            Assert.Equal(0, context.RouteData.Values.Count);
         }
 
         [Fact]
@@ -64,9 +64,9 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
             // Assert
             Assert.True(context.IsHandled);
-            Assert.Equal(2, context.Values.Count);
-            Assert.Equal("Home", context.Values["controller"]);
-            Assert.Equal("Index", context.Values["action"]);
+            Assert.Equal(2, context.RouteData.Values.Count);
+            Assert.Equal("Home", context.RouteData.Values["controller"]);
+            Assert.Equal("Index", context.RouteData.Values["action"]);
         }
 
         [Fact]
@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             Assert.False(context.IsHandled);
 
             // Issue #16 tracks this.
-            Assert.NotNull(context.Values);
+            Assert.NotNull(context.RouteData.Values);
         }
 
         private static RouteContext CreateRouteContext(string requestPath)

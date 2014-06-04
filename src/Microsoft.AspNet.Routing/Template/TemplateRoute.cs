@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.Routing.Template
             else
             {
                 // Not currently doing anything to clean this up if it's not a match. Consider hardening this.
-                context.Values = values;
+                context.RouteData.Values = values;
 
                 if (RouteConstraintMatcher.Match(Constraints,
                                                  values,

@@ -18,7 +18,7 @@ namespace RoutingSample.Web
                                                                 .HttpContext
                                                                 .Response
                                                                 .WriteAsync(
-                                                                  "match1, route values -" + context.Values.Print()));
+                                                                  "match1, route values -" + context.RouteData.Values.Print()));
 
             var endpoint2 = new DelegateRouteEndpoint(async (context) => 
                                                         await context

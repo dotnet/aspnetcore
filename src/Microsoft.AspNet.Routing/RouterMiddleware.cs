@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -29,10 +29,8 @@ namespace Microsoft.AspNet.Builder
 
         public async Task Invoke(HttpContext httpContext)
         {
-            var context = new RouteContext(httpContext)
-            {
-                Router = Router,
-            };
+            var context = new RouteContext(httpContext);
+            context.RouteData.Routers.Push(Router);
 
             await Router.RouteAsync(context);
             if (!context.IsHandled)
