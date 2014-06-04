@@ -208,12 +208,42 @@ namespace Microsoft.AspNet.Identity.Security.Test
         }
 
         [Fact]
+        public async Task PasswordSignInWorksWithNonTwoFactorStore()
+        {
+            // Setup
+            var user = new TestUser { UserName = "Foo" };
+            var manager = MockHelpers.MockUserManager<TestUser>();
+            manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
+            manager.Setup(m => m.IsLockedOutAsync(user, CancellationToken.None)).ReturnsAsync(false).Verifiable();
+            manager.Setup(m => m.FindByNameAsync(user.UserName, CancellationToken.None)).ReturnsAsync(user).Verifiable();
+            manager.Setup(m => m.CheckPasswordAsync(user, "password", CancellationToken.None)).ReturnsAsync(true).Verifiable();
+            var context = new Mock<HttpContext>();
+            var response = new Mock<HttpResponse>();
+            response.Setup(r => r.SignIn(It.IsAny<ClaimsIdentity>(), It.IsAny<AuthenticationProperties>())).Verifiable();
+            context.Setup(c => c.Response).Returns(response.Object).Verifiable();
+            var contextAccessor = new Mock<IContextAccessor<HttpContext>>();
+            contextAccessor.Setup(a => a.Value).Returns(context.Object);
+            var helper = new SignInManager<TestUser>(manager.Object, new HttpAuthenticationManager(contextAccessor.Object));
+
+            // Act
+            var result = await helper.PasswordSignInAsync(user.UserName, "password", false, false);
+
+            // Assert
+            Assert.Equal(SignInStatus.Success, result);
+            manager.VerifyAll();
+            context.VerifyAll();
+            response.VerifyAll();
+            contextAccessor.VerifyAll();
+        }
+
+        [Fact]
         public async Task PasswordSignInRequiresVerification()
         {
             // Setup
             var user = new TestUser { UserName = "Foo" };
             var manager = MockHelpers.MockUserManager<TestUser>();
             manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
+            manager.Setup(m => m.SupportsUserTwoFactor).Returns(true).Verifiable();
             manager.Setup(m => m.GetTwoFactorEnabledAsync(user, CancellationToken.None)).ReturnsAsync(true).Verifiable();
             manager.Setup(m => m.IsLockedOutAsync(user, CancellationToken.None)).ReturnsAsync(false).Verifiable();
             manager.Setup(m => m.FindByNameAsync(user.UserName, CancellationToken.None)).ReturnsAsync(user).Verifiable();
@@ -309,6 +339,7 @@ namespace Microsoft.AspNet.Identity.Security.Test
             var manager = MockHelpers.MockUserManager<TestUser>();
             manager.Setup(m => m.GetTwoFactorEnabledAsync(user, CancellationToken.None)).ReturnsAsync(true).Verifiable();
             manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
+            manager.Setup(m => m.SupportsUserTwoFactor).Returns(true).Verifiable();
             manager.Setup(m => m.IsLockedOutAsync(user, CancellationToken.None)).ReturnsAsync(false).Verifiable();
             manager.Setup(m => m.FindByNameAsync(user.UserName, CancellationToken.None)).ReturnsAsync(user).Verifiable();
             manager.Setup(m => m.GetUserIdAsync(user, CancellationToken.None)).ReturnsAsync(user.Id).Verifiable();

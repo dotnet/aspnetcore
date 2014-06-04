@@ -159,7 +159,7 @@ namespace Microsoft.AspNet.Identity
 
         private async Task<SignInStatus> SignInOrTwoFactor(TUser user, bool isPersistent)
         {
-            if (await UserManager.GetTwoFactorEnabledAsync(user))
+            if (UserManager.SupportsUserTwoFactor && await UserManager.GetTwoFactorEnabledAsync(user))
             {
                 var userId = await UserManager.GetUserIdAsync(user);
                 if (!await AuthenticationManager.IsClientRememeberedAsync(userId))
