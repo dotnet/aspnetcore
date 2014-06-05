@@ -259,6 +259,11 @@
     </Analyzer>
     <Analyzer AnalyzerId="StyleCop.CSharp.ReadabilityRules">
       <Rules>
+        <Rule Name="OpeningParenthesisMustBeOnDeclarationLine">
+          <RuleSettings>
+            <BooleanProperty Name="Enabled">False</BooleanProperty>
+          </RuleSettings>
+        </Rule>
         <Rule Name="ParameterMustNotSpanMultipleLines">
           <RuleSettings>
             <BooleanProperty Name="Enabled">False</BooleanProperty>

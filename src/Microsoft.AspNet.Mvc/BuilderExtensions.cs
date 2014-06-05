@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Builder
             return app.UseMvc(routes =>
             {
                 // Action style actions
-                routes.MapRoute(null, "{controller}/{action}/{id?}", new { controller = "Home" , action = "Index" });
+                routes.MapRoute(null, "{controller}/{action}/{id?}", new { controller = "Home", action = "Index" });
 
                 // Rest style actions
                 routes.MapRoute(null, "{controller}/{id?}");
