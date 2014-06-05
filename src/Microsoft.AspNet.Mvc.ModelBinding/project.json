@@ -6,6 +6,7 @@
   "dependencies": {
     "Microsoft.AspNet.Http": "0.1-alpha-*",
     "Microsoft.AspNet.Mvc.Common": "",
+    "Microsoft.AspNet.Routing": "0.1-alpha-*",
     "Microsoft.DataAnnotations": "0.1-alpha-*",
     "Microsoft.Framework.DependencyInjection": "0.1-alpha-*",
     "Newtonsoft.Json": "5.0.8"

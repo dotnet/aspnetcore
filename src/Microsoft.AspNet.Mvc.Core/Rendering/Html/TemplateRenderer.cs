@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 var fullViewName = modeViewPath + "/" + viewName;
 
                 // Forcing synchronous behavior so users don't have to await templates.
-                var viewEngineResult = _viewEngine.FindPartialView(_viewContext.RouteValues, fullViewName);
+                var viewEngineResult = _viewEngine.FindPartialView(_viewContext.RouteData.Values, fullViewName);
                 if (viewEngineResult.Success)
                 {
                     using (var writer = new StringWriter(CultureInfo.InvariantCulture))

@@ -21,8 +21,8 @@ namespace Microsoft.AspNet.Mvc
         public UrlHelper(IContextAccessor<ActionContext> contextAccessor, IActionSelector actionSelector)
         {
             _httpContext = contextAccessor.Value.HttpContext;
-            _router = contextAccessor.Value.Router;
-            _ambientValues = contextAccessor.Value.RouteValues;
+            _router = contextAccessor.Value.RouteData.Routers.Peek();
+            _ambientValues = contextAccessor.Value.RouteData.Values;
             _actionSelector = actionSelector;
         }
 

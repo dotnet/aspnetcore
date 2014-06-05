@@ -12,6 +12,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection.NestedProviders;
 using Moq;
 using Xunit;
+using Microsoft.AspNet.Routing;
 
 namespace Microsoft.AspNet.Mvc.Core.Test
 {
@@ -31,16 +32,15 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public async Task HttpMethodAttribute_ActionWithMultipleHttpMethodAttributeViaAcceptVerbs_ORsMultipleHttpMethods(string verb)
         {
             // Arrange
-            var requestContext = new RequestContext(
-                                        GetHttpContext(verb),
-                                        new Dictionary<string, object>
-                                            {
-                                                { "controller", "HttpMethodAttributeTests_RestOnly" },
-                                                { "action", "Patch" }
-                                            });
+            var routeContext = new RouteContext(GetHttpContext(verb));
+            routeContext.RouteData.Values = new Dictionary<string, object>
+            {
+                { "controller", "HttpMethodAttributeTests_RestOnly" },
+                { "action", "Patch" }
+            };
 
             // Act
-            var result = await InvokeActionSelector(requestContext);
+            var result = await InvokeActionSelector(routeContext);
 
             // Assert
             Assert.Equal("Patch", result.Name);
@@ -55,16 +55,15 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public async Task HttpMethodAttribute_ActionWithMultipleHttpMethodAttributes_ORsMultipleHttpMethods(string verb)
         {
             // Arrange
-            var requestContext = new RequestContext(
-                                        GetHttpContext(verb),
-                                        new Dictionary<string, object>
-                                            {
-                                                { "controller", "HttpMethodAttributeTests_RestOnly" },
-                                                { "action", "Put" }
-                                            });
+            var routeContext = new RouteContext(GetHttpContext(verb));
+            routeContext.RouteData.Values = new Dictionary<string, object>()
+            {
+                { "controller", "HttpMethodAttributeTests_RestOnly" },
+                { "action", "Put" }
+            };
 
             // Act
-            var result = await InvokeActionSelector(requestContext);
+            var result = await InvokeActionSelector(routeContext);
 
             // Assert
             Assert.Equal("Put", result.Name);
@@ -77,15 +76,14 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             // Arrange
             // Note no action name is passed, hence should return a null action descriptor.
-            var requestContext = new RequestContext(
-                                        GetHttpContext(verb),
-                                        new Dictionary<string, object>
-                                            {
-                                                { "controller", "HttpMethodAttributeTests_RestOnly" },
-                                            });
+            var routeContext = new RouteContext(GetHttpContext(verb));
+            routeContext.RouteData.Values = new Dictionary<string, object>()
+            {
+                { "controller", "HttpMethodAttributeTests_RestOnly" },
+            };
 
             // Act
-            var result = await InvokeActionSelector(requestContext);
+            var result = await InvokeActionSelector(routeContext);
 
             // Assert
             Assert.Equal(null, result);
@@ -98,15 +96,14 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             // Arrange
             // Note no action name is passed, hence should return a null action descriptor.
-            var requestContext = new RequestContext(
-                                        GetHttpContext(verb),
-                                        new Dictionary<string, object>
-                                            {
-                                                { "controller", "HttpMethodAttributeTests_DefaultMethodValidation" },
-                                            });
+            var routeContext = new RouteContext(GetHttpContext(verb));
+            routeContext.RouteData.Values = new Dictionary<string, object>
+            {
+                { "controller", "HttpMethodAttributeTests_DefaultMethodValidation" },
+            };
 
             // Act
-            var result = await InvokeActionSelector(requestContext);
+            var result = await InvokeActionSelector(routeContext);
 
             // Assert
             Assert.Equal("Index", result.Name);
@@ -141,16 +138,15 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public async Task ActionNameAttribute_ActionGetsExposedViaActionName_UnreachableByConvention(string verb)
         {
             // Arrange
-            var requestContext = new RequestContext(
-                                        GetHttpContext(verb),
-                                        new Dictionary<string, object>
-                                            {
-                                                { "controller", "ActionName" },
-                                                { "action", "RPCMethodWithHttpGet" }
-                                            });
+            var routeContext = new RouteContext(GetHttpContext(verb));
+            routeContext.RouteData.Values = new Dictionary<string, object>
+            {
+                { "controller", "ActionName" },
+                { "action", "RPCMethodWithHttpGet" }
+            };
 
             // Act
-            var result = await InvokeActionSelector(requestContext);
+            var result = await InvokeActionSelector(routeContext);
 
             // Assert
             Assert.Equal(null, result);
@@ -175,27 +171,26 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public async Task ActionNameAttribute_DifferentActionName_UsesActionNameFromActionNameAttribute(string verb, string actionName)
         {
             // Arrange
-            var requestContext = new RequestContext(
-                                        GetHttpContext(verb),
-                                        new Dictionary<string, object>
-                                            {
-                                                { "controller", "ActionName" },
-                                                { "action", actionName }
-                                            });
+            var routeContext = new RouteContext(GetHttpContext(verb));
+            routeContext.RouteData.Values = new Dictionary<string, object>
+            {
+                { "controller", "ActionName" },
+                { "action", actionName }
+            };
 
             // Act
-            var result = await InvokeActionSelector(requestContext);
+            var result = await InvokeActionSelector(routeContext);
 
             // Assert
             Assert.Equal(actionName, result.Name);
         }
 
-        private async Task<ActionDescriptor> InvokeActionSelector(RequestContext context)
+        private async Task<ActionDescriptor> InvokeActionSelector(RouteContext context)
         {
             return await InvokeActionSelector(context, _actionDiscoveryConventions);
         }
 
-        private async Task<ActionDescriptor> InvokeActionSelector(RequestContext context, DefaultActionDiscoveryConventions actionDiscoveryConventions)
+        private async Task<ActionDescriptor> InvokeActionSelector(RouteContext context, DefaultActionDiscoveryConventions actionDiscoveryConventions)
         {
             var actionDescriptorProvider = GetActionDescriptorProvider(actionDiscoveryConventions);
             var descriptorProvider =

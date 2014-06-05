@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Routing;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -31,8 +32,9 @@ namespace Microsoft.AspNet.Mvc
 
         public Task<ActionBindingContext> GetActionBindingContextAsync(ActionContext actionContext)
         {
-            var requestContext = new RequestContext(actionContext.HttpContext, actionContext.RouteValues);
-            var valueProviders = _valueProviderFactories.Select(factory => factory.GetValueProvider(requestContext))
+            var routeContext = new RouteContext(actionContext.HttpContext);
+            routeContext.RouteData = actionContext.RouteData;
+            var valueProviders = _valueProviderFactories.Select(factory => factory.GetValueProvider(routeContext))
                                                         .Where(vp => vp != null);
             var context = new ActionBindingContext(
                 actionContext,

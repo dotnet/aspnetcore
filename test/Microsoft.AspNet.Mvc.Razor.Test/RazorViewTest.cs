@@ -303,7 +303,7 @@ Layout end
             var httpContext = new Mock<HttpContext>();
             httpContext.SetupGet(c => c.RequestServices).Returns(serviceProvider.Object);
             
-            var actionContext = new ActionContext(httpContext.Object, null, null, null);
+            var actionContext = new ActionContext(httpContext.Object, null, null);
             return new ViewContext(
                 actionContext,
                 layoutView,

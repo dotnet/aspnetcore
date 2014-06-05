@@ -8,6 +8,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
 using Moq;
+using Microsoft.AspNet.Routing;
 
 namespace Microsoft.AspNet.Mvc.Core.Test
 {
@@ -40,8 +41,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // AuthorizationContext
             var actionContext = new ActionContext(
                 httpContext: httpContext.Object,
-                router: null,
-                routeValues: null,
+                routeData: new RouteData(),
                 actionDescriptor: null
                 );
 

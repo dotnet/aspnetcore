@@ -11,26 +11,28 @@ namespace Microsoft.AspNet.Mvc
     public class ActionContext
     {
         public ActionContext([NotNull] ActionContext actionContext)
-            : this(actionContext.HttpContext, actionContext.Router, actionContext.RouteValues, actionContext.ActionDescriptor)
+            : this(actionContext.HttpContext, actionContext.RouteData, actionContext.ActionDescriptor)
         {
             ModelState = actionContext.ModelState;
             Controller = actionContext.Controller;
         }
 
-        public ActionContext(HttpContext httpContext, IRouter router, IDictionary<string, object> routeValues, ActionDescriptor actionDescriptor)
+        public ActionContext([NotNull] RouteContext routeContext, [NotNull] ActionDescriptor actionDescriptor)
+            : this(routeContext.HttpContext, routeContext.RouteData, actionDescriptor)
+        {
+        }
+
+        public ActionContext([NotNull] HttpContext httpContext, [NotNull] RouteData routeData, [NotNull] ActionDescriptor actionDescriptor)
         {
             HttpContext = httpContext;
-            Router = router;
-            RouteValues = routeValues;
+            RouteData = routeData;
             ActionDescriptor = actionDescriptor;
             ModelState = new ModelStateDictionary();
         }
 
         public HttpContext HttpContext { get; private set; }
 
-        public IRouter Router { get; private set; }
-
-        public IDictionary<string, object> RouteValues { get; private set; }
+        public RouteData RouteData { get; private set; }
 
         public ModelStateDictionary ModelState { get; private set; }
 

@@ -85,8 +85,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
                 httpContext.Setup(o => o.Response).Returns(response);
             }
             
-            return new ActionContext(httpContext.Object, Mock.Of<IRouter>(), new Dictionary<string, object>(),
-                new ActionDescriptor());
+            return new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
         }
     }
 }

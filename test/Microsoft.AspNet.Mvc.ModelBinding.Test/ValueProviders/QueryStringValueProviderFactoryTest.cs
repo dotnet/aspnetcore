@@ -8,6 +8,8 @@ using Microsoft.AspNet.Http;
 using Moq;
 #endif
 using Xunit;
+using Microsoft.AspNet.Routing;
+using System;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 {
@@ -25,10 +27,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var context = new Mock<HttpContext>();
             context.SetupGet(c => c.Items).Returns(new Dictionary<object, object>());
             context.SetupGet(c => c.Request).Returns(request.Object);
-            var requestContext = new RequestContext(context.Object, new Dictionary<string, object>());
+            var routeContext = new RouteContext(context.Object);
+            routeContext.RouteData.Values = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
             // Act
-            var result = _factory.GetValueProvider(requestContext);
+            var result = _factory.GetValueProvider(routeContext);
 
             // Assert
             var valueProvider = Assert.IsType<ReadableStringCollectionValueProvider>(result);

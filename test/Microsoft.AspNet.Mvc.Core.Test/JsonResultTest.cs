@@ -31,9 +31,8 @@ namespace Microsoft.AspNet.Mvc
             var context = new Mock<HttpContext>();
             context.SetupGet(c => c.Response)
                    .Returns(response.Object);
-            var actionContext = new ActionContext(context.Object, 
-                                                  Mock.Of<IRouter>(),
-                                                  new Dictionary<string, object>(), 
+            var actionContext = new ActionContext(context.Object,
+                                                  new RouteData(),
                                                   new ActionDescriptor());
             var result = new JsonResult(new { foo = "abcd" });
 
@@ -57,8 +56,7 @@ namespace Microsoft.AspNet.Mvc
             context.SetupGet(c => c.Response)
                    .Returns(response.Object);
             var actionContext = new ActionContext(context.Object,
-                                                  Mock.Of<IRouter>(),
-                                                  new Dictionary<string, object>(),
+                                                  new RouteData(),
                                                   new ActionDescriptor());
             var result = new JsonResult(new { foo = "abcd" })
             {

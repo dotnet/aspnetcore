@@ -24,8 +24,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             httpContext.Setup(o => o.Response).Returns(httpResponse.Object);
 
             var actionContext = new ActionContext(httpContext.Object,
-                                                  Mock.Of<IRouter>(),
-                                                  new Dictionary<string, object>(),
+                                                  new RouteData(),
                                                   new ActionDescriptor());
             IUrlHelper urlHelper = GetMockUrlHelper(expectedUrl);
             RedirectToActionResult result = new RedirectToActionResult(urlHelper, "SampleAction", null, null);
@@ -47,8 +46,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             var httpContext = new Mock<HttpContext>();
             httpContext.Setup(o => o.Response).Returns(new Mock<HttpResponse>().Object);
             var actionContext = new ActionContext(httpContext.Object,
-                                                  Mock.Of<IRouter>(),
-                                                  new Dictionary<string, object>(),
+                                                  new RouteData(),
                                                   new ActionDescriptor());
 
             IUrlHelper urlHelper = GetMockUrlHelper(returnValue: null);

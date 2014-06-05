@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection.NestedProviders;
 using Moq;
 using Xunit;
@@ -27,15 +28,14 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public async Task ActionSelection_IndexSelectedByDefaultInAbsenceOfVerbOnlyMethod(string verb)
         {
             // Arrange
-            var requestContext = new RequestContext(
-                                        GetHttpContext(verb),
-                                        new Dictionary<string, object>
-                                            {
-                                                { "controller", "RpcOnly" }
-                                            });
+            var routeContext = new RouteContext(GetHttpContext(verb));
+            routeContext.RouteData.Values = new Dictionary<string, object>
+            {
+                { "controller", "RpcOnly" }
+            };
 
             // Act
-            var result = await InvokeActionSelector(requestContext);
+            var result = await InvokeActionSelector(routeContext);
 
             // Assert
             Assert.Equal("Index", result.Name);
@@ -47,15 +47,14 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public async Task ActionSelection_PrefersVerbOnlyMethodOverIndex(string verb)
         {
             // Arrange
-            var requestContext = new RequestContext(
-                                        GetHttpContext(verb),
-                                        new Dictionary<string, object>
-                                            {
-                                                { "controller", "MixedRpcAndRest" }
-                                            });
+            var routeContext = new RouteContext(GetHttpContext(verb));
+            routeContext.RouteData.Values = new Dictionary<string, object>
+            {
+                { "controller", "MixedRpcAndRest" }
+            };
 
             // Act
-            var result = await InvokeActionSelector(requestContext);
+            var result = await InvokeActionSelector(routeContext);
 
             // Assert
             Assert.Equal(verb, result.Name, StringComparer.OrdinalIgnoreCase);
@@ -68,15 +67,14 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public async Task ActionSelection_IndexNotSelectedByDefaultExceptGetAndPostVerbs(string verb)
         {
             // Arrange
-            var requestContext = new RequestContext(
-                                        GetHttpContext(verb),
-                                        new Dictionary<string, object>
-                                            {
-                                                { "controller", "RpcOnly" }
-                                            });
+            var routeContext = new RouteContext(GetHttpContext(verb));
+            routeContext.RouteData.Values = new Dictionary<string, object>
+            {
+                { "controller", "RpcOnly" }
+            };
 
             // Act
-            var result = await InvokeActionSelector(requestContext);
+            var result = await InvokeActionSelector(routeContext);
 
             // Assert
             Assert.Equal(null, result);
@@ -88,15 +86,14 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public async Task ActionSelection_NoConventionBasedRoutingForHeadAndOptions(string verb)
         {
             // Arrange
-            var requestContext = new RequestContext(
-                GetHttpContext(verb),
-                new Dictionary<string, object>
-                {
-                    {"controller", "MixedRpcAndRest"},
-                });
+            var routeContext = new RouteContext(GetHttpContext(verb));
+            routeContext.RouteData.Values = new Dictionary<string, object>
+            {
+                { "controller", "MixedRpcAndRest" },
+            };
 
             // Act
-            var result = await InvokeActionSelector(requestContext);
+            var result = await InvokeActionSelector(routeContext);
 
             // Assert
             Assert.Equal(null, result);
@@ -108,16 +105,15 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public async Task ActionSelection_ActionNameBasedRoutingForHeadAndOptions(string verb)
         {
             // Arrange
-            var requestContext = new RequestContext(
-                                        GetHttpContext(verb),
-                                        new Dictionary<string, object>
-                                            {
-                                                { "controller", "MixedRpcAndRest" },
-                                                { "action", verb },
-                                            });
+            var routeContext = new RouteContext(GetHttpContext(verb));
+            routeContext.RouteData.Values = new Dictionary<string, object>
+            {
+                { "controller", "MixedRpcAndRest" },
+                { "action", verb },
+            };
 
             // Act
-            var result = await InvokeActionSelector(requestContext);
+            var result = await InvokeActionSelector(routeContext);
 
             // Assert
             Assert.Equal(verb, result.Name, StringComparer.OrdinalIgnoreCase);
@@ -127,15 +123,14 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public async Task ActionSelection_ChangeDefaultConventionPicksCustomMethodForPost_DefaultMethodIsSelectedForGet()
         {
             // Arrange
-            var requestContext = new RequestContext(
-                                        GetHttpContext("GET"),
-                                        new Dictionary<string, object>
-                                            {
-                                                { "controller", "RpcOnly" }
-                                            });
+            var routeContext = new RouteContext(GetHttpContext("GET"));
+            routeContext.RouteData.Values = new Dictionary<string, object>
+            {
+                { "controller", "RpcOnly" }
+            };
 
             // Act
-            var result = await InvokeActionSelector(requestContext, new CustomActionConvention());
+            var result = await InvokeActionSelector(routeContext, new CustomActionConvention());
 
             // Assert
             Assert.Equal("INDEX", result.Name, StringComparer.OrdinalIgnoreCase);
@@ -145,26 +140,25 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public async Task ActionSelection_ChangeDefaultConventionPicksCustomMethodForPost_CutomMethodIsSelected()
         {
             // Arrange
-            var requestContext = new RequestContext(
-                                        GetHttpContext("POST"),
-                                        new Dictionary<string, object>
-                                            {
-                                                { "controller", "RpcOnly" }
-                                            });
+            var routeContext = new RouteContext(GetHttpContext("POST"));
+            routeContext.RouteData.Values = new Dictionary<string, object>
+            {
+                { "controller", "RpcOnly" }
+            };
 
             // Act
-            var result = await InvokeActionSelector(requestContext, new CustomActionConvention());
+            var result = await InvokeActionSelector(routeContext, new CustomActionConvention());
 
             // Assert
             Assert.Equal("PostSomething", result.Name);
         }
 
-        private async Task<ActionDescriptor> InvokeActionSelector(RequestContext context)
+        private async Task<ActionDescriptor> InvokeActionSelector(RouteContext context)
         {
             return await InvokeActionSelector(context, _actionDiscoveryConventions);
         }
 
-        private async Task<ActionDescriptor> InvokeActionSelector(RequestContext context, DefaultActionDiscoveryConventions actionDiscoveryConventions)
+        private async Task<ActionDescriptor> InvokeActionSelector(RouteContext context, DefaultActionDiscoveryConventions actionDiscoveryConventions)
         {
             var actionDescriptorProvider = GetActionDescriptorProvider(actionDiscoveryConventions);
             var descriptorProvider =

@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
 using Microsoft.Framework.DependencyInjection;
 using Moq;
@@ -1291,8 +1292,7 @@ namespace Microsoft.AspNet.Mvc
 
             var actionContext = new ActionContext(
                 httpContext: httpContext.Object,
-                router: null,
-                routeValues: null,
+                routeData: new RouteData(),
                 actionDescriptor: actionDescriptor);
 
             var controllerFactory = new Mock<IControllerFactory>(MockBehavior.Strict);

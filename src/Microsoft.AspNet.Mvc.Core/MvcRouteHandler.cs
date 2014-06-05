@@ -31,17 +31,14 @@ namespace Microsoft.AspNet.Mvc
             // TODO: Throw an error here that's descriptive enough so that
             // users understand they should call the per request scoped middleware
             // or set HttpContext.Services manually
-
-            var requestContext = new RequestContext(context.HttpContext, context.Values);
-
             var actionSelector = services.GetService<IActionSelector>();
-            var actionDescriptor = await actionSelector.SelectAsync(requestContext);
+            var actionDescriptor = await actionSelector.SelectAsync(context);
             if (actionDescriptor == null)
             {
                 return;
             }
 
-            var actionContext = new ActionContext(context.HttpContext, context.Router, context.Values, actionDescriptor);
+            var actionContext = new ActionContext(context.HttpContext, context.RouteData, actionDescriptor);
 
             var contextAccessor = services.GetService<IContextAccessor<ActionContext>>();
             using (contextAccessor.SetContextSource(() => actionContext, PreventExchange))

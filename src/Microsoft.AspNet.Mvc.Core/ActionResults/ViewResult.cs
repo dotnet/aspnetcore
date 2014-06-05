@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc
         public override async Task ExecuteResultAsync([NotNull] ActionContext context)
         {
             var viewName = ViewName ?? context.ActionDescriptor.Name;
-            var view = FindView(context.RouteValues, viewName);
+            var view = FindView(context.RouteData.Values, viewName);
 
             using (view as IDisposable)
             {

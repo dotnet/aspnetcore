@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Mvc
                     _viewName);
             }
 
-            var view = FindView(context.ViewContext.RouteValues, qualifiedViewName);
+            var view = FindView(context.ViewContext.RouteData.Values, qualifiedViewName);
 
             var childViewContext = new ViewContext(
                 context.ViewContext,

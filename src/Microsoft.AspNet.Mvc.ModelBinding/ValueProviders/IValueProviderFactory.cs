@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Threading.Tasks;
+using Microsoft.AspNet.Routing;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -10,8 +10,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <summary>
         /// Get a value provider with values from the given <paramref name="requestContext"/>.
         /// </summary>
-        /// <param name="requestContext">RequestContext that value provider will populate from</param>
+        /// <param name="routeContext">RouteContext that value provider will populate from</param>
         /// <returns>a value provider instance or null</returns>
-        IValueProvider GetValueProvider(RequestContext requestContext);
+        IValueProvider GetValueProvider([NotNull] RouteContext routeContext);
     }
 }

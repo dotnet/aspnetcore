@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Routing;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -117,14 +118,14 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        public bool Accept([NotNull] RequestContext context)
+        public bool Accept([NotNull] RouteContext context)
         {
-            var routeValues = context.RouteValues;
+            var routeValues = context.RouteData.Values;
             if (routeValues == null)
             {
                 throw new ArgumentException(Resources.FormatPropertyOfTypeCannotBeNull(
-                        "RouteValues", 
-                        typeof(RequestContext)), 
+                        "Values", 
+                        typeof(RouteData)), 
                     "context");
             }
 

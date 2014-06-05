@@ -6,8 +6,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Routing;
 using Moq;
 using Xunit;
+using System;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 {
@@ -44,7 +46,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Equal(CultureInfo.CurrentCulture, valueProvider.Culture);
         }
 
-        private static RequestContext CreateRequestContext(string contentType)
+        private static RouteContext CreateRequestContext(string contentType)
         {
             var collection = Mock.Of<IReadableStringCollection>();
             var request = new Mock<HttpRequest>();
@@ -56,9 +58,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             var context = new Mock<HttpContext>();
             context.SetupGet(c => c.Request).Returns(request.Object);
-            
-            var requestContext = new RequestContext(context.Object, new Dictionary<string, object>());
-            return requestContext;
+
+            var routeContext = new RouteContext(context.Object);
+            routeContext.RouteData.Values = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            return routeContext;
         }
     }
 }

@@ -381,7 +381,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             var newViewData = new ViewDataDictionary(baseViewData, model);
 
-            var viewEngineResult = _viewEngine.FindPartialView(ViewContext.RouteValues, partialViewName);
+            var viewEngineResult = _viewEngine.FindPartialView(ViewContext.RouteData.Values, partialViewName);
             if (!viewEngineResult.Success)
             {
                 var locations = string.Empty;

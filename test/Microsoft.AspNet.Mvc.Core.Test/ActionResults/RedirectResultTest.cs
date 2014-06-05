@@ -69,9 +69,14 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
         private static ActionContext GetActionContext(HttpContext httpContext)
         {
+            var routeData = new RouteData()
+            {
+                Values = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase),
+            };
+            routeData.Routers.Push(new Mock<IRouter>().Object);
+
             return new ActionContext(httpContext,
-                                    Mock.Of<IRouter>(),
-                                    new Dictionary<string, object>(),
+                                    routeData,
                                     new ActionDescriptor());
         }
 

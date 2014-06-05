@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Routing;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -11,9 +12,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     {
         private const string FormEncodedContentType = "application/x-www-form-urlencoded";
 
-        public IValueProvider GetValueProvider(RequestContext requestContext)
+        public IValueProvider GetValueProvider([NotNull] RouteContext routeContext)
         {
-            var request = requestContext.HttpContext.Request;
+            var request = routeContext.HttpContext.Request;
 
             if (IsSupportedContentType(request))
             {

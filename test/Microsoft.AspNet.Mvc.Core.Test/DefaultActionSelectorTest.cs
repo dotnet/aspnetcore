@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -217,7 +218,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var actions = new ActionDescriptor[] { actionWithConstraints, actionWithoutConstraints };
 
             var selector = CreateSelector(actions);
-            var context = new RequestContext(CreateHttpContext("POST"), new Dictionary<string, object>());
+            var context = CreateRouteContext("POST");
 
             // Act
             var action = await selector.SelectAsync(context);
@@ -285,16 +286,27 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 new RouteValueDictionary(routeValues));
         }
 
-        private static HttpContext CreateHttpContext(string httpMethod)
+        private static RouteContext CreateRouteContext(string httpMethod)
         {
-            var context = new Mock<HttpContext>(MockBehavior.Strict);
+            var routeData = new RouteData()
+            {
+                Values = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase),
+            };
+
+            routeData.Routers.Push(new Mock<IRouter>(MockBehavior.Strict).Object);
+            
+            var httpContext = new Mock<HttpContext>(MockBehavior.Strict);
 
             var request = new Mock<HttpRequest>(MockBehavior.Strict);
-            context.SetupGet(c => c.Request).Returns(request.Object);
+            httpContext.SetupGet(c => c.Request).Returns(request.Object);
 
             request.SetupGet(r => r.Method).Returns(httpMethod);
+            request.SetupGet(r => r.Path).Returns(new PathString());
 
-            return context.Object;
+            return new RouteContext(httpContext.Object)
+            {
+                RouteData = routeData,
+            };
         }
 
         private static ActionDescriptor CreateAction(string area, string controller, string action)

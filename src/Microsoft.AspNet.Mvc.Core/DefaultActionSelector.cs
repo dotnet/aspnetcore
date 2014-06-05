@@ -25,13 +25,8 @@ namespace Microsoft.AspNet.Mvc
             _bindingProvider = bindingProvider;
         }
 
-        public async Task<ActionDescriptor> SelectAsync(RequestContext context)
+        public async Task<ActionDescriptor> SelectAsync([NotNull] RouteContext context)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException("context");
-            }
-
             var allDescriptors = GetActions();
 
             var matching = allDescriptors.Where(ad => Match(ad, context)).ToList();
@@ -63,7 +58,7 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        public bool Match(ActionDescriptor descriptor, RequestContext context)
+        public bool Match(ActionDescriptor descriptor, RouteContext context)
         {
             if (descriptor == null)
             {
@@ -75,7 +70,7 @@ namespace Microsoft.AspNet.Mvc
                    (descriptor.DynamicConstraints == null || descriptor.DynamicConstraints.All(c => c.Accept(context)));
         }
 
-        protected virtual async Task<ActionDescriptor> SelectBestCandidate(RequestContext context, List<ActionDescriptor> candidates)
+        protected virtual async Task<ActionDescriptor> SelectBestCandidate(RouteContext context, List<ActionDescriptor> candidates)
         {
             var applicableCandiates = new List<ActionDescriptorCandidate>();
             foreach (var action in candidates)
@@ -86,12 +81,7 @@ namespace Microsoft.AspNet.Mvc
                     Action = action,
                 };
 
-                // Issues #60 & #65 filed to deal with the ugliness of passing null here.
-                var actionContext = new ActionContext(
-                    httpContext: context.HttpContext,
-                    router: null,
-                    routeValues: context.RouteValues,
-                    actionDescriptor: action);
+                var actionContext = new ActionContext(context, action);
                 var actionBindingContext = await _bindingProvider.GetActionBindingContextAsync(actionContext);
 
                 foreach (var parameter in action.Parameters.Where(p => p.ParameterBindingInfo != null))

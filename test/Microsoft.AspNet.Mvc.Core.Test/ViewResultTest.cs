@@ -32,8 +32,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                    .Returns(response.Object);
             var routeDictionary = new Dictionary<string, object>();
             var actionContext = new ActionContext(context.Object,
-                                                  Mock.Of<IRouter>(),
-                                                  routeDictionary,
+                                                  new RouteData() {  Values = routeDictionary },
                                                   new ActionDescriptor());
             var view = new Mock<IView>();
             view.Setup(v => v.RenderAsync(It.IsAny<ViewContext>()))
@@ -73,8 +72,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                    .Returns(response.Object);
             var routeDictionary = new Dictionary<string, object>();
             var actionContext = new ActionContext(context.Object,
-                                                  Mock.Of<IRouter>(),
-                                                  routeDictionary,
+                                                  new RouteData() { Values = routeDictionary },
                                                   new ActionDescriptor());
             var view = new Mock<IView>();
             view.Setup(v => v.RenderAsync(It.IsAny<ViewContext>()))

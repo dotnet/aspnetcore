@@ -7,6 +7,7 @@
     "Microsoft.AspNet.Http": "0.1-alpha-*",
     "Microsoft.AspNet.Mvc.ModelBinding" : "",
     "Microsoft.AspNet.PipelineCore": "0.1-alpha-*",
+    "Microsoft.AspNet.Routing": "0.1-alpha-*",
     "Microsoft.AspNet.Testing": "0.1-alpha-*",
     "Microsoft.DataAnnotations" : "0.1-alpha-*",
     "Microsoft.Framework.DependencyInjection": "0.1-alpha-*",

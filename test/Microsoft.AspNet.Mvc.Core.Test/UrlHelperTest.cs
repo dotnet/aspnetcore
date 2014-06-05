@@ -466,9 +466,12 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
         private static IContextAccessor<ActionContext> CreateActionContext(HttpContext context, IRouter router)
         {
+            var routeData = new RouteData();
+            routeData.Values = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            routeData.Routers.Push(router);
+
             var actionContext = new ActionContext(context,
-                                                  router,
-                                                  new Dictionary<string, object>(),
+                                                  routeData,
                                                   new ActionDescriptor());
             var contextAccessor = new Mock<IContextAccessor<ActionContext>>();
             contextAccessor.SetupGet(c => c.Value)
