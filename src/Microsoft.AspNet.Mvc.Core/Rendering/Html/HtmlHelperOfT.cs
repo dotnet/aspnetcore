@@ -98,12 +98,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public HtmlString DisplayNameForInnerType<TInnerModel, TValue>(
             [NotNull] Expression<Func<TInnerModel, TValue>> expression)
         {
-            var metadata = ExpressionMetadataProvider.
-                                            FromLambdaExpression<TInnerModel, TValue>(
-                                                                                expression,
-                                                                                new ViewDataDictionary<TInnerModel>(
-                                                                                                    MetadataProvider),
-                                                                                MetadataProvider);
+            var metadata = ExpressionMetadataProvider.FromLambdaExpression<TInnerModel, TValue>(
+                expression,
+                new ViewDataDictionary<TInnerModel>(MetadataProvider),
+                MetadataProvider);
+
             var expressionText = ExpressionHelper.GetExpressionText(expression);
             if (metadata == null)
             {

@@ -66,7 +66,6 @@ namespace Microsoft.AspNet.Mvc
                 result = await InvokeAsyncCore(asyncMethod, context.ViewContext);
             }
 
-
             await result.ExecuteAsync(context);
         }
 

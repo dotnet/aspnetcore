@@ -1,14 +1,13 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Mvc.Core;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.Core;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -128,11 +127,10 @@ namespace Microsoft.AspNet.Mvc
                 if (innerTaskType != null && typeof(Task).IsAssignableFrom(innerTaskType))
                 {
                     throw new InvalidOperationException(
-                                    Resources.FormatActionExecutor_WrappedTaskInstance(
-                                                                        methodName,
-                                                                        declaringType,
-                                                                        actualTypeReturned.FullName
-                                                                        ));
+                        Resources.FormatActionExecutor_WrappedTaskInstance(
+                            methodName,
+                            declaringType,
+                            actualTypeReturned.FullName));
                 }
             }
         }

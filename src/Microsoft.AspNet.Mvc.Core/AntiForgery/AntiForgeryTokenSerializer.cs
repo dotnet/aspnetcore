@@ -3,9 +3,9 @@
 
 using System;
 using System.IO;
+using System.Text;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Security.DataProtection;
-using System.Text;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Mvc
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 // swallow all exceptions - homogenize error if something went wrong
                 innerException = ex;

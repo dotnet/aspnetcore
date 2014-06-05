@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc
             var components = 
                 types
                 .Where(ViewComponentConventions.IsComponent)
-                .Select(c => new {Name = ViewComponentConventions.GetComponentName(c), Type = c.AsType()});
+                .Select(c => new { Name = ViewComponentConventions.GetComponentName(c), Type = c.AsType() });
 
             var matching = 
                 components

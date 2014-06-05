@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -36,9 +35,10 @@ namespace Microsoft.AspNet.Mvc
         /// If the object is already an <see cref="IDictionary{string, object}"/> instance, then a copy
         /// is returned.
         /// </summary>
-        //
-        // The implementation of PropertyHelper will cache the property accessors per-type. This is
-        // faster when the the same type is used multiple times with ObjectToDictionary.
+        /// <remarks>
+        /// The implementation of PropertyHelper will cache the property accessors per-type. This is
+        /// faster when the the same type is used multiple times with ObjectToDictionary.
+        /// </remarks>
         public static IDictionary<string, object> ObjectToDictionary(object value)
         {
             var dictionary = value as IDictionary<string, object>;

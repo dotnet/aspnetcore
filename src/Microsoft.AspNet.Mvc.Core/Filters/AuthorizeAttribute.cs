@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc
 
         public AuthorizeAttribute(string claimType, string claimValue)
         {
-            _claims = new [] { new Claim(claimType, claimValue) };
+            _claims = new[] { new Claim(claimType, claimValue) };
         }
 
         public AuthorizeAttribute(string claimType, string claimValue, params string[] otherClaimValues)
@@ -53,9 +53,9 @@ namespace Microsoft.AspNet.Mvc
                     user.Identity == null || 
                     !user.Identity.IsAuthenticated;
 
-                    if(userIsAnonymous && !HasAllowAnonymous(context))
+                    if (userIsAnonymous && !HasAllowAnonymous(context))
                     {
-                        base.Fail(context);
+                        Fail(context);
                     }
             }
             else 
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Mvc
 
                 if (!authorized)
                 {
-                    base.Fail(context);
+                    Fail(context);
                 }
             }
         }

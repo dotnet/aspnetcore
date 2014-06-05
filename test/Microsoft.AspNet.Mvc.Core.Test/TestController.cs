@@ -22,7 +22,6 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         #pragma warning disable 1998
         public async Task<int> TaskValueTypeAction(int i, string s)
         {
-            Console.WriteLine(s);
             return i;
         }
         #pragma warning restore 1998
@@ -59,13 +58,11 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
         public TaskDerivedType TaskActionWithCustomTaskReturnType(int i, string s)
         {
-            Console.WriteLine(s);
             return new TaskDerivedType();
         }
 
         public TaskOfTDerivedType<int> TaskActionWithCustomTaskOfTReturnType(int i, string s)
         {
-            Console.WriteLine(s);
             return new TaskOfTDerivedType<int>(1);
         }
 

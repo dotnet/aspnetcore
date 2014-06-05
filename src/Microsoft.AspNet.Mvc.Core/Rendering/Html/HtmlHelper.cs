@@ -1291,7 +1291,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var modelErrors = tryGetModelStateResult ? modelState.Errors : null;
 
             ModelError modelError = null;
-            if(modelErrors != null && modelErrors.Count != 0)
+            if (modelErrors != null && modelErrors.Count != 0)
             {
                 modelError = modelErrors.FirstOrDefault(m => !string.IsNullOrEmpty(m.ErrorMessage)) ?? modelErrors[0];
             }

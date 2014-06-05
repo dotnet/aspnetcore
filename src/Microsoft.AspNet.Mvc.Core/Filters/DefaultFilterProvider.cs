@@ -84,7 +84,6 @@ namespace Microsoft.AspNet.Mvc.Filters
             var orderedControllerFilter = controllerFilter as IOrderedFilter;
             if (orderedControllerFilter != null)
             {
-
                 order = orderedControllerFilter.Order;
             }
 

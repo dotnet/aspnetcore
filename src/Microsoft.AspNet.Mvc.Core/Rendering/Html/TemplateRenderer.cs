@@ -125,7 +125,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         private IEnumerable<string> GetViewNames()
         {
             var metadata = _viewData.ModelMetadata;
-            var templateHints = new string[] {
+            var templateHints = new string[]
+            {
                 _templateName, 
                 metadata.TemplateHint, 
                 metadata.DataTypeName

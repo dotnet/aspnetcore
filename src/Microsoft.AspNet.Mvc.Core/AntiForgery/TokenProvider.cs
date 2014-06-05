@@ -3,10 +3,9 @@
 
 using System;
 using System.Diagnostics.Contracts;
-using System.Security.Principal;
+using System.Security.Claims;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
-using System.Security.Claims;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -72,8 +71,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 // Application says user is authenticated, but we have no identifier for the user.
                 throw new InvalidOperationException(
-                                        Resources.
-                                            FormatTokenValidator_AuthenticatedUserWithoutUsername(identity.GetType()));
+                    Resources.FormatTokenValidator_AuthenticatedUserWithoutUsername(identity.GetType()));
             }
 
             return formToken;
@@ -132,9 +130,8 @@ namespace Microsoft.AspNet.Mvc
                                                  StringComparison.Ordinal : 
                                                  StringComparison.OrdinalIgnoreCase))
             {
-                throw new InvalidOperationException(Resources.
-                                                        FormatAntiForgeryToken_UsernameMismatch(fieldToken.Username,
-                                                                                               currentUsername));
+                throw new InvalidOperationException(
+                    Resources.FormatAntiForgeryToken_UsernameMismatch(fieldToken.Username, currentUsername));
             }
 
             if (!Equals(fieldToken.ClaimUid, currentClaimUid))

@@ -314,7 +314,6 @@ namespace Microsoft.AspNet.Mvc
         // Ex: These are not in the same equivalence class.
         //  Action 1: constraint keys - { action, controller, area }
         //  Action 2: constraint keys - { action, module }
-        //
         private ActionDescriptor FindEquivalenceClass(ActionDescriptor[] candidates)
         {
             Contract.Assert(candidates.Length > 1);

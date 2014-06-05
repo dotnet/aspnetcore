@@ -15,4 +15,3 @@ namespace Microsoft.AspNet.Mvc
         public Type ParameterType { get; private set; }
     }
 }
-

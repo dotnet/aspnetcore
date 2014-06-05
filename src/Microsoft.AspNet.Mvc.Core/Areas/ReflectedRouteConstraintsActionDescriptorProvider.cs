@@ -22,11 +22,11 @@ namespace Microsoft.AspNet.Mvc
             // Iterate all the Reflected Action Descriptor providers and add area or other route constraints
             foreach (var actionDescriptor in context.Results.OfType<ReflectedActionDescriptor>())
             {
-                var routeConstraints = actionDescriptor.
-                                       ControllerDescriptor.
-                                       ControllerTypeInfo.
-                                       GetCustomAttributes<RouteConstraintAttribute>().
-                                       ToArray();
+                var routeConstraints = actionDescriptor
+                    .ControllerDescriptor
+                    .ControllerTypeInfo
+                    .GetCustomAttributes<RouteConstraintAttribute>()
+                    .ToArray();
 
                 foreach (var routeConstraint in routeConstraints)
                 {

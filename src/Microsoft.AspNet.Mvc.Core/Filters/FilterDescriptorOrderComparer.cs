@@ -9,7 +9,10 @@ namespace Microsoft.AspNet.Mvc
     {
         private static readonly FilterDescriptorOrderComparer _comparer = new FilterDescriptorOrderComparer();
 
-        public static FilterDescriptorOrderComparer Comparer { get { return _comparer; } }
+        public static FilterDescriptorOrderComparer Comparer
+        {
+            get { return _comparer; }
+        }
 
         public int Compare([NotNull]FilterDescriptor x, [NotNull]FilterDescriptor y)
         {

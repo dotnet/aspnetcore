@@ -40,8 +40,7 @@ namespace Microsoft.AspNet.Mvc
                 new CompositeModelBinder(_modelBinders),
                 new CompositeValueProvider(valueProviders),
                 _inputFormatterProvider,
-                _validatorProviders
-            );
+                _validatorProviders);
 
             return Task.FromResult(context);
         }

@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>
         /// The display name for the model.
         /// </returns>
-        public static HtmlString DisplayNameFor<TInnerModel,TValue>(
+        public static HtmlString DisplayNameFor<TInnerModel, TValue>(
             [NotNull] this IHtmlHelper<IEnumerable<TInnerModel>> htmlHelper,
             [NotNull] Expression<Func<TInnerModel, TValue>> expression)
         {

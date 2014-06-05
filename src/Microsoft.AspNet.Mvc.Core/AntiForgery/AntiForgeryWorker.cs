@@ -156,10 +156,10 @@ namespace Microsoft.AspNet.Mvc
 
             Contract.Assert(_validator.IsCookieTokenValid(oldCookieToken));
 
-            AntiForgeryToken formToken = _generator.
-                                            GenerateFormToken(httpContext,
-                                                    ExtractIdentity(httpContext),
-                                                    oldCookieToken);
+            AntiForgeryToken formToken = _generator.GenerateFormToken(
+                httpContext,
+                ExtractIdentity(httpContext),
+                oldCookieToken);
 
             return new AntiForgeryTokenSetInternal()
                             {

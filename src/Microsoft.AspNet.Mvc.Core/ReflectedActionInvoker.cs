@@ -281,7 +281,6 @@ namespace Microsoft.AspNet.Mvc
 
                     var inputFormatter = actionBindingContext.InputFormatterProvider.GetInputFormatter(providerContext);
 
-
                     var formatterContext = new InputFormatterContext(actionBindingContext.ActionContext.HttpContext,
                                                                      modelMetadata,
                                                                      modelState);
@@ -519,7 +518,7 @@ namespace Microsoft.AspNet.Mvc
             ActionMethod,
             ResultFilters,
             ActionResult
-        };
+        }
 
         /// <summary>
         /// A one-way cursor for filters. 
@@ -543,44 +542,44 @@ namespace Microsoft.AspNet.Mvc
         /// </remarks>
         private struct FilterCursor
         {
-            private FilterStage Stage;
-            private int Index;
-            private readonly IFilter[] Filters;
+            private FilterStage _stage;
+            private int _index;
+            private readonly IFilter[] _filters;
 
             public FilterCursor(FilterStage stage, int index, IFilter[] filters)
             {
-                Stage = stage;
-                Index = index;
-                Filters = filters;
+                _stage = stage;
+                _index = index;
+                _filters = filters;
             }
 
             public FilterCursor(IFilter[] filters)
             {
-                Stage = FilterStage.Undefined;
-                Index = 0;
-                Filters = filters;
+                _stage = FilterStage.Undefined;
+                _index = 0;
+                _filters = filters;
             }
 
             public void SetStage(FilterStage stage)
             {
-                Stage = stage;
-                Index = 0;
+                _stage = stage;
+                _index = 0;
             }
 
             public FilterCursorItem<TFilter, TFilterAsync> GetNextFilter<TFilter, TFilterAsync>()
                 where TFilter : class
                 where TFilterAsync : class
             {
-                while (Index < Filters.Length)
+                while (_index < _filters.Length)
                 {
-                    var filter = Filters[Index] as TFilter;
-                    var filterAsync = Filters[Index] as TFilterAsync;
+                    var filter = _filters[_index] as TFilter;
+                    var filterAsync = _filters[_index] as TFilterAsync;
 
-                    Index += 1;
+                    _index += 1;
 
                     if (filter != null || filterAsync != null)
                     {
-                        return new FilterCursorItem<TFilter, TFilterAsync>(Stage, Index, filter, filterAsync);
+                        return new FilterCursorItem<TFilter, TFilterAsync>(_stage, _index, filter, filterAsync);
                     }
                 }
 
@@ -589,7 +588,7 @@ namespace Microsoft.AspNet.Mvc
 
             public bool StillAt<TFilter, TFilterAsync>(FilterCursorItem<TFilter, TFilterAsync> current)
             {
-                return current.Stage == Stage && current.Index == Index;
+                return current.Stage == _stage && current.Index == _index;
             }
         }
 

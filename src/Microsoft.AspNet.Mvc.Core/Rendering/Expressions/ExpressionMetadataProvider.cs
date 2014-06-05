@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
                                                          [NotNull] ViewDataDictionary viewData,
                                                          IModelMetadataProvider metadataProvider)
         {
-            if(string.IsNullOrEmpty(expression))
+            if (string.IsNullOrEmpty(expression))
             {
                 return viewData.ModelMetadata;
             }
