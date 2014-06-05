@@ -18,7 +18,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="project.json" />
-    <Content Include="Resources.resx" />
+    <Content Include="Resources.resx">
+      <SubType>Designer</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BuilderExtensions.cs" />
@@ -30,6 +32,7 @@
     <Compile Include="INamedRouter.cs" />
     <Compile Include="InlineRouteParameterParser.cs" />
     <Compile Include="IRouteBuilder.cs" />
+    <Compile Include="RouteOptions.cs" />
     <Compile Include="IRouteCollection.cs" />
     <Compile Include="IRouteConstraint.cs" />
     <Compile Include="IRouter.cs" />
@@ -43,6 +46,7 @@
     <Compile Include="RouteContext.cs" />
     <Compile Include="RouteData.cs" />
     <Compile Include="RouteDirection.cs" />
+    <Compile Include="RouterServices.cs" />
     <Compile Include="RouterMiddleware.cs" />
     <Compile Include="RouteValueDictionary.cs" />
     <Compile Include="Template\Template.cs" />

@@ -1,15 +1,22 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if NET45
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.Fallback;
+using Microsoft.Framework.OptionsModel;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Routing.Template.Tests
 {
     public class TemplateBinderTests
     {
+        private static IInlineConstraintResolver _inlineConstraintResolver = GetInlineConstraintResolver();
+
         public static IEnumerable<object[]> EmptyAndNullDefaultValues
         {
             get
@@ -127,7 +134,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             string expected)
         {
             // Arrange
-            var binder = new TemplateBinder(TemplateParser.Parse(template, new DefaultInlineConstraintResolver()),
+            var binder = new TemplateBinder(TemplateParser.Parse(template, _inlineConstraintResolver),
                                             defaults);
 
             // Act & Assert
@@ -961,7 +968,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             string expected)
         {
             // Arrange
-            var binder = new TemplateBinder(TemplateParser.Parse(template, new DefaultInlineConstraintResolver()), defaults);
+            var binder = new TemplateBinder(TemplateParser.Parse(template, _inlineConstraintResolver), defaults);
 
             // Act & Assert
             var acceptedValues = binder.GetAcceptedValues(ambientValues, values);
@@ -1025,6 +1032,14 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                 expected);
         }
 
+        private static IInlineConstraintResolver GetInlineConstraintResolver()
+        {
+            var services = new ServiceCollection { OptionsServices.GetDefaultServices() };
+            var serviceProvider = services.BuildServiceProvider();
+            var accessor = serviceProvider.GetService<IOptionsAccessor<RouteOptions>>();
+            return new DefaultInlineConstraintResolver(serviceProvider, accessor);
+        }
+
         private class PathAndQuery
         {
             public PathAndQuery(string uri)
@@ -1053,3 +1068,4 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
     }
 }
+#endif

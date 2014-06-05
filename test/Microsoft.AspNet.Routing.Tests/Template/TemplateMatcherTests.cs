@@ -1,13 +1,21 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if NET45
 using System.Collections.Generic;
+using Microsoft.AspNet.Routing.Constraints;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.Fallback;
+using Microsoft.Framework.OptionsModel;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Routing.Template.Tests
 {
     public class TemplateMatcherTests
     {
+        private static IInlineConstraintResolver _inlineConstraintResolver = GetInlineConstraintResolver();
+
         [Fact]
         public void MatchSingleRoute()
         {
@@ -784,13 +792,13 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
         private TemplateMatcher CreateMatcher(string template)
         {
-            return new TemplateMatcher(TemplateParser.Parse(template, new DefaultInlineConstraintResolver()));
+            return new TemplateMatcher(TemplateParser.Parse(template, _inlineConstraintResolver));
         }
 
         private static void RunTest(string template, string path, IDictionary<string, object> defaults, IDictionary<string, object> expected)
         {
             // Arrange
-            var matcher = new TemplateMatcher(TemplateParser.Parse(template, new DefaultInlineConstraintResolver()));
+            var matcher = new TemplateMatcher(TemplateParser.Parse(template, _inlineConstraintResolver));
 
             // Act
             var match = matcher.Match(path, defaults);
@@ -810,5 +818,14 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                 }
             }
         }
+
+        private static IInlineConstraintResolver GetInlineConstraintResolver()
+        {
+            var services = new ServiceCollection { OptionsServices.GetDefaultServices() };
+            var serviceProvider = services.BuildServiceProvider();
+            var accessor = serviceProvider.GetService<IOptionsAccessor<RouteOptions>>();
+            return new DefaultInlineConstraintResolver(serviceProvider, accessor);
+        }
     }
 }
+#endif

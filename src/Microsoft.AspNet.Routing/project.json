@@ -5,7 +5,9 @@
   },
   "dependencies": {
     "Microsoft.AspNet.Http": "0.1-alpha-*",
-    "Microsoft.Framework.DependencyInjection" : "0.1-alpha-*"
+    "Microsoft.Framework.DependencyInjection" : "0.1-alpha-*",
+    "Microsoft.AspNet.RequestContainer": "0.1-alpha-*",
+    "Microsoft.Framework.OptionsModel": "0.1-alpha-*"
   },
   "configurations": {
     "net45": {},

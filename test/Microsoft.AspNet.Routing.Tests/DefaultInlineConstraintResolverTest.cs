@@ -1,10 +1,14 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if NET45
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing.Constraints;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.OptionsModel;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Routing.Tests
@@ -14,8 +18,12 @@ namespace Microsoft.AspNet.Routing.Tests
         [Fact]
         public void ResolveConstraint_IntConstraint_ResolvesCorrectly()
         {
-            // Arrange & Act
-            var constraint = new DefaultInlineConstraintResolver().ResolveConstraint("int");
+            // Arrange
+            var routeOptions = new RouteOptions();
+            var constraintResolver = GetInlineConstraintResolver(routeOptions);
+
+            // Act
+            var constraint = constraintResolver.ResolveConstraint("int");
 
             // Assert
             Assert.IsType<IntRouteConstraint>(constraint);
@@ -24,9 +32,13 @@ namespace Microsoft.AspNet.Routing.Tests
         [Fact]
         public void ResolveConstraint_IntConstraintWithArgument_Throws()
         {
+            // Arrange
+            var routeOptions = new RouteOptions();
+            var constraintResolver = GetInlineConstraintResolver(routeOptions);
+
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(
-                () => new DefaultInlineConstraintResolver().ResolveConstraint("int(5)"));
+                () => constraintResolver.ResolveConstraint("int(5)"));
             Assert.Equal("Could not find a constructor for constraint type 'IntRouteConstraint'"+
                          " with the following number of parameters: 1.",
                          ex.Message);
@@ -36,8 +48,9 @@ namespace Microsoft.AspNet.Routing.Tests
         public void ResolveConstraint_SupportsCustomConstraints()
         {
             // Arrange
-            var resolver = new DefaultInlineConstraintResolver();
-            resolver.ConstraintMap.Add("custom", typeof(CustomRouteConstraint));
+            var routeOptions = new RouteOptions();
+            routeOptions.ConstraintMap.Add("custom", typeof(CustomRouteConstraint));
+            var resolver = GetInlineConstraintResolver(routeOptions);
 
             // Act
             var constraint = resolver.ResolveConstraint("custom(argument)");
@@ -50,14 +63,25 @@ namespace Microsoft.AspNet.Routing.Tests
         public void ResolveConstraint_CustomConstraintThatDoesNotImplementIRouteConstraint_Throws()
         {
             // Arrange
-            var resolver = new DefaultInlineConstraintResolver();
-            resolver.ConstraintMap.Add("custom", typeof(string));
+            var routeOptions = new RouteOptions();
+            routeOptions.ConstraintMap.Add("custom", typeof(string));
+            var resolver = GetInlineConstraintResolver(routeOptions);
 
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(() => resolver.ResolveConstraint("custom"));
             Assert.Equal("The constraint type 'System.String' which is mapped to constraint key 'custom'"+
                          " must implement the 'IRouteConstraint' interface.", 
                          ex.Message);
+        }
+
+        private IInlineConstraintResolver GetInlineConstraintResolver(RouteOptions routeOptions)
+        {
+            var optionsAccessor = new Mock<IOptionsAccessor<RouteOptions>>();
+            optionsAccessor.SetupGet(o => o.Options).Returns(routeOptions);
+            var serviceProvider = new Mock<IServiceProvider>();
+            serviceProvider.Setup(o => o.GetService(It.Is<Type>(type => type == typeof(ITypeActivator))))
+                           .Returns(new TypeActivator());
+            return new DefaultInlineConstraintResolver(serviceProvider.Object, optionsAccessor.Object);
         }
 
         private class CustomRouteConstraint : IRouteConstraint
@@ -79,3 +103,4 @@ namespace Microsoft.AspNet.Routing.Tests
         }
     }
 }
+#endif

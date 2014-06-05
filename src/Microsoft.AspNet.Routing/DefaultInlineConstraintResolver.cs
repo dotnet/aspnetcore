@@ -6,7 +6,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNet.Routing.Constraints;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Routing
 {
@@ -17,26 +18,14 @@ namespace Microsoft.AspNet.Routing
     /// </summary>
     public class DefaultInlineConstraintResolver : IInlineConstraintResolver
     {
-        private readonly IDictionary<string, Type> _inlineConstraintMap = GetDefaultConstraintMap();
+        private readonly IDictionary<string, Type> _inlineConstraintMap;
+        private readonly IServiceProvider _serviceProvider;
 
-        /// <summary>
-        /// Gets the mutable dictionary that maps constraint keys to a particular constraint type.
-        /// </summary>
-        public IDictionary<string, Type> ConstraintMap
+        public DefaultInlineConstraintResolver(IServiceProvider serviceProvider,
+                                               IOptionsAccessor<RouteOptions> routeOptions)
         {
-            get
-            {
-                return _inlineConstraintMap;
-            }
-        }
-
-        private static IDictionary<string, Type> GetDefaultConstraintMap()
-        {
-            return new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase)
-            {
-                // Type-specific constraints
-                { "int", typeof(IntRouteConstraint) },
-            };
+            _serviceProvider = serviceProvider;
+            _inlineConstraintMap = routeOptions.Options.ConstraintMap;
         }
 
         /// <inheritdoc />

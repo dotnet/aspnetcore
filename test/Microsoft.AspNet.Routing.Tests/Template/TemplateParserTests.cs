@@ -1,16 +1,21 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if NET45
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Testing;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.Fallback;
+using Microsoft.Framework.OptionsModel;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Routing.Template.Tests
 {
     public class TemplateRouteParserTests
     {
-        private IInlineConstraintResolver _inlineConstraintResolver = new DefaultInlineConstraintResolver();
+        private IInlineConstraintResolver _inlineConstraintResolver = GetInlineConstraintResolver();
 
         [Fact]
         public void Parse_SingleLiteral()
@@ -440,7 +445,15 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                 "A catch-all parameter cannot be marked optional." + Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
-        
+
+        private static IInlineConstraintResolver GetInlineConstraintResolver()
+        {
+            var services = new ServiceCollection { OptionsServices.GetDefaultServices() };
+            var serviceProvider = services.BuildServiceProvider();
+            var accessor = serviceProvider.GetService<IOptionsAccessor<RouteOptions>>();
+            return new DefaultInlineConstraintResolver(serviceProvider, accessor);
+        }
+
         private class TemplateEqualityComparer : IEqualityComparer<Template>
         {
             public bool Equals(Template x, Template y)
@@ -516,3 +529,4 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
     }
 }
+#endif

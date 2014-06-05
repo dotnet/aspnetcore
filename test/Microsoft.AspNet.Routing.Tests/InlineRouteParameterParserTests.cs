@@ -7,6 +7,9 @@ using System.Linq;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing.Constraints;
 using Microsoft.AspNet.Routing.Template;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.Fallback;
+using Microsoft.Framework.OptionsModel;
 using Xunit;
 
 namespace Microsoft.AspNet.Routing.Tests
@@ -164,7 +167,7 @@ namespace Microsoft.AspNet.Routing.Tests
         [Fact]
         public void ParseRouteParameter_ConstraintWithCommaInPattern_PatternIsParsedCorrectly()
         {
-            // Arrange
+            // Arrange & Act
             var templatePart = ParseParameter(@"param:test(\w,\w)");
 
             // Assert
@@ -267,20 +270,27 @@ namespace Microsoft.AspNet.Routing.Tests
 
         private TemplatePart ParseParameter(string routeParameter)
         {
-            var constraintResolver = new DefaultInlineConstraintResolver();
-
-            // TODO: This will be removed once this is supported in product code.
-            constraintResolver.ConstraintMap.Add("test", typeof(TestRouteConstraint));
+            var constraintResolver = GetConstraintResolver();
             var templatePart = InlineRouteParameterParser.ParseRouteParameter(routeParameter, constraintResolver);
             return templatePart;
         }
 
         private static Template.Template ParseRouteTemplate(string template)
         {
-            var constraintResolver = new DefaultInlineConstraintResolver();
-
-            constraintResolver.ConstraintMap.Add("test", typeof(TestRouteConstraint));
+            var constraintResolver = GetConstraintResolver();
             return TemplateParser.Parse(template, constraintResolver);
+        }
+
+        private static IInlineConstraintResolver GetConstraintResolver()
+        {
+            var services = new ServiceCollection { OptionsServices.GetDefaultServices() };
+            services.SetupOptions<RouteOptions>(options =>
+                                options
+                                .ConstraintMap
+                                .Add("test", typeof(TestRouteConstraint)));
+            var serviceProvider = services.BuildServiceProvider();
+            var accessor = serviceProvider.GetService<IOptionsAccessor<RouteOptions>>();
+            return new DefaultInlineConstraintResolver(serviceProvider, accessor);
         }
 
         private class TestRouteConstraint : IRouteConstraint

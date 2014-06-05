@@ -11,6 +11,22 @@ namespace Microsoft.AspNet.Routing
             = new ResourceManager("Microsoft.AspNet.Routing.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// The '{0}' property of '{1}' must not be null.
+        /// </summary>
+        internal static string PropertyOfTypeCannotBeNull
+        {
+            get { return GetString("PropertyOfTypeCannotBeNull"); }
+        }
+
+        /// <summary>
+        /// The '{0}' property of '{1}' must not be null.
+        /// </summary>
+        internal static string FormatPropertyOfTypeCannotBeNull(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("PropertyOfTypeCannotBeNull"), p0, p1);
+        }
+
+        /// <summary>
         /// The supplied route name '{0}' is ambiguous and matched more than one route.
         /// </summary>
         internal static string NamedRoutes_AmbiguousRoutesFound
@@ -123,7 +139,7 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <summary>
-        /// The route parameter '{0}' has both an inline deafult value and an explicit default value specified. A route parameter cannot contain an inline default value when a default value is specified explicitly. Consider removing one of them.
+        /// The route parameter '{0}' has both an inline default value and an explicit default value specified. A route parameter cannot contain an inline default value when a default value is specified explicitly. Consider removing one of them.
         /// </summary>
         internal static string TemplateRoute_CannotHaveDefaultValueSpecifiedInlineAndExplicitly
         {
@@ -131,7 +147,7 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <summary>
-        /// The route parameter '{0}' has both an inline deafult value and an explicit default value specified. A route parameter cannot contain an inline default value when a default value is specified explicitly. Consider removing one of them.
+        /// The route parameter '{0}' has both an inline default value and an explicit default value specified. A route parameter cannot contain an inline default value when a default value is specified explicitly. Consider removing one of them.
         /// </summary>
         internal static string FormatTemplateRoute_CannotHaveDefaultValueSpecifiedInlineAndExplicitly(object p0)
         {

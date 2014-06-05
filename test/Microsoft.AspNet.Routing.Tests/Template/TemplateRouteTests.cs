@@ -17,6 +17,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 {
     public class TemplateRouteTests
     {
+        private static IInlineConstraintResolver _inlineConstraintResolver = GetInlineConstraintResolver();
+
         #region Route Matching
 
         // PathString in HttpAbstractions guarantees a leading slash - so no value in testing other cases.
@@ -507,7 +509,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
             var serviceProviderMock = new Mock<IServiceProvider>();
             serviceProviderMock.Setup(o => o.GetService(typeof(IInlineConstraintResolver)))
-                               .Returns(new DefaultInlineConstraintResolver());
+                               .Returns(_inlineConstraintResolver);
             routeBuilder.ServiceProvider = serviceProviderMock.Object;
 
             return routeBuilder;
@@ -515,7 +517,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
         private static TemplateRoute CreateRoute(string template, bool accept = true)
         {
-            return new TemplateRoute(CreateTarget(accept), template, new DefaultInlineConstraintResolver());
+            return new TemplateRoute(CreateTarget(accept), template, _inlineConstraintResolver);
         }
 
         private static TemplateRoute CreateRoute(string template, object defaults, bool accept = true, IDictionary<string, object> constraints = null)
@@ -524,7 +526,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                                      template,
                                      new RouteValueDictionary(defaults),
                                      constraints,
-                                     new DefaultInlineConstraintResolver());
+                                     _inlineConstraintResolver);
         }
 
         private static TemplateRoute CreateRoute(IRouter target, string template)
@@ -533,7 +535,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                                      template,
                                      new RouteValueDictionary(),
                                      constraints: null,
-                                     inlineConstraintResolver: new DefaultInlineConstraintResolver());
+                                     inlineConstraintResolver: _inlineConstraintResolver);
         }
 
         private static TemplateRoute CreateRoute(IRouter target, string template, object defaults)
@@ -542,7 +544,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                                      template,
                                      new RouteValueDictionary(defaults),
                                      constraints: null,
-                                     inlineConstraintResolver: new DefaultInlineConstraintResolver());
+                                     inlineConstraintResolver: _inlineConstraintResolver);
         }
 
         private static IRouter CreateTarget(bool accept = true)
@@ -559,6 +561,13 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                 .Returns(Task.FromResult<object>(null));
 
             return target.Object;
+        }
+
+        private static IInlineConstraintResolver GetInlineConstraintResolver()
+        {
+            var resolverMock = new Mock<IInlineConstraintResolver>();
+            resolverMock.Setup(o => o.ResolveConstraint("int")).Returns(new IntRouteConstraint());
+            return resolverMock.Object;
         }
     }
 }
