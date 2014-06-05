@@ -202,7 +202,7 @@ namespace Microsoft.AspNet.Routing.Tests
 
             target
                 .Setup(e => e.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>(async (c) => c.IsHandled = accept)
+                .Callback<RouteContext>((c) => c.IsHandled = accept)
                 .Returns(Task.FromResult<object>(null))
                 .Verifiable();
 
@@ -236,7 +236,7 @@ namespace Microsoft.AspNet.Routing.Tests
 
             target
                 .Setup(e => e.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>(async (c) => c.IsHandled = accept)
+                .Callback<RouteContext>((c) => c.IsHandled = accept)
                 .Returns(Task.FromResult<object>(null))
                 .Verifiable();
 

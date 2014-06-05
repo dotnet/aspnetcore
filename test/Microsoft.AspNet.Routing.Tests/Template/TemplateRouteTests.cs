@@ -555,7 +555,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
             target
                 .Setup(e => e.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>(async (c) => c.IsHandled = accept)
+                .Callback<RouteContext>((c) => c.IsHandled = accept)
                 .Returns(Task.FromResult<object>(null));
 
             return target.Object;
