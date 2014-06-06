@@ -468,7 +468,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             var routeData = new RouteData();
             routeData.Values = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-            routeData.Routers.Push(router);
+            routeData.Routers.Add(router);
 
             var actionContext = new ActionContext(context,
                                                   routeData,

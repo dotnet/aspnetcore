@@ -293,7 +293,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 Values = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase),
             };
 
-            routeData.Routers.Push(new Mock<IRouter>(MockBehavior.Strict).Object);
+            routeData.Routers.Add(new Mock<IRouter>(MockBehavior.Strict).Object);
             
             var httpContext = new Mock<HttpContext>(MockBehavior.Strict);
 
