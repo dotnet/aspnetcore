@@ -1,6 +1,7 @@
 using System;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Routing;
+using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using MvcSample.Web.Filters;
 using MvcSample.Web.Services;
@@ -63,7 +64,7 @@ namespace MvcSample.Web
 
             app.UseMvc(routes =>
             {
-                routes.MapRoute("areaRoute", "{area}/{controller}/{action}");
+                routes.MapRoute("areaRoute", "{area:exists}/{controller}/{action}");
 
                 routes.MapRoute(
                     "controllerActionRoute",

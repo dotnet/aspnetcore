@@ -2,16 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using BasicWebSite;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
-using Microsoft.Framework.Runtime;
-using Microsoft.Framework.Runtime.Infrastructure;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -29,24 +24,15 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
         public BasicTests()
         {
-            var originalProvider = CallContextServiceLocator.Locator.ServiceProvider;
-            IApplicationEnvironment appEnvironment = originalProvider.GetService<IApplicationEnvironment>();
-
-            // When an application executes in a regular context, the application base path points to the root
-            // directory where the application is located, for example MvcSample.Web. However, when executing
-            // an aplication as part of a test, the ApplicationBasePath of the IApplicationEnvironment points
-            // to the root folder of the test project.
-            // To compensate for this, we need to calculate the original path and override the application
-            // environment value so that components like the view engine work properly in the context of the
-            // test.
-            string appBasePath = CalculateApplicationBasePath(appEnvironment);
-            _provider = new ServiceCollection()
-                .AddInstance(typeof(IApplicationEnvironment), new TestApplicationEnvironment(appEnvironment, appBasePath))
-                .BuildServiceProvider(originalProvider);
+            _provider = TestHelper.CreateServices("BasicWebSite");
         }
 
-        [Fact]
-        public async Task CanRender_ViewsWithLayout()
+        [InlineData("http://localhost/")]
+        [InlineData("http://localhost/Home")]
+        [InlineData("http://localhost/Home/Index")]
+        [InlineData("http://localhost/Users")]
+        [InlineData("http://localhost/Monitor/CountActionDescriptorInvocations")]
+        public async Task CanRender_ViewsWithLayout(string url)
         {
             // Arrange
             var server = TestServer.Create(_provider, _app);
@@ -59,7 +45,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Act
 
             // The host is not important as everything runs in memory and tests are isolated from each other.
-            var result = await client.GetAsync("http://localhost/");
+            var result = await client.GetAsync(url);
             var responseContent = await result.ReadBodyAsStringAsync();
 
             // Assert
@@ -128,19 +114,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expectedContent, results[0]);
             Assert.Equal(expectedContent, results[1]);
             Assert.Equal(expectedContent, results[2]);
-        }
-
-        // Calculate the path relative to the current application base path.
-        private static string CalculateApplicationBasePath(IApplicationEnvironment appEnvironment)
-        {
-            // Mvc/test/Microsoft.AspNet.Mvc.FunctionalTests
-            var appBase = appEnvironment.ApplicationBasePath;
-
-            // Mvc/test
-            var test = Path.GetDirectoryName(appBase);
-
-            // Mvc/test/WebSites/BasicWebSite
-            return Path.GetFullPath(Path.Combine(appBase, "..", "WebSites", "BasicWebSite"));
         }
     }
 }

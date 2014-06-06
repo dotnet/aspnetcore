@@ -202,6 +202,7 @@
     <Compile Include="Rendering\ViewEngineResult.cs" />
     <Compile Include="RouteConstraintAttribute.cs" />
     <Compile Include="RouteDataActionConstraint.cs" />
+    <Compile Include="KnownRouteValueConstraint.cs" />
     <Compile Include="RouteKeyHandling.cs" />
     <Compile Include="TemplateInfo.cs" />
     <Compile Include="UrlHelper.cs" />

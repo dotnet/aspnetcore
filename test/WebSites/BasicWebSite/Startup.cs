@@ -21,8 +21,13 @@ namespace BasicWebSite
             // Add MVC to the request pipeline
             app.UseMvc(routes =>
             {
+                routes.MapRoute("areaRoute",
+                                "{area:exists}/{controller}/{action}",
+                                new { controller = "Home", action = "Index" });
+
                 routes.MapRoute("ActionAsMethod", "{controller}/{action}",
                     defaults: new { controller = "Home", action = "Index" });
+
             });
         }
     }
