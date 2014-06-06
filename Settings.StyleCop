@@ -423,7 +423,7 @@
     <Analyzer AnalyzerId="StyleCop.KRules.LineLengthRule">
       <Rules />
       <AnalyzerSettings>
-        <IntegerProperty Name="LineLength">125</IntegerProperty>
+        <IntegerProperty Name="LineLength">120</IntegerProperty>
       </AnalyzerSettings>
     </Analyzer>
   </Analyzers>
