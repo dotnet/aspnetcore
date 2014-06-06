@@ -68,6 +68,32 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expectedContent, responseContent);
         }
 
+        [Fact]
+        public async Task ActionDescriptors_CreatedOncePerRequest()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.Handler;
+
+            var expectedContent = "1";
+
+            // Call the server 3 times, and make sure the return value remains the same.
+            var results = new string[3];
+
+            // Act
+            for (int i = 0; i < 3; i++)
+            {
+                var result = await client.GetAsync("http://localhost/Monitor/CountActionDescriptorInvocations");
+                Assert.Equal(200, result.StatusCode);
+                results[i] = await result.ReadBodyAsStringAsync();
+            }
+
+            // Assert
+            Assert.Equal(expectedContent, results[0]);
+            Assert.Equal(expectedContent, results[1]);
+            Assert.Equal(expectedContent, results[2]);
+        }
+
         // Calculate the path relative to the current application base path.
         private static string CalculateApplicationBasePath(IApplicationEnvironment appEnvironment)
         {

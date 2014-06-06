@@ -258,12 +258,12 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 .Where(a => a.RouteConstraints.Any(c => c.RouteKey == "action" && c.Comparer.Equals(c.RouteValue, action)));
         }
 
-        private static DefaultActionSelector CreateSelector(IEnumerable<ActionDescriptor> actions)
+        private static DefaultActionSelector CreateSelector(IReadOnlyList<ActionDescriptor> actions)
         {
-            var actionProvider = new Mock<INestedProviderManager<ActionDescriptorProviderContext>>(MockBehavior.Strict);
+            var actionProvider = new Mock<IActionDescriptorsCollectionProvider>(MockBehavior.Strict);
+
             actionProvider
-                .Setup(p => p.Invoke(It.IsAny<ActionDescriptorProviderContext>()))
-                .Callback<ActionDescriptorProviderContext>(c => c.Results.AddRange(actions));
+                .Setup(p => p.ActionDescriptors).Returns(new ActionDescriptorsCollection(actions, 0));
 
             var bindingProvider = new Mock<IActionBindingContextProvider>(MockBehavior.Strict);
             bindingProvider

@@ -26,6 +26,7 @@
     <Compile Include="ActionConvention.cs" />
     <Compile Include="ActionDescriptor.cs" />
     <Compile Include="ActionDescriptorProviderContext.cs" />
+    <Compile Include="ActionDescriptorsCollection.cs" />
     <Compile Include="ActionInvokerFactory.cs" />
     <Compile Include="ActionInvokerProviderContext.cs" />
     <Compile Include="ActionMethodSelectorAttribute.cs" />
@@ -67,6 +68,7 @@
     <Compile Include="BodyParameterInfo.cs" />
     <Compile Include="Controller.cs" />
     <Compile Include="ControllerDescriptor.cs" />
+    <Compile Include="DefaultActionDescriptorsCollectionProvider.cs" />
     <Compile Include="DefaultActionDiscoveryConventions.cs" />
     <Compile Include="DefaultActionSelector.cs" />
     <Compile Include="DefaultControllerAssemblyProvider.cs" />
@@ -122,6 +124,7 @@
     <Compile Include="HttpPutAttribute.cs" />
     <Compile Include="IActionConstraint.cs" />
     <Compile Include="IActionDescriptorProvider.cs" />
+    <Compile Include="IActionDescriptorsCollectionProvider.cs" />
     <Compile Include="IActionDiscoveryConventions.cs" />
     <Compile Include="IActionInvoker.cs" />
     <Compile Include="IActionInvokerFactory.cs" />

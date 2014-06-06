@@ -28,6 +28,7 @@
     <DevelopmentServerPort>38820</DevelopmentServerPort>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="ActionDescriptorCreationCounter.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>

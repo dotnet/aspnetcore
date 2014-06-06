@@ -5,10 +5,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.NestedProviders;
 using Moq;
 using Xunit;
@@ -190,14 +192,24 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             return await InvokeActionSelector(context, _actionDiscoveryConventions);
         }
 
-        private async Task<ActionDescriptor> InvokeActionSelector(RouteContext context, DefaultActionDiscoveryConventions actionDiscoveryConventions)
+        private async Task<ActionDescriptor> InvokeActionSelector(RouteContext context, 
+                                                                  DefaultActionDiscoveryConventions actionDiscoveryConventions)
         {
             var actionDescriptorProvider = GetActionDescriptorProvider(actionDiscoveryConventions);
             var descriptorProvider =
                 new NestedProviderManager<ActionDescriptorProviderContext>(new[] { actionDescriptorProvider });
+
+            var serviceContainer = new ServiceContainer();
+            serviceContainer.AddService(typeof(INestedProviderManager<ActionDescriptorProviderContext>),
+                                        descriptorProvider);
+
+            var actionCollectionDescriptorProvider = new DefaultActionDescriptorsCollectionProvider(serviceContainer);
+
             var bindingProvider = new Mock<IActionBindingContextProvider>();
 
-            var defaultActionSelector = new DefaultActionSelector(descriptorProvider, bindingProvider.Object);
+            var defaultActionSelector = new DefaultActionSelector(actionCollectionDescriptorProvider,
+                                                                  bindingProvider.Object);
+
             return await defaultActionSelector.SelectAsync(context);
         }
 

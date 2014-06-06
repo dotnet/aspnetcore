@@ -9,19 +9,18 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc
 {
     public class DefaultActionSelector : IActionSelector
     {
-        private readonly INestedProviderManager<ActionDescriptorProviderContext> _actionDescriptorProvider;
+        private readonly IActionDescriptorsCollectionProvider _actionDescriptorsCollectionProvider;
         private readonly IActionBindingContextProvider _bindingProvider;
 
-        public DefaultActionSelector(INestedProviderManager<ActionDescriptorProviderContext> actionDescriptorProvider,
+        public DefaultActionSelector(IActionDescriptorsCollectionProvider actionDescriptorsCollectionProvider,
                                      IActionBindingContextProvider bindingProvider)
         {
-            _actionDescriptorProvider = actionDescriptorProvider;
+            _actionDescriptorsCollectionProvider = actionDescriptorsCollectionProvider;
             _bindingProvider = bindingProvider;
         }
 
@@ -164,7 +163,7 @@ namespace Microsoft.AspNet.Mvc
         // Read further for details.
         public virtual IEnumerable<ActionDescriptor> GetCandidateActions(VirtualPathContext context)
         {
-            // This method attemptss to find a unique 'best' candidate set of actions from the provided route
+            // This method attempts to find a unique 'best' candidate set of actions from the provided route
             // values and ambient route values.
             //
             // The purpose of this process is to avoid allowing certain routes to be too greedy. When a route uses 
@@ -332,12 +331,26 @@ namespace Microsoft.AspNet.Mvc
             return exemplar;
         }
 
-        private List<ActionDescriptor> GetActions()
+        private IReadOnlyList<ActionDescriptor> GetActions()
         {
-            var actionDescriptorProviderContext = new ActionDescriptorProviderContext();
-            _actionDescriptorProvider.Invoke(actionDescriptorProviderContext);
+            var descriptors = _actionDescriptorsCollectionProvider.ActionDescriptors;
 
-            return actionDescriptorProviderContext.Results;
+            if (descriptors == null)
+            {
+                throw new InvalidOperationException(
+                    Resources.FormatPropertyOfTypeCannotBeNull(_actionDescriptorsCollectionProvider.GetType(),
+                                                               "ActionDescriptors"));
+            }
+
+            var items = descriptors.Items;
+
+            if (items == null)
+            {
+                throw new InvalidOperationException(
+                    Resources.FormatPropertyOfTypeCannotBeNull(descriptors.GetType(), "Items"));
+            }
+
+            return items;
         }
 
         private class ActionDescriptorCandidate
