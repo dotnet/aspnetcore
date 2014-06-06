@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
 
@@ -535,8 +536,12 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 .Returns<VirtualPathContext>(rc => null);
             rt.DefaultHandler = target.Object;
             var serviceProviderMock = new Mock<IServiceProvider>();
+            var accessorMock = new Mock<IOptionsAccessor<RouteOptions>>();
+            accessorMock.SetupGet(o => o.Options).Returns(new RouteOptions());
             serviceProviderMock.Setup(o => o.GetService(typeof(IInlineConstraintResolver)))
-                               .Returns(new DefaultInlineConstraintResolver());
+                               .Returns(new DefaultInlineConstraintResolver(serviceProviderMock.Object,
+                                                                            accessorMock.Object));
+          
             rt.ServiceProvider = serviceProviderMock.Object;
             rt.MapRoute(string.Empty,
                         "{controller}/{action}/{id}",
