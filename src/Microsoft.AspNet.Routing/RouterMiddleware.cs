@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Builder
         public async Task Invoke(HttpContext httpContext)
         {
             var context = new RouteContext(httpContext);
-            context.RouteData.Routers.Push(Router);
+            context.RouteData.Routers.Add(Router);
 
             await Router.RouteAsync(context);
             if (!context.IsHandled)

@@ -12,10 +12,10 @@ namespace Microsoft.AspNet.Routing
     {
         public RouteData()
         {
-            Routers = new Stack<IRouter>();
+            Routers = new List<IRouter>();
         }
 
-        public Stack<IRouter> Routers { get; private set; }
+        public List<IRouter> Routers { get; private set; }
 
         public IDictionary<string, object> Values { get; set; }
     }
