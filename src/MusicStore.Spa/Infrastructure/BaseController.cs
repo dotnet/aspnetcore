@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Routing;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -39,8 +40,12 @@ namespace Microsoft.AspNet.Mvc
         {
             LazyInitializer.EnsureInitialized(ref _modelBinder, ref _modelBinderInitialized, ref _modelBinderInitLocker, () =>
             {
-                var requestContext = new RequestContext(Context, ActionContext.RouteValues);
-                _compositeValueProvider = new CompositeValueProvider(_valueProviderFactories.Select(vpf => vpf.GetValueProvider(requestContext)));
+                var routeContext = new RouteContext(Context)
+                {
+                    RouteData = ActionContext.RouteData,
+                };
+
+                _compositeValueProvider = new CompositeValueProvider(_valueProviderFactories.Select(vpf => vpf.GetValueProvider(routeContext)));
                 return new CompositeModelBinder(_modelBinders);
             });
 
