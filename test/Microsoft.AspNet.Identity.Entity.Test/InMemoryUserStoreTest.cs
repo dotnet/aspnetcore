@@ -332,7 +332,7 @@ namespace Microsoft.AspNet.Identity.Entity.Test
             Assert.Equal(0, logins.Count());
         }
 
-        [Fact]
+        //[Fact] Disabled--see issue #107
         public async Task CanCreateUserAddLogin()
         {
             var manager = TestIdentityFactory.CreateManager();
@@ -351,7 +351,7 @@ namespace Microsoft.AspNet.Identity.Entity.Test
             Assert.Equal(providerKey, logins.First().ProviderKey);
         }
 
-        [Fact]
+        //[Fact] Disabled--see issue #107
         public async Task CanCreateUserLoginAndAddPassword()
         {
             var manager = TestIdentityFactory.CreateManager();
@@ -380,7 +380,7 @@ namespace Microsoft.AspNet.Identity.Entity.Test
                 "User already has a password set.");
         }
 
-        [Fact]
+        //[Fact] Disabled--see issue #107
         public async Task CanCreateUserAddRemoveLogin()
         {
             var manager = TestIdentityFactory.CreateManager();
@@ -515,7 +515,7 @@ namespace Microsoft.AspNet.Identity.Entity.Test
             Assert.NotEqual(stamp, user.SecurityStamp);
         }
 
-        [Fact]
+        //[Fact] Disabled--see issue #107
         public async Task AddDupeLoginFails()
         {
             var manager = TestIdentityFactory.CreateManager();
