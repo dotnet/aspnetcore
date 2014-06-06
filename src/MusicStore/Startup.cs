@@ -38,9 +38,7 @@ namespace MusicStore
                         {
                             options.DefaultAdminUserName = configuration.Get("DefaultAdminUsername");
                             options.DefaultAdminPassword = configuration.Get("DefaultAdminPassword");
-                            //Bug: Identity overriding the passed in connection string with a default value. https://github.com/aspnet/identity/issues/102
-                            options.ConnectionString = configuration.Get("Data:IdentityConnection:ConnectionString");
-                            options.UseSqlServer(options.ConnectionString);
+                            options.UseSqlServer(configuration.Get("Data:IdentityConnection:ConnectionString"));
                         });
 
                 services.SetupOptions<MusicStoreDbContextOptions>(options =>
