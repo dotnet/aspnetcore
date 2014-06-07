@@ -46,6 +46,8 @@ namespace E2ETests
         public static Process StartApplication(HostType hostType, KreFlavor kreFlavor, string identityDbName)
         {
             string applicationPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, APP_RELATIVE_PATH));
+            //Tweak the %PATH% to the point to the right KREFLAVOR
+            Environment.SetEnvironmentVariable("PATH", SwitchPathToKreFlavor(kreFlavor));
 
             if (hostType == HostType.Helios)
             {
@@ -86,10 +88,25 @@ namespace E2ETests
             };
 
             var hostProcess = Process.Start(startInfo);
-            Console.WriteLine("Started klr.exe. Process Id : {0}", hostProcess.Id);
+            Console.WriteLine("Started {0}. Process Id : {1}", hostProcess.MainModule.FileName, hostProcess.Id);
             WaitTillDbCreated(identityDbName);
 
             return hostProcess;
+        }
+
+        private static string SwitchPathToKreFlavor(KreFlavor kreFlavor)
+        {
+            var pathValue = Environment.GetEnvironmentVariable("PATH");
+            Console.WriteLine();
+            Console.WriteLine("Current %PATH% value : {0}", pathValue);
+
+            pathValue = (kreFlavor == KreFlavor.CoreClr) ? 
+                pathValue.Replace("KRE-svr50-", "KRE-svrc50-") : 
+                pathValue.Replace("KRE-svrc50-", "KRE-svr50-");
+
+            Console.WriteLine();
+            Console.WriteLine("Setting %PATH% value to : {0}", pathValue);
+            return pathValue;
         }
 
         //In case of self-host application activation happens immediately unlike iis where activation happens on first request.
