@@ -5,6 +5,7 @@ using Microsoft.AspNet.Server.Kestrel.Networking;
 using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -113,14 +114,18 @@ namespace Microsoft.AspNet.Server.KestralTests
                 var tcp2 = new UvTcpHandle();
                 tcp2.Init(loop);
                 tcp.Accept(tcp2);
-                tcp2.ReadStart((__, nread, data, state2) =>
-                {
-                    bytesRead += nread;
-                    if (nread == 0)
+                var data = Marshal.AllocCoTaskMem(500);
+                tcp2.ReadStart(
+                    (a, b, c) => new Libuv.uv_buf_t { memory = data, len = 500 },
+                    (__, nread, state2) =>
                     {
-                        tcp2.Close();
-                    }
-                }, null);
+                        bytesRead += nread;
+                        if (nread == 0)
+                        {
+                            tcp2.Close();
+                        }
+                    },
+                    null);
                 tcp.Close();
             }, null);
             var t = Task.Run(async () =>

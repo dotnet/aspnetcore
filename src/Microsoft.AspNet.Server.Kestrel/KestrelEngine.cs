@@ -1,9 +1,12 @@
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using Microsoft.AspNet.Server.Kestrel.Networking;
 using System.Threading;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Server.Kestrel.Http;
 
 namespace Microsoft.AspNet.Server.Kestrel
 {
@@ -14,11 +17,13 @@ namespace Microsoft.AspNet.Server.Kestrel
         {
             Threads = new List<KestrelThread>();
             Listeners = new List<Listener>();
+            Memory = new MemoryPool();
             Libuv = new Libuv();
             Libuv.Load("libuv.dll");
         }
 
         public Libuv Libuv { get; private set; }
+        public IMemoryPool Memory { get; set; }
         public List<KestrelThread> Threads { get; private set; }
         public List<Listener> Listeners { get; private set; }
 
@@ -44,13 +49,13 @@ namespace Microsoft.AspNet.Server.Kestrel
             Threads.Clear();
         }
 
-        public IDisposable CreateServer()
+        public IDisposable CreateServer(Func<object, Task> app)
         {
             var listeners = new List<Listener>();
             foreach (var thread in Threads)
             {
-                var listener = new Listener(thread);
-                listener.StartAsync().Wait();
+                var listener = new Listener(Memory);
+                listener.StartAsync(thread, app).Wait();
                 listeners.Add(listener);
             }
             return new Disposable(() =>

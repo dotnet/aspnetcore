@@ -178,6 +178,50 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        delegate int uv_try_write(UvStreamHandle handle, Libuv.uv_buf_t[] bufs, int nbufs);
+        uv_try_write _uv_try_write;
+        public int try_write(UvStreamHandle handle, Libuv.uv_buf_t[] bufs, int nbufs)
+        {
+            return Check(_uv_try_write(handle, bufs, nbufs));
+        }
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void uv_write_cb(IntPtr req, int status);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        delegate int uv_write(UvWriteReq req, UvStreamHandle handle, Libuv.uv_buf_t[] bufs, int nbufs, uv_write_cb cb);
+        uv_write _uv_write;
+        public void write(UvWriteReq req, UvStreamHandle handle, Libuv.uv_buf_t[] bufs, int nbufs, uv_write_cb cb)
+        {
+            Check(_uv_write(req, handle, bufs, nbufs, cb));
+        }
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void uv_shutdown_cb(IntPtr req, int status);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        delegate int uv_shutdown(UvShutdownReq req, UvStreamHandle handle, uv_shutdown_cb cb);
+        uv_shutdown _uv_shutdown;
+        public void shutdown(UvShutdownReq req, UvStreamHandle handle, uv_shutdown_cb cb)
+        {
+            Check(_uv_shutdown(req, handle, cb));
+        }
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        delegate int uv_handle_size(int handleType);
+        uv_handle_size _uv_handle_size;
+        public int handle_size(int handleType)
+        {
+            return _uv_handle_size(handleType);
+        }
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        delegate int uv_req_size(int handleType);
+        uv_req_size _uv_req_size;
+        public int req_size(int handleType)
+        {
+            return _uv_req_size(handleType);
+        }
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         delegate int uv_ip4_addr(string ip, int port, out sockaddr addr);
 
         uv_ip4_addr _uv_ip4_addr;
@@ -209,5 +253,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             public IntPtr memory;
         }
 
+        //int handle_size_async;
+        //int handle_size_tcp;
+        //int req_size_write;
+        //int req_size_shutdown;
     }
 }

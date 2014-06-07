@@ -15,12 +15,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         public Action<UvStreamHandle, int, object> _connectionCallback;
         public object _connectionState;
 
-        public Action<UvStreamHandle, int, byte[], object> _readCallback;
+        public Func<UvStreamHandle, int, object, Libuv.uv_buf_t> _allocCallback;
+
+        public Action<UvStreamHandle, int, object> _readCallback;
         public object _readState;
 
-        public UvStreamHandle()
-        {
-        }
 
         public void Listen(int backlog, Action<UvStreamHandle, int, object> callback, object state)
         {
@@ -35,10 +34,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         }
 
         public void ReadStart(
-            Action<UvStreamHandle, int, byte[], object> callback, 
+            Func<UvStreamHandle, int, object, Libuv.uv_buf_t> allocCallback,
+            Action<UvStreamHandle, int, object> readCallback,
             object state)
         {
-            _readCallback = callback;
+            _allocCallback = allocCallback;
+            _readCallback = readCallback;
             _readState = state;
             _uv.read_start(this, _uv_alloc_cb, _uv_read_cb);
         }
@@ -48,38 +49,38 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             _uv.read_stop(this);
         }
 
+        public int TryWrite(Libuv.uv_buf_t buf)
+        {
+            return _uv.try_write(this, new[] { buf }, 1);
+        }
+
+
         private static void UvConnectionCb(IntPtr handle, int status)
         {
             var stream = FromIntPtr<UvStreamHandle>(handle);
             stream._connectionCallback(stream, status, stream._connectionState);
         }
 
-        private static void UvAllocCb(IntPtr server, int suggested_size, out Libuv.uv_buf_t buf)
+        private static void UvAllocCb(IntPtr handle, int suggested_size, out Libuv.uv_buf_t buf)
         {
-            buf = new Libuv.uv_buf_t
-            {
-                memory = Marshal.AllocCoTaskMem(suggested_size),
-                len = (uint)suggested_size,
-            };
-
+            var stream = FromIntPtr<UvStreamHandle>(handle);
+            buf = stream._allocCallback(stream, suggested_size, stream._readState);
         }
 
-        private static void UvReadCb(IntPtr ptr, int nread, ref Libuv.uv_buf_t buf)
+        private static void UvReadCb(IntPtr handle, int nread, ref Libuv.uv_buf_t buf)
         {
-            var stream = FromIntPtr<UvStreamHandle>(ptr);
+            var stream = FromIntPtr<UvStreamHandle>(handle);
+
             if (nread == -4095)
             {
-                stream._readCallback(stream, 0, null, stream._readState);
-                Marshal.FreeCoTaskMem(buf.memory);
+                stream._readCallback(stream, 0, stream._readState);
                 return;
             }
 
             var length = stream._uv.Check(nread);
-            var data = new byte[length];
-            Marshal.Copy(buf.memory, data, 0, length);
-            Marshal.FreeCoTaskMem(buf.memory);
 
-            stream._readCallback(stream, length, data, stream._readState);
+            stream._readCallback(stream, nread, stream._readState);
         }
+
     }
 }

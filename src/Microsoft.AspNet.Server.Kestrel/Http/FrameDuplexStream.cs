@@ -1,0 +1,166 @@
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.IO;
+
+namespace Microsoft.AspNet.Server.Kestrel.Http
+{
+    class FrameDuplexStream : Stream
+    {
+        readonly FrameRequestStream _requestStream;
+        readonly FrameResponseStream _responseStream;
+
+        public FrameDuplexStream(FrameRequestStream requestStream, FrameResponseStream responseStream)
+        {
+            _requestStream = requestStream;
+            _responseStream = responseStream;
+        }
+
+        public override void Close()
+        {
+            _requestStream.Close();
+            _responseStream.Close();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _requestStream.Dispose();
+                _responseStream.Dispose();
+            }
+        }
+
+        public override void Flush()
+        {
+            _responseStream.Flush();
+        }
+
+        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        {
+            return _requestStream.BeginRead(buffer, offset, count, callback, state);
+        }
+
+        public override int EndRead(IAsyncResult asyncResult)
+        {
+            return _requestStream.EndRead(asyncResult);
+        }
+
+        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        {
+            return _responseStream.BeginWrite(buffer, offset, count, callback, state);
+        }
+
+        public override void EndWrite(IAsyncResult asyncResult)
+        {
+            _responseStream.EndWrite(asyncResult);
+        }
+
+        public override long Seek(long offset, SeekOrigin origin)
+        {
+            return _requestStream.Seek(offset, origin);
+        }
+
+        public override void SetLength(long value)
+        {
+            _requestStream.SetLength(value);
+        }
+
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            return _requestStream.Read(buffer, offset, count);
+        }
+
+        public override int ReadByte()
+        {
+            return _requestStream.ReadByte();
+        }
+
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+            _responseStream.Write(buffer, offset, count);
+        }
+
+        public override void WriteByte(byte value)
+        {
+            _responseStream.WriteByte(value);
+        }
+
+        public override bool CanRead
+        {
+            get
+            {
+                return _requestStream.CanRead;
+            }
+        }
+
+        public override bool CanSeek
+        {
+            get
+            {
+                return _requestStream.CanSeek;
+            }
+        }
+
+        public override bool CanTimeout
+        {
+            get
+            {
+                return _responseStream.CanTimeout || _requestStream.CanTimeout;
+            }
+        }
+
+        public override bool CanWrite
+        {
+            get
+            {
+                return _responseStream.CanWrite;
+            }
+        }
+
+        public override long Length
+        {
+            get
+            {
+                return _requestStream.Length;
+            }
+        }
+
+        public override long Position
+        {
+            get
+            {
+                return _requestStream.Position;
+            }
+            set
+            {
+                _requestStream.Position = value;
+            }
+        }
+
+        public override int ReadTimeout
+        {
+            get
+            {
+                return _requestStream.ReadTimeout;
+            }
+            set
+            {
+                _requestStream.ReadTimeout = value;
+            }
+        }
+
+        public override int WriteTimeout
+        {
+            get
+            {
+                return _responseStream.WriteTimeout;
+            }
+            set
+            {
+                _responseStream.WriteTimeout = value;
+            }
+        }
+    }
+}

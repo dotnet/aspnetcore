@@ -1,36 +1,58 @@
-﻿using Microsoft.AspNet.Server.Kestrel.Networking;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using Microsoft.AspNet.Server.Kestrel.Networking;
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Server.Kestrel
+namespace Microsoft.AspNet.Server.Kestrel.Http
 {
+    public class ListenerContext
+    {
+        public ListenerContext() { }
+
+        public ListenerContext(ListenerContext context)
+        {
+            Thread = context.Thread;
+            Application = context.Application;
+            Memory = context.Memory;
+        }
+
+        public KestrelThread Thread { get; set; }
+
+        public Func<object, Task> Application { get; set; }
+
+        public IMemoryPool Memory { get; set; }
+    }
+
     /// <summary>
     /// Summary description for Accept
     /// </summary>
-    public class Listener : IDisposable
+    public class Listener : ListenerContext, IDisposable
     {
-        private readonly KestrelThread _thread;
-        UvTcpHandle _socket;
-        private readonly Action<UvStreamHandle, int, object> _connectionCallback = ConnectionCallback;
+        private static readonly Action<UvStreamHandle, int, object> _connectionCallback = ConnectionCallback;
+
+        UvTcpHandle ListenSocket { get; set; }
 
         private static void ConnectionCallback(UvStreamHandle stream, int status, object state)
         {
             ((Listener)state).OnConnection(stream, status);
         }
 
-        public Listener(KestrelThread thread)
+        public Listener(IMemoryPool memory)
         {
-            _thread = thread;
+            Memory = memory;
         }
 
-        public Task StartAsync()
+        public Task StartAsync(KestrelThread thread, Func<object, Task> app)
         {
+            Thread = thread;
+            Application = app;
+
             var tcs = new TaskCompletionSource<int>();
-            _thread.Post(OnStart, tcs);
+            Thread.Post(OnStart, tcs);
             return tcs.Task;
         }
 
@@ -39,10 +61,10 @@ namespace Microsoft.AspNet.Server.Kestrel
             var tcs = (TaskCompletionSource<int>)parameter;
             try
             {
-                _socket = new UvTcpHandle();
-                _socket.Init(_thread.Loop);
-                _socket.Bind(new IPEndPoint(IPAddress.Any, 4001));
-                _socket.Listen(10, _connectionCallback, this);
+                ListenSocket = new UvTcpHandle();
+                ListenSocket.Init(Thread.Loop);
+                ListenSocket.Bind(new IPEndPoint(IPAddress.Any, 4001));
+                ListenSocket.Listen(10, _connectionCallback, this);
                 tcs.SetResult(0);
             }
             catch (Exception ex)
@@ -51,33 +73,25 @@ namespace Microsoft.AspNet.Server.Kestrel
             }
         }
 
-        private void OnConnection(UvStreamHandle socket, int status)
+        private void OnConnection(UvStreamHandle listenSocket, int status)
         {
-            var connection = new UvTcpHandle();
-            connection.Init(_thread.Loop);
-            socket.Accept(connection);
-            connection.ReadStart(OnRead, null);
-        }
+            var acceptSocket = new UvTcpHandle();
+            acceptSocket.Init(Thread.Loop);
+            listenSocket.Accept(acceptSocket);
 
-        private void OnRead(UvStreamHandle socket, int count, byte[] data, object _)
-        {
-            var text = Encoding.UTF8.GetString(data);
-            if (count <= 0)
-            {
-                socket.Close();
-            }
+            var connection = new Connection(this, acceptSocket);
+            connection.Start();
         }
 
         public void Dispose()
         {
-            var socket = _socket;
-            _socket = null;
-            _thread.Post(OnDispose, socket);
+            Thread.Post(OnDispose, ListenSocket);
+            ListenSocket = null;
         }
 
-        private void OnDispose(object socket)
+        private void OnDispose(object listenSocket)
         {
-            ((UvHandle)socket).Close();
+            ((UvHandle)listenSocket).Close();
         }
     }
 }
