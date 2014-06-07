@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNet.Server.Kestrel.Networking;
-using System.Threading;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Server.Kestrel.Http;

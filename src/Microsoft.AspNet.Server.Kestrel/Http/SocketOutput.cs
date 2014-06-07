@@ -3,9 +3,6 @@
 
 using Microsoft.AspNet.Server.Kestrel.Networking;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Net.Sockets;
 using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
