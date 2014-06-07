@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             
         public void Init(UvLoopHandle loop)
         {
-            CreateHandle(loop.Libuv, loop.Libuv.req_size(2));
+            CreateHandle(loop, loop.Libuv.req_size(2));
         }
 
         public void Write(UvStreamHandle handle, Libuv.uv_buf_t[] bufs, int nbufs, Action<UvWriteReq, int, object> callback, object state)
@@ -39,14 +39,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 
     public abstract class UvReq : UvMemory
     {
-
-        unsafe protected void CreateHandle(Libuv uv, int size)
-        {
-            _uv = uv;
-            handle = Marshal.AllocCoTaskMem(size);
-            *(IntPtr*)handle = GCHandle.ToIntPtr(GCHandle.Alloc(this));
-        }
-
         protected override bool ReleaseHandle()
         {
             DestroyHandle(handle);

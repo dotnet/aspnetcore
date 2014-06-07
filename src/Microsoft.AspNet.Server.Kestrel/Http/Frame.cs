@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 switch (_mode)
                 {
                     case Mode.StartLine:
-                        if (input.RemoteIntakeFin)
+                        if (input.Buffer.Count == 0 && input.RemoteIntakeFin)
                         {
                             _mode = Mode.Terminated;
                             return;
@@ -95,6 +95,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
                         if (!TakeStartLine(input))
                         {
+                            if (input.RemoteIntakeFin)
+                            {
+                                _mode = Mode.Terminated;
+                            }
                             return;
                         }
 
@@ -102,7 +106,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         break;
 
                     case Mode.MessageHeader:
-                        if (input.RemoteIntakeFin)
+                        if (input.Buffer.Count == 0 && input.RemoteIntakeFin)
                         {
                             _mode = Mode.Terminated;
                             return;
@@ -113,16 +117,25 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         {
                             if (!TakeMessageHeader(input, out endOfHeaders))
                             {
+                                if (input.RemoteIntakeFin)
+                                {
+                                    _mode = Mode.Terminated;
+                                }
                                 return;
                             }
                         }
 
                         //var resumeBody = HandleExpectContinue(callback);
-                        Execute();
                         _mode = Mode.MessageBody;
+                        Execute();
                         break;
 
                     case Mode.MessageBody:
+                        if (_messageBody.LocalIntakeFin)
+                        {
+                            // NOTE: stop reading and resume on keepalive?
+                            return;
+                        }
                         _messageBody.Consume();
                         // NOTE: keep looping?
                         return;

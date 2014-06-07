@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 
         public void Init(UvLoopHandle loop)
         {
-            CreateHandle(loop.Libuv, loop.Libuv.req_size(3));
+            CreateHandle(loop, loop.Libuv.req_size(3));
         }
 
         public void Shutdown(UvStreamHandle handle, Action<UvShutdownReq, int, object> callback, object state)

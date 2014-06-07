@@ -59,6 +59,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         uv_loop_close _uv_loop_close;
         public void loop_close(UvLoopHandle handle)
         {
+            handle.Validate(closed: true);
             Check(_uv_loop_close(handle.DangerousGetHandle()));
         }
 
@@ -67,6 +68,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         uv_run _uv_run;
         public int run(UvLoopHandle handle, int mode)
         {
+            handle.Validate();
             return Check(_uv_run(handle, mode));
         }
 
@@ -75,6 +77,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         uv_stop _uv_stop;
         public void stop(UvLoopHandle handle)
         {
+            handle.Validate();
             _uv_stop(handle);
         }
 
@@ -83,6 +86,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         uv_ref _uv_ref;
         public void @ref(UvHandle handle)
         {
+            handle.Validate();
             _uv_ref(handle);
         }
 
@@ -91,6 +95,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         uv_unref _uv_unref;
         public void unref(UvHandle handle)
         {
+            handle.Validate();
             _uv_unref(handle);
         }
 
@@ -102,6 +107,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         uv_close _uv_close;
         public void close(UvHandle handle, uv_close_cb close_cb)
         {
+            handle.Validate(closed: true);
             _uv_close(handle.DangerousGetHandle(), close_cb);
         }
 
@@ -112,6 +118,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         uv_async_init _uv_async_init;
         public void async_init(UvLoopHandle loop, UvAsyncHandle handle, uv_async_cb cb)
         {
+            loop.Validate();
+            handle.Validate();
             Check(_uv_async_init(loop, handle, cb));
         }
 
@@ -128,6 +136,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         uv_tcp_init _uv_tcp_init;
         public void tcp_init(UvLoopHandle loop, UvTcpHandle handle)
         {
+            loop.Validate();
+            handle.Validate();
             Check(_uv_tcp_init(loop, handle));
         }
 
@@ -136,6 +146,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         uv_tcp_bind _uv_tcp_bind;
         public void tcp_bind(UvTcpHandle handle, ref sockaddr addr, int flags)
         {
+            handle.Validate();
             Check(_uv_tcp_bind(handle, ref addr, flags));
         }
 
@@ -146,6 +157,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         uv_listen _uv_listen;
         public void listen(UvStreamHandle handle, int backlog, uv_connection_cb cb)
         {
+            handle.Validate();
             Check(_uv_listen(handle, backlog, cb));
         }
 
@@ -154,6 +166,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         uv_accept _uv_accept;
         public void accept(UvStreamHandle server, UvStreamHandle client)
         {
+            server.Validate();
+            client.Validate();
             Check(_uv_accept(server, client));
         }
 
@@ -166,6 +180,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         uv_read_start _uv_read_start;
         public void read_start(UvStreamHandle handle, uv_alloc_cb alloc_cb, uv_read_cb read_cb)
         {
+            handle.Validate();
             Check(_uv_read_start(handle, alloc_cb, read_cb));
         }
 
@@ -174,6 +189,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         uv_read_stop _uv_read_stop;
         public void read_stop(UvStreamHandle handle)
         {
+            handle.Validate();
             Check(_uv_read_stop(handle));
         }
 
@@ -182,6 +198,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         uv_try_write _uv_try_write;
         public int try_write(UvStreamHandle handle, Libuv.uv_buf_t[] bufs, int nbufs)
         {
+            handle.Validate();
             return Check(_uv_try_write(handle, bufs, nbufs));
         }
 
@@ -192,6 +209,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         uv_write _uv_write;
         public void write(UvWriteReq req, UvStreamHandle handle, Libuv.uv_buf_t[] bufs, int nbufs, uv_write_cb cb)
         {
+            req.Validate();
+            handle.Validate();
             Check(_uv_write(req, handle, bufs, nbufs, cb));
         }
 
@@ -202,6 +221,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         uv_shutdown _uv_shutdown;
         public void shutdown(UvShutdownReq req, UvStreamHandle handle, uv_shutdown_cb cb)
         {
+            req.Validate();
+            handle.Validate();
             Check(_uv_shutdown(req, handle, cb));
         }
 

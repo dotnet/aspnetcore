@@ -9,8 +9,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
     {
         static Libuv.uv_close_cb _close_cb = DestroyHandle;
 
-
-
         protected override bool ReleaseHandle()
         {
             var memory = handle;

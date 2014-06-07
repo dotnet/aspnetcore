@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
+#define TRACE
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace Microsoft.AspNet.Server.Kestrel.Networking
 {
@@ -12,6 +14,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
     public abstract class UvMemory : SafeHandle
     {
         protected Libuv _uv;
+        int _threadId;
+
         public UvMemory() : base(IntPtr.Zero, true)
         {
         }
@@ -29,6 +33,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         unsafe protected void CreateHandle(Libuv uv, int size)
         {
             _uv = uv;
+            _threadId = Thread.CurrentThread.ManagedThreadId;
+
             handle = Marshal.AllocCoTaskMem(size);
             *(IntPtr*)handle = GCHandle.ToIntPtr(GCHandle.Alloc(this));
         }
@@ -36,7 +42,16 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         protected void CreateHandle(UvLoopHandle loop, int size)
         {
             CreateHandle(loop._uv, size);
+            _threadId = loop._threadId;
         }
+
+        public void Validate(bool closed = false)
+        {
+            Trace.Assert(IsClosed == closed, "Handle is closed");
+            Trace.Assert(!IsInvalid, "Handle is invalid");
+            Trace.Assert(_threadId == Thread.CurrentThread.ManagedThreadId, "ThreadId is correct");
+        }
+
 
         unsafe protected static void DestroyHandle(IntPtr memory)
         {

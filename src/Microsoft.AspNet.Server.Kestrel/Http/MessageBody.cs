@@ -6,24 +6,6 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
-    public static class DelegateExtensions
-    {
-        public static void InvokeNoThrow(this Action d)
-        {
-            try
-            { d.Invoke(); }
-            catch
-            { }
-        }
-        public static void InvokeNoThrow<T>(this Action<T> d, T arg1)
-        {
-            try
-            { d.Invoke(arg1); }
-            catch
-            { }
-        }
-    }
-
     public abstract class MessageBody : MessageBodyExchanger
     {
         private Action _continuation = () => { };
@@ -155,8 +137,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 var input = _context.SocketInput;
                 var consumeLength = Math.Min(_neededLength, input.Buffer.Count);
                 _neededLength -= consumeLength;
-
-                var consumed = input.Take(consumeLength);
 
                 if (_neededLength != 0)
                 {

@@ -7,7 +7,9 @@
         "Microsoft.AspNet.Server.Kestrel": "0.1-*"
     },
     "configurations": {
-        "net45": {}
+        "net45": {
+            "compilationOptions": { "define": [ "TRACE" ] }
+        }
     },
     "commands": {
         "run": "Xunit.KRunner",

@@ -45,16 +45,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             ((Connection)state).OnRead(handle, nread);
         }
 
-
-        private readonly Func<object, Task> _app;
         private readonly UvStreamHandle _socket;
-
         private Frame _frame;
-
-        private Action<Exception> _fault;
-        private Action<Frame, Exception> _frameConsumeCallback;
-        private Action _receiveAsyncCompleted;
-        private Frame _receiveAsyncCompletedFrame;
 
         public Connection(ListenerContext context, UvStreamHandle socket) : base(context)
         {
@@ -64,41 +56,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public void Start()
         {
-            //_services.Trace.Event(TraceEventType.Start, TraceMessage.Connection);
-
             SocketInput = new SocketInput(Memory);
             SocketOutput = new SocketOutput(Thread, _socket);
-
+            _frame = new Frame(this);
             _socket.ReadStart(_allocCallback, _readCallback, this);
-
-            //_fault = ex => { Debug.WriteLine(ex.Message); };
-
-            //_frameConsumeCallback = (frame, error) =>
-            //{
-            //    if (error != null)
-            //    {
-            //        _fault(error);
-            //    }
-            //    try
-            //    {
-            //        Go(false, frame);
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        _fault(ex);
-            //    }
-            //};
-
-            //try
-            //{
-            //    //_socket.Blocking = false;
-            //    //_socket.NoDelay = true;
-            //    Go(true, null);
-            //}
-            //catch (Exception ex)
-            //{
-            //    _fault(ex);
-            //}
         }
 
         private Libuv.uv_buf_t OnAlloc(UvStreamHandle handle, int suggestedSize)
@@ -119,10 +80,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 SocketInput.RemoteIntakeFin = true;
             }
 
-            if (_frame == null)
-            {
-                _frame = new Frame(this);
-            }
             _frame.Consume();
         }
 
@@ -141,14 +98,26 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             switch (endType)
             {
                 case ProduceEndType.SocketShutdownSend:
-                    var shutdown = new UvShutdownReq();
-                    shutdown.Init(Thread.Loop);
-                    shutdown.Shutdown(_socket, (req, status, state) => req.Close(), null);
+                    Thread.Post(
+                        x =>
+                        {
+                            var self = (Connection)x;
+                            var shutdown = new UvShutdownReq();
+                            shutdown.Init(self.Thread.Loop);
+                            shutdown.Shutdown(self._socket, (req, status, state) => req.Close(), null);
+                        },
+                        this);
                     break;
                 case ProduceEndType.ConnectionKeepAlive:
+                    _frame = new Frame(this);
+                    Thread.Post(
+                        x => ((Frame)x).Consume(),
+                        _frame);
                     break;
                 case ProduceEndType.SocketDisconnect:
-                    _socket.Close();
+                    Thread.Post(
+                        x => ((UvHandle)x).Close(),
+                        _socket);
                     break;
             }
         }
