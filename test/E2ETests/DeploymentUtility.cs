@@ -88,6 +88,8 @@ namespace E2ETests
             };
 
             var hostProcess = Process.Start(startInfo);
+            //Sometimes reading MainModule returns null if called immediately after starting process.
+            Thread.Sleep(1 * 1000);
             Console.WriteLine("Started {0}. Process Id : {1}", hostProcess.MainModule.FileName, hostProcess.Id);
             WaitTillDbCreated(identityDbName);
 
