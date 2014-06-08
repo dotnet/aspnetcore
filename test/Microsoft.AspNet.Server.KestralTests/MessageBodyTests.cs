@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Server.KestralTests
         public async Task Http10ConnectionClose()
         {
             var input = new TestInput();
-            var body = MessageBody.For("HTTP/1.0", new Dictionary<string, string[]>(), input.ConnectionContext);
+            var body = MessageBody.For("HTTP/1.0", new Dictionary<string, string[]>(), input.FrameContext);
             var stream = new FrameRequestStream(body);
 
             input.Add("Hello", true);
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Server.KestralTests
         public async Task Http10ConnectionCloseAsync()
         {
             var input = new TestInput();
-            var body = MessageBody.For("HTTP/1.0", new Dictionary<string, string[]>(), input.ConnectionContext);
+            var body = MessageBody.For("HTTP/1.0", new Dictionary<string, string[]>(), input.FrameContext);
             var stream = new FrameRequestStream(body);
 
             input.Add("Hello", true);

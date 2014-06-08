@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Server.KestralTests
             var context = new ConnectionContext();
             context.SocketInput = new SocketInput(new MemoryPool());
 
-            var exchanger = new MessageBodyExchanger(testInput.ConnectionContext);
+            var exchanger = new MessageBodyExchanger(testInput.FrameContext);
 
             var buffer1 = new byte[1024];
             var buffer2 = new byte[1024];
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Server.KestralTests
             var context = new ConnectionContext();
             context.SocketInput = new SocketInput(new MemoryPool());
 
-            var exchanger = new MessageBodyExchanger(testInput.ConnectionContext);
+            var exchanger = new MessageBodyExchanger(testInput.FrameContext);
 
             testInput.Add("Hello");
 
@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.Server.KestralTests
             var context = new ConnectionContext();
             context.SocketInput = new SocketInput(new MemoryPool());
 
-            var exchanger = new MessageBodyExchanger(testInput.ConnectionContext);
+            var exchanger = new MessageBodyExchanger(testInput.FrameContext);
 
             var buffer1 = new byte[1024];
             var buffer2 = new byte[1024];
@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Server.KestralTests
             var context = new ConnectionContext();
             context.SocketInput = new SocketInput(new MemoryPool());
 
-            var exchanger = new MessageBodyExchanger(testInput.ConnectionContext);
+            var exchanger = new MessageBodyExchanger(testInput.FrameContext);
 
             var buffer1 = new byte[1024];
             var buffer2 = new byte[1024];
@@ -155,7 +155,7 @@ namespace Microsoft.AspNet.Server.KestralTests
             var context = new ConnectionContext();
             context.SocketInput = new SocketInput(new MemoryPool());
 
-            var exchanger = new MessageBodyExchanger(testInput.ConnectionContext);
+            var exchanger = new MessageBodyExchanger(testInput.FrameContext);
 
             testInput.Add("Hello");
 

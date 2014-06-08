@@ -63,11 +63,25 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken, object state)
         {
-            //NOTE todo
-            throw new NotImplementedException();
-            //var tcs = new TaskCompletionSource<int>(state);
-            //_body.ReadAsync(new ArraySegment<byte>(buffer, offset, count));
-            //return tcs.Task;
+            var tcs = new TaskCompletionSource<int>(state);
+            var task = _body.ReadAsync(new ArraySegment<byte>(buffer, offset, count));
+            task.ContinueWith((t, x) =>
+            {
+                var tcs2 = (TaskCompletionSource<int>)x;
+                if (t.IsCanceled)
+                {
+                    tcs2.SetCanceled();
+                }
+                else if (t.IsFaulted)
+                {
+                    tcs2.SetException(t.Exception);
+                }
+                else
+                {
+                    tcs2.SetResult(t.Result);
+                }
+            }, tcs);
+            return tcs.Task;
         }
 
         public override void Write(byte[] buffer, int offset, int count)

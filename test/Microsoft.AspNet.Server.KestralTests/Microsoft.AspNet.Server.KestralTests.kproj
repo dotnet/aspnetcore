@@ -31,6 +31,7 @@
     <Compile Include="MessageBodyExchangerTests.cs" />
     <Compile Include="MessageBodyTests.cs" />
     <Compile Include="NetworkingTests.cs" />
+    <Compile Include="TestConnection.cs" />
     <Compile Include="TestInput.cs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />

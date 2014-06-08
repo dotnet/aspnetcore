@@ -34,20 +34,21 @@ namespace Microsoft.AspNet.Server.KestralTests
         {
             var request = callContext as IHttpRequestFeature;
             var response = callContext as IHttpResponseFeature;
-            response.Headers["Transfer-Encoding"] = new[] { "chunked" };
+
+            var data = new MemoryStream();
             for (; ;)
             {
                 var buffer = new byte[8192];
                 var count = await request.Body.ReadAsync(buffer, 0, buffer.Length);
-                var hex = Encoding.ASCII.GetBytes(count.ToString("x") + "\r\n");
-                await response.Body.WriteAsync(hex, 0, hex.Length);
                 if (count == 0)
                 {
                     break;
                 }
-                await response.Body.WriteAsync(buffer, 0, count);
-                await response.Body.WriteAsync(new[] { (byte)'\r', (byte)'\n' }, 0, 2);
+                data.Write(buffer, 0, count);
             }
+            var bytes = data.ToArray();
+            response.Headers["Content-Length"] = new[] { bytes.Length.ToString() };
+            await response.Body.WriteAsync(bytes, 0, bytes.Length);
         }
 
         [Fact]
@@ -118,12 +119,12 @@ Hello World");
 
             Transceive(
 @"POST / HTTP/1.0
-Content-Length: 5
+Content-Length: 11
 
 Hello World",
 @"HTTP/1.0 200 OK
 
-Hello");
+Hello World");
             started.Dispose();
             engine.Stop();
         }
@@ -135,19 +136,21 @@ Hello");
             engine.Start(1);
             var started = engine.CreateServer(App);
 
-            Transceive(
-@"POST / HTTP/1.0
-Transfer-Encoding: chunked
+            using (var connection = new TestConnection())
+            {
+                await connection.Send(
+                    "POST / HTTP/1.0",
+                    "Transfer-Encoding: chunked",
+                    "",
+                    "5", "Hello", "6", " World", "0\r\n");
+                await connection.ReceiveEnd(
+                    "HTTP/1.0 200 OK",
+                    "",
+                    "Hello World");
+            }
 
-5
-Hello
-6
- World
-0
-ignored",
-@"HTTP/1.0 200 OK
 
-Hello World");
+
             started.Dispose();
             engine.Stop();
         }
@@ -160,25 +163,27 @@ Hello World");
             engine.Start(1);
             var started = engine.CreateServer(AppChunked);
 
-            Transceive(
-@"GET / HTTP/1.0
-Connection: Keep-Alive
+            using (var connection = new TestConnection())
+            {
+                await connection.SendEnd(
+                    "GET / HTTP/1.0",
+                    "Connection: keep-alive",
+                    "",
+                    "POST / HTTP/1.0",
+                    "",
+                    "Goodbye");
+                await connection.Receive(
+                    "HTTP/1.0 200 OK",
+                    "Content-Length: 0",
+                    "Connection: keep-alive",
+                    "\r\n");
+                await connection.ReceiveEnd(
+                    "HTTP/1.0 200 OK",
+                    "Content-Length: 7",
+                    "",
+                    "Goodbye");
+            }
 
-POST / HTTP/1.0
-
-Goodbye",
-@"HTTP/1.0 200 OK
-Transfer-Encoding: chunked
-Connection: keep-alive
-
-0
-HTTP/1.0 200 OK
-Transfer-Encoding: chunked
-
-7
-Goodbye
-0
-");
             started.Dispose();
             engine.Stop();
         }
@@ -190,28 +195,28 @@ Goodbye
             engine.Start(1);
             var started = engine.CreateServer(AppChunked);
 
-            Transceive(
-@"POST / HTTP/1.0
-Connection: Keep-Alive
-Content-Length: 11
-
-Hello WorldPOST / HTTP/1.0
-
-Goodbye",
-@"HTTP/1.0 200 OK
-Transfer-Encoding: chunked
-Connection: keep-alive
-
-b
-Hello World
-0
-HTTP/1.0 200 OK
-Transfer-Encoding: chunked
-
-7
-Goodbye
-0
-");
+            using (var connection = new TestConnection())
+            {
+                await connection.SendEnd(
+                    "POST / HTTP/1.0",
+                    "Connection: keep-alive",
+                    "Content-Length: 11",
+                    "",
+                    "Hello WorldPOST / HTTP/1.0",
+                    "",
+                    "Goodbye");
+                await connection.Receive(
+                    "HTTP/1.0 200 OK",
+                    "Content-Length: 11",
+                    "Connection: keep-alive",
+                    "",
+                    "Hello World");
+                await connection.ReceiveEnd(
+                    "HTTP/1.0 200 OK",
+                    "Content-Length: 7",
+                    "",
+                    "Goodbye");
+            }
             started.Dispose();
             engine.Stop();
         }
@@ -223,37 +228,52 @@ Goodbye
             engine.Start(1);
             var started = engine.CreateServer(AppChunked);
 
-            Transceive(
-@"POST / HTTP/1.0
-Transfer-Encoding: chunked
-Connection: keep-alive
+            using (var connection = new TestConnection())
+            {
+                await connection.SendEnd(
+                    "POST / HTTP/1.0",
+                    "Transfer-Encoding: chunked",
+                    "Connection: keep-alive",
+                    "",
+                    "5", "Hello", "6", " World", "0",
+                    "POST / HTTP/1.0",
+                    "",
+                    "Goodbye");
+                await connection.Receive(
+                    "HTTP/1.0 200 OK",
+                    "Content-Length: 11",
+                    "Connection: keep-alive",
+                    "",
+                    "Hello World");
+                await connection.ReceiveEnd(
+                    "HTTP/1.0 200 OK",
+                    "Content-Length: 7",
+                    "",
+                    "Goodbye");
+            }
 
-5
-Hello
-6
- World
-0
-POST / HTTP/1.0
-
-Goodbye",
-@"HTTP/1.0 200 OK
-Transfer-Encoding: chunked
-Connection: keep-alive
-
-b
-Hello World
-0
-HTTP/1.0 200 OK
-Transfer-Encoding: chunked
-
-7
-Goodbye
-0
-");
             started.Dispose();
             engine.Stop();
         }
 
+        [Fact(Skip = "This is still not working")]
+        public async Task Expect100ContinueForBody()
+        {
+            var engine = new KestrelEngine();
+            engine.Start(1);
+            var started = engine.CreateServer(AppChunked);
+
+            using (var connection = new TestConnection())
+            {
+                await connection.Send("POST / HTTP/1.1", "Expect: 100-continue", "Content-Length: 11", "\r\n");
+                await connection.Receive("HTTP/1.1 100 Continue", "\r\n");
+                await connection.SendEnd("Hello World");
+                await connection.ReceiveEnd("HTTP/1.1 200 OK", "Content-Length: 11", "", "Hello World");
+            }
+
+            started.Dispose();
+            engine.Stop();
+        }
 
         private void Transceive(string send, string expected)
         {
@@ -261,11 +281,25 @@ Goodbye
             socket.Connect(new IPEndPoint(IPAddress.Loopback, 4001));
 
             var stream = new NetworkStream(socket, false);
-            var writer = new StreamWriter(stream, Encoding.ASCII);
-            writer.Write(send);
-            writer.Flush();
-            stream.Flush();
-            socket.Shutdown(SocketShutdown.Send);
+            Task.Run(async () =>
+            {
+                try
+                {
+                    var writer = new StreamWriter(stream, Encoding.ASCII);
+                    foreach (var ch in send)
+                    {
+                        await writer.WriteAsync(ch);
+                        await writer.FlushAsync();
+                        await Task.Delay(TimeSpan.FromMilliseconds(5));
+                    }
+                    writer.Flush();
+                    stream.Flush();
+                    socket.Shutdown(SocketShutdown.Send);
+                }
+                catch (Exception ex)
+                {
+                }
+            });
 
             var reader = new StreamReader(stream, Encoding.ASCII);
             var actual = reader.ReadToEnd();

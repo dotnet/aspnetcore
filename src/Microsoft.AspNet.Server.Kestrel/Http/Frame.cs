@@ -20,10 +20,29 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         ConnectionKeepAlive,
     }
 
-    public class Frame
+    public class FrameContext : ConnectionContext
     {
-        private ConnectionContext _context;
+        public FrameContext()
+        {
 
+        }
+
+        public FrameContext(ConnectionContext context) : base(context)
+        {
+
+        }
+
+        public IFrameControl FrameControl { get; set; }
+    }
+
+    public interface IFrameControl
+    {
+        void ProduceContinue();
+        void Write(ArraySegment<byte> data, Action<object> callback, object state);
+    }
+
+    public class Frame : FrameContext, IFrameControl
+    {
         Mode _mode;
 
         enum Mode
@@ -64,10 +83,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         Task _upgradeTask = _completedTask;
         static readonly Task _completedTask = Task.FromResult(0);
 
-        public Frame(ConnectionContext context)
+        public Frame(ConnectionContext context) : base(context)
         {
-            _context = context;
+            FrameControl = this;
         }
+
         /*
         public bool LocalIntakeFin
         {
@@ -81,7 +101,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         */
         public void Consume()
         {
-            var input = _context.SocketInput;
+            var input = SocketInput;
             for (; ;)
             {
                 switch (_mode)
@@ -146,46 +166,15 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
         }
 
-        Action<Frame, Exception> HandleExpectContinue(Action<Frame, Exception> continuation)
-        {
-            string[] expect;
-            if (_httpVersion.Equals("HTTP/1.1") &&
-                _requestHeaders.TryGetValue("Expect", out expect) &&
-                    (expect.FirstOrDefault() ?? "").Equals("100-continue", StringComparison.OrdinalIgnoreCase))
-            {
-                return (frame, error) =>
-                {
-                    if (_resultStarted)
-                    {
-                        continuation.Invoke(frame, error);
-                    }
-                    else
-                    {
-                        var bytes = Encoding.Default.GetBytes("HTTP/1.1 100 Continue\r\n\r\n");
-
-                        //var isasync = _context.SocketOutput.Write(
-                        //    new ArraySegment<byte>(bytes),
-                        //    error2 => continuation(frame, error2));
-
-                        //if (!isasync)
-                        //{
-                        //    continuation.Invoke(frame, null);
-                        //}
-                    }
-                };
-            }
-            return continuation;
-        }
-
         private void Execute()
         {
             _messageBody = MessageBody.For(
                 _httpVersion,
                 _requestHeaders,
-                _context);
+                this);
             _keepAlive = _messageBody.RequestKeepAlive;
             _callContext = CreateCallContext();
-            _context.SocketInput.Free();
+            SocketInput.Free();
             Task.Run(ExecuteAsync);
         }
 
@@ -194,7 +183,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             Exception error = null;
             try
             {
-                await _context.Application.Invoke(_callContext);
+                await Application.Invoke(_callContext);
                 await _upgradeTask;
             }
             catch (Exception ex)
@@ -210,7 +199,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private CallContext CreateCallContext()
         {
             _inputStream = new FrameRequestStream(_messageBody);
-            _outputStream = new FrameResponseStream(OnWrite);
+            _outputStream = new FrameResponseStream(this);
             _duplexStream = new FrameDuplexStream(_inputStream, _outputStream);
 
             var remoteIpAddress = "127.0.0.1";
@@ -279,13 +268,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return callContext;
         }
 
-        void OnWrite(ArraySegment<byte> data, Action<object> callback, object state)
+        public void Write(ArraySegment<byte> data, Action<object> callback, object state)
         {
             ProduceStart();
-            _context.SocketOutput.Write(data, callback, state);
+            SocketOutput.Write(data, callback, state);
         }
 
-        void Upgrade(IDictionary<string, object> options, Func<object, Task> callback)
+        public void Upgrade(IDictionary<string, object> options, Func<object, Task> callback)
         {
             _keepAlive = false;
             ProduceStart();
@@ -293,7 +282,22 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             _upgradeTask = callback(_callContext);
         }
 
-        void ProduceStart()
+        byte[] _continueBytes = Encoding.ASCII.GetBytes("HTTP/1.1 100 Continue\r\n\r\n");
+
+        public void ProduceContinue()
+        {
+            if (_resultStarted) return;
+
+            string[] expect;
+            if (_httpVersion.Equals("HTTP/1.1") &&
+                _requestHeaders.TryGetValue("Expect", out expect) &&
+                (expect.FirstOrDefault() ?? "").Equals("100-continue", StringComparison.OrdinalIgnoreCase))
+            {
+                SocketOutput.Write(new ArraySegment<byte>(_continueBytes, 0, _continueBytes.Length), _ => { }, null);
+            }
+        }
+
+        public void ProduceStart()
         {
             if (_resultStarted) return;
 
@@ -305,27 +309,27 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 response.ReasonPhrase);
 
             var responseHeader = CreateResponseHeader(status, _responseHeaders);
-            _context.SocketOutput.Write(responseHeader.Item1, x => ((IDisposable)x).Dispose(), responseHeader.Item2);
+            SocketOutput.Write(responseHeader.Item1, x => ((IDisposable)x).Dispose(), responseHeader.Item2);
         }
 
-        private void ProduceEnd(Exception ex)
+        public void ProduceEnd(Exception ex)
         {
             ProduceStart();
 
             if (!_keepAlive)
             {
-                _context.ConnectionControl.End(ProduceEndType.SocketShutdownSend);
+                ConnectionControl.End(ProduceEndType.SocketShutdownSend);
             }
 
             _messageBody.Drain(() =>
-                _context.ConnectionControl.End(_keepAlive ? ProduceEndType.ConnectionKeepAlive : ProduceEndType.SocketDisconnect));
+                ConnectionControl.End(_keepAlive ? ProduceEndType.ConnectionKeepAlive : ProduceEndType.SocketDisconnect));
         }
 
 
         private Tuple<ArraySegment<byte>, IDisposable> CreateResponseHeader(
             string status, IEnumerable<KeyValuePair<string, string[]>> headers)
         {
-            var writer = new MemoryPoolTextWriter(_context.Memory);
+            var writer = new MemoryPoolTextWriter(Memory);
             writer.Write(_httpVersion);
             writer.Write(' ');
             writer.Write(status);

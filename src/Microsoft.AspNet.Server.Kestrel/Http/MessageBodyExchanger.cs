@@ -15,14 +15,15 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     public class MessageBodyExchanger
     {
         private static readonly WaitCallback _completePending = CompletePending;
-        protected readonly ConnectionContext _context;
+        protected readonly FrameContext _context;
 
         object _sync = new Object();
 
         ArraySegment<byte> _buffer;
         Queue<ReadOperation> _reads = new Queue<ReadOperation>();
+        bool _send100Continue = true;
 
-        public MessageBodyExchanger(ConnectionContext context)
+        public MessageBodyExchanger(FrameContext context)
         {
             _context = context;
             _buffer = new ArraySegment<byte>(_context.Memory.Empty);
@@ -32,9 +33,18 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public void Transfer(int count, bool fin)
         {
+            if (count == 0 && !fin)
+            {
+                return;
+            }
             var input = _context.SocketInput;
             lock (_sync)
             {
+                if (_send100Continue)
+                {
+                    _send100Continue = false;
+                }
+
                 // NOTE: this should not copy each time
                 var oldBuffer = _buffer;
                 var newData = _context.SocketInput.Take(count);
@@ -63,7 +73,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public Task<int> ReadAsync(ArraySegment<byte> buffer)
         {
-            for (; ;)
+            Task<int> result = null;
+            var send100Continue = false;
+            while (result == null)
             {
                 while (CompletePending())
                 {
@@ -83,7 +95,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         var count = Math.Min(buffer.Count, _buffer.Count);
                         Array.Copy(_buffer.Array, _buffer.Offset, buffer.Array, buffer.Offset, count);
                         _buffer = new ArraySegment<byte>(_buffer.Array, _buffer.Offset + count, _buffer.Count - count);
-                        return Task.FromResult(count);
+                        result = Task.FromResult(count);
                     }
                     else
                     {
@@ -94,10 +106,17 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             Buffer = buffer,
                             CompletionSource = tcs,
                         });
-                        return tcs.Task;
+                        result = tcs.Task;
+                        send100Continue = _send100Continue;
+                        _send100Continue = false;
                     }
                 }
             }
+            if (send100Continue)
+            {
+                _context.FrameControl.ProduceContinue();
+            }
+            return result;
         }
 
         static void CompletePending(object state)

@@ -10,11 +10,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 {
     class FrameResponseStream : Stream
     {
-        readonly Action<ArraySegment<byte>, Action<object>, object> _write;
+        private readonly FrameContext _context;
 
-        public FrameResponseStream(Action<ArraySegment<byte>, Action<object>, object> write)
+        public FrameResponseStream(FrameContext context)
         {
-            _write = write;
+            _context = context;
         }
 
         public override void Flush()
@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
             var tcs = new TaskCompletionSource<int>();
-            _write(new ArraySegment<byte>(new byte[0]), x => ((TaskCompletionSource<int>)x).SetResult(0), tcs);
+            _context.FrameControl.Write(new ArraySegment<byte>(new byte[0]), x => ((TaskCompletionSource<int>)x).SetResult(0), tcs);
             return tcs.Task;
         }
 
@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             var tcs = new TaskCompletionSource<int>();
-            _write(new ArraySegment<byte>(buffer, offset, count), x => ((TaskCompletionSource<int>)x).SetResult(0), tcs);
+            _context.FrameControl.Write(new ArraySegment<byte>(buffer, offset, count), x => ((TaskCompletionSource<int>)x).SetResult(0), tcs);
             return tcs.Task;
         }
 

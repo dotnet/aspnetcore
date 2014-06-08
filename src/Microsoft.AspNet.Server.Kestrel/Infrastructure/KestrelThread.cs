@@ -4,6 +4,7 @@
 using Microsoft.AspNet.Server.Kestrel.Networking;
 using System;
 using System.Collections.Generic;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,6 +23,7 @@ namespace Microsoft.AspNet.Server.Kestrel
         Queue<Work> _workRunning = new Queue<Work>();
         object _workSync = new Object();
         bool _stopImmediate = false;
+        private ExceptionDispatchInfo _closeError;
 
         public KestrelThread(KestrelEngine engine)
         {
@@ -50,6 +52,10 @@ namespace Microsoft.AspNet.Server.Kestrel
                 {
                     _thread.Abort();
                 }
+            }
+            if (_closeError != null)
+            {
+                _closeError.Throw();
             }
         }
 
@@ -86,20 +92,27 @@ namespace Microsoft.AspNet.Server.Kestrel
             {
                 tcs.SetException(ex);
             }
-            var ran1 = _loop.Run();
-            if (_stopImmediate)
+            try
             {
-                // thread-abort form of exit, resources will be leaked
-                return;
+                var ran1 = _loop.Run();
+                if (_stopImmediate)
+                {
+                    // thread-abort form of exit, resources will be leaked
+                    return;
+                }
+
+                // run the loop one more time to delete the _post handle
+                _post.Reference();
+                _post.DangerousClose();
+                var ran2 = _loop.Run();
+
+                // delete the last of the unmanaged memory
+                _loop.Close();
             }
-
-            // run the loop one more time to delete the _post handle
-            _post.Reference();
-            _post.Close();
-            var ran2 = _loop.Run();
-
-            // delete the last of the unmanaged memory
-            _loop.Close();
+            catch (Exception ex)
+            {
+                _closeError = ExceptionDispatchInfo.Capture(ex);
+            }
         }
 
         private void OnPost()

@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public bool RequestKeepAlive { get; protected set; }
 
-        protected MessageBody(ConnectionContext context) : base(context)
+        protected MessageBody(FrameContext context) : base(context)
         {
         }
 
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public static MessageBody For(
             string httpVersion,
             IDictionary<string, string[]> headers,
-            ConnectionContext context)
+            FrameContext context)
         {
             // see also http://tools.ietf.org/html/rfc2616#section-4.4
 
@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         class ForRemainingData : MessageBody
         {
-            public ForRemainingData(ConnectionContext context)
+            public ForRemainingData(FrameContext context)
                 : base(context)
             {
             }
@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             private readonly int _contentLength;
             private int _neededLength;
 
-            public ForContentLength(bool keepAlive, int contentLength, ConnectionContext context)
+            public ForContentLength(bool keepAlive, int contentLength, FrameContext context)
                 : base(context)
             {
                 RequestKeepAlive = keepAlive;
@@ -168,7 +168,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             };
 
 
-            public ForChunkedEncoding(bool keepAlive, ConnectionContext context)
+            public ForChunkedEncoding(bool keepAlive, FrameContext context)
                 : base(context)
             {
                 RequestKeepAlive = keepAlive;

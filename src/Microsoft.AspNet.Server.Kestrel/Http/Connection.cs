@@ -17,6 +17,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
         }
 
+        public ConnectionContext(ConnectionContext context) : base(context)
+        {
+            SocketInput = context.SocketInput;
+            SocketOutput = context.SocketOutput;
+            ConnectionControl = context.ConnectionControl;
+        }
+
         public SocketInput SocketInput { get; set; }
         public ISocketOutput SocketOutput { get; set; }
 

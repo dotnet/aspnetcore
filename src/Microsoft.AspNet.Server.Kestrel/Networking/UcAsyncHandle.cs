@@ -23,6 +23,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             _uv.async_init(loop, this, _uv_async_cb);
         }
 
+        public void DangerousClose()
+        {
+            Close();
+            ReleaseHandle();
+        }
+
         private void UvAsyncCb(IntPtr handle)
         {
             _callback.Invoke();
