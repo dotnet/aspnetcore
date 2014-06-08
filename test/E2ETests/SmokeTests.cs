@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -33,10 +34,11 @@ namespace E2ETests
             Environment.SetEnvironmentVariable("SQLAZURECONNSTR_IdentityConnection", string.Format(Connection_string_Format, musicStoreIdentityDbName));
 
             ApplicationBaseUrl = applicationBaseUrl;
-            var hostProcess = DeploymentUtility.StartApplication(hostType, kreFlavor, musicStoreIdentityDbName);
+            Process hostProcess = null;
 
             try
             {
+                hostProcess = DeploymentUtility.StartApplication(hostType, kreFlavor, musicStoreIdentityDbName);
                 httpClientHandler = new HttpClientHandler();
                 httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(applicationBaseUrl) };
 
@@ -104,8 +106,11 @@ namespace E2ETests
             }
             finally
             {
-                //Shutdown the host process
-                hostProcess.Kill();
+                if (hostProcess != null)
+                {
+                    //Shutdown the host process
+                    hostProcess.Kill();
+                }
 
                 DbUtils.DropDatabase(musicStoreDbName);
                 DbUtils.DropDatabase(musicStoreIdentityDbName);
