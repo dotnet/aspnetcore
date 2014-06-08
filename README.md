@@ -30,8 +30,8 @@ The first thing we need to do is setup the tools required to build and run an ap
 
 * Clone the repository
 * On the command line execute
- * ```kvmsetup.cmd``` on Windows or
- * ```sh kvmsetup.sh && source ~/.kre/kvm/kvm.sh``` on OSX/Linux
+ * ```kvm.cmd setup``` on Windows or
+ * ```sh kvminstall.sh && source ~/.kre/kvm/kvm.sh``` on OSX/Linux
 * This command will setup your environment, getting it ready to install a version of the runtime. It adds kvm to your path and puts it in your user profile.
 * Execute ```kvm install 0.1-alpha-build-0446```. This command will download the named version of the KRE and put it on your user profile ready to use. You can get the latest version by running ```kvm upgrade``` but 0446 was the last version explicitly tested. see the [KVM page](https://github.com/aspnet/Home/wiki/version-manager) for more information on KVM.
 * Navigate to samples\ConsoleApp
