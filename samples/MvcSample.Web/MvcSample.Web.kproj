@@ -23,6 +23,7 @@
     <DevelopmentServerPort>42750</DevelopmentServerPort>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="App_Data\Config.json" />
     <Content Include="Areas\Travel\Views\Flight\Fly.cshtml" />
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="project.json" />

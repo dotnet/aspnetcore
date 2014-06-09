@@ -14,13 +14,17 @@
     "Microsoft.AspNet.Server.WebListener": "0.1-alpha-*",
     "Microsoft.DataAnnotations": "0.1-alpha-*",
     "Microsoft.Framework.ConfigurationModel": "0.1-alpha-*",
-    "Microsoft.Framework.DependencyInjection": "0.1-alpha-*"
+    "Microsoft.Framework.DependencyInjection": "0.1-alpha-*",
+    "Microsoft.Framework.OptionsModel": "0.1-alpha-*"
   },
   "commands": { "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001" },
   "configurations": {
     "net45": {
       "dependencies": {
-        "System.ComponentModel.DataAnnotations": ""
+        "System.ComponentModel.DataAnnotations": "",
+        "Microsoft.Framework.DependencyInjection.Autofac": "0.1-alpha-*",
+        "Microsoft.Framework.ConfigurationModel.Json": "0.1-alpha-*",
+        "Autofac": "3.3.0"
       }
     },
     "k10": {
