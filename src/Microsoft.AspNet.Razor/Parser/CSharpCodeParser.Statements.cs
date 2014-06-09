@@ -507,13 +507,7 @@ namespace Microsoft.AspNet.Razor.Parser
             else
             {
                 // Throw errors as necessary, but continue parsing
-                if (At(CSharpSymbolType.Keyword))
-                {
-                    Context.OnError(CurrentLocation,
-                                    RazorResources.FormatParseError_Unexpected_Keyword_After_At(
-                                        CSharpLanguageCharacteristics.GetKeyword(CurrentSymbol.Keyword.Value)));
-                }
-                else if (At(CSharpSymbolType.LeftBrace))
+                if (At(CSharpSymbolType.LeftBrace))
                 {
                     Context.OnError(CurrentLocation, RazorResources.ParseError_Unexpected_Nested_CodeBlock);
                 }

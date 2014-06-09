@@ -695,22 +695,6 @@ namespace Microsoft.AspNet.Razor
         }
 
         /// <summary>
-        /// Unexpected "{0}" keyword after "@" character.  Once inside code, you do not need to prefix constructs like "{0}" with "@".
-        /// </summary>
-        internal static string ParseError_Unexpected_Keyword_After_At
-        {
-            get { return GetString("ParseError_Unexpected_Keyword_After_At"); }
-        }
-
-        /// <summary>
-        /// Unexpected "{0}" keyword after "@" character.  Once inside code, you do not need to prefix constructs like "{0}" with "@".
-        /// </summary>
-        internal static string FormatParseError_Unexpected_Keyword_After_At(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ParseError_Unexpected_Keyword_After_At"), p0);
-        }
-
-        /// <summary>
         /// "{0}" is a reserved word and cannot be used in implicit expressions.  An explicit expression ("@()") must be used.
         /// </summary>
         internal static string ParseError_ReservedWord

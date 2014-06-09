@@ -264,9 +264,6 @@ Instead, wrap the contents of the block in "{{}}":
   <data name="Parser_Context_Not_Set" xml:space="preserve">
     <value>Parser was started with a null Context property.  The Context property must be set BEFORE calling any methods on the parser.</value>
   </data>
-  <data name="ParseError_Unexpected_Keyword_After_At" xml:space="preserve">
-    <value>Unexpected "{0}" keyword after "@" character.  Once inside code, you do not need to prefix constructs like "{0}" with "@".</value>
-  </data>
   <data name="ParseError_ReservedWord" xml:space="preserve">
     <value>"{0}" is a reserved word and cannot be used in implicit expressions.  An explicit expression ("@()") must be used.</value>
   </data>

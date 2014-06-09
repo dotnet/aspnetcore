@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         }
 
         [Fact]
-        public void NestedCodeBlockWithAtCausesError()
+        public void NestedCodeBlockWithAtDoesntCauseError()
         {
             ParseBlockTest("if (true) { @if(false) { } }",
                            new StatementBlock(
@@ -44,10 +44,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    Factory.CodeTransition(),
                                    Factory.Code("if(false) { }").AsStatement()
                                    ),
-                               Factory.Code(" }").AsStatement()),
-                           new RazorError(
-                               RazorResources.FormatParseError_Unexpected_Keyword_After_At("if"),
-                               new SourceLocation(13, 0, 13)));
+                               Factory.Code(" }").AsStatement()));
         }
 
         [Fact]
