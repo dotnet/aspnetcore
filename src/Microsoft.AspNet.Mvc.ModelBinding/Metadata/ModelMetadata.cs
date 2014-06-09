@@ -185,17 +185,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return PropertyName ?? ModelType.Name;
         }
 
-        // TODO: Revive ModelValidators
-        //public virtual IEnumerable<ModelValidator> GetValidators(IEnumerable<ModelValidatorProvider> validatorProviders)
-        //{
-        //    if (validatorProviders == null)
-        //    {
-        //        throw Error.ArgumentNull("validatorProviders");
-        //    }
-
-        //    return validatorProviders.SelectMany(provider => provider.GetValidators(this, validatorProviders));
-        //}
-
         protected virtual string ComputeSimpleDisplayText()
         {
             if (Model == null)
@@ -228,10 +217,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return Convert.ToString(firstProperty.Model, CultureInfo.CurrentCulture);
         }
 
-        private static EfficientTypePropertyKey<Type, string> CreateCacheKey(Type containerType, Type modelType, string propertyName)
+        private static EfficientTypePropertyKey<Type, string> CreateCacheKey(Type containerType,
+                                                                             Type modelType,
+                                                                             string propertyName)
         {
             // If metadata is for a property then containerType != null && propertyName != null
-            // If metadata is for a type then containerType == null && propertyName == null, so we have to use modelType for the cache key.
+            // If metadata is for a type then containerType == null && propertyName == null, 
+            // so we have to use modelType for the cache key.
             return new EfficientTypePropertyKey<Type, string>(containerType ?? modelType, propertyName);
         }
     }

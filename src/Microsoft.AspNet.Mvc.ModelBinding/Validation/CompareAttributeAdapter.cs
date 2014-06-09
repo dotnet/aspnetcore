@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             var errorMessage = ((CompareAttributeWrapper)Attribute).FormatErrorMessage(context);
             var clientRule = new ModelClientValidationEqualToRule(errorMessage,
-                                                                  FormatPropertyForClientValidation(Attribute.OtherProperty));
+                                                            FormatPropertyForClientValidation(Attribute.OtherProperty));
             return new[] { clientRule };
         }
 
@@ -58,9 +58,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             private string GetOtherPropertyDisplayName(ClientModelValidationContext context)
             {
-                // The System.ComponentModel.DataAnnotations.CompareAttribute doesn't populate the OtherPropertyDisplayName
-                // until after IsValid() is called. Therefore, by the time we get the error message for client validation, 
-                // the display name is not populated and won't be used.
+                // The System.ComponentModel.DataAnnotations.CompareAttribute doesn't populate the
+                // OtherPropertyDisplayName until after IsValid() is called. Therefore, by the time we get
+                // the error message for client validation, the display name is not populated and won't be used.
                 var metadata = context.ModelMetadata;
                 var otherPropertyDisplayName = OtherPropertyDisplayName;
                 if (otherPropertyDisplayName == null && metadata.ContainerType != null)

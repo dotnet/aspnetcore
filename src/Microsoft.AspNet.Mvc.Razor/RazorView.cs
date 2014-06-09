@@ -159,7 +159,6 @@ namespace Microsoft.AspNet.Mvc.Razor
                 if (helperResult != null)
                 {
                     helperResult.WriteTo(writer);
-
                 }
                 else
                 {
@@ -203,8 +202,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                                              PositionTagged<string> suffix,
                                              params AttributeValue[] values)
         {
-            bool first = true;
-            bool wroteSomething = false;
+            var first = true;
+            var wroteSomething = false;
             if (values.Length == 0)
             {
                 // Explicitly empty attribute, so write the prefix and suffix
@@ -213,11 +212,11 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
             else
             {
-                for (int i = 0; i < values.Length; i++)
+                for (var i = 0; i < values.Length; i++)
                 {
-                    AttributeValue attrVal = values[i];
-                    PositionTagged<object> val = attrVal.Value;
-                    PositionTagged<string> next = i == values.Length - 1 ?
+                    var attrVal = values[i];
+                    var val = attrVal.Value;
+                    var next = i == values.Length - 1 ?
                         suffix : // End of the list, grab the suffix
                         values[i + 1].Prefix; // Still in the list, grab the next prefix
 
@@ -228,12 +227,11 @@ namespace Microsoft.AspNet.Mvc.Razor
                     }
 
                     // The special cases here are that the value we're writing might already be a string, or that the 
-                    // value might be a bool. If the value is the bool 'true' we want to write the attribute name instead
-                    // of the string 'true'. If the value is the bool 'false' we don't want to write anything.
-                    //
-                    // Otherwise the value is another object (perhaps an HtmlString), and we'll ask it to format itself.
+                    // value might be a bool. If the value is the bool 'true' we want to write the attribute name
+                    // instead of the string 'true'. If the value is the bool 'false' we don't want to write anything.
+                    // Otherwise the value is another object (perhaps an HtmlString) and we'll ask it to format itself.
                     string stringValue;
-                    bool? boolValue = val.Value as bool?;
+                    var boolValue = val.Value as bool?;
                     if (boolValue == true)
                     {
                         stringValue = name;
@@ -258,7 +256,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     }
 
                     // Calculate length of the source span by the position of the next value (or suffix)
-                    int sourceLength = next.Position - attrVal.Value.Position;
+                    var sourceLength = next.Position - attrVal.Value.Position;
 
                     if (attrVal.Literal)
                     {
@@ -360,7 +358,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             if (BodyContent != null)
             {
-                var sectionsNotRendered = PreviousSectionWriters.Keys.Except(_renderedSections, StringComparer.OrdinalIgnoreCase);
+                var sectionsNotRendered = PreviousSectionWriters.Keys.Except(_renderedSections,
+                                                                             StringComparer.OrdinalIgnoreCase);
                 if (sectionsNotRendered.Any())
                 {
                     var sectionNames = String.Join(", ", sectionsNotRendered);

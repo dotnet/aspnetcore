@@ -19,12 +19,12 @@ namespace Microsoft.AspNet.Mvc.Razor
         public CompilationResult GetOrAdd(IFileInfo file, Func<CompilationResult> compile)
         {
             // Generate a content id
-            string contentId = file.PhysicalPath + '|' + file.LastModified.Ticks;
+            var contentId = file.PhysicalPath + '|' + file.LastModified.Ticks;
 
             Type compiledType;
             if (!_cache.TryGetValue(contentId, out compiledType))
             {
-                CompilationResult result = compile();
+                var result = compile();
                 _cache.TryAdd(contentId, result.CompiledType);
 
                 return result;

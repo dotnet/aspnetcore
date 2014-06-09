@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading.Tasks;
 using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.Framework.DependencyInjection;
@@ -34,7 +33,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             IFileInfo fileInfo;
             if (_fileSystem.TryGetFileInfo(virtualPath, out fileInfo))
             {
-                CompilationResult result = _compilationService.Compile(fileInfo);
+                var result = _compilationService.Compile(fileInfo);
                 return (IView)_activator.CreateInstance(_serviceProvider, result.CompiledType);
             }
 

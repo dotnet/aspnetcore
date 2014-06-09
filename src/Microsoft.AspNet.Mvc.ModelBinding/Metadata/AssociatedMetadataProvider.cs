@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 Func<object> modelAccessor = null;
                 if (container != null)
                 {
-                    Func<object, object> propertyGetter = propertyInfo.ValueAccessor;
+                    var propertyGetter = propertyInfo.ValueAccessor;
                     modelAccessor = () => propertyGetter(container);
                 }
                 yield return CreatePropertyMetadata(modelAccessor, propertyInfo);

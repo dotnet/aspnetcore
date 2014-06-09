@@ -48,7 +48,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             set { _addImplicitRequiredAttributeForValueTypes = value; }
         }
 
-        protected override IEnumerable<IModelValidator> GetValidators(ModelMetadata metadata, IEnumerable<Attribute> attributes)
+        protected override IEnumerable<IModelValidator> GetValidators(ModelMetadata metadata,
+                                                                      IEnumerable<Attribute> attributes)
         {
             var results = new List<IModelValidator>();
 
@@ -104,9 +105,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return dict;
         }
 
-        private static void AddValidationAttributeAdapter(Dictionary<Type, DataAnnotationsModelValidationFactory> dictionary,
-                                                          Type validationAttributeType,
-                                                          DataAnnotationsModelValidationFactory factory)
+        private static void AddValidationAttributeAdapter(
+            Dictionary<Type, DataAnnotationsModelValidationFactory> dictionary,
+            Type validationAttributeType,
+            DataAnnotationsModelValidationFactory factory)
         {
             if (validationAttributeType != null)
             {
@@ -114,9 +116,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
-        private static void AddDataTypeAttributeAdapter(Dictionary<Type, DataAnnotationsModelValidationFactory> dictionary,
-                                                        Type attributeType,
-                                                        string ruleName)
+        private static void AddDataTypeAttributeAdapter(
+            Dictionary<Type, DataAnnotationsModelValidationFactory> dictionary,
+            Type attributeType,
+            string ruleName)
         {
             AddValidationAttributeAdapter(
                 dictionary,

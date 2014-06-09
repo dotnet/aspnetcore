@@ -108,7 +108,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 if (valueAsArray != null)
                 {
                     // case 1: both destination + source type are arrays, so convert each element
-                    IList converted = Array.CreateInstance(destinationElementType, valueAsArray.Length);
+                    var converted = (IList)Array.CreateInstance(destinationElementType, valueAsArray.Length);
                     for (var i = 0; i < valueAsArray.Length; i++)
                     {
                         converted[i] = ConvertSimpleType(culture, valueAsArray.GetValue(i), destinationElementType);
@@ -117,9 +117,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 }
                 else
                 {
-                    // case 2: destination type is array but source is single element, so wrap element in array + convert
+                    // case 2: destination type is array but source is single element, so wrap element in
+                    // array + convert
                     var element = ConvertSimpleType(culture, value, destinationElementType);
-                    IList converted = Array.CreateInstance(destinationElementType, 1);
+                    var converted = (IList)Array.CreateInstance(destinationElementType, 1);
                     converted[0] = element;
                     return converted;
                 }

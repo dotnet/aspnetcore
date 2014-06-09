@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
                 }
                 else
                 {
-                    char charAfterPrefix = key[prefix.Length];
+                    var charAfterPrefix = key[prefix.Length];
                     switch (charAfterPrefix)
                     {
                         case '[':

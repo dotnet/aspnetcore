@@ -25,8 +25,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private IEnumerable<IModelValidator> GetValidatorsForProperty(ModelMetadata metadata)
         {
             var propertyName = metadata.PropertyName;
+            var bindingFlags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase;
             var property = metadata.ContainerType
-                                   .GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+                                   .GetProperty(propertyName, bindingFlags);
                 
             if (property == null)
             {

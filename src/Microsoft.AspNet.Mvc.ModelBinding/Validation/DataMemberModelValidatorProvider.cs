@@ -10,7 +10,8 @@ using System.Runtime.Serialization;
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     /// <summary>
-    /// This <see cref="ModelValidatorProvider"/> provides a required ModelValidator for members marked as [DataMember(IsRequired=true)].
+    /// This <see cref="ModelValidatorProvider"/> provides a required ModelValidator for members marked
+    /// as [DataMember(IsRequired=true)].
     /// </summary>
     public class DataMemberModelValidatorProvider : AssociatedValidatorProvider
     {
@@ -38,10 +39,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             if (dataMemberAttribute != null)
             {
                 // isDataContract == true iff the container type has at least one DataContractAttribute
-                bool isDataContract = containerType.GetTypeInfo()
-                                                   .GetCustomAttributes()
-                                                   .OfType<DataContractAttribute>()
-                                                   .Any();
+                var isDataContract = containerType.GetTypeInfo()
+                                                  .GetCustomAttributes()
+                                                  .OfType<DataContractAttribute>()
+                                                  .Any();
                 if (isDataContract && dataMemberAttribute.IsRequired)
                 {
                     return true;

@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                                                       IEnumerable<KeyValuePair<TKey, TValue>> incomingElements,
                                                       Func<IDictionary<TKey, TValue>> creator)
         {
-            IDictionary<TKey, TValue> dictionary = bindingContext.Model as IDictionary<TKey, TValue>;
+            var dictionary = bindingContext.Model as IDictionary<TKey, TValue>;
             if (dictionary == null || dictionary.IsReadOnly)
             {
                 dictionary = creator();

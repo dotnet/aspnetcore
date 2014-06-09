@@ -89,7 +89,6 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private static bool IsSpecificPath(string name)
         {
-            char c = name[0];
             return name[0] == '~' || name[0] == '/';
         }
 
@@ -109,8 +108,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
 
             var formattedPaths = unformattedPaths.Select(path =>
-                string.Format(CultureInfo.InvariantCulture, path, viewName, controllerName, areaName)
-            );
+                string.Format(CultureInfo.InvariantCulture, path, viewName, controllerName, areaName));
 
             return formattedPaths;
         }

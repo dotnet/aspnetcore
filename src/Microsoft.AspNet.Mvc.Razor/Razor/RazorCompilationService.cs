@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             _appRoot = EnsureTrailingSlash(environment.ApplicationBasePath);
         }
 
-        public CompilationResult Compile([NotNull]IFileInfo file)
+        public CompilationResult Compile([NotNull] IFileInfo file)
         {
             return _cache.GetOrAdd(file, () => CompileCore(file));
         }
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public CompilationResult CompileCore(IFileInfo file)
         {
             GeneratorResults results;
-            using (Stream inputStream = file.CreateReadStream())
+            using (var inputStream = file.CreateReadStream())
             {
                 Contract.Assert(file.PhysicalPath.StartsWith(_appRoot, StringComparison.OrdinalIgnoreCase));
                 var rootRelativePath = file.PhysicalPath.Substring(_appRoot.Length);

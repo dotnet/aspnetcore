@@ -50,7 +50,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
-        private static ModelValidationResult CreateSubPropertyResult(ModelMetadata propertyMetadata, ModelValidationResult propertyResult)
+        private static ModelValidationResult CreateSubPropertyResult(ModelMetadata propertyMetadata,
+                                                                     ModelValidationResult propertyResult)
         {
             return new ModelValidationResult(propertyMetadata.PropertyName + '.' + propertyResult.MemberName,
                                              propertyResult.Message);

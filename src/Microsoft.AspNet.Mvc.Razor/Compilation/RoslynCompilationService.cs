@@ -2,23 +2,23 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
     public class RoslynCompilationService : ICompilationService
     {
-        private static readonly ConcurrentDictionary<string, MetadataReference> _metadataFileCache = new ConcurrentDictionary<string, MetadataReference>(StringComparer.OrdinalIgnoreCase);
-        
+        private static readonly ConcurrentDictionary<string, MetadataReference> _metadataFileCache =
+            new ConcurrentDictionary<string, MetadataReference>(StringComparer.OrdinalIgnoreCase);
+
         private readonly ILibraryManager _libraryManager;
         private readonly IApplicationEnvironment _environment;
         private readonly IAssemblyLoaderEngine _loader;
@@ -50,13 +50,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             {
                 using (var pdb = new MemoryStream())
                 {
-                    EmitResult result = null;
+                    EmitResult result;
 
                     if (PlatformHelper.IsMono)
                     {
                         result = compilation.Emit(ms, pdbStream: null);
                     }
-                    else 
+                    else
                     {
                         result = compilation.Emit(ms, pdbStream: pdb);
                     }
@@ -65,12 +65,15 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                     {
                         var formatter = new DiagnosticFormatter();
 
-                        var messages = result.Diagnostics.Where(IsError).Select(d => GetCompilationMessage(formatter, d)).ToList();
+                        var messages = result.Diagnostics
+                                             .Where(IsError)
+                                             .Select(d => GetCompilationMessage(formatter, d))
+                                             .ToList();
 
                         return CompilationResult.Failed(content, messages);
                     }
 
-                    Assembly assembly = null;
+                    Assembly assembly;
                     ms.Seek(0, SeekOrigin.Begin);
 
                     if (PlatformHelper.IsMono)
@@ -86,7 +89,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                     var type = assembly.GetExportedTypes()
                                        .First();
 
-                    return CompilationResult.Successful(String.Empty, type);
+                    return CompilationResult.Successful(string.Empty, type);
                 }
             }
         }
@@ -121,7 +124,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 
         private MetadataReference CreateMetadataFileReference(string path)
         {
-            return _metadataFileCache.GetOrAdd(path, _ => 
+            return _metadataFileCache.GetOrAdd(path, _ =>
             {
                 // TODO: What about access to the file system? We need to be able to 
                 // read files from anywhere on disk, not just under the web root
