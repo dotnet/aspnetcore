@@ -15,58 +15,44 @@ projectFile=''
     var serializer = new JavaScriptSerializer();
     var projectText = File.ReadAllText(projectFile);
     var project = (Dictionary<string, object>)serializer.DeserializeObject(projectText);
-
+    
     object commandsObject;
     var commands = project.TryGetValue("commands", out commandsObject)
         ? (Dictionary<string, object>)commandsObject
         : new Dictionary<string, object>();
-
+            
     if (commands.Keys.Contains("test"))
     {
         var projectFolder = Path.GetDirectoryName(projectFile);
-
+        
         object configsObject;
         var configs = project.TryGetValue("configurations", out configsObject)
             ? (Dictionary<string, object>)configsObject
-            : new Dictionary<string, object>
-                {
-                    { "net45", new Dictionary<string, object>() },
-                    { "k10", new Dictionary<string, object>() }
-                };
-
+            : new Dictionary<string, object>();
+        
         // Currently only net* and k* targets are supported. See aspnet/Universe#53
-        var targetFrameworks = configs.Keys.Where(k => k.StartsWith("net", StringComparison.OrdinalIgnoreCase)
-                                                    || k.StartsWith("k", StringComparison.OrdinalIgnoreCase));
-
+        var targetFrameworks = configs.Keys.Where(k => k.StartsWith("net", StringComparison.OrdinalIgnoreCase) /*
+                                                    || k.StartsWith("k", StringComparison.OrdinalIgnoreCase) */ );
+        
+        var originalTargetFramework = Environment.GetEnvironmentVariable("TARGET_FRAMEWORK");
         try
         {
             foreach (var framework in targetFrameworks)
             {
-                if (framework.StartsWith("net", StringComparison.OrdinalIgnoreCase))
-                {
-                    UseSvr50();
-                }
-                else
-                {
-                    UseSvrc50();
-                }
+                // Workaround for aspnet/KRuntime#129
+                var frameworkString = framework.StartsWith("net", StringComparison.OrdinalIgnoreCase)
+                    ? ""
+                    : framework;
 
+                Environment.SetEnvironmentVariable("TARGET_FRAMEWORK", frameworkString);
                 K("test", projectFolder);
             }
         } finally
         {
-            UseSvr50();
+            Environment.SetEnvironmentVariable("TARGET_FRAMEWORK", originalTargetFramework);
         }
     }
 }
 
 macro name='K' command='string' workingdir='string'
     k
-
-macro name='UseSvr50'
-    exec program='cmd' commandline='/C kvm use default -svr50 -x86' if='!IsMono'
-    exec program='kvm' commandline='use default -svr50 -x86' if='IsMono'
-
-macro name='UseSvrc50'
-    exec program='cmd' commandline='/C kvm use default -svrc50 -x86' if='!IsMono'
-    exec program='kvm' commandline='use default -svrc50 -x86' if='IsMono'
