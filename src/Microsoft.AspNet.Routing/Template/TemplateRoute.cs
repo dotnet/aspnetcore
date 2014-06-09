@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.Routing.Template
 
         public async virtual Task RouteAsync([NotNull] RouteContext context)
         {
-            var requestPath = context.RequestPath;
+            var requestPath = context.HttpContext.Request.Path.Value;
             if (!string.IsNullOrEmpty(requestPath) && requestPath[0] == '/')
             {
                 requestPath = requestPath.Substring(1);

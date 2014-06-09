@@ -33,11 +33,12 @@ namespace RoutingSample.Web
 
         public async Task RouteAsync(RouteContext context)
         {
-            if (context.RequestPath.StartsWith(_prefix, StringComparison.OrdinalIgnoreCase))
+            var requestPath = context.HttpContext.Request.Path.Value ?? string.Empty;
+            if (requestPath.StartsWith(_prefix, StringComparison.OrdinalIgnoreCase))
             {
-                if (context.RequestPath.Length > _prefix.Length)
+                if (requestPath.Length > _prefix.Length)
                 {
-                    var lastCharacter = context.RequestPath[_prefix.Length];
+                    var lastCharacter = requestPath[_prefix.Length];
                     if (lastCharacter != '/' && lastCharacter != '#' && lastCharacter != '?')
                     {
                         return;
