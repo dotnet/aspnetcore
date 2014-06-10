@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Routing.Tests
 
             var constraint = constraintDictionary["controller"];
 
-            Assert.IsType<RegexConstraint>(constraint);
+            Assert.IsType<RegexRouteConstraint>(constraint);
         }
 
         [Fact]

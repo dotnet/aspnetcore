@@ -45,11 +45,11 @@ namespace RoutingSample.Web
             routeBuilder.MapRoute("regexStringRoute",
                                   "api/rconstraint/{controller}",
                                   new { foo = "Bar" },
-                                  new { controller = new RegexConstraint("^(my.*)$") });
+                                  new { controller = new RegexRouteConstraint("^(my.*)$") });
             routeBuilder.MapRoute("regexRoute",
                                   "api/r2constraint/{controller}",
                                   new { foo = "Bar2" },
-                                  new { controller = new RegexConstraint(new Regex("^(my.*)$")) });
+                                  new { controller = new RegexRouteConstraint(new Regex("^(my.*)$")) });
 
             routeBuilder.MapRoute("parameterConstraintRoute",
                                   "api/{controller}/{*extra}",

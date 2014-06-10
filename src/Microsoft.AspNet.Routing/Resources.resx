@@ -117,6 +117,12 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ArgumentMustBeGreaterThanOrEqualTo" xml:space="preserve">
+    <value>Value must be greater than or equal to {0}.</value>
+  </data>
+  <data name="RangeConstraint_MinShouldBeLessThanOrEqualToMax" xml:space="preserve">
+    <value>The value for argument '{0}' should be less than or equal to the value for the argument '{1}'.</value>
+  </data>
   <data name="PropertyOfTypeCannotBeNull" xml:space="preserve">
     <value>The '{0}' property of '{1}' must not be null.</value>
   </data>

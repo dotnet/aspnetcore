@@ -176,6 +176,18 @@ namespace Microsoft.AspNet.Routing.Tests
             Assert.Equal(@"\w,\w", ((TestRouteConstraint)templatePart.InlineConstraint).Pattern);
         }
 
+        [Fact]
+        public void ParseRouteParameter_ConstraintWithEqualsFollowedByQuestionMark_PatternIsParsedCorrectly()
+        {
+            // Arrange & Act
+            var templatePart = ParseParameter(@"param:int=?");
+
+            // Assert
+            Assert.Equal("param", templatePart.Name);
+            var constraint = Assert.IsType<IntRouteConstraint>(templatePart.InlineConstraint);
+            Assert.Equal("", templatePart.DefaultValue);
+        }
+
         [Theory]
         [InlineData(",")]
         [InlineData("(")]
@@ -270,15 +282,15 @@ namespace Microsoft.AspNet.Routing.Tests
 
         private TemplatePart ParseParameter(string routeParameter)
         {
-            var constraintResolver = GetConstraintResolver();
-            var templatePart = InlineRouteParameterParser.ParseRouteParameter(routeParameter, constraintResolver);
+            var _constraintResolver = GetConstraintResolver();
+            var templatePart = InlineRouteParameterParser.ParseRouteParameter(routeParameter, _constraintResolver);
             return templatePart;
         }
 
         private static Template.Template ParseRouteTemplate(string template)
         {
-            var constraintResolver = GetConstraintResolver();
-            return TemplateParser.Parse(template, constraintResolver);
+            var _constraintResolver = GetConstraintResolver();
+            return TemplateParser.Parse(template, _constraintResolver);
         }
 
         private static IInlineConstraintResolver GetConstraintResolver()

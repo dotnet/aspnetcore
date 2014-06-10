@@ -423,7 +423,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
             // Assert
             Assert.Equal(2, constraints.Count);
-            Assert.IsType<RegexConstraint>(constraints["controller"]);
+            Assert.IsType<RegexRouteConstraint>(constraints["controller"]);
             Assert.Equal(mockConstraint, constraints["action"]);
         }
 
@@ -444,7 +444,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             Assert.Equal(1, constraints.Count);
             var constraint = (CompositeRouteConstraint)constraints["id"];
             Assert.IsType<CompositeRouteConstraint>(constraint);
-            Assert.IsType<RegexConstraint>(constraint.Constraints.ElementAt(0));
+            Assert.IsType<RegexRouteConstraint>(constraint.Constraints.ElementAt(0));
             Assert.IsType<IntRouteConstraint>(constraint.Constraints.ElementAt(1));
         }
 

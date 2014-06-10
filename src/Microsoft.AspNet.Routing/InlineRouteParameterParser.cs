@@ -78,18 +78,18 @@ namespace Microsoft.AspNet.Routing
         }
 
         private static IRouteConstraint GetInlineConstraint(Group constraintGroup,
-                                                            IInlineConstraintResolver constraintResolver)
+                                                            IInlineConstraintResolver _constraintResolver)
         {
             var parameterConstraints = new List<IRouteConstraint>();
             foreach (Capture constraintCapture in constraintGroup.Captures)
             {
                 var inlineConstraint = constraintCapture.Value;
-                var constraint = constraintResolver.ResolveConstraint(inlineConstraint);
+                var constraint = _constraintResolver.ResolveConstraint(inlineConstraint);
                 if (constraint == null)
                 {
                     throw new InvalidOperationException(
                         Resources.FormatInlineRouteParser_CouldNotResolveConstraint(
-                                        constraintResolver.GetType().Name, inlineConstraint));
+                                        _constraintResolver.GetType().Name, inlineConstraint));
                 }
 
                 parameterConstraints.Add(constraint);

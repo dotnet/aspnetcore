@@ -25,8 +25,22 @@
   <ItemGroup>
     <Compile Include="BuilderExtensions.cs" />
     <Compile Include="Constraints\CompositeRouteConstraint.cs" />
+    <Compile Include="Constraints\DateTimeRouteConstraint.cs" />
+    <Compile Include="Constraints\DoubleRouteConstraint.cs" />
+    <Compile Include="Constraints\DecimalRouteConstraint.cs" />
+    <Compile Include="Constraints\FloatRouteConstraint.cs" />
+    <Compile Include="Constraints\GuidRouteConstraint.cs" />
+    <Compile Include="Constraints\AlphaRouteConstraint.cs" />
+    <Compile Include="Constraints\LongRouteConstraint.cs" />
+    <Compile Include="Constraints\MaxLengthRouteConstraint.cs" />
+    <Compile Include="Constraints\MaxRouteConstraint.cs" />
+    <Compile Include="Constraints\MinLengthRouteConstraint.cs" />
+    <Compile Include="Constraints\RangeRouteConstraint.cs" />
+    <Compile Include="Constraints\MinRouteConstraint.cs" />
+    <Compile Include="Constraints\LengthRouteConstraint.cs" />
+    <Compile Include="Constraints\BoolRouteConstraint.cs" />
     <Compile Include="Constraints\IntRouteConstraint.cs" />
-    <Compile Include="Constraints\RegexConstraint.cs" />
+    <Compile Include="Constraints\RegexRouteConstraint.cs" />
     <Compile Include="DefaultInlineConstraintResolver.cs" />
     <Compile Include="IInlineConstraintResolver.cs" />
     <Compile Include="INamedRouter.cs" />
@@ -46,9 +60,9 @@
     <Compile Include="RouteContext.cs" />
     <Compile Include="RouteData.cs" />
     <Compile Include="RouteDirection.cs" />
-    <Compile Include="RouterServices.cs" />
     <Compile Include="RouterMiddleware.cs" />
     <Compile Include="RouteValueDictionary.cs" />
+    <Compile Include="RoutingServices.cs" />
     <Compile Include="Template\Template.cs" />
     <Compile Include="Template\TemplateBinder.cs" />
     <Compile Include="Template\TemplateMatcher.cs" />

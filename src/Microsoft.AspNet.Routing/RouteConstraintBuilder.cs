@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Routing
 
                     var constraintsRegEx = "^(" + regexPattern + ")$";
 
-                    constraint = new RegexConstraint(constraintsRegEx);
+                    constraint = new RegexRouteConstraint(constraintsRegEx);
                 }
 
                 constraints.Add(kvp.Key, constraint);

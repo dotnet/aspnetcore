@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Routing
                 {
                     throw new InvalidOperationException(
                                 Resources.FormatDefaultInlineConstraintResolver_CouldNotFindCtor(
-                                                       constraintTypeInfo.Name, argumentString.Length));
+                                                       constraintTypeInfo.Name, arguments.Length));
                 }
                 else if (constructorMatches == 1)
                 {
@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.Routing
                 {
                     throw new InvalidOperationException(
                                 Resources.FormatDefaultInlineConstraintResolver_AmbiguousCtors(
-                                                       constraintTypeInfo.Name, argumentString.Length));
+                                                       constraintTypeInfo.Name, arguments.Length));
                 }
             }
 

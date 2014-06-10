@@ -9,14 +9,14 @@ using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Routing.Constraints
 {
-    public class RegexConstraint : IRouteConstraint
+    public class RegexRouteConstraint : IRouteConstraint
     {
-        public RegexConstraint([NotNull] Regex regex)
+        public RegexRouteConstraint([NotNull] Regex regex)
         {
             Constraint = regex;
         }
 
-        public RegexConstraint([NotNull] string regexPattern)
+        public RegexRouteConstraint([NotNull] string regexPattern)
         {
             Constraint = new Regex(regexPattern, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
         }

@@ -36,6 +36,26 @@ namespace Microsoft.AspNet.Routing
             {
                 // Type-specific constraints
                 { "int", typeof(IntRouteConstraint) },
+                { "bool", typeof(BoolRouteConstraint) },
+                { "datetime", typeof(DateTimeRouteConstraint) },
+                { "decimal", typeof(DecimalRouteConstraint) },
+                { "double", typeof(DoubleRouteConstraint) },
+                { "float", typeof(FloatRouteConstraint) },
+                { "guid", typeof(GuidRouteConstraint) },
+                { "long", typeof(LongRouteConstraint) },
+
+                // Length constraints
+                { "minlength", typeof(MinLengthRouteConstraint) },
+                { "maxlength", typeof(MaxLengthRouteConstraint) },
+                { "length", typeof(LengthRouteConstraint) },
+
+                // Min/Max value constraints
+                { "min", typeof(MinRouteConstraint) },
+                { "max", typeof(MaxRouteConstraint) },
+                { "range", typeof(RangeRouteConstraint) },
+
+                // Regex-based constraints
+                { "alpha", typeof(AlphaRouteConstraint) },
             };
         }
     }
