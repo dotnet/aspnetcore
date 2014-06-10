@@ -10,19 +10,17 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.NestedProviders;
 using Moq;
 using Xunit;
-using Microsoft.AspNet.Routing;
 
-namespace Microsoft.AspNet.Mvc.Core.Test
+namespace Microsoft.AspNet.Mvc.Test
 {
     public class ActionAttributeTests
     {
         private DefaultActionDiscoveryConventions _actionDiscoveryConventions = new DefaultActionDiscoveryConventions();
-        private IControllerDescriptorFactory _controllerDescriptorFactory = new DefaultControllerDescriptorFactory();
-        private IParameterDescriptorFactory _parameterDescriptorFactory = new DefaultParameterDescriptorFactory();
         private IEnumerable<Assembly> _controllerAssemblies = new[] { Assembly.GetExecutingAssembly() };
 
         [Theory]
@@ -217,12 +215,12 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             var controllerAssemblyProvider = new Mock<IControllerAssemblyProvider>();
             controllerAssemblyProvider.SetupGet(x => x.CandidateAssemblies).Returns(_controllerAssemblies);
+
             return new ReflectedActionDescriptorProvider(
                                         controllerAssemblyProvider.Object,
                                         actionDiscoveryConventions,
-                                        _controllerDescriptorFactory,
-                                        _parameterDescriptorFactory,
-                                        null);
+                                        null,
+                                        new MockMvcOptionsAccessor());
         }
 
         private static HttpContext GetHttpContext(string httpMethod)

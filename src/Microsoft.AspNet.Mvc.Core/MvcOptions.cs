@@ -2,13 +2,20 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Mvc.ReflectedModelBuilder;
 
 namespace Microsoft.AspNet.Mvc
 {
     public class MvcOptions
     {
         private AntiForgeryOptions _antiForgeryOptions = new AntiForgeryOptions();
+
+        public MvcOptions()
+        {
+            ApplicationModelConventions = new List<IReflectedApplicationModelConvention>();
+        }
 
         public AntiForgeryOptions AntiForgeryOptions
         {
@@ -29,5 +36,7 @@ namespace Microsoft.AspNet.Mvc
                 _antiForgeryOptions = value;
             }
         }
+
+        public List<IReflectedApplicationModelConvention> ApplicationModelConventions { get; private set; }
     }
 }

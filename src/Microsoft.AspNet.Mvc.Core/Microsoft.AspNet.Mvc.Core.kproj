@@ -27,6 +27,10 @@
     <Compile Include="ActionDescriptor.cs" />
     <Compile Include="ActionDescriptorProviderContext.cs" />
     <Compile Include="ActionDescriptorsCollection.cs" />
+    <Compile Include="ReflectedModelBuilder\IReflectedApplicationModelConvention.cs" />
+    <Compile Include="ReflectedModelBuilder\ReflectedActionModel.cs" />
+    <Compile Include="ReflectedModelBuilder\ReflectedControllerModel.cs" />
+    <Compile Include="ReflectedModelBuilder\ReflectedApplicationModel.cs" />
     <Compile Include="ActionInvokerFactory.cs" />
     <Compile Include="ActionInvokerProviderContext.cs" />
     <Compile Include="ActionMethodSelectorAttribute.cs" />
@@ -61,7 +65,6 @@
     <Compile Include="AntiForgery\ITokenValidator.cs" />
     <Compile Include="AntiForgery\TokenProvider.cs" />
     <Compile Include="Areas\AreaAttribute.cs" />
-    <Compile Include="Areas\ReflectedRouteConstraintsActionDescriptorProvider.cs" />
     <Compile Include="BodyParameterInfo.cs" />
     <Compile Include="Controller.cs" />
     <Compile Include="ControllerDescriptor.cs" />
@@ -69,9 +72,8 @@
     <Compile Include="DefaultActionDiscoveryConventions.cs" />
     <Compile Include="DefaultActionSelector.cs" />
     <Compile Include="DefaultControllerAssemblyProvider.cs" />
-    <Compile Include="DefaultControllerDescriptorFactory.cs" />
     <Compile Include="DefaultControllerFactory.cs" />
-    <Compile Include="DefaultParameterDescriptorFactory.cs" />
+    <Compile Include="ReflectedModelBuilder\ReflectedParameterModel.cs" />
     <Compile Include="Extensions\IEnumerableExtensions.cs" />
     <Compile Include="Filters\FilterItemOrderComparer.cs" />
     <Compile Include="Filters\TypeFilterAttribute.cs" />
@@ -129,13 +131,11 @@
     <Compile Include="IActionResult.cs" />
     <Compile Include="IActionSelector.cs" />
     <Compile Include="IControllerAssemblyProvider.cs" />
-    <Compile Include="IControllerDescriptorFactory.cs" />
     <Compile Include="IControllerFactory.cs" />
     <Compile Include="Injector.cs" />
     <Compile Include="Internal\PropertyHelper.cs" />
     <Compile Include="Internal\TypeHelper.cs" />
     <Compile Include="Internal\UTF8EncodingWithoutBOM.cs" />
-    <Compile Include="IParameterDescriptorFactory.cs" />
     <Compile Include="IUrlHelper.cs" />
     <Compile Include="JsonOutputFormatter.cs" />
     <Compile Include="MvcOptions.cs" />

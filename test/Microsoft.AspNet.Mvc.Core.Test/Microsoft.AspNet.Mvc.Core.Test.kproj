@@ -30,6 +30,10 @@
     <Compile Include="ActionResults\RedirectResultTest.cs" />
     <Compile Include="ActionSelectionConventionTests.cs" />
     <Compile Include="AntiXsrf\AntiForgeryOptionsTests.cs" />
+    <Compile Include="ReflectedModelBuilder\ReflectedParameterModelTests.cs" />
+    <Compile Include="ReflectedModelBuilder\ReflectedActionModelTests.cs" />
+    <Compile Include="ReflectedModelBuilder\ReflectedControllerModelTests.cs" />
+    <Compile Include="MockMvcOptionsAccessor.cs" />
     <Compile Include="MvcOptionsTests.cs" />
     <Compile Include="AntiXsrf\AntiForgeryTokenSerializerTest.cs" />
     <Compile Include="AntiXsrf\ITokenProvider.cs" />
@@ -60,6 +64,7 @@
     <Compile Include="KnownRouteValueConstraintTests.cs" />
     <Compile Include="TestController.cs" />
     <Compile Include="TypeHelperTest.cs" />
+    <Compile Include="StaticActionDiscoveryConventions.cs" />
     <Compile Include="UrlHelperTest.cs" />
     <Compile Include="ViewResultTest.cs" />
     <Compile Include="ViewComponentTests.cs" />

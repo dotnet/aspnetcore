@@ -15,13 +15,11 @@ using Microsoft.Framework.DependencyInjection.NestedProviders;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Core.Test
+namespace Microsoft.AspNet.Mvc.Test
 {
     public class ActionSelectionConventionTests
     {
         private DefaultActionDiscoveryConventions _actionDiscoveryConventions = new DefaultActionDiscoveryConventions();
-        private IControllerDescriptorFactory _controllerDescriptorFactory = new DefaultControllerDescriptorFactory();
-        private IParameterDescriptorFactory _parameterDescriptorFactory = new DefaultParameterDescriptorFactory();
         private IEnumerable<Assembly> _controllerAssemblies = new[] { Assembly.GetExecutingAssembly() };
 
         [Theory]
@@ -188,9 +186,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             return new ReflectedActionDescriptorProvider(
                                         controllerAssemblyProvider.Object,
                                         actionDiscoveryConventions,
-                                        _controllerDescriptorFactory,
-                                        _parameterDescriptorFactory,
-                                        null);
+                                        null,
+                                        new MockMvcOptionsAccessor());
         }
 
         private static HttpContext GetHttpContext(string httpMethod)

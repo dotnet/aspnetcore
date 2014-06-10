@@ -4,7 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if K10
 using System.Reflection;
+#endif
+using Microsoft.AspNet.Mvc.ReflectedModelBuilder;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -14,23 +18,18 @@ namespace Microsoft.AspNet.Mvc
 
         private readonly IControllerAssemblyProvider _controllerAssemblyProvider;
         private readonly IActionDiscoveryConventions _conventions;
-        private readonly IControllerDescriptorFactory _controllerDescriptorFactory;
-        private readonly IParameterDescriptorFactory _parameterDescriptorFactory;
-        private readonly IEnumerable<FilterDescriptor> _globalFilters;
+        private readonly IEnumerable<IFilter> _globalFilters;
+        private readonly IEnumerable<IReflectedApplicationModelConvention> _modelConventions;
 
         public ReflectedActionDescriptorProvider(IControllerAssemblyProvider controllerAssemblyProvider,
                                                  IActionDiscoveryConventions conventions,
-                                                 IControllerDescriptorFactory controllerDescriptorFactory,
-                                                 IParameterDescriptorFactory parameterDescriptorFactory,
-                                                 IEnumerable<IFilter> globalFilters)
+                                                 IEnumerable<IFilter> globalFilters,
+                                                 IOptionsAccessor<MvcOptions> optionsAccessor)
         {
             _controllerAssemblyProvider = controllerAssemblyProvider;
             _conventions = conventions;
-            _controllerDescriptorFactory = controllerDescriptorFactory;
-            _parameterDescriptorFactory = parameterDescriptorFactory;
-            var filters = globalFilters ?? Enumerable.Empty<IFilter>();
-
-            _globalFilters = filters.Select(f => new FilterDescriptor(f, FilterScope.Global));
+            _globalFilters = globalFilters ?? Enumerable.Empty<IFilter>();
+            _modelConventions = optionsAccessor.Options.ApplicationModelConventions;
         }
 
         public int Order
@@ -44,34 +43,35 @@ namespace Microsoft.AspNet.Mvc
             callNext();
         }
 
-        public IEnumerable<ActionDescriptor> GetDescriptors()
+        public IEnumerable<ReflectedActionDescriptor> GetDescriptors()
         {
-            var assemblies = _controllerAssemblyProvider.CandidateAssemblies;
-            var types = assemblies.SelectMany(a => a.DefinedTypes);
-            var controllers = types.Where(_conventions.IsController);
-            var controllerDescriptors = controllers
-                .Select(t => _controllerDescriptorFactory.CreateControllerDescriptor(t))
-                .ToArray();
+            var model = BuildModel();
 
-            return GetDescriptors(controllerDescriptors);
+            foreach (var convention in _modelConventions)
+            {
+                convention.OnModelCreated(model);
+            }
+
+            return Build(model);
         }
 
-        // Internal for unit testing.
-        internal IEnumerable<ActionDescriptor> GetDescriptors(IEnumerable<ControllerDescriptor> controllerDescriptors)
+        public ReflectedApplicationModel BuildModel()
         {
-            foreach (var cd in controllerDescriptors)
-            {
-                var controllerAttributes = cd.ControllerTypeInfo.GetCustomAttributes(inherit: true).ToArray();
-                var globalAndControllerFilters =
-                    controllerAttributes.OfType<IFilter>()
-                                        .Select(filter => new FilterDescriptor(filter, FilterScope.Controller))
-                                        .Concat(_globalFilters)
-                                        .OrderBy(d => d, FilterDescriptorOrderComparer.Comparer)
-                                        .ToArray();
+            var applicationModel = new ReflectedApplicationModel();
+            applicationModel.Filters.AddRange(_globalFilters);
 
-                foreach (var methodInfo in cd.ControllerTypeInfo.AsType().GetMethods())
+            var assemblies = _controllerAssemblyProvider.CandidateAssemblies;
+            var types = assemblies.SelectMany(a => a.DefinedTypes);
+            var controllerTypes = types.Where(_conventions.IsController);
+
+            foreach (var controllerType in controllerTypes)
+            {
+                var controllerModel = new ReflectedControllerModel(controllerType);
+                applicationModel.Controllers.Add(controllerModel);
+
+                foreach (var methodInfo in controllerType.AsType().GetMethods())
                 {
-                    var actionInfos = _conventions.GetActions(methodInfo, cd.ControllerTypeInfo);
+                    var actionInfos = _conventions.GetActions(methodInfo, controllerType);
                     if (actionInfos == null)
                     {
                         continue;
@@ -79,62 +79,140 @@ namespace Microsoft.AspNet.Mvc
 
                     foreach (var actionInfo in actionInfos)
                     {
-                        yield return BuildDescriptor(cd, methodInfo, actionInfo, globalAndControllerFilters);
+                        var actionModel = new ReflectedActionModel(methodInfo);
+
+                        actionModel.ActionName = actionInfo.ActionName;
+                        actionModel.IsActionNameMatchRequired = actionInfo.RequireActionNameMatch;
+                        actionModel.HttpMethods.AddRange(actionInfo.HttpMethods ?? Enumerable.Empty<string>());
+
+                        foreach (var parameter in methodInfo.GetParameters())
+                        {
+                            actionModel.Parameters.Add(new ReflectedParameterModel(parameter));
+                        }
+
+                        controllerModel.Actions.Add(actionModel);
                     }
                 }
             }
+
+            return applicationModel;
         }
 
-        private ReflectedActionDescriptor BuildDescriptor(ControllerDescriptor controllerDescriptor,
-                                                          MethodInfo methodInfo,
-                                                          ActionInfo actionInfo,
-                                                          FilterDescriptor[] globalAndControllerFilters)
+        private bool HasConstraint(List<RouteDataActionConstraint> constraints, string routeKey)
         {
-            var ad = new ReflectedActionDescriptor
+            return constraints.Any(
+                rc => string.Equals(rc.RouteKey, routeKey, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public List<ReflectedActionDescriptor> Build(ReflectedApplicationModel model)
+        {
+            var actions = new List<ReflectedActionDescriptor>();
+
+            var removalConstraints = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var controller in model.Controllers)
             {
-                RouteConstraints = new List<RouteDataActionConstraint>
+                var controllerDescriptor = new ControllerDescriptor(controller.ControllerType);
+                foreach (var action in controller.Actions)
                 {
-                    new RouteDataActionConstraint("controller", controllerDescriptor.Name)
-                },
+                    var parameterDescriptors = new List<ParameterDescriptor>();
+                    foreach (var parameter in action.Parameters)
+                    {
+                        var isFromBody = parameter.Attributes.OfType<FromBodyAttribute>().Any();
 
-                Name = actionInfo.ActionName,
-                ControllerDescriptor = controllerDescriptor,
-                MethodInfo = methodInfo,
-            };
+                        parameterDescriptors.Add(new ParameterDescriptor()
+                        {
+                            Name = parameter.ParameterName,
+                            IsOptional = parameter.IsOptional,
 
-            var httpMethods = actionInfo.HttpMethods;
-            if (httpMethods != null && httpMethods.Length > 0)
+                            ParameterBindingInfo = isFromBody
+                                ? null
+                                : new ParameterBindingInfo(
+                                    parameter.ParameterName, 
+                                    parameter.ParameterInfo.ParameterType),
+
+                            BodyParameterInfo = isFromBody
+                                ? new BodyParameterInfo(parameter.ParameterInfo.ParameterType)
+                                : null
+                        });
+                    }
+
+                    var actionDescriptor = new ReflectedActionDescriptor()
+                    {
+                        Name = action.ActionName,
+                        ControllerDescriptor = controllerDescriptor,
+                        MethodInfo = action.ActionMethod,
+                        Parameters = new List<ParameterDescriptor>(),
+                        RouteConstraints = new List<RouteDataActionConstraint>(),
+                    };
+
+                    var httpMethods = action.HttpMethods;
+                    if (httpMethods != null && httpMethods.Count > 0)
+                    {
+                        actionDescriptor.MethodConstraints = new List<HttpMethodConstraint>()
+                        {
+                            new HttpMethodConstraint(httpMethods)
+                        };
+                    }
+
+                    actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
+                        "controller",
+                        controller.ControllerName));
+
+                    if (action.IsActionNameMatchRequired)
+                    {
+                        actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
+                            "action",
+                            action.ActionName));
+                    }
+                    else
+                    {
+                        actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
+                            "action",
+                            RouteKeyHandling.DenyKey));
+                    }
+
+                    foreach (var constraintAttribute in controller.RouteConstraints)
+                    {
+                        if (constraintAttribute.BlockNonAttributedActions)
+                        {
+                            removalConstraints.Add(constraintAttribute.RouteKey);
+                        }
+
+                        // Skip duplicates
+                        if (!HasConstraint(actionDescriptor.RouteConstraints, constraintAttribute.RouteKey))
+                        {
+                            actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
+                                constraintAttribute.RouteKey,
+                                constraintAttribute.RouteValue));
+                        }
+                    }
+
+                    actionDescriptor.FilterDescriptors =
+                        action.Filters.Select(f => new FilterDescriptor(f, FilterScope.Action))
+                        .Concat(controller.Filters.Select(f => new FilterDescriptor(f, FilterScope.Controller)))
+                        .Concat(model.Filters.Select(f => new FilterDescriptor(f, FilterScope.Global)))
+                        .OrderBy(d => d, FilterDescriptorOrderComparer.Comparer)
+                        .ToList();
+
+                    actions.Add(actionDescriptor);
+                }
+            }
+
+            foreach (var actionDescriptor in actions)
             {
-                ad.MethodConstraints = new List<HttpMethodConstraint>
+                foreach (var key in removalConstraints)
                 {
-                    new HttpMethodConstraint(httpMethods)
-                };
+                    if (!HasConstraint(actionDescriptor.RouteConstraints, key))
+                    {
+                        actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
+                            key,
+                            RouteKeyHandling.DenyKey));
+                    }
+                }
             }
 
-            if (actionInfo.RequireActionNameMatch)
-            {
-                ad.RouteConstraints.Add(new RouteDataActionConstraint("action", actionInfo.ActionName));
-            }
-            else
-            {
-                ad.RouteConstraints.Add(new RouteDataActionConstraint("action", RouteKeyHandling.DenyKey));
-            }
-
-            ad.Parameters = methodInfo.GetParameters()
-                .Select(p => _parameterDescriptorFactory.GetDescriptor(p))
-                .ToList();
-
-            var attributes = methodInfo.GetCustomAttributes(inherit: true).ToArray();
-
-            var filtersFromAction = attributes
-                .OfType<IFilter>()
-                .Select(filter => new FilterDescriptor(filter, FilterScope.Action));
-
-            ad.FilterDescriptors = filtersFromAction.Concat(globalAndControllerFilters)
-                                                    .OrderBy(d => d, FilterDescriptorOrderComparer.Comparer)
-                                                    .ToList();
-
-            return ad;
+            return actions;
         }
     }
 }
