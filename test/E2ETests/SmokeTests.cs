@@ -18,7 +18,7 @@ namespace E2ETests
         [Theory]
         [InlineData(HostType.Helios, KreFlavor.DesktopClr, "http://localhost:5001/")]
         [InlineData(HostType.SelfHost, KreFlavor.DesktopClr, "http://localhost:5002/")]
-        //[InlineData(HostType.Helios, KreFlavor.CoreClr, "http://localhost:5001/")]
+        [InlineData(HostType.Helios, KreFlavor.CoreClr, "http://localhost:5001/")]
         [InlineData(HostType.SelfHost, KreFlavor.CoreClr, "http://localhost:5002/")]
         public void SmokeTestSuite(HostType hostType, KreFlavor kreFlavor, string applicationBaseUrl)
         {

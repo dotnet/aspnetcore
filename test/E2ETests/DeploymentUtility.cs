@@ -48,6 +48,8 @@ namespace E2ETests
             string applicationPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, APP_RELATIVE_PATH));
             //Tweak the %PATH% to the point to the right KREFLAVOR
             Environment.SetEnvironmentVariable("PATH", SwitchPathToKreFlavor(kreFlavor));
+            //To avoid the KRE_DEFAULT_LIB of the test process flowing into Helios, set it to empty
+            Environment.SetEnvironmentVariable("KRE_DEFAULT_LIB", string.Empty);
 
             if (hostType == HostType.Helios)
             {
