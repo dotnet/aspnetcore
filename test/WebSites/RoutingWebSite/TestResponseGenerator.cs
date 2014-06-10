@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Framework.DependencyInjection;
 
@@ -23,6 +24,18 @@ namespace RoutingWebSite
 
         public JsonResult Generate(params string[] expectedUrls)
         {
+            var link = (string)null;
+            var query = _actionContext.HttpContext.Request.Query;
+            if (query.ContainsKey("link"))
+            {
+                var values = query
+                    .Where(kvp => kvp.Key != "link" && kvp.Key != "link_action" && kvp.Key != "link_controller")
+                    .ToDictionary(kvp => kvp.Key.Substring("link_".Length), kvp => (object)kvp.Value[0]);
+
+                var urlHelper = _actionContext.HttpContext.RequestServices.GetService<IUrlHelper>();
+                link = urlHelper.Action(query["link_action"], query["link_controller"], values);
+            }
+
             return new JsonResult(new
             {
                 expectedUrls = expectedUrls,
@@ -31,6 +44,8 @@ namespace RoutingWebSite
 
                 action = _actionContext.ActionDescriptor.Name,
                 controller = ((ReflectedActionDescriptor)_actionContext.ActionDescriptor).ControllerDescriptor.Name,
+
+                link,
             });
         }
     }

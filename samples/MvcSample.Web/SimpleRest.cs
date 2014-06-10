@@ -16,5 +16,11 @@ namespace MvcSample.Web
         {
             return "Get other thing";
         }
+
+        [HttpGet("Link")]
+        public string GenerateLink(string action = null, string controller = null)
+        {
+            return Url.Action(action, controller);
+        }
     }
 }

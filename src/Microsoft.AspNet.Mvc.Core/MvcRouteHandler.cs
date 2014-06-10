@@ -38,6 +38,17 @@ namespace Microsoft.AspNet.Mvc
                 return;
             }
 
+            if (actionDescriptor.RouteValues != null)
+            {
+                foreach (var kvp in actionDescriptor.RouteValues)
+                {
+                    if (!context.RouteData.Values.ContainsKey(kvp.Key))
+                    {
+                        context.RouteData.Values.Add(kvp.Key, kvp.Value);
+                    }
+                }
+            }
+
             var actionContext = new ActionContext(context.HttpContext, context.RouteData, actionDescriptor);
 
             var contextAccessor = services.GetService<IContextAccessor<ActionContext>>();

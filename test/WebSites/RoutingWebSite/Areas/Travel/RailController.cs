@@ -5,26 +5,26 @@ using Microsoft.AspNet.Mvc;
 
 namespace RoutingWebSite
 {
-    // This controller is reachable via traditional routing.
     [Area("Travel")]
-    public class FlightController
+    [Route("ContosoCorp/Trains")]
+    public class RailController
     {
         private readonly TestResponseGenerator _generator;
 
-        public FlightController(TestResponseGenerator generator)
+        public RailController(TestResponseGenerator generator)
         {
             _generator = generator;
         }
 
         public IActionResult Index()
         {
-            return _generator.Generate("/Travel/Flight", "/Travel/Flight/Index");
+            return _generator.Generate("/ContosoCorp/Trains");
         }
 
-        [HttpPost]
-        public IActionResult BuyTickets()
+        [HttpGet("CheckSchedule")]
+        public IActionResult Schedule()
         {
-            return _generator.Generate("/Travel/Flight/BuyTickets");
+            return _generator.Generate("/ContosoCorp/Trains/Schedule");
         }
     }
 }

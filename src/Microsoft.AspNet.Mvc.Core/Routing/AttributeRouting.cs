@@ -26,38 +26,57 @@ namespace Microsoft.AspNet.Mvc.Routing
         {
             var actions = GetActionDescriptors(services);
 
-            // We're creating one AttributeRouteEntry per group, so we need to identify the distinct set of
-            // groups. It's guaranteed that all members of the group have the same template and precedence,
-            // so we only need to hang on to a single instance of the template.
-            var routeTemplatesByGroup = GroupTemplatesByGroupId(actions);
-
             var inlineConstraintResolver = services.GetService<IInlineConstraintResolver>();
+            var routeInfos = GetRouteInfos(actions, inlineConstraintResolver);
 
-            var entries = new List<AttributeRouteEntry>();
-            foreach (var routeGroup in routeTemplatesByGroup)
+            // We're creating one AttributeRouteGenerationEntry per action. This allows us to match the intended
+            // action by expected route values, and then use the TemplateBinder to generate the link.
+            var generationEntries = new List<AttributeRouteGenerationEntry>();
+            foreach (var routeInfo in routeInfos)
             {
-                var routeGroupId = routeGroup.Key;
-                var template = routeGroup.Value;
+                var defaults = routeInfo.ParsedTemplate.Parameters
+                    .Where(p => p.DefaultValue != null)
+                    .ToDictionary(p => p.Name, p => p.DefaultValue, StringComparer.OrdinalIgnoreCase);
 
-                var parsedTemplate = TemplateParser.Parse(template, inlineConstraintResolver);
-                var precedence = AttributeRoutePrecedence.Compute(parsedTemplate);
+                var constraints = routeInfo.ParsedTemplate.Parameters
+                    .Where(p => p.InlineConstraint != null)
+                    .ToDictionary(p => p.Name, p => p.InlineConstraint, StringComparer.OrdinalIgnoreCase);
 
-                entries.Add(new AttributeRouteEntry()
+                generationEntries.Add(new AttributeRouteGenerationEntry()
                 {
-                    Precedence = precedence,
+                    Binder = new TemplateBinder(routeInfo.ParsedTemplate, defaults),
+                    Defaults = defaults,
+                    Constraints = constraints,
+                    Precedence = routeInfo.Precedence,
+                    RequiredLinkValues = routeInfo.ActionDescriptor.RouteValues,
+                    RouteGroup = routeInfo.RouteGroup,
+                    Template = routeInfo.ParsedTemplate,
+                });
+            }
+
+            // We're creating one AttributeRouteMatchingEntry per group, so we need to identify the distinct set of
+            // groups. It's guaranteed that all members of the group have the same template and precedence,
+            // so we only need to hang on to a single instance of the RouteInfo for each group.
+            var distinctRouteInfosByGroup = GroupRouteInfosByGroupId(routeInfos);
+            var matchingEntries = new List<AttributeRouteMatchingEntry>();
+            foreach (var routeInfo in distinctRouteInfosByGroup)
+            {
+                matchingEntries.Add(new AttributeRouteMatchingEntry()
+                {
+                    Precedence = routeInfo.Precedence,
                     Route = new TemplateRoute(
                         target,
-                        template,
+                        routeInfo.RouteTemplate,
                         defaults: new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
                         {
-                            { RouteGroupKey, routeGroupId },
+                            { RouteGroupKey, routeInfo.RouteGroup },
                         },
                         constraints: null,
                         inlineConstraintResolver: inlineConstraintResolver),
                 });
             }
 
-            return new AttributeRoute(target, entries);
+            return new AttributeRoute(target, matchingEntries, generationEntries);
         }
 
         private static IReadOnlyList<ActionDescriptor> GetActionDescriptors(IServiceProvider services)
@@ -68,9 +87,27 @@ namespace Microsoft.AspNet.Mvc.Routing
             return actionDescriptorsCollection.Items;
         }
 
-        private static Dictionary<string, string> GroupTemplatesByGroupId(IReadOnlyList<ActionDescriptor> actions)
+        private static IEnumerable<RouteInfo> GroupRouteInfosByGroupId(List<RouteInfo> routeInfos)
         {
-            var routeTemplatesByGroup = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var routeInfosByGroupId = new Dictionary<string, RouteInfo>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var routeInfo in routeInfos)
+            {
+                if (!routeInfosByGroupId.ContainsKey(routeInfo.RouteGroup))
+                {
+                    routeInfosByGroupId.Add(routeInfo.RouteGroup, routeInfo);
+                }
+            }
+
+            return routeInfosByGroupId.Values;
+        }
+
+        private static List<RouteInfo> GetRouteInfos(
+            IReadOnlyList<ActionDescriptor> actions, 
+            IInlineConstraintResolver constraintResolver)
+        {
+            var routeInfos = new List<RouteInfo>();
+
             foreach (var action in actions.Where(a => a.RouteTemplate != null))
             {
                 var constraint = action.RouteConstraints
@@ -84,14 +121,31 @@ namespace Microsoft.AspNet.Mvc.Routing
                     continue;
                 }
 
-                var routeGroup = constraint.RouteValue;
-                if (!routeTemplatesByGroup.ContainsKey(routeGroup))
+                var parsedTemplate = TemplateParser.Parse(action.RouteTemplate, constraintResolver);
+                routeInfos.Add(new RouteInfo()
                 {
-                    routeTemplatesByGroup.Add(routeGroup, action.RouteTemplate);
-                }
+                    ActionDescriptor = action,
+                    ParsedTemplate = parsedTemplate,
+                    Precedence = AttributeRoutePrecedence.Compute(parsedTemplate),
+                    RouteGroup = constraint.RouteValue,
+                    RouteTemplate = action.RouteTemplate,
+                });
             }
 
-            return routeTemplatesByGroup;
+            return routeInfos;
+        }
+
+        private class RouteInfo
+        {
+            public ActionDescriptor ActionDescriptor { get; set; }
+
+            public Template ParsedTemplate { get; set; }
+
+            public decimal Precedence { get; set; }
+
+            public string RouteGroup { get; set; }
+
+            public string RouteTemplate { get; set; }
         }
     }
 }

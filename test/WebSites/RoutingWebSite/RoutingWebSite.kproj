@@ -28,7 +28,10 @@
     <DevelopmentServerPort>11178</DevelopmentServerPort>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Areas\Admin\UserManagementController.cs" />
     <Compile Include="Areas\Travel\FlightController.cs" />
+    <Compile Include="Areas\Travel\HomeController.cs" />
+    <Compile Include="Areas\Travel\RailController.cs" />
     <Compile Include="Controllers\BlogController.cs" />
     <Compile Include="Controllers\EmployeeController.cs" />
     <Compile Include="Controllers\HomeController.cs" />

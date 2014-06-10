@@ -3,11 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.TestHost;
 using Xunit;
+
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
@@ -153,6 +156,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Contains("/Store/Shop/Products", result.ExpectedUrls);
             Assert.Equal("Store", result.Controller);
             Assert.Equal("ListProducts", result.Action);
+
+            Assert.Contains(
+                new KeyValuePair<string, object>("controller", "Store"),
+                result.RouteValues);
+
+            Assert.Contains(
+                new KeyValuePair<string, object>("action", "ListProducts"),
+                result.RouteValues);
         }
 
         // The url would be /Store/ListProducts with conventional routes
@@ -191,15 +202,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Contains("/Home/About", result.ExpectedUrls);
             Assert.Equal("Store", result.Controller);
             Assert.Equal("About", result.Action);
-
-            // A convention-routed action would have values for action and controller.
-            Assert.None(
-                result.RouteValues,
-                (kvp) => string.Equals(kvp.Key, "action", StringComparison.OrdinalIgnoreCase));
-
-            Assert.None(
-                result.RouteValues,
-                (kvp) => string.Equals(kvp.Key, "controller", StringComparison.OrdinalIgnoreCase));
         }
 
         [Fact]
@@ -222,7 +224,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("Blog", result.Controller);
             Assert.Equal("Edit", result.Action);
 
-            // This route is parameterized on {action}, but not controller.
+            Assert.Contains(
+                new KeyValuePair<string, object>("controller", "Blog"),
+                result.RouteValues);
+
             Assert.Contains(
                 new KeyValuePair<string, object>("action", "Edit"),
                 result.RouteValues);
@@ -230,10 +235,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Contains(
                 new KeyValuePair<string, object>("postId", "5"),
                 result.RouteValues);
-
-            Assert.None(
-                result.RouteValues,
-                (kvp) => string.Equals(kvp.Key, "controller", StringComparison.OrdinalIgnoreCase));
         }
 
         // There's no [HttpGet] on the action here.
@@ -310,6 +311,392 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 result.RouteValues);
         }
 
+		[Fact]
+        public async Task AttributeRoutedAction_LinkToSelf()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            // Act
+            var url = LinkFrom("http://localhost/api/Employee").To(new { });
+            var response = await client.GetAsync(url);
+            Assert.Equal(200, response.StatusCode);
+
+            // Assert
+            var body = await response.ReadBodyAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            // Assert
+            Assert.Equal("Employee", result.Controller);
+            Assert.Equal("List", result.Action);
+
+            Assert.Equal("/api/Employee", result.Link);
+        }
+
+        [Fact]
+        public async Task AttributeRoutedAction_LinkWithAmbientController()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            // Act
+            var url = LinkFrom("http://localhost/api/Employee").To(new { action = "Get", id = 5 });
+            var response = await client.GetAsync(url);
+            Assert.Equal(200, response.StatusCode);
+
+            // Assert
+            var body = await response.ReadBodyAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            // Assert
+            Assert.Equal("Employee", result.Controller);
+            Assert.Equal("List", result.Action);
+
+            Assert.Equal("/api/Employee/5", result.Link);
+        }
+
+        [Fact]
+        public async Task AttributeRoutedAction_LinkToAttribueRoutedController()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            // Act
+            var url = LinkFrom("http://localhost/api/Employee").To(new { action = "ShowPosts", controller = "Blog" });
+            var response = await client.GetAsync(url);
+
+            Assert.Equal(200, response.StatusCode);
+
+            // Assert
+            var body = await response.ReadBodyAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            // Assert
+            Assert.Equal("Employee", result.Controller);
+            Assert.Equal("List", result.Action);
+
+            Assert.Equal("/Blog", result.Link);
+        }
+
+        [Fact]
+        public async Task AttributeRoutedAction_LinkToConventionalController()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            // Act
+            var url = LinkFrom("http://localhost/api/Employee").To(new { action = "Index", controller = "Home" });
+            var response = await client.GetAsync(url);
+            Assert.Equal(200, response.StatusCode);
+
+            // Assert
+            var body = await response.ReadBodyAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            // Assert
+            Assert.Equal("Employee", result.Controller);
+            Assert.Equal("List", result.Action);
+
+            Assert.Equal("/", result.Link);
+        }
+
+        [Fact]
+        public async Task ConventionalRoutedAction_LinkToArea()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            // Act
+            var url = LinkFrom("http://localhost/")
+                .To(new { action = "BuyTickets", controller = "Flight", area = "Travel" });
+            var response = await client.GetAsync(url);
+            Assert.Equal(200, response.StatusCode);
+
+            // Assert
+            var body = await response.ReadBodyAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            // Assert
+            Assert.Equal("Home", result.Controller);
+            Assert.Equal("Index", result.Action);
+
+            Assert.Equal("/Travel/Flight/BuyTickets", result.Link);
+        }
+
+        [Fact]
+        public async Task ConventionalRoutedAction_InArea_ImplicitLinkToArea()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            // Act
+            var url = LinkFrom("http://localhost/Travel/Flight").To(new { action = "BuyTickets" });
+            var response = await client.GetAsync(url);
+            Assert.Equal(200, response.StatusCode);
+
+            // Assert
+            var body = await response.ReadBodyAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            // Assert
+            Assert.Equal("Flight", result.Controller);
+            Assert.Equal("Index", result.Action);
+
+            Assert.Equal("/Travel/Flight/BuyTickets", result.Link);
+        }
+
+        [Fact]
+        public async Task ConventionalRoutedAction_InArea_ExplicitLeaveArea()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            // Act
+            var url = LinkFrom("http://localhost/Travel/Flight").To(new { action = "Index", controller = "Home", area = "" });
+            var response = await client.GetAsync(url);
+            Assert.Equal(200, response.StatusCode);
+
+            // Assert
+            var body = await response.ReadBodyAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            // Assert
+            Assert.Equal("Flight", result.Controller);
+            Assert.Equal("Index", result.Action);
+
+            Assert.Equal("/", result.Link);
+        }
+
+        [Fact]
+        public async Task ConventionalRoutedAction_InArea_ImplicitLeaveArea()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            // Act
+            var url = LinkFrom("http://localhost/Travel/Flight").To(new { action = "Contact", controller = "Home", });
+            var response = await client.GetAsync(url);
+            Assert.Equal(200, response.StatusCode);
+
+            // Assert
+            var body = await response.ReadBodyAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            // Assert
+            Assert.Equal("Flight", result.Controller);
+            Assert.Equal("Index", result.Action);
+
+            Assert.Equal("/Home/Contact", result.Link);
+        }
+
+        [Fact]
+        public async Task AttributeRoutedAction_LinkToArea()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            // Act
+            var url = LinkFrom("http://localhost/api/Employee")
+                .To(new { action = "Schedule", controller = "Rail", area = "Travel" });
+            var response = await client.GetAsync(url);
+            Assert.Equal(200, response.StatusCode);
+
+            // Assert
+            var body = await response.ReadBodyAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            // Assert
+            Assert.Equal("Employee", result.Controller);
+            Assert.Equal("List", result.Action);
+
+            Assert.Equal("/ContosoCorp/Trains/CheckSchedule", result.Link);
+        }
+
+        [Fact]
+        public async Task AttributeRoutedAction_InArea_ImplicitLinkToArea()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            // Act
+            var url = LinkFrom("http://localhost/ContosoCorp/Trains/CheckSchedule").To(new { action = "Index" });
+            var response = await client.GetAsync(url);
+            Assert.Equal(200, response.StatusCode);
+
+            // Assert
+            var body = await response.ReadBodyAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            // Assert
+            Assert.Equal("Rail", result.Controller);
+            Assert.Equal("Schedule", result.Action);
+
+            Assert.Equal("/ContosoCorp/Trains", result.Link);
+        }
+
+        [Fact]
+        public async Task AttributeRoutedAction_InArea_ExplicitLeaveArea()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            // Act
+            var url = LinkFrom("http://localhost/ContosoCorp/Trains/CheckSchedule")
+                .To(new { action = "Index", controller = "Home", area = "" });
+            var response = await client.GetAsync(url);
+            Assert.Equal(200, response.StatusCode);
+
+            // Assert
+            var body = await response.ReadBodyAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            // Assert
+            Assert.Equal("Rail", result.Controller);
+            Assert.Equal("Schedule", result.Action);
+
+            Assert.Equal("/", result.Link);
+        }
+
+        [Fact]
+        public async Task AttributeRoutedAction_InArea_ImplicitLeaveArea()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            // Act
+            var url = LinkFrom("http://localhost/ContosoCorp/Trains")
+                .To(new { action = "Contact", controller = "Home", });
+            var response = await client.GetAsync(url);
+            Assert.Equal(200, response.StatusCode);
+
+            // Assert
+            var body = await response.ReadBodyAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            // Assert
+            Assert.Equal("Rail", result.Controller);
+            Assert.Equal("Index", result.Action);
+
+            Assert.Equal("/Home/Contact", result.Link);
+        }
+
+        [Fact]
+        public async Task AttributeRoutedAction_InArea_LinkToConventionalRoutedActionInArea()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            // Act
+            var url = LinkFrom("http://localhost/ContosoCorp/Trains")
+                .To(new { action = "Index", controller = "Flight", });
+
+            var response = await client.GetAsync(url);
+            Assert.Equal(200, response.StatusCode);
+
+            // Assert
+            var body = await response.ReadBodyAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            // Assert
+            Assert.Equal("Rail", result.Controller);
+            Assert.Equal("Index", result.Action);
+
+            Assert.Equal("/Travel/Flight", result.Link);
+        }
+
+        [Fact]
+        public async Task ConventionalRoutedAction_InArea_LinkToAttributeRoutedActionInArea()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            // Act
+            var url = LinkFrom("http://localhost/Travel/Flight")
+                .To(new { action = "Index", controller = "Rail", });
+
+            var response = await client.GetAsync(url);
+            Assert.Equal(200, response.StatusCode);
+
+            // Assert
+            var body = await response.ReadBodyAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            // Assert
+            Assert.Equal("Flight", result.Controller);
+            Assert.Equal("Index", result.Action);
+
+            Assert.Equal("/ContosoCorp/Trains", result.Link);
+        }
+
+        [Fact]
+        public async Task ConventionalRoutedAction_InArea_LinkToAnotherArea()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            // Act
+            var url = LinkFrom("http://localhost/Travel/Flight")
+                .To(new { action = "ListUsers", controller = "UserManagement", area = "Admin" });
+
+            var response = await client.GetAsync(url);
+            Assert.Equal(200, response.StatusCode);
+
+            // Assert
+            var body = await response.ReadBodyAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            // Assert
+            Assert.Equal("Flight", result.Controller);
+            Assert.Equal("Index", result.Action);
+
+            Assert.Equal("/Admin/Users/All", result.Link);
+        }
+
+        [Fact]
+        public async Task AttributeRoutedAction_InArea_LinkToAnotherArea()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            // Act
+            var url = LinkFrom("http://localhost/ContosoCorp/Trains")
+                .To(new { action = "ListUsers", controller = "UserManagement", area = "Admin" });
+
+            var response = await client.GetAsync(url);
+            Assert.Equal(200, response.StatusCode);
+
+            // Assert
+            var body = await response.ReadBodyAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            // Assert
+            Assert.Equal("Rail", result.Controller);
+            Assert.Equal("Index", result.Action);
+
+            Assert.Equal("/Admin/Users/All", result.Link);
+        }
+
+        private static LinkBuilder LinkFrom(string url)
+        {
+            return new LinkBuilder(url);
+        }
+
         // See TestResponseGenerator in RoutingWebSite for the code that generates this data.
         private class RoutingResult
         {
@@ -322,6 +709,44 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             public string Action { get; set; }
 
             public string Controller { get; set; }
+
+            public string Link { get; set; }
+        }
+
+        private class LinkBuilder
+        {
+            public LinkBuilder(string url)
+            {
+                Url = url;
+
+                Values = new Dictionary<string, object>();
+                Values.Add("link", string.Empty);
+            }
+
+            public string Url { get; set; }
+
+            public Dictionary<string, object> Values { get; set; }
+
+            public LinkBuilder To(object values)
+            {
+                var dictionary = new RouteValueDictionary(values);
+                foreach (var kvp in dictionary)
+                {
+                    Values.Add("link_" + kvp.Key, kvp.Value);
+                }
+
+                return this;
+            }
+
+            public override string ToString()
+            {
+                return Url + '?' + string.Join("&", Values.Select(kvp => kvp.Key + '=' + kvp.Value));
+            }
+
+            public static implicit operator string (LinkBuilder builder)
+            {
+                return builder.ToString();
+            }
         }
     }
 }

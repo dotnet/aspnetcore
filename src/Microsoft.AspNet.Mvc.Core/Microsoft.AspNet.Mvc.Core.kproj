@@ -217,7 +217,8 @@
     <Compile Include="KnownRouteValueConstraint.cs" />
     <Compile Include="RouteKeyHandling.cs" />
     <Compile Include="Routing\AttributeRoute.cs" />
-    <Compile Include="Routing\AttributeRouteEntry.cs" />
+    <Compile Include="Routing\AttributeRouteGenerationEntry.cs" />
+    <Compile Include="Routing\AttributeRouteMatchingEntry.cs" />
     <Compile Include="Routing\AttributeRoutePrecedence.cs" />
     <Compile Include="Routing\AttributeRouteTemplate.cs" />
     <Compile Include="Routing\AttributeRouting.cs" />

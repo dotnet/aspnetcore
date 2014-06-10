@@ -211,25 +211,40 @@ namespace Microsoft.AspNet.Mvc
                         }
                         else
                         {
-                            // An attribute routed action will ignore conventional routed constraints.
-                            actionDescriptor.RouteConstraints.Clear();
-
-                            // TODO #738 - this currently has parity with what we did in MVC5 for the action
-                            // route values. This needs to be reconsidered as part of #738.
-                            var template = TemplateParser.Parse(templateText, _constraintResolver);
-                            if (template.Parameters.Any(
-                                p => p.IsParameter &&
-                                string.Equals(p.Name, "action", StringComparison.OrdinalIgnoreCase)))
+                            // An attribute routed action will ignore conventional routed constraints. We still
+                            // want to provide these values as ambient values.
+                            var ambientValues = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                            foreach (var constraint in actionDescriptor.RouteConstraints)
                             {
-                                actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
-                                    "action",
-                                    action.ActionName));
+                                ambientValues.Add(constraint.RouteKey, constraint.RouteValue);
+                            }
+
+                            actionDescriptor.RouteValues = ambientValues;
+
+                            // TODO #738 - this currently has parity with what we did in MVC5 when a template uses parameters
+                            // like 'area', 'controller', and 'action. This needs to be reconsidered as part of #738.
+                            //
+                            // For instance, consider actions mapped with api/Blog/{action}. The value of {action} needs to 
+                            // passed to action selection to choose the right action.
+                            var template = TemplateParser.Parse(templateText, _constraintResolver);
+
+                            var routeConstraints = new List<RouteDataActionConstraint>();
+                            foreach (var constraint in actionDescriptor.RouteConstraints)
+                            {
+                                if (template.Parameters.Any(
+                                    p => p.IsParameter &&
+                                    string.Equals(p.Name, constraint.RouteKey, StringComparison.OrdinalIgnoreCase)))
+                                {
+                                    routeConstraints.Add(constraint);
+                                }
                             }
 
                             var routeGroup = routeGroupsByTemplate[templateText];
-                            actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
+                            routeConstraints.Add(new RouteDataActionConstraint(
                                 AttributeRouting.RouteGroupKey,
                                 routeGroup));
+
+                            actionDescriptor.RouteConstraints = routeConstraints;
 
                             actionDescriptor.RouteTemplate = templateText;
                         }
@@ -250,11 +265,21 @@ namespace Microsoft.AspNet.Mvc
             {
                 foreach (var key in removalConstraints)
                 {
-                    if (!HasConstraint(actionDescriptor.RouteConstraints, key))
+                    if (actionDescriptor.RouteTemplate == null)
                     {
-                        actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
-                            key,
-                            RouteKeyHandling.DenyKey));
+                        if (!HasConstraint(actionDescriptor.RouteConstraints, key))
+                        {
+                            actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
+                                key,
+                                RouteKeyHandling.DenyKey));
+                        }
+                    }
+                    else
+                    {
+                        if (!actionDescriptor.RouteValues.ContainsKey(key))
+                        {
+                            actionDescriptor.RouteValues.Add(key, null);
+                        }
                     }
                 }
             }

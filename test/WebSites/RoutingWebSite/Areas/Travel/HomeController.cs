@@ -3,9 +3,9 @@
 
 using Microsoft.AspNet.Mvc;
 
-namespace RoutingWebSite
+namespace RoutingWebSite.Travel
 {
-    // This controller is reachable via traditional routing.
+    [Area("Travel")]
     public class HomeController : Controller
     {
         private readonly TestResponseGenerator _generator;
@@ -17,18 +17,13 @@ namespace RoutingWebSite
 
         public IActionResult Index()
         {
-            return _generator.Generate("/", "/Home", "/Home/Index");
+            return _generator.Generate("/Travel", "/Travel/Home", "/Travel/Home/Index");
         }
 
+        [HttpGet("ContosoCorp/AboutTravel")]
         public IActionResult About()
         {
-            // There are no urls that reach this action - it's hidden by an attribute route.
             return _generator.Generate();
-        }
-
-        public IActionResult Contact()
-        {
-            return _generator.Generate("/Home/Contact");
         }
     }
 }
