@@ -4,8 +4,14 @@ k
     Run klr commands in your project. Executes k sdk.
 
 command=''
+kvmUse=''
 
 */}
 
-exec program='cmd' commandline='/C k ${command}' if='!IsMono'
+default kvmUse=''
+
+var kvmPath='${Directory.GetCurrentDirectory()}\packages\KoreBuild\build\kvm'
+
+exec program='cmd' commandline='/C k ${command}' if='!IsMono && string.IsNullOrEmpty(kvmUse)'
+exec program='cmd' commandline='/C "${kvmPath}" use ${kvmUse} && k ${command}' if='!IsMono && !string.IsNullOrEmpty(kvmUse)'
 exec program='k' commandline='${command}' if='IsMono'

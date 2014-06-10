@@ -28,31 +28,29 @@ projectFile=''
         object configsObject;
         var configs = project.TryGetValue("configurations", out configsObject)
             ? (Dictionary<string, object>)configsObject
-            : new Dictionary<string, object>();
+            : new Dictionary<string, object>
+                {
+                    { "net45", new Dictionary<string, object>() },
+                    { "k10", new Dictionary<string, object>() }
+                };
         
         // Currently only net* and k* targets are supported. See aspnet/Universe#53
-        var targetFrameworks = configs.Keys.Where(k => k.StartsWith("net", StringComparison.OrdinalIgnoreCase) /*
-                                                    || k.StartsWith("k", StringComparison.OrdinalIgnoreCase) */ );
+        var targetFrameworks = configs.Keys.Where(k => k.StartsWith("net", StringComparison.OrdinalIgnoreCase)
+                                                    || k.StartsWith("k", StringComparison.OrdinalIgnoreCase));
         
-        var originalTargetFramework = Environment.GetEnvironmentVariable("TARGET_FRAMEWORK");
-        try
+        foreach (var framework in targetFrameworks)
         {
-            foreach (var framework in targetFrameworks)
+            if (framework.StartsWith("net", StringComparison.OrdinalIgnoreCase))
             {
-                // Workaround for aspnet/KRuntime#129
-                var frameworkString = framework.StartsWith("net", StringComparison.OrdinalIgnoreCase)
-                    ? ""
-                    : framework;
-
-                Environment.SetEnvironmentVariable("TARGET_FRAMEWORK", frameworkString);
-                K("test", projectFolder);
+                K("test", projectFolder, "");
             }
-        } finally
-        {
-            Environment.SetEnvironmentVariable("TARGET_FRAMEWORK", originalTargetFramework);
+            else if (!IsMono)
+            {
+                K("test", projectFolder, "default -svrc50");
+            }
         }
     }
 }
 
-macro name='K' command='string' workingdir='string'
+macro name='K' command='string' workingdir='string' kvmUse='string'
     k
