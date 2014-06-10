@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var store = new Mock<IUserStore<TUser>>();
             var options = new OptionsAccessor<IdentityOptions>(null);
-            return new Mock<UserManager<TUser>>(new ServiceCollection().BuildServiceProvider(), store.Object, options);
+            return new Mock<UserManager<TUser>>(store.Object, options, new PasswordHasher(), new UserValidator<TUser>(), new PasswordValidator<TUser>(), new ClaimsIdentityFactory<TUser>());
         }
 
         public static UserManager<TUser> TestUserManager<TUser>() where TUser : class
@@ -45,9 +45,8 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var options = new OptionsAccessor<IdentityOptions>(null);
             var validator = new Mock<UserValidator<TUser>>();
-            var userManager = new UserManager<TUser>(new ServiceCollection().BuildServiceProvider(), store, options);
+            var userManager = new UserManager<TUser>(store, options, new PasswordHasher(), validator.Object, new PasswordValidator<TUser>(), new ClaimsIdentityFactory<TUser>());
             validator.Setup(v => v.ValidateAsync(userManager, It.IsAny<TUser>(), CancellationToken.None)).Returns(Task.FromResult(IdentityResult.Success)).Verifiable();
-            userManager.UserValidator = validator.Object;
             return userManager;
         }
     }

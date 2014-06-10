@@ -25,10 +25,10 @@ namespace Microsoft.AspNet.Identity.Entity.Test
         {
             var services = new ServiceCollection();
             services.AddEntityFramework().AddInMemoryStore();
+            services.AddIdentity<EntityUser, EntityRole>();
             services.AddSingleton<IOptionsAccessor<IdentityOptions>, OptionsAccessor<IdentityOptions>>();
             services.AddInstance<IdentityContext>(new IdentityContext());
             services.AddTransient<IUserStore<EntityUser>, InMemoryUserStore>();
-            services.AddSingleton<UserManager<EntityUser>>();
             var provider = services.BuildServiceProvider();
             var manager = provider.GetService<UserManager<EntityUser>>();
             Assert.NotNull(manager);

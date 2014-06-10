@@ -21,7 +21,10 @@ namespace Microsoft.AspNet.Identity.Test
         {
             public IUserStore<TestUser> StorePublic { get { return Store; } }
 
-            public TestManager(IServiceProvider provider, IUserStore<TestUser> store, IOptionsAccessor<IdentityOptions> options) : base(provider, store, options) { }
+            public TestManager(IUserStore<TestUser> store, IOptionsAccessor<IdentityOptions> optionsAccessor,
+                IPasswordHasher passwordHasher, IUserValidator<TestUser> userValidator,
+                IPasswordValidator<TestUser> passwordValidator, IClaimsIdentityFactory<TestUser> claimsIdentityFactory)
+                : base(store, optionsAccessor, passwordHasher, userValidator, passwordValidator, claimsIdentityFactory) { }
         }
 
         [Fact]
@@ -47,7 +50,6 @@ namespace Microsoft.AspNet.Identity.Test
             // Setup
             var store = new Mock<IUserStore<TestUser>>();
             var user = new TestUser { UserName = "Foo" };
-            var options = new OptionsAccessor<IdentityOptions>(null);
             store.Setup(s => s.CreateAsync(user, CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
             var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
 
@@ -65,9 +67,8 @@ namespace Microsoft.AspNet.Identity.Test
             // Setup
             var store = new Mock<IUserStore<TestUser>>();
             var user = new TestUser { UserName = "Foo" };
-            var options = new OptionsAccessor<IdentityOptions>(null);
             store.Setup(s => s.DeleteAsync(user, CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
-            var userManager = new UserManager<TestUser>(new ServiceCollection().BuildServiceProvider(), store.Object, options);
+            var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
 
             // Act
             var result = await userManager.DeleteAsync(user);
@@ -420,14 +421,28 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public async Task ManagerPublicNullChecks()
         {
-            var provider = new ServiceCollection().BuildServiceProvider();
-            Assert.Throws<ArgumentNullException>("serviceProvider",
-                () => new UserManager<TestUser>(null, null, null));
+            var store = new NotImplementedStore();
+            var optionsAccessor = new OptionsAccessor<IdentityOptions>(null);
+            var passwordHasher = new PasswordHasher();
+            var userValidator = new UserValidator<TestUser>();
+            var passwordValidator = new PasswordValidator<TestUser>();
+            var claimsIdentityFactory = new ClaimsIdentityFactory<TestUser>();
+
             Assert.Throws<ArgumentNullException>("store",
-                () => new UserManager<TestUser>(provider, null, null));
+                () => new UserManager<TestUser>(null, null, null, null, null, null));
             Assert.Throws<ArgumentNullException>("optionsAccessor",
-                () => new UserManager<TestUser>(provider, new NotImplementedStore(), null));
-            var manager = new UserManager<TestUser>(provider, new NotImplementedStore(), new OptionsAccessor<IdentityOptions>(null));
+                () => new UserManager<TestUser>(store, null, null, null, null, null));
+            Assert.Throws<ArgumentNullException>("passwordHasher",
+                () => new UserManager<TestUser>(store, optionsAccessor, null, null, null, null));
+            Assert.Throws<ArgumentNullException>("userValidator",
+                () => new UserManager<TestUser>(store, optionsAccessor, passwordHasher, null, null, null));
+            Assert.Throws<ArgumentNullException>("passwordValidator",
+                () => new UserManager<TestUser>(store, optionsAccessor, passwordHasher, userValidator, null, null));
+            Assert.Throws<ArgumentNullException>("claimsIdentityFactory",
+                () => new UserManager<TestUser>(store, optionsAccessor, passwordHasher, userValidator, passwordValidator, null));
+
+            var manager = new UserManager<TestUser>(store, optionsAccessor, passwordHasher, userValidator, passwordValidator, claimsIdentityFactory);
+
             Assert.Throws<ArgumentNullException>("value", () => manager.ClaimsIdentityFactory = null);
             Assert.Throws<ArgumentNullException>("value", () => manager.PasswordHasher = null);
             Assert.Throws<ArgumentNullException>("value", () => manager.Options = null);

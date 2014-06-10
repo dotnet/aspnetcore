@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public void RolesQueryableFailWhenStoreNotImplemented()
         {
-            var manager = new RoleManager<TestRole>(new ServiceCollection().BuildServiceProvider(), new NoopRoleStore());
+            var manager = CreateRoleManager(new NoopRoleStore());
             Assert.False(manager.SupportsQueryableRoles);
             Assert.Throws<NotSupportedException>(() => manager.Roles.Count());
         }
@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public void DisposeAfterDisposeDoesNotThrow()
         {
-            var manager = new RoleManager<TestRole>(new ServiceCollection().BuildServiceProvider(), new NoopRoleStore());
+            var manager = CreateRoleManager(new NoopRoleStore());
             manager.Dispose();
             manager.Dispose();
         }
@@ -34,10 +34,10 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var provider = new ServiceCollection().BuildServiceProvider();
             Assert.Throws<ArgumentNullException>("store",
-                () => new RoleManager<TestRole>(provider, null));
-            Assert.Throws<ArgumentNullException>("services",
-                () => new RoleManager<TestRole>(null, new NotImplementedStore()));
-            var manager = new RoleManager<TestRole>(provider, new NotImplementedStore());
+                () => new RoleManager<TestRole>(null, new RoleValidator<TestRole>()));
+            Assert.Throws<ArgumentNullException>("roleValidator",
+                () => new RoleManager<TestRole>(new NotImplementedStore(), null));
+            var manager = CreateRoleManager(new NotImplementedStore());
             await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await manager.CreateAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await manager.UpdateAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await manager.DeleteAsync(null));
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public async Task RoleStoreMethodsThrowWhenDisposed()
         {
-            var manager = new RoleManager<TestRole>(new ServiceCollection().BuildServiceProvider(), new NoopRoleStore());
+            var manager = CreateRoleManager(new NoopRoleStore());
             manager.Dispose();
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByIdAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByNameAsync(null));
@@ -56,6 +56,11 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.CreateAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.UpdateAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.DeleteAsync(null));
+        }
+
+        private static RoleManager<TestRole> CreateRoleManager(IRoleStore<TestRole> roleStore)
+        {
+            return new RoleManager<TestRole>(roleStore, new RoleValidator<TestRole>());
         }
 
         private class NotImplementedStore : IRoleStore<TestRole>

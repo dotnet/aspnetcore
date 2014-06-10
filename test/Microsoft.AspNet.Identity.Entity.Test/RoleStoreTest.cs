@@ -38,6 +38,7 @@ namespace Microsoft.AspNet.Identity.Entity.Test
             services.AddEntityFramework().AddInMemoryStore();
             services.AddTransient<IdentityContext>();
             services.AddTransient<IRoleStore<EntityRole>, EntityRoleStore<EntityRole>>();
+            services.AddTransient<IRoleValidator<EntityRole>, RoleValidator<EntityRole>>();
             services.AddSingleton<RoleManager<EntityRole>>();
             var provider = services.BuildServiceProvider();
             var manager = provider.GetService<RoleManager<EntityRole>>();

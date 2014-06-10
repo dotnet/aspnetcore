@@ -21,19 +21,19 @@ namespace Microsoft.AspNet.Identity
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="services"></param>
         /// <param name="store">The IRoleStore is responsible for commiting changes via the UpdateAsync/CreateAsync methods</param>
-        public RoleManager(IServiceProvider services, IRoleStore<TRole> store)
+        /// <param name="roleValidator"></param>
+        public RoleManager(IRoleStore<TRole> store, IRoleValidator<TRole> roleValidator)
         {
             if (store == null)
             {
                 throw new ArgumentNullException("store");
             }
-            if (services == null)
+            if (roleValidator == null)
             {
-                throw new ArgumentNullException("services");
+                throw new ArgumentNullException("roleValidator");
             }
-            RoleValidator = services.GetService<IRoleValidator<TRole>>() ?? new RoleValidator<TRole>();
+            RoleValidator = roleValidator;
             Store = store;
         }
 
