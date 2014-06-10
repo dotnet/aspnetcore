@@ -68,8 +68,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Equal("Hello 'MyProperty', goodbye 'OtherProperty'.", rule.ErrorMessage);
         }
 
-        // Test currently fails under CoreCLR; DataAnnotations unable to find the resource.
-#if NET45
         [Fact]
         public void ClientRulesWithCompareAttribute_ErrorMessageUsesResourceOverride()
         {
@@ -91,7 +89,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var rule = Assert.Single(rules);
             Assert.Equal("Comparing MyProperty to OtherProperty.", rule.ErrorMessage);
         }
-#endif
 
         private class PropertyDisplayNameModel
         {
