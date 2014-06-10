@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
 
 namespace Microsoft.AspNet.Builder
@@ -28,6 +29,10 @@ namespace Microsoft.AspNet.Builder
                 DefaultHandler = new MvcRouteHandler(),
                 ServiceProvider = app.ApplicationServices
             };
+
+            routes.Routes.Add(AttributeRouting.CreateAttributeMegaRoute(
+                routes.DefaultHandler, 
+                app.ApplicationServices));
 
             configureRoutes(routes);
 

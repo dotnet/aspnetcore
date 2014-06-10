@@ -29,7 +29,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Areas\Travel\FlightController.cs" />
+    <Compile Include="Controllers\BlogController.cs" />
+    <Compile Include="Controllers\EmployeeController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\StoreController.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="TestResponseGenerator.cs" />
   </ItemGroup>

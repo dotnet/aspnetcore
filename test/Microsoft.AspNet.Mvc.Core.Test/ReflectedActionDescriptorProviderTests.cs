@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNet.Routing;
 using Moq;
 using Xunit;
 
@@ -297,36 +298,38 @@ namespace Microsoft.AspNet.Mvc.Test
             TypeInfo controllerTypeInfo, 
             IEnumerable<IFilter> filters = null)
         {
+            var conventions = new StaticActionDiscoveryConventions(controllerTypeInfo);
+
             var assemblyProvider = new Mock<IControllerAssemblyProvider>();
             assemblyProvider
                 .SetupGet(ap => ap.CandidateAssemblies)
                 .Returns(new Assembly[] { controllerTypeInfo.Assembly });
 
-            var conventions = new StaticActionDiscoveryConventions(controllerTypeInfo);
-
             var provider = new ReflectedActionDescriptorProvider(
                 assemblyProvider.Object,
                 conventions,
                 filters,
-                new MockMvcOptionsAccessor());
+                new MockMvcOptionsAccessor(),
+                Mock.Of<IInlineConstraintResolver>());
 
             return provider;
         }
 
         private IEnumerable<ActionDescriptor> GetDescriptors(params TypeInfo[] controllerTypeInfos)
         {
+            var conventions = new StaticActionDiscoveryConventions(controllerTypeInfos);
+
             var assemblyProvider = new Mock<IControllerAssemblyProvider>();
             assemblyProvider
                 .SetupGet(ap => ap.CandidateAssemblies)
                 .Returns(controllerTypeInfos.Select(cti => cti.Assembly).Distinct());
 
-            var conventions = new StaticActionDiscoveryConventions(controllerTypeInfos);
-
             var provider = new ReflectedActionDescriptorProvider(
                 assemblyProvider.Object,
                 conventions,
                 null,
-                new MockMvcOptionsAccessor());
+                new MockMvcOptionsAccessor(),
+                null);
             
             return provider.GetDescriptors();
         }

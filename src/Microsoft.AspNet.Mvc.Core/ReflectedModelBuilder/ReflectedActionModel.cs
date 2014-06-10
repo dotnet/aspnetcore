@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNet.Mvc.Routing;
 
 namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
 {
@@ -18,6 +19,12 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
             Attributes = actionMethod.GetCustomAttributes(inherit: true).OfType<object>().ToList();
 
             Filters = Attributes.OfType<IFilter>().ToList();
+
+            var routeTemplateAttribute = Attributes.OfType<IRouteTemplateProvider>().FirstOrDefault();
+            if (routeTemplateAttribute != null)
+            {
+                RouteTemplate = routeTemplateAttribute.Template;
+            }
 
             HttpMethods = new List<string>();
             Parameters = new List<ReflectedParameterModel>();
@@ -36,5 +43,7 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
         public bool IsActionNameMatchRequired { get; set; }
 
         public List<ReflectedParameterModel> Parameters { get; private set; }
+
+        public string RouteTemplate { get; set; }
     }
 }

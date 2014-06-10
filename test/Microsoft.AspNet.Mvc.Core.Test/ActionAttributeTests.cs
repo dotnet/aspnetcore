@@ -220,7 +220,8 @@ namespace Microsoft.AspNet.Mvc.Test
                                         controllerAssemblyProvider.Object,
                                         actionDiscoveryConventions,
                                         null,
-                                        new MockMvcOptionsAccessor());
+                                        new MockMvcOptionsAccessor(),
+                                        Mock.Of<IInlineConstraintResolver>());
         }
 
         private static HttpContext GetHttpContext(string httpMethod)

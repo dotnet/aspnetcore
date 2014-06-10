@@ -27,6 +27,8 @@
     <Compile Include="ActionDescriptor.cs" />
     <Compile Include="ActionDescriptorProviderContext.cs" />
     <Compile Include="ActionDescriptorsCollection.cs" />
+    <Compile Include="ReflectedActionDescriptor.cs" />
+    <Compile Include="ReflectedActionDescriptorProvider.cs" />
     <Compile Include="ReflectedModelBuilder\IReflectedApplicationModelConvention.cs" />
     <Compile Include="ReflectedModelBuilder\ReflectedActionModel.cs" />
     <Compile Include="ReflectedModelBuilder\ReflectedControllerModel.cs" />
@@ -74,7 +76,6 @@
     <Compile Include="DefaultActionSelector.cs" />
     <Compile Include="DefaultControllerAssemblyProvider.cs" />
     <Compile Include="DefaultControllerFactory.cs" />
-    <Compile Include="ReflectedModelBuilder\ReflectedParameterModel.cs" />
     <Compile Include="Extensions\IEnumerableExtensions.cs" />
     <Compile Include="Filters\FilterItemOrderComparer.cs" />
     <Compile Include="Filters\TypeFilterAttribute.cs" />
@@ -152,11 +153,10 @@
     <Compile Include="ParameterDescriptor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs" />
-    <Compile Include="ReflectedActionDescriptor.cs" />
-    <Compile Include="ReflectedActionDescriptorProvider.cs" />
     <Compile Include="ReflectedActionExecutor.cs" />
     <Compile Include="ReflectedActionInvoker.cs" />
     <Compile Include="ReflectedActionInvokerProvider.cs" />
+    <Compile Include="ReflectedModelBuilder\ReflectedParameterModel.cs" />
     <Compile Include="Rendering\DynamicViewData.cs" />
     <Compile Include="Rendering\Expressions\CachedExpressionCompiler.cs" />
     <Compile Include="Rendering\Expressions\ExpressionHelper.cs" />
@@ -203,10 +203,17 @@
     <Compile Include="Rendering\SelectListItem.cs" />
     <Compile Include="Rendering\UnobtrusiveValidationAttributesGenerator.cs" />
     <Compile Include="Rendering\ViewEngineResult.cs" />
+    <Compile Include="RouteAttribute.cs" />
     <Compile Include="RouteConstraintAttribute.cs" />
     <Compile Include="RouteDataActionConstraint.cs" />
     <Compile Include="KnownRouteValueConstraint.cs" />
     <Compile Include="RouteKeyHandling.cs" />
+    <Compile Include="Routing\AttributeRoute.cs" />
+    <Compile Include="Routing\AttributeRouteEntry.cs" />
+    <Compile Include="Routing\AttributeRoutePrecedence.cs" />
+    <Compile Include="Routing\AttributeRouteTemplate.cs" />
+    <Compile Include="Routing\AttributeRouting.cs" />
+    <Compile Include="Routing\IRouteTemplateProvider.cs" />
     <Compile Include="TemplateInfo.cs" />
     <Compile Include="UrlHelper.cs" />
     <Compile Include="UrlHelperExtensions.cs" />

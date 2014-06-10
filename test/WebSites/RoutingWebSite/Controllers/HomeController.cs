@@ -22,6 +22,7 @@ namespace RoutingWebSite
 
         public IActionResult About()
         {
+            // There are no urls that reach this action - it's hidden by an attribute route.
             return _generator.Generate();
         }
     }

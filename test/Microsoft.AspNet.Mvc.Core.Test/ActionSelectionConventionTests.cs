@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Routing;
@@ -187,7 +188,8 @@ namespace Microsoft.AspNet.Mvc.Test
                                         controllerAssemblyProvider.Object,
                                         actionDiscoveryConventions,
                                         null,
-                                        new MockMvcOptionsAccessor());
+                                        new MockMvcOptionsAccessor(),
+                                        Mock.Of<IInlineConstraintResolver>());
         }
 
         private static HttpContext GetHttpContext(string httpMethod)

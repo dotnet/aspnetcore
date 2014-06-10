@@ -8,6 +8,9 @@ using System.Linq;
 using System.Reflection;
 #endif
 using Microsoft.AspNet.Mvc.ReflectedModelBuilder;
+using Microsoft.AspNet.Mvc.Routing;
+using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Routing.Template;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc
@@ -20,16 +23,19 @@ namespace Microsoft.AspNet.Mvc
         private readonly IActionDiscoveryConventions _conventions;
         private readonly IEnumerable<IFilter> _globalFilters;
         private readonly IEnumerable<IReflectedApplicationModelConvention> _modelConventions;
+        private readonly IInlineConstraintResolver _constraintResolver;
 
         public ReflectedActionDescriptorProvider(IControllerAssemblyProvider controllerAssemblyProvider,
                                                  IActionDiscoveryConventions conventions,
                                                  IEnumerable<IFilter> globalFilters,
-                                                 IOptionsAccessor<MvcOptions> optionsAccessor)
+                                                 IOptionsAccessor<MvcOptions> optionsAccessor,
+                                                 IInlineConstraintResolver constraintResolver)
         {
             _controllerAssemblyProvider = controllerAssemblyProvider;
             _conventions = conventions;
             _globalFilters = globalFilters ?? Enumerable.Empty<IFilter>();
             _modelConventions = optionsAccessor.Options.ApplicationModelConventions;
+            _constraintResolver = constraintResolver;
         }
 
         public int Order
@@ -106,6 +112,8 @@ namespace Microsoft.AspNet.Mvc
 
         public List<ReflectedActionDescriptor> Build(ReflectedApplicationModel model)
         {
+            var routeGroupsByTemplate = GetRouteGroupsByTemplate(model);
+
             var actions = new List<ReflectedActionDescriptor>();
 
             var removalConstraints = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -188,6 +196,45 @@ namespace Microsoft.AspNet.Mvc
                         }
                     }
 
+                    if (routeGroupsByTemplate.Any())
+                    {
+                        var templateText = AttributeRouteTemplate.Combine(
+                                controller.RouteTemplate,
+                                action.RouteTemplate);
+
+                        if (templateText == null)
+                        {
+                            // A conventional routed action can't match any route group.
+                            actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
+                                AttributeRouting.RouteGroupKey,
+                                RouteKeyHandling.DenyKey));
+                        }
+                        else
+                        {
+                            // An attribute routed action will ignore conventional routed constraints.
+                            actionDescriptor.RouteConstraints.Clear();
+
+                            // TODO #738 - this currently has parity with what we did in MVC5 for the action
+                            // route values. This needs to be reconsidered as part of #738.
+                            var template = TemplateParser.Parse(templateText, _constraintResolver);
+                            if (template.Parameters.Any(
+                                p => p.IsParameter &&
+                                string.Equals(p.Name, "action", StringComparison.OrdinalIgnoreCase)))
+                            {
+                                actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
+                                    "action",
+                                    action.ActionName));
+                            }
+
+                            var routeGroup = routeGroupsByTemplate[templateText];
+                            actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
+                                AttributeRouting.RouteGroupKey,
+                                routeGroup));
+
+                            actionDescriptor.RouteTemplate = templateText;
+                        }
+                    }
+
                     actionDescriptor.FilterDescriptors =
                         action.Filters.Select(f => new FilterDescriptor(f, FilterScope.Action))
                         .Concat(controller.Filters.Select(f => new FilterDescriptor(f, FilterScope.Controller)))
@@ -213,6 +260,26 @@ namespace Microsoft.AspNet.Mvc
             }
 
             return actions;
+        }
+
+        // Groups the set of all attribute routing templates and returns mapping of [template -> group].
+        private static Dictionary<string, string> GetRouteGroupsByTemplate(ReflectedApplicationModel model)
+        {
+            var groupsByTemplate = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var controller in model.Controllers)
+            {
+                foreach (var action in controller.Actions)
+                {
+                    var template = AttributeRouteTemplate.Combine(controller.RouteTemplate, action.RouteTemplate);
+                    if (template != null && !groupsByTemplate.ContainsKey(template))
+                    {
+                        groupsByTemplate.Add(template, "__route__" + template);
+                    }
+                }
+            }
+
+            return groupsByTemplate;
         }
     }
 }

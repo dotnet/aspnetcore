@@ -67,6 +67,8 @@
     <Compile Include="Rendering\ViewContextTests.cs" />
     <Compile Include="Rendering\ViewDataOfTTest.cs" />
     <Compile Include="KnownRouteValueConstraintTests.cs" />
+    <Compile Include="Routing\AttributeRoutePrecedenceTests.cs" />
+    <Compile Include="Routing\AttributeRouteTemplateTests.cs" />
     <Compile Include="TestController.cs" />
     <Compile Include="TypeHelperTest.cs" />
     <Compile Include="StaticActionDiscoveryConventions.cs" />

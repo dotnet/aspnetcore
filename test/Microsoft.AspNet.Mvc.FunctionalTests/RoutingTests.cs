@@ -134,6 +134,155 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(404, response.StatusCode);
         }
 
+        [Fact]
+        public async Task AttributeRoutedAction_IsReachable()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            // Act
+            var response = await client.GetAsync("http://localhost/Store/Shop/Products");
+            Assert.Equal(200, response.StatusCode);
+
+            var body = await response.ReadBodyAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            // Assert
+            Assert.Contains("/Store/Shop/Products", result.ExpectedUrls);
+            Assert.Equal("Store", result.Controller);
+            Assert.Equal("ListProducts", result.Action);
+        }
+
+        // The url would be /Store/ListProducts with conventional routes
+        [Fact]
+        public async Task AttributeRoutedAction_IsNotReachableWithTraditionalRoute()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            // Act
+            var response = await client.GetAsync("http://localhost/Store/ListProducts");
+
+            // Assert
+            Assert.Equal(404, response.StatusCode);
+        }
+
+        // There's two actions at this URL - but attribute routes go in the route table
+        // first.
+        [Fact]
+        public async Task AttributeRoutedAction_TriedBeforeConventionRouting()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            // Act
+            var response = await client.GetAsync("http://localhost/Home/About");
+            Assert.Equal(200, response.StatusCode);
+
+            // Assert
+            var body = await response.ReadBodyAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            // Assert
+            Assert.Contains("/Home/About", result.ExpectedUrls);
+            Assert.Equal("Store", result.Controller);
+            Assert.Equal("About", result.Action);
+
+            // A convention-routed action would have values for action and controller.
+            Assert.None(
+                result.RouteValues,
+                (kvp) => string.Equals(kvp.Key, "action", StringComparison.OrdinalIgnoreCase));
+
+            Assert.None(
+                result.RouteValues,
+                (kvp) => string.Equals(kvp.Key, "controller", StringComparison.OrdinalIgnoreCase));
+        }
+
+        [Fact]
+        public async Task AttributeRoutedAction_ControllerLevelRoute_WithActionParameter_IsReachable()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            // Act
+            var response = await client.GetAsync("http://localhost/Blog/Edit/5");
+            Assert.Equal(200, response.StatusCode);
+
+            // Assert
+            var body = await response.ReadBodyAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            // Assert
+            Assert.Contains("/Blog/Edit/5", result.ExpectedUrls);
+            Assert.Equal("Blog", result.Controller);
+            Assert.Equal("Edit", result.Action);
+
+            // This route is parameterized on {action}, but not controller.
+            Assert.Contains(
+                new KeyValuePair<string, object>("action", "Edit"),
+                result.RouteValues);
+
+            Assert.Contains(
+                new KeyValuePair<string, object>("postId", "5"),
+                result.RouteValues);
+
+            Assert.None(
+                result.RouteValues,
+                (kvp) => string.Equals(kvp.Key, "controller", StringComparison.OrdinalIgnoreCase));
+        }
+
+        // There's no [HttpGet] on the action here.
+        [Fact]
+        public async Task AttributeRoutedAction_ControllerLevelRoute_IsReachable()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            // Act
+            var response = await client.GetAsync("http://localhost/api/Employee");
+            Assert.Equal(200, response.StatusCode);
+
+            // Assert
+            var body = await response.ReadBodyAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            // Assert
+            Assert.Contains("/api/Employee", result.ExpectedUrls);
+            Assert.Equal("Employee", result.Controller);
+            Assert.Equal("List", result.Action);
+        }
+
+        // There's an [HttpGet] with its own template on the action here.
+        [Fact]
+        public async Task AttributeRoutedAction_ControllerLevelRoute_CombinedWithActionRoute_IsReachable()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            // Act
+            var response = await client.GetAsync("http://localhost/api/Employee/5/Boss");
+            Assert.Equal(200, response.StatusCode);
+
+            // Assert
+            var body = await response.ReadBodyAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            // Assert
+            Assert.Contains("/api/Employee/5/Boss", result.ExpectedUrls);
+            Assert.Equal("Employee", result.Controller);
+            Assert.Equal("GetBoss", result.Action);
+
+            Assert.Contains(
+                new KeyValuePair<string, object>("id", "5"),
+                result.RouteValues);
+        }
+
         // See TestResponseGenerator in RoutingWebSite for the code that generates this data.
         private class RoutingResult
         {
