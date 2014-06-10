@@ -8,20 +8,17 @@ namespace Microsoft.AspNet.Mvc
 {
     public class ReflectedActionInvokerProvider : IActionInvokerProvider
     {
-        private readonly IServiceProvider _serviceProvider;
         private readonly IControllerFactory _controllerFactory;
         private readonly IActionBindingContextProvider _bindingProvider;
         private readonly INestedProviderManager<FilterProviderContext> _filterProvider;
 
         public ReflectedActionInvokerProvider(IControllerFactory controllerFactory,
                                               IActionBindingContextProvider bindingProvider,
-                                              INestedProviderManager<FilterProviderContext> filterProvider,
-                                              IServiceProvider serviceProvider)
+                                              INestedProviderManager<FilterProviderContext> filterProvider)
         {
             _controllerFactory = controllerFactory;
             _bindingProvider = bindingProvider;
             _filterProvider = filterProvider;
-            _serviceProvider = serviceProvider;
         }
 
         public int Order

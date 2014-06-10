@@ -1,0 +1,10 @@
+﻿{
+    "dependencies": {
+        "Helios": "0.1-alpha-*",
+        "Microsoft.AspNet.Mvc": ""
+    },
+    "configurations": {
+        "net45": { },
+        "k10": { }
+    }
+}

@@ -186,8 +186,60 @@ namespace Microsoft.AspNet.Mvc
             var propAHelper = Assert.Single(helpers.Where(h => h.Name == "PropA"));
             var propBHelper = Assert.Single(helpers.Where(h => h.Name == "PropB"));
 
-            Assert.Equal("Overriden", propAHelper.GetValue(derived));
+            Assert.Equal("OverridenpropAValue", propAHelper.GetValue(derived));
             Assert.Equal("propBValue", propBHelper.GetValue(derived));
+        }
+
+        [Fact]
+        public void MakeFastPropertySetter_SetsPropertyValues_ForPublicAndNobPublicProperties()
+        {
+            // Arrange
+            var instance = new BaseClass();
+            var typeInfo = instance.GetType().GetTypeInfo();
+            var publicProperty = typeInfo.GetDeclaredProperty("PropA");
+            var protectedProperty = typeInfo.GetDeclaredProperty("PropProtected");
+            var publicPropertySetter = PropertyHelper.MakeFastPropertySetter(publicProperty);
+            var protectedPropertySetter = PropertyHelper.MakeFastPropertySetter(protectedProperty);
+
+            // Act
+            publicPropertySetter(instance, "TestPublic");
+            protectedPropertySetter(instance, "TestProtected");
+
+            // Assert
+            Assert.Equal("TestPublic", instance.PropA);
+            Assert.Equal("TestProtected", instance.GetPropProtected());
+        }
+
+        [Fact]
+        public void MakeFastPropertySetter_SetsPropertyValues_ForOverridenProperties()
+        {
+            // Arrange
+            var instance = new DerivedClassWithOverride();
+            var typeInfo = instance.GetType().GetTypeInfo();
+            var property = typeInfo.GetDeclaredProperty("PropA");
+            var propertySetter = PropertyHelper.MakeFastPropertySetter(property);
+
+            // Act
+            propertySetter(instance, "Test value");
+
+            // Assert
+            Assert.Equal("OverridenTest value", instance.PropA);
+        }
+
+        [Fact]
+        public void MakeFastPropertySetter_SetsPropertyValues_ForNewedProperties()
+        {
+            // Arrange
+            var instance = new DerivedClassWithNew();
+            var typeInfo = instance.GetType().GetTypeInfo();
+            var property = typeInfo.GetDeclaredProperty("PropB");
+            var propertySetter = PropertyHelper.MakeFastPropertySetter(property);
+
+            // Act
+            propertySetter(instance, "Test value");
+
+            // Assert
+            Assert.Equal("NewedTest value", instance.PropB);
         }
 
         private class Static
@@ -220,6 +272,11 @@ namespace Microsoft.AspNet.Mvc
             public string PropA { get; set; }
 
             protected string PropProtected { get; set; }
+
+            public string GetPropProtected()
+            {
+                return PropProtected;
+            }
         }
 
         public class DerivedClass : BaseClass
@@ -235,12 +292,24 @@ namespace Microsoft.AspNet.Mvc
 
         public class DerivedClassWithNew : BaseClassWithVirtual
         {
-            public new string PropB { get { return "Newed"; } }
+            private string _value = "Newed";
+
+            public new string PropB
+            {
+                get { return _value; }
+                set { _value = "Newed" + value; }
+            }
         }
 
         public class DerivedClassWithOverride : BaseClassWithVirtual
         {
-            public override string PropA { get { return "Overriden"; } }
+            private string _value = "Overriden";
+
+            public override string PropA
+            {
+                get { return _value; }
+                set { _value = "Overriden" + value; }
+            }
         }
     }
 }

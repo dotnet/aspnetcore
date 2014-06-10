@@ -8,15 +8,12 @@ namespace MvcSample.Web.RandomNameSpace
     {
         private User _user = new User() { Name = "User Name", Address = "Home Address" };
 
-        public HttpContext Context
+        [Activate]
+        public HttpResponse Response
         {
-            get
-            {
-                return ActionContext.HttpContext;
-            }
+            get; set;
         }
 
-        // The property ActionContext gets injected by InitializeController from DefaultControllerFactory.
         public ActionContext ActionContext { get; set; }
 
         public string Index()
@@ -42,7 +39,7 @@ namespace MvcSample.Web.RandomNameSpace
 
         public void Raw()
         {
-            Context.Response.WriteAsync("Hello World raw");
+            Response.WriteAsync("Hello World raw");
         }
 
         public ActionResult UserJson()

@@ -38,6 +38,7 @@
     <Compile Include="AntiXsrf\AntiForgeryTokenSerializerTest.cs" />
     <Compile Include="AntiXsrf\ITokenProvider.cs" />
     <Compile Include="AntiXsrf\ValidateAntiForgeryTokenAttributeTest.cs" />
+    <Compile Include="DefaultControllerActivatorTest.cs" />
     <Compile Include="Filters\ActionFilterAttributeTests.cs" />
     <Compile Include="Filters\AuthorizeAttributeTests.cs" />
     <Compile Include="Filters\AuthorizeAttributeTestsBase.cs" />

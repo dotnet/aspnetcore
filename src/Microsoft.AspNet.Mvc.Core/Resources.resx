@@ -306,4 +306,7 @@
   <data name="ActionResult_ActionReturnValueCannotBeNull" xml:space="preserve">
     <value>Cannot return null from an action method with a return type of '{0}'.</value>
   </data>
+  <data name="ValueTypesCannotBeActivated" xml:space="preserve">
+    <value>Value types cannot be activated by '{0}'.</value>
+  </data>
 </root>

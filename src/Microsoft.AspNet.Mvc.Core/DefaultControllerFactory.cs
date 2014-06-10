@@ -3,20 +3,23 @@
 
 using System;
 using Microsoft.AspNet.Mvc.Core;
-using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc
 {
     public class DefaultControllerFactory : IControllerFactory
     {
-        private readonly ITypeActivator _activator;
         private readonly IServiceProvider _serviceProvider;
+        private readonly ITypeActivator _typeActivator;
+        private readonly IControllerActivator _controllerActivator;
 
-        public DefaultControllerFactory(IServiceProvider serviceProvider, ITypeActivator activator)
+        public DefaultControllerFactory(IServiceProvider serviceProvider, 
+                                        ITypeActivator typeActivator,
+                                        IControllerActivator controllerActivator)
         {
             _serviceProvider = serviceProvider;
-            _activator = activator;
+            _typeActivator = typeActivator;
+            _controllerActivator = controllerActivator;
         }
 
         public object CreateController(ActionContext actionContext)
@@ -30,11 +33,12 @@ namespace Microsoft.AspNet.Mvc
                     "actionContext");
             }
 
-            var controller = _activator.CreateInstance(
+            var controller = _typeActivator.CreateInstance(
                 _serviceProvider,
                 actionDescriptor.ControllerDescriptor.ControllerTypeInfo.AsType());
 
-            InitializeController(controller, actionContext);
+            actionContext.Controller = controller;
+            _controllerActivator.Activate(controller, actionContext);
 
             return controller;
         }
@@ -47,21 +51,6 @@ namespace Microsoft.AspNet.Mvc
             {
                 disposableController.Dispose();
             }
-        }
-
-        private void InitializeController(object controller, ActionContext actionContext)
-        {
-            Injector.InjectProperty(controller, "ActionContext", actionContext);
-
-            var viewData = new ViewDataDictionary(
-                _serviceProvider.GetService<IModelMetadataProvider>(),
-                actionContext.ModelState);
-            Injector.InjectProperty(controller, "ViewData", viewData);
-
-            var urlHelper = _serviceProvider.GetService<IUrlHelper>();
-            Injector.InjectProperty(controller, "Url", urlHelper);
-
-            Injector.CallInitializer(controller, _serviceProvider);
         }
     }
 }

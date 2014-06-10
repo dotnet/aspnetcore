@@ -47,6 +47,7 @@
     <Compile Include="ActionResults\RedirectToActionResult.cs" />
     <Compile Include="ActionResults\RedirectToRouteResult.cs" />
     <Compile Include="ActionResults\ViewResult.cs" />
+    <Compile Include="ActivateAttribute.cs" />
     <Compile Include="AntiForgery\AntiForgery.cs" />
     <Compile Include="AntiForgery\AntiForgeryOptions.cs" />
     <Compile Include="AntiForgery\AntiForgeryToken.cs" />
@@ -130,7 +131,9 @@
     <Compile Include="IActionInvokerProvider.cs" />
     <Compile Include="IActionResult.cs" />
     <Compile Include="IActionSelector.cs" />
+    <Compile Include="IControllerActivator.cs" />
     <Compile Include="IControllerAssemblyProvider.cs" />
+    <Compile Include="DefaultControllerActivator.cs" />
     <Compile Include="IControllerFactory.cs" />
     <Compile Include="Injector.cs" />
     <Compile Include="Internal\PropertyHelper.cs" />

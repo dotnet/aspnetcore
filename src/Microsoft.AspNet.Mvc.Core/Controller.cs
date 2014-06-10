@@ -15,15 +15,6 @@ namespace Microsoft.AspNet.Mvc
     public class Controller : IActionFilter, IAsyncActionFilter
     {
         private DynamicViewData _viewBag;
-        private IServiceProvider _serviceProvider;
-        private IViewEngine _viewEngine;
-
-        [NonAction]
-        public virtual void Initialize(IServiceProvider serviceProvider, IViewEngine viewEngine)
-        {
-            _serviceProvider = serviceProvider;
-            _viewEngine = viewEngine;
-        }
 
         public HttpContext Context
         {
@@ -41,8 +32,16 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
+        [Activate]
         public ActionContext ActionContext { get; set; }
 
+        [Activate]
+        public IServiceProvider ServiceProvider { get; set; }
+
+        [Activate]
+        public IViewEngine ViewEngine { get; set; }
+
+        [Activate]
         public IUrlHelper Url { get; set; }
 
         public IPrincipal User
@@ -58,6 +57,7 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
+        [Activate]
         public ViewDataDictionary ViewData { get; set; }
 
         public dynamic ViewBag
@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.Mvc
                 ViewData.Model = model;
             }
 
-            return new ViewResult(_serviceProvider, _viewEngine)
+            return new ViewResult(ServiceProvider, ViewEngine)
             {
                 ViewName = viewName,
                 ViewData = ViewData,

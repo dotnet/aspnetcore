@@ -1297,7 +1297,7 @@ namespace Microsoft.AspNet.Mvc
                 routeData: new RouteData(),
                 actionDescriptor: actionDescriptor);
 
-            var controllerFactory = new Mock<IControllerFactory>(MockBehavior.Strict);
+            var controllerFactory = new Mock<IControllerFactory>();
             controllerFactory.Setup(c => c.CreateController(It.IsAny<ActionContext>())).Returns(this);
 
             var actionBindingContextProvider = new Mock<IActionBindingContextProvider>(MockBehavior.Strict);

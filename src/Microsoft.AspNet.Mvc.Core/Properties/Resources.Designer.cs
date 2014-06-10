@@ -1018,6 +1018,22 @@ namespace Microsoft.AspNet.Mvc.Core
             return string.Format(CultureInfo.CurrentCulture, GetString("ActionResult_ActionReturnValueCannotBeNull"), p0);
         }
 
+        /// <summary>
+        /// Value types cannot be activated by '{0}'.
+        /// </summary>
+        internal static string ValueTypesCannotBeActivated
+        {
+            get { return GetString("ValueTypesCannotBeActivated"); }
+        }
+
+        /// <summary>
+        /// Value types cannot be activated by '{0}'.
+        /// </summary>
+        internal static string FormatValueTypesCannotBeActivated(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ValueTypesCannotBeActivated"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

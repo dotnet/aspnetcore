@@ -15,8 +15,9 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             // Arrange
             var factory = new DefaultControllerFactory(
-                new Mock<IServiceProvider>().Object,
-                new Mock<ITypeActivator>().Object);
+                Mock.Of<IServiceProvider>(),
+                Mock.Of<ITypeActivator>(),
+                Mock.Of<IControllerActivator>());
 
             var controller = new MyController();
 
@@ -33,8 +34,9 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             // Arrange
             var factory = new DefaultControllerFactory(
-                new Mock<IServiceProvider>().Object,
-                new Mock<ITypeActivator>().Object);
+                Mock.Of<IServiceProvider>(),
+                Mock.Of<ITypeActivator>(),
+                Mock.Of<IControllerActivator>());
 
             var controller = new Object();
 
