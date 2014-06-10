@@ -110,6 +110,15 @@ namespace E2ETests
                 {
                     //Shutdown the host process
                     hostProcess.Kill();
+                    hostProcess.WaitForExit(5 * 1000);
+                    if (!hostProcess.HasExited)
+                    {
+                        Console.WriteLine("Unable to terminate the host process with process Id '{0}", hostProcess.Id);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Successfully terminated host process with process Id '{0}'", hostProcess.Id);
+                    }
                 }
 
                 DbUtils.DropDatabase(musicStoreDbName);
