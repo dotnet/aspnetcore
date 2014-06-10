@@ -45,9 +45,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             _threadId = loop._threadId;
         }
 
+
         public void Validate(bool closed = false)
         {
-            Trace.Assert(IsClosed == closed, "Handle is closed");
+            Trace.Assert(closed || !IsClosed, "Handle is closed");
             Trace.Assert(!IsInvalid, "Handle is invalid");
             Trace.Assert(_threadId == Thread.CurrentThread.ManagedThreadId, "ThreadId is correct");
         }

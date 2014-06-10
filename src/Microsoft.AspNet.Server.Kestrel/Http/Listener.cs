@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private void OnDispose(object listenSocket)
         {
-            ((UvHandle)listenSocket).Close();
+            ((UvHandle)listenSocket).Dispose();
         }
     }
 }

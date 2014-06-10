@@ -111,7 +111,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             var self = (Connection)x;
                             var shutdown = new UvShutdownReq();
                             shutdown.Init(self.Thread.Loop);
-                            shutdown.Shutdown(self._socket, (req, status, state) => req.Close(), null);
+                            shutdown.Shutdown(self._socket, (req, status, state) => req.Dispose(), null);
                         },
                         this);
                     break;
@@ -123,7 +123,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     break;
                 case ProduceEndType.SocketDisconnect:
                     Thread.Post(
-                        x => ((UvHandle)x).Close(),
+                        x => ((UvHandle)x).Dispose(),
                         _socket);
                     break;
             }

@@ -3,6 +3,8 @@
 
 using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
@@ -17,11 +19,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             _responseStream = responseStream;
         }
 
+#if NET45
         public override void Close()
         {
             _requestStream.Close();
             _responseStream.Close();
         }
+#endif
 
         protected override void Dispose(bool disposing)
         {
@@ -37,6 +41,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             _responseStream.Flush();
         }
 
+        public override Task FlushAsync(CancellationToken cancellationToken)
+        {
+            return _responseStream.FlushAsync(cancellationToken);
+        }
+
+#if NET45
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             return _requestStream.BeginRead(buffer, offset, count, callback, state);
@@ -46,7 +56,19 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             return _requestStream.EndRead(asyncResult);
         }
+#endif
 
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            return _requestStream.ReadAsync(buffer, offset, count, cancellationToken);
+        }
+
+        public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
+        {
+            return _requestStream.CopyToAsync(destination, bufferSize, cancellationToken);
+        }
+
+#if NET45
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             return _responseStream.BeginWrite(buffer, offset, count, callback, state);
@@ -55,6 +77,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public override void EndWrite(IAsyncResult asyncResult)
         {
             _responseStream.EndWrite(asyncResult);
+        }
+#endif
+
+        public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            return _responseStream.WriteAsync(buffer, offset, count, cancellationToken);
         }
 
         public override long Seek(long offset, SeekOrigin origin)

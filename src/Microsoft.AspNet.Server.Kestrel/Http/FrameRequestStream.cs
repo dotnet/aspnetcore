@@ -41,6 +41,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return ReadAsync(buffer, offset, count).Result;
         }
 
+#if NET45
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             var task = ReadAsync(buffer, offset, count, CancellationToken.None, state);
@@ -55,6 +56,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             return ((Task<int>)asyncResult).Result;
         }
+#endif
 
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {

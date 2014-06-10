@@ -8,12 +8,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
     public class UvAsyncHandle : UvHandle
     {
         private static Libuv.uv_async_cb _uv_async_cb = AsyncCb;
-
-        unsafe static void AsyncCb(IntPtr handle)
-        {
-            FromIntPtr<UvAsyncHandle>(handle)._callback.Invoke();
-        }
-
         private Action _callback;
 
         public void Init(UvLoopHandle loop, Action callback)
@@ -25,18 +19,18 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 
         public void DangerousClose()
         {
-            Close();
+            Dispose();
             ReleaseHandle();
-        }
-
-        private void UvAsyncCb(IntPtr handle)
-        {
-            _callback.Invoke();
         }
 
         public void Send()
         {
             _uv.async_send(this);
+        }
+
+        unsafe static void AsyncCb(IntPtr handle)
+        {
+            FromIntPtr<UvAsyncHandle>(handle)._callback.Invoke();
         }
     }
 }

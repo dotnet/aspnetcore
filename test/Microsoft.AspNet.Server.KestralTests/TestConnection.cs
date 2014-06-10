@@ -32,8 +32,8 @@ namespace Microsoft.AspNet.Server.KestralTests
         }
         public void Dispose()
         {
-            _stream.Close();
-            _socket.Close();
+            _stream.Dispose();
+            _socket.Dispose();
         }
 
         public async Task Send(params string[] lines)
@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Server.KestralTests
             while (offset < expected.Length)
             {
                 var task = _reader.ReadAsync(actual, offset, actual.Length - offset);
-                Assert.True(task.Wait(1000), "timeout");
+//                Assert.True(task.Wait(1000), "timeout");
                 var count = await task;
                 if (count == 0)
                 {

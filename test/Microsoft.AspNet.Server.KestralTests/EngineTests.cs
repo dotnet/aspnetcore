@@ -256,7 +256,7 @@ Hello World");
             engine.Stop();
         }
 
-        [Fact(Skip = "This is still not working")]
+        [Fact]
         public async Task Expect100ContinueForBody()
         {
             var engine = new KestrelEngine();
@@ -265,10 +265,20 @@ Hello World");
 
             using (var connection = new TestConnection())
             {
-                await connection.Send("POST / HTTP/1.1", "Expect: 100-continue", "Content-Length: 11", "\r\n");
+                await connection.Send(
+                    "POST / HTTP/1.1",
+                    "Expect: 100-continue",
+                    "Content-Length: 11",
+                    "Connection: close",
+                    "\r\n");
                 await connection.Receive("HTTP/1.1 100 Continue", "\r\n");
                 await connection.SendEnd("Hello World");
-                await connection.ReceiveEnd("HTTP/1.1 200 OK", "Content-Length: 11", "", "Hello World");
+                await connection.Receive(
+                    "HTTP/1.1 200 OK",
+                    "Content-Length: 11",
+                    "Connection: close",
+                    "", 
+                    "Hello World");
             }
 
             started.Dispose();

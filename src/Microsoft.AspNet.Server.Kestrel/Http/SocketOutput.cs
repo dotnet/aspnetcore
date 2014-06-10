@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 _pin.Free();
                 //NOTE: pool this?
-                Close();
+                Dispose();
                 _callback(_state);
             }
         }

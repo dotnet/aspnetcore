@@ -454,7 +454,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         static string GetString(ArraySegment<byte> range, int startIndex, int endIndex)
         {
-            return Encoding.Default.GetString(range.Array, range.Offset + startIndex, endIndex - startIndex);
+            return Encoding.UTF8.GetString(range.Array, range.Offset + startIndex, endIndex - startIndex);
         }
 
 

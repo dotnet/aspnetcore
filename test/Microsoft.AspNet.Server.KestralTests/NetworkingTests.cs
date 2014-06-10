@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Server.KestralTests
             var loop = new UvLoopHandle();
             loop.Init(_uv);
             loop.Run();
-            loop.Close();
+            loop.Dispose();
         }
 
         [Fact]
@@ -42,11 +42,11 @@ namespace Microsoft.AspNet.Server.KestralTests
             trigger.Init(loop, () =>
             {
                 called = true;
-                trigger.Close();
+                trigger.Dispose();
             });
             trigger.Send();
             loop.Run();
-            loop.Close();
+            loop.Dispose();
             Assert.True(called);
         }
 
@@ -58,9 +58,9 @@ namespace Microsoft.AspNet.Server.KestralTests
             var tcp = new UvTcpHandle();
             tcp.Init(loop);
             tcp.Bind(new IPEndPoint(IPAddress.Loopback, 0));
-            tcp.Close();
+            tcp.Dispose();
             loop.Run();
-            loop.Close();
+            loop.Dispose();
         }
 
 
@@ -77,8 +77,8 @@ namespace Microsoft.AspNet.Server.KestralTests
                 var tcp2 = new UvTcpHandle();
                 tcp2.Init(loop);
                 stream.Accept(tcp2);
-                tcp2.Close();
-                stream.Close();
+                tcp2.Dispose();
+                stream.Dispose();
             }, null);
             var t = Task.Run(async () =>
             {
@@ -92,10 +92,10 @@ namespace Microsoft.AspNet.Server.KestralTests
                     new IPEndPoint(IPAddress.Loopback, 54321),
                     null,
                     TaskCreationOptions.None);
-                socket.Close();
+                socket.Dispose();
             });
             loop.Run();
-            loop.Close();
+            loop.Dispose();
             await t;
         }
 
@@ -122,11 +122,11 @@ namespace Microsoft.AspNet.Server.KestralTests
                         bytesRead += nread;
                         if (nread == 0)
                         {
-                            tcp2.Close();
+                            tcp2.Dispose();
                         }
                     },
                     null);
-                tcp.Close();
+                tcp.Dispose();
             }, null);
             var t = Task.Run(async () =>
             {
@@ -147,10 +147,10 @@ namespace Microsoft.AspNet.Server.KestralTests
                     SocketFlags.None,
                     null,
                     TaskCreationOptions.None);
-                socket.Close();
+                socket.Dispose();
             });
             loop.Run();
-            loop.Close();
+            loop.Dispose();
             await t;
         }
     }

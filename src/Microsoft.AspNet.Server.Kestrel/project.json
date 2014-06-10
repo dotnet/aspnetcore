@@ -3,6 +3,19 @@
     "dependencies": {
         "Microsoft.AspNet.Hosting": "0.1-*"
     },
+    "configurations": {
+        "net45": { },
+        "k10": {
+            "dependencies": {
+                "System.Threading.ThreadPool": "4.0.10.0",
+                "System.Diagnostics.Debug": "4.0.10.0",
+                "System.Threading.Thread": "4.0.0.0",
+                "System.Diagnostics.TraceSource": "4.0.0.0",
+                "System.Text.Encoding": "4.0.20.0",
+                "System.Threading.Tasks": "4.0.10.0"
+            }
+        }
+    },
     "compilationOptions": {
         "allowUnsafe": true
     }

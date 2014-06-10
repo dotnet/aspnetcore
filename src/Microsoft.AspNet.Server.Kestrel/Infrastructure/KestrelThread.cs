@@ -45,12 +45,14 @@ namespace Microsoft.AspNet.Server.Kestrel
         public void Stop(TimeSpan timeout)
         {
             Post(OnStop, null);
-            if (!_thread.Join(timeout))
+            if (!_thread.Join((int)timeout.TotalMilliseconds))
             {
                 Post(OnStopImmediate, null);
-                if (!_thread.Join(timeout))
+                if (!_thread.Join((int)timeout.TotalMilliseconds))
                 {
+#if NET45
                     _thread.Abort();
+#endif
                 }
             }
             if (_closeError != null)
@@ -107,7 +109,7 @@ namespace Microsoft.AspNet.Server.Kestrel
                 var ran2 = _loop.Run();
 
                 // delete the last of the unmanaged memory
-                _loop.Close();
+                _loop.Dispose();
             }
             catch (Exception ex)
             {
