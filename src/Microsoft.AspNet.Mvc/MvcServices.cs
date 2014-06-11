@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc
 
             yield return describe.Transient<IControllerFactory, DefaultControllerFactory>();
             yield return describe.Transient<IControllerDescriptorFactory, DefaultControllerDescriptorFactory>();
-            yield return describe.Transient<IActionSelector, DefaultActionSelector>();
+            yield return describe.Scoped<IActionSelector, DefaultActionSelector>();
             yield return describe.Transient<IActionInvokerFactory, ActionInvokerFactory>();
             yield return describe.Transient<IParameterDescriptorFactory, DefaultParameterDescriptorFactory>();
             yield return describe.Transient<IControllerAssemblyProvider, DefaultControllerAssemblyProvider>();
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc
 
             yield return describe.Transient<IRazorCompilationService, RazorCompilationService>();
             yield return describe.Transient<IVirtualPathViewFactory, VirtualPathViewFactory>();
-            yield return describe.Transient<IViewEngine, RazorViewEngine>();
+            yield return describe.Scoped<IViewEngine, RazorViewEngine>();
 
             yield return describe.Transient<INestedProvider<ActionDescriptorProviderContext>,
                                             ReflectedActionDescriptorProvider>();
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Mvc
                 DefaultActionDescriptorsCollectionProvider>();
 
             yield return describe.Transient<IModelMetadataProvider, DataAnnotationsModelMetadataProvider>();
-            yield return describe.Transient<IActionBindingContextProvider, DefaultActionBindingContextProvider>();
+            yield return describe.Scoped<IActionBindingContextProvider, DefaultActionBindingContextProvider>();
 
             yield return describe.Transient<IValueProviderFactory, RouteValueValueProviderFactory>();
             yield return describe.Transient<IValueProviderFactory, QueryStringValueProviderFactory>();

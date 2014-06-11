@@ -61,6 +61,8 @@
     <Compile Include="HomeController.cs" />
     <Compile Include="LinkController.cs" />
     <Compile Include="Models\User.cs" />
+    <Compile Include="Monitoring\MonitoringMiddlware.cs" />
+    <Compile Include="Monitoring\MonitoringModule.cs" />
     <Compile Include="OverloadController.cs" />
     <Compile Include="Services\TestService.cs" />
     <Compile Include="SimplePocoController.cs" />

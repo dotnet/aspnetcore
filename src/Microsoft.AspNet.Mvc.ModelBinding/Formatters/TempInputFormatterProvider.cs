@@ -5,21 +5,28 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class TempInputFormatterProvider : IInputFormatterProvider
     {
-        private readonly IInputFormatter[] _formatters;
-
-        public TempInputFormatterProvider(IEnumerable<IInputFormatter> formatters)
-        {
-            _formatters = formatters.ToArray();
-        }
+        private IInputFormatter[] _formatters;
 
         public IInputFormatter GetInputFormatter(InputFormatterProviderContext context)
         {
             var request = context.HttpContext.Request;
+
+            var formatters = _formatters;
+
+            if (formatters == null)
+            {
+                formatters = context.HttpContext.ApplicationServices.GetService<IEnumerable<IInputFormatter>>()
+                                .ToArray();
+
+                _formatters = formatters;
+            }
+
             var contentType = request.GetContentType();
             if (contentType == null)
             {
@@ -27,9 +34,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 throw new InvalidOperationException("400: Bad Request");
             }
 
-            for (var i = 0; i < _formatters.Length; i++)
+            for (var i = 0; i < formatters.Length; i++)
             {
-                var formatter = _formatters[i];
+                var formatter = formatters[i];
                 if (formatter.SupportedMediaTypes.Contains(contentType.ContentType, StringComparer.OrdinalIgnoreCase))
                 {
                     return formatter;

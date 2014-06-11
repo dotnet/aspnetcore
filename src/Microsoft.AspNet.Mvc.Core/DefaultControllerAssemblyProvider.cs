@@ -21,6 +21,7 @@ namespace Microsoft.AspNet.Mvc
             "Microsoft.AspNet.Mvc.Razor.Host",
             "Microsoft.AspNet.Mvc.Rendering",
         };
+
         private readonly ILibraryManager _libraryManager;
 
         public DefaultControllerAssemblyProvider(ILibraryManager libraryManager)
@@ -42,8 +43,8 @@ namespace Microsoft.AspNet.Mvc
             // for a given assembly. In our case, we'll gather all assemblies that reference
             // any of the primary Mvc assemblies while ignoring Mvc assemblies.
             return _mvcAssemblyList.SelectMany(_libraryManager.GetReferencingLibraries)
-                                       .Distinct()
-                                       .Where(IsCandidateLibrary);
+                                   .Distinct()
+                                   .Where(IsCandidateLibrary);
         }
 
         private static Assembly Load(ILibraryInformation library)
