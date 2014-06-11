@@ -16,6 +16,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     {
         private readonly DataAnnotationsModelMetadataProvider _metadataProvider = new DataAnnotationsModelMetadataProvider();
 
+#if NET45
         [Fact]
         public void GetValidators_ReturnsValidatorForIValidatableObject()
         {
@@ -30,8 +31,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Assert
             var validator = Assert.Single(validators);
             Assert.IsType<ValidatableObjectAdapter>(validator);
-
         }
+#endif
 
         [Fact]
         public void GetValidators_DoesNotAddRequiredAttribute_ForNonNullableValueTypes_IfAttributeIsSpecifiedExplicitly()
