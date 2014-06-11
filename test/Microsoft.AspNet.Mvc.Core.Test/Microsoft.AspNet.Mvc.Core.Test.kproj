@@ -59,6 +59,9 @@
     <Compile Include="PropertyHelperTest.cs" />
     <Compile Include="ReflectedActionDescriptorProviderTests.cs" />
     <Compile Include="ReflectedActionInvokerTest.cs" />
+    <Compile Include="Rendering\DefaultTemplatesUtilities.cs" />
+    <Compile Include="Rendering\DefaultDisplayTemplatesTests.cs" />
+    <Compile Include="Rendering\DefaultEditorTemplatesTests.cs" />
     <Compile Include="Rendering\HtmlAttributePropertyHelperTest.cs" />
     <Compile Include="Rendering\ViewContextTests.cs" />
     <Compile Include="Rendering\ViewDataOfTTest.cs" />
