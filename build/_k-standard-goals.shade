@@ -92,7 +92,6 @@ default Configuration='Release'
 #stylecop
   stylecop-setup
   stylecop-run each='var projectFile in Files.Include("src/**/project.json")'
-  stylecop-run each='var projectFile in Files.Include("test/**/project.json")'
 
 functions @{
     string E(string key) { return Environment.GetEnvironmentVariable(key); }
