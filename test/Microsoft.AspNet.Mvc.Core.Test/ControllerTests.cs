@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
 using Xunit;
@@ -12,6 +13,17 @@ namespace Microsoft.AspNet.Mvc.Core
 {
     public class ControllerTests
     {
+        public static IEnumerable<object[]> PublicNormalMethodsFromController
+        {
+            get
+            {
+                return typeof(Controller).GetTypeInfo()
+                    .DeclaredMethods
+                    .Where(method => method.IsPublic && !method.IsSpecialName)
+                    .Select(method => new [] { method });
+            }
+        }
+
         [Fact]
         public void SettingViewData_AlsoUpdatesViewBag()
         {
@@ -246,6 +258,14 @@ namespace Microsoft.AspNet.Mvc.Core
             // Assert
             Assert.True(resultPermanent.Permanent);
             Assert.Equal(TypeHelper.ObjectToDictionary(routeValues), resultPermanent.RouteValues);
+        }
+
+        [Theory]
+        [MemberData("PublicNormalMethodsFromController")]
+        public void NonActionAttribute_IsOnEveryPublicNormalMethodFromController(MethodInfo method)
+        {
+            // Arrange & Act & Assert
+            Assert.True(method.IsDefined(typeof(NonActionAttribute)));
         }
 
         public static IEnumerable<object[]> RedirectTestData

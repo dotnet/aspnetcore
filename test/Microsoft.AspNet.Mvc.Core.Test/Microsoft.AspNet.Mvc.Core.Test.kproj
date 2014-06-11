@@ -49,6 +49,7 @@
     <Compile Include="JsonResultTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PropertyHelperTest.cs" />
+    <Compile Include="ReflectedActionDescriptorProviderTests.cs" />
     <Compile Include="ReflectedActionInvokerTest.cs" />
     <Compile Include="Rendering\HtmlAttributePropertyHelperTest.cs" />
     <Compile Include="Rendering\ViewContextTests.cs" />
