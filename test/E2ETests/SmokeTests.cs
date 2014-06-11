@@ -106,7 +106,7 @@ namespace E2ETests
             }
             finally
             {
-                if (hostProcess != null)
+                if (hostProcess != null & !hostProcess.HasExited)
                 {
                     //Shutdown the host process
                     hostProcess.Kill();
@@ -119,6 +119,10 @@ namespace E2ETests
                     {
                         Console.WriteLine("Successfully terminated host process with process Id '{0}'", hostProcess.Id);
                     }
+                }
+                else
+                {
+                    Console.WriteLine("Host process already exited or never started successfully.");
                 }
 
                 DbUtils.DropDatabase(musicStoreDbName);
