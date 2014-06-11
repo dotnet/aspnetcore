@@ -9,26 +9,30 @@ namespace Microsoft.AspNet.Mvc
 {
     public class ContentViewComponentResult : IViewComponentResult
     {
-        private readonly HtmlString _encoded;
-
         public ContentViewComponentResult([NotNull] string content)
         {
-            _encoded = new HtmlString(WebUtility.HtmlEncode(content));
+            Content = content;
+            EncodedContent = new HtmlString(WebUtility.HtmlEncode(content));
         }
 
-        public ContentViewComponentResult([NotNull] HtmlString encoded)
+        public ContentViewComponentResult([NotNull] HtmlString encodedContent)
         {
-            _encoded = encoded;
+            EncodedContent = encodedContent;
+            Content = WebUtility.HtmlDecode(encodedContent.ToString());
         }
+
+        public string Content { get; private set; }
+
+        public HtmlString EncodedContent { get; private set; }
 
         public void Execute([NotNull] ViewComponentContext context)
         {
-            context.Writer.Write(_encoded.ToString());
+            context.Writer.Write(EncodedContent.ToString());
         }
 
         public async Task ExecuteAsync([NotNull] ViewComponentContext context)
         {
-            await context.Writer.WriteAsync(_encoded.ToString());
+            await context.Writer.WriteAsync(EncodedContent.ToString());
         }
     }
 }

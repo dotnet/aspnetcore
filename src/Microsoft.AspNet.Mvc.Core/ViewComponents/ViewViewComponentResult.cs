@@ -14,18 +14,19 @@ namespace Microsoft.AspNet.Mvc
     {
         // {0} is the component name, {1} is the view name.
         private const string ViewPathFormat = "Components/{0}/{1}";
-
         private readonly IViewEngine _viewEngine;
-        private readonly string _viewName;
-        private readonly ViewDataDictionary _viewData;
 
-        public ViewViewComponentResult([NotNull] IViewEngine viewEngine, [NotNull] string viewName,
+        public ViewViewComponentResult([NotNull] IViewEngine viewEngine, string viewName,
             ViewDataDictionary viewData)
         {
             _viewEngine = viewEngine;
-            _viewName = viewName;
-            _viewData = viewData;
+            ViewName = viewName;
+            ViewData = viewData;
         }
+
+        public string ViewName { get; private set; }
+
+        public ViewDataDictionary ViewData { get; private set; }
 
         public void Execute([NotNull] ViewComponentContext context)
         {
@@ -35,10 +36,10 @@ namespace Microsoft.AspNet.Mvc
         public async Task ExecuteAsync([NotNull] ViewComponentContext context)
         {
             string qualifiedViewName;
-            if (_viewName.Length > 0 && _viewName[0] == '/')
+            if (ViewName != null && ViewName.Length > 0 && ViewName[0] == '/')
             {
                 // View name that was passed in is already a rooted path, the view engine will handle this.
-                qualifiedViewName = _viewName;
+                qualifiedViewName = ViewName;
             }
             else
             {
@@ -57,7 +58,7 @@ namespace Microsoft.AspNet.Mvc
                     CultureInfo.InvariantCulture,
                     ViewPathFormat,
                     ViewComponentConventions.GetComponentName(context.ComponentType),
-                    _viewName);
+                    ViewName ?? "Default");
             }
 
             var view = FindView(context.ViewContext.RouteData.Values, qualifiedViewName);
@@ -65,7 +66,7 @@ namespace Microsoft.AspNet.Mvc
             var childViewContext = new ViewContext(
                 context.ViewContext,
                 view,
-                _viewData ?? context.ViewContext.ViewData,
+                ViewData ?? context.ViewContext.ViewData,
                 context.Writer);
 
             using (view as IDisposable)

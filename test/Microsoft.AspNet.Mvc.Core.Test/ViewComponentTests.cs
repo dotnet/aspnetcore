@@ -1,13 +1,9 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
-using System.Threading.Tasks;
+using System.Net;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc
@@ -53,140 +49,120 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Fact]
-        public void ViewComponent_Content_CallsResultContentWithTestContent()
+        public void ViewComponent_Content_SetsResultContentAndEncodedContent()
         {
             // Arrange
             var viewComponent = new TestViewComponent();
-            var resultHelperMock = new Mock<DefaultViewComponentResultHelper>(It.IsAny<IViewEngine>());
-            var resultMock = new Mock<ContentViewComponentResult>("TestContent");
-            resultHelperMock.Setup(r => r.Content(It.IsAny<string>()))
-                            .Returns(resultMock.Object);
-            viewComponent.Initialize(resultHelperMock.Object);
+            var expectedContent = "TestContent&";
+            var expectedEncodedContent = new HtmlString(WebUtility.HtmlEncode(expectedContent));
 
             // Act
-            var actualResult = viewComponent.Content("TestContent");
+            var actualResult = viewComponent.Content(expectedContent);
 
             // Assert
-            resultHelperMock.Verify(r => r.Content("TestContent"));
-            Assert.Same(resultMock.Object, actualResult);
+            Assert.IsType<ContentViewComponentResult>(actualResult);
+            Assert.Same(expectedContent, actualResult.Content);
+            Assert.Equal(expectedEncodedContent.ToString(), actualResult.EncodedContent.ToString());
         }
 
         [Fact]
-        public void ViewComponent_Json_CallsResultJsonWithTestValue()
+        public void ViewComponent_Json_SetsResultData()
         {
             // Arrange
             var viewComponent = new TestViewComponent();
-            var resultHelperMock = new Mock<DefaultViewComponentResultHelper>(It.IsAny<IViewEngine>());
-            var resultMock = new Mock<JsonViewComponentResult>(It.IsAny<object>());
-            resultHelperMock.Setup(r => r.Json(It.IsAny<object>()))
-                            .Returns(resultMock.Object);
-            viewComponent.Initialize(resultHelperMock.Object);
-            var testValue = new object();
+            var testData = new object();
 
             // Act
-            var actualResult = viewComponent.Json(testValue);
+            var actualResult = viewComponent.Json(testData);
 
             // Assert
-            resultHelperMock.Verify(r => r.Json(testValue));
-            Assert.Same(resultMock.Object, actualResult);
+            Assert.IsType<JsonViewComponentResult>(actualResult);
+            Assert.Same(testData, actualResult.Data);
         }
 
         [Fact]
-        public void ViewComponent_View_WithEmptyParameter_CallsResultViewWithDefaultViewName()
+        public void ViewComponent_View_WithEmptyParameter_SetsResultViewWithDefaultViewName()
         {
             // Arrange
             var viewComponent = new TestViewComponent()
             {
                 ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
             };
-            var resultHelperMock = new Mock<DefaultViewComponentResultHelper>(It.IsAny<IViewEngine>());
-            var resultMock = new Mock<ViewViewComponentResult>(It.IsAny<IViewEngine>(),
-                                                               It.IsAny<string>(),
-                                                               It.IsAny<ViewDataDictionary>());
-            resultHelperMock.Setup(r => r.View(It.IsAny<string>(), It.IsAny<ViewDataDictionary>()))
-                            .Returns(resultMock.Object);
-            viewComponent.Initialize(resultHelperMock.Object);
 
             // Act
             var actualResult = viewComponent.View();
 
             // Assert
-            resultHelperMock.Verify(r => r.View("Default", viewComponent.ViewData));
-            Assert.Same(resultMock.Object, actualResult);
+            Assert.IsType<ViewViewComponentResult>(actualResult);
+            Assert.NotSame(viewComponent.ViewData, actualResult.ViewData);
+            Assert.Equal(new ViewDataDictionary<object>(viewComponent.ViewData), actualResult.ViewData);
+            Assert.Null(actualResult.ViewData.Model);
+            Assert.Null(actualResult.ViewName);
         }
 
         [Fact]
-        public void ViewComponent_View_WithViewNameParameter_CallsResultViewWithCustomViewName()
+        public void ViewComponent_View_WithViewNameParameter_SetsResultViewWithCustomViewName()
         {
             // Arrange
             var viewComponent = new TestViewComponent()
             {
                 ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
             };
-            var resultHelperMock = new Mock<DefaultViewComponentResultHelper>(It.IsAny<IViewEngine>());
-            var resultMock = new Mock<ViewViewComponentResult>(It.IsAny<IViewEngine>(),
-                                                               It.IsAny<string>(),
-                                                               It.IsAny<ViewDataDictionary>());
-            resultHelperMock.Setup(r => r.View(It.IsAny<string>(), It.IsAny<ViewDataDictionary>()))
-                            .Returns(resultMock.Object);
-            viewComponent.Initialize(resultHelperMock.Object);
 
             // Act
             var actualResult = viewComponent.View("CustomViewName");
 
             // Assert
-            resultHelperMock.Verify(r => r.View("CustomViewName", viewComponent.ViewData));
-            Assert.Same(resultMock.Object, actualResult);
+            Assert.IsType<ViewViewComponentResult>(actualResult);
+            Assert.IsType<ViewDataDictionary<object>>(actualResult.ViewData);
+            Assert.NotSame(viewComponent.ViewData, actualResult.ViewData);
+            Assert.Equal(new ViewDataDictionary<object>(viewComponent.ViewData), actualResult.ViewData);
+            Assert.Null(actualResult.ViewData.Model);
+            Assert.Equal("CustomViewName", actualResult.ViewName);
         }
 
         [Fact]
-        public void ViewComponent_View_WithModelParameter_CallsResultViewWithDefaultViewNameAndModel()
+        public void ViewComponent_View_WithModelParameter_SetsResultViewWithDefaultViewNameAndModel()
         {
             // Arrange
             var viewComponent = new TestViewComponent()
             {
                 ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
             };
-            var resultHelperMock = new Mock<DefaultViewComponentResultHelper>(It.IsAny<IViewEngine>());
-            var resultMock = new Mock<ViewViewComponentResult>(It.IsAny<IViewEngine>(),
-                                                               It.IsAny<string>(),
-                                                               It.IsAny<ViewDataDictionary>());
-            resultHelperMock.Setup(r => r.View(It.IsAny<string>(), It.IsAny<ViewDataDictionary>()))
-                            .Returns(resultMock.Object);
-            viewComponent.Initialize(resultHelperMock.Object);
             var model = new object();
 
             // Act
             var actualResult = viewComponent.View(model);
 
             // Assert
-            resultHelperMock.Verify(r => r.View("Default", viewComponent.ViewData));
-            Assert.Same(resultMock.Object, actualResult);
+            Assert.IsType<ViewViewComponentResult>(actualResult);
+            Assert.IsType<ViewDataDictionary<object>>(actualResult.ViewData);
+            Assert.NotSame(viewComponent.ViewData, actualResult.ViewData);
+            Assert.Equal(new ViewDataDictionary<object>(viewComponent.ViewData), actualResult.ViewData);
+            Assert.Same(model, actualResult.ViewData.Model);
+            Assert.Null(actualResult.ViewName);
         }
 
         [Fact]
-        public void ViewComponent_View_WithViewNameAndModelParameters_CallsResultViewWithCustomViewNameAndModel()
+        public void ViewComponent_View_WithViewNameAndModelParameters_SetsResultViewWithCustomViewNameAndModel()
         {
             // Arrange
             var viewComponent = new TestViewComponent()
             {
                 ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
             };
-            var resultHelperMock = new Mock<DefaultViewComponentResultHelper>(It.IsAny<IViewEngine>());
-            var resultMock = new Mock<ViewViewComponentResult>(It.IsAny<IViewEngine>(),
-                                                               It.IsAny<string>(),
-                                                               It.IsAny<ViewDataDictionary>());
-            resultHelperMock.Setup(r => r.View(It.IsAny<string>(), It.IsAny<ViewDataDictionary>()))
-                            .Returns(resultMock.Object);
-            viewComponent.Initialize(resultHelperMock.Object);
             var model = new object();
 
             // Act
             var actualResult = viewComponent.View("CustomViewName", model);
 
             // Assert
-            resultHelperMock.Verify(r => r.View("CustomViewName", viewComponent.ViewData));
-            Assert.Same(resultMock.Object, actualResult);
+            Assert.IsType<ViewViewComponentResult>(actualResult);
+            Assert.IsType<ViewDataDictionary<object>>(actualResult.ViewData);
+            Assert.NotSame(viewComponent.ViewData, actualResult.ViewData);
+            Assert.Equal(new ViewDataDictionary<object>(viewComponent.ViewData), actualResult.ViewData);
+            Assert.Same(model, actualResult.ViewData.Model);
+            Assert.Equal("CustomViewName", actualResult.ViewName);
         }
 
         private class TestViewComponent : ViewComponent

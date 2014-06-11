@@ -212,14 +212,12 @@
     <Compile Include="ViewComponents\DefaultViewComponentInvoker.cs" />
     <Compile Include="ViewComponents\DefaultViewComponentInvokerFactory.cs" />
     <Compile Include="ViewComponents\DefaultViewComponentInvokerProvider.cs" />
-    <Compile Include="ViewComponents\DefaultViewComponentResultHelper.cs" />
     <Compile Include="ViewComponents\DefaultViewComponentSelector.cs" />
     <Compile Include="ViewComponents\IViewComponentHelper.cs" />
     <Compile Include="ViewComponents\IViewComponentInvoker.cs" />
     <Compile Include="ViewComponents\IViewComponentInvokerFactory.cs" />
     <Compile Include="ViewComponents\IViewComponentInvokerProvider.cs" />
     <Compile Include="ViewComponents\IViewComponentResult.cs" />
-    <Compile Include="ViewComponents\IViewComponentResultHelper.cs" />
     <Compile Include="ViewComponents\IViewComponentSelector.cs" />
     <Compile Include="ViewComponents\JsonViewComponentResult.cs" />
     <Compile Include="ViewComponents\ViewComponent.cs" />

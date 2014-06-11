@@ -10,13 +10,12 @@ namespace Microsoft.AspNet.Mvc
     public abstract class ViewComponent
     {
         private dynamic _viewBag;
+        private IViewEngine _viewEngine;
 
         public HttpContext Context
         {
             get { return ViewContext == null ? null : ViewContext.HttpContext; }
         }
-
-        public IViewComponentResultHelper Result { get; private set; }
 
         public dynamic ViewBag
         {
@@ -35,19 +34,19 @@ namespace Microsoft.AspNet.Mvc
 
         public ViewDataDictionary ViewData { get; set; }
 
-        public ContentViewComponentResult Content(string content)
+        public ContentViewComponentResult Content([NotNull] string content)
         {
-            return Result.Content(content);
+            return new ContentViewComponentResult(content);
         }
 
-        public void Initialize(IViewComponentResultHelper result)
+        public void Initialize(IViewEngine viewEngine)
         {
-            Result = result;
+            _viewEngine = viewEngine;
         }
 
-        public JsonViewComponentResult Json(object value)
+        public JsonViewComponentResult Json([NotNull] object value)
         {
-            return Result.Json(value);
+            return new JsonViewComponentResult(value);
         }
 
         public ViewViewComponentResult View()
@@ -73,7 +72,7 @@ namespace Microsoft.AspNet.Mvc
                 viewData.Model = model;
             }
 
-            return Result.View(viewName ?? "Default", viewData);
+            return new ViewViewComponentResult(_viewEngine, viewName, viewData);
         }
     }
 }

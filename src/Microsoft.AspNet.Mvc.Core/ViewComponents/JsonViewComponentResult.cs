@@ -9,15 +9,15 @@ namespace Microsoft.AspNet.Mvc
 {
     public class JsonViewComponentResult : IViewComponentResult
     {
-        private readonly object _value;
-
         private JsonSerializerSettings _jsonSerializerSettings;
 
-        public JsonViewComponentResult([NotNull] object value)
+        public JsonViewComponentResult([NotNull] object data)
         {
-            _value = value;
+            Data = data;
             _jsonSerializerSettings = JsonOutputFormatter.CreateDefaultSettings();
         }
+
+        public object Data { get; private set; }
 
         public JsonSerializerSettings SerializerSettings
         {
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Mvc
         public void Execute([NotNull] ViewComponentContext context)
         {
             var formatter = new JsonOutputFormatter(SerializerSettings, Indent);
-            formatter.WriteObject(context.Writer, _value);
+            formatter.WriteObject(context.Writer, Data);
         }
 
         #pragma warning disable 1998
