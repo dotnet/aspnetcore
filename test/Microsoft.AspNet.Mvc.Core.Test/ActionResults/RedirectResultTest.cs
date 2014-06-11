@@ -14,6 +14,34 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 {
     public class RedirectResultTest
     {
+        [Fact]
+        public void RedirectResult_Constructor_WithParameterUrl_SetsResultUrlAndNotPermanent()
+        {
+            // Arrange
+            var url = "/test/url";
+
+            // Act
+            var result = new RedirectResult(url);
+
+            // Assert
+            Assert.False(result.Permanent);
+            Assert.Same(url, result.Url);
+        }
+
+        [Fact]
+        public void RedirectResult_Constructor_WithParameterUrlAndPermanent_SetsResultUrlAndPermanent()
+        {
+            // Arrange
+            var url = "/test/url";
+
+            // Act
+            var result = new RedirectResult(url, permanent: true);
+
+            // Assert
+            Assert.True(result.Permanent);
+            Assert.Same(url, result.Url);
+        }
+
         [Theory]
         [InlineData("", "/Home/About", "/Home/About")]
         [InlineData("/myapproot", "/test", "/test")]
