@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc
             [NotNull] ResultExecutionDelegate next)
         {
             OnResultExecuting(context);
-            if (context.Result == null)
+            if (!context.Cancel)
             {
                 OnResultExecuted(await next());
             }

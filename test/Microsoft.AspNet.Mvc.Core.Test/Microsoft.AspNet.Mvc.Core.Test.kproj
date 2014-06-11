@@ -34,6 +34,7 @@
     <Compile Include="AntiXsrf\AntiForgeryTokenSerializerTest.cs" />
     <Compile Include="AntiXsrf\ITokenProvider.cs" />
     <Compile Include="AntiXsrf\ValidateAntiForgeryTokenAttributeTest.cs" />
+    <Compile Include="Filters\ActionFilterAttributeTests.cs" />
     <Compile Include="Filters\AuthorizeAttributeTests.cs" />
     <Compile Include="Filters\AuthorizeAttributeTestsBase.cs" />
     <Compile Include="AntiXsrf\AntiForgeryTokenStoreTest.cs" />
@@ -47,6 +48,7 @@
     <Compile Include="DefaultActionSelectorTest.cs" />
     <Compile Include="DefaultControllerAssemblyProviderTests.cs" />
     <Compile Include="DefaultControllerFactoryTest.cs" />
+    <Compile Include="Filters\ResultFilterAttributeTest.cs" />
     <Compile Include="JsonResultTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PropertyHelperTest.cs" />
