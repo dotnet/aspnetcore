@@ -106,7 +106,7 @@ namespace E2ETests
             }
             finally
             {
-                if (hostProcess != null & !hostProcess.HasExited)
+                if (hostProcess != null && !hostProcess.HasExited)
                 {
                     //Shutdown the host process
                     hostProcess.Kill();
