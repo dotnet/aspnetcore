@@ -66,9 +66,7 @@ namespace Microsoft.AspNet.TestHost.Tests
                 .BuildServiceProvider();
 
             // Act & Assert
-            Assert.Throws<ArgumentException>(
-                "serviceProvider",
-                () => TestServer.Create(services, new Startup().Configuration));
+            Assert.Throws<Exception>(() => TestServer.Create(services, new Startup().Configuration));
         }
 
         public class Startup
