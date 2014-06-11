@@ -16,8 +16,6 @@ These are the current minimum requirements, they do not necesarilly represent ou
 ### Windows
 * Windows 7 or greater, though Core CLR will only work on Windows 8 today. If using Core CLR you will need to be on Windows 8 or above. At RTM the whole stack will support Windows 7+ and Windows Server 2008 R2+.
 * .NET 4.5.1 for hosting in IIS
-* Powershell 4. KVM is a Powershell script that makes use of types that older verisons of Powershell cannot load
-
 
 ### OSX/Linux
  * Mono >= 3.4.1 - Currently this means compiling Mono from source from https://github.com/mono/mono
@@ -28,11 +26,17 @@ These are the current minimum requirements, they do not necesarilly represent ou
 
 The first thing we need to do is setup the tools required to build and run an application. We will start out by getting the [K Version Manager (KVM)](https://github.com/aspnet/Home/wiki/version-manager)
 
+The easiest way to get the KVM on Windows is to run the following command:
+```powershell
+@powershell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/master/kvminstall.ps1'))"
+```
+This downloads KVM from this repository and puts it on your machine. Alternatively, you you could clone the repo and get it:
 * Clone the repository
 * On the command line execute
- * ```kvmsetup.cmd``` on Windows or
+ * ```kvm setup``` on Windows or
  * ```sh kvmsetup.sh && source ~/.kre/kvm/kvm.sh``` on OSX/Linux
-* This command will setup your environment, getting it ready to install a version of the runtime. It adds kvm to your path and puts it in your user profile.
+
+This command will setup your environment, getting it ready to install a version of the runtime. It adds KVM to your path and puts it in your user profile. Once you have KVM then you need to get a version of the runtime:
 * Execute ```kvm install 0.1-alpha-build-0446```. This command will download the named version of the KRE and put it on your user profile ready to use. You can get the latest version by running ```kvm upgrade``` but 0446 was the last version explicitly tested. see the [KVM page](https://github.com/aspnet/Home/wiki/version-manager) for more information on KVM.
 * Navigate to samples\ConsoleApp
 * Run ```kpm restore```. This downloads the System.Console package so the app can do Console.WriteLine

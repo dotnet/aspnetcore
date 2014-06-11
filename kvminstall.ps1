@@ -3,7 +3,7 @@ $kvmPs1Path = Join-Path $tempPath "kvm.ps1"
 $kvmCmdPath = Join-Path $tempPath "kvm.cmd"
 
 Write-Host "Using temporary directory: $tempPath"
-if (!(Test-Path $tempPath)) { md $tempPath }
+if (!(Test-Path $tempPath)) { md $tempPath | Out-Null }
 
 
 $webClient = New-Object System.Net.WebClient

@@ -4,6 +4,7 @@ param(
   [switch] $verbosity = $false,
   [alias("g")][switch] $global = $false,
   [alias("p")][switch] $persistent = $false,
+  [alias("f")][switch] $force = $false,
   [switch] $x86 = $false,
   [switch] $x64 = $false,
   [switch] $svr50 = $false,
@@ -21,20 +22,22 @@ $scriptPath = $myInvocation.MyCommand.Definition
 
 function Kvm-Help {
 @"
-K Runtime Environment Version Manager - Build 482
+K Runtime Environment Version Manager - Build 509
 
 USAGE: kvm <command> [options]
 
 kvm upgrade [-x86][-x64] [-svr50][-svrc50] [-g|-global]
   install latest KRE from feed
   set 'default' alias to installed version
-  add KRE bin to user PATH environment variable persistently
+  add KRE bin to user PATH environment variable
   -g|-global        install to machine-wide location
+  -f|-force         upgrade even if latest is already installed
 
 kvm install <semver>|<alias>|<nupkg> [-x86][-x64] [-svr50][-svrc50] [-g|-global]
   install requested KRE from feed
   add KRE bin to path of current command line
   -g|-global        install to machine-wide location
+  -f|-force         install even if specified version is already installed
 
 kvm use <semver>|<alias>|none [-x86][-x64] [-svr50][-svrc50] [-p|-persistent] [-g|-global]
   <semver>|<alias>  add KRE bin to path of current command line   
@@ -146,27 +149,45 @@ function Kvm-Install-Latest {
 function Do-Kvm-Download {
 param(
   [string] $kreFullName,
-  [string] $kreFolder
+  [string] $packagesFolder
 )
     $parts = $kreFullName.Split(".", 2)
 
     $url = "https://www.myget.org/F/aspnetvnext/api/v2/package/" + $parts[0] + "/" + $parts[1]
-    $kreFile = "$kreFolder\$kreFullName.nupkg"
+    $kreFolder = Join-Path $packagesFolder $kreFullName
+    $kreFile = Join-Path $kreFolder "$kreFullName.nupkg"
 
     If (Test-Path $kreFolder) {
-      Write-Host "$kreFullName already installed."
-      return;
+      if($force)
+      {
+        rm $kreFolder -Recurse -Force
+      } else {
+        Write-Host "$kreFullName already installed."
+        return;
+      }
     }
 
     Write-Host "Downloading" $kreFullName "from https://www.myget.org/F/aspnetvnext/api/v2/"
 
-    md $kreFolder -Force | Out-Null
+    #Downloading to temp location
+    $kreTempDownload = Join-Path $packagesFolder "temp"
+    $tempKreFile = Join-Path $kreTempDownload "$kreFullName.nupkg"
+
+    if(Test-Path $kreTempDownload) {  
+      del "$kreTempDownload\*" -recurse
+    } else {
+      md $kreTempDownload -Force | Out-Null
+    }
 
     $wc = New-Object System.Net.WebClient
     $wc.Credentials = new-object System.Net.NetworkCredential("aspnetreadonly", "4d8a2d9c-7b80-4162-9978-47e918c9658c")
-    $wc.DownloadFile($url, $kreFile)
+    $wc.DownloadFile($url, $tempKreFile)
 
-    Do-Kvm-Unpack $kreFile $kreFolder
+    Do-Kvm-Unpack $tempKreFile $kreTempDownload
+
+    md $kreFolder -Force | Out-Null   
+    Write-Host "Installing to $kreFolder"
+    mv "$kreTempDownload\*" $kreFolder
 }
 
 function Do-Kvm-Unpack {
@@ -174,11 +195,22 @@ param(
   [string] $kreFile,
   [string] $kreFolder
 )
-    Write-Host "Installing to" $kreFolder
-
-    [System.Reflection.Assembly]::LoadWithPartialName('System.IO.Compression.FileSystem') | Out-Null
-    [System.IO.Compression.ZipFile]::ExtractToDirectory($kreFile, $kreFolder)
-
+    Write-Host "Unpacking to" $kreFolder
+    try {
+      #Shell will not recognize nupkg as a zip and throw, so rename it to zip
+      $kreZip = [System.IO.Path]::ChangeExtension($kreFile, "zip")
+      Rename-Item $kreFile $kreZip
+      #Use the shell to uncompress the nupkg
+      $shell_app=new-object -com shell.application
+      $zip_file = $shell_app.namespace($kreZip)
+      $destination = $shell_app.namespace($kreFolder)
+      $destination.Copyhere($zip_file.items(), 0x14) #0x4 = don't show UI, 0x10 = overwrite files
+    }
+    finally {
+      #make it a nupkg again
+      Rename-Item $kreZip $kreFile
+    }
+    
     If (Test-Path ($kreFolder + "\[Content_Types].xml")) {
         Remove-Item ($kreFolder + "\[Content_Types].xml")
     }
@@ -202,8 +234,8 @@ param(
     }
 
     $kreFullName = Requested-VersionOrAlias $versionOrAlias
-    $kreFolder = "$globalKrePackages\$kreFullName"
-    Do-Kvm-Download $kreFullName $kreFolder
+
+    Do-Kvm-Download $kreFullName $globalKrePackages
     Kvm-Use $versionOrAlias
 }
 
@@ -215,14 +247,30 @@ param(
     {
         $kreFullName = [System.IO.Path]::GetFileNameWithoutExtension($versionOrAlias)
         $kreFolder = "$userKrePackages\$kreFullName"
-        $kreFile = "$kreFolder\$kreFullName.nupkg"
+        $folderExists = Test-Path $kreFolder
 
-        if (Test-Path($kreFolder)) {
-          Write-Host "Target folder '$kreFolder' already exists"
+        if($folderExists -and $force) {
+            del $kreFolder -Recurse -Force
+            $folderExists = $false;
+        }
+        
+        if($folderExists) {
+            Write-Host "Target folder '$kreFolder' already exists"
         } else {
-          md $kreFolder -Force | Out-Null
-          copy $versionOrAlias $kreFile
-          Do-Kvm-Unpack $kreFile $kreFolder
+            $tempUnpackFolder = Join-Path $userKrePackages "temp"
+            $tempKreFile = Join-Path $tempUnpackFolder "$kreFullName.nupkg"
+        
+            if(Test-Path $tempUnpackFolder) {  
+                del "$tempUnpackFolder\*" -recurse
+            } else {
+                md $tempUnpackFolder -Force | Out-Null
+            }
+            copy $versionOrAlias $tempKreFile
+                        
+            Do-Kvm-Unpack $tempKreFile $tempUnpackFolder
+            md $kreFolder -Force | Out-Null
+            Write-Host "Installing to $kreFolder"
+            mv "$tempUnpackFolder\*" $kreFolder
         }
 
         $kreBin = "$kreFolder\bin"
@@ -233,9 +281,7 @@ param(
     {
         $kreFullName = Requested-VersionOrAlias $versionOrAlias
 
-        $kreFolder = "$userKrePackages\$kreFullName"
-
-        Do-Kvm-Download $kreFullName $kreFolder
+        Do-Kvm-Download $kreFullName $userKrePackages
         Kvm-Use $versionOrAlias
     }
 }
