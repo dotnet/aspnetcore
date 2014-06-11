@@ -32,7 +32,6 @@
     <Compile Include="ActionMethodSelectorAttribute.cs" />
     <Compile Include="ActionNameAttribute.cs" />
     <Compile Include="ActionResult.cs" />
-    <Compile Include="ActionResultHelper.cs" />
     <Compile Include="ActionResults\ChallengeResult.cs" />
     <Compile Include="ActionResults\ContentResult.cs" />
     <Compile Include="ActionResults\EmptyResult.cs" />
@@ -130,7 +129,6 @@
     <Compile Include="IActionInvokerFactory.cs" />
     <Compile Include="IActionInvokerProvider.cs" />
     <Compile Include="IActionResult.cs" />
-    <Compile Include="IActionResultHelper.cs" />
     <Compile Include="IActionSelector.cs" />
     <Compile Include="IControllerAssemblyProvider.cs" />
     <Compile Include="IControllerDescriptorFactory.cs" />

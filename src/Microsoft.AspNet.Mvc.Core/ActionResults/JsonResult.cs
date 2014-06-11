@@ -12,19 +12,13 @@ namespace Microsoft.AspNet.Mvc
     public class JsonResult : ActionResult
     {
         private const int BufferSize = 1024;
-        private readonly object _returnValue;
 
         private JsonSerializerSettings _jsonSerializerSettings;
         private Encoding _encoding = UTF8EncodingWithoutBOM.Encoding;
 
-        public JsonResult(object returnValue)
+        public JsonResult([NotNull] object data)
         {
-            if (returnValue == null)
-            {
-                throw new ArgumentNullException("returnValue");
-            }
-
-            _returnValue = returnValue;
+            Data = data;
             _jsonSerializerSettings = JsonOutputFormatter.CreateDefaultSettings();
         }
 
@@ -62,6 +56,8 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
+        public object Data { get; private set; }
+
         public override void ExecuteResult([NotNull] ActionContext context)
         {
             var response = context.HttpContext.Response;
@@ -75,7 +71,7 @@ namespace Microsoft.AspNet.Mvc
             using (var writer = new StreamWriter(writeStream, Encoding, BufferSize, leaveOpen: true))
             {
                 var formatter = new JsonOutputFormatter(SerializerSettings, Indent);
-                formatter.WriteObject(writer, _returnValue);
+                formatter.WriteObject(writer, Data);
             }
         }
     }
