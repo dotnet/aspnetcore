@@ -3,8 +3,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using System.Text;
-using Microsoft.AspNet.Security.DataProtection;
+using System.Security.Cryptography;
 
 namespace Microsoft.AspNet.Identity
 {
@@ -32,10 +31,14 @@ namespace Microsoft.AspNet.Identity
             }
 
             // Produce a version 0 (see comment above) text hash.
-            var salt = new byte[SaltSize];
-            CryptRand.FillBuffer(new ArraySegment<byte>(salt));
-            var passwordBytes = Encoding.UTF8.GetBytes(password);
-            var subkey = PBKDF2.DeriveKey("SHA1", passwordBytes, salt, Pbkdf2IterCount, Pbkdf2SubkeyLength);
+            byte[] salt;
+            byte[] subkey;
+            using (var deriveBytes = new Rfc2898DeriveBytes(password, SaltSize, Pbkdf2IterCount))
+            {
+                salt = deriveBytes.Salt;
+                subkey = deriveBytes.GetBytes(Pbkdf2SubkeyLength);
+            }
+
             var outputBytes = new byte[1 + SaltSize + Pbkdf2SubkeyLength];
             Buffer.BlockCopy(salt, 0, outputBytes, 1, SaltSize);
             Buffer.BlockCopy(subkey, 0, outputBytes, 1 + SaltSize, Pbkdf2SubkeyLength);
@@ -65,8 +68,12 @@ namespace Microsoft.AspNet.Identity
             Buffer.BlockCopy(hashedPasswordBytes, 1, salt, 0, SaltSize);
             var storedSubkey = new byte[Pbkdf2SubkeyLength];
             Buffer.BlockCopy(hashedPasswordBytes, 1 + SaltSize, storedSubkey, 0, Pbkdf2SubkeyLength);
-            var passwordBytes = Encoding.UTF8.GetBytes(password);
-            var generatedSubkey = PBKDF2.DeriveKey("SHA1", passwordBytes, salt, Pbkdf2IterCount, Pbkdf2SubkeyLength);
+
+            byte[] generatedSubkey;
+            using (var deriveBytes = new Rfc2898DeriveBytes(password, salt, Pbkdf2IterCount))
+            {
+                generatedSubkey = deriveBytes.GetBytes(Pbkdf2SubkeyLength);
+            }
             return ByteArraysEqual(storedSubkey, generatedSubkey);
         }
 
