@@ -19,11 +19,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public void GetValueProvider_ReturnsNull_WhenContentTypeIsNotFormUrlEncoded()
         {
             // Arrange
-            var requestContext = CreateRequestContext("some-content-type");
+            var context = CreateContext("some-content-type");
             var factory = new FormValueProviderFactory();
             
             // Act
-            var result = factory.GetValueProvider(requestContext);
+            var result = factory.GetValueProvider(context);
 
             // Assert
             Assert.Null(result);
@@ -35,18 +35,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public void GetValueProvider_ReturnsValueProviderInstaceWithInvariantCulture(string contentType)
         {
             // Arrange
-            var requestContext = CreateRequestContext(contentType);
+            var context = CreateContext(contentType);
             var factory = new FormValueProviderFactory();
 
             // Act
-            var result = factory.GetValueProvider(requestContext);
+            var result = factory.GetValueProvider(context);
 
             // Assert
             var valueProvider = Assert.IsType<ReadableStringCollectionValueProvider>(result);
             Assert.Equal(CultureInfo.CurrentCulture, valueProvider.Culture);
         }
 
-        private static RouteContext CreateRequestContext(string contentType)
+        private static ValueProviderFactoryContext CreateContext(string contentType)
         {
             var collection = Mock.Of<IReadableStringCollection>();
             var request = new Mock<HttpRequest>();
@@ -59,9 +59,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var context = new Mock<HttpContext>();
             context.SetupGet(c => c.Request).Returns(request.Object);
 
-            var routeContext = new RouteContext(context.Object);
-            routeContext.RouteData.Values = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-            return routeContext;
+            return new ValueProviderFactoryContext(
+                context.Object, 
+                new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase));
         }
     }
 }

@@ -1,15 +1,13 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Routing;
-
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class RouteValueValueProviderFactory : IValueProviderFactory
     {
-        public IValueProvider GetValueProvider([NotNull] RouteContext routeContext)
+        public IValueProvider GetValueProvider([NotNull] ValueProviderFactoryContext context)
         {
-            return new DictionaryBasedValueProvider(routeContext.RouteData.Values);
+            return new DictionaryBasedValueProvider(context.RouteValues);
         }
     }
 }

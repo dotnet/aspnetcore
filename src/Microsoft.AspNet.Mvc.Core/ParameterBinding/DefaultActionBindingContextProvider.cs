@@ -33,9 +33,11 @@ namespace Microsoft.AspNet.Mvc
 
         public Task<ActionBindingContext> GetActionBindingContextAsync(ActionContext actionContext)
         {
-            var routeContext = new RouteContext(actionContext.HttpContext);
-            routeContext.RouteData = actionContext.RouteData;
-            var valueProviders = _valueProviderFactories.Select(factory => factory.GetValueProvider(routeContext))
+            var factoryContext = new ValueProviderFactoryContext(
+                actionContext.HttpContext, 
+                actionContext.RouteData.Values);
+
+            var valueProviders = _valueProviderFactories.Select(factory => factory.GetValueProvider(factoryContext))
                                                         .Where(vp => vp != null);
             var context = new ActionBindingContext(
                 actionContext,

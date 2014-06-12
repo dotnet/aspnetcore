@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Globalization;
-using Microsoft.AspNet.Routing;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -10,15 +9,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     {
         private static readonly object _cacheKey = new object();
 
-        public IValueProvider GetValueProvider([NotNull] RouteContext routeContext)
+        public IValueProvider GetValueProvider([NotNull] ValueProviderFactoryContext context)
         {
             // Process the query collection once-per request. 
-            var storage = routeContext.HttpContext.Items;
+            var storage = context.HttpContext.Items;
             object value;
             IValueProvider provider;
             if (!storage.TryGetValue(_cacheKey, out value))
             {
-                var queryCollection = routeContext.HttpContext.Request.Query;
+                var queryCollection = context.HttpContext.Request.Query;
                 provider = new ReadableStringCollectionValueProvider(queryCollection, CultureInfo.InvariantCulture);
                 storage[_cacheKey] = provider;
             }

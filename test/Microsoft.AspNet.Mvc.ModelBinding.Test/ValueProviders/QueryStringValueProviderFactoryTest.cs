@@ -27,11 +27,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var context = new Mock<HttpContext>();
             context.SetupGet(c => c.Items).Returns(new Dictionary<object, object>());
             context.SetupGet(c => c.Request).Returns(request.Object);
-            var routeContext = new RouteContext(context.Object);
-            routeContext.RouteData.Values = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            var factoryContext = new ValueProviderFactoryContext(context.Object, new Dictionary<String, object>(StringComparer.OrdinalIgnoreCase));
 
             // Act
-            var result = _factory.GetValueProvider(routeContext);
+            var result = _factory.GetValueProvider(factoryContext);
 
             // Assert
             var valueProvider = Assert.IsType<ReadableStringCollectionValueProvider>(result);
