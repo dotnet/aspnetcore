@@ -42,6 +42,7 @@
     <Compile Include="Http\SocketOutput.cs" />
     <Compile Include="Infrastructure\Disposable.cs" />
     <Compile Include="Infrastructure\KestrelThread.cs" />
+    <Compile Include="Infrastructure\KestrelTrace.cs" />
     <Compile Include="Networking\UcAsyncHandle.cs" />
     <Compile Include="Networking\UvMemory.cs" />
     <Compile Include="Networking\UvShutdownReq.cs" />

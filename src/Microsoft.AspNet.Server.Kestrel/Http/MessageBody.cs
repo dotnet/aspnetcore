@@ -3,13 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
     public abstract class MessageBody : MessageBodyExchanger
     {
-        private Action _continuation = () => { };
-
         public bool RequestKeepAlive { get; protected set; }
 
         protected MessageBody(FrameContext context) : base(context)
@@ -24,10 +23,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public void IntakeFin(int count)
         {
             Transfer(count, true);
-            if (_continuation != null)
-            {
-                _continuation.Invoke();
-            }
         }
 
         public abstract void Consume();
@@ -88,12 +83,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
             value = String.Join(",", values);
             return true;
-        }
-
-        public void Drain(Action continuation)
-        {
-            _continuation = continuation;
-            _continuation.Invoke();
         }
 
 

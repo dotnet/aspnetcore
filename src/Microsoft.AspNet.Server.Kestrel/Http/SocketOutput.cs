@@ -28,6 +28,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public void Write(ArraySegment<byte> buffer, Action<object> callback, object state)
         {
+            KestrelTrace.Log.ConnectionWrite(0, buffer.Count);
             var req = new ThisWriteReq();
             req.Init(_thread.Loop);
             req.Contextualize(this, _socket, buffer, callback, state);
@@ -87,6 +88,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             private void OnWrite(UvWriteReq req, int status)
             {
                 _pin.Free();
+                KestrelTrace.Log.ConnectionWriteCallback(0, status);
                 //NOTE: pool this?
                 Dispose();
                 _callback(_state);

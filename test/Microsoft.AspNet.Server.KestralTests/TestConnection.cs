@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -40,8 +41,9 @@ namespace Microsoft.AspNet.Server.KestralTests
         {
             var text = String.Join("\r\n", lines);
             var writer = new StreamWriter(_stream, Encoding.ASCII);
-            foreach (var ch in text)
+            for (var index = 0; index != text.Length; ++index)
             {
+                var ch = text[index];
                 await writer.WriteAsync(ch);
                 await writer.FlushAsync();
                 await Task.Delay(TimeSpan.FromMilliseconds(5));
@@ -64,7 +66,10 @@ namespace Microsoft.AspNet.Server.KestralTests
             while (offset < expected.Length)
             {
                 var task = _reader.ReadAsync(actual, offset, actual.Length - offset);
-//                Assert.True(task.Wait(1000), "timeout");
+                if (!Debugger.IsAttached)
+                {
+                    Assert.True(task.Wait(1000), "timeout");
+                }
                 var count = await task;
                 if (count == 0)
                 {

@@ -321,8 +321,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 ConnectionControl.End(ProduceEndType.SocketShutdownSend);
             }
 
-            _messageBody.Drain(() =>
-                ConnectionControl.End(_keepAlive ? ProduceEndType.ConnectionKeepAlive : ProduceEndType.SocketDisconnect));
+            //NOTE: must finish reading request body
+            ConnectionControl.End(_keepAlive ? ProduceEndType.ConnectionKeepAlive : ProduceEndType.SocketDisconnect);
         }
 
 
