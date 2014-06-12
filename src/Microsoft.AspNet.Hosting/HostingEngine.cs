@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Hosting
         {
             if (context.ServerFactory == null)
             {
-                context.ServerFactory = context.Services.GetService<IServerFactory>();
+                context.ServerFactory = context.Services.GetServiceOrDefault<IServerFactory>();
             }
             if (context.ServerFactory != null)
             {
