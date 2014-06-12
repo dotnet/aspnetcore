@@ -24,12 +24,14 @@
     <Compile Include="IHttpApplicationFeature.cs" />
     <Compile Include="IHttpBufferingFeature.cs" />
     <Compile Include="IHttpConnectionFeature.cs" />
+    <Compile Include="IHttpOpaqueUpgradeFeature.cs" />
     <Compile Include="IHttpRequestFeature.cs" />
     <Compile Include="IHttpRequestLifetimeFeature.cs" />
     <Compile Include="IHttpResponseFeature.cs" />
     <Compile Include="IHttpSendFileFeature.cs" />
     <Compile Include="IHttpTransportLayerSecurityFeature.cs" />
     <Compile Include="IHttpWebSocketFeature.cs" />
+    <Compile Include="IWebSocketAcceptContext.cs" />
     <Compile Include="Security\IAuthenticateContext.cs" />
     <Compile Include="Security\IAuthenticationHandler.cs" />
     <Compile Include="Security\IAuthTypeContext.cs" />

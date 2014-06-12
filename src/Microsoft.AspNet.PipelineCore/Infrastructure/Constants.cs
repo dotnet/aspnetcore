@@ -22,6 +22,7 @@ namespace Microsoft.AspNet.Http.Infrastructure
             internal const string Cookie = "Cookie";
             internal const string SetCookie = "Set-Cookie";
             internal const string Expires = "Expires";
+            internal const string WebSocketSubProtocols = "Sec-WebSocket-Protocol";
         }
     }
 }

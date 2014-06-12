@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.WebSockets;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,6 +27,10 @@ namespace Microsoft.AspNet.Http
         public abstract IServiceProvider RequestServices { get; set; }
 
         public abstract CancellationToken OnRequestAborted { get; }
+
+        public abstract bool IsWebSocketRequest { get; }
+
+        public abstract IList<string> WebSocketRequestedProtocols { get; }
 
         public abstract void Abort();
 
@@ -60,5 +65,12 @@ namespace Microsoft.AspNet.Http
         }
 
         public abstract Task<IEnumerable<AuthenticationResult>> AuthenticateAsync(IList<string> authenticationTypes);
+
+        public virtual Task<WebSocket> AcceptWebSocketAsync()
+        {
+            return AcceptWebSocket(subProtocol: null);
+        }
+
+        public abstract Task<WebSocket> AcceptWebSocket(string subProtocol);
     }
 }

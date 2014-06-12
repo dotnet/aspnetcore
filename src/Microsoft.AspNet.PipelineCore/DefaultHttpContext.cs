@@ -4,12 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.WebSockets;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Security;
 using Microsoft.AspNet.FeatureModel;
+using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Infrastructure;
+using Microsoft.AspNet.Http.Security;
 using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.HttpFeature.Security;
 using Microsoft.AspNet.PipelineCore.Infrastructure;
@@ -19,6 +21,8 @@ namespace Microsoft.AspNet.PipelineCore
 {
     public class DefaultHttpContext : HttpContext
     {
+        private static IList<string> EmptyList = new List<string>();
+
         private readonly HttpRequest _request;
         private readonly HttpResponse _response;
 
@@ -26,6 +30,7 @@ namespace Microsoft.AspNet.PipelineCore
         private FeatureReference<IServiceProvidersFeature> _serviceProviders;
         private FeatureReference<IHttpAuthenticationFeature> _authentication;
         private FeatureReference<IHttpRequestLifetimeFeature> _lifetime;
+        private FeatureReference<IHttpWebSocketFeature> _webSockets;
         private IFeatureCollection _features;
 
         public DefaultHttpContext(IFeatureCollection features)
@@ -37,6 +42,8 @@ namespace Microsoft.AspNet.PipelineCore
             _items = FeatureReference<IItemsFeature>.Default;
             _serviceProviders = FeatureReference<IServiceProvidersFeature>.Default;
             _authentication = FeatureReference<IHttpAuthenticationFeature>.Default;
+            _lifetime = FeatureReference<IHttpRequestLifetimeFeature>.Default;
+            _webSockets = FeatureReference<IHttpWebSocketFeature>.Default;
         }
 
         IItemsFeature ItemsFeature
@@ -57,6 +64,11 @@ namespace Microsoft.AspNet.PipelineCore
         private IHttpRequestLifetimeFeature LifetimeFeature
         {
             get { return _lifetime.Fetch(_features); }
+        }
+
+        private IHttpWebSocketFeature WebSocketFeature
+        {
+            get { return _webSockets.Fetch(_features); }
         }
 
         public override HttpRequest Request { get { return _request; } }
@@ -107,6 +119,23 @@ namespace Microsoft.AspNet.PipelineCore
                     return lifetime.OnRequestAborted;
                 }
                 return CancellationToken.None;
+            }
+        }
+
+        public override bool IsWebSocketRequest
+        {
+            get
+            {
+                var webSocketFeature = WebSocketFeature;
+                return webSocketFeature != null && webSocketFeature.IsWebSocketRequest;
+            }
+        }
+
+        public override IList<string> WebSocketRequestedProtocols
+        {
+            get
+            {
+                return Request.Headers.GetValues(Constants.Headers.WebSocketSubProtocols) ?? EmptyList;
             }
         }
 
@@ -195,6 +224,16 @@ namespace Microsoft.AspNet.PipelineCore
             }
 
             return authenticateContext.Results;
+        }
+
+        public override Task<WebSocket> AcceptWebSocket(string subProtocol)
+        {
+            var webSocketFeature = WebSocketFeature;
+            if (WebSocketFeature == null)
+            {
+                throw new NotSupportedException("WebSockets are not supported");
+            }
+            return WebSocketFeature.AcceptAsync(new WebSocketAcceptContext() { SubProtocol = subProtocol } );
         }
     }
 }

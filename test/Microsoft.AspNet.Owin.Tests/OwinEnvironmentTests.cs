@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.WebSockets;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -113,7 +114,22 @@ namespace Microsoft.AspNet.Owin
                 get { throw new NotImplementedException(); }
             }
 
+            public override bool IsWebSocketRequest
+            {
+                get { throw new NotImplementedException(); }
+            }
+
+            public override IList<string> WebSocketRequestedProtocols
+            {
+                get { throw new NotImplementedException(); }
+            }
+
             public override void Abort()
+            {
+                throw new NotImplementedException();
+            }
+
+            public override Task<WebSocket> AcceptWebSocket(string subProtocol)
             {
                 throw new NotImplementedException();
             }
