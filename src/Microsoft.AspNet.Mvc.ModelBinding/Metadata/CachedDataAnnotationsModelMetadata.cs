@@ -99,22 +99,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                        : base.ComputeShowForEdit();
         }
 
-        public override string GetDisplayName()
-        {
-            // DisplayAttribute doesn't require you to set a name, so this could be null. 
-            if (PrototypeCache.Display != null)
-            {
-                var name = PrototypeCache.Display.GetName();
-                if (name != null)
-                {
-                    return name;
-                }
-            }
-
-            // If DisplayAttribute does not specify a name, we'll fall back to the property name.
-            return base.GetDisplayName();
-        }
-
         private static void ValidateDisplayColumnAttribute(DisplayColumnAttribute displayColumnAttribute,
             PropertyInfo displayColumnProperty, Type modelType)
         {
