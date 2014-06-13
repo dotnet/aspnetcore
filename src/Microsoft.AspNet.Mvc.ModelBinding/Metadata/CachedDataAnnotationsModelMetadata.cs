@@ -50,6 +50,23 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                        : base.ComputeDescription();
         }
 
+        protected override string ComputeDisplayName()
+        {
+            // DisplayName may be provided by DisplayAttribute.
+            // If that does not supply a name, then we fall back to the property name (in base.GetDisplayName()).
+            if (PrototypeCache.Display != null)
+            {
+                // DisplayAttribute doesn't require you to set a name, so this could be null.
+                var name = PrototypeCache.Display.GetName();
+                if (name != null)
+                {
+                    return name;
+                }
+            }
+
+            return base.ComputeDisplayName();
+        }
+
         protected override bool ComputeIsReadOnly()
         {
             if (PrototypeCache.Editable != null)
