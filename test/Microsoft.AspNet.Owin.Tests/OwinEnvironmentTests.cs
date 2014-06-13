@@ -129,7 +129,7 @@ namespace Microsoft.AspNet.Owin
                 throw new NotImplementedException();
             }
 
-            public override Task<WebSocket> AcceptWebSocket(string subProtocol)
+            public override Task<WebSocket> AcceptWebSocketAsync(string subProtocol)
             {
                 throw new NotImplementedException();
             }

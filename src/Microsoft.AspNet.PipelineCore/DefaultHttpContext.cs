@@ -226,7 +226,7 @@ namespace Microsoft.AspNet.PipelineCore
             return authenticateContext.Results;
         }
 
-        public override Task<WebSocket> AcceptWebSocket(string subProtocol)
+        public override Task<WebSocket> AcceptWebSocketAsync(string subProtocol)
         {
             var webSocketFeature = WebSocketFeature;
             if (WebSocketFeature == null)

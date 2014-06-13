@@ -68,9 +68,9 @@ namespace Microsoft.AspNet.Http
 
         public virtual Task<WebSocket> AcceptWebSocketAsync()
         {
-            return AcceptWebSocket(subProtocol: null);
+            return AcceptWebSocketAsync(subProtocol: null);
         }
 
-        public abstract Task<WebSocket> AcceptWebSocket(string subProtocol);
+        public abstract Task<WebSocket> AcceptWebSocketAsync(string subProtocol);
     }
 }
