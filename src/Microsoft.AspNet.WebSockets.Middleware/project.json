@@ -1,0 +1,16 @@
+﻿{
+    "version": "0.1-alpha-*",
+    "dependencies": {
+        "Microsoft.AspNet.Http":  "0.1-alpha-*",
+        "Microsoft.AspNet.HttpFeature": "0.1-alpha-*",
+        "Microsoft.AspNet.WebSockets.Protocol": ""
+    },
+    "configurations" : {
+        "net45" : { },
+        "k10" : { 
+            "dependencies": {
+                "System.Runtime": "4.0.20.0"
+            }
+        }
+    }
+}

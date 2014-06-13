@@ -5,7 +5,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Net.WebSockets.Test
+namespace Microsoft.AspNet.WebSockets.Protocol.Test
 {
     // A duplex wrapper around a read and write stream.
     public class DuplexStream : Stream

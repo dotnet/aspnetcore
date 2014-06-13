@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,8 +9,9 @@ using System.Net;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.WebSockets.Protocol;
 
-namespace Microsoft.Net.WebSockets.Client
+namespace Microsoft.AspNet.WebSockets.Client
 {
     public class WebSocketClient
     {
@@ -94,10 +98,11 @@ namespace Microsoft.Net.WebSockets.Client
             }
 
             // TODO: Validate handshake
-            if (response.StatusCode != HttpStatusCode.SwitchingProtocols)
+            HttpStatusCode statusCode = response.StatusCode;
+            if (statusCode != HttpStatusCode.SwitchingProtocols)
             {
                 response.Dispose();
-                throw new InvalidOperationException("Incomplete handshake, invalid status code: " + response.StatusCode);
+                throw new InvalidOperationException("Incomplete handshake, invalid status code: " + statusCode);
             }
             // TODO: Validate Sec-WebSocket-Key/Sec-WebSocket-Accept
 

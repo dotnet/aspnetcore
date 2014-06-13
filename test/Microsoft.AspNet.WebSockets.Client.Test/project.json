@@ -1,6 +1,7 @@
-{
+﻿{
     "dependencies": {
-        "Microsoft.Net.WebSockets": "",
+        "Microsoft.AspNet.WebSockets.Protocol": "",
+        "Microsoft.AspNet.WebSockets.Client": "",
         "xunit.abstractions": "2.0.0-aspnet-*",
         "xunit.assert": "2.0.0-aspnet-*",
         "xunit.core": "2.0.0-aspnet-*",
