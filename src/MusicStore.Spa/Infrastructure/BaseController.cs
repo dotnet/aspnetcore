@@ -40,12 +40,8 @@ namespace Microsoft.AspNet.Mvc
         {
             LazyInitializer.EnsureInitialized(ref _modelBinder, ref _modelBinderInitialized, ref _modelBinderInitLocker, () =>
             {
-                var routeContext = new RouteContext(Context)
-                {
-                    RouteData = ActionContext.RouteData,
-                };
-
-                _compositeValueProvider = new CompositeValueProvider(_valueProviderFactories.Select(vpf => vpf.GetValueProvider(routeContext)));
+                var factoryContext = new ValueProviderFactoryContext(Context, ActionContext.RouteData.Values);
+                _compositeValueProvider = new CompositeValueProvider(_valueProviderFactories.Select(vpf => vpf.GetValueProvider(factoryContext)));
                 return new CompositeModelBinder(_modelBinders);
             });
 
