@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.HttpFeature;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -43,8 +43,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
     public class Frame : FrameContext, IFrameControl
     {
-        Mode _mode;
-
         enum Mode
         {
             StartLine,
@@ -53,40 +51,42 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             Terminated,
         }
 
-
-        private string _method;
-        private string _requestUri;
-        private string _path;
-        private string _queryString;
-        private string _httpVersion;
-
-        private readonly IDictionary<string, string[]> _requestHeaders =
-            new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
-
-        readonly IDictionary<string, string[]> _responseHeaders =
-            new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
-
-        private MessageBody _messageBody;
+        Mode _mode;
         private bool _resultStarted;
         private bool _keepAlive;
 
-        private CallContext _callContext;
         /*
         //IDictionary<string, object> _environment;
 
         CancellationTokenSource _cts = new CancellationTokenSource();
         */
-        FrameResponseStream _outputStream;
-        FrameRequestStream _inputStream;
-        FrameDuplexStream _duplexStream;
 
-        Task _upgradeTask = _completedTask;
-        static readonly Task _completedTask = Task.FromResult(0);
+        List<KeyValuePair<Action<object>, object>> _onSendingHeaders;
+        object _onSendingHeadersSync = new Object();
+        Stream _duplexStream;
 
         public Frame(ConnectionContext context) : base(context)
         {
             FrameControl = this;
+            StatusCode = 200;
+            RequestHeaders = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
+            ResponseHeaders = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
         }
+
+        public string Method { get; set; }
+        public string RequestUri { get; set; }
+        public string Path { get; set; }
+        public string QueryString { get; set; }
+        public string HttpVersion { get; set; }
+        public IDictionary<string, string[]> RequestHeaders { get; set; }
+        public MessageBody MessageBody { get; set; }
+        public Stream RequestBody { get; set; }
+
+        public int StatusCode { get; set; }
+        public string ReasonPhrase { get; set; }
+        public IDictionary<string, string[]> ResponseHeaders { get; set; }
+        public Stream ResponseBody { get; set; }
+
 
         /*
         public bool LocalIntakeFin
@@ -151,12 +151,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         break;
 
                     case Mode.MessageBody:
-                        if (_messageBody.LocalIntakeFin)
+                        if (MessageBody.LocalIntakeFin)
                         {
                             // NOTE: stop reading and resume on keepalive?
                             return;
                         }
-                        _messageBody.Consume();
+                        MessageBody.Consume();
                         // NOTE: keep looping?
                         return;
 
@@ -168,14 +168,45 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private void Execute()
         {
-            _messageBody = MessageBody.For(
-                _httpVersion,
-                _requestHeaders,
+            MessageBody = MessageBody.For(
+                HttpVersion,
+                RequestHeaders,
                 this);
-            _keepAlive = _messageBody.RequestKeepAlive;
-            _callContext = CreateCallContext();
+            _keepAlive = MessageBody.RequestKeepAlive;
+            RequestBody = new FrameRequestStream(MessageBody);
+            ResponseBody = new FrameResponseStream(this);
+            _duplexStream = new FrameDuplexStream(RequestBody, ResponseBody);
             SocketInput.Free();
             Task.Run(ExecuteAsync);
+        }
+
+        public void OnSendingHeaders(Action<object> callback, object state)
+        {
+            lock (_onSendingHeadersSync)
+            {
+                if (_onSendingHeaders == null)
+                {
+                    _onSendingHeaders = new List<KeyValuePair<Action<object>, object>>();
+                }
+                _onSendingHeaders.Add(new KeyValuePair<Action<object>, object>(callback, state));
+            }
+        }
+
+        private void FireOnSendingHeaders()
+        {
+            List<KeyValuePair<Action<object>, object>> onSendingHeaders = null;
+            lock (_onSendingHeadersSync)
+            {
+                onSendingHeaders = _onSendingHeaders;
+                _onSendingHeaders = null;
+            }
+            if (onSendingHeaders != null)
+            {
+                foreach (var entry in onSendingHeaders)
+                {
+                    entry.Key.Invoke(entry.Value);
+                }
+            }
         }
 
         private async Task ExecuteAsync()
@@ -183,8 +214,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             Exception error = null;
             try
             {
-                await Application.Invoke(_callContext);
-                await _upgradeTask;
+                await Application.Invoke(this);
             }
             catch (Exception ex)
             {
@@ -196,77 +226,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
         }
 
-        private CallContext CreateCallContext()
-        {
-            _inputStream = new FrameRequestStream(_messageBody);
-            _outputStream = new FrameResponseStream(this);
-            _duplexStream = new FrameDuplexStream(_inputStream, _outputStream);
-
-            var remoteIpAddress = "127.0.0.1";
-            var remotePort = "0";
-            var localIpAddress = "127.0.0.1";
-            var localPort = "80";
-            var isLocal = false;
-
-            //if (_context.Socket != null)
-            //{
-            //    var remoteEndPoint = _context.Socket.RemoteEndPoint as IPEndPoint;
-            //    if (remoteEndPoint != null)
-            //    {
-            //        remoteIpAddress = remoteEndPoint.Address.ToString();
-            //        remotePort = remoteEndPoint.Port.ToString(CultureInfo.InvariantCulture);
-            //    }
-
-            //    var localEndPoint = _context.Socket.LocalEndPoint as IPEndPoint;
-            //    if (localEndPoint != null)
-            //    {
-            //        localIpAddress = localEndPoint.Address.ToString();
-            //        localPort = localEndPoint.Port.ToString(CultureInfo.InvariantCulture);
-            //    }
-
-            //    if (remoteEndPoint != null && localEndPoint != null)
-            //    {
-            //        isLocal = Equals(remoteEndPoint.Address, localEndPoint.Address);
-            //    }
-            //}
-
-            var callContext = new CallContext();
-            var request = (IHttpRequestFeature)callContext;
-            var response = (IHttpResponseFeature)callContext;
-            //var lifetime = (IHttpRequestLifetimeFeature)callContext;
-            request.Protocol = _httpVersion;
-            request.Scheme = "http";
-            request.Method = _method;
-            request.Path = _path;
-            request.PathBase = "";
-            request.QueryString = _queryString;
-            request.Headers = _requestHeaders;
-            request.Body = _inputStream;
-            response.Headers = _responseHeaders;
-            response.Body = _outputStream;
-
-            //var env = new Dictionary<string, object>();
-            //env["owin.Version"] = "1.0";
-            //env["owin.RequestProtocol"] = _httpVersion;
-            //env["owin.RequestScheme"] = "http";
-            //env["owin.RequestMethod"] = _method;
-            //env["owin.RequestPath"] = _path;
-            //env["owin.RequestPathBase"] = "";
-            //env["owin.RequestQueryString"] = _queryString;
-            //env["owin.RequestHeaders"] = _requestHeaders;
-            //env["owin.RequestBody"] = _inputStream;
-            //env["owin.ResponseHeaders"] = _responseHeaders;
-            //env["owin.ResponseBody"] = _outputStream;
-            //env["owin.CallCancelled"] = _cts.Token;
-            //env["opaque.Upgrade"] = (Action<IDictionary<string, object>, Func<IDictionary<string, object>, Task>>)Upgrade;
-            //env["opaque.Stream"] = _duplexStream;
-            //env["server.RemoteIpAddress"] = remoteIpAddress;
-            //env["server.RemotePort"] = remotePort;
-            //env["server.LocalIpAddress"] = localIpAddress;
-            //env["server.LocalPort"] = localPort;
-            //env["server.IsLocal"] = isLocal;
-            return callContext;
-        }
 
         public void Write(ArraySegment<byte> data, Action<object> callback, object state)
         {
@@ -279,7 +238,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             _keepAlive = false;
             ProduceStart();
 
-            _upgradeTask = callback(_callContext);
+            // NOTE: needs changes
+            //_upgradeTask = callback(_callContext);
         }
 
         byte[] _continueBytes = Encoding.ASCII.GetBytes("HTTP/1.1 100 Continue\r\n\r\n");
@@ -289,8 +249,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             if (_resultStarted) return;
 
             string[] expect;
-            if (_httpVersion.Equals("HTTP/1.1") &&
-                _requestHeaders.TryGetValue("Expect", out expect) &&
+            if (HttpVersion.Equals("HTTP/1.1") &&
+                RequestHeaders.TryGetValue("Expect", out expect) &&
                 (expect.FirstOrDefault() ?? "").Equals("100-continue", StringComparison.OrdinalIgnoreCase))
             {
                 SocketOutput.Write(new ArraySegment<byte>(_continueBytes, 0, _continueBytes.Length), _ => { }, null);
@@ -300,15 +260,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public void ProduceStart()
         {
             if (_resultStarted) return;
-
             _resultStarted = true;
 
-            var response = (IHttpResponseFeature)_callContext;
-            var status = ReasonPhrases.ToStatus(
-                response.StatusCode,
-                response.ReasonPhrase);
+            FireOnSendingHeaders();
 
-            var responseHeader = CreateResponseHeader(status, _responseHeaders);
+            var status = ReasonPhrases.ToStatus(StatusCode, ReasonPhrase);
+
+            var responseHeader = CreateResponseHeader(status, ResponseHeaders);
             SocketOutput.Write(responseHeader.Item1, x => ((IDisposable)x).Dispose(), responseHeader.Item2);
         }
 
@@ -325,12 +283,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             ConnectionControl.End(_keepAlive ? ProduceEndType.ConnectionKeepAlive : ProduceEndType.SocketDisconnect);
         }
 
-
         private Tuple<ArraySegment<byte>, IDisposable> CreateResponseHeader(
             string status, IEnumerable<KeyValuePair<string, string[]>> headers)
         {
             var writer = new MemoryPoolTextWriter(Memory);
-            writer.Write(_httpVersion);
+            writer.Write(HttpVersion);
             writer.Write(' ');
             writer.Write(status);
             writer.Write('\r');
@@ -381,11 +338,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 _keepAlive = false;
             }
-            if (_keepAlive == false && hasConnection == false && _httpVersion == "HTTP/1.1")
+            if (_keepAlive == false && hasConnection == false && HttpVersion == "HTTP/1.1")
             {
                 writer.Write("Connection: close\r\n\r\n");
             }
-            else if (_keepAlive && hasConnection == false && _httpVersion == "HTTP/1.0")
+            else if (_keepAlive && hasConnection == false && HttpVersion == "HTTP/1.0")
             {
                 writer.Write("Connection: keep-alive\r\n\r\n");
             }
@@ -418,19 +375,19 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     {
                         throw new InvalidOperationException("INVALID REQUEST FORMAT");
                     }
-                    _method = GetString(remaining, 0, firstSpace);
-                    _requestUri = GetString(remaining, firstSpace + 1, secondSpace);
+                    Method = GetString(remaining, 0, firstSpace);
+                    RequestUri = GetString(remaining, firstSpace + 1, secondSpace);
                     if (questionMark == -1)
                     {
-                        _path = _requestUri;
-                        _queryString = string.Empty;
+                        Path = RequestUri;
+                        QueryString = string.Empty;
                     }
                     else
                     {
-                        _path = GetString(remaining, firstSpace + 1, questionMark);
-                        _queryString = GetString(remaining, questionMark, secondSpace);
+                        Path = GetString(remaining, firstSpace + 1, questionMark);
+                        QueryString = GetString(remaining, questionMark, secondSpace);
                     }
-                    _httpVersion = GetString(remaining, secondSpace + 1, index);
+                    HttpVersion = GetString(remaining, secondSpace + 1, index);
                     baton.Skip(index + 2);
                     return true;
                 }
@@ -540,15 +497,15 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private void AddRequestHeader(string name, string value)
         {
             string[] existing;
-            if (!_requestHeaders.TryGetValue(name, out existing) ||
+            if (!RequestHeaders.TryGetValue(name, out existing) ||
                 existing == null ||
                 existing.Length == 0)
             {
-                _requestHeaders[name] = new[] { value };
+                RequestHeaders[name] = new[] { value };
             }
             else
             {
-                _requestHeaders[name] = existing.Concat(new[] { value }).ToArray();
+                RequestHeaders[name] = existing.Concat(new[] { value }).ToArray();
             }
         }
     }

@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public KestrelThread Thread { get; set; }
 
-        public Func<object, Task> Application { get; set; }
+        public Func<Frame, Task> Application { get; set; }
 
         public IMemoryPool Memory { get; set; }
     }
@@ -45,10 +45,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             Memory = memory;
         }
 
-        public Task StartAsync(KestrelThread thread, Func<object, Task> app)
+        public Task StartAsync(KestrelThread thread, Func<Frame, Task> application)
         {
             Thread = thread;
-            Application = app;
+            Application = application;
 
             var tcs = new TaskCompletionSource<int>();
             Thread.Post(OnStart, tcs);

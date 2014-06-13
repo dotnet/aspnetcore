@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNet.HttpFeature;
-using Microsoft.AspNet.Server.Kestrel;
+﻿using Microsoft.AspNet.Server.Kestrel;
+using Microsoft.AspNet.Server.Kestrel.Http;
 using System;
 using System.IO;
 using System.Net;
@@ -15,31 +15,26 @@ namespace Microsoft.AspNet.Server.KestralTests
     /// </summary>
     public class EngineTests
     {
-        private async Task App(object callContext)
+        private async Task App(Frame frame)
         {
-            var request = callContext as IHttpRequestFeature;
-            var response = callContext as IHttpResponseFeature;
             for (; ;)
             {
                 var buffer = new byte[8192];
-                var count = await request.Body.ReadAsync(buffer, 0, buffer.Length);
+                var count = await frame.RequestBody.ReadAsync(buffer, 0, buffer.Length);
                 if (count == 0)
                 {
                     break;
                 }
-                await response.Body.WriteAsync(buffer, 0, count);
+                await frame.ResponseBody.WriteAsync(buffer, 0, count);
             }
         }
-        private async Task AppChunked(object callContext)
+        private async Task AppChunked(Frame frame)
         {
-            var request = callContext as IHttpRequestFeature;
-            var response = callContext as IHttpResponseFeature;
-
             var data = new MemoryStream();
             for (; ;)
             {
                 var buffer = new byte[8192];
-                var count = await request.Body.ReadAsync(buffer, 0, buffer.Length);
+                var count = await frame.RequestBody.ReadAsync(buffer, 0, buffer.Length);
                 if (count == 0)
                 {
                     break;
@@ -47,8 +42,8 @@ namespace Microsoft.AspNet.Server.KestralTests
                 data.Write(buffer, 0, count);
             }
             var bytes = data.ToArray();
-            response.Headers["Content-Length"] = new[] { bytes.Length.ToString() };
-            await response.Body.WriteAsync(bytes, 0, bytes.Length);
+            frame.ResponseHeaders["Content-Length"] = new[] { bytes.Length.ToString() };
+            await frame.ResponseBody.WriteAsync(bytes, 0, bytes.Length);
         }
 
         [Fact]
@@ -56,7 +51,7 @@ namespace Microsoft.AspNet.Server.KestralTests
         {
             var engine = new KestrelEngine();
             engine.Start(1);
-            engine.Stop();
+            engine.Dispose();
         }
 
         [Fact]
@@ -66,7 +61,7 @@ namespace Microsoft.AspNet.Server.KestralTests
             engine.Start(1);
             var started = engine.CreateServer(App);
             started.Dispose();
-            engine.Stop();
+            engine.Dispose();
         }
 
 
@@ -89,7 +84,7 @@ namespace Microsoft.AspNet.Server.KestralTests
                 var text = Encoding.ASCII.GetString(buffer, 0, length);
             }
             started.Dispose();
-            engine.Stop();
+            engine.Dispose();
         }
 
         [Fact]

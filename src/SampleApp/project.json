@@ -1,14 +1,16 @@
 ﻿{
     "dependencies": {
-        "Microsoft.AspNet.Server.Kestrel": "0.1-alpha-*",
-        "Microsoft.AspNet.PipelineCore": "0.1-alpha-*"
+        "Kestrel": "0.1-alpha-*"
     },
-    "configurations" : {
-        "net45" : { },
-        "k10" : { 
+    "configurations": {
+        "net45": { },
+        "k10": {
             "dependencies": {
                 "System.Console": "4.0.0.0"
             }
         }
+    },
+    "commands": {
+        "web": "Microsoft.AspNet.Hosting --server kestrel"
     }
 }

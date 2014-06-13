@@ -9,7 +9,7 @@ using Microsoft.AspNet.Server.Kestrel.Http;
 
 namespace Microsoft.AspNet.Server.Kestrel
 {
-    public class KestrelEngine
+    public class KestrelEngine : IDisposable
     {
 
         public KestrelEngine()
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Server.Kestrel
             }
         }
 
-        public void Stop()
+        public void Dispose()
         {
             foreach (var thread in Threads)
             {
@@ -48,13 +48,13 @@ namespace Microsoft.AspNet.Server.Kestrel
             Threads.Clear();
         }
 
-        public IDisposable CreateServer(Func<object, Task> app)
+        public IDisposable CreateServer(Func<Frame, Task> application)
         {
             var listeners = new List<Listener>();
             foreach (var thread in Threads)
             {
                 var listener = new Listener(Memory);
-                listener.StartAsync(thread, app).Wait();
+                listener.StartAsync(thread, application).Wait();
                 listeners.Add(listener);
             }
             return new Disposable(() =>

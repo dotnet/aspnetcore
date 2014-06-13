@@ -14,12 +14,12 @@
             "compilationOptions": { "define": [ "TRACE" ] },
             "dependencies": {
                 "System.Net.Sockets": "4.0.0.0",
-                "System.Runtime.Handles": "4.0.0.0"
+                "System.Runtime.Handles": "4.0.0.0",
+                "System.IO": "4.0.0.0"
             }
         }
     },
     "commands": {
-        "run": "Xunit.KRunner -trait x=vs",
         "test": "Xunit.KRunner"
     }
 }

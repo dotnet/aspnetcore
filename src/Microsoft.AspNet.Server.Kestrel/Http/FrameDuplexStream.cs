@@ -10,10 +10,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 {
     class FrameDuplexStream : Stream
     {
-        readonly FrameRequestStream _requestStream;
-        readonly FrameResponseStream _responseStream;
+        readonly Stream _requestStream;
+        readonly Stream _responseStream;
 
-        public FrameDuplexStream(FrameRequestStream requestStream, FrameResponseStream responseStream)
+        public FrameDuplexStream(Stream requestStream, Stream responseStream)
         {
             _requestStream = requestStream;
             _responseStream = responseStream;

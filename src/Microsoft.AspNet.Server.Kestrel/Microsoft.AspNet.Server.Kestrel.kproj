@@ -26,7 +26,6 @@
     <Content Include="project.json" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Http\CallContext.cs" />
     <Compile Include="Http\FrameDuplexStream.cs" />
     <Compile Include="Http\FrameRequestStream.cs" />
     <Compile Include="Http\FrameResponseStream.cs" />

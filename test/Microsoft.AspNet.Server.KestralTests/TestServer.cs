@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNet.Server.Kestrel;
+using Microsoft.AspNet.Server.Kestrel.Http;
 using System;
 using System.Threading.Tasks;
 
@@ -12,12 +13,12 @@ namespace Microsoft.AspNet.Server.KestralTests
         private KestrelEngine _engine;
         private IDisposable _server;
 
-        public TestServer(Func<object, Task> app)
+        public TestServer(Func<Frame, Task> app)
         {
             Create(app);
         }
 
-        public void Create(Func<object,Task> app)
+        public void Create(Func<Frame, Task> app)
         {
             _engine = new KestrelEngine();
             _engine.Start(1);
@@ -28,7 +29,7 @@ namespace Microsoft.AspNet.Server.KestralTests
         public void Dispose()
         {
             _server.Dispose();
-            _engine.Stop();
+            _engine.Dispose();
         }
     }
 }

@@ -1,0 +1,35 @@
+﻿using Microsoft.AspNet.Hosting.Server;
+using System;
+using Microsoft.AspNet.Builder;
+using Microsoft.Framework.ConfigurationModel;
+using System.Threading.Tasks;
+using Microsoft.AspNet.Server.Kestrel;
+
+namespace Kestrel
+{
+    /// <summary>
+    /// Summary description for ServerFactory
+    /// </summary>
+    public class ServerFactory : IServerFactory
+    {
+        public IServerInformation Initialize(IConfiguration configuration)
+        {
+            var information = new ServerInformation();
+            information.Initialize(configuration);
+            return information;
+        }
+
+        public IDisposable Start(IServerInformation serverInformation, Func<object, Task> application)
+        {
+            var information = (ServerInformation)serverInformation;
+            var engine = new KestrelEngine();
+            engine.Start(1);
+            engine.CreateServer(async frame =>
+            {
+                var request = new ServerRequest(frame);
+                await application.Invoke(request);
+            });
+            return engine;
+        }
+    }
+}
