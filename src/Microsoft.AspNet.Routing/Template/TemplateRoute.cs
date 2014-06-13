@@ -198,8 +198,8 @@ namespace Microsoft.AspNet.Routing.Template
                     if (_defaults.ContainsKey(parameter.Name))
                     {
                         throw new InvalidOperationException(
-                            Resources.
-                             FormatTemplateRoute_CannotHaveDefaultValueSpecifiedInlineAndExplicitly(parameter.Name));
+                          Resources
+                            .FormatTemplateRoute_CannotHaveDefaultValueSpecifiedInlineAndExplicitly(parameter.Name));
                     }
                     else
                     {

@@ -28,7 +28,8 @@ namespace Microsoft.AspNet.Routing.Template
         }
 
         // Step 1: Get the list of values we're going to try to use to match and generate this URI
-        public IDictionary<string, object> GetAcceptedValues(IDictionary<string, object> ambientValues, IDictionary<string, object> values)
+        public IDictionary<string, object> GetAcceptedValues(IDictionary<string, object> ambientValues,
+                                                             IDictionary<string, object> values)
         {
             var context = new TemplateBindingContext(_defaults, values);
 
@@ -47,7 +48,8 @@ namespace Microsoft.AspNet.Routing.Template
                 var hasNewParameterValue = values.TryGetValue(parameterName, out newParameterValue);
 
                 object currentParameterValue = null;
-                var hasCurrentParameterValue = ambientValues != null && ambientValues.TryGetValue(parameterName, out currentParameterValue);
+                var hasCurrentParameterValue = ambientValues != null &&
+                                               ambientValues.TryGetValue(parameterName, out currentParameterValue);
 
                 if (hasNewParameterValue && hasCurrentParameterValue)
                 {
@@ -73,7 +75,7 @@ namespace Microsoft.AspNet.Routing.Template
                         context.Accept(parameterName, currentParameterValue);
                     }
                 }
-            };
+            }
 
             // Add all remaining new values to the list of values we will use for URI generation
             foreach (var kvp in values)
@@ -85,7 +87,7 @@ namespace Microsoft.AspNet.Routing.Template
             }
 
             // Accept all remaining default values if they match a required parameter
-            for (int i = 0; i < _template.Parameters.Count; i++)
+            for (var i = 0; i < _template.Parameters.Count; i++)
             {
                 var parameter = _template.Parameters[i];
                 if (parameter.IsOptional || parameter.IsCatchAll)
@@ -179,7 +181,7 @@ namespace Microsoft.AspNet.Routing.Template
                             acceptedValues.Remove(part.Name);
                         }
 
-                        bool isSameAsDefault = false;
+                        var isSameAsDefault = false;
                         object defaultValue;
                         if (_defaults != null && _defaults.TryGetValue(part.Name, out defaultValue))
                         {
@@ -245,7 +247,7 @@ namespace Microsoft.AspNet.Routing.Template
 
         private static string UriEncode(string str)
         {
-            string escape = Uri.EscapeUriString(str);
+            var escape = Uri.EscapeUriString(str);
             return Regex.Replace(escape, "([#;?:@&=+$,])", EscapeReservedCharacters);
         }
 
@@ -256,7 +258,7 @@ namespace Microsoft.AspNet.Routing.Template
 
         private TemplatePart GetParameter(string name)
         {
-            for (int i = 0; i < _template.Parameters.Count; i++)
+            for (var i = 0; i < _template.Parameters.Count; i++)
             {
                 var parameter = _template.Parameters[i];
                 if (string.Equals(parameter.Name, name, StringComparison.OrdinalIgnoreCase))
@@ -270,8 +272,8 @@ namespace Microsoft.AspNet.Routing.Template
 
         private static bool RoutePartsEqual(object a, object b)
         {
-            string sa = a as string;
-            string sb = b as string;
+            var sa = a as string;
+            var sb = b as string;
 
             if (sa != null && sb != null)
             {
@@ -395,7 +397,6 @@ namespace Microsoft.AspNet.Routing.Template
 
                 BufferState = SegmentState.Beginning;
                 UriState = SegmentState.Beginning;
-
             }
 
             public SegmentState BufferState { get; private set; }

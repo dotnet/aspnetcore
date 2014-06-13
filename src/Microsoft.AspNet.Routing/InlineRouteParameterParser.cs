@@ -43,8 +43,7 @@ namespace Microsoft.AspNet.Routing
                                                     isCatchAll: isCatchAll,
                                                     isOptional: isOptional,
                                                     defaultValue: null,
-                                                    inlineConstraint: null
-                                                    );
+                                                    inlineConstraint: null);
             }
 
             var parameterName = parameterMatch.Groups["parameterName"].Value;

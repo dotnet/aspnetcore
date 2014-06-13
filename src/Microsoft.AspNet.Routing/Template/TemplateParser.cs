@@ -35,9 +35,10 @@ namespace Microsoft.AspNet.Routing.Template
             {
                 if (context.Current == Separator)
                 {
-                    // If we get here is means that there's a consecutive '/' character. Templates don't start with a '/' and
-                    // parsing a segment consumes the separator.
-                    throw new ArgumentException(Resources.TemplateRoute_CannotHaveConsecutiveSeparators, "routeTemplate");
+                    // If we get here is means that there's a consecutive '/' character.
+                    // Templates don't start with a '/' and parsing a segment consumes the separator.
+                    throw new ArgumentException(Resources.TemplateRoute_CannotHaveConsecutiveSeparators,
+                                                "routeTemplate");
                 }
                 else
                 {
@@ -153,8 +154,8 @@ namespace Microsoft.AspNet.Routing.Template
 
                     if (context.Current == CloseBrace)
                     {
-                        // This is an 'escaped' brace in a parameter name, which is not allowed. We'll just accept it for now
-                        // and let the validation code for the name find it.
+                        // This is an 'escaped' brace in a parameter name, which is not allowed.
+                        // We'll just accept it for now and let the validation code for the name find it.
                     }
                     else
                     {
@@ -178,8 +179,6 @@ namespace Microsoft.AspNet.Routing.Template
             // default values and optional parameters. 
             var templatePart = InlineRouteParameterParser.ParseRouteParameter(rawParameter,
                                                                               context.ConstraintResolver);
-
-            
 
             if (templatePart.IsCatchAll && templatePart.IsOptional)
             {
@@ -287,13 +286,15 @@ namespace Microsoft.AspNet.Routing.Template
         private static bool IsAllValid(TemplateParserContext context, List<TemplateSegment> segments)
         {
             // A catch-all parameter must be the last part of the last segment
-            for (int i = 0; i < segments.Count; i++)
+            for (var i = 0; i < segments.Count; i++)
             {
                 var segment = segments[i];
-                for (int j = 0; j < segment.Parts.Count; j++)
+                for (var j = 0; j < segment.Parts.Count; j++)
                 {
                     var part = segment.Parts[j];
-                    if (part.IsParameter && part.IsCatchAll && (i != segments.Count - 1 || j != segment.Parts.Count - 1))
+                    if (part.IsParameter && 
+                        part.IsCatchAll &&
+                        (i != segments.Count - 1 || j != segment.Parts.Count - 1))
                     {
                         context.Error = Resources.TemplateRoute_CatchAllMustBeLast;
                         return false;
@@ -307,7 +308,7 @@ namespace Microsoft.AspNet.Routing.Template
         private static bool IsSegmentValid(TemplateParserContext context, TemplateSegment segment)
         {
             // If a segment has multiple parts, then it can't contain a catch all.
-            for (int i = 0; i < segment.Parts.Count; i++)
+            for (var i = 0; i < segment.Parts.Count; i++)
             {
                 var part = segment.Parts[i];
                 if (part.IsParameter && part.IsCatchAll && segment.Parts.Count > 1)
@@ -318,7 +319,7 @@ namespace Microsoft.AspNet.Routing.Template
             }
 
             // if a segment has multiple parts, then the parameters can't be optional
-            for (int i = 0; i < segment.Parts.Count; i++)
+            for (var i = 0; i < segment.Parts.Count; i++)
             {
                 var part = segment.Parts[i];
                 if (part.IsParameter && part.IsOptional && segment.Parts.Count > 1)
@@ -330,7 +331,7 @@ namespace Microsoft.AspNet.Routing.Template
 
             // A segment cannot containt two consecutive parameters
             var isLastSegmentParameter = false;
-            for (int i = 0; i < segment.Parts.Count; i++)
+            for (var i = 0; i < segment.Parts.Count; i++)
             {
                 var part = segment.Parts[i];
                 if (part.IsParameter && isLastSegmentParameter)
@@ -349,23 +350,26 @@ namespace Microsoft.AspNet.Routing.Template
         {
             if (parameterName.Length == 0)
             {
-                context.Error = String.Format(CultureInfo.CurrentCulture, Resources.TemplateRoute_InvalidParameterName, parameterName);
+                context.Error = String.Format(CultureInfo.CurrentCulture,
+                                              Resources.TemplateRoute_InvalidParameterName, parameterName);
                 return false;
             }
 
-            for (int i = 0; i < parameterName.Length; i++)
+            for (var i = 0; i < parameterName.Length; i++)
             {
                 var c = parameterName[i];
                 if (c == Separator || c == OpenBrace || c == CloseBrace || c == QuestionMark)
                 {
-                    context.Error = String.Format(CultureInfo.CurrentCulture, Resources.TemplateRoute_InvalidParameterName, parameterName);
+                    context.Error = String.Format(CultureInfo.CurrentCulture,
+                                                  Resources.TemplateRoute_InvalidParameterName, parameterName);
                     return false;
                 }
             }
 
             if (!context.ParameterNames.Add(parameterName))
             {
-                context.Error = String.Format(CultureInfo.CurrentCulture, Resources.TemplateRoute_RepeatedParameter, parameterName);
+                context.Error = String.Format(CultureInfo.CurrentCulture,
+                                              Resources.TemplateRoute_RepeatedParameter, parameterName);
                 return false;
             }
 
@@ -379,7 +383,8 @@ namespace Microsoft.AspNet.Routing.Template
 
             if (literal.IndexOf(QuestionMark) != -1)
             {
-                context.Error = String.Format(CultureInfo.CurrentCulture, Resources.TemplateRoute_InvalidLiteral, literal);
+                context.Error = String.Format(CultureInfo.CurrentCulture,
+                                              Resources.TemplateRoute_InvalidLiteral, literal);
                 return false;
             }
 
@@ -391,7 +396,6 @@ namespace Microsoft.AspNet.Routing.Template
             return routeTemplate.StartsWith("~", StringComparison.Ordinal) ||
                    routeTemplate.StartsWith("/", StringComparison.Ordinal);
         }
-
 
         private class TemplateParserContext
         {

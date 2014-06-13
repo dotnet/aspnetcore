@@ -29,7 +29,8 @@ namespace Microsoft.AspNet.Routing
                 return null;
             }
 
-            var constraints = new Dictionary<string, IRouteConstraint>(inputConstraints.Count, StringComparer.OrdinalIgnoreCase);
+            var constraints = new Dictionary<string, IRouteConstraint>(inputConstraints.Count,
+                                                                       StringComparer.OrdinalIgnoreCase);
 
             foreach (var kvp in inputConstraints)
             {

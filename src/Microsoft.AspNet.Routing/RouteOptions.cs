@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Routing
             }
             set
             {
-                if(value == null)
+                if (value == null)
                 {
                     throw new ArgumentNullException("value",
                                                     Resources.FormatPropertyOfTypeCannotBeNull(

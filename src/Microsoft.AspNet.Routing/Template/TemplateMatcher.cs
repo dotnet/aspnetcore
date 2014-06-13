@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Routing.Template
 
             var values = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
-            for (int i = 0; i < requestSegments.Length; i++)
+            for (var i = 0; i < requestSegments.Length; i++)
             {
                 var routeSegment = Template.Segments.Count > i ? Template.Segments[i] : null;
                 var requestSegment = requestSegments[i];
@@ -100,7 +100,8 @@ namespace Microsoft.AspNet.Routing.Template
                                 }
                                 else if (part.IsOptional)
                                 {
-                                    // This is optional (with no default value) - there's nothing to capture here, so just move on.
+                                    // This is optional (with no default value) 
+                                    // - there's nothing to capture here, so just move on.
                                 }
                                 else
                                 {
@@ -120,7 +121,7 @@ namespace Microsoft.AspNet.Routing.Template
                 }
             }
 
-            for (int i = requestSegments.Length; i < Template.Segments.Count; i++)
+            for (var i = requestSegments.Length; i < Template.Segments.Count; i++)
             {
                 // We've matched the request path so far, but still have remaining route segments. These need
                 // to be all single-part parameter segments with default values or else they won't match.
@@ -130,7 +131,6 @@ namespace Microsoft.AspNet.Routing.Template
                     // If it has more than one part it must contain literals, so it can't match.
                     return null;
                 }
-
 
                 var part = routeSegment.Parts[0];
                 if (part.IsLiteral)
@@ -172,21 +172,24 @@ namespace Microsoft.AspNet.Routing.Template
             return values;
         }
 
-        private bool MatchComplexSegment(TemplateSegment routeSegment, string requestSegment, IDictionary<string, object> defaults, Dictionary<string, object> values)
+        private bool MatchComplexSegment(TemplateSegment routeSegment,
+                                         string requestSegment,
+                                         IDictionary<string, object> defaults,
+                                         Dictionary<string, object> values)
         {
             Contract.Assert(routeSegment != null);
             Contract.Assert(routeSegment.Parts.Count > 1);
 
             // Find last literal segment and get its last index in the string
-            int lastIndex = requestSegment.Length;
-            int indexOfLastSegmentUsed = routeSegment.Parts.Count - 1;
+            var lastIndex = requestSegment.Length;
+            var indexOfLastSegmentUsed = routeSegment.Parts.Count - 1;
 
             TemplatePart parameterNeedsValue = null; // Keeps track of a parameter segment that is pending a value
             TemplatePart lastLiteral = null; // Keeps track of the left-most literal we've encountered
 
             while (indexOfLastSegmentUsed >= 0)
             {
-                int newLastIndex = lastIndex;
+                var newLastIndex = lastIndex;
 
                 var part = routeSegment.Parts[indexOfLastSegmentUsed];
                 if (part.IsParameter)
@@ -199,7 +202,7 @@ namespace Microsoft.AspNet.Routing.Template
                     Contract.Assert(part.IsLiteral);
                     lastLiteral = part;
 
-                    int startIndex = lastIndex - 1;
+                    var startIndex = lastIndex - 1;
                     // If we have a pending parameter subsegment, we must leave at least one character for that
                     if (parameterNeedsValue != null)
                     {
@@ -211,7 +214,9 @@ namespace Microsoft.AspNet.Routing.Template
                         return false;
                     }
 
-                    int indexOfLiteral = requestSegment.LastIndexOf(part.Text, startIndex, StringComparison.OrdinalIgnoreCase);
+                    var indexOfLiteral = requestSegment.LastIndexOf(part.Text, 
+                                                                    startIndex,
+                                                                    StringComparison.OrdinalIgnoreCase);
                     if (indexOfLiteral == -1)
                     {
                         // If we couldn't find this literal index, this segment cannot match
@@ -232,7 +237,8 @@ namespace Microsoft.AspNet.Routing.Template
                     newLastIndex = indexOfLiteral;
                 }
 
-                if ((parameterNeedsValue != null) && (((lastLiteral != null) && (part.IsLiteral)) || (indexOfLastSegmentUsed == 0)))
+                if ((parameterNeedsValue != null) && 
+                    (((lastLiteral != null) && (part.IsLiteral)) || (indexOfLastSegmentUsed == 0)))
                 {
                     // If we have a pending parameter that needs a value, grab that value
 
@@ -267,7 +273,7 @@ namespace Microsoft.AspNet.Routing.Template
                         }
                     }
 
-                    string parameterValueString = requestSegment.Substring(parameterStartIndex, parameterTextLength);
+                    var parameterValueString = requestSegment.Substring(parameterStartIndex, parameterTextLength);
 
                     if (string.IsNullOrEmpty(parameterValueString))
                     {
@@ -298,6 +304,5 @@ namespace Microsoft.AspNet.Routing.Template
             // This check is related to the check we do earlier in this function for LiteralSubsegments.
             return (lastIndex == 0) || routeSegment.Parts[0].IsParameter;
         }
-
     }
 }

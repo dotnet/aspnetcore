@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Routing
         {
             string constraintKey;
             string argumentString;
-            int indexOfFirstOpenParens = inlineConstraint.IndexOf('(');
+            var indexOfFirstOpenParens = inlineConstraint.IndexOf('(');
             if (indexOfFirstOpenParens >= 0 && inlineConstraint.EndsWith(")", StringComparison.Ordinal))
             {
                 constraintKey = inlineConstraint.Substring(0, indexOfFirstOpenParens);
@@ -92,9 +92,10 @@ namespace Microsoft.AspNet.Routing
             }
             else
             {
-                string[] arguments = argumentString.Split(',').Select(argument => argument.Trim()).ToArray();
+                var arguments = argumentString.Split(',').Select(argument => argument.Trim()).ToArray();
 
-                var matchingConstructors = constructors.Where(ci => ci.GetParameters().Length == arguments.Length).ToArray();
+                var matchingConstructors = constructors.Where(ci => ci.GetParameters().Length == arguments.Length)
+                                                       .ToArray();
                 var constructorMatches = matchingConstructors.Length;
 
                 if (constructorMatches == 0)
@@ -122,7 +123,7 @@ namespace Microsoft.AspNet.Routing
         private static object[] ConvertArguments(ParameterInfo[] parameterInfos, string[] arguments)
         {
             var parameters = new object[parameterInfos.Length];
-            for (int i = 0; i < parameterInfos.Length; i++)
+            for (var i = 0; i < parameterInfos.Length; i++)
             {
                 var parameter = parameterInfos[i];
                 var parameterType = parameter.ParameterType;

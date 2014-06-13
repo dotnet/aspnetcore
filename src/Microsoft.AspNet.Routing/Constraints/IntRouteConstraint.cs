@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Routing.Constraints
                 }
 
                 int result;
-                string valueString = Convert.ToString(value, CultureInfo.InvariantCulture);
+                var valueString = Convert.ToString(value, CultureInfo.InvariantCulture);
                 return Int32.TryParse(valueString, NumberStyles.Integer, CultureInfo.InvariantCulture, out result);
             }
 
