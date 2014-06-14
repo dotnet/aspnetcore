@@ -200,8 +200,8 @@ kvm()
 
             local versionOrAlias="$2"
 
-            if [ "$versionOrAlias" == *.nupkg ]; then
-                local kreFullName=$(echo $versionOrAlias | sed "s/\(.*\)\.nupkg/\1/")
+            if [[ "$versionOrAlias" == *.nupkg ]]; then
+                local kreFullName=$(basename $versionOrAlias | sed "s/\(.*\)\.nupkg/\1/")
                 local kreFolder="$KRE_USER_PACKAGES/$kreFullName"
                 local kreFile="$kreFolder/$kreFullName.nupkg"
 
@@ -215,7 +215,7 @@ kvm()
 
                 echo "Adding $kreBin to current PATH"
                 PATH=$(_kvm_strip_path "$PATH" "/bin")
-                PATH=(_kvm_prepend_path "$PATH" "$kreBin")
+                PATH=$(_kvm_prepend_path "$PATH" "$kreBin")
             else
                 local kreFullName="$(_kvm_requested_version_or_alias $versionOrAlias)"
                 local kreFolder="$KRE_USER_PACKAGES/$kreFullName"
@@ -244,7 +244,7 @@ kvm()
             if [[ $versionOrAlias == "none" ]]; then
                 echo "Removing KRE from process PATH"
                 # Strip other version from PATH
-                PATH=`_kvm_strip_path "$PATH" "/bin"`
+                PATH=$(_kvm_strip_path "$PATH" "/bin")
 
                 if [[ -n $persistent && -e "$KRE_USER_HOME/alias/default.alias" ]]; then
                     echo "Setting default KRE to none"
@@ -263,8 +263,8 @@ kvm()
 
             echo "Adding" $kreBin "to process PATH"
 
-            PATH=`_kvm_strip_path "$PATH" "/bin"`
-            PATH=`_kvm_prepend_path "$PATH" "$kreBin"`
+            PATH=$(_kvm_strip_path "$PATH" "/bin")
+            PATH=$(_kvm_prepend_path "$PATH" "$kreBin")
 
             if [[ -n $persistent ]]; then
                 echo "Setting  $kreBin as default KRE"
@@ -313,7 +313,7 @@ kvm()
                 echo $searchGlob
             fi
 
-            for f in $(find $KRE_USER_PACKAGES/* -name $searchGlob -type d -prune -exec basename {} \;); do
+            for f in $(find $KRE_USER_PACKAGES/* -name "$searchGlob" -type d -prune -exec basename {} \;); do
                 #TODO: Format, extract package, version arch etc
                 echo -n $f
                 if [[ $PATH == *"$KRE_USER_PACKAGES/$f/bin"* ]]; then
