@@ -369,7 +369,12 @@ param(
   [string] $name
 )
     md ($userKrePath + "\alias\") -Force | Out-Null
-    Write-Host "Alias '$name' is set to" (Get-Content ($userKrePath + "\alias\" + $name + ".txt"))
+    $aliasFilePath=$userKrePath + "\alias\" + $name + ".txt"
+    if (!(Test-Path $aliasFilePath)) {
+        Write-Host "Alias '$name' does not exist"
+    } else {
+        Write-Host "Alias '$name' is set to" (Get-Content ($userKrePath + "\alias\" + $name + ".txt"))
+    }
 }
 
 function Kvm-Alias-Set {
