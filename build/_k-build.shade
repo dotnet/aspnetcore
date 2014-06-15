@@ -13,5 +13,6 @@ var projectName='${Path.GetFileName(projectFolder)}'
 var projectBin='${Path.Combine(projectFolder, "bin")}'
 
 directory delete="${projectBin}"
-k command='build ${projectFolder}'
+exec program='cmd' commandline='/C kpm build ${projectFolder}' if='!IsMono'
+exec program='kpm' commandline='build ${projectFolder}' if='IsMono'
 copy sourceDir='${projectBin}' outputDir='${Path.Combine(BUILD_DIR, projectName)}'
