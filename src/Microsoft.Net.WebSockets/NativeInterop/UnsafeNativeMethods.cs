@@ -27,7 +27,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace Microsoft.AspNet.WebSockets
+namespace Microsoft.Net.WebSockets
 {
     internal static class UnsafeNativeMethods
     {
@@ -161,7 +161,11 @@ namespace Microsoft.AspNet.WebSockets
 
             static WebSocketProtocolComponent()
             {
+#if NET45
                 DllFileName = Path.Combine(Environment.SystemDirectory, WEBSOCKET);
+#else
+                DllFileName = Path.Combine(Environment.GetEnvironmentVariable("SYSTEMROOT"), "System32", WEBSOCKET);
+#endif
                 WebSocketDllHandle = SafeLoadLibrary.LoadLibraryEx(DllFileName);
 
                 if (!WebSocketDllHandle.IsInvalid)

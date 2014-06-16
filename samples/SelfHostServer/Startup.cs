@@ -15,6 +15,10 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
+using System;
+using System.Net.WebSockets;
+using System.Text;
+using System.Threading;
 using Microsoft.AspNet;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
@@ -32,8 +36,20 @@ namespace SelfHostServer
 
             app.Run(async context =>
             {
-                context.Response.ContentType = "text/plain";
-                await context.Response.WriteAsync("Hello world");
+                if (context.IsWebSocketRequest)
+                {
+                    Console.WriteLine("WebSocket");
+                    byte[] bytes = Encoding.ASCII.GetBytes("Hello World: " + DateTime.Now);
+                    WebSocket webSocket = await context.AcceptWebSocketAsync();
+                    await webSocket.SendAsync(new ArraySegment<byte>(bytes, 0, bytes.Length), WebSocketMessageType.Text, true, CancellationToken.None);
+                    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Goodbye", CancellationToken.None);
+                    webSocket.Dispose();
+                }
+                else
+                {
+                    context.Response.ContentType = "text/plain";
+                    await context.Response.WriteAsync("Hello world");
+                }
             });
         }
     }

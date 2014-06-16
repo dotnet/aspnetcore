@@ -26,21 +26,20 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.IO;
+using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
-#if NET45
 using System.Security.Cryptography;
-#endif
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.WebSockets
+namespace Microsoft.Net.WebSockets
 {
-    internal static class WebSocketHelpers
+    public static class WebSocketHelpers
     {
         internal const string SecWebSocketKeyGuid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-        internal const string WebSocketUpgradeToken = "websocket";
-        internal const int DefaultReceiveBufferSize = 16 * 1024;
+        public const string WebSocketUpgradeToken = "websocket";
+        public const int DefaultReceiveBufferSize = 16 * 1024;
         internal const int DefaultClientSendBufferSize = 16 * 1024;
         internal const int MaxControlFramePayloadLength = 123;
 
@@ -63,138 +62,30 @@ namespace Microsoft.AspNet.WebSockets
         internal static readonly ArraySegment<byte> EmptyPayload = new ArraySegment<byte>(new byte[] { }, 0, 0);
         private static readonly Random KeyGenerator = new Random();
 
-/*
-        internal static Task<HttpListenerWebSocketContext> AcceptWebSocketAsync(HttpListenerContext context,
-            string subProtocol,
-            int receiveBufferSize,
-            TimeSpan keepAliveInterval,
-            ArraySegment<byte> internalBuffer)
+        public static bool AreWebSocketsSupported
         {
-            WebSocketHelpers.ValidateOptions(subProtocol, receiveBufferSize, WebSocketBuffer.MinSendBufferSize, keepAliveInterval);
-            WebSocketHelpers.ValidateArraySegment<byte>(internalBuffer, "internalBuffer");
-            WebSocketBuffer.Validate(internalBuffer.Count, receiveBufferSize, WebSocketBuffer.MinSendBufferSize, true);
-
-            return AcceptWebSocketAsyncCore(context, subProtocol, receiveBufferSize, keepAliveInterval, internalBuffer);
+            get
+            {
+                return UnsafeNativeMethods.WebSocketProtocolComponent.IsSupported;
+            }
         }
-        
-        private static async Task<HttpListenerWebSocketContext> AcceptWebSocketAsyncCore(HttpListenerContext context,
-            string subProtocol,
-            int receiveBufferSize,
-            TimeSpan keepAliveInterval,
-            ArraySegment<byte> internalBuffer)
+
+        public static bool IsValidWebSocketKey(string key)
         {
-            HttpListenerWebSocketContext webSocketContext = null;
-            /*if (Logging.On)
+            if (string.IsNullOrWhiteSpace(key))
             {
-                Logging.Enter(Logging.WebSockets, context, "AcceptWebSocketAsync", "");
-            }* /
-
-            try
-            {
-                // get property will create a new response if one doesn't exist.
-                HttpListenerResponse response = context.Response;
-                HttpListenerRequest request = context.Request;
-                ValidateWebSocketHeaders(context);
-
-                string secWebSocketVersion = request.Headers[HttpKnownHeaderNames.SecWebSocketVersion];
-
-                // Optional for non-browser client
-                string origin = request.Headers[HttpKnownHeaderNames.Origin];
-
-                List<string> secWebSocketProtocols = new List<string>();
-                string outgoingSecWebSocketProtocolString;
-                bool shouldSendSecWebSocketProtocolHeader =
-                    WebSocketHelpers.ProcessWebSocketProtocolHeader(
-                        request.Headers[HttpKnownHeaderNames.SecWebSocketProtocol],
-                        subProtocol,
-                        out outgoingSecWebSocketProtocolString);
-
-                if (shouldSendSecWebSocketProtocolHeader)
-                {
-                    secWebSocketProtocols.Add(outgoingSecWebSocketProtocolString);
-                    response.Headers.Add(HttpKnownHeaderNames.SecWebSocketProtocol,
-                        outgoingSecWebSocketProtocolString);
-                }
-
-                // negotiate the websocket key return value
-                string secWebSocketKey = request.Headers[HttpKnownHeaderNames.SecWebSocketKey];
-                string secWebSocketAccept = WebSocketHelpers.GetSecWebSocketAcceptString(secWebSocketKey);
-
-                response.Headers.Add(HttpKnownHeaderNames.Connection, HttpKnownHeaderNames.Upgrade);
-                response.Headers.Add(HttpKnownHeaderNames.Upgrade, WebSocketHelpers.WebSocketUpgradeToken);
-                response.Headers.Add(HttpKnownHeaderNames.SecWebSocketAccept, secWebSocketAccept);
-
-                response.StatusCode = (int)HttpStatusCode.SwitchingProtocols; // HTTP 101                
-                response.ComputeCoreHeaders();
-                ulong hresult = SendWebSocketHeaders(response);
-                if (hresult != 0)
-                {
-                    throw new WebSocketException((int)hresult,
-                        SR.GetString(SR.net_WebSockets_NativeSendResponseHeaders,
-                        WebSocketHelpers.MethodNames.AcceptWebSocketAsync,
-                        hresult));
-                }
-
-                await response.OutputStream.FlushAsync().SuppressContextFlow(); // TODO:??? FlushAsync was never implemented
-
-                HttpResponseStream responseStream = response.OutputStream as HttpResponseStream;
-                Contract.Assert(responseStream != null, "'responseStream' MUST be castable to System.Net.HttpResponseStream.");
-                ((HttpResponseStream)response.OutputStream).SwitchToOpaqueMode();
-                HttpRequestStream requestStream = new HttpRequestStream(context);
-                requestStream.SwitchToOpaqueMode();
-                WebSocketHttpListenerDuplexStream webSocketStream =
-                    new WebSocketHttpListenerDuplexStream(requestStream, responseStream, context);
-                WebSocket webSocket = WebSocket.CreateServerWebSocket(webSocketStream,
-                    subProtocol,
-                    receiveBufferSize,
-                    keepAliveInterval,
-                    internalBuffer);
-
-                webSocketContext = new HttpListenerWebSocketContext(
-                                                                    request.Url,
-                                                                    request.Headers,
-                                                                    request.Cookies,
-                                                                    context.User,
-                                                                    request.IsAuthenticated,
-                                                                    request.IsLocal,
-                                                                    request.IsSecureConnection,
-                                                                    origin,
-                                                                    secWebSocketProtocols.AsReadOnly(),
-                                                                    secWebSocketVersion,
-                                                                    secWebSocketKey,
-                                                                    webSocket);
-
-                if (Logging.On)
-                {
-                    Logging.Associate(Logging.WebSockets, context, webSocketContext);
-                    Logging.Associate(Logging.WebSockets, webSocketContext, webSocket);
-                }
+                return false;
             }
-            catch (Exception ex)
-            {
-                if (Logging.On)
-                {
-                    Logging.Exception(Logging.WebSockets, context, "AcceptWebSocketAsync", ex);
-                }
-                throw;
-            }
-            finally
-            {
-                if (Logging.On)
-                {
-                    Logging.Exit(Logging.WebSockets, context, "AcceptWebSocketAsync", "");
-                }
-            }
-            return webSocketContext;
+            // TODO:
+            // throw new NotImplementedException();
+            return true;
         }
-        
-*/
+
         [SuppressMessage("Microsoft.Cryptographic.Standard", "CA5354:SHA1CannotBeUsed",
             Justification = "SHA1 used only for hashing purposes, not for crypto.")]
-        internal static string GetSecWebSocketAcceptString(string secWebSocketKey)
+        public static string GetSecWebSocketAcceptString(string secWebSocketKey)
         {
             string retVal;
-#if NET45
             // SHA1 used only for hashing purposes, not for crypto. Check here for FIPS compat.
             using (SHA1 sha1 = SHA1.Create())
             {
@@ -202,8 +93,12 @@ namespace Microsoft.AspNet.WebSockets
                 byte[] toHash = Encoding.UTF8.GetBytes(acceptString);
                 retVal = Convert.ToBase64String(sha1.ComputeHash(toHash));
             }
-#endif
             return retVal;
+        }
+
+        public static WebSocket CreateServerWebSocket(Stream opaqueStream, string subProtocol, int receiveBufferSize, TimeSpan keepAliveInterval, ArraySegment<byte> internalBuffer)
+        {
+            return new ServerWebSocket(opaqueStream, subProtocol, receiveBufferSize, keepAliveInterval, internalBuffer);
         }
 
         internal static string GetTraceMsgForParameters(int offset, int count, CancellationToken cancellationToken)
@@ -216,11 +111,8 @@ namespace Microsoft.AspNet.WebSockets
         }
 
         // return value here signifies if a Sec-WebSocket-Protocol header should be returned by the server. 
-        internal static bool ProcessWebSocketProtocolHeader(string clientSecWebSocketProtocol,
-            string subProtocol,
-            out string acceptProtocol)
+        public static bool ProcessWebSocketProtocolHeader(string clientSecWebSocketProtocol, string subProtocol)
         {
-            acceptProtocol = string.Empty;
             if (string.IsNullOrEmpty(clientSecWebSocketProtocol))
             {
                 // client hasn't specified any Sec-WebSocket-Protocol header
@@ -236,10 +128,10 @@ namespace Microsoft.AspNet.WebSockets
 
             // here, we know the client specified something and it's non-empty.
 
-            if (subProtocol == null)
+            if (string.IsNullOrEmpty(subProtocol))
             {
                 // client specified some protocols, server specified 'null'. So server should send headers.                 
-                return true;
+                return false;
             }
 
             // here, we know that the client has specified something, it's not empty
@@ -247,14 +139,13 @@ namespace Microsoft.AspNet.WebSockets
 
             string[] requestProtocols = clientSecWebSocketProtocol.Split(new char[] { ',' },
                 StringSplitOptions.RemoveEmptyEntries);
-            acceptProtocol = subProtocol;
 
             // client specified protocols, serverOptions has exactly 1 non-empty entry. Check that 
             // this exists in the list the client specified. 
             for (int i = 0; i < requestProtocols.Length; i++)
             {
                 string currentRequestProtocol = requestProtocols[i].Trim();
-                if (string.Compare(acceptProtocol, currentRequestProtocol, StringComparison.OrdinalIgnoreCase) == 0)
+                if (string.Compare(subProtocol, currentRequestProtocol, StringComparison.OrdinalIgnoreCase) == 0)
                 {
                     return true;
                 }
@@ -281,7 +172,34 @@ namespace Microsoft.AspNet.WebSockets
             // under the caller's synchronization context.
             return task.ConfigureAwait(false);
         }
-        
+
+        internal static bool IsStateTerminal(WebSocketState state)
+        {
+            return state == WebSocketState.Closed || state == WebSocketState.Aborted;
+        }
+
+        internal static void ThrowOnInvalidState(WebSocketState state, params WebSocketState[] validStates)
+        {
+            string text = string.Empty;
+            if (validStates != null && validStates.Length > 0)
+            {
+                for (int i = 0; i < validStates.Length; i++)
+                {
+                    WebSocketState webSocketState = validStates[i];
+                    if (state == webSocketState)
+                    {
+                        return;
+                    }
+                }
+                text = string.Join<WebSocketState>(", ", validStates);
+            }
+            throw new WebSocketException(SR.GetString("net_WebSockets_InvalidState", new object[]
+            {
+                state,
+                text
+            }));
+        }
+
         internal static void ValidateBuffer(byte[] buffer, int offset, int count)
         {
             if (buffer == null)
@@ -299,57 +217,6 @@ namespace Microsoft.AspNet.WebSockets
                 throw new ArgumentOutOfRangeException("count");
             }
         }
-        /*
-        private static unsafe ulong SendWebSocketHeaders(HttpListenerResponse response)
-        {
-            return response.SendHeaders(null, null,
-                UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_OPAQUE |
-                UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA |
-                UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_BUFFER_DATA,
-                true);
-        }
-        private static void ValidateWebSocketHeaders(HttpListenerContext context)
-        {
-            EnsureHttpSysSupportsWebSockets();
-
-            if (!context.Request.IsWebSocketRequest)
-            {
-                throw new WebSocketException(WebSocketError.NotAWebSocket,
-                    SR.GetString(SR.net_WebSockets_AcceptNotAWebSocket,
-                    WebSocketHelpers.MethodNames.ValidateWebSocketHeaders,
-                    HttpKnownHeaderNames.Connection,
-                    HttpKnownHeaderNames.Upgrade,
-                    WebSocketHelpers.WebSocketUpgradeToken,
-                    context.Request.Headers[HttpKnownHeaderNames.Upgrade]));
-            }
-
-            string secWebSocketVersion = context.Request.Headers[HttpKnownHeaderNames.SecWebSocketVersion];
-            if (string.IsNullOrEmpty(secWebSocketVersion))
-            {
-                throw new WebSocketException(WebSocketError.HeaderError,
-                    SR.GetString(SR.net_WebSockets_AcceptHeaderNotFound,
-                    WebSocketHelpers.MethodNames.ValidateWebSocketHeaders,
-                    HttpKnownHeaderNames.SecWebSocketVersion));
-            }
-
-            if (string.Compare(secWebSocketVersion, WebSocketProtocolComponent.SupportedVersion, StringComparison.OrdinalIgnoreCase) != 0)
-            {
-                throw new WebSocketException(WebSocketError.UnsupportedVersion,
-                    SR.GetString(SR.net_WebSockets_AcceptUnsupportedWebSocketVersion,
-                    WebSocketHelpers.MethodNames.ValidateWebSocketHeaders,
-                    secWebSocketVersion,
-                    WebSocketProtocolComponent.SupportedVersion));
-            }
-
-            if (string.IsNullOrWhiteSpace(context.Request.Headers[HttpKnownHeaderNames.SecWebSocketKey]))
-            {
-                throw new WebSocketException(WebSocketError.HeaderError,
-                    SR.GetString(SR.net_WebSockets_AcceptHeaderNotFound,
-                    WebSocketHelpers.MethodNames.ValidateWebSocketHeaders,
-                    HttpKnownHeaderNames.SecWebSocketKey));
-            }
-        }
-        */
 
         internal static void ValidateSubprotocol(string subProtocol)
         {
@@ -425,7 +292,7 @@ namespace Microsoft.AspNet.WebSockets
             }
         }
 
-        internal static void ValidateOptions(string subProtocol,
+        public static void ValidateOptions(string subProtocol,
             int receiveBufferSize,
             int sendBufferSize,
             TimeSpan keepAliveInterval)
@@ -511,7 +378,7 @@ namespace Microsoft.AspNet.WebSockets
             throw new PlatformNotSupportedException(SR.GetString(SR.net_WebSockets_UnsupportedPlatform));
         }
 
-        internal static void ValidateArraySegment<T>(ArraySegment<T> arraySegment, string parameterName)
+        public static void ValidateArraySegment<T>(ArraySegment<T> arraySegment, string parameterName)
         {
             Contract.Requires(!string.IsNullOrEmpty(parameterName), "'parameterName' MUST NOT be NULL or string.Empty");
 
@@ -528,12 +395,6 @@ namespace Microsoft.AspNet.WebSockets
             {
                 throw new ArgumentOutOfRangeException(parameterName + ".Count");
             }
-        }
-
-        internal static class MethodNames
-        {
-            internal const string AcceptWebSocketAsync = "AcceptWebSocketAsync";
-            internal const string ValidateWebSocketHeaders = "ValidateWebSocketHeaders";
         }
     }
 }

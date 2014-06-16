@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,7 +29,15 @@ using Microsoft.Net.Server;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
-    internal class FeatureContext : IHttpRequestFeature, IHttpConnectionFeature, IHttpResponseFeature, IHttpSendFileFeature, IHttpTransportLayerSecurityFeature, IHttpRequestLifetimeFeature
+    internal class FeatureContext :
+        IHttpRequestFeature,
+        IHttpConnectionFeature,
+        IHttpResponseFeature,
+        IHttpSendFileFeature,
+        IHttpTransportLayerSecurityFeature,
+        IHttpRequestLifetimeFeature,
+        IHttpWebSocketFeature,
+        IHttpOpaqueUpgradeFeature
     {
         private RequestContext _requestContext;
         private FeatureCollection _features;
@@ -85,10 +94,13 @@ namespace Microsoft.AspNet.Server.WebListener
             _features.Add(typeof(IHttpSendFileFeature), this);
             _features.Add(typeof(IHttpRequestLifetimeFeature), this);
 
+            // TODO: If Win8+
+            _features.Add(typeof(IHttpOpaqueUpgradeFeature), this);
+            _features.Add(typeof(IHttpWebSocketFeature), this);
+
             // TODO: 
             // _environment.CallCancelled = _cts.Token;
             // _environment.User = _request.User;
-            // Opaque/WebSockets
             // Channel binding
 
             /*
@@ -348,10 +360,15 @@ namespace Microsoft.AspNet.Server.WebListener
             set { Response.StatusCode = value; }
         }
         #endregion
+        #region IHttpSendFileFeature
+
         Task IHttpSendFileFeature.SendFileAsync(string path, long offset, long? length, CancellationToken cancellation)
         {
             return Response.SendFileAsync(path, offset, length, cancellation);
         }
+
+        #endregion
+        #region IHttpRequestLifetimeFeature
 
         public CancellationToken OnRequestAborted
         {
@@ -362,5 +379,46 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             _requestContext.Abort();
         }
+
+        #endregion
+        #region IHttpOpaqueUpgradeFeature
+
+        public bool IsUpgradableRequest
+        {
+            get { return _requestContext.IsUpgradableRequest; }
+        }
+
+        public Task<Stream> UpgradeAsync()
+        {
+            if (!IsUpgradableRequest)
+            {
+                throw new InvalidOperationException("This request cannot be upgraded.");
+            }
+            return _requestContext.UpgradeAsync();
+        }
+
+        #endregion
+        #region IHttpWebSocketFeature
+
+        public bool IsWebSocketRequest
+        {
+            get
+            {
+                return _requestContext.IsWebSocketRequest;
+            }
+        }
+
+        public Task<WebSocket> AcceptAsync(IWebSocketAcceptContext context)
+        {
+            // TODO: Advanced params
+            string subProtocol = null;
+            if (context != null)
+            {
+                subProtocol = context.SubProtocol;
+            }
+            return _requestContext.AcceptWebSocketAsync(subProtocol);
+        }
+
+        #endregion
     }
 }

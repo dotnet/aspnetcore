@@ -441,6 +441,17 @@ namespace Microsoft.Net.Server
             return UnsafeNclNativeMethods.HttpApi.GetKnownVerb(RequestBuffer, OriginalBlobAddress);
         }
 
+        // TODO: We need an easier to user header collection that has this built in
+        internal string GetHeader(string headerName)
+        {
+            string[] values;
+            if (Headers.TryGetValue(headerName, out values))
+            {
+                return string.Join(", ", values);
+            }
+            return string.Empty;
+        }
+
         // Populates the client certificate.  The result may be null if there is no client cert.
         // TODO: Does it make sense for this to be invoked multiple times (e.g. renegotiate)? Client and server code appear to
         // enable this, but it's unclear what Http.Sys would do.

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.21708.0
+VisualStudioVersion = 14.0.21730.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestClient", "samples\TestClient\TestClient.csproj", "{8B828433-B333-4C19-96AE-00BFFF9D8841}"
 EndProject
@@ -19,7 +19,7 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SelfHostServer", "samples\S
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Security.Windows", "src\Microsoft.AspNet.Security.Windows\Microsoft.AspNet.Security.Windows.kproj", "{EFC7538F-7AEB-4A3E-A1E6-6BDCCBD272BF}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.WebSockets", "src\Microsoft.AspNet.WebSockets\Microsoft.AspNet.WebSockets.kproj", "{E788AEAE-2CB4-4BFA-8746-D0BB7E93A1BB}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Net.WebSockets", "src\Microsoft.Net.WebSockets\Microsoft.Net.WebSockets.kproj", "{E788AEAE-2CB4-4BFA-8746-D0BB7E93A1BB}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Server.WebListener.FunctionalTests", "test\Microsoft.AspNet.Server.WebListener.FunctionalTests\Microsoft.AspNet.Server.WebListener.FunctionalTests.kproj", "{4492FF4C-9032-411D-853F-46B01755E504}"
 EndProject

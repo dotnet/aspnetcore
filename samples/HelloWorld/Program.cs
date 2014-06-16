@@ -16,7 +16,9 @@
 // permissions and limitations under the License.
 
 using System;
+using System.Net.WebSockets;
 using System.Text;
+using System.Threading;
 using Microsoft.Net.Server;
 
 namespace HelloWorld
@@ -73,11 +75,23 @@ namespace HelloWorld
                     // Response
                     byte[] bytes = Encoding.ASCII.GetBytes("Hello World: " + DateTime.Now);
 
-                    context.Response.ContentLength = bytes.Length;
-                    context.Response.ContentType = "text/plain";
+                    if (context.IsWebSocketRequest)
+                    {
+                        Console.WriteLine("WebSocket");
+                        WebSocket webSocket = context.AcceptWebSocketAsync().Result;
+                        webSocket.SendAsync(new ArraySegment<byte>(bytes, 0, bytes.Length), WebSocketMessageType.Text, true, CancellationToken.None).Wait();
+                        webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Goodbye", CancellationToken.None).Wait();
+                        webSocket.Dispose();
+                    }
+                    else
+                    {
+                        Console.WriteLine("Hello World");
+                        context.Response.ContentLength = bytes.Length;
+                        context.Response.ContentType = "text/plain";
 
-                    context.Response.Body.Write(bytes, 0, bytes.Length);
-                    context.Dispose();
+                        context.Response.Body.Write(bytes, 0, bytes.Length);
+                        context.Dispose();
+                    }
                 }
             }
         }

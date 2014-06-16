@@ -156,7 +156,6 @@ namespace Microsoft.AspNet.Server.WebListener
                     Interlocked.Increment(ref _outstandingRequests);
                     FeatureContext featureContext = new FeatureContext(requestContext);
                     await _appFunc(featureContext.Features).SupressContext();
-                    // TODO: WebSocket/Opaque upgrade - await requestContext.ProcessResponseAsync().SupressContext();
                     requestContext.Dispose();
                 }
                 catch (Exception ex)

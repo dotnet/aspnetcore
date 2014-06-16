@@ -29,13 +29,14 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.IO;
+using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.WebSockets
+namespace Microsoft.Net.WebSockets
 {
     internal abstract class WebSocketBase : WebSocket, IDisposable
     {
@@ -233,7 +234,7 @@ namespace Microsoft.AspNet.WebSockets
             {
                 ThrowIfPendingException();
                 ThrowIfDisposed();
-                ThrowOnInvalidState(State, WebSocketState.Open, WebSocketState.CloseSent);
+                WebSocketHelpers.ThrowOnInvalidState(State, WebSocketState.Open, WebSocketState.CloseSent);
 
                 bool ownsCancellationTokenSource = false;
                 CancellationToken linkedCancellationToken = CancellationToken.None;
@@ -338,7 +339,7 @@ namespace Microsoft.AspNet.WebSockets
             {
                 ThrowIfPendingException();
                 ThrowIfDisposed();
-                ThrowOnInvalidState(State, WebSocketState.Open, WebSocketState.CloseReceived);
+                WebSocketHelpers.ThrowOnInvalidState(State, WebSocketState.Open, WebSocketState.CloseReceived);
                 bool ownsCancellationTokenSource = false;
                 CancellationToken linkedCancellationToken = CancellationToken.None;
 
@@ -468,13 +469,13 @@ namespace Microsoft.AspNet.WebSockets
             bool sessionHandleLockTaken = false;
             try
             {
-                if (IsStateTerminal(State))
+                if (WebSocketHelpers.IsStateTerminal(State))
                 {
                     return;
                 }
 
                 TakeLocks(ref thisLockTaken, ref sessionHandleLockTaken);
-                if (IsStateTerminal(State))
+                if (WebSocketHelpers.IsStateTerminal(State))
                 {
                     return;
                 }
@@ -548,7 +549,7 @@ namespace Microsoft.AspNet.WebSockets
             try
             {
                 ThrowIfPendingException();
-                if (IsStateTerminal(State))
+                if (WebSocketHelpers.IsStateTerminal(State))
                 {
                     return;
                 }
@@ -566,12 +567,12 @@ namespace Microsoft.AspNet.WebSockets
                     ThrowIfPendingException();
                     ThrowIfDisposed();
 
-                    if (IsStateTerminal(State))
+                    if (WebSocketHelpers.IsStateTerminal(State))
                     {
                         return;
                     }
 
-                    ThrowOnInvalidState(State, WebSocketState.Open, WebSocketState.CloseReceived);
+                    WebSocketHelpers.ThrowOnInvalidState(State, WebSocketState.Open, WebSocketState.CloseReceived);
                     ownsCloseOutputCancellationTokenSource = _closeOutputOutstandingOperationHelper.TryStartOperation(cancellationToken, out linkedCancellationToken);
                     if (!ownsCloseOutputCancellationTokenSource)
                     {
@@ -676,7 +677,7 @@ namespace Microsoft.AspNet.WebSockets
         // returns TRUE if the caller should also call StartOnCloseCompleted
         private bool OnCloseOutputCompleted()
         {
-            if (IsStateTerminal(State))
+            if (WebSocketHelpers.IsStateTerminal(State))
             {
                 return false;
             }
@@ -707,7 +708,7 @@ namespace Microsoft.AspNet.WebSockets
         {
             Contract.Assert(thisLockTakenSnapshot, "'thisLockTakenSnapshot' MUST be 'true' at this point.");
 
-            if (IsStateTerminal(_state))
+            if (WebSocketHelpers.IsStateTerminal(_state))
             {
                 return false;
             }
@@ -793,7 +794,7 @@ namespace Microsoft.AspNet.WebSockets
             try
             {
                 ThrowIfPendingException();
-                if (IsStateTerminal(State))
+                if (WebSocketHelpers.IsStateTerminal(State))
                 {
                     return;
                 }
@@ -806,12 +807,12 @@ namespace Microsoft.AspNet.WebSockets
                 try
                 {
                     ThrowIfPendingException();
-                    if (IsStateTerminal(State))
+                    if (WebSocketHelpers.IsStateTerminal(State))
                     {
                         return;
                     }
                     ThrowIfDisposed();
-                    ThrowOnInvalidState(State,
+                    WebSocketHelpers.ThrowOnInvalidState(State,
                         WebSocketState.Open, WebSocketState.CloseReceived, WebSocketState.CloseSent);
 
                     Task closeOutputTask;
@@ -893,7 +894,7 @@ namespace Microsoft.AspNet.WebSockets
                         }
                     }
 
-                    if (IsStateTerminal(State))
+                    if (WebSocketHelpers.IsStateTerminal(State))
                     {
                         return;
                     }
@@ -970,7 +971,7 @@ namespace Microsoft.AspNet.WebSockets
                         Monitor.Enter(_thisLock, ref lockTaken);
                     }
 
-                    if (!IsStateTerminal(State))
+                    if (!WebSocketHelpers.IsStateTerminal(State))
                     {
                         bool ownsSendCancellationSource = false;
                         try
@@ -1055,7 +1056,7 @@ namespace Microsoft.AspNet.WebSockets
                     return;
                 }
 
-                if (!IsStateTerminal(State))
+                if (!WebSocketHelpers.IsStateTerminal(State))
                 {
                     Abort();
                 }
@@ -1501,13 +1502,13 @@ namespace Microsoft.AspNet.WebSockets
         {
             ThrowIfDisposed();
 
-            if (IsStateTerminal(State) || State == WebSocketState.CloseReceived)
+            if (WebSocketHelpers.IsStateTerminal(State) || State == WebSocketState.CloseReceived)
             {
                 return false;
             }
 
             Monitor.Enter(_thisLock, ref thisLockTaken);
-            if (IsStateTerminal(State) || State == WebSocketState.CloseReceived)
+            if (WebSocketHelpers.IsStateTerminal(State) || State == WebSocketState.CloseReceived)
             {
                 return false;
             }

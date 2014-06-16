@@ -22,7 +22,6 @@
     <Content Include="project.json" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Constants.cs" />
     <Compile Include="fx\Microsoft\Win32\SafeHandles\SafeHandleZeroOrMinusOneIsInvalid.cs" />
     <Compile Include="fx\System\AccessViolationException.cs" />
     <Compile Include="fx\System\ComponentModel\Win32Exception.cs" />
@@ -31,29 +30,21 @@
     <Compile Include="fx\System\SafeNativeMethods.cs" />
     <Compile Include="fx\System\SystemException.cs" />
     <Compile Include="HttpKnownHeaderNames.cs" />
-    <Compile Include="Legacy\HttpListenerContext.cs" />
-    <Compile Include="Legacy\HttpListenerRequest.cs" />
     <Compile Include="Legacy\SR.cs" />
     <Compile Include="Legacy\WebSocketHttpListenerDuplexStream.cs" />
     <Compile Include="NativeInterop\SafeLoadLibrary.cs" />
     <Compile Include="NativeInterop\SafeNativeOverlapped.cs" />
     <Compile Include="NativeInterop\SafeWebSocketHandle.cs" />
     <Compile Include="NativeInterop\UnsafeNativeMethods.cs" />
-    <Compile Include="OwinWebSocketWrapper.cs" />
     <Compile Include="ServerWebSocket.cs" />
-    <Compile Include="WebSocket.cs" />
     <Compile Include="WebSocketBase.cs" />
     <Compile Include="WebSocketBuffer.cs" />
-    <Compile Include="WebSocketCloseStatus.cs" />
+    <Compile Include="WebSocketConstants.cs" />
     <Compile Include="WebSocketError.cs" />
     <Compile Include="WebSocketException.cs" />
-    <Compile Include="WebSocketExtensions.cs" />
     <Compile Include="WebSocketHelpers.cs" />
-    <Compile Include="WebSocketMessageType.cs" />
     <Compile Include="WebSocketMiddleware.cs" />
-    <Compile Include="WebSocketReceiveResult.cs" />
-    <Compile Include="WebSocketState.cs" />
+    <Compile Include="WebSocketReceiveResultExtensions.cs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
-

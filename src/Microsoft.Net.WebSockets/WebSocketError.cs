@@ -21,7 +21,7 @@
 // </copyright>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.AspNet.WebSockets
+namespace Microsoft.Net.WebSockets
 {
     public enum WebSocketError
     {

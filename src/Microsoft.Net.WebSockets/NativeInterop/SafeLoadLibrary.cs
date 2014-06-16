@@ -23,7 +23,7 @@
 
 using Microsoft.Win32.SafeHandles;
 
-namespace Microsoft.AspNet.WebSockets
+namespace Microsoft.Net.WebSockets
 {
     internal sealed class SafeLoadLibrary : SafeHandleZeroOrMinusOneIsInvalid
     {

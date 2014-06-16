@@ -23,9 +23,10 @@
 
 using System;
 using System.ComponentModel;
+using System.Net.WebSockets;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.AspNet.WebSockets
+namespace Microsoft.Net.WebSockets
 {
 #if NET45
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2237:MarkISerializableTypesWithSerializable")]

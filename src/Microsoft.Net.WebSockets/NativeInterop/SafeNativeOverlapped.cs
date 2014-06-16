@@ -25,7 +25,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace Microsoft.AspNet.WebSockets
+namespace Microsoft.Net.WebSockets
 {
     internal class SafeNativeOverlapped : SafeHandle
     {

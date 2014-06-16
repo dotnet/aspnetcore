@@ -16,17 +16,33 @@
 // permissions and limitations under the License.
 
 //------------------------------------------------------------------------------
-// <copyright file="WebSocketMessageType.cs" company="Microsoft">
+// <copyright company="Microsoft">
 //     Copyright (c) Microsoft Corporation.  All rights reserved.
 // </copyright>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.AspNet.WebSockets
+using Microsoft.Win32.SafeHandles;
+
+namespace Microsoft.Net.WebSockets
 {
-    public enum WebSocketMessageType
+    // This class is a wrapper for a WSPC (WebSocket protocol component) session. WebSocketCreateClientHandle and WebSocketCreateServerHandle return a PVOID and not a real handle
+    // but we use a SafeHandle because it provides us the guarantee that WebSocketDeleteHandle will always get called.
+    internal sealed class SafeWebSocketHandle : SafeHandleZeroOrMinusOneIsInvalid
     {
-        Text = 0x1,
-        Binary = 0x2,
-        Close = 0x8,
+        internal SafeWebSocketHandle()
+            : base(true)
+        {
+        }
+
+        protected override bool ReleaseHandle()
+        {
+            if (this.IsInvalid)
+            {
+                return true;
+            }
+
+            UnsafeNativeMethods.WebSocketProtocolComponent.WebSocketDeleteHandle(this.handle);
+            return true;
+        }
     }
 }

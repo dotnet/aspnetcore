@@ -25,11 +25,12 @@ using System;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Globalization;
+using System.Net.WebSockets;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 
-namespace Microsoft.AspNet.WebSockets
+namespace Microsoft.Net.WebSockets
 {
     // This class helps to abstract the internal WebSocket buffer, which is used to interact with the native WebSocket
     // protocol component (WSPC). It helps to shield the details of the layout and the involved pointer arithmetic.
@@ -43,10 +44,10 @@ namespace Microsoft.AspNet.WebSockets
     //
     // *RBS = ReceiveBufferSize, *SBS = SendBufferSize
     // *PBS = PropertyBufferSize (32-bit: 16, 64 bit: 20 bytes)
-    internal class WebSocketBuffer : IDisposable
+    public class WebSocketBuffer : IDisposable
     {
         private const int NativeOverheadBufferSize = 144;
-        internal const int MinSendBufferSize = 16;
+        public const int MinSendBufferSize = 16;
         internal const int MinReceiveBufferSize = 256;
         internal const int MaxBufferSize = 64 * 1024;
 #if NET45
@@ -362,7 +363,7 @@ namespace Microsoft.AspNet.WebSockets
             ValidateBufferedPayload();
 
             int bytesTransferred = Math.Min(buffer.Count, _BufferedPayloadReceiveResult.Count);
-            receiveResult = _BufferedPayloadReceiveResult.Copy(bytesTransferred);
+            receiveResult = WebSocketReceiveResultExtensions.DecrementAndClone(ref _BufferedPayloadReceiveResult, bytesTransferred);
 
             Buffer.BlockCopy(_PayloadBuffer.Array,
                 _PayloadBuffer.Offset + _PayloadOffset,
@@ -664,7 +665,7 @@ namespace Microsoft.AspNet.WebSockets
             ReleasePinnedSendBuffer();
         }
 
-        internal static ArraySegment<byte> CreateInternalBufferArraySegment(int receiveBufferSize, int sendBufferSize, bool isServerBuffer)
+        public static ArraySegment<byte> CreateInternalBufferArraySegment(int receiveBufferSize, int sendBufferSize, bool isServerBuffer)
         {
             Contract.Assert(receiveBufferSize >= MinReceiveBufferSize,
                 "'receiveBufferSize' MUST be at least " + MinReceiveBufferSize.ToString(NumberFormatInfo.InvariantInfo) + ".");
@@ -675,7 +676,7 @@ namespace Microsoft.AspNet.WebSockets
             return new ArraySegment<byte>(new byte[internalBufferSize]);
         }
 
-        internal static void Validate(int count, int receiveBufferSize, int sendBufferSize, bool isServerBuffer)
+        public static void Validate(int count, int receiveBufferSize, int sendBufferSize, bool isServerBuffer)
         {
             Contract.Assert(receiveBufferSize >= MinReceiveBufferSize,
                 "'receiveBufferSize' MUST be at least " + MinReceiveBufferSize.ToString(NumberFormatInfo.InvariantInfo) + ".");

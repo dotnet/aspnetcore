@@ -21,7 +21,7 @@
 // </copyright>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.AspNet.WebSockets
+namespace Microsoft.Net.WebSockets
 {
     // this class contains known header names
     internal static class HttpKnownHeaderNames

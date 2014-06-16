@@ -24,23 +24,24 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Linq;
+using System.Net.WebSockets;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Framework.Logging;
+using Microsoft.Net.WebSockets;
 
 namespace Microsoft.Net.Server
 {
-    using OpaqueFunc = Func<IDictionary<string, object>, Task>;
-
     public sealed class RequestContext : IDisposable
     {
         private WebListener _server;
         private Request _request;
         private Response _response;
         private NativeRequestContext _memoryBlob;
-        private OpaqueFunc _opaqueCallback;
         private bool _disposed;
         private CancellationTokenSource _requestAbortSource;
         private CancellationToken? _disconnectToken;
@@ -128,17 +129,230 @@ namespace Microsoft.Net.Server
                 return Request.RequestId;
             }
         }
-        /*
-        public bool TryGetOpaqueUpgrade(ref Action<IDictionary<string, object>, OpaqueFunc> value)
+
+        public bool IsUpgradableRequest
         {
-            if (_request.IsUpgradable)
-            {
-                value = OpaqueUpgrade;
-                return true;
-            }
-            return false;
+            get { return _request.IsUpgradable; }
         }
 
+        public Task<Stream> UpgradeAsync()
+        {
+            if (!IsUpgradableRequest || _response.SentHeaders)
+            {
+                throw new InvalidOperationException();
+            }
+
+            // Set the status code and reason phrase
+            Response.StatusCode = (int)HttpStatusCode.SwitchingProtocols;
+            Response.ReasonPhrase = HttpReasonPhrase.Get(HttpStatusCode.SwitchingProtocols);
+
+            Response.SendOpaqueUpgrade(); // TODO: Async
+            Request.SwitchToOpaqueMode();
+            Response.SwitchToOpaqueMode();
+            Stream opaqueStream = new OpaqueStream(Request.Body, Response.Body);
+            return Task.FromResult(opaqueStream);
+        }
+
+        public bool IsWebSocketRequest
+        {
+            get
+            {
+                if (!WebSocketHelpers.AreWebSocketsSupported)
+                {
+                    return false;
+                }
+
+                if (!IsUpgradableRequest)
+                {
+                    return false;
+                }
+
+                if (!string.Equals("GET", Request.Method, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                // Connection: Upgrade (some odd clients send Upgrade,KeepAlive)
+                string connection = Request.GetHeader(HttpKnownHeaderNames.Connection);
+                if (connection.IndexOf(HttpKnownHeaderNames.Upgrade, StringComparison.OrdinalIgnoreCase) < 0)
+                {
+                    return false;
+                }
+
+                // Upgrade: websocket
+                string upgrade = Request.GetHeader(HttpKnownHeaderNames.Upgrade);
+                if (!string.Equals(WebSocketHelpers.WebSocketUpgradeToken, upgrade, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                // Sec-WebSocket-Version: 13
+                string version = Request.GetHeader(HttpKnownHeaderNames.SecWebSocketVersion);
+                if (!string.Equals(WebSocketConstants.SupportedProtocolVersion, version, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                // Sec-WebSocket-Key: {base64string}
+                string key = Request.GetHeader(HttpKnownHeaderNames.SecWebSocketKey);
+                if (!WebSocketHelpers.IsValidWebSocketKey(key))
+                {
+                    return false;
+                }
+
+                return true;
+            }
+        }
+
+        // Compare IsWebSocketRequest
+        private void ValidateWebSocketRequest()
+        {
+            if (!WebSocketHelpers.AreWebSocketsSupported)
+            {
+                throw new NotSupportedException("WebSockets are not supported on this platform.");
+            }
+
+            if (!IsUpgradableRequest)
+            {
+                throw new InvalidOperationException("This request is not a valid upgrade request.");
+            }
+
+            if (!string.Equals("GET", Request.Method, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("This request is not a valid upgrade request; invalid verb: " + Request.Method);
+            }
+
+            // Connection: Upgrade (some odd clients send Upgrade,KeepAlive)
+            string connection = Request.GetHeader(HttpKnownHeaderNames.Connection);
+            if (connection.IndexOf(HttpKnownHeaderNames.Upgrade, StringComparison.OrdinalIgnoreCase) < 0)
+            {
+                throw new InvalidOperationException("The Connection header is invalid: " + connection);
+            }
+
+            // Upgrade: websocket
+            string upgrade = Request.GetHeader(HttpKnownHeaderNames.Upgrade);
+            if (!string.Equals(WebSocketHelpers.WebSocketUpgradeToken, upgrade, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("The Upgrade header is invalid: " + upgrade);
+            }
+
+            // Sec-WebSocket-Version: 13
+            string version = Request.GetHeader(HttpKnownHeaderNames.SecWebSocketVersion);
+            if (!string.Equals(WebSocketConstants.SupportedProtocolVersion, version, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("The Sec-WebSocket-Version header is invalid or not supported: " + version);
+            }
+
+            // Sec-WebSocket-Key: {base64string}
+            string key = Request.GetHeader(HttpKnownHeaderNames.SecWebSocketKey);
+            if (!WebSocketHelpers.IsValidWebSocketKey(key))
+            {
+                throw new InvalidOperationException("The Sec-WebSocket-Key header is invalid: " + upgrade);
+            }
+        }
+
+        public Task<WebSocket> AcceptWebSocketAsync()
+        {
+            return AcceptWebSocketAsync(null,
+                WebSocketHelpers.DefaultReceiveBufferSize,
+                WebSocket.DefaultKeepAliveInterval);
+        }
+
+        public Task<WebSocket> AcceptWebSocketAsync(string subProtocol)
+        {
+            return AcceptWebSocketAsync(subProtocol,
+                WebSocketHelpers.DefaultReceiveBufferSize,
+                WebSocket.DefaultKeepAliveInterval);
+        }
+
+        public Task<WebSocket> AcceptWebSocketAsync(string subProtocol, TimeSpan keepAliveInterval)
+        {
+            return AcceptWebSocketAsync(subProtocol,
+                WebSocketHelpers.DefaultReceiveBufferSize,
+                keepAliveInterval);
+        }
+
+        public Task<WebSocket> AcceptWebSocketAsync(
+            string subProtocol,
+            int receiveBufferSize,
+            TimeSpan keepAliveInterval)
+        {
+            WebSocketHelpers.ValidateOptions(subProtocol, receiveBufferSize, WebSocketBuffer.MinSendBufferSize, keepAliveInterval);
+
+            ArraySegment<byte> internalBuffer = WebSocketBuffer.CreateInternalBufferArraySegment(receiveBufferSize, WebSocketBuffer.MinSendBufferSize, true);
+            return this.AcceptWebSocketAsync(subProtocol,
+                receiveBufferSize,
+                keepAliveInterval,
+                internalBuffer);
+        }
+
+        public Task<WebSocket> AcceptWebSocketAsync(
+                    string subProtocol,
+                    int receiveBufferSize,
+                    TimeSpan keepAliveInterval,
+                    ArraySegment<byte> internalBuffer)
+        {
+            if (!IsUpgradableRequest)
+            {
+                throw new InvalidOperationException("This request is cannot be upgraded.");
+            }
+            WebSocketHelpers.ValidateOptions(subProtocol, receiveBufferSize, WebSocketBuffer.MinSendBufferSize, keepAliveInterval);
+            WebSocketHelpers.ValidateArraySegment<byte>(internalBuffer, "internalBuffer");
+            WebSocketBuffer.Validate(internalBuffer.Count, receiveBufferSize, WebSocketBuffer.MinSendBufferSize, true);
+
+            return AcceptWebSocketAsyncCore(subProtocol, receiveBufferSize, keepAliveInterval, internalBuffer);
+        }
+
+        private async Task<WebSocket> AcceptWebSocketAsyncCore(
+                    string subProtocol,
+                    int receiveBufferSize,
+                    TimeSpan keepAliveInterval,
+                    ArraySegment<byte> internalBuffer)
+        {
+            try
+            {
+                // TODO: We need a better header collection API.
+                ValidateWebSocketRequest();
+
+                string subProtocols = string.Empty;
+                string[] values;
+                if (Request.Headers.TryGetValue(HttpKnownHeaderNames.SecWebSocketProtocol, out values))
+                {
+                    subProtocols = string.Join(", ", values);
+                }
+
+                bool shouldSendSecWebSocketProtocolHeader = WebSocketHelpers.ProcessWebSocketProtocolHeader(subProtocols, subProtocol);
+                if (shouldSendSecWebSocketProtocolHeader)
+                {
+                    Response.Headers[HttpKnownHeaderNames.SecWebSocketProtocol] = new[] { subProtocol };
+                }
+
+                // negotiate the websocket key return value
+                string secWebSocketKey = Request.Headers[HttpKnownHeaderNames.SecWebSocketKey].First();
+                string secWebSocketAccept = WebSocketHelpers.GetSecWebSocketAcceptString(secWebSocketKey);
+
+                Response.Headers.Add(HttpKnownHeaderNames.Connection, new[] { HttpKnownHeaderNames.Upgrade });
+                Response.Headers.Add(HttpKnownHeaderNames.Upgrade, new[] { WebSocketHelpers.WebSocketUpgradeToken });
+                Response.Headers.Add(HttpKnownHeaderNames.SecWebSocketAccept, new[] { secWebSocketAccept });
+
+                Stream opaqueStream = await UpgradeAsync();
+
+                return WebSocketHelpers.CreateServerWebSocket(
+                    opaqueStream,
+                    subProtocol,
+                    receiveBufferSize,
+                    keepAliveInterval,
+                    internalBuffer);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.LogException(Logger, "AcceptWebSocketAsync", ex);
+                throw;
+            }
+        }
+
+
+        /*
         public bool TryGetChannelBinding(ref ChannelBinding value)
         {
             value = Server.GetChannelBinding(Request.ConnectionId, Request.IsSecureConnection);
@@ -221,57 +435,5 @@ namespace Microsoft.Net.Server
                 // RequestQueueHandle may have been closed
             }
         }
-        /*
-        internal void OpaqueUpgrade(IDictionary<string, object> parameters, OpaqueFunc callback)
-        {
-            // Parameters are ignored for now
-            if (Response.SentHeaders)
-            {
-                throw new InvalidOperationException();
-            }
-            if (callback == null)
-            {
-                throw new ArgumentNullException("callback");
-            }
-
-            // Set the status code and reason phrase
-            Response.StatusCode = (int)HttpStatusCode.SwitchingProtocols;
-            Response.ReasonPhrase = HttpReasonPhrase.Get(HttpStatusCode.SwitchingProtocols);
-
-            // Store the callback and process it after the stack unwind.
-            _opaqueCallback = callback;
-        }
-
-        // Called after the AppFunc completes for any necessary post-processing.
-        internal unsafe Task ProcessResponseAsync()
-        {
-            // If an upgrade was requested, perform it
-            if (!Response.SentHeaders && _opaqueCallback != null
-                && Response.StatusCode == (int)HttpStatusCode.SwitchingProtocols)
-            {
-                Response.SendOpaqueUpgrade();
-
-                IDictionary<string, object> opaqueEnv = CreateOpaqueEnvironment();
-                return _opaqueCallback(opaqueEnv);
-            }
-
-            return Helpers.CompletedTask();
-        }
-
-        private IDictionary<string, object> CreateOpaqueEnvironment()
-        {
-            IDictionary<string, object> opaqueEnv = new Dictionary<string, object>();
-
-            opaqueEnv[Constants.OpaqueVersionKey] = Constants.OpaqueVersion;
-            // TODO: Separate CT?
-            // opaqueEnv[Constants.OpaqueCallCancelledKey] = Environment.CallCancelled;
-
-            Request.SwitchToOpaqueMode();
-            Response.SwitchToOpaqueMode();
-            opaqueEnv[Constants.OpaqueStreamKey] = new OpaqueStream(Request.Body, Response.Body);
-
-            return opaqueEnv;
-        }
-        */
     }
 }
