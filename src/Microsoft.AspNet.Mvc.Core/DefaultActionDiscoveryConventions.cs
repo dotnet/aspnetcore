@@ -79,10 +79,16 @@ namespace Microsoft.AspNet.Mvc
             return String.Equals(methodInfo.Name, DefaultMethodName, StringComparison.OrdinalIgnoreCase);
         }
 
+        /// <summary>
+        /// Determines whether the method is a valid action.
+        /// </summary>
+        /// <param name="method">The <see cref="MethodInfo"/>.</param>
+        /// <returns>true if the method is a valid action. Otherwise, false.</returns>
         protected virtual bool IsValidActionMethod(MethodInfo method)
         {
             return
                 method.IsPublic &&
+                !method.IsStatic &&
                 !method.IsAbstract &&
                 !method.IsConstructor &&
                 !method.IsGenericMethod &&
