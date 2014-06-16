@@ -32,6 +32,16 @@ namespace Microsoft.AspNet.Routing
                                              object defaults,
                                              object constraints)
         {
+            return MapRoute(routeCollectionBuilder, name, template, defaults, constraints, dataTokens: null);
+        }
+
+        public static IRouteBuilder MapRoute(this IRouteBuilder routeCollectionBuilder,
+                                             string name,
+                                             string template,
+                                             object defaults,
+                                             object constraints,
+                                             object dataTokens)
+        {
             if (routeCollectionBuilder.DefaultHandler == null)
             {
                 throw new InvalidOperationException(Resources.DefaultHandler_MustBeSet);
@@ -45,7 +55,9 @@ namespace Microsoft.AspNet.Routing
                                                                 template,
                                                                 ObjectToDictionary(defaults),
                                                                 ObjectToDictionary(constraints),
+                                                                ObjectToDictionary(dataTokens),
                                                                 inlineConstraintResolver));
+
             return routeCollectionBuilder;
         }
 

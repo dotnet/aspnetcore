@@ -18,5 +18,7 @@ namespace Microsoft.AspNet.Routing
         public List<IRouter> Routers { get; private set; }
 
         public IDictionary<string, object> Values { get; set; }
+
+        public IDictionary<string, object> DataTokens { get; set; }
     }
 }

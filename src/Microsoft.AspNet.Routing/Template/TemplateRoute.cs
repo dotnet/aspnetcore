@@ -15,6 +15,7 @@ namespace Microsoft.AspNet.Routing.Template
     {
         private readonly IDictionary<string, object> _defaults;
         private readonly IDictionary<string, IRouteConstraint> _constraints;
+        private readonly IDictionary<string, object> _dataTokens;
         private readonly IRouter _target;
         private readonly RouteTemplate _parsedTemplate;
         private readonly string _routeTemplate;
@@ -24,7 +25,12 @@ namespace Microsoft.AspNet.Routing.Template
         private ILogger _constraintLogger;
 
         public TemplateRoute(IRouter target, string routeTemplate, IInlineConstraintResolver inlineConstraintResolver)
-            : this(target, routeTemplate, null, null, inlineConstraintResolver)
+                        : this(target,
+                               routeTemplate,
+                               defaults: null,
+                               constraints: null,
+                               dataTokens: null,
+                               inlineConstraintResolver: inlineConstraintResolver)
         {
         }
 
@@ -32,8 +38,9 @@ namespace Microsoft.AspNet.Routing.Template
                              string routeTemplate,
                              IDictionary<string, object> defaults,
                              IDictionary<string, object> constraints,
+                             IDictionary<string, object> dataTokens,
                              IInlineConstraintResolver inlineConstraintResolver)
-            : this(target, null, routeTemplate, defaults, constraints, inlineConstraintResolver)
+            : this(target, null, routeTemplate, defaults, constraints, dataTokens, inlineConstraintResolver)
         {
         }
 
@@ -42,6 +49,7 @@ namespace Microsoft.AspNet.Routing.Template
                              string routeTemplate,
                              IDictionary<string, object> defaults,
                              IDictionary<string, object> constraints,
+                             IDictionary<string, object> dataTokens,
                              IInlineConstraintResolver inlineConstraintResolver)
         {
             _target = target;
@@ -50,6 +58,7 @@ namespace Microsoft.AspNet.Routing.Template
             _defaults = defaults ?? new RouteValueDictionary();
             _constraints = RouteConstraintBuilder.BuildConstraints(constraints, _routeTemplate) ??
                                                             new Dictionary<string, IRouteConstraint>();
+            _dataTokens = dataTokens ?? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
             // The parser will throw for invalid routes.
             _parsedTemplate = TemplateParser.Parse(RouteTemplate, inlineConstraintResolver);
@@ -64,6 +73,11 @@ namespace Microsoft.AspNet.Routing.Template
         public IDictionary<string, object> Defaults
         {
             get { return _defaults; }
+        }
+
+        public IDictionary<string, object> DataTokens
+        {
+            get { return _dataTokens; }
         }
 
         public string RouteTemplate
@@ -117,6 +131,7 @@ namespace Microsoft.AspNet.Routing.Template
                                                      RouteDirection.IncomingRequest,
                                                      _constraintLogger))
                     {
+                        context.RouteData.DataTokens = _dataTokens;
                         await _target.RouteAsync(context);
 
                         if (_logger.IsEnabled(TraceType.Information))
