@@ -3,7 +3,6 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.Security;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Security.Cookies;

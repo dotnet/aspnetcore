@@ -799,6 +799,7 @@
     <Content Include="node_modules\grunt\node_modules\lodash\lodash.min.js" />
     <Content Include="node_modules\grunt\node_modules\lodash\lodash.underscore.js" />
     <Content Include="node_modules\grunt\node_modules\lodash\lodash.underscore.min.js" />
+    <Content Include="node_modules\grunt\node_modules\nopt\.npmignore" />
     <Content Include="node_modules\grunt\node_modules\rimraf\AUTHORS" />
     <Content Include="node_modules\grunt\node_modules\underscore.string\Gemfile.lock" />
     <Content Include="node_modules\grunt\node_modules\underscore.string\Rakefile" />

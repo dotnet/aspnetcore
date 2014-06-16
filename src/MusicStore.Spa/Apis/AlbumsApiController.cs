@@ -20,8 +20,8 @@ namespace MusicStore.Apis
         public async Task<ActionResult> Paged(int page = 1, int pageSize = 50, string sortBy = null)
         {
             var pagedAlbums = await _storeContext.Albums
-                .Include(a => a.Genre)
-                .Include(a => a.Artist)
+                //.Include(a => a.Genre)
+                //.Include(a => a.Artist)
                 .SortBy(sortBy, a => a.Title)
                 .ToPagedListAsync(page, pageSize);
 
@@ -37,8 +37,8 @@ namespace MusicStore.Apis
             return new SmartJsonResult
             {
                 Data = await _storeContext.Albums
-                    .Include(a => a.Genre)
-                    .Include(a => a.Artist)
+                    //.Include(a => a.Genre)
+                    //.Include(a => a.Artist)
                     .OrderBy(a => a.Title)
                     .ToListAsync()
             };
@@ -67,8 +67,8 @@ namespace MusicStore.Apis
 
             // TODO: Make async when EF supports SingleOrDefaultAsync
             var album = _storeContext.Albums
-                .Include(a => a.Artist)
-                .Include(a => a.Genre)
+                //.Include(a => a.Artist)
+                //.Include(a => a.Genre)
                 .SingleOrDefault(a => a.AlbumId == albumId);
 
             // TODO: Add null checking and return 404 in that case

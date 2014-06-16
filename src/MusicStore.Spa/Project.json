@@ -1,9 +1,14 @@
 ﻿{
-    "compilationOptions" : { "define" : ["DEBUG"] },
+    "authors": [
+        "Microsoft"
+    ],
+    "description": "Music store application on K as a SPA",
+    "compilationOptions": { "define": [ "DEBUG" ] },
     "dependencies": {
-        "Helios" : "0.1-alpha-*",
-        "Microsoft.AspNet.Mvc" : "0.1-alpha-*",
-        "Microsoft.AspNet.StaticFiles" : "0.1-alpha-*",
+        "Helios": "0.1-alpha-*",
+        "Microsoft.AspNet.Mvc": "0.1-alpha-*",
+        "Microsoft.AspNet.Server.WebListener": "0.1-alpha-*",
+        "Microsoft.AspNet.StaticFiles": "0.1-alpha-*",
         "Microsoft.Data.Entity.Relational": "0.1-alpha-*",
         "Microsoft.Data.Entity.InMemory": "0.1-alpha-*",
         "Microsoft.Data.Entity.SqlServer": "0.1-alpha-*",
@@ -13,14 +18,12 @@
         "Microsoft.Framework.ConfigurationModel": "0.1-alpha-*",
         "Microsoft.Framework.ConfigurationModel.Json": "0.1-alpha-build-*"
     },
-    "configurations" : {
-        "net451" : {
-            "dependencies": {
-                "System.Runtime" : "",
-                "System.Data": "",
-                "System.ComponentModel.DataAnnotations": ""
-            }
-        },
-        "k10" : { }
+    "commands": {
+        "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5002",
+        "run": "run server.urls=http://localhost:5003"
+    },
+    "configurations": {
+        "net451": { },
+        "k10": { }
     }
 }

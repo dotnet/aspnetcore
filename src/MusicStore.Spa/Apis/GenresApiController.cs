@@ -45,7 +45,7 @@ namespace MusicStore.Apis
             return new SmartJsonResult
             {
                 Data = await _storeContext.Genres
-                    .Include(g => g.Albums)
+                    //.Include(g => g.Albums)
                     .OrderBy(g => g.Name)
                     .ToListAsync()
             };
@@ -56,8 +56,8 @@ namespace MusicStore.Apis
         {
             var albums = await _storeContext.Albums
                 .Where(a => a.GenreId == genreId)
-                .Include(a => a.Genre)
-                .Include(a => a.Artist)
+                //.Include(a => a.Genre)
+                //.Include(a => a.Artist)
                 //.OrderBy(a => a.Genre.Name)
                 .ToListAsync();
 
