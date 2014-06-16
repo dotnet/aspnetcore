@@ -6,6 +6,7 @@
         "BasicWebSite": "",
         "ActivatorWebSite": "",
         "InlineConstraintsWebSite": "",
+        "AutofacWebSite": "",
         "Microsoft.AspNet.TestHost": "1.0.0-*",
         "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*",
         "Xunit.KRunner": "1.0.0-*",

@@ -4,14 +4,10 @@
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
   </PropertyGroup>
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-  </PropertyGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>323d0c04-b518-4a8f-8a8e-3546ad153d34</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>07c0e921-fcbb-458c-ac11-3d01ce68b16b</ProjectGuid>
+    <OutputType>Web</OutputType>
   </PropertyGroup>
   <PropertyGroup Condition="$(OutputType) == 'Console'">
     <DebuggerFlavor>ConsoleDebugger</DebuggerFlavor>
@@ -19,25 +15,26 @@
   <PropertyGroup Condition="$(OutputType) == 'Web'">
     <DebuggerFlavor>WebDebugger</DebuggerFlavor>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
   </PropertyGroup>
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DevelopmentServerPort>38823</DevelopmentServerPort>
+  </PropertyGroup>
   <ItemGroup>
-    <Content Include="compiler\resources\BasicWebSite.Home.Index.html" />
-    <Content Include="compiler\resources\BasicWebSite.Home.PlainView.html" />
     <Content Include="project.json" />
+    <Content Include="Views\Basic\Index.cshtml" />
+    <Content Include="Views\DI\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ActivatorTests.cs" />
-    <Compile Include="DependencyResolverTests.cs" />
-    <Compile Include="InlineConstraintTests.cs" />
-    <Compile Include="TestHelper.cs" />
-    <Compile Include="BasicTests.cs" />
-    <Compile Include="HttpResponseHelpers.cs" />
-    <Compile Include="ResourceHelpers.cs" />
-    <Compile Include="TestApplicationEnvironment.cs" />
+    <Compile Include="Controllers\BasicController.cs" />
+    <Compile Include="Controllers\DIController.cs" />
+    <Compile Include="HelloWorldBuilder.cs" />
+    <Compile Include="Startup.cs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
