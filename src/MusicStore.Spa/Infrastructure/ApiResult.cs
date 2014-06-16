@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Newtonsoft.Json;
 
@@ -18,10 +17,10 @@ namespace Microsoft.AspNet.Mvc
                 Message = "The model submitted was invalid. Please correct the specified errors and try again.";
                 ModelErrors = modelState
                     .SelectMany(m => m.Value.Errors.Select(me => new ModelError
-                        {
-                            FieldName = m.Key,
-                            ErrorMessage = me.ErrorMessage
-                        }));
+                    {
+                        FieldName = m.Key,
+                        ErrorMessage = me.ErrorMessage
+                    }));
             }
         }
 
@@ -43,11 +42,12 @@ namespace Microsoft.AspNet.Mvc
 
         public override void ExecuteResult(ActionContext context)
         {
-            var json = new SmartJsonResult
+            if (StatusCode.HasValue)
             {
-                StatusCode = StatusCode,
-                Data = this
-            };
+                context.HttpContext.Response.StatusCode = StatusCode.Value;
+            }
+
+            var json = new JsonResult(this);
             json.ExecuteResult(context);
         }
 

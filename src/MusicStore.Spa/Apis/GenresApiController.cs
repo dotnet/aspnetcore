@@ -17,12 +17,11 @@ namespace MusicStore.Apis
         //[Route("api/genres/lookup")]
         public async Task<ActionResult> Lookup()
         {
-            return new SmartJsonResult
-            {
-                Data = await _storeContext.Genres
-                    .Select(g => new { g.GenreId, g.Name })
-                    .ToListAsync()
-            };
+            var genres = await _storeContext.Genres
+                .Select(g => new { g.GenreId, g.Name })
+                .ToListAsync();
+
+            return Json(genres);
         }
 
         //[Route("api/genres/menu")]
@@ -30,25 +29,25 @@ namespace MusicStore.Apis
         {
             count = count > 0 && count < 20 ? count : 9;
 
-            return new SmartJsonResult
-            {
-                Data = await _storeContext.Genres
-                    .OrderByDescending(g => g.Albums.Sum(a => a.OrderDetails.Sum(od => od.Quantity)))
-                    .Take(count)
-                    .ToListAsync()
-            };
+            var genres = await _storeContext.Genres
+                .OrderByDescending(g =>
+                    g.Albums.Sum(a =>
+                        a.OrderDetails.Sum(od => od.Quantity)))
+                .Take(count)
+                .ToListAsync();
+
+            return Json(genres);
         }
 
         //[Route("api/genres")]
         public async Task<ActionResult> GenreList()
         {
-            return new SmartJsonResult
-            {
-                Data = await _storeContext.Genres
-                    //.Include(g => g.Albums)
-                    .OrderBy(g => g.Name)
-                    .ToListAsync()
-            };
+            var genres = await _storeContext.Genres
+                //.Include(g => g.Albums)
+                .OrderBy(g => g.Name)
+                .ToListAsync();
+
+            return Json(genres);
         }
 
         //[Route("api/genres/{genreId:int}/albums")]
@@ -61,10 +60,7 @@ namespace MusicStore.Apis
                 //.OrderBy(a => a.Genre.Name)
                 .ToListAsync();
 
-            return new SmartJsonResult
-            {
-                Data = albums
-            };
+            return Json(albums);
         }
     }
 }

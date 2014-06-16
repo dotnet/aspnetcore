@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
@@ -19,10 +18,11 @@ namespace MusicStore.Apis
         //[Route("api/artists/lookup")]
         public async Task<ActionResult> Lookup()
         {
-            return new SmartJsonResult
-            {
-                Data = await _storeContext.Artists.OrderBy(a => a.Name).ToListAsync()
-            };
+            var artists = await _storeContext.Artists
+                .OrderBy(a => a.Name)
+                .ToListAsync();
+
+            return Json(artists);
         }
     }
 }

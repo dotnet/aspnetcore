@@ -19,43 +19,37 @@ namespace MusicStore.Apis
         //[Route("api/albums")]
         public async Task<ActionResult> Paged(int page = 1, int pageSize = 50, string sortBy = null)
         {
-            var pagedAlbums = await _storeContext.Albums
+            var albums = await _storeContext.Albums
                 //.Include(a => a.Genre)
                 //.Include(a => a.Artist)
                 .SortBy(sortBy, a => a.Title)
                 .ToPagedListAsync(page, pageSize);
 
-            return new SmartJsonResult
-            {
-                Data = pagedAlbums
-            };
+            return Json(albums);
         }
 
         //[Route("api/albums/all")]
         public async Task<ActionResult> All()
         {
-            return new SmartJsonResult
-            {
-                Data = await _storeContext.Albums
-                    //.Include(a => a.Genre)
-                    //.Include(a => a.Artist)
-                    .OrderBy(a => a.Title)
-                    .ToListAsync()
-            };
+            var albums = await _storeContext.Albums
+                //.Include(a => a.Genre)
+                //.Include(a => a.Artist)
+                .OrderBy(a => a.Title)
+                .ToListAsync();
+
+            return Json(albums);
         }
 
         //[Route("api/albums/mostPopular")]
         public async Task<ActionResult> MostPopular(int count = 6)
         {
             count = count > 0 && count < 20 ? count : 6;
+            var albums = await _storeContext.Albums
+                .OrderByDescending(a => a.OrderDetails.Count())
+                .Take(count)
+                .ToListAsync();
 
-            return new SmartJsonResult
-            {
-                Data = await _storeContext.Albums
-                    .OrderByDescending(a => a.OrderDetails.Count())
-                    .Take(count)
-                    .ToListAsync()
-            };
+            return Json(albums);
         }
 
         //[Route("api/albums/{albumId:int}")]
@@ -73,10 +67,7 @@ namespace MusicStore.Apis
 
             // TODO: Add null checking and return 404 in that case
 
-            return new SmartJsonResult
-            {
-                Data = album
-            };
+            return Json(album);
         }
 
         //[Route("api/albums")]
