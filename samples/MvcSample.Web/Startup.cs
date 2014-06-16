@@ -9,7 +9,6 @@ using MvcSample.Web.Services;
 #if NET45 
 using Autofac;
 using Microsoft.Framework.DependencyInjection.Autofac;
-using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.OptionsModel;
 #endif
 

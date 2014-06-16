@@ -27,6 +27,7 @@
   <ItemGroup>
     <Content Include="compiler\resources\BasicWebSite.Home.Index.html" />
     <Content Include="compiler\resources\BasicWebSite.Home.PlainView.html" />
+    <Content Include="config\InlineConstraintTestsConfig.json" />
     <Content Include="project.json" />
   </ItemGroup>
   <ItemGroup>
