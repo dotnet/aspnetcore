@@ -29,22 +29,6 @@ namespace Microsoft.AspNet.Mvc
             public int x;
         }
 
-        public static IEnumerable<object[]> CreateActionResultData
-        {
-            get
-            {
-                yield return new object[] { new { x1 = 10, y1 = "Hello" } };
-                yield return new object[] { 5 };
-                yield return new object[] { "sample input" };
-
-                SampleStruct test;
-                test.x = 10;
-                yield return new object[] { test };
-
-                yield return new object[] { new Task(() => Console.WriteLine("Test task")) };
-            }
-        }
-
         [Fact]
         public async Task InvokeAction_DoesNotInvokeExceptionFilter_WhenActionDoesNotThrow()
         {
@@ -1241,28 +1225,44 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Theory]
-        [InlineData(typeof(void), typeof(NoContentResult))]
-        [InlineData(typeof(string), typeof(ObjectContentResult))]
-        public void CreateActionResult_Types_ReturnsAppropriateResults(Type type, Type returnType)
+        [InlineData(typeof(void))]
+        [InlineData(typeof(Task))]
+        public void CreateActionResult_Types_ReturnsNoContentResultForTaskAndVoidReturnTypes(Type type)
         {
             // Arrange & Act
             var result = ReflectedActionInvoker.CreateActionResult(type, null).GetType();
 
             // Assert
-            Assert.Equal(returnType, result);
+            Assert.Equal(typeof(NoContentResult), (result));
+        }
+
+        public static IEnumerable<object[]> CreateActionResult_ReturnsObjectContentResultData
+        {
+            get
+            {
+                var anonymousObject = new { x1 = 10, y1 = "Hello" };
+                yield return new object[] { anonymousObject.GetType(), anonymousObject, };
+                yield return new object[] { typeof(int), 5 };
+                yield return new object[] { typeof(string), "sample input" };
+
+                SampleStruct test;
+                test.x = 10;
+                yield return new object[] { test.GetType(), test };
+                yield return new object[] { typeof(Task<int>), 5 };
+                yield return new object[] { typeof(Task<string>), "Hello world" };
+            }
         }
 
         [Theory]
-        [MemberData("CreateActionResultData")]
-        public void CreateActionResult_ReturnsObjectContentResult(object input)
+        [MemberData("CreateActionResult_ReturnsObjectContentResultData")]
+        public void CreateActionResult_ReturnsObjectContentResult(Type type, object input)
         {
             // Arrange & Act
-            var actualResult = ReflectedActionInvoker.CreateActionResult(input.GetType(), input)
-                as ObjectContentResult;
-            
+            var actualResult = ReflectedActionInvoker.CreateActionResult(type, input);
+
             // Assert
-            Assert.NotNull(actualResult);
-            Assert.Equal(input, actualResult.Value);
+            var contentResult = Assert.IsType<ObjectContentResult>(actualResult);
+            Assert.Same(input, contentResult.Value);
         }
 
         private ReflectedActionInvoker CreateInvoker(IFilter filter, bool actionThrows = false)

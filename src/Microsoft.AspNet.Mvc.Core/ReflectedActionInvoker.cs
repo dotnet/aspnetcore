@@ -101,21 +101,23 @@ namespace Microsoft.AspNet.Mvc
         {
             // optimize common path
             var actionResult = actionReturnValue as IActionResult;
-
             if (actionResult != null)
             {
                 return actionResult;
             }
 
-            if (actionReturnValue == null && typeof(IActionResult).IsAssignableFrom(declaredReturnType))
-            {
-                throw new InvalidOperationException(
-                    Resources.FormatActionResult_ActionReturnValueCannotBeNull(declaredReturnType));
-            }
-
-            if (declaredReturnType == typeof(void))
+            if (declaredReturnType == typeof(void) ||
+                declaredReturnType == typeof(Task))
             {
                 return new NoContentResult();
+            }
+
+            // Unwrap potential Task<T> types. 
+            var actualReturnType = TypeHelper.GetTaskInnerTypeOrNull(declaredReturnType) ?? declaredReturnType;
+            if (actionReturnValue == null && typeof(IActionResult).IsAssignableFrom(actualReturnType))
+            {
+                throw new InvalidOperationException(
+                    Resources.FormatActionResult_ActionReturnValueCannotBeNull(actualReturnType));
             }
 
             return new ObjectContentResult(actionReturnValue);
@@ -275,7 +277,7 @@ namespace Microsoft.AspNet.Mvc
                 {
                     var parameterType = parameter.BodyParameterInfo.ParameterType;
                     var modelMetadata = metadataProvider.GetMetadataForType(
-                        modelAccessor: null, 
+                        modelAccessor: null,
                         modelType: parameterType);
                     var providerContext = new InputFormatterProviderContext(
                         actionBindingContext.ActionContext.HttpContext,
@@ -295,7 +297,7 @@ namespace Microsoft.AspNet.Mvc
                 {
                     var parameterType = parameter.ParameterBindingInfo.ParameterType;
                     var modelMetadata = metadataProvider.GetMetadataForType(
-                        modelAccessor: null, 
+                        modelAccessor: null,
                         modelType: parameterType);
 
                     var modelBindingContext = new ModelBindingContext
@@ -400,12 +402,8 @@ namespace Microsoft.AspNet.Mvc
                 _actionContext.Controller,
                 _actionExecutingContext.ActionArguments);
 
-            var underlyingReturnType = 
-                TypeHelper.GetTaskInnerTypeOrNull(actionMethodInfo.ReturnType) ?? 
-                actionMethodInfo.ReturnType;
-
             var actionResult = CreateActionResult(
-                underlyingReturnType,
+                actionMethodInfo.ReturnType,
                 actionReturnValue);
             return actionResult;
         }
@@ -459,8 +457,8 @@ namespace Microsoft.AspNet.Mvc
                     {
                         // Short-circuited by not calling next
                         _resultExecutedContext = new ResultExecutedContext(
-                            _resultExecutingContext, 
-                            _filters, 
+                            _resultExecutingContext,
+                            _filters,
                             _resultExecutingContext.Result)
                         {
                             Canceled = true,
@@ -470,8 +468,8 @@ namespace Microsoft.AspNet.Mvc
                     {
                         // Short-circuited by setting Cancel == true
                         _resultExecutedContext = new ResultExecutedContext(
-                            _resultExecutingContext, 
-                            _filters, 
+                            _resultExecutingContext,
+                            _filters,
                             _resultExecutingContext.Result)
                         {
                             Canceled = true,
@@ -486,8 +484,8 @@ namespace Microsoft.AspNet.Mvc
                     {
                         // Short-circuited by setting Cancel == true
                         _resultExecutedContext = new ResultExecutedContext(
-                            _resultExecutingContext, 
-                            _filters, 
+                            _resultExecutingContext,
+                            _filters,
                             _resultExecutingContext.Result)
                         {
                             Canceled = true,
@@ -504,16 +502,16 @@ namespace Microsoft.AspNet.Mvc
 
                     Contract.Assert(_resultExecutedContext == null);
                     _resultExecutedContext = new ResultExecutedContext(
-                        _resultExecutingContext, 
-                        _filters, 
+                        _resultExecutingContext,
+                        _filters,
                         _resultExecutingContext.Result);
                 }
             }
             catch (Exception exception)
             {
                 _resultExecutedContext = new ResultExecutedContext(
-                    _resultExecutingContext, 
-                    _filters, 
+                    _resultExecutingContext,
+                    _filters,
                     _resultExecutingContext.Result)
                 {
                     ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception)

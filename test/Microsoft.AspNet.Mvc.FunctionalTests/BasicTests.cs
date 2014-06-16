@@ -91,6 +91,22 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task ReturningTaskFromAction_ProducesNoContentResult()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.Handler;
+
+            // Act
+            var result = await client.GetAsync("http://localhost/Home/ActionReturningTask");
+
+            // Assert
+            Assert.Equal(204, result.StatusCode);
+            var body = await result.ReadBodyAsStringAsync();
+            Assert.Equal("Hello world", body);
+        }
+
+        [Fact]
         public async Task ActionDescriptors_CreatedOncePerRequest()
         {
             // Arrange
