@@ -379,18 +379,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// {0} has a DisplayColumn attribute for {1}, but property {1} does not exist..
+        /// {0} has a DisplayColumn attribute for {1}, but property {1} does not exist.
         /// </summary>
         internal static string DataAnnotationsModelMetadataProvider_UnknownProperty
         {
-            get
-            {
-                return GetString("DataAnnotationsModelMetadataProvider_UnknownProperty");
-            }
+            get { return GetString("DataAnnotationsModelMetadataProvider_UnknownProperty"); }
         }
 
         /// <summary>
-        /// {0} has a DisplayColumn attribute for {1}, but property {1} does not exist..
+        /// {0} has a DisplayColumn attribute for {1}, but property {1} does not exist.
         /// </summary>
         internal static string FormatDataAnnotationsModelMetadataProvider_UnknownProperty(object p0, object p1)
         {
@@ -398,18 +395,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// {0} has a DisplayColumn attribute for {1}, but property {1} does not have a public 'get' method..
+        /// {0} has a DisplayColumn attribute for {1}, but property {1} does not have a public 'get' method.
         /// </summary>
         internal static string DataAnnotationsModelMetadataProvider_UnreadableProperty
         {
-            get
-            {
-                return GetString("DataAnnotationsModelMetadataProvider_UnreadableProperty");
-            }
+            get { return GetString("DataAnnotationsModelMetadataProvider_UnreadableProperty"); }
         }
 
         /// <summary>
-        /// {0} has a DisplayColumn attribute for {1}, but property {1} does not have a public 'get' method..
+        /// {0} has a DisplayColumn attribute for {1}, but property {1} does not have a public 'get' method.
         /// </summary>
         internal static string FormatDataAnnotationsModelMetadataProvider_UnreadableProperty(object p0, object p1)
         {

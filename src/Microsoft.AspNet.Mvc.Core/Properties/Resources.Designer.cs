@@ -1002,7 +1002,7 @@ namespace Microsoft.AspNet.Mvc.Core
             return string.Format(CultureInfo.CurrentCulture, GetString("UnobtrusiveJavascript_ValidationTypeMustBeUnique"), p0);
         }
 
-        /// </summary>
+        /// <summary>
         /// Cannot return null from an action method with a return type of '{0}'.
         /// </summary>
         internal static string ActionResult_ActionReturnValueCannotBeNull

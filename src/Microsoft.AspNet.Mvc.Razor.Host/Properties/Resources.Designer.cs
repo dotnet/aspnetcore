@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host
         }
 
         /// <summary>
-        /// A property name must be specified when using the '{0}' statement. Format for a '{0}' statement is  '@{0} &lt;TypeName&gt; &lt;PropertyName&gt;'.
+        /// A property name must be specified when using the '{0}' statement. Format for a '{0}' statement is '@{0} &lt;Type Name&gt; &lt;Property Name&gt;'.
         /// </summary>
         internal static string MvcRazorCodeParser_InjectDirectivePropertyNameRequired
         {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host
         }
 
         /// <summary>
-        /// A property name must be specified when using the '{0}' statement. Format for a '{0}' statement is  '@{0} &lt;TypeName&gt; &lt;PropertyName&gt;'.
+        /// A property name must be specified when using the '{0}' statement. Format for a '{0}' statement is '@{0} &lt;Type Name&gt; &lt;Property Name&gt;'.
         /// </summary>
         internal static string FormatMvcRazorCodeParser_InjectDirectivePropertyNameRequired(object p0)
         {
