@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc
             object value;
             if (values.TryGetValue(routeKey, out value))
             {
-                string valueAsString = value as string;
+                var valueAsString = value as string;
 
                 if (valueAsString != null)
                 {
@@ -78,8 +78,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 throw new InvalidOperationException(
                     Resources.FormatPropertyOfTypeCannotBeNull("ActionDescriptors",
-                                                               provider.GetType()
-                                                              ));
+                                                               provider.GetType()));
             }
 
             return descriptors;

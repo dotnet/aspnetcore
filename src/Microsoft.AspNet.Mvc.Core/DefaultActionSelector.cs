@@ -346,8 +346,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 throw new InvalidOperationException(
                     Resources.FormatPropertyOfTypeCannotBeNull("ActionDescriptors",
-                                                               _actionDescriptorsCollectionProvider.GetType()
-                                                              ));
+                                                               _actionDescriptorsCollectionProvider.GetType()));
             }
 
             return descriptors.Items;

@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public static IServiceProvider CreateServices(string applicationWebSiteName)
         {
             var originalProvider = CallContextServiceLocator.Locator.ServiceProvider;
-            IApplicationEnvironment appEnvironment = originalProvider.GetService<IApplicationEnvironment>();
+            var appEnvironment = originalProvider.GetService<IApplicationEnvironment>();
 
             // When an application executes in a regular context, the application base path points to the root
             // directory where the application is located, for example MvcSample.Web. However, when executing
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // To compensate for this, we need to calculate the original path and override the application
             // environment value so that components like the view engine work properly in the context of the
             // test.
-            string appBasePath = CalculateApplicationBasePath(appEnvironment, applicationWebSiteName);
+            var appBasePath = CalculateApplicationBasePath(appEnvironment, applicationWebSiteName);
             var provider = new ServiceCollection()
                             .AddInstance(typeof(IApplicationEnvironment),
                                          new TestApplicationEnvironment(appEnvironment, appBasePath))
@@ -41,7 +41,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         // Calculate the path relative to the application base path.
-        public static string CalculateApplicationBasePath(IApplicationEnvironment appEnvironment, string applicationWebSiteName)
+        public static string CalculateApplicationBasePath(IApplicationEnvironment appEnvironment,
+                                                          string applicationWebSiteName)
         {
             // Mvc/test/Microsoft.AspNet.Mvc.FunctionalTests
             var appBase = appEnvironment.ApplicationBasePath;

@@ -41,12 +41,13 @@ namespace InlineConstraints
             }
 
             // Add MVC to the request pipeline
-            app.UseMvc(routes=> {
-                foreach (var item in GetDataFromConfig(config))
-                {
-                    routes.MapRoute(item.RouteName, item.RouteTemplateValue);
-                }
-            });
+            app.UseMvc(routes =>
+                        {
+                            foreach (var item in GetDataFromConfig(config))
+                            {
+                                routes.MapRoute(item.RouteName, item.RouteTemplateValue);
+                            }
+                        });
         }
 
         private IEnumerable<RouteConfigData> GetDataFromConfig(IConfiguration config)
