@@ -76,10 +76,6 @@ namespace Microsoft.AspNet.Hosting
 
         private void EnsureServerFactory(HostingContext context)
         {
-            if (context.ServerFactory == null)
-            {
-                context.ServerFactory = context.Services.GetServiceOrDefault<IServerFactory>();
-            }
             if (context.ServerFactory != null)
             {
                 return;
