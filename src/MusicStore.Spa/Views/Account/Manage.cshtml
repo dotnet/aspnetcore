@@ -2,9 +2,11 @@
     //TODO: Until we have a way to specify the layout page at application level.
     Layout = "/Views/Shared/_Layout.cshtml";
     ViewBag.Title = "Manage Account";
+    ViewBag.ngApp = "MusicStore.Store";
 }
 
 <h2>@ViewBag.Title.</h2>
+
 <p class="text-success">@ViewBag.StatusMessage</p>
 
 <div class="row">
@@ -14,8 +16,9 @@
 </div>
 
 @section Scripts {
-    @*TODO : Until script helpers are available, adding script references manually*@
-    @*@Scripts.Render("~/bundles/jqueryval")*@
-    <script src="@Url.Content("~/Scripts/jquery.validate.js")"></script>
-    <script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.js")"></script>
+    <script src="~/js/angular.js"></script>
+    <script src="~/js/angular-route.js"></script>
+    @* TODO: This is currently all the compiled TypeScript, non-minified. Need to explore options
+        for alternate loading schemes, e.g. AMD loader of individual modules, min vs. non-min, etc. *@
+    <script src="~/js/MusicStore.Store.js"></script>
 }

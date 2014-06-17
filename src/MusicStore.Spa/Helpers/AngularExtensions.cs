@@ -12,14 +12,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
     {
         public static HtmlString ngPasswordFor<TModel, TProperty>(this IHtmlHelper<TModel> html, Expression<Func<TModel, TProperty>> expression)
         {
-            return html.ngTextBoxFor(expression, new RouteValueDictionary { { "type", "password" } });
+            return html.ngPasswordFor(expression, null);
         }
 
         public static HtmlString ngPasswordFor<TModel, TProperty>(this IHtmlHelper<TModel> html, Expression<Func<TModel, TProperty>> expression, object htmlAttributes)
         {
-            return html.ngTextBoxFor(expression, MergeAttributes(
-                new RouteValueDictionary { { "type", "password" } },
-                HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes)));
+            return html.ngPasswordFor(expression, HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes));
         }
 
         public static HtmlString ngPasswordFor<TModel, TProperty>(this IHtmlHelper<TModel> html, Expression<Func<TModel, TProperty>> expression, IDictionary<string, object> htmlAttributes)
@@ -51,8 +49,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var metadata = ExpressionMetadataProvider.FromLambdaExpression(expression, helper.ViewData, helper.ModelMetadataProvider);
             var ngAttributes = new Dictionary<string, object>();
 
+            ngAttributes["type"] = "text";
+
             // Angular binding to client-side model (scope). This is required for Angular validation to work.
-            ngAttributes["ng-model"] = html.ViewData.TemplateInfo.GetFullHtmlFieldName(expressionText);
+            var valueFieldName = html.ViewData.TemplateInfo.GetFullHtmlFieldName(expressionText);
+            ngAttributes["name"] = valueFieldName;
+            ngAttributes["ng-model"] = valueFieldName;
 
             // Set input type
             if (string.Equals(metadata.DataTypeName, Enum.GetName(typeof(DataType), DataType.EmailAddress), StringComparison.OrdinalIgnoreCase))
@@ -139,7 +141,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
 
             // Render!
-            return html.TextBoxFor(expression, null, MergeAttributes(ngAttributes, htmlAttributes));
+            if (metadata.Model != null)
+            {
+                ngAttributes.Add("value", metadata.Model.ToString());
+            }
+
+            var tag = new TagBuilder("input");
+            tag.MergeAttributes(MergeAttributes(ngAttributes, htmlAttributes));
+            return tag.ToHtmlString(TagRenderMode.SelfClosing);
         }
 
         //private static bool IsNumberType(Type type)
@@ -255,7 +264,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             tag.MergeAttributes(htmlAttributes, replaceExisting: true);
 
-            return html.Raw(tag.ToString());
+            return tag.ToHtmlString(TagRenderMode.Normal);
         }
 
         public static HtmlString ngValidationMessageFor<TModel, TProperty>(this IHtmlHelper<TModel> htmlHelper, Expression<Func<TModel, TProperty>> expression, string formName)
@@ -341,6 +350,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         private static IDictionary<string, object> MergeAttributes(IDictionary<string, object> source, IDictionary<string, object> target)
         {
+            if (target == null)
+            {
+                return source;
+            }
+
             // Keys in target win over keys in source
             foreach (var pair in source)
             {
