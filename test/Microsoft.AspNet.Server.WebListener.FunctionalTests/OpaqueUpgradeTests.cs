@@ -15,7 +15,6 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
-/* TODO: Opaque
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -24,14 +23,13 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.FeatureModel;
+using Microsoft.AspNet.HttpFeature;
+using Microsoft.AspNet.PipelineCore;
 using Xunit;
-using Xunit.Extensions;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
-    using AppFunc = Func<object, Task>;
-    using OpaqueUpgrade = Action<IDictionary<string, object>, Func<IDictionary<string, object>, Task>>;
-
     public class OpaqueUpgradeTests
     {
         private const string Address = "http://localhost:8080/";
@@ -39,22 +37,17 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task OpaqueUpgrade_SupportKeys_Present()
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(env =>
             {
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 try
                 {
-                    IDictionary<string, object> capabilities = env.Get<IDictionary<string, object>>("server.Capabilities");
-                    Assert.NotNull(capabilities);
-
-                    Assert.Equal("1.0", capabilities.Get<string>("opaque.Version"));
-
-                    OpaqueUpgrade opaqueUpgrade = env.Get<OpaqueUpgrade>("opaque.Upgrade");
-                    Assert.NotNull(opaqueUpgrade);
+                    var opaqueFeature = httpContext.GetFeature<IHttpOpaqueUpgradeFeature>();
+                    Assert.NotNull(opaqueFeature);
                 }
                 catch (Exception ex)
                 {
-                    byte[] body = Encoding.UTF8.GetBytes(ex.ToString());
-                    env.Get<Stream>("owin.ResponseBody").Write(body, 0, body.Length);
+                    return httpContext.Response.WriteAsync(ex.ToString());
                 }
                 return Task.FromResult(0);
             }))
@@ -68,49 +61,24 @@ namespace Microsoft.AspNet.Server.WebListener
         }
 
         [Fact]
-        public async Task OpaqueUpgrade_NullCallback_Throws()
-        {
-            using (CreateServer(env =>
-            {
-                try
-                {
-                    OpaqueUpgrade opaqueUpgrade = env.Get<OpaqueUpgrade>("opaque.Upgrade");
-                    opaqueUpgrade(new Dictionary<string, object>(), null);
-                }
-                catch (Exception ex)
-                {
-                    byte[] body = Encoding.UTF8.GetBytes(ex.ToString());
-                    env.Get<Stream>("owin.ResponseBody").Write(body, 0, body.Length);
-                }
-                return Task.FromResult(0);
-            }))
-            {
-                HttpResponseMessage response = await SendRequestAsync(Address);
-                Assert.Equal(200, (int)response.StatusCode);
-                Assert.True(response.Headers.TransferEncodingChunked.Value, "Chunked");
-                Assert.Contains("callback", response.Content.ReadAsStringAsync().Result);
-            }
-        }
-
-        [Fact]
         public async Task OpaqueUpgrade_AfterHeadersSent_Throws()
         {
             bool? upgradeThrew = null;
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(async env =>
             {
-                byte[] body = Encoding.UTF8.GetBytes("Hello World");
-                env.Get<Stream>("owin.ResponseBody").Write(body, 0, body.Length);
-                OpaqueUpgrade opaqueUpgrade = env.Get<OpaqueUpgrade>("opaque.Upgrade");
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                await httpContext.Response.WriteAsync("Hello World");
                 try
                 {
-                    opaqueUpgrade(null, _ => Task.FromResult(0));
+                    var opaqueFeature = httpContext.GetFeature<IHttpOpaqueUpgradeFeature>();
+                    Assert.NotNull(opaqueFeature);
+                    await opaqueFeature.UpgradeAsync();
                     upgradeThrew = false;
                 }
                 catch (InvalidOperationException)
                 {
                     upgradeThrew = true;
                 }
-                return Task.FromResult(0);
             }))
             {
                 HttpResponseMessage response = await SendRequestAsync(Address);
@@ -124,26 +92,24 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task OpaqueUpgrade_GetUpgrade_Success()
         {
             ManualResetEvent waitHandle = new ManualResetEvent(false);
-            bool? callbackInvoked = null;
-            using (CreateServer(env =>
+            bool? upgraded = null;
+            using (Utilities.CreateHttpServer(async env =>
             {
-                var responseHeaders = env.Get<IDictionary<string, string[]>>("owin.ResponseHeaders");
-                responseHeaders["Upgrade"] = new string[] { "websocket" }; // Win8.1 blocks anything but WebSockets
-                OpaqueUpgrade opaqueUpgrade = env.Get<OpaqueUpgrade>("opaque.Upgrade");
-                opaqueUpgrade(null, opqEnv => 
-                {
-                    callbackInvoked = true;
-                    waitHandle.Set();
-                    return Task.FromResult(0);
-                });
-                return Task.FromResult(0);
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                httpContext.Response.Headers["Upgrade"] = "websocket"; // Win8.1 blocks anything but WebSockets
+                var opaqueFeature = httpContext.GetFeature<IHttpOpaqueUpgradeFeature>();
+                Assert.NotNull(opaqueFeature);
+                Assert.True(opaqueFeature.IsUpgradableRequest);
+                await opaqueFeature.UpgradeAsync();
+                upgraded = true;
+                waitHandle.Set();
             }))
             {
                 using (Stream stream = await SendOpaqueRequestAsync("GET", Address))
                 {
                     Assert.True(waitHandle.WaitOne(TimeSpan.FromSeconds(1)), "Timed out");
-                    Assert.True(callbackInvoked.HasValue, "CallbackInvoked not set");
-                    Assert.True(callbackInvoked.Value, "Callback not invoked");
+                    Assert.True(upgraded.HasValue, "Upgraded not set");
+                    Assert.True(upgraded.Value, "Upgrade failed");
                 }
             }
         }
@@ -173,21 +139,26 @@ namespace Microsoft.AspNet.Server.WebListener
         [InlineData("PUT", "Content-Length: 0")]
         public async Task OpaqueUpgrade_VariousMethodsUpgradeSendAndReceive_Success(string method, string extraHeader)
         {
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(async env =>
             {
-                var responseHeaders = env.Get<IDictionary<string, string[]>>("owin.ResponseHeaders");
-                responseHeaders["Upgrade"] = new string[] { "WebSocket" }; // Win8.1 blocks anything but WebSockets
-                OpaqueUpgrade opaqueUpgrade = env.Get<OpaqueUpgrade>("opaque.Upgrade");
-                opaqueUpgrade(null, async opqEnv =>
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                try
                 {
-                    Stream opaqueStream = opqEnv.Get<Stream>("opaque.Stream");
+                    httpContext.Response.Headers["Upgrade"] = "websocket"; // Win8.1 blocks anything but WebSockets
+                    var opaqueFeature = httpContext.GetFeature<IHttpOpaqueUpgradeFeature>();
+                    Assert.NotNull(opaqueFeature);
+                    Assert.True(opaqueFeature.IsUpgradableRequest);
+                    var opaqueStream = await opaqueFeature.UpgradeAsync();
 
                     byte[] buffer = new byte[100];
                     int read = await opaqueStream.ReadAsync(buffer, 0, buffer.Length);
 
                     await opaqueStream.WriteAsync(buffer, 0, read);
-                });
-                return Task.FromResult(0);
+                }
+                catch (Exception ex)
+                {
+                    await httpContext.Response.WriteAsync(ex.ToString());
+                }
             }))
             {
                 using (Stream stream = await SendOpaqueRequestAsync(method, Address, extraHeader))
@@ -208,52 +179,25 @@ namespace Microsoft.AspNet.Server.WebListener
         [InlineData("PUT", "Transfer-Encoding: chunked")]
         [InlineData("CUSTOMVERB", "Content-Length: 10")]
         [InlineData("CUSTOMVERB", "Transfer-Encoding: chunked")]
-        public void OpaqueUpgrade_InvalidMethodUpgrade_Disconnected(string method, string extraHeader)
+        public async Task OpaqueUpgrade_InvalidMethodUpgrade_Disconnected(string method, string extraHeader)
         {
-            OpaqueUpgrade opaqueUpgrade = null;
-            using (CreateServer(env =>
+            using (Utilities.CreateHttpServer(async env =>
             {
-                opaqueUpgrade = env.Get<OpaqueUpgrade>("opaque.Upgrade");
-                if (opaqueUpgrade == null)
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                try
                 {
-                    throw new NotImplementedException();
+                    var opaqueFeature = httpContext.GetFeature<IHttpOpaqueUpgradeFeature>();
+                    Assert.NotNull(opaqueFeature);
+                    Assert.False(opaqueFeature.IsUpgradableRequest);
                 }
-                opaqueUpgrade(null, opqEnv => Task.FromResult(0));
-                return Task.FromResult(0);
+                catch (Exception ex)
+                {
+                    await httpContext.Response.WriteAsync(ex.ToString());
+                }
             }))
             {
-                Assert.Throws<InvalidOperationException>(() =>
-                {
-                    try
-                    {
-                        return SendOpaqueRequestAsync(method, Address, extraHeader).Result;
-                    }
-                    catch (AggregateException ag)
-                    {
-                        throw ag.GetBaseException();
-                    }
-                });
-                Assert.Null(opaqueUpgrade);
+                await Assert.ThrowsAsync<InvalidOperationException>(async () => await SendOpaqueRequestAsync(method, Address, extraHeader));
             }
-        }
-
-        private IDisposable CreateServer(AppFunc app)
-        {
-            IDictionary<string, object> properties = new Dictionary<string, object>();
-            IList<IDictionary<string, object>> addresses = new List<IDictionary<string, object>>();
-            properties["host.Addresses"] = addresses;
-
-            IDictionary<string, object> address = new Dictionary<string, object>();
-            addresses.Add(address);
-
-            address["scheme"] = "http";
-            address["host"] = "localhost";
-            address["port"] = "8080";
-            address["path"] = string.Empty;
-
-            OwinServerFactory.Initialize(properties);
-
-            return OwinServerFactory.Create(app, properties);
         }
 
         private async Task<HttpResponseMessage> SendRequestAsync(string uri)
@@ -334,4 +278,3 @@ namespace Microsoft.AspNet.Server.WebListener
         }
     }
 }
-*/
