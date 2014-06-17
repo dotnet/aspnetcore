@@ -64,11 +64,19 @@ namespace Microsoft.AspNet.Builder
 
         public static IBuilder UseServices(this IBuilder builder, Action<ServiceCollection> configureServices)
         {
+            return builder.UseServices(serviceCollection =>
+            {
+                configureServices(serviceCollection);
+                return serviceCollection.BuildServiceProvider(builder.ApplicationServices);
+            });
+        }
+
+        public static IBuilder UseServices(this IBuilder builder, Func<ServiceCollection, IServiceProvider> configureServices)
+        {
             var serviceCollection = new ServiceCollection();
 
             serviceCollection.Add(OptionsServices.GetDefaultServices());
-            configureServices(serviceCollection);
-            builder.ApplicationServices = serviceCollection.BuildServiceProvider(builder.ApplicationServices);
+            builder.ApplicationServices = configureServices(serviceCollection);
 
             return builder.UseMiddleware(typeof(ContainerMiddleware));
         }
