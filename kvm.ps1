@@ -1,6 +1,7 @@
 param(
   [parameter(Position=0)]
   [string] $command,
+  [string] $proxy = "",
   [switch] $verbosity = $false,
   [alias("g")][switch] $global = $false,
   [alias("p")][switch] $persistent = $false,
@@ -26,12 +27,13 @@ K Runtime Environment Version Manager - Build 509
 
 USAGE: kvm <command> [options]
 
-kvm upgrade [-x86][-x64] [-svr50][-svrc50] [-g|-global]
+kvm upgrade [-x86][-x64] [-svr50][-svrc50] [-g|-global] [-proxy <ADDRESS>]
   install latest KRE from feed
   set 'default' alias to installed version
   add KRE bin to user PATH environment variable
   -g|-global        install to machine-wide location
   -f|-force         upgrade even if latest is already installed
+  -proxy <ADDRESS>  use given address as proxy when accessing remote server
 
 kvm install <semver>|<alias>|<nupkg> [-x86][-x64] [-svr50][-svrc50] [-g|-global]
   install requested KRE from feed
@@ -124,6 +126,25 @@ function Kvm-Upgrade {
     Kvm-Alias-Set "default" $version
 }
 
+function Add-Proxy-If-Specified {
+param(
+    [System.Net.WebClient] $wc
+)
+    if ([string]::IsNullOrEmpty($proxy)) {
+        $proxy = [Environment]::GetEnvironmentVariable("http_proxy")
+    }
+    if (-NOT [string]::IsNullOrEmpty($proxy)) {
+        $wp = New-Object System.Net.WebProxy($proxy)
+        $pb = New-Object UriBuilder($proxy)
+        if ([string]::IsNullOrEmpty($pb.UserName)) {
+            $wp.Credentials = [System.Net.CredentialCache]::DefaultCredentials
+        } else {
+            $wp.Credentials = New-Object System.Net.NetworkCredential($pb.UserName, $pb.Password)
+        }
+        $wc.Proxy = $wp
+    }
+}
+
 function Kvm-Find-Latest {
 param(
     [string] $platform,
@@ -135,6 +156,7 @@ param(
 
     $wc = New-Object System.Net.WebClient
     $wc.Credentials = new-object System.Net.NetworkCredential("aspnetreadonly", "4d8a2d9c-7b80-4162-9978-47e918c9658c")
+    Add-Proxy-If-Specified([ref]$wc)
     [xml]$xml = $wc.DownloadString($url)
 
     $version = Select-Xml "//d:Version" -Namespace @{d='http://schemas.microsoft.com/ado/2007/08/dataservices'} $xml 
@@ -181,6 +203,7 @@ param(
 
     $wc = New-Object System.Net.WebClient
     $wc.Credentials = new-object System.Net.NetworkCredential("aspnetreadonly", "4d8a2d9c-7b80-4162-9978-47e918c9658c")
+    Add-Proxy-If-Specified([ref]$wc)
     $wc.DownloadFile($url, $tempKreFile)
 
     Do-Kvm-Unpack $tempKreFile $kreTempDownload
