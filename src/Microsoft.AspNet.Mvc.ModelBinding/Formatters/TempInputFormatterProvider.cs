@@ -21,8 +21,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             if (formatters == null)
             {
-                formatters = context.HttpContext.ApplicationServices.GetService<IEnumerable<IInputFormatter>>()
-                                .ToArray();
+                formatters = context.HttpContext.RequestServices.GetService<IEnumerable<IInputFormatter>>()
+                                    .ToArray();
 
                 _formatters = formatters;
             }
