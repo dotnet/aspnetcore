@@ -377,7 +377,7 @@ namespace Microsoft.Net.Server
             */
             uint statusCode;
             uint bytesSent;
-            List<GCHandle> pinnedHeaders = SerializeHeaders();
+            List<GCHandle> pinnedHeaders = SerializeHeaders(isOpaqueUpgrade);
             try
             {
                 if (pDataChunk != null)
@@ -589,7 +589,7 @@ namespace Microsoft.Net.Server
             return flags;
         }
 
-        private List<GCHandle> SerializeHeaders()
+        private List<GCHandle> SerializeHeaders(bool isOpaqueUpgrade)
         {
             UnsafeNclNativeMethods.HttpApi.HTTP_UNKNOWN_HEADER[] unknownHeaders = null;
             UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_INFO[] knownHeaderInfo = null;
@@ -623,7 +623,9 @@ namespace Microsoft.Net.Server
                 // See if this is an unknown header
                 lookup = UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_HEADER_ID.IndexOfKnownHeader(headerPair.Key);
 
-                if (lookup == -1)
+                // Http.Sys doesn't let us send the Connection: Upgrade header as a Known header.
+                if (lookup == -1 ||
+                    (isOpaqueUpgrade && lookup == (int)UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_HEADER_ID.Enum.HttpHeaderConnection))
                 {
                     numUnknownHeaders += headerPair.Value.Length;
                 }
@@ -649,7 +651,9 @@ namespace Microsoft.Net.Server
                         string[] headerValues = headerPair.Value;
                         lookup = UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_HEADER_ID.IndexOfKnownHeader(headerName);
 
-                        if (lookup == -1)
+                        // Http.Sys doesn't let us send the Connection: Upgrade header as a Known header.
+                        if (lookup == -1 ||
+                            (isOpaqueUpgrade && lookup == (int)UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_HEADER_ID.Enum.HttpHeaderConnection))
                         {
                             if (unknownHeaders == null)
                             {
