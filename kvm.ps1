@@ -156,7 +156,7 @@ param(
 
     $wc = New-Object System.Net.WebClient
     $wc.Credentials = new-object System.Net.NetworkCredential("aspnetreadonly", "4d8a2d9c-7b80-4162-9978-47e918c9658c")
-    Add-Proxy-If-Specified([ref]$wc)
+    Add-Proxy-If-Specified($wc)
     [xml]$xml = $wc.DownloadString($url)
 
     $version = Select-Xml "//d:Version" -Namespace @{d='http://schemas.microsoft.com/ado/2007/08/dataservices'} $xml 
@@ -203,7 +203,7 @@ param(
 
     $wc = New-Object System.Net.WebClient
     $wc.Credentials = new-object System.Net.NetworkCredential("aspnetreadonly", "4d8a2d9c-7b80-4162-9978-47e918c9658c")
-    Add-Proxy-If-Specified([ref]$wc)
+    Add-Proxy-If-Specified($wc)
     $wc.DownloadFile($url, $tempKreFile)
 
     Do-Kvm-Unpack $tempKreFile $kreTempDownload
