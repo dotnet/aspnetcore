@@ -134,7 +134,7 @@ namespace Microsoft.AspNet.Routing.Tests
         {
             // Arrange
             var httpContext = new Mock<HttpContext>();
-            httpContext.Setup(o => o.ApplicationServices
+            httpContext.Setup(o => o.RequestServices
                                   .GetService(typeof(IActionDescriptorsCollectionProvider)))
                        .Returns(new Mock<IActionDescriptorsCollectionProvider>().Object);
             // Act & Assert
@@ -159,12 +159,12 @@ namespace Microsoft.AspNet.Routing.Tests
                 .Callback<ActionDescriptorProviderContext>(c => c.Results.Add(actionDescriptor));
 
             var context = new Mock<HttpContext>();
-            context.Setup(o => o.ApplicationServices
+            context.Setup(o => o.RequestServices
                                 .GetService(typeof(INestedProviderManager<ActionDescriptorProviderContext>)))
                    .Returns(actionProvider.Object);
-            context.Setup(o => o.ApplicationServices
+            context.Setup(o => o.RequestServices
                                .GetService(typeof(IActionDescriptorsCollectionProvider)))
-                   .Returns(new DefaultActionDescriptorsCollectionProvider(context.Object.ApplicationServices));
+                   .Returns(new DefaultActionDescriptorsCollectionProvider(context.Object.RequestServices));
             return context.Object;
         }
 
