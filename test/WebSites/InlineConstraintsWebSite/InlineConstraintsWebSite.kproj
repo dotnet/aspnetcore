@@ -33,6 +33,8 @@
   <ItemGroup>
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\UsersController.cs" />
+    <Compile Include="DefaultCommandLineArgumentBuilder.cs" />
+    <Compile Include="ICommandLineArgumentProvider.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="TestControllerAssemblyProvider.cs" />
   </ItemGroup>

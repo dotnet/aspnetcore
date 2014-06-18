@@ -12,7 +12,8 @@
         "xunit.assert": "2.0.0-aspnet-*",
         "xunit.core": "2.0.0-aspnet-*",
         "Xunit.KRunner": "0.1-alpha-*",
-        "Microsoft.Framework.ConfigurationModel.Json": "0.1-alpha-*"
+        "Microsoft.Framework.ConfigurationModel.Json": "0.1-alpha-*",
+        "Microsoft.Framework.DependencyInjection": "0.1-alpha-*"
     },
     "commands": {
         "test": "Xunit.KRunner"

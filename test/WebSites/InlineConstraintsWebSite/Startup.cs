@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
@@ -13,6 +14,7 @@ namespace InlineConstraints
     public class Startup
     {
         public Action<IRouteBuilder> RouteCollectionProvider { get; set; }
+
         public void Configure(IBuilder app)
         {
             // Set up application services
@@ -28,11 +30,16 @@ namespace InlineConstraints
 
             var config = new Configuration();
             config.AddEnvironmentVariables();
-
+            var commandLineBuilder = app.ApplicationServices.GetService<ICommandLineArgumentBuilder>();
             string appConfigPath;
             if (config.TryGet("AppConfigPath", out appConfigPath))
             {
                 config.AddJsonFile(appConfigPath);
+            }
+            else if (commandLineBuilder != null)
+            {
+                var args = commandLineBuilder.Build();
+                config.AddCommandLine(args.ToArray());
             }
             else
             {

@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using InlineConstraints;
 using Microsoft.AspNet.Builder;
@@ -22,31 +24,23 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private readonly IServiceProvider _provider;
         private readonly Action<IBuilder> _app = new Startup().Configure;
-        private readonly string _jsonConfigFilePath;
-        private readonly Configuration _config = new Configuration();
+    
         public InlineConstraintTests()
         {
             _provider = TestHelper.CreateServices("InlineConstraintsWebSite");
-
-            // TODO: Hardcoding the config file path for now. Update it to read it from args.
-            _jsonConfigFilePath = @"config\InlineConstraintTestsConfig.json";
-            _config.AddJsonFile(_jsonConfigFilePath);
-
-            Environment.SetEnvironmentVariable("AppConfigPath", _jsonConfigFilePath);
+            _provider = new ServiceCollection()
+                         .AddScoped<ICommandLineArgumentBuilder, DefaultCommandLineArgumentBuilder>()
+                         .BuildServiceProvider(_provider);
         }
 
         [Fact]
         public async Task RoutingToANonExistantArea_WithExistConstraint_RoutesToCorrectAction()
         {
-            // Arrange
-            var source = new JsonConfigurationSource(_jsonConfigFilePath);
-
-            // Add the exists inline constraint.
-            _config.Set("TemplateCollection:areaRoute:TemplateValue",
-                        @"{area:exists}/{controller=Home}/{action=Index}");
-            _config.Set("TemplateCollection:actionAsMethod:TemplateValue",
-                        @"{controller=Home}/{action=Index}");
-            _config.Commit();
+            var svc = _provider.GetService<ICommandLineArgumentBuilder>();
+            svc.AddArgument("--TemplateCollection:areaRoute:TemplateValue="+
+                            "{area:exists}/{controller=Home}/{action=Index}");
+            svc.AddArgument("--TemplateCollection:actionAsMethod:TemplateValue="+
+                            "{controller=Home}/{action=Index}");
 
             var server = TestServer.Create(_provider, _app);
             var client = server.Handler;
@@ -64,12 +58,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task RoutingToANonExistantArea_WithoutExistConstraint_RoutesToIncorrectAction()
         {
             // Arrange
-            _config.Set("TemplateCollection:areaRoute:TemplateValue",
-                        @"{area}/{controller=Home}/{action=Index}");
-            _config.Set("TemplateCollection:actionAsMethod:TemplateValue",
-                        @"{controller=Home}/{action=Index}");
-
-            _config.Commit();
+            var svc = _provider.GetService<ICommandLineArgumentBuilder>();
+            svc.AddArgument("--TemplateCollection:areaRoute:TemplateValue="+
+                            "{area}/{controller=Home}/{action=Index}");
+            svc.AddArgument("--TemplateCollection:actionAsMethod:TemplateValue"+
+                            "={controller=Home}/{action=Index}");
 
             var server = TestServer.Create(_provider, _app);
             var client = server.Handler;
