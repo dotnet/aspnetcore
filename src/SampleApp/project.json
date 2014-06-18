@@ -1,6 +1,7 @@
 ﻿{
     "dependencies": {
-        "Kestrel": "0.1-alpha-*"
+        "Kestrel": "0.1-alpha-*",
+        "Microsoft.AspNet.Server.WebListener": "0.1-alpha-*"
     },
     "configurations": {
         "net45": { },
@@ -11,6 +12,7 @@
         }
     },
     "commands": {
-        "web": "Microsoft.AspNet.Hosting --server kestrel"
+        "run": "Microsoft.AspNet.Hosting",
+        "web": "Microsoft.AspNet.Hosting"
     }
 }

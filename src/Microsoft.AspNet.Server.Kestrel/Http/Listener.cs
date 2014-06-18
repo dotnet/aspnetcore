@@ -45,31 +45,33 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             Memory = memory;
         }
 
-        public Task StartAsync(KestrelThread thread, Func<Frame, Task> application)
+        public Task StartAsync(
+            string scheme,
+            string host,
+            int port,
+            KestrelThread thread,
+            Func<Frame, Task> application)
         {
             Thread = thread;
             Application = application;
 
             var tcs = new TaskCompletionSource<int>();
-            Thread.Post(OnStart, tcs);
+            Thread.Post(_ =>
+            {
+                try
+                {
+                    ListenSocket = new UvTcpHandle();
+                    ListenSocket.Init(Thread.Loop);
+                    ListenSocket.Bind(new IPEndPoint(IPAddress.Any, port));
+                    ListenSocket.Listen(10, _connectionCallback, this);
+                    tcs.SetResult(0);
+                }
+                catch (Exception ex)
+                {
+                    tcs.SetException(ex);
+                }
+            }, null);
             return tcs.Task;
-        }
-
-        public void OnStart(object parameter)
-        {
-            var tcs = (TaskCompletionSource<int>)parameter;
-            try
-            {
-                ListenSocket = new UvTcpHandle();
-                ListenSocket.Init(Thread.Loop);
-                ListenSocket.Bind(new IPEndPoint(IPAddress.Any, 4001));
-                ListenSocket.Listen(10, _connectionCallback, this);
-                tcs.SetResult(0);
-            }
-            catch (Exception ex)
-            {
-                tcs.SetException(ex);
-            }
         }
 
         private void OnConnection(UvStreamHandle listenSocket, int status)

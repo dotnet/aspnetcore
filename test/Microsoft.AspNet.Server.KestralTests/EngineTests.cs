@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Server.KestralTests
         {
             var engine = new KestrelEngine();
             engine.Start(1);
-            var started = engine.CreateServer(App);
+            var started = engine.CreateServer("http", "localhost", 54321, App);
             started.Dispose();
             engine.Dispose();
         }
@@ -70,10 +70,10 @@ namespace Microsoft.AspNet.Server.KestralTests
         {
             var engine = new KestrelEngine();
             engine.Start(1);
-            var started = engine.CreateServer(App);
+            var started = engine.CreateServer("http", "localhost", 54321, App);
 
             var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            socket.Connect(new IPEndPoint(IPAddress.Loopback, 4001));
+            socket.Connect(new IPEndPoint(IPAddress.Loopback, 54321));
             socket.Send(Encoding.ASCII.GetBytes("POST / HTTP/1.0\r\n\r\nHello World"));
             socket.Shutdown(SocketShutdown.Send);
             var buffer = new byte[8192];

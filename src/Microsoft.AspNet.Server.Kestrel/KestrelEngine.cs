@@ -48,13 +48,13 @@ namespace Microsoft.AspNet.Server.Kestrel
             Threads.Clear();
         }
 
-        public IDisposable CreateServer(Func<Frame, Task> application)
+        public IDisposable CreateServer(string scheme, string host, int port, Func<Frame, Task> application)
         {
             var listeners = new List<Listener>();
             foreach (var thread in Threads)
             {
                 var listener = new Listener(Memory);
-                listener.StartAsync(thread, application).Wait();
+                listener.StartAsync(scheme, host, port, thread, application).Wait();
                 listeners.Add(listener);
             }
             return new Disposable(() =>

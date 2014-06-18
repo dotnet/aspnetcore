@@ -22,7 +22,11 @@ namespace Microsoft.AspNet.Server.KestralTests
         {
             _engine = new KestrelEngine();
             _engine.Start(1);
-            _server = _engine.CreateServer(app);
+            _server = _engine.CreateServer(
+                "http",
+                "localhost",
+                54321,
+                app);
 
         }
 

@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            throw new NotImplementedException();
+            WriteAsync(buffer, offset, count).Wait();
         }
 
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)

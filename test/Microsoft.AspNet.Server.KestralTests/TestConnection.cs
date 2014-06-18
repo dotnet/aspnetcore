@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Server.KestralTests
         public void Create()
         {
             _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            _socket.Connect(new IPEndPoint(IPAddress.Loopback, 4001));
+            _socket.Connect(new IPEndPoint(IPAddress.Loopback, 54321));
 
             _stream = new NetworkStream(_socket, false);
             _reader = new StreamReader(_stream, Encoding.ASCII);
