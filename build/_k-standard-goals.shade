@@ -13,6 +13,10 @@ default Configuration='Release'
 
 @{
   E("K_BUILD_VERSION", BuildNumber);
+  if (string.IsNullOrEmpty(E("K_AUTHOR")))
+  {
+    E("K_AUTHOR", AUTHORS);
+  }
 }
 
 #repo-initialize target='initialize'
