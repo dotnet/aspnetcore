@@ -1,7 +1,7 @@
 param(
   [parameter(Position=0)]
   [string] $command,
-  [string] $proxy = "",
+  [string] $proxy,
   [switch] $verbosity = $false,
   [alias("g")][switch] $global = $false,
   [alias("p")][switch] $persistent = $false,
@@ -130,13 +130,13 @@ function Add-Proxy-If-Specified {
 param(
     [System.Net.WebClient] $wc
 )
-    if ([string]::IsNullOrEmpty($proxy)) {
-        $proxy = [Environment]::GetEnvironmentVariable("http_proxy")
+    if (!$proxy) {
+        $proxy = $env:http_proxy
     }
-    if (-NOT [string]::IsNullOrEmpty($proxy)) {
+    if ($proxy) {
         $wp = New-Object System.Net.WebProxy($proxy)
         $pb = New-Object UriBuilder($proxy)
-        if ([string]::IsNullOrEmpty($pb.UserName)) {
+        if (!$pb.UserName) {
             $wp.Credentials = [System.Net.CredentialCache]::DefaultCredentials
         } else {
             $wp.Credentials = New-Object System.Net.NetworkCredential($pb.UserName, $pb.Password)
