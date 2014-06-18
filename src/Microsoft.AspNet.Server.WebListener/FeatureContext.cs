@@ -114,8 +114,6 @@ namespace Microsoft.AspNet.Server.WebListener
              */
         }
 
-        #region IHttpRequestFeature
-
         Stream IHttpRequestFeature.Body
         {
             get
@@ -231,8 +229,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }
             set { _scheme = value; }
         }
-        #endregion
-        #region IHttpConnectionFeature
+
         bool IHttpConnectionFeature.IsLocal
         {
             get
@@ -297,8 +294,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }
             set { _remotePort = value; }
         }
-        #endregion
-        #region IHttpTransportLayerSecurityFeature
+
         X509Certificate IHttpTransportLayerSecurityFeature.ClientCertificate
         {
             get
@@ -319,8 +315,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 _clientCert = await Request.GetClientCertificateAsync();
             }
         }
-        #endregion
-        #region IHttpResponseFeature
+
         Stream IHttpResponseFeature.Body
         {
             get
@@ -363,48 +358,33 @@ namespace Microsoft.AspNet.Server.WebListener
             get { return Response.StatusCode; }
             set { Response.StatusCode = value; }
         }
-        #endregion
-        #region IHttpSendFileFeature
 
         Task IHttpSendFileFeature.SendFileAsync(string path, long offset, long? length, CancellationToken cancellation)
         {
             return Response.SendFileAsync(path, offset, length, cancellation);
         }
 
-        #endregion
-        #region IHttpRequestLifetimeFeature
-
-        public CancellationToken OnRequestAborted
+        CancellationToken IHttpRequestLifetimeFeature.OnRequestAborted
         {
             get { return _requestContext.DisconnectToken; }
         }
 
-        public void Abort()
+        void IHttpRequestLifetimeFeature.Abort()
         {
             _requestContext.Abort();
         }
 
-        #endregion
-        #region IHttpOpaqueUpgradeFeature
-
-        public bool IsUpgradableRequest
+        bool IHttpOpaqueUpgradeFeature.IsUpgradableRequest
         {
             get { return _requestContext.IsUpgradableRequest; }
         }
 
-        public Task<Stream> UpgradeAsync()
+        Task<Stream> IHttpOpaqueUpgradeFeature.UpgradeAsync()
         {
-            if (!IsUpgradableRequest)
-            {
-                throw new InvalidOperationException("This request cannot be upgraded.");
-            }
             return _requestContext.UpgradeAsync();
         }
 
-        #endregion
-        #region IHttpWebSocketFeature
-
-        public bool IsWebSocketRequest
+        bool IHttpWebSocketFeature.IsWebSocketRequest
         {
             get
             {
@@ -412,7 +392,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        public Task<WebSocket> AcceptAsync(IWebSocketAcceptContext context)
+        Task<WebSocket> IHttpWebSocketFeature.AcceptAsync(IWebSocketAcceptContext context)
         {
             // TODO: Advanced params
             string subProtocol = null;
@@ -422,7 +402,5 @@ namespace Microsoft.AspNet.Server.WebListener
             }
             return _requestContext.AcceptWebSocketAsync(subProtocol);
         }
-
-        #endregion
     }
 }

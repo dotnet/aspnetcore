@@ -6,7 +6,7 @@
     "Microsoft.AspNet.Server.WebListener": "",
     "Microsoft.Net.Server": ""
   },
-  "commands": { "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:8080" },
+  "commands": { "web": "Microsoft.AspNet.Hosting --server=Microsoft.AspNet.Server.WebListener --server.urls=http://localhost:8080" },
   "configurations": {
     "net45": {
     },

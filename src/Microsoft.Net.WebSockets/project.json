@@ -1,13 +1,13 @@
 {
      "version": "0.1-alpha-*",
      "dependencies": {
+        "Microsoft.Net.WebSocketAbstractions": "0.1-alpha-*"
      },
      "compilationOptions" : { "allowUnsafe": true },
      "configurations": {
           "net45" : { },
           "k10" : {
                "dependencies": {
-                    "Microsoft.Net.WebSocketAbstractions": "0.1-alpha-*",
                     "Microsoft.Win32.Primitives": "4.0.0.0",
                     "System.Collections": "4.0.0.0",
                     "System.Collections.Concurrent": "4.0.0.0",

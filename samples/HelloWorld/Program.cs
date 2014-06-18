@@ -19,13 +19,14 @@ using System;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Net.Server;
 
 namespace HelloWorld
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             using (WebListener listener = new WebListener())
             {
@@ -35,7 +36,7 @@ namespace HelloWorld
                 Console.WriteLine("Running...");
                 while (true)
                 {
-                    RequestContext context = listener.GetContextAsync().Result;
+                    RequestContext context = await listener.GetContextAsync();
                     Console.WriteLine("Accepted");
 
                     // Context:
@@ -78,9 +79,9 @@ namespace HelloWorld
                     if (context.IsWebSocketRequest)
                     {
                         Console.WriteLine("WebSocket");
-                        WebSocket webSocket = context.AcceptWebSocketAsync().Result;
-                        webSocket.SendAsync(new ArraySegment<byte>(bytes, 0, bytes.Length), WebSocketMessageType.Text, true, CancellationToken.None).Wait();
-                        webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Goodbye", CancellationToken.None).Wait();
+                        WebSocket webSocket = await context.AcceptWebSocketAsync();
+                        await webSocket.SendAsync(new ArraySegment<byte>(bytes, 0, bytes.Length), WebSocketMessageType.Text, true, CancellationToken.None);
+                        await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Goodbye", CancellationToken.None);
                         webSocket.Dispose();
                     }
                     else
