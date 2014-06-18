@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.HttpFeature;
 using Microsoft.Net.Server;
+using Microsoft.Net.WebSockets;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
@@ -94,9 +95,12 @@ namespace Microsoft.AspNet.Server.WebListener
             _features.Add(typeof(IHttpSendFileFeature), this);
             _features.Add(typeof(IHttpRequestLifetimeFeature), this);
 
-            // TODO: If Win8+
-            _features.Add(typeof(IHttpOpaqueUpgradeFeature), this);
-            _features.Add(typeof(IHttpWebSocketFeature), this);
+            // Win8+
+            if (WebSocketHelpers.AreWebSocketsSupported)
+            {
+                _features.Add(typeof(IHttpOpaqueUpgradeFeature), this);
+                _features.Add(typeof(IHttpWebSocketFeature), this);
+            }
 
             // TODO: 
             // _environment.CallCancelled = _cts.Token;

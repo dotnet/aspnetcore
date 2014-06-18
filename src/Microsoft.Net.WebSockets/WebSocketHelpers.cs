@@ -61,6 +61,7 @@ namespace Microsoft.Net.WebSockets
 
         internal static readonly ArraySegment<byte> EmptyPayload = new ArraySegment<byte>(new byte[] { }, 0, 0);
         private static readonly Random KeyGenerator = new Random();
+        private static TimeSpan? _defaultKeepAliveInterval;
 
         public static bool AreWebSocketsSupported
         {
@@ -69,6 +70,26 @@ namespace Microsoft.Net.WebSockets
                 return UnsafeNativeMethods.WebSocketProtocolComponent.IsSupported;
             }
         }
+
+        public static TimeSpan DefaultKeepAliveInterval
+        {
+            get
+            {
+                if (!_defaultKeepAliveInterval.HasValue)
+                {
+                    if (AreWebSocketsSupported)
+                    {
+                        _defaultKeepAliveInterval = new TimeSpan?(UnsafeNativeMethods.WebSocketProtocolComponent.WebSocketGetDefaultKeepAliveInterval());
+                    }
+                    else
+                    {
+                        _defaultKeepAliveInterval = new TimeSpan?(Timeout.InfiniteTimeSpan);
+                    }
+                }
+                return _defaultKeepAliveInterval.Value;
+            }
+        }
+
 
         public static bool IsValidWebSocketKey(string key)
         {

@@ -18,7 +18,6 @@
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="build.cmd" />
     <Content Include="project.json" />
   </ItemGroup>
   <ItemGroup>
@@ -43,7 +42,6 @@
     <Compile Include="WebSocketError.cs" />
     <Compile Include="WebSocketException.cs" />
     <Compile Include="WebSocketHelpers.cs" />
-    <Compile Include="WebSocketMiddleware.cs" />
     <Compile Include="WebSocketReceiveResultExtensions.cs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />

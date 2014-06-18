@@ -255,14 +255,14 @@ namespace Microsoft.Net.Server
         {
             return AcceptWebSocketAsync(null,
                 WebSocketHelpers.DefaultReceiveBufferSize,
-                WebSocket.DefaultKeepAliveInterval);
+                WebSocketHelpers.DefaultKeepAliveInterval);
         }
 
         public Task<WebSocket> AcceptWebSocketAsync(string subProtocol)
         {
             return AcceptWebSocketAsync(subProtocol,
                 WebSocketHelpers.DefaultReceiveBufferSize,
-                WebSocket.DefaultKeepAliveInterval);
+                WebSocketHelpers.DefaultKeepAliveInterval);
         }
 
         public Task<WebSocket> AcceptWebSocketAsync(string subProtocol, TimeSpan keepAliveInterval)
