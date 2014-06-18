@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             mockIntBinder
                 .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
                 .Returns(
-                    delegate(ModelBindingContext context)
+                    delegate (ModelBindingContext context)
                     {
                         Assert.Same(bindingContext.ModelMetadata, context.ModelMetadata);
                         Assert.Equal("someName", context.ModelName);
@@ -48,8 +48,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                         bindingContext.ValidationNode.Validating += delegate { validationCalled = true; };
                         return Task.FromResult(true);
                     });
-
-            var shimBinder = new CompositeModelBinder(mockIntBinder.Object);
+            var shimBinder = CreateCompositeBinder(mockIntBinder.Object);
 
             // Act
             var isBound = await shimBinder.BindModelAsync(bindingContext);
@@ -59,7 +58,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Equal(42, bindingContext.Model);
 
             Assert.True(validationCalled);
-            Assert.Equal(true, bindingContext.ModelState.IsValid);
+            Assert.True(bindingContext.ModelState.IsValid);
         }
 
         [Fact]
@@ -102,7 +101,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                         return Task.FromResult(true);
                     });
 
-            IModelBinder shimBinder = new CompositeModelBinder(mockIntBinder.Object);
+            var shimBinder = CreateCompositeBinder(mockIntBinder.Object);
 
             // Act
             var isBound = await shimBinder.BindModelAsync(bindingContext);
@@ -146,7 +145,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             // Arrange
             var innerBinder = Mock.Of<IModelBinder>();
-            var shimBinder = new CompositeModelBinder(innerBinder);
+            var shimBinder = CreateCompositeBinder(innerBinder);
 
             var bindingContext = new ModelBindingContext
             {
@@ -300,8 +299,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 new TypeConverterModelBinder(),
                 new MutableObjectModelBinder()
             };
-            var binder = new CompositeModelBinder(binders);
+            var binderProviders = new Mock<IModelBindersProvider>();
+            binderProviders.SetupGet(p => p.ModelBinders)
+                           .Returns(binders);
+            var binder = new CompositeModelBinder(binderProviders.Object);
             return binder;
+        }
+
+        private static CompositeModelBinder CreateCompositeBinder(IModelBinder mockIntBinder)
+        {
+            var binderProvider = new Mock<IModelBindersProvider>();
+            binderProvider.SetupGet(p => p.ModelBinders)
+                          .Returns(new[] { mockIntBinder });
+
+            var shimBinder = new CompositeModelBinder(binderProvider.Object);
+            return shimBinder;
         }
 
         private class SimplePropertiesModel

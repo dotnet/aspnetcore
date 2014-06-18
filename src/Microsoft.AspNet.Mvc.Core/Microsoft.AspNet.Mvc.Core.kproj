@@ -147,6 +147,7 @@
     <Compile Include="ParameterBindingInfo.cs" />
     <Compile Include="ParameterBinding\ActionBindingContext.cs" />
     <Compile Include="ParameterBinding\DefaultActionBindingContextProvider.cs" />
+    <Compile Include="ParameterBinding\DefaultModelBindersProvider.cs" />
     <Compile Include="ParameterBinding\FromBodyAttribute.cs" />
     <Compile Include="ParameterBinding\IActionBindingContextProvider.cs" />
     <Compile Include="ParameterDescriptor.cs" />

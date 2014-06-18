@@ -2,32 +2,44 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     /// <summary>
-    /// This class is an <see cref="IModelBinder"/> that delegates to one of a collection of
-    /// <see cref="IModelBinder"/> instances.
+    /// Represents an <see cref="IModelBinder"/> that delegates to one of a collection of <see cref="IModelBinder"/> 
+    /// instances.
     /// </summary>
     /// <remarks>
     /// If no binder is available and the <see cref="ModelBindingContext"/> allows it,
     /// this class tries to find a binder using an empty prefix.
     /// </remarks>
-    public class CompositeModelBinder : IModelBinder
+    public class CompositeModelBinder : ICompositeModelBinder
     {
-        public CompositeModelBinder([NotNull] IEnumerable<IModelBinder> binders)
-            : this(binders.ToArray())
+        private readonly IModelBindersProvider _modelBindersProvider;
+        private IReadOnlyList<IModelBinder> _binders;
+
+        /// <summary>
+        /// Initializes a new instance of the CompositeModelBinder class.
+        /// </summary>
+        /// <param name="modelBindersProvider">Provides a collection of <see cref="IModelBinder"/> instances.</param>
+        public CompositeModelBinder(IModelBindersProvider modelBindersProvider)
         {
+            _modelBindersProvider = modelBindersProvider;
         }
 
-        public CompositeModelBinder(params IModelBinder[] binders)
+        /// <inheritdoc />
+        public IReadOnlyList<IModelBinder> ModelBinders
         {
-            Binders = binders;
+            get
+            {
+                if (_binders == null)
+                {
+                    _binders = _modelBindersProvider.ModelBinders;
+                }
+                return _binders;
+            }
         }
-
-        private IModelBinder[] Binders { get; set; }
 
         public virtual async Task<bool> BindModelAsync([NotNull] ModelBindingContext bindingContext)
         {
@@ -86,7 +98,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Protects against stack overflow for deeply nested model binding
             // RuntimeHelpers.EnsureSufficientExecutionStack();
 
-            foreach (var binder in Binders)
+            foreach (var binder in ModelBinders)
             {
                 if (await binder.BindModelAsync(bindingContext))
                 {

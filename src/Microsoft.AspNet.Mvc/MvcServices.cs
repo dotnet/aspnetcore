@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc
                                             ReflectedActionDescriptorProvider>();
             yield return describe.Transient<INestedProvider<ActionInvokerProviderContext>,
                                             ReflectedActionInvokerProvider>();
-            yield return describe.Singleton<IActionDescriptorsCollectionProvider, 
+            yield return describe.Singleton<IActionDescriptorsCollectionProvider,
                 DefaultActionDescriptorsCollectionProvider>();
 
             yield return describe.Transient<IModelMetadataProvider, DataAnnotationsModelMetadataProvider>();
@@ -54,14 +54,11 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Transient<IValueProviderFactory, QueryStringValueProviderFactory>();
             yield return describe.Transient<IValueProviderFactory, FormValueProviderFactory>();
 
-            yield return describe.Transient<IModelBinder, TypeConverterModelBinder>();
-            yield return describe.Transient<IModelBinder, TypeMatchModelBinder>();
-            yield return describe.Transient<IModelBinder, GenericModelBinder>();
-            yield return describe.Transient<IModelBinder, MutableObjectModelBinder>();
-            yield return describe.Transient<IModelBinder, ComplexModelDtoModelBinder>();
-
             yield return describe.Transient<IInputFormatter, JsonInputFormatter>();
             yield return describe.Transient<IInputFormatterProvider, TempInputFormatterProvider>();
+
+            yield return describe.Transient<IModelBindersProvider, DefaultModelBindersProvider>();
+            yield return describe.Transient<ICompositeModelBinder, CompositeModelBinder>();
 
             yield return describe.Transient<INestedProvider<FilterProviderContext>, DefaultFilterProvider>();
 
@@ -72,15 +69,15 @@ namespace Microsoft.AspNet.Mvc
 
             yield return describe.Transient<IViewComponentSelector, DefaultViewComponentSelector>();
             yield return describe.Transient<IViewComponentInvokerFactory, DefaultViewComponentInvokerFactory>();
-            yield return describe.Transient<INestedProvider<ViewComponentInvokerProviderContext>, 
+            yield return describe.Transient<INestedProvider<ViewComponentInvokerProviderContext>,
                 DefaultViewComponentInvokerProvider>();
             yield return describe.Transient<IViewComponentHelper, DefaultViewComponentHelper>();
 
             yield return describe.Transient<IAuthorizationService, DefaultAuthorizationService>();
             yield return describe.Singleton<IClaimUidExtractor, DefaultClaimUidExtractor>();
             yield return describe.Singleton<AntiForgery, AntiForgery>();
-            yield return describe.Singleton<IAntiForgeryAdditionalDataProvider, 
-                DefaultAntiForgeryAdditionalDataProvider>(); 
+            yield return describe.Singleton<IAntiForgeryAdditionalDataProvider,
+                DefaultAntiForgeryAdditionalDataProvider>();
 
             yield return
                describe.Describe(

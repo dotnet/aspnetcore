@@ -55,6 +55,7 @@
     <Compile Include="DefaultControllerFactoryTest.cs" />
     <Compile Include="Filters\ResultFilterAttributeTest.cs" />
     <Compile Include="JsonResultTest.cs" />
+    <Compile Include="ParameterBinding\DefaultModelBindersProviderTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PropertyHelperTest.cs" />
     <Compile Include="ReflectedActionDescriptorProviderTests.cs" />

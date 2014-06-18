@@ -6,29 +6,26 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Routing;
 
 namespace Microsoft.AspNet.Mvc
 {
     public class DefaultActionBindingContextProvider : IActionBindingContextProvider
     {
         private readonly IModelMetadataProvider _modelMetadataProvider;
-        private readonly IEnumerable<IModelBinder> _modelBinders;
+        private readonly ICompositeModelBinder _compositeModelBinder;
         private readonly IEnumerable<IValueProviderFactory> _valueProviderFactories;
         private readonly IInputFormatterProvider _inputFormatterProvider;
         private readonly IEnumerable<IModelValidatorProvider> _validatorProviders;
-
         private Tuple<ActionContext, ActionBindingContext> _bindingContext;
 
         public DefaultActionBindingContextProvider(IModelMetadataProvider modelMetadataProvider,
-                                                   IEnumerable<IModelBinder> modelBinders,
+                                                   ICompositeModelBinder compositeModelBinder,
                                                    IEnumerable<IValueProviderFactory> valueProviderFactories,
                                                    IInputFormatterProvider inputFormatterProvider,
                                                    IEnumerable<IModelValidatorProvider> validatorProviders)
         {
             _modelMetadataProvider = modelMetadataProvider;
-            _modelBinders = modelBinders.OrderBy(
-                binder => binder.GetType() == typeof(ComplexModelDtoModelBinder) ? 1 : 0).ToArray();
+            _compositeModelBinder = compositeModelBinder;
             _valueProviderFactories = valueProviderFactories;
             _inputFormatterProvider = inputFormatterProvider;
             _validatorProviders = validatorProviders;
@@ -54,7 +51,7 @@ namespace Microsoft.AspNet.Mvc
             var context = new ActionBindingContext(
                 actionContext,
                 _modelMetadataProvider,
-                new CompositeModelBinder(_modelBinders),
+                _compositeModelBinder,
                 new CompositeValueProvider(valueProviders),
                 _inputFormatterProvider,
                 _validatorProviders);
