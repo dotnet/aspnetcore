@@ -149,18 +149,5 @@ namespace Microsoft.AspNet.PipelineCore
         {
             get { return RequestCookiesFeature.Cookies; }
         }
-
-        public override System.Threading.CancellationToken CallCanceled
-        {
-            get
-            {
-                // TODO: Which feature exposes this?
-                return CancellationToken.None;
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
     }
 }

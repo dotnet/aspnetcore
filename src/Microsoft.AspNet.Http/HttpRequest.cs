@@ -120,12 +120,5 @@ namespace Microsoft.AspNet.Http
         /// </summary>
         /// <returns>The owin.RequestBody Stream.</returns>
         public abstract Stream Body { get; set; }
-
-        /// <summary>
-        /// Gets or sets the cancellation token for the request.
-        /// </summary>
-        /// <returns>The cancellation token for the request.</returns>
-        public abstract CancellationToken CallCanceled { get; set; }
-
     }
 }

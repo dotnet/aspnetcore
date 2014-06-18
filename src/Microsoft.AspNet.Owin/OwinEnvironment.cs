@@ -8,11 +8,14 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
+using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.HttpFeature;
+using Microsoft.AspNet.HttpFeature.Security;
 
 namespace Microsoft.AspNet.Owin
 {
@@ -28,12 +31,14 @@ namespace Microsoft.AspNet.Owin
             _context = context;
             _entries = new Dictionary<string, FeatureMap>()
             {
+                { OwinConstants.CallCancelled, new FeatureMap<IHttpRequestLifetimeFeature>(feature => feature.OnRequestAborted) },
                 { OwinConstants.RequestProtocol, new FeatureMap<IHttpRequestFeature>(feature => feature.Protocol, (feature, value) => feature.Protocol = Convert.ToString(value)) },
                 { OwinConstants.RequestScheme, new FeatureMap<IHttpRequestFeature>(feature => feature.Scheme, (feature, value) => feature.Scheme = Convert.ToString(value)) },
                 { OwinConstants.RequestMethod, new FeatureMap<IHttpRequestFeature>(feature => feature.Method, (feature, value) => feature.Method = Convert.ToString(value)) },
                 { OwinConstants.RequestPathBase, new FeatureMap<IHttpRequestFeature>(feature => feature.PathBase, (feature, value) => feature.PathBase = Convert.ToString(value)) },
                 { OwinConstants.RequestPath, new FeatureMap<IHttpRequestFeature>(feature => feature.Path, (feature, value) => feature.Path = Convert.ToString(value)) },
-                { OwinConstants.RequestQueryString, new FeatureMap<IHttpRequestFeature>(feature => feature.QueryString, (feature, value) => feature.QueryString = Convert.ToString(value)) },
+                { OwinConstants.RequestQueryString, new FeatureMap<IHttpRequestFeature>(feature => RemoveQuestionMark(feature.QueryString),
+                    (feature, value) => feature.QueryString = AddQuestionMark(Convert.ToString(value))) },
                 { OwinConstants.RequestHeaders, new FeatureMap<IHttpRequestFeature>(feature => feature.Headers, (feature, value) => feature.Headers = (IDictionary<string, string[]>)value) },
                 { OwinConstants.RequestBody, new FeatureMap<IHttpRequestFeature>(feature => feature.Body, (feature, value) => feature.Body = (Stream)value) },
 
@@ -56,6 +61,8 @@ namespace Microsoft.AspNet.Owin
                 { OwinConstants.CommonKeys.IsLocal, new FeatureMap<IHttpConnectionFeature>(feature => feature.IsLocal, (feature, value) => feature.IsLocal = Convert.ToBoolean(value)) },
 
                 { OwinConstants.SendFiles.SendAsync, new FeatureMap<IHttpSendFileFeature>(feature => new SendFileFunc(feature.SendFileAsync)) },
+
+                { OwinConstants.Security.User, new FeatureMap<IHttpAuthenticationFeature>(feature => feature.User, (feature, value) => feature.User = MakeClaimsPrincipal((IPrincipal)value)) },
             };
 
             if (context.Request.IsSecure)
@@ -220,6 +227,36 @@ namespace Microsoft.AspNet.Owin
         IEnumerator IEnumerable.GetEnumerator()
         {
             throw new NotImplementedException();
+        }
+
+        private string RemoveQuestionMark(string queryString)
+        {
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                if (queryString[0] == '?')
+                {
+                    return queryString.Substring(1);
+                }
+            }
+            return queryString;
+        }
+
+        private string AddQuestionMark(string queryString)
+        {
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                return '?' + queryString;
+            }
+            return queryString;
+        }
+
+        private ClaimsPrincipal MakeClaimsPrincipal(IPrincipal principal)
+        {
+            if (principal is ClaimsPrincipal)
+            {
+                return principal as ClaimsPrincipal;
+            }
+            return new ClaimsPrincipal(principal);
         }
 
         public class FeatureMap
