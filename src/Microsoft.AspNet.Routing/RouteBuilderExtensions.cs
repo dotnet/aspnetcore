@@ -23,31 +23,7 @@ namespace Microsoft.AspNet.Routing
                                              string template,
                                              object defaults)
         {
-            MapRoute(routeCollectionBuilder, name, template, new RouteValueDictionary(defaults));
-            return routeCollectionBuilder;
-        }
-
-        public static IRouteBuilder MapRoute(this IRouteBuilder routeCollectionBuilder,
-                                             string name,
-                                             string template,
-                                             IDictionary<string, object> defaults)
-        {
-            if (routeCollectionBuilder.DefaultHandler == null)
-            {
-                throw new InvalidOperationException(Resources.DefaultHandler_MustBeSet);
-            }
-
-            var inlineConstraintResolver = routeCollectionBuilder
-                                                    .ServiceProvider
-                                                    .GetService<IInlineConstraintResolver>();
-
-            routeCollectionBuilder.Routes.Add(new TemplateRoute(routeCollectionBuilder.DefaultHandler,
-                                              name,
-                                              template,
-                                              defaults,
-                                              constraints: null,
-                                              inlineConstraintResolver: inlineConstraintResolver));
-            return routeCollectionBuilder;
+            return MapRoute(routeCollectionBuilder, name, template, defaults, constraints: null);
         }
 
         public static IRouteBuilder MapRoute(this IRouteBuilder routeCollectionBuilder,
@@ -55,39 +31,6 @@ namespace Microsoft.AspNet.Routing
                                              string template,
                                              object defaults,
                                              object constraints)
-        {
-            MapRoute(routeCollectionBuilder,
-                     name,
-                     template,
-                     new RouteValueDictionary(defaults),
-                     new RouteValueDictionary(constraints));
-            return routeCollectionBuilder;
-        }
-
-        public static IRouteBuilder MapRoute(this IRouteBuilder routeCollectionBuilder,
-                                             string name,
-                                             string template,
-                                             object defaults,
-                                             IDictionary<string, object> constraints)
-        {
-            MapRoute(routeCollectionBuilder, name, template, new RouteValueDictionary(defaults), constraints);
-            return routeCollectionBuilder;
-        }
-
-        public static IRouteBuilder MapRoute(this IRouteBuilder routeCollectionBuilder,
-                                             string name,
-                                             string template,
-                                             IDictionary<string, object> defaults, object constraints)
-        {
-            MapRoute(routeCollectionBuilder, name, template, defaults, new RouteValueDictionary(constraints));
-            return routeCollectionBuilder;
-        }
-
-        public static IRouteBuilder MapRoute(this IRouteBuilder routeCollectionBuilder,
-                                             string name,
-                                             string template,
-                                             IDictionary<string, object> defaults,
-                                             IDictionary<string, object> constraints)
         {
             if (routeCollectionBuilder.DefaultHandler == null)
             {
@@ -100,10 +43,21 @@ namespace Microsoft.AspNet.Routing
             routeCollectionBuilder.Routes.Add(new TemplateRoute(routeCollectionBuilder.DefaultHandler,
                                                                 name,
                                                                 template,
-                                                                defaults,
-                                                                constraints,
+                                                                ObjectToDictionary(defaults),
+                                                                ObjectToDictionary(constraints),
                                                                 inlineConstraintResolver));
             return routeCollectionBuilder;
+        }
+
+        private static IDictionary<string, object> ObjectToDictionary(object value)
+        {
+            var dictionary = value as IDictionary<string, object>;
+            if (dictionary != null)
+            {
+                return dictionary;
+            }
+          
+            return new RouteValueDictionary(value);
         }
     }
 }
