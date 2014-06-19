@@ -4,19 +4,19 @@
         "Microsoft"
     ],
     "description": "Music store application on K",
-    "version": "0.1-alpha-*",
+    "version": "1.0.0-*",
     "dependencies": {
-        "Helios": "0.1-alpha-*",
-        "Microsoft.AspNet.Mvc": "0.1-alpha-*",
-        "Microsoft.AspNet.Server.WebListener": "0.1-alpha-*",
-        "Microsoft.AspNet.Diagnostics": "0.1-alpha-*",
-        "Microsoft.AspNet.Identity.Entity": "0.1-alpha-*",
-        "Microsoft.AspNet.Identity.Security": "0.1-alpha-*",
-        "Microsoft.AspNet.Security.Cookies": "0.1-alpha-*",
-        "Microsoft.AspNet.StaticFiles": "0.1-alpha-*",
-        "Microsoft.Data.Entity.SqlServer": "0.1-alpha-*",
-        "Microsoft.Framework.ConfigurationModel.Json": "0.1-alpha-*",
-        "Microsoft.Framework.OptionsModel": "0.1-alpha-*"
+        "Helios": "1.0.0-*",
+        "Microsoft.AspNet.Mvc": "6.0.0-*",
+        "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
+        "Microsoft.AspNet.Diagnostics": "1.0.0-*",
+        "Microsoft.Framework.Identity.EntityFramework": "3.0.0-*",
+        "Microsoft.Framework.Identity.AspNet": "3.0.0-*",
+        "Microsoft.AspNet.Security.Cookies": "1.0.0-*",
+        "Microsoft.AspNet.StaticFiles": "1.0.0-*",
+        "EntityFramework.SqlServer": "7.0.0-*",
+        "Microsoft.Framework.ConfigurationModel.Json": "1.0.0-*",
+        "Microsoft.Framework.OptionsModel": "1.0.0-*"
     },
     "commands": {
         "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5002",
