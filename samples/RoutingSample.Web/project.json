@@ -1,10 +1,9 @@
 {
-  "version": "0.1-alpha-*",
   "dependencies": {
-    "Helios": "0.1-alpha-*",
+    "Helios": "1.0.0-*",
     "Microsoft.AspNet.Routing" : "",
-    "Microsoft.AspNet.RequestContainer": "0.1-alpha-*",
-    "Microsoft.Framework.OptionsModel": "0.1-alpha-*"
+    "Microsoft.AspNet.RequestContainer": "1.0.0-*",
+    "Microsoft.Framework.OptionsModel": "1.0.0-*"
   },
   "configurations": {
     "net45": { },
