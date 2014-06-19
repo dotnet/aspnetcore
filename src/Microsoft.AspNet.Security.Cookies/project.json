@@ -1,15 +1,15 @@
 {
-  "version": "0.1-alpha-*",
+  "version": "1.0.0-*",
   "dependencies": {
-    "Microsoft.AspNet.FeatureModel": "0.1-alpha-*",
-    "Microsoft.AspNet.Http": "0.1-alpha-*",
-    "Microsoft.AspNet.HttpFeature": "0.1-alpha-*",
-    "Microsoft.AspNet.PipelineCore": "0.1-alpha-*",
-    "Microsoft.AspNet.RequestContainer": "0.1-alpha-*",
+    "Microsoft.AspNet.FeatureModel": "1.0.0-*",
+    "Microsoft.AspNet.Http": "1.0.0-*",
+    "Microsoft.AspNet.HttpFeature": "1.0.0-*",
+    "Microsoft.AspNet.PipelineCore": "1.0.0-*",
+    "Microsoft.AspNet.RequestContainer": "1.0.0-*",
     "Microsoft.AspNet.Security": "",
-    "Microsoft.AspNet.Security.DataProtection": "0.1-alpha-*",
-    "Microsoft.Framework.DependencyInjection": "0.1-alpha-*",
-    "Microsoft.Framework.Logging": "0.1-alpha-*",
+    "Microsoft.AspNet.Security.DataProtection": "1.0.0-*",
+    "Microsoft.Framework.DependencyInjection": "1.0.0-*",
+    "Microsoft.Framework.Logging": "1.0.0-*",
     "Newtonsoft.Json": "5.0.8"
   },
   "configurations": {
@@ -30,7 +30,7 @@
         "System.Runtime": "4.0.20.0",
         "System.Runtime.Extensions": "4.0.10.0",
         "System.Runtime.InteropServices": "4.0.20.0",
-        "System.Security.Claims": "0.1-alpha-*",
+        "System.Security.Claims": "1.0.0-*",
         "System.Security.Principal" : "4.0.0.0",
         "System.Threading": "4.0.0.0",
         "System.Threading.Tasks": "4.0.10.0"
