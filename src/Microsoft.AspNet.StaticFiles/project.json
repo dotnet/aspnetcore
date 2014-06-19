@@ -1,9 +1,9 @@
 {
-  "version": "0.1-alpha-*",
+  "version": "1.0.0-*",
   "dependencies": {
-    "Microsoft.AspNet.FileSystems": "0.1-alpha-*",
-    "Microsoft.AspNet.Http": "0.1-alpha-*",
-    "Microsoft.AspNet.HttpFeature": "0.1-alpha-*"
+    "Microsoft.AspNet.FileSystems": "1.0.0-*",
+    "Microsoft.AspNet.Http": "1.0.0-*",
+    "Microsoft.AspNet.HttpFeature": "1.0.0-*"
   },
   "configurations": {
     "net45": {},
