@@ -13,7 +13,7 @@ functions
                 return "t" + DateTime.UtcNow.ToString("yyMMddHHmmss");
             }
 
-            buildNumber = "build-" + buildNumber.PadLeft(4, (char)'0');
+            buildNumber = "alpha2-" + buildNumber.PadLeft(4, (char)'0');
 
             return buildNumber;
                    
