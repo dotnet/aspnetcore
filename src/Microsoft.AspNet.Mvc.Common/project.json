@@ -1,4 +1,5 @@
 {
+  "version": "6.0.0-*",
   "shared": "*.cs",
   "dependencies": {
     "System.Linq": "4.0.0.0",

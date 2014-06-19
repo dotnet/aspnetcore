@@ -1,23 +1,18 @@
 {
-  "version" : "0.1-alpha-*",
   "compilationOptions": {
     "warningsAsErrors": true
   },
   "dependencies": {
-    "Microsoft.AspNet.Http": "0.1-alpha-*",
+    "Microsoft.AspNet.Http": "1.0.0-*",
     "Microsoft.AspNet.Mvc" : "",
     "Microsoft.AspNet.Mvc.Core" : "",
     "Microsoft.AspNet.Mvc.ModelBinding": "",
-    "Microsoft.AspNet.PipelineCore": "0.1-alpha-*",
-    "Microsoft.AspNet.Routing": "0.1-alpha-*",
-    "Microsoft.AspNet.Testing": "0.1-alpha-*",
-    "Microsoft.Framework.DependencyInjection": "0.1-alpha-*",
+    "Microsoft.AspNet.PipelineCore": "1.0.0-*",
+    "Microsoft.AspNet.Routing": "1.0.0-*",
+    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Microsoft.Framework.DependencyInjection": "1.0.0-*",
     "Moq": "4.2.1312.1622",
-    "xunit.abstractions": "2.0.0-aspnet-*",
-    "xunit.assert": "2.0.0-aspnet-*",
-    "xunit.core": "2.0.0-aspnet-*",
-    "xunit.execution": "2.0.0-aspnet-*",
-    "Xunit.KRunner": "0.1-alpha-*"
+    "Xunit.KRunner": "1.0.0-*"
   },
   "commands": {
     "test": "Xunit.KRunner"

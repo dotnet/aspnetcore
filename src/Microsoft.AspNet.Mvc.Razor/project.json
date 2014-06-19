@@ -1,19 +1,19 @@
 {
-  "version": "0.1-alpha-*",
+  "version": "6.0.0-*",
   "compilationOptions": {
     "warningsAsErrors": false
   },
   "dependencies": {
-    "K.Roslyn" : "0.1-alpha-*",
-    "Microsoft.AspNet.FileSystems": "0.1-alpha-*",
-    "Microsoft.AspNet.Http": "0.1-alpha-*",
+    "K.Roslyn" : "1.0.0-*",
+    "Microsoft.AspNet.FileSystems": "1.0.0-*",
+    "Microsoft.AspNet.Http": "1.0.0-*",
     "Microsoft.AspNet.Mvc.Common" : "",
     "Microsoft.AspNet.Mvc.Core" : "",
     "Microsoft.AspNet.Mvc.ModelBinding" : "",
     "Microsoft.AspNet.Mvc.Razor.Host" : "",
-    "Microsoft.AspNet.Razor": "0.1-alpha-*",
-    "Microsoft.Framework.DependencyInjection": "0.1-alpha-*",
-    "Microsoft.Framework.Runtime.Interfaces":  "0.1-alpha-*"
+    "Microsoft.AspNet.Razor": "4.0.0-*",
+    "Microsoft.Framework.DependencyInjection": "1.0.0-*",
+    "Microsoft.Framework.Runtime.Interfaces":  "1.0.0-*"
   },
   "configurations": {
     "net45": {

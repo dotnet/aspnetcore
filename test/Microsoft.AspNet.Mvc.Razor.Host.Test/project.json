@@ -1,13 +1,11 @@
 {
-  "version" : "0.1-alpha-*",
   "compilationOptions": {
     "warningsAsErrors": false
   },
   "resources": "TestFiles\\**",
   "dependencies": {
     "Microsoft.AspNet.Mvc.Razor.Host" : "",
-    "xunit.assert": "2.0.0-aspnet-*",
-    "Xunit.KRunner": "0.1-alpha-*"
+    "Xunit.KRunner": "1.0.0-*"
   },
   "commands": {
     "test": "Xunit.KRunner"

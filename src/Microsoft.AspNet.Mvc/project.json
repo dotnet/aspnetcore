@@ -1,21 +1,21 @@
 {
-  "version": "0.1-alpha-*",
+  "version": "6.0.0-*",
   "compilationOptions": {
     "warningsAsErrors": true
   },
   "dependencies": {
-    "Microsoft.AspNet.FileSystems" : "0.1-alpha-*",
-    "Microsoft.AspNet.Http" : "0.1-alpha-*",
+    "Microsoft.AspNet.FileSystems" : "1.0.0-*",
+    "Microsoft.AspNet.Http" : "1.0.0-*",
     "Microsoft.AspNet.Mvc.Common": "",
     "Microsoft.AspNet.Mvc.Core": "",
     "Microsoft.AspNet.Mvc.ModelBinding": "",
     "Microsoft.AspNet.Mvc.Razor": "",
     "Microsoft.AspNet.Mvc.Razor.Host": "",
-    "Microsoft.AspNet.Razor" : "0.1-alpha-*",
-    "Microsoft.AspNet.RequestContainer": "0.1-alpha-*",
-    "Microsoft.AspNet.Routing" : "0.1-alpha-*",
-    "Microsoft.Framework.ConfigurationModel" : "0.1-alpha-*",
-    "Microsoft.Framework.DependencyInjection" : "0.1-alpha-*"
+    "Microsoft.AspNet.Razor" : "4.0.0-*",
+    "Microsoft.AspNet.RequestContainer": "1.0.0-*",
+    "Microsoft.AspNet.Routing" : "1.0.0-*",
+    "Microsoft.Framework.ConfigurationModel" : "1.0.0-*",
+    "Microsoft.Framework.DependencyInjection" : "1.0.0-*"
   },
   "configurations": {
     "net45": {},

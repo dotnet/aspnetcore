@@ -1,29 +1,28 @@
 {
-  "version": "0.1-alpha-*",
   "compilationOptions": {
     "warningsAsErrors": true
   },
   "dependencies": {
-    "Helios": "0.1-alpha-*",
-    "Microsoft.AspNet.Http": "0.1-alpha-*",
+    "Helios": "1.0.0-*",
+    "Microsoft.AspNet.Http": "1.0.0-*",
     "Microsoft.AspNet.Mvc": "",
     "Microsoft.AspNet.Mvc.Core": "",
     "Microsoft.AspNet.Mvc.ModelBinding": "",
     "Microsoft.AspNet.Mvc.Razor": "",
-    "Microsoft.AspNet.Routing": "0.1-alpha-*",
-    "Microsoft.AspNet.Server.WebListener": "0.1-alpha-*",
-    "Microsoft.DataAnnotations": "0.1-alpha-*",
-    "Microsoft.Framework.ConfigurationModel": "0.1-alpha-*",
-    "Microsoft.Framework.DependencyInjection": "0.1-alpha-*",
-    "Microsoft.Framework.OptionsModel": "0.1-alpha-*"
+    "Microsoft.AspNet.Routing": "1.0.0-*",
+    "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
+    "Microsoft.DataAnnotations": "1.0.0-*",
+    "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
+    "Microsoft.Framework.DependencyInjection": "1.0.0-*",
+    "Microsoft.Framework.OptionsModel": "1.0.0-*"
   },
   "commands": { "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001" },
   "configurations": {
     "net45": {
       "dependencies": {
         "System.ComponentModel.DataAnnotations": "",
-        "Microsoft.Framework.DependencyInjection.Autofac": "0.1-alpha-*",
-        "Microsoft.Framework.ConfigurationModel.Json": "0.1-alpha-*",
+        "Microsoft.Framework.DependencyInjection.Autofac": "1.0.0-*",
+        "Microsoft.Framework.ConfigurationModel.Json": "1.0.0-*",
         "Autofac": "3.3.0"
       }
     },

@@ -1,6 +1,6 @@
 ﻿{
     "dependencies": {
-        "Helios": "0.1-alpha-*",
+        "Helios": "1.0.0-*",
         "Microsoft.AspNet.Mvc": ""
     },
     "configurations": {
