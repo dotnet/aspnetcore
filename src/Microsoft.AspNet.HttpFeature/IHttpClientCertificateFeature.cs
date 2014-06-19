@@ -8,9 +8,17 @@ using Microsoft.Framework.Runtime;
 namespace Microsoft.AspNet.HttpFeature
 {
     [AssemblyNeutral]
-    public interface IHttpTransportLayerSecurityFeature
+    public interface IHttpClientCertificateFeature
     {
+        /// <summary>
+        /// Synchronously retrieves the client certificate, if any.
+        /// </summary>
         X509Certificate ClientCertificate { get; set; }
-        Task LoadAsync();
+
+        /// <summary>
+        /// Asynchronously retrieves the client certificate, if any.
+        /// </summary>
+        /// <returns></returns>
+        Task<X509Certificate> GetClientCertificateAsync();
     }
 }

@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.PipelineCore
 
         private FeatureReference<IHttpRequestFeature> _request = FeatureReference<IHttpRequestFeature>.Default;
         private FeatureReference<IHttpConnectionFeature> _connection = FeatureReference<IHttpConnectionFeature>.Default;
-        private FeatureReference<IHttpTransportLayerSecurityFeature> _transportLayerSecurity = FeatureReference<IHttpTransportLayerSecurityFeature>.Default;
+        private FeatureReference<IHttpClientCertificateFeature> _clientCertificate = FeatureReference<IHttpClientCertificateFeature>.Default;
         private FeatureReference<IQueryFeature> _query = FeatureReference<IQueryFeature>.Default;
         private FeatureReference<IFormFeature> _form = FeatureReference<IFormFeature>.Default;
         private FeatureReference<IRequestCookiesFeature> _cookies = FeatureReference<IRequestCookiesFeature>.Default;
@@ -43,9 +43,9 @@ namespace Microsoft.AspNet.PipelineCore
             get { return _connection.Fetch(_features); }
         }
 
-        private IHttpTransportLayerSecurityFeature HttpTransportLayerSecurityFeature
+        private IHttpClientCertificateFeature HttpClientCertificateFeature
         {
-            get { return _transportLayerSecurity.Fetch(_features); }
+            get { return _clientCertificate.Fetch(_features); }
         }
 
         private IQueryFeature QueryFeature

@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Owin
         IHttpResponseFeature,
         IHttpConnectionFeature,
         IHttpSendFileFeature,
-        IHttpTransportLayerSecurityFeature,
+        IHttpClientCertificateFeature,
         IOwinEnvironmentFeature
     {
         public IDictionary<string, object> Environment { get; set; }
@@ -197,13 +197,13 @@ namespace Microsoft.AspNet.Owin
             }
         }
 
-        X509Certificate IHttpTransportLayerSecurityFeature.ClientCertificate
+        X509Certificate IHttpClientCertificateFeature.ClientCertificate
         {
             get { return Prop<X509Certificate>(OwinConstants.CommonKeys.ClientCertificate); }
             set { Prop(OwinConstants.CommonKeys.ClientCertificate, value); }
         }
 
-        Task IHttpTransportLayerSecurityFeature.LoadAsync()
+        Task<X509Certificate> IHttpClientCertificateFeature.GetClientCertificateAsync()
         {
             throw new NotImplementedException();
         }
@@ -228,7 +228,7 @@ namespace Microsoft.AspNet.Owin
                 {
                     return SupportsSendFile;
                 }
-                else if (key == typeof(IHttpTransportLayerSecurityFeature))
+                else if (key == typeof(IHttpClientCertificateFeature))
                 {
                     return SupportsClientCerts;
                 }
@@ -256,7 +256,7 @@ namespace Microsoft.AspNet.Owin
                 }
                 if (SupportsClientCerts)
                 {
-                    keys.Add(typeof(IHttpTransportLayerSecurityFeature));
+                    keys.Add(typeof(IHttpClientCertificateFeature));
                 }
                 return keys;
             }

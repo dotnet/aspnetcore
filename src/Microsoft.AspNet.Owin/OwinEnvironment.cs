@@ -67,9 +67,9 @@ namespace Microsoft.AspNet.Owin
 
             if (context.Request.IsSecure)
             {
-                _entries.Add(OwinConstants.CommonKeys.ClientCertificate, new FeatureMap<IHttpTransportLayerSecurityFeature>(feature => feature.ClientCertificate,
+                _entries.Add(OwinConstants.CommonKeys.ClientCertificate, new FeatureMap<IHttpClientCertificateFeature>(feature => feature.ClientCertificate,
                     (feature, value) => feature.ClientCertificate = (X509Certificate)value));
-                _entries.Add(OwinConstants.CommonKeys.LoadClientCertAsync, new FeatureMap<IHttpTransportLayerSecurityFeature>(feature => new Func<Task>(feature.LoadAsync)));
+                _entries.Add(OwinConstants.CommonKeys.LoadClientCertAsync, new FeatureMap<IHttpClientCertificateFeature>(feature => new Func<Task>(feature.GetClientCertificateAsync)));
             }
 
             _context.Items[typeof(HttpContext).FullName] = _context; // Store for lookup when we transition back out of OWIN
