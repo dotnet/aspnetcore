@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Server.WebListener
         IHttpConnectionFeature,
         IHttpResponseFeature,
         IHttpSendFileFeature,
-        IHttpTransportLayerSecurityFeature,
+        IHttpClientCertificateFeature,
         IHttpRequestLifetimeFeature,
         IHttpWebSocketFeature,
         IHttpOpaqueUpgradeFeature
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Server.WebListener
             if (Request.IsSecureConnection)
             {
                 // TODO: Should this feature be conditional? Should we add this for HTTP requests?
-                _features.Add(typeof(IHttpTransportLayerSecurityFeature), this);
+                _features.Add(typeof(IHttpClientCertificateFeature), this);
             }
             _features.Add(typeof(IHttpResponseFeature), this);
             _features.Add(typeof(IHttpSendFileFeature), this);
@@ -295,7 +295,7 @@ namespace Microsoft.AspNet.Server.WebListener
             set { _remotePort = value; }
         }
 
-        X509Certificate IHttpTransportLayerSecurityFeature.ClientCertificate
+        X509Certificate IHttpClientCertificateFeature.ClientCertificate
         {
             get
             {
@@ -308,12 +308,13 @@ namespace Microsoft.AspNet.Server.WebListener
             set { _clientCert = value; }
         }
 
-        async Task IHttpTransportLayerSecurityFeature.LoadAsync()
+        async Task<X509Certificate> IHttpClientCertificateFeature.GetClientCertificateAsync()
         {
             if (_clientCert == null)
             {
                 _clientCert = await Request.GetClientCertificateAsync();
             }
+            return _clientCert;
         }
 
         Stream IHttpResponseFeature.Body
