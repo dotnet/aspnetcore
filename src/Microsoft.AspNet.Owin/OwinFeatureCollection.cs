@@ -8,10 +8,13 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
+using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.HttpFeature;
+using Microsoft.AspNet.HttpFeature.Security;
 using Microsoft.AspNet.FeatureModel;
 
 namespace Microsoft.AspNet.Owin
@@ -25,6 +28,8 @@ namespace Microsoft.AspNet.Owin
         IHttpConnectionFeature,
         IHttpSendFileFeature,
         IHttpClientCertificateFeature,
+        IHttpRequestLifetimeFeature,
+        IHttpAuthenticationFeature,
         IOwinEnvironmentFeature
     {
         public IDictionary<string, object> Environment { get; set; }
@@ -81,8 +86,8 @@ namespace Microsoft.AspNet.Owin
 
         string IHttpRequestFeature.QueryString
         {
-            get { return Prop<string>(OwinConstants.RequestQueryString); }
-            set { Prop(OwinConstants.RequestQueryString, value); }
+            get { return Utilities.AddQuestionMark(Prop<string>(OwinConstants.RequestQueryString)); }
+            set { Prop(OwinConstants.RequestQueryString, Utilities.RemoveQuestionMark(value)); }
         }
 
         IDictionary<string, string[]> IHttpRequestFeature.Headers
@@ -203,9 +208,36 @@ namespace Microsoft.AspNet.Owin
             set { Prop(OwinConstants.CommonKeys.ClientCertificate, value); }
         }
 
-        Task<X509Certificate> IHttpClientCertificateFeature.GetClientCertificateAsync(CancellationToken cancellationToken)
+        async Task<X509Certificate> IHttpClientCertificateFeature.GetClientCertificateAsync(CancellationToken cancellationToken)
+        {
+            var loadAsync = Prop<Func<Task>>(OwinConstants.CommonKeys.LoadClientCertAsync);
+            if (loadAsync != null)
+            {
+                await loadAsync();
+            }
+            return Prop<X509Certificate>(OwinConstants.CommonKeys.ClientCertificate);
+        }
+
+        CancellationToken IHttpRequestLifetimeFeature.OnRequestAborted
+        {
+            get { return Prop<CancellationToken>(OwinConstants.CallCancelled); }
+        }
+
+        void IHttpRequestLifetimeFeature.Abort()
         {
             throw new NotImplementedException();
+        }
+
+        ClaimsPrincipal IHttpAuthenticationFeature.User
+        {
+            get { return Utilities.MakeClaimsPrincipal(Prop<IPrincipal>(OwinConstants.Security.User)); }
+            set { Prop(OwinConstants.Security.User, value); }
+        }
+
+        IAuthenticationHandler IHttpAuthenticationFeature.Handler
+        {
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         public int Revision
@@ -249,6 +281,8 @@ namespace Microsoft.AspNet.Owin
                     typeof(IHttpResponseFeature),
                     typeof(IHttpConnectionFeature),
                     typeof(IOwinEnvironmentFeature),
+                    typeof(IHttpRequestLifetimeFeature),
+                    typeof(IHttpAuthenticationFeature),
                 };
                 if (SupportsSendFile)
                 {

@@ -37,8 +37,8 @@ namespace Microsoft.AspNet.Owin
                 { OwinConstants.RequestMethod, new FeatureMap<IHttpRequestFeature>(feature => feature.Method, (feature, value) => feature.Method = Convert.ToString(value)) },
                 { OwinConstants.RequestPathBase, new FeatureMap<IHttpRequestFeature>(feature => feature.PathBase, (feature, value) => feature.PathBase = Convert.ToString(value)) },
                 { OwinConstants.RequestPath, new FeatureMap<IHttpRequestFeature>(feature => feature.Path, (feature, value) => feature.Path = Convert.ToString(value)) },
-                { OwinConstants.RequestQueryString, new FeatureMap<IHttpRequestFeature>(feature => RemoveQuestionMark(feature.QueryString),
-                    (feature, value) => feature.QueryString = AddQuestionMark(Convert.ToString(value))) },
+                { OwinConstants.RequestQueryString, new FeatureMap<IHttpRequestFeature>(feature => Utilities.RemoveQuestionMark(feature.QueryString),
+                    (feature, value) => feature.QueryString = Utilities.AddQuestionMark(Convert.ToString(value))) },
                 { OwinConstants.RequestHeaders, new FeatureMap<IHttpRequestFeature>(feature => feature.Headers, (feature, value) => feature.Headers = (IDictionary<string, string[]>)value) },
                 { OwinConstants.RequestBody, new FeatureMap<IHttpRequestFeature>(feature => feature.Body, (feature, value) => feature.Body = (Stream)value) },
 
@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Owin
 
                 { OwinConstants.SendFiles.SendAsync, new FeatureMap<IHttpSendFileFeature>(feature => new SendFileFunc(feature.SendFileAsync)) },
 
-                { OwinConstants.Security.User, new FeatureMap<IHttpAuthenticationFeature>(feature => feature.User, (feature, value) => feature.User = MakeClaimsPrincipal((IPrincipal)value)) },
+                { OwinConstants.Security.User, new FeatureMap<IHttpAuthenticationFeature>(feature => feature.User, (feature, value) => feature.User = Utilities.MakeClaimsPrincipal((IPrincipal)value)) },
             };
 
             if (context.Request.IsSecure)
@@ -228,36 +228,6 @@ namespace Microsoft.AspNet.Owin
         IEnumerator IEnumerable.GetEnumerator()
         {
             throw new NotImplementedException();
-        }
-
-        private string RemoveQuestionMark(string queryString)
-        {
-            if (!string.IsNullOrEmpty(queryString))
-            {
-                if (queryString[0] == '?')
-                {
-                    return queryString.Substring(1);
-                }
-            }
-            return queryString;
-        }
-
-        private string AddQuestionMark(string queryString)
-        {
-            if (!string.IsNullOrEmpty(queryString))
-            {
-                return '?' + queryString;
-            }
-            return queryString;
-        }
-
-        private ClaimsPrincipal MakeClaimsPrincipal(IPrincipal principal)
-        {
-            if (principal is ClaimsPrincipal)
-            {
-                return principal as ClaimsPrincipal;
-            }
-            return new ClaimsPrincipal(principal);
         }
 
         public class FeatureMap

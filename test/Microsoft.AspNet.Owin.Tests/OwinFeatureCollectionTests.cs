@@ -16,17 +16,53 @@ namespace Microsoft.AspNet.Owin
             object value;
             return features.TryGetValue(typeof(T), out value) ? (T)value : default(T);
         }
+        private T Get<T>(IDictionary<string, object> env, string key)
+        {
+            object value;
+            return env.TryGetValue(key, out value) ? (T)value : default(T);
+        }
 
         [Fact]
         public void OwinHttpEnvironmentCanBeCreated()
         {
             var env = new Dictionary<string, object>
             {
-                {"owin.RequestMethod", "POST"}
+                { "owin.RequestMethod", "POST" },
+                { "owin.RequestPath", "/path" },
+                { "owin.RequestPathBase", "/pathBase" },
+                { "owin.RequestQueryString", "name=value" },
             };
             var features = new FeatureObject(new OwinFeatureCollection(env));
 
-            Assert.Equal(Get<IHttpRequestFeature>(features).Method, "POST");
+            var requestFeature = Get<IHttpRequestFeature>(features);
+            Assert.Equal(requestFeature.Method, "POST");
+            Assert.Equal(requestFeature.Path, "/path");
+            Assert.Equal(requestFeature.PathBase, "/pathBase");
+            Assert.Equal(requestFeature.QueryString, "?name=value");
+        }
+
+        [Fact]
+        public void OwinHttpEnvironmentCanBeModified()
+        {
+            var env = new Dictionary<string, object>
+            {
+                { "owin.RequestMethod", "POST" },
+                { "owin.RequestPath", "/path" },
+                { "owin.RequestPathBase", "/pathBase" },
+                { "owin.RequestQueryString", "name=value" },
+            };
+            var features = new FeatureObject(new OwinFeatureCollection(env));
+
+            var requestFeature = Get<IHttpRequestFeature>(features);
+            requestFeature.Method = "GET";
+            requestFeature.Path = "/path2";
+            requestFeature.PathBase = "/pathBase2";
+            requestFeature.QueryString = "?name=value2";
+
+            Assert.Equal("GET", Get<string>(env, "owin.RequestMethod"));
+            Assert.Equal("/path2", Get<string>(env, "owin.RequestPath"));
+            Assert.Equal("/pathBase2", Get<string>(env, "owin.RequestPathBase"));
+            Assert.Equal("name=value2", Get<string>(env, "owin.RequestQueryString"));
         }
 
         [Fact]
