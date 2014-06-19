@@ -1,5 +1,4 @@
 {
-    "version": "0.1-alpha-*",
     "dependencies": {
         "Microsoft.AspNet.WebSockets.Protocol": "",
         "Microsoft.AspNet.WebSockets.Client": ""

@@ -1,10 +1,10 @@
 {
-    "version": "0.1-alpha-*",
+    "version": "1.0.0-*",
     "configurations": {
         "net45": { },
         "k10": {
           "dependencies": {
-            "Microsoft.Net.WebSocketAbstractions":  "0.1-alpha-*",
+            "Microsoft.Net.WebSocketAbstractions":  "1.0.0-*",
             "System.Diagnostics.Contracts": "4.0.0.0",
             "System.Linq": "4.0.0.0",
             "System.Runtime": "4.0.20.0",

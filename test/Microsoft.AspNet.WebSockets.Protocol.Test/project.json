@@ -1,11 +1,7 @@
 {
     "dependencies": {
         "Microsoft.AspNet.WebSockets.Protocol": "",
-        "xunit.abstractions": "2.0.0-aspnet-*",
-        "xunit.assert": "2.0.0-aspnet-*",
-        "xunit.core": "2.0.0-aspnet-*",
-        "xunit.execution": "2.0.0-aspnet-*",
-        "Xunit.KRunner": "0.1-alpha-*"
+        "Xunit.KRunner": "1.0.0-*"
     },
     "configurations": {
         "net45": {
