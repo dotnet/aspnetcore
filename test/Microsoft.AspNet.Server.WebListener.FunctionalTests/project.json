@@ -1,23 +1,18 @@
 {
-     "version" : "0.1-alpha-*",
      "commands": {
           "test": "Xunit.KRunner"
      },
      "dependencies": {
-          "Microsoft.AspNet.FeatureModel" : "0.1-alpha-*",
-          "Microsoft.AspNet.Hosting": "0.1-alpha-*",
-          "Microsoft.AspNet.Http" : "0.1-alpha-*",
-          "Microsoft.AspNet.HttpFeature" : "0.1-alpha-*",
-          "Microsoft.AspNet.PipelineCore" : "0.1-alpha-*",
+          "Microsoft.AspNet.FeatureModel" : "1.0.0-*",
+          "Microsoft.AspNet.Hosting": "1.0.0-*",
+          "Microsoft.AspNet.Http" : "1.0.0-*",
+          "Microsoft.AspNet.HttpFeature" : "1.0.0-*",
+          "Microsoft.AspNet.PipelineCore" : "1.0.0-*",
           "Microsoft.AspNet.Server.WebListener" : "",
-          "Microsoft.Framework.ConfigurationModel": "0.1-alpha-*",
-          "Microsoft.Framework.Logging": "0.1-alpha-*",
+          "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
+          "Microsoft.Framework.Logging": "1.0.0-*",
           "Microsoft.Net.Server" : "",
-          "xunit.abstractions": "2.0.0-aspnet-*",
-          "xunit.assert": "2.0.0-aspnet-*",
-          "xunit.core": "2.0.0-aspnet-*",
-          "xunit.execution": "2.0.0-aspnet-*",
-          "Xunit.KRunner": "0.1-alpha-*"
+          "Xunit.KRunner": "1.0.0-*"
      },
      "configurations": {
         "net45": {
