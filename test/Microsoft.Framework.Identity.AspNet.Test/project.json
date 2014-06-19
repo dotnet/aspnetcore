@@ -1,14 +1,21 @@
 {
   "dependencies": {
+    "Microsoft.AspNet.FeatureModel" : "1.0.0-*",
     "Microsoft.AspNet.Http" : "1.0.0-*",
+    "Microsoft.AspNet.HttpFeature" : "1.0.0-*",
     "Microsoft.Framework.Identity" : "",
     "Microsoft.AspNet.Identity.InMemory" : "",
+    "Microsoft.Framework.Identity.AspNet" : "",
     "Microsoft.AspNet.PipelineCore" : "1.0.0-*",
     "Microsoft.AspNet.RequestContainer" : "1.0.0-*",
+    "Microsoft.AspNet.Security" : "1.0.0-*",
+    "Microsoft.AspNet.Security.Cookies" : "1.0.0-*",
     "Microsoft.AspNet.Testing" : "1.0.0-*",
     "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
     "Microsoft.Framework.DependencyInjection" : "1.0.0-*",
     "Microsoft.Framework.OptionsModel" : "1.0.0-*",
+    "Microsoft.Framework.Logging" : "1.0.0-*",
+    "System.Security.Claims" : "1.0.0-*",
     "Xunit.KRunner": "1.0.0-*"
   },
   "code": "**\\*.cs;..\\Shared\\*.cs",
@@ -16,8 +23,8 @@
     "net45": {
       "dependencies": {
         "Moq" : "4.2.1312.1622",
-        "System.Collections": "",
-        "System.Runtime": ""
+        "System.Runtime": "",
+        "System.Collections": ""
       }
     }
   },

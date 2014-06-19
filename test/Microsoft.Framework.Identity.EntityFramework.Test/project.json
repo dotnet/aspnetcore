@@ -1,0 +1,30 @@
+{
+  "dependencies": {
+    "Microsoft.AspNet.Http": "1.0.0-*",
+    "Microsoft.Framework.Identity": "",
+    "Microsoft.Framework.Identity.EntityFramework": "",
+    "Microsoft.AspNet.PipelineCore": "1.0.0-*",
+    "Microsoft.AspNet.RequestContainer": "1.0.0-*",
+    "Microsoft.AspNet.Security.DataProtection": "1.0.0-*",
+    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "EntityFramework.InMemory": "7.0.0-*",
+    "EntityFramework.SqlServer": "7.0.0-*",
+    "Microsoft.Framework.OptionsModel" : "1.0.0-*",
+    "System.Security.Claims": "1.0.0-*",
+    "Xunit.KRunner": "1.0.0-*"
+  },
+  "code": "**\\*.cs;..\\Shared\\*.cs",
+  "configurations": {
+    "net451": {
+      "dependencies": {
+        "Moq" : "4.2.1312.1622",
+        "System.Collections": "",
+        "System.Runtime": ""
+      }
+    }
+  },
+  "code": "**\\*.cs;..\\Shared\\*.cs",
+  "commands": {
+    "test": "Xunit.KRunner"
+  }
+}

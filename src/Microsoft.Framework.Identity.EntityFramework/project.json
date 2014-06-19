@@ -1,14 +1,18 @@
 {
-  "version": "0.1-alpha-*",
+  "version": "3.0.0-*",
   "dependencies": {
-    "Microsoft.AspNet.Http" : "0.1-alpha-*",
-    "Microsoft.AspNet.Identity" : "",
-    "Microsoft.AspNet.Security.DataProtection" : "0.1-alpha-*",
-    "Microsoft.Framework.DependencyInjection" : "0.1-alpha-*",
-    "System.Security.Claims" : "0.1-alpha-*"
+    "Microsoft.Framework.Identity": "",
+    "EntityFramework.InMemory": "7.0.0-*",
+    "EntityFramework.SqlServer": "7.0.0-*",
+    "System.Security.Claims" : "1.0.0-*"
   },
   "configurations": {
-    "net45": {},
+    "net451": {
+      "dependencies": {
+        "System.Collections": "",
+        "System.Runtime": ""
+      }
+    },
     "k10": {
       "dependencies": {
         "System.Collections": "4.0.0.0",
@@ -18,6 +22,7 @@
         "System.Globalization": "4.0.10.0",
         "System.Linq": "4.0.0.0",
         "System.Linq.Expressions": "4.0.0.0",
+        "System.Linq.Queryable": "4.0.0.0",
         "System.Reflection": "4.0.10.0",
         "System.Resources.ResourceManager": "4.0.0.0",
         "System.Runtime": "4.0.20.0",

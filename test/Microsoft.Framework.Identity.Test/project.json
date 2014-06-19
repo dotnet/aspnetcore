@@ -2,11 +2,10 @@
   "dependencies": {
     "Microsoft.AspNet.Http" : "1.0.0-*",
     "Microsoft.Framework.Identity" : "",
-    "Microsoft.AspNet.Identity.InMemory" : "",
     "Microsoft.AspNet.PipelineCore" : "1.0.0-*",
     "Microsoft.AspNet.RequestContainer" : "1.0.0-*",
     "Microsoft.AspNet.Testing" : "1.0.0-*",
-    "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
+    "Microsoft.Framework.ConfigurationModel" : "1.0.0-*",
     "Microsoft.Framework.DependencyInjection" : "1.0.0-*",
     "Microsoft.Framework.OptionsModel" : "1.0.0-*",
     "Xunit.KRunner": "1.0.0-*"
