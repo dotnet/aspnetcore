@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -30,7 +32,19 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             public object ComplexInnerModel { get; set; }
         }
 
-        public static HtmlHelper GetHtmlHelper(object model)
+        public class ObjectWithScaffoldColumn
+        {
+            public string Property1 { get; set; }
+
+            [ScaffoldColumn(false)]
+            public string Property2 { get; set; }
+
+            [ScaffoldColumn(true)]
+            public string Property3 { get; set; }
+        }
+
+        public static HtmlHelper GetHtmlHelper(object model,
+                                               IViewEngine viewEngine = null)
         {
             var provider = new DataAnnotationsModelMetadataProvider();
             var viewData = new ViewDataDictionary(provider);
@@ -46,6 +60,59 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 .Setup(o => o.Items)
                 .Returns(new Dictionary<object, object>());
 
+            viewEngine = viewEngine ?? CreateViewEngine();
+
+            var actionContext = new ActionContext(httpContext.Object,
+                                      new RouteData(),
+                                      new ActionDescriptor());
+
+            var actionBindingContext = new ActionBindingContext(actionContext,
+                                                                provider,
+                                                                Mock.Of<IModelBinder>(),
+                                                                Mock.Of<IValueProvider>(),
+                                                                Mock.Of<IInputFormatterProvider>(),
+                                                                Enumerable.Empty<IModelValidatorProvider>());
+            var urlHelper = Mock.Of<IUrlHelper>();
+            var actionBindingContextProvider = new Mock<IActionBindingContextProvider>();
+            actionBindingContextProvider
+               .Setup(c => c.GetActionBindingContextAsync(It.IsAny<ActionContext>()))
+               .Returns(Task.FromResult(actionBindingContext));
+
+            var serviceProvider = new Mock<IServiceProvider>();
+            serviceProvider
+                .Setup(s => s.GetService(typeof(IViewEngine)))
+                .Returns(viewEngine);
+            serviceProvider
+                .Setup(s => s.GetService(typeof(IUrlHelper)))
+                .Returns(urlHelper);
+            serviceProvider
+                .Setup(s => s.GetService(typeof(IViewComponentHelper)))
+                .Returns(new Mock<IViewComponentHelper>().Object);
+ 
+            httpContext
+                .Setup(o => o.RequestServices)
+                .Returns(serviceProvider.Object);
+
+            var viewContext = new ViewContext(actionContext, Mock.Of<IView>(), viewData, new StringWriter());
+
+            var htmlHelper = new HtmlHelper(
+                                    viewEngine,
+                                    provider,
+                                    urlHelper,
+                                    GetAntiForgeryInstance(),
+                                    actionBindingContextProvider.Object);
+            htmlHelper.Contextualize(viewContext);
+
+            serviceProvider
+                .Setup(s => s.GetService(typeof(IHtmlHelper)))
+                .Returns(htmlHelper);
+
+
+            return htmlHelper;
+        }
+
+        private static IViewEngine CreateViewEngine()
+        {
             var view = new Mock<IView>();
             view
                 .Setup(v => v.RenderAsync(It.IsAny<ViewContext>()))
@@ -55,42 +122,11 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 })
                 .Returns(Task.FromResult(0));
 
-            var routeDictionary = new Dictionary<string, object>();
             var viewEngine = new Mock<IViewEngine>();
             viewEngine
-                .Setup(v => v.FindPartialView(routeDictionary, It.IsAny<string>()))
+                .Setup(v => v.FindPartialView(It.IsAny<Dictionary<string, object>>(), It.IsAny<string>()))
                 .Returns(ViewEngineResult.Found("MyView", view.Object));
-
-            var serviceProvider = new Mock<IServiceProvider>();
-            serviceProvider
-                .Setup(s => s.GetService(typeof(IViewEngine)))
-                .Returns(viewEngine.Object);
-            serviceProvider
-                .Setup(s => s.GetService(typeof(IUrlHelper)))
-                .Returns(new Mock<IUrlHelper>().Object);
-            serviceProvider
-                .Setup(s => s.GetService(typeof(IViewComponentHelper)))
-                .Returns(new Mock<IViewComponentHelper>().Object);
-
-            httpContext
-                .Setup(o => o.RequestServices)
-                .Returns(serviceProvider.Object);
-
-            var actionContext = new ActionContext(httpContext.Object,
-                                                  new RouteData() { Values = routeDictionary },
-                                                  new ActionDescriptor());
-
-            var viewContext = new ViewContext(actionContext, view.Object, viewData, new StringWriter());
-
-            var htmlHelper = new HtmlHelper(
-                                    viewEngine.Object,
-                                    provider,
-                                    new Mock<IUrlHelper>().Object,
-                                    GetAntiForgeryInstance(),
-                                    new Mock<IActionBindingContextProvider>().Object);
-            htmlHelper.Contextualize(viewContext);
-
-            return htmlHelper;
+            return viewEngine.Object;
         }
 
         private static AntiForgery GetAntiForgeryInstance()

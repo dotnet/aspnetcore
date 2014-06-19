@@ -85,6 +85,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return base.ComputeSimpleDisplayText();
         }
 
+        protected override bool ComputeShowForDisplay()
+        {
+            return PrototypeCache.ScaffoldColumn != null
+                       ? PrototypeCache.ScaffoldColumn.Scaffold
+                       : base.ComputeShowForDisplay();
+        }
+
+        protected override bool ComputeShowForEdit()
+        {
+            return PrototypeCache.ScaffoldColumn != null
+                       ? PrototypeCache.ScaffoldColumn.Scaffold
+                       : base.ComputeShowForEdit();
+        }
+
         public override string GetDisplayName()
         {
             // DisplayAttribute doesn't require you to set a name, so this could be null. 

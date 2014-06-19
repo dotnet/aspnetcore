@@ -25,6 +25,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private IEnumerable<ModelMetadata> _properties;
         private Type _realModelType;
         private string _simpleDisplayText;
+        private bool _showForDisplay = true;
+        private bool _showForEdit = true;
 
         public ModelMetadata([NotNull] IModelMetadataProvider provider,
                              Type containerType,
@@ -162,6 +164,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             set { _simpleDisplayText = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value that indicates whether the property should be displayed in read-only views.
+        /// </summary>
+        public virtual bool ShowForDisplay
+        {
+            get { return _showForDisplay; }
+            set { _showForDisplay = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value that indicates whether the property should be displayed in editable views.
+        /// </summary>
+        public virtual bool ShowForEdit
+        {
+            get { return _showForEdit; }
+            set { _showForEdit = value; }
         }
 
         public virtual string TemplateHint { get; set; }

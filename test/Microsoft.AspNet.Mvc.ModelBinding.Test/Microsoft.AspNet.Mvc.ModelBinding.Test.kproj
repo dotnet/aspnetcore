@@ -35,6 +35,7 @@
     <Compile Include="Formatters\JsonInputFormatterTest.cs" />
     <Compile Include="Internal\TypeExtensionTests.cs" />
     <Compile Include="Metadata\AssociatedMetadataProviderTest.cs" />
+    <Compile Include="Metadata\CachedDataAnnotationsModelMetadataProviderTest.cs" />
     <Compile Include="Metadata\ModelMetadataTest.cs" />
     <Compile Include="ModelBindingContextTest.cs" />
     <Compile Include="Properties\Resources.Designer.cs" />

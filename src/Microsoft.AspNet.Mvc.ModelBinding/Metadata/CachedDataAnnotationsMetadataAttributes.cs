@@ -17,6 +17,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             DisplayColumn = attributes.OfType<DisplayColumnAttribute>().FirstOrDefault();
             Editable = attributes.OfType<EditableAttribute>().FirstOrDefault();
             Required = attributes.OfType<RequiredAttribute>().FirstOrDefault();
+            ScaffoldColumn = attributes.OfType<ScaffoldColumnAttribute>().FirstOrDefault();
         }
 
         public DisplayAttribute Display { get; protected set; }
@@ -28,5 +29,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public EditableAttribute Editable { get; protected set; }
 
         public RequiredAttribute Required { get; protected set; }
+
+        public ScaffoldColumnAttribute ScaffoldColumn { get; protected set; }
     }
 }

@@ -21,6 +21,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private bool _isReadOnly;
         private bool _isComplexType;
         private bool _isRequired;
+        private bool _showForDisplay;
+        private bool _showForEdit;
 
         private bool _convertEmptyStringToNullComputed;
         private bool _nullDisplayTextComputed;
@@ -28,6 +30,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private bool _isReadOnlyComputed;
         private bool _isComplexTypeComputed;
         private bool _isRequiredComputed;
+        private bool _showForDisplayComputed;
+        private bool _showForEditComputed;
 
         // Constructor for creating real instances of the metadata class based on a prototype
         protected CachedModelMetadata(CachedModelMetadata<TPrototypeCache> prototype, Func<object> modelAccessor)
@@ -158,6 +162,42 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
+        public sealed override bool ShowForDisplay
+        {
+            get
+            {
+                if (!_showForDisplayComputed)
+                {
+                    _showForDisplay = ComputeShowForDisplay();
+                    _showForDisplayComputed = true;
+                }
+                return _showForDisplay;
+            }
+            set
+            {
+                _showForDisplay = value;
+                _showForDisplayComputed = true;
+            }
+        }
+
+        public sealed override bool ShowForEdit
+        {
+            get
+            {
+                if (!_showForEditComputed)
+                {
+                    _showForEdit = ComputeShowForEdit();
+                    _showForEditComputed = true;
+                }
+                return _showForEdit;
+            }
+            set
+            {
+                _showForEdit = value;
+                _showForEditComputed = true;
+            }
+        }
+
         protected TPrototypeCache PrototypeCache { get; set; }
 
         protected virtual bool ComputeConvertEmptyStringToNull()
@@ -188,6 +228,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         protected virtual bool ComputeIsComplexType()
         {
             return base.IsComplexType;
+        }
+
+        protected virtual bool ComputeShowForDisplay()
+        {
+            return base.ShowForDisplay;
+        }
+
+        protected virtual bool ComputeShowForEdit()
+        {
+            return base.ShowForEdit;
         }
     }
 }

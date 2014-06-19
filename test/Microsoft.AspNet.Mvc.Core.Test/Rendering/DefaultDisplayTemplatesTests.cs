@@ -2,8 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Core.Test
@@ -69,6 +72,29 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             // Assert
             Assert.Equal(metadata.SimpleDisplayText, result);
+        }
+
+        [Fact]
+        public void ObjectTemplate_IgnoresPropertiesWith_ScaffoldColumnFalse()
+        {
+            // Arrange
+            var expected =
+@"<div class=""display-label"">Property1</div>
+<div class=""display-field""></div>
+<div class=""display-label"">Property3</div>
+<div class=""display-field""></div>
+";
+            var model = new DefaultTemplatesUtilities.ObjectWithScaffoldColumn();
+            var viewEngine = new Mock<IViewEngine>();
+            viewEngine.Setup(v => v.FindPartialView(It.IsAny<IDictionary<string, object>>(), It.IsAny<string>()))
+                      .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
+            var htmlHelper = DefaultTemplatesUtilities.GetHtmlHelper(model, viewEngine.Object);
+
+            // Act
+            var result = DefaultDisplayTemplates.ObjectTemplate(htmlHelper);
+
+            // Assert
+            Assert.Equal(expected, result);
         }
     }
 }

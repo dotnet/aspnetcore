@@ -2,8 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Core.Test
@@ -73,6 +76,29 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             // Assert
             Assert.Equal(metadata.SimpleDisplayText, result);
+        }
+
+        [Fact]
+        public void ObjectTemplate_IgnoresPropertiesWith_ScaffoldColumnFalse()
+        {
+            // Arrange
+            var expected =
+@"<div class=""editor-label""><label for=""Property1"">Property1</label></div>
+<div class=""editor-field""><input class=""text-box single-line"" id=""Property1"" name=""Property1"" type=""text"" value="""" /> </div>
+<div class=""editor-label""><label for=""Property1.Property3"">Property3</label></div>
+<div class=""editor-field""> </div>
+";
+            var model = new DefaultTemplatesUtilities.ObjectWithScaffoldColumn();
+            var viewEngine = new Mock<IViewEngine>();
+            viewEngine.Setup(v => v.FindPartialView(It.IsAny<IDictionary<string, object>>(), It.IsAny<string>()))
+                      .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
+            var htmlHelper = DefaultTemplatesUtilities.GetHtmlHelper(model, viewEngine.Object);
+
+            // Act
+            var result = DefaultEditorTemplates.ObjectTemplate(htmlHelper);
+
+            // Assert
+            Assert.Equal(expected, result);
         }
     }
 }
