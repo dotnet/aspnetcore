@@ -1,9 +1,8 @@
 {
-  "version": "0.1-alpha-*",
   "dependencies": {
     "Microsoft.AspNet.Hosting": "",
-    "Microsoft.AspNet.Http": "0.1-alpha-*",
-    "Microsoft.AspNet.Server.WebListener": "0.1-alpha-*"
+    "Microsoft.AspNet.Http": "1.0.0-*",
+    "Microsoft.AspNet.Server.WebListener": "1.0.0-*"
   },
   "commands": { "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001" },
   "configurations": {

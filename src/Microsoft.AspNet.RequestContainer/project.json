@@ -1,9 +1,9 @@
 {
-  "version": "0.1-alpha-*",
+  "version": "1.0.0-*",
   "dependencies": {
-    "Microsoft.AspNet.Http": "0.1-alpha-*",
-    "Microsoft.Framework.DependencyInjection": "0.1-alpha-*",
-    "Microsoft.Framework.OptionsModel": "0.1-alpha-*"
+    "Microsoft.AspNet.Http": "1.0.0-*",
+    "Microsoft.Framework.DependencyInjection": "1.0.0-*",
+    "Microsoft.Framework.OptionsModel": "1.0.0-*"
   },
   "configurations": {
     "net45": {},
