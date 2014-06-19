@@ -1,9 +1,9 @@
 {
-  "version": "0.1-alpha-*",
+  "version": "1.0.0-*",
   "dependencies": {
-    "Microsoft.AspNet.FeatureModel": "0.1-alpha-*",
-    "Microsoft.AspNet.Http": "0.1-alpha-*",
-    "Microsoft.AspNet.PipelineCore": "0.1-alpha-*"
+    "Microsoft.AspNet.FeatureModel": "1.0.0-*",
+    "Microsoft.AspNet.Http": "1.0.0-*",
+    "Microsoft.AspNet.PipelineCore": "1.0.0-*"
   },
   "configurations": {
     "net45": {},

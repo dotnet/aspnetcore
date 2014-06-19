@@ -1,12 +1,11 @@
 {
-  "version": "0.1-alpha-*",
   "dependencies": {
-    "Helios" :  "0.1-alpha-*",
+    "Helios" :  "1.0.0-*",
     "Microsoft.AspNet.Diagnostics": "",
-    "Microsoft.AspNet.Hosting": "0.1-alpha-*",
-    "Microsoft.AspNet.Http": "0.1-alpha-*",
-    "Microsoft.AspNet.HttpFeature": "0.1-alpha-*",
-    "Microsoft.AspNet.Server.WebListener": "0.1-alpha-*"
+    "Microsoft.AspNet.Hosting": "1.0.0-*",
+    "Microsoft.AspNet.Http": "1.0.0-*",
+    "Microsoft.AspNet.HttpFeature": "1.0.0-*",
+    "Microsoft.AspNet.Server.WebListener": "1.0.0-*"
   },
   "commands": { "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001" },
   "configurations": {
@@ -25,7 +24,7 @@
         "System.Runtime": "4.0.20.0",
         "System.Runtime.Extensions": "4.0.10.0",
         "System.Runtime.InteropServices": "4.0.20.0",
-        "System.Security.Claims":  "0.1-alpha-*",
+        "System.Security.Claims":  "1.0.0-*",
         "System.Text.Encoding": "4.0.20.0",
         "System.Threading.Tasks": "4.0.10.0"
       }

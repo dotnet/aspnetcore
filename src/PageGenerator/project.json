@@ -1,8 +1,9 @@
 ﻿{
+    "version": "1.0.0-*",
     "dependencies": {
         "Microsoft.AspNet.Diagnostics":  "",
-        "Microsoft.AspNet.Razor": "0.1.0-alpha-*",
-        "Microsoft.Framework.Runtime.Interfaces": "0.1.0-alpha-*"
+        "Microsoft.AspNet.Razor": "6.0.0-*",
+        "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
     },
 
     "configurations" : {
