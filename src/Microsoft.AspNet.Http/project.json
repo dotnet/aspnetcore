@@ -1,11 +1,11 @@
 {
-  "version": "0.1-alpha-*",
+  "version": "1.0.0-*",
   "dependencies": {},
   "configurations": {
     "net45": {},
     "k10": {
       "dependencies": {
-        "Microsoft.Net.WebSocketAbstractions": "0.1-alpha-*",
+        "Microsoft.Net.WebSocketAbstractions": "1.0.0-*",
         "System.Collections": "4.0.0.0",
         "System.ComponentModel": "4.0.0.0",
         "System.Diagnostics.Tools": "4.0.0.0",
@@ -16,7 +16,7 @@
         "System.Runtime": "4.0.20.0",
         "System.Runtime.Extensions": "4.0.10.0",
         "System.Runtime.InteropServices": "4.0.20.0",
-        "System.Security.Claims": "0.1-alpha-*",
+        "System.Security.Claims": "1.0.0-*",
         "System.Security.Principal" : "4.0.0.0",
         "System.Threading.Tasks": "4.0.10.0"
       }

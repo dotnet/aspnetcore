@@ -1,15 +1,10 @@
 {
-  "version": "0.1-alpha-*",
   "dependencies": {
     "Microsoft.AspNet.FeatureModel": "",
     "Microsoft.AspNet.Http": "",
     "Microsoft.AspNet.HttpFeature": "",
     "Microsoft.AspNet.PipelineCore": "",
-    "xunit.abstractions": "2.0.0-aspnet-*",
-    "xunit.assert": "2.0.0-aspnet-*",
-    "xunit.core": "2.0.0-aspnet-*",
-    "xunit.execution": "2.0.0-aspnet-*",
-    "Xunit.KRunner": "0.1-alpha-*"
+    "Xunit.KRunner": "1.0.0-*"
   },
   "commands": {
     "test": "Xunit.KRunner"
