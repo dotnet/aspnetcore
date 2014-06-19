@@ -1,5 +1,5 @@
 {
-    "version": "0.1-alpha-*",
+    "version": "4.0.0-*",
     "dependencies": {
         "System.Collections": "4.0.0.0",
         "System.Diagnostics.Debug": "4.0.10.0",
