@@ -2,7 +2,7 @@
     "version": "1.0.0-*",
     "dependencies": {
         "Microsoft.AspNet.Diagnostics":  "",
-        "Microsoft.AspNet.Razor": "6.0.0-*",
+        "Microsoft.AspNet.Razor": "4.0.0-*",
         "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
     },
 
