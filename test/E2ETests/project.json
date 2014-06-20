@@ -12,7 +12,6 @@
                 "System.Runtime.Extensions": "",
                 "System.Net.Http": "",
                 "System.Net.Http.WebRequest": "",
-                "System.Diagnostics.Process": "",
                 "System.Xml": "",
                 "System.Data": ""
             }
