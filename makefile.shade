@@ -121,6 +121,33 @@ var repos='${new Dictionary<string,string> {
         }
     }
 
+#init-release
+    var templatePath = '${Path.Combine(BASE_DIR, "build-template")}'
+    var fileName = 'NuGet.Config'
+    for each='var repo in repos'
+        var targetFile = '${Path.Combine(Directory.GetCurrentDirectory(), repo.Key, fileName)}'
+        var sourceFile = '${Path.Combine(Directory.GetCurrentDirectory(), templatePath, fileName)}'
+        var gitFolder = '${repo.Key}'
+
+        -// get latest dev and create new release
+        git gitCommand='checkout dev'
+        git gitCommand='pull origin dev'
+        git gitCommand='checkout -b release dev'
+
+        -// alter and commit release NuGet.Config
+        -File.Copy(sourceFile, targetFile, true);
+        update-file updateFile="${targetFile}"
+            -updateText = updateText.Replace("/F/aspnetvnext/", "/F/aspnetrelease/");
+        git gitCommand='add NuGet.Config'
+        git gitCommand='commit -m "Updating release Nuget.config"'
+
+        -// alter dev NuGet.Config and phantom merge release branch
+        git gitCommand='checkout dev'
+        git gitCommand='merge release'
+        -File.Copy(sourceFile, targetFile, true);
+        git gitCommand='add NuGet.Config'
+        git gitCommand='commit -m "Updating dev Nuget.config"'
+
 #only-compile target='compile'
     @{
         var failed = new Dictionary<string, Exception>();
