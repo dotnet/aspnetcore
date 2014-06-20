@@ -1,7 +1,7 @@
 {
      "version": "0.1-alpha-*",
      "dependencies": {
-        "Microsoft.Net.WebSocketAbstractions": "0.1-alpha-*"
+        "Microsoft.Net.WebSocketAbstractions": "1.0.0-*"
      },
      "compilationOptions" : { "allowUnsafe": true },
      "configurations": {
