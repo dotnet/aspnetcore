@@ -5,7 +5,7 @@
     "description": "Music store application on K as a SPA",
     "compilationOptions": { "define": [ "DEBUG" ] },
     "dependencies": {
-        "Helios": "1.0.0-*",
+        "Microsoft.AspNet.Server.IIS": "1.0.0-*",
         "Microsoft.AspNet.Mvc": "6.0.0-*",
         "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
         "Microsoft.AspNet.StaticFiles": "1.0.0-*",
