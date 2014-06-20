@@ -29,6 +29,7 @@
         "System.Runtime.Extensions": "4.0.10.0",
         "System.Runtime.Handles":  "4.0.0.0",
         "System.Runtime.InteropServices": "4.0.20.0",
+        "System.Security.Claims": "0.1-alpha-*",
         "System.Security.Cryptography.X509Certificates": "4.0.0.0",
         "System.Security.Principal": "4.0.0.0",
         "System.Text.Encoding": "4.0.20.0",

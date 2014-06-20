@@ -27,9 +27,11 @@ using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Runtime.InteropServices;
+using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
+#if NET45
 using System.Security.Principal;
-using System.Threading;
+#endif
 using System.Threading.Tasks;
 
 namespace Microsoft.Net.Server
@@ -66,7 +68,7 @@ namespace Microsoft.Net.Server
         private SocketAddress _localEndPoint;
         private SocketAddress _remoteEndPoint;
 
-        private IPrincipal _user;
+        private ClaimsPrincipal _user;
 
         private bool _isDisposed = false;
         
@@ -140,7 +142,7 @@ namespace Microsoft.Net.Server
             _headers = new RequestHeaders(_nativeRequestContext);
 
             UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_V2* requestV2 = (UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_V2*)memoryBlob.RequestBlob;
-            _user = GetUser(requestV2->pRequestInfo);
+            _user = AuthenticationManager.GetUser(requestV2->pRequestInfo);
 
             // TODO: Verbose log parameters
 
@@ -411,29 +413,9 @@ namespace Microsoft.Net.Server
             }
         }
 
-        internal IPrincipal User
+        internal ClaimsPrincipal User
         {
             get { return _user; }
-        }
-
-        private unsafe IPrincipal GetUser(UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_INFO* requestInfo)
-        {
-            if (requestInfo == null
-                || requestInfo->InfoType != UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth)
-            {
-                return null;
-            }
-
-            if (requestInfo->pInfo->AuthStatus != UnsafeNclNativeMethods.HttpApi.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
-            {
-                return null;
-            }
-
-#if NET45
-            return new WindowsPrincipal(new WindowsIdentity(requestInfo->pInfo->AccessToken));
-#else
-            return null;
-#endif
         }
 
         internal UnsafeNclNativeMethods.HttpApi.HTTP_VERB GetKnownMethod()

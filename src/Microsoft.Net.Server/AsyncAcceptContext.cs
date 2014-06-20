@@ -91,7 +91,7 @@ namespace Microsoft.Net.Server
                         bool stoleBlob = false;
                         try
                         {
-                            if (server.ValidateRequest(asyncResult._nativeRequestContext))
+                            if (server.ValidateRequest(asyncResult._nativeRequestContext) && server.ValidateAuth(asyncResult._nativeRequestContext))
                             {
                                 stoleBlob = true;
                                 RequestContext requestContext = new RequestContext(server, asyncResult._nativeRequestContext);

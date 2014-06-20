@@ -78,6 +78,7 @@ namespace Microsoft.Net.Server
 
         private SafeHandle _requestQueueHandle;
         private volatile State _state; // m_State is set only within lock blocks, but often read outside locks.
+
         private bool _ignoreWriteExceptions;
         private HttpServerSessionHandle _serverSessionHandle;
         private ulong _urlGroupId;
@@ -649,7 +650,18 @@ namespace Microsoft.Net.Server
             // Block potential DOS attacks
             if (requestMemory.RequestBlob->Headers.UnknownHeaderCount > UnknownHeaderLimit)
             {
-                SendError(requestMemory.RequestBlob->RequestId, HttpStatusCode.BadRequest);
+                SendError(requestMemory.RequestBlob->RequestId, HttpStatusCode.BadRequest, authChallenges: null);
+                return false;
+            }
+            return true;
+        }
+
+        internal unsafe bool ValidateAuth(NativeRequestContext requestMemory)
+        {
+            var requestV2 = (UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_V2*)requestMemory.RequestBlob;
+            if (!AuthenticationManager.AllowAnonymous && !AuthenticationManager.CheckAuthenticated(requestV2->pRequestInfo))
+            {
+                SendError(requestMemory.RequestBlob->RequestId, HttpStatusCode.Unauthorized, AuthenticationManager.GenerateChallenges());
                 return false;
             }
             return true;
@@ -781,47 +793,116 @@ namespace Microsoft.Net.Server
             return cts.Token;
         }
 
-        private unsafe void SendError(ulong requestId, HttpStatusCode httpStatusCode)
+        private unsafe void SendError(ulong requestId, HttpStatusCode httpStatusCode, IList<string> authChallenges)
         {
             UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_V2 httpResponse = new UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_V2();
             httpResponse.Response_V1.Version = new UnsafeNclNativeMethods.HttpApi.HTTP_VERSION();
             httpResponse.Response_V1.Version.MajorVersion = (ushort)1;
             httpResponse.Response_V1.Version.MinorVersion = (ushort)1;
-            httpResponse.Response_V1.StatusCode = (ushort)httpStatusCode;
-            string statusDescription = HttpReasonPhrase.Get(httpStatusCode);
-            uint dataWritten = 0;
-            uint statusCode;
-            byte[] byteReason = HeaderEncoding.GetBytes(statusDescription);
-            fixed (byte* pReason = byteReason)
+
+            List<GCHandle> pinnedHeaders = null;
+            GCHandle gcHandle;
+            try
             {
-                httpResponse.Response_V1.pReason = (sbyte*)pReason;
-                httpResponse.Response_V1.ReasonLength = (ushort)byteReason.Length;
-
-                byte[] byteContentLength = new byte[] { (byte)'0' };
-                fixed (byte* pContentLength = byteContentLength)
+                // Copied from the multi-value headers section of SerializeHeaders
+                if (authChallenges != null && authChallenges.Count > 0)
                 {
-                    (&httpResponse.Response_V1.Headers.KnownHeaders)[(int)HttpSysResponseHeader.ContentLength].pRawValue = (sbyte*)pContentLength;
-                    (&httpResponse.Response_V1.Headers.KnownHeaders)[(int)HttpSysResponseHeader.ContentLength].RawValueLength = (ushort)byteContentLength.Length;
-                    httpResponse.Response_V1.Headers.UnknownHeaderCount = 0;
+                    pinnedHeaders = new List<GCHandle>();
 
-                    statusCode =
-                        UnsafeNclNativeMethods.HttpApi.HttpSendHttpResponse(
-                            _requestQueueHandle,
-                            requestId,
-                            0,
-                            &httpResponse,
-                            null,
-                            &dataWritten,
-                            SafeLocalFree.Zero,
-                            0,
-                            SafeNativeOverlapped.Zero,
-                            IntPtr.Zero);
+                    UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_INFO[] knownHeaderInfo = null;
+                    knownHeaderInfo = new UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_INFO[1];
+                    gcHandle = GCHandle.Alloc(knownHeaderInfo, GCHandleType.Pinned);
+                    pinnedHeaders.Add(gcHandle);
+                    httpResponse.pResponseInfo = (UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_INFO*)gcHandle.AddrOfPinnedObject();
+
+                    knownHeaderInfo[httpResponse.ResponseInfoCount].Type = UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_INFO_TYPE.HttpResponseInfoTypeMultipleKnownHeaders;
+                    knownHeaderInfo[httpResponse.ResponseInfoCount].Length =
+#if NET45
+                    (uint)Marshal.SizeOf(typeof(UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS));
+#else
+                    (uint)Marshal.SizeOf<UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS>();
+#endif
+
+                    UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS header = new UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS();
+
+                    header.HeaderId = UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_HEADER_ID.Enum.HttpHeaderWwwAuthenticate;
+                    header.Flags = UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_INFO_FLAGS.PreserveOrder; // The docs say this is for www-auth only.
+
+                    UnsafeNclNativeMethods.HttpApi.HTTP_KNOWN_HEADER[] nativeHeaderValues = new UnsafeNclNativeMethods.HttpApi.HTTP_KNOWN_HEADER[authChallenges.Count];
+                    gcHandle = GCHandle.Alloc(nativeHeaderValues, GCHandleType.Pinned);
+                    pinnedHeaders.Add(gcHandle);
+                    header.KnownHeaders = (UnsafeNclNativeMethods.HttpApi.HTTP_KNOWN_HEADER*)gcHandle.AddrOfPinnedObject();
+
+                    for (int headerValueIndex = 0; headerValueIndex < authChallenges.Count; headerValueIndex++)
+                    {
+                        // Add Value
+                        string headerValue = authChallenges[headerValueIndex];
+                        byte[] bytes = new byte[HeaderEncoding.GetByteCount(headerValue)];
+                        nativeHeaderValues[header.KnownHeaderCount].RawValueLength = (ushort)bytes.Length;
+                        HeaderEncoding.GetBytes(headerValue, 0, bytes.Length, bytes, 0);
+                        gcHandle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+                        pinnedHeaders.Add(gcHandle);
+                        nativeHeaderValues[header.KnownHeaderCount].pRawValue = (sbyte*)gcHandle.AddrOfPinnedObject();
+                        header.KnownHeaderCount++;
+                    }
+
+                    // This type is a struct, not an object, so pinning it causes a boxed copy to be created. We can't do that until after all the fields are set.
+                    gcHandle = GCHandle.Alloc(header, GCHandleType.Pinned);
+                    pinnedHeaders.Add(gcHandle);
+                    knownHeaderInfo[0].pInfo = (UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS*)gcHandle.AddrOfPinnedObject();
+
+                    httpResponse.ResponseInfoCount = 1;
+                }
+
+                httpResponse.Response_V1.StatusCode = (ushort)httpStatusCode;
+                string statusDescription = HttpReasonPhrase.Get(httpStatusCode);
+                uint dataWritten = 0;
+                uint statusCode;
+                byte[] byteReason = HeaderEncoding.GetBytes(statusDescription);
+                fixed (byte* pReason = byteReason)
+                {
+                    httpResponse.Response_V1.pReason = (sbyte*)pReason;
+                    httpResponse.Response_V1.ReasonLength = (ushort)byteReason.Length;
+
+                    byte[] byteContentLength = new byte[] { (byte)'0' };
+                    fixed (byte* pContentLength = byteContentLength)
+                    {
+                        (&httpResponse.Response_V1.Headers.KnownHeaders)[(int)HttpSysResponseHeader.ContentLength].pRawValue = (sbyte*)pContentLength;
+                        (&httpResponse.Response_V1.Headers.KnownHeaders)[(int)HttpSysResponseHeader.ContentLength].RawValueLength = (ushort)byteContentLength.Length;
+                        httpResponse.Response_V1.Headers.UnknownHeaderCount = 0;
+
+                        statusCode =
+                            UnsafeNclNativeMethods.HttpApi.HttpSendHttpResponse(
+                                _requestQueueHandle,
+                                requestId,
+                                0,
+                                &httpResponse,
+                                null,
+                                &dataWritten,
+                                SafeLocalFree.Zero,
+                                0,
+                                SafeNativeOverlapped.Zero,
+                                IntPtr.Zero);
+                    }
+                }
+                if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+                {
+                    // if we fail to send a 401 something's seriously wrong, abort the request
+                    RequestContext.CancelRequest(_requestQueueHandle, requestId);
                 }
             }
-            if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+            finally
             {
-                // if we fail to send a 401 something's seriously wrong, abort the request
-                RequestContext.CancelRequest(_requestQueueHandle, requestId);
+                if (pinnedHeaders != null)
+                {
+                    foreach (GCHandle handle in pinnedHeaders)
+                    {
+                        if (handle.IsAllocated)
+                        {
+                            handle.Free();
+                        }
+                    }
+                }
             }
         }
 

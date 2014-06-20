@@ -32,7 +32,7 @@ namespace SelfHostServer
         public void Configure(IBuilder app)
         {
             var info = (ServerInformation)app.Server;
-            info.Listener.AuthenticationManager.AuthenticationTypes = AuthenticationType.None;
+            info.Listener.AuthenticationManager.AuthenticationTypes = AuthenticationTypes.AllowAnonymous;
 
             app.Run(async context =>
             {

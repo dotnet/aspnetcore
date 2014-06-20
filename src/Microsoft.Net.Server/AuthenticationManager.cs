@@ -25,6 +25,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Security.Claims;
+using System.Security.Principal;
 
 namespace Microsoft.Net.Server
 {
@@ -45,17 +47,17 @@ namespace Microsoft.Net.Server
 #endif
 
         private WebListener _server;
-        AuthenticationType _authTypes;
+        private AuthenticationTypes _authTypes;
 
         internal AuthenticationManager(WebListener listener)
         {
             _server = listener;
-            _authTypes = AuthenticationType.None;
+            _authTypes = AuthenticationTypes.AllowAnonymous;
         }
 
         #region Properties
 
-        public AuthenticationType AuthenticationTypes
+        public AuthenticationTypes AuthenticationTypes
         {
             get
             {
@@ -68,6 +70,14 @@ namespace Microsoft.Net.Server
             }
         }
 
+        internal bool AllowAnonymous
+        {
+            get
+            {
+                return ((_authTypes & AuthenticationTypes.AllowAnonymous) == AuthenticationTypes.AllowAnonymous);
+            }
+        }
+
         #endregion Properties
 
         private unsafe void SetServerSecurity()
@@ -76,71 +86,108 @@ namespace Microsoft.Net.Server
                 new UnsafeNclNativeMethods.HttpApi.HTTP_SERVER_AUTHENTICATION_INFO();
 
             authInfo.Flags = UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
-            authInfo.AuthSchemes = (UnsafeNclNativeMethods.HttpApi.HTTP_AUTH_TYPES)_authTypes;
+            var authTypes = (UnsafeNclNativeMethods.HttpApi.HTTP_AUTH_TYPES)(_authTypes & ~AuthenticationTypes.AllowAnonymous);
+            if (authTypes != UnsafeNclNativeMethods.HttpApi.HTTP_AUTH_TYPES.NONE)
+            {
+                authInfo.AuthSchemes = authTypes;
 
-            // TODO:
-            // NTLM auth sharing (on by default?) DisableNTLMCredentialCaching
-            // Kerberos auth sharing (off by default?) HTTP_AUTH_EX_FLAG_ENABLE_KERBEROS_CREDENTIAL_CACHING
-            // Mutual Auth - ReceiveMutualAuth
-            // Digest domain and realm - HTTP_SERVER_AUTHENTICATION_DIGEST_PARAMS
-            // Basic realm - HTTP_SERVER_AUTHENTICATION_BASIC_PARAMS
+                // TODO:
+                // NTLM auth sharing (on by default?) DisableNTLMCredentialCaching
+                // Kerberos auth sharing (off by default?) HTTP_AUTH_EX_FLAG_ENABLE_KERBEROS_CREDENTIAL_CACHING
+                // Mutual Auth - ReceiveMutualAuth
+                // Digest domain and realm - HTTP_SERVER_AUTHENTICATION_DIGEST_PARAMS
+                // Basic realm - HTTP_SERVER_AUTHENTICATION_BASIC_PARAMS
 
-            IntPtr infoptr = new IntPtr(&authInfo);
+                IntPtr infoptr = new IntPtr(&authInfo);
 
-            _server.SetUrlGroupProperty(
-                UnsafeNclNativeMethods.HttpApi.HTTP_SERVER_PROPERTY.HttpServerAuthenticationProperty,
-                infoptr, (uint)AuthInfoSize);
+                _server.SetUrlGroupProperty(
+                    UnsafeNclNativeMethods.HttpApi.HTTP_SERVER_PROPERTY.HttpServerAuthenticationProperty,
+                    infoptr, (uint)AuthInfoSize);
+            }
         }
 
-        internal void SetAuthenticationChallenge(Response response)
+        // TODO: If we're not going to support Digest then this whole list can be pre-computed and cached.
+        //  consider even pre-serialzing and caching the bytes for the !AllowAnonymous scenario.
+        internal IList<string> GenerateChallenges()
         {
-            if (_authTypes == AuthenticationType.None)
-            {
-                return;
-            }
-
             IList<string> challenges = new List<string>();
 
             // Order by strength.
-            if ((_authTypes & AuthenticationType.Kerberos) == AuthenticationType.Kerberos)
+            if ((_authTypes & AuthenticationTypes.Kerberos) == AuthenticationTypes.Kerberos)
             {
                 challenges.Add("Kerberos");
             }
-            if ((_authTypes & AuthenticationType.Negotiate) == AuthenticationType.Negotiate)
+            if ((_authTypes & AuthenticationTypes.Negotiate) == AuthenticationTypes.Negotiate)
             {
                 challenges.Add("Negotiate");
             }
-            if ((_authTypes & AuthenticationType.Ntlm) == AuthenticationType.Ntlm)
+            if ((_authTypes & AuthenticationTypes.Ntlm) == AuthenticationTypes.Ntlm)
             {
                 challenges.Add("NTLM");
             }
-            if ((_authTypes & AuthenticationType.Digest) == AuthenticationType.Digest)
+            /*if ((_authTypes & AuthenticationTypes.Digest) == AuthenticationTypes.Digest)
             {
                 // TODO:
                 throw new NotImplementedException("Digest challenge generation has not been implemented.");
                 // challenges.Add("Digest");
-            }
-            if ((_authTypes & AuthenticationType.Basic) == AuthenticationType.Basic)
+            }*/
+            if ((_authTypes & AuthenticationTypes.Basic) == AuthenticationTypes.Basic)
             {
                 // TODO: Realm
                 challenges.Add("Basic");
             }
+            return challenges;
+        }
 
-            // Append to the existing header, if any. Some clients (IE, Chrome) require each challenges to be sent on their own line/header.
-            string[] oldValues;
-            string[] newValues;
-            if (response.Headers.TryGetValue(HttpKnownHeaderNames.WWWAuthenticate, out oldValues))
+        internal void SetAuthenticationChallenge(Response response)
+        {
+            IList<string> challenges = GenerateChallenges();
+
+            if (challenges.Count > 0)
             {
-                newValues = new string[oldValues.Length + challenges.Count];
-                Array.Copy(oldValues, newValues, oldValues.Length);
-                challenges.CopyTo(newValues, oldValues.Length);
+                // TODO: We need a better header API that just lets us append values.
+                // Append to the existing header, if any. Some clients (IE, Chrome) require each challenges to be sent on their own line/header.
+                string[] oldValues;
+                string[] newValues;
+                if (response.Headers.TryGetValue(HttpKnownHeaderNames.WWWAuthenticate, out oldValues))
+                {
+                    newValues = new string[oldValues.Length + challenges.Count];
+                    Array.Copy(oldValues, newValues, oldValues.Length);
+                    challenges.CopyTo(newValues, oldValues.Length);
+                }
+                else
+                {
+                    newValues = new string[challenges.Count];
+                    challenges.CopyTo(newValues, 0);
+                }
+                response.Headers[HttpKnownHeaderNames.WWWAuthenticate] = newValues;
             }
-            else
+        }
+
+        internal static unsafe bool CheckAuthenticated(UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_INFO* requestInfo)
+        {
+            if (requestInfo != null
+                && requestInfo->InfoType == UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth
+                && requestInfo->pInfo->AuthStatus == UnsafeNclNativeMethods.HttpApi.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
             {
-                newValues = new string[challenges.Count];
-                challenges.CopyTo(newValues, 0);
+#if NET45
+                return true;
+#endif
             }
-            response.Headers[HttpKnownHeaderNames.WWWAuthenticate] = newValues;
+            return false;
+        }
+
+        internal static unsafe ClaimsPrincipal GetUser(UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_INFO* requestInfo)
+        {
+            if (requestInfo != null
+                && requestInfo->InfoType == UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth
+                && requestInfo->pInfo->AuthStatus == UnsafeNclNativeMethods.HttpApi.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
+            {
+#if NET45
+                return new WindowsPrincipal(new WindowsIdentity(requestInfo->pInfo->AccessToken));
+#endif
+            }
+            return new ClaimsPrincipal(new ClaimsIdentity(string.Empty)); // Anonymous / !IsAuthenticated
         }
     }
 }

@@ -708,7 +708,12 @@ namespace Microsoft.Net.Server
                             }
 
                             knownHeaderInfo[_nativeResponse.ResponseInfoCount].Type = UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_INFO_TYPE.HttpResponseInfoTypeMultipleKnownHeaders;
-                            knownHeaderInfo[_nativeResponse.ResponseInfoCount].Length = (uint)Marshal.SizeOf(typeof(UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS));
+                            knownHeaderInfo[_nativeResponse.ResponseInfoCount].Length =
+#if NET45
+                                (uint)Marshal.SizeOf(typeof(UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS));
+#else
+                                (uint)Marshal.SizeOf<UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS>();
+#endif
 
                             UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS header = new UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS();
 

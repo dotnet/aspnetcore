@@ -22,13 +22,12 @@
 //------------------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Runtime.InteropServices;
-using System.Security.Principal;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Framework.Logging;
@@ -72,7 +71,7 @@ namespace Microsoft.Net.Server
             }
         }
 
-        public IPrincipal User
+        public ClaimsPrincipal User
         {
             get { return _request.User; }
         }

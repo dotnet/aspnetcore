@@ -16,21 +16,18 @@
 // permissions and limitations under the License.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Microsoft.Net.Server
 {
     [Flags]
-    public enum AuthenticationType
+    public enum AuthenticationTypes
     {
-        None = 0x0,
+        // None = 0x0, // None is invalid, use AllowAnonymous (which must have a non-zero value).
         Basic = 0x1,
-        Digest = 0x2,
+        // Digest = 0x2, // TODO: Verify this is no longer supported by Http.Sys
         Ntlm = 0x4,
         Negotiate = 0x8,
         Kerberos = 0x10,
+        AllowAnonymous = 0x1000
     }
 }

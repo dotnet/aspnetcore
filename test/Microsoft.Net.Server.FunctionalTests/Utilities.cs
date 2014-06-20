@@ -16,17 +16,17 @@ namespace Microsoft.Net.Server
             return CreateServer("https", "localhost", "9090", string.Empty);
         }
 
-        internal static WebListener CreateAuthServer(AuthenticationType authType)
+        internal static WebListener CreateAuthServer(AuthenticationTypes authType)
         {
             return CreateServer("http", "localhost", "8080", string.Empty, authType);
         }
 
         internal static WebListener CreateServer(string scheme, string host, string port, string path)
         {
-            return CreateServer(scheme, host, port, path, AuthenticationType.None);
+            return CreateServer(scheme, host, port, path, AuthenticationTypes.AllowAnonymous);
         }
 
-        internal static WebListener CreateServer(string scheme, string host, string port, string path, AuthenticationType authType)
+        internal static WebListener CreateServer(string scheme, string host, string port, string path, AuthenticationTypes authType)
         {
             WebListener listener = new WebListener();
             listener.UrlPrefixes.Add(UrlPrefix.Create(scheme, host, port, path));
