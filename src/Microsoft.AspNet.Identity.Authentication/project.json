@@ -2,7 +2,7 @@
   "version": "3.0.0-*",
   "dependencies": {
     "Microsoft.AspNet.Http" : "1.0.0-*",
-    "Microsoft.Framework.Identity" : "",
+    "Microsoft.AspNet.Identity" : "",
     "Microsoft.AspNet.Security.DataProtection" : "1.0.0-*",
     "Microsoft.Framework.DependencyInjection" : "1.0.0-*",
     "System.Security.Claims" : "1.0.0-*"
