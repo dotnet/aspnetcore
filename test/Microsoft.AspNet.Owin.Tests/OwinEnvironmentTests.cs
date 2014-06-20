@@ -104,7 +104,6 @@ namespace Microsoft.AspNet.Owin
             var features = new FeatureCollection();
             features.Add(typeof(IHttpRequestFeature), new MoqHttpRequestFeature());
             features.Add(typeof(IHttpResponseFeature), new MoqHttpResponseFeature());
-            features.Add(typeof(IHttpAuthenticationFeature), new MoqHttpAuthenticationFeature());
             features.Add(typeof(IHttpRequestLifetimeFeature), new MoqHttpRequestLifetimeFeature());
             return new DefaultHttpContext(features);
         }
@@ -152,13 +151,6 @@ namespace Microsoft.AspNet.Owin
             {
                 throw new NotImplementedException();
             }
-        }
-
-        private class MoqHttpAuthenticationFeature : IHttpAuthenticationFeature
-        {
-            public ClaimsPrincipal User { get; set; }
-
-            public IAuthenticationHandler Handler { get; set; }
         }
 
         private class MoqHttpRequestLifetimeFeature : IHttpRequestLifetimeFeature

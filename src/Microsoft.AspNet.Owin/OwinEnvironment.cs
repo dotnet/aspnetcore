@@ -8,7 +8,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.Threading;
@@ -16,6 +15,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.HttpFeature.Security;
+using Microsoft.AspNet.PipelineCore.Security;
 
 namespace Microsoft.AspNet.Owin
 {
@@ -62,7 +62,10 @@ namespace Microsoft.AspNet.Owin
 
                 { OwinConstants.SendFiles.SendAsync, new FeatureMap<IHttpSendFileFeature>(feature => new SendFileFunc(feature.SendFileAsync)) },
 
-                { OwinConstants.Security.User, new FeatureMap<IHttpAuthenticationFeature>(feature => feature.User, (feature, value) => feature.User = Utilities.MakeClaimsPrincipal((IPrincipal)value)) },
+                { OwinConstants.Security.User, new FeatureMap<IHttpAuthenticationFeature>(feature => feature.User,
+                    (feature, value) => feature.User = Utilities.MakeClaimsPrincipal((IPrincipal)value),
+                    () => new HttpAuthenticationFeature())
+                },
             };
 
             if (context.Request.IsSecure)
@@ -150,17 +153,17 @@ namespace Microsoft.AspNet.Owin
                 FeatureMap entry;
                 if (_entries.TryGetValue(key, out entry))
                 {
-                    if (entry.Setter == null)
+                    if (entry.CanSet)
+                    {
+                        entry.Set(_context, value);
+                    }
+                    else
                     {
                         _entries.Remove(key);
                         if (value != null)
                         {
                             _context.Items[key] = value;
                         }
-                    }
-                    else
-                    {
-                        entry.Setter(_context.GetFeature(entry.FeatureInterface), value);
                     }
                 }
                 else
@@ -233,20 +236,32 @@ namespace Microsoft.AspNet.Owin
         public class FeatureMap
         {
             public FeatureMap(Type featureInterface, Func<object, object> getter)
-                : this(featureInterface, getter, null)
+                : this(featureInterface, getter, setter: null)
             {
             }
 
             public FeatureMap(Type featureInterface, Func<object, object> getter, Action<object, object> setter)
+                : this(featureInterface, getter, setter, featureCreator: null)
+            {
+            }
+
+            public FeatureMap(Type featureInterface, Func<object, object> getter, Action<object, object> setter, Func<object> featureCreator)
             {
                 FeatureInterface = featureInterface;
                 Getter = getter;
                 Setter = setter;
+                FeatureCreator = featureCreator;
             }
 
-            internal Type FeatureInterface { get; set; }
-            internal Func<object, object> Getter { get; set; }
-            internal Action<object, object> Setter { get; set; }
+            private Type FeatureInterface { get; set; }
+            private Func<object, object> Getter { get; set; }
+            private Action<object, object> Setter { get; set; }
+            private Func<object> FeatureCreator { get; set; }
+
+            public bool CanSet
+            {
+                get { return Setter != null; }
+            }
 
             internal object Get(HttpContext context)
             {
@@ -260,7 +275,20 @@ namespace Microsoft.AspNet.Owin
 
             internal void Set(HttpContext context, object value)
             {
-                Setter(context.GetFeature(FeatureInterface), value);
+                var feature = context.GetFeature(FeatureInterface);
+                if (feature == null)
+                {
+                    if (FeatureCreator == null)
+                    {
+                        throw new InvalidOperationException("Missing feature: " + FeatureInterface.FullName);
+                    }
+                    else
+                    {
+                        feature = FeatureCreator();
+                        context.SetFeature(FeatureInterface, feature);
+                    }
+                }
+                Setter(feature, value);
             }
         }
 
@@ -273,6 +301,11 @@ namespace Microsoft.AspNet.Owin
 
             public FeatureMap(Func<T, object> getter, Action<T, object> setter)
                 : base(typeof(T), feature => getter((T)feature), (feature, value) => setter((T)feature, value))
+            {
+            }
+
+            public FeatureMap(Func<T, object> getter, Action<T, object> setter, Func<T> creator)
+                : base(typeof(T), feature => getter((T)feature), (feature, value) => setter((T)feature, value), () => (T)creator())
             {
             }
         }
