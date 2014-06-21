@@ -142,7 +142,7 @@ namespace Microsoft.AspNet.Mvc
                         Name = action.ActionName,
                         ControllerDescriptor = controllerDescriptor,
                         MethodInfo = action.ActionMethod,
-                        Parameters = new List<ParameterDescriptor>(),
+                        Parameters = parameterDescriptors,
                         RouteConstraints = new List<RouteDataActionConstraint>(),
                     };
 
