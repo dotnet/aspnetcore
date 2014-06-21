@@ -1,0 +1,15 @@
+use assembly="System.IO.Compression.FileSystem, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
+use assembly="System.IO.Compression, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
+use namespace="System.IO"
+use namespace="System.IO.Compression"
+use namespace="System.Net"
+
+#add-files target="compile"
+  var each='var nupkgFile in Files.Include("artifacts\\build\\Microsoft.AspNet.Server.Kestrel.*.nupkg").Where(x=>!x.EndsWith("symbols.nupkg"))'
+    log info='Adding content to ${nupkgFile}'
+    var archive='${ZipFile.Open(nupkgFile, ZipArchiveMode.Update)}'
+    @{
+        archive.CreateEntryFromFile("src/Microsoft.AspNet.Server.Kestrel/amd64/libuv.dll", "amd64/libuv.dll");
+        archive.CreateEntryFromFile("src/Microsoft.AspNet.Server.Kestrel/x86/libuv.dll", "x86/libuv.dll");
+        archive.Dispose();
+    }

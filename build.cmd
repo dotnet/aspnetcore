@@ -23,4 +23,4 @@ CALL packages\KoreBuild\build\kvm install default -svrc50 -x86
 
 :run
 CALL packages\KoreBuild\build\kvm use default -svr50 -x86
-packages\Sake\tools\Sake.exe -I packages\KoreBuild\build -f makefile.shade %*
+packages\Sake\tools\Sake.exe -I build -I packages\KoreBuild\build -f makefile.shade %*
