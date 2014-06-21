@@ -30,6 +30,11 @@ The easiest way to get the KVM on Windows is to run the following command:
 ```powershell
 @powershell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/master/kvminstall.ps1'))"
 ```
+or on OSX/Linux:
+```
+curl https://raw.githubusercontent.com/aspnet/Home/master/kvminstall.sh | sh && source ~/.kre/kvm/kvm.sh
+```
+
 This downloads KVM from this repository and puts it on your machine. Alternatively, you you could clone the repo and get it:
 * Clone the repository
 * On the command line execute
