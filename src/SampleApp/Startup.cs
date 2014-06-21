@@ -15,6 +15,7 @@ namespace SampleApp
                     context.Request.Path,
                     context.Request.QueryString);
 
+                context.Response.ContentLength = 11;
                 context.Response.ContentType = "text/plain";
                 await context.Response.WriteAsync("Hello world");
             });

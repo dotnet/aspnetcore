@@ -25,6 +25,7 @@
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Program.cs" />
     <Compile Include="ServerAddress.cs" />
     <Compile Include="ServerFactory.cs" />
     <Compile Include="ServerInformation.cs" />

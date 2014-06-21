@@ -5,6 +5,7 @@ using Microsoft.Framework.ConfigurationModel;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Server.Kestrel;
 using System.Collections.Generic;
+using Microsoft.Framework.Runtime;
 
 namespace Kestrel
 {
@@ -13,6 +14,13 @@ namespace Kestrel
     /// </summary>
     public class ServerFactory : IServerFactory
     {
+        private readonly ILibraryManager _libraryManager;
+
+        public ServerFactory(ILibraryManager libraryManager)
+        {
+            _libraryManager = libraryManager;
+        }
+
         public IServerInformation Initialize(IConfiguration configuration)
         {
             var information = new ServerInformation();
@@ -24,7 +32,7 @@ namespace Kestrel
         {
             var disposables = new List<IDisposable>();
             var information = (ServerInformation)serverInformation;
-            var engine = new KestrelEngine();
+            var engine = new KestrelEngine(_libraryManager);
             engine.Start(1);
             foreach (var address in information.Addresses)
             {

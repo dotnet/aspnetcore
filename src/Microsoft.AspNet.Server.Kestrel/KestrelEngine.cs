@@ -6,19 +6,33 @@ using Microsoft.AspNet.Server.Kestrel.Networking;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Server.Kestrel.Http;
+using Microsoft.Framework.Runtime;
+using System.IO;
 
 namespace Microsoft.AspNet.Server.Kestrel
 {
     public class KestrelEngine : IDisposable
     {
 
-        public KestrelEngine()
+        public KestrelEngine(ILibraryManager libraryManager)
         {
             Threads = new List<KestrelThread>();
             Listeners = new List<Listener>();
             Memory = new MemoryPool();
             Libuv = new Libuv();
-            Libuv.Load("libuv.dll");
+
+            var library = libraryManager.GetLibraryInformation("Microsoft.AspNet.Server.Kestrel");
+            var libraryPath = library.Path;
+            if (library.Type == "Project")
+            {
+                libraryPath = Path.GetDirectoryName(libraryPath);
+            }
+            var architecture = IntPtr.Size == 4
+                ? "x86"
+                : "amd64";
+            libraryPath = Path.Combine(libraryPath, architecture, "libuv.dll");
+
+            Libuv.Load(libraryPath);
         }
 
         public Libuv Libuv { get; private set; }

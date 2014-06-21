@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNet.Server.Kestrel;
 using Microsoft.AspNet.Server.Kestrel.Http;
+using Microsoft.Framework.Runtime;
+using Microsoft.Framework.Runtime.Infrastructure;
 using System;
 using System.Threading.Tasks;
 
@@ -18,16 +20,24 @@ namespace Microsoft.AspNet.Server.KestralTests
             Create(app);
         }
 
+        ILibraryManager LibraryManager
+        {
+            get
+            {
+                var services = CallContextServiceLocator.Locator.ServiceProvider;
+                return (ILibraryManager)services.GetService(typeof(ILibraryManager));
+            }
+        }
+
         public void Create(Func<Frame, Task> app)
         {
-            _engine = new KestrelEngine();
+            _engine = new KestrelEngine(LibraryManager);
             _engine.Start(1);
             _server = _engine.CreateServer(
                 "http",
                 "localhost",
                 54321,
                 app);
-
         }
 
         public void Dispose()

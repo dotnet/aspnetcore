@@ -25,14 +25,14 @@
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <CommandLineArguments>web</CommandLineArguments>
+    <CommandLineArguments>
+    </CommandLineArguments>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="libuv.dll" />
     <Content Include="Microsoft.AspNet.Hosting.ini" />
     <Content Include="project.json" />
   </ItemGroup>

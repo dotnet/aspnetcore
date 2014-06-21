@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNet.Server.Kestrel;
 using Microsoft.AspNet.Server.Kestrel.Http;
+using Microsoft.Framework.Runtime;
+using Microsoft.Framework.Runtime.Infrastructure;
 using System;
 using System.IO;
 using System.Net;
@@ -28,6 +30,17 @@ namespace Microsoft.AspNet.Server.KestralTests
                 await frame.ResponseBody.WriteAsync(buffer, 0, count);
             }
         }
+
+        ILibraryManager LibraryManager
+        {
+            get
+            {
+                var services = CallContextServiceLocator.Locator.ServiceProvider;
+                return (ILibraryManager)services.GetService(typeof(ILibraryManager));
+            }
+        }
+
+
         private async Task AppChunked(Frame frame)
         {
             var data = new MemoryStream();
@@ -49,7 +62,7 @@ namespace Microsoft.AspNet.Server.KestralTests
         [Fact]
         public async Task EngineCanStartAndStop()
         {
-            var engine = new KestrelEngine();
+            var engine = new KestrelEngine(LibraryManager);
             engine.Start(1);
             engine.Dispose();
         }
@@ -57,7 +70,7 @@ namespace Microsoft.AspNet.Server.KestralTests
         [Fact]
         public async Task ListenerCanCreateAndDispose()
         {
-            var engine = new KestrelEngine();
+            var engine = new KestrelEngine(LibraryManager);
             engine.Start(1);
             var started = engine.CreateServer("http", "localhost", 54321, App);
             started.Dispose();
@@ -68,7 +81,7 @@ namespace Microsoft.AspNet.Server.KestralTests
         [Fact]
         public async Task ConnectionCanReadAndWrite()
         {
-            var engine = new KestrelEngine();
+            var engine = new KestrelEngine(LibraryManager);
             engine.Start(1);
             var started = engine.CreateServer("http", "localhost", 54321, App);
 

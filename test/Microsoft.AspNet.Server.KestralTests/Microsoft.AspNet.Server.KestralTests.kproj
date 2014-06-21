@@ -24,7 +24,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="project.json" />
-    <Content Include="libuv.dll" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EngineTests.cs" />

@@ -1,10 +1,10 @@
 {
-    "version": "0.1-alpha-*",
+    "version": "1.0.0-*",
     "dependencies": {
-        "Xunit.KRunner": "0.1-*",
+        "Xunit.KRunner": "1.0.0-*",
         "xunit.assert": "2.0.0-*",
         "xunit.abstractions": "2.0.0-*",
-        "Microsoft.AspNet.Server.Kestrel": "0.1-*"
+        "Microsoft.AspNet.Server.Kestrel": "1.0.0-*"
     },
     "configurations": {
         "net45": {
@@ -20,6 +20,7 @@
         }
     },
     "commands": {
+        "run": "Xunit.KRunner",
         "test": "Xunit.KRunner"
     }
 }

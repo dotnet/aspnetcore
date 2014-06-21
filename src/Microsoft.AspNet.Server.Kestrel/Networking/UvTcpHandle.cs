@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Net;
 
 namespace Microsoft.AspNet.Server.Kestrel.Networking
@@ -16,7 +17,21 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         public void Bind(IPEndPoint endpoint)
         {
             Libuv.sockaddr addr;
-            _uv.ip4_addr(endpoint.Address.ToString(), endpoint.Port, out addr);
+            var addressText = endpoint.Address.ToString();
+
+            Exception error1;
+            _uv.ip4_addr(addressText, endpoint.Port, out addr, out error1);
+
+            if (error1 != null)
+            {
+                Exception error2;
+                _uv.ip6_addr(addressText, endpoint.Port, out addr, out error2);
+                if (error2 != null)
+                {
+                    throw error1;
+                }
+            }
+
             _uv.tcp_bind(this, ref addr, 0);
         }
     }

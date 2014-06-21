@@ -1,7 +1,10 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNet.Server.Kestrel;
 using Microsoft.AspNet.Server.Kestrel.Networking;
+using Microsoft.Framework.Runtime;
+using Microsoft.Framework.Runtime.Infrastructure;
 using System;
 using System.Net;
 using System.Net.Sockets;
@@ -19,8 +22,17 @@ namespace Microsoft.AspNet.Server.KestralTests
         Libuv _uv;
         public NetworkingTests()
         {
-            _uv = new Libuv();
-            _uv.Load("libuv.dll");
+            var engine = new KestrelEngine(LibraryManager);
+            _uv = engine.Libuv;
+        }
+
+        ILibraryManager LibraryManager
+        {
+            get
+            {
+                var services = CallContextServiceLocator.Locator.ServiceProvider;
+                return (ILibraryManager)services.GetService(typeof(ILibraryManager));
+            }
         }
 
         [Fact]

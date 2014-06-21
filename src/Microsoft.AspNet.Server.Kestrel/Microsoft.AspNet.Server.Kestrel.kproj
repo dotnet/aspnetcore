@@ -23,7 +23,9 @@
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="amd64\libuv.dll" />
     <Content Include="project.json" />
+    <Content Include="x86\libuv.dll" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Http\FrameDuplexStream.cs" />

@@ -4,6 +4,7 @@
 using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Microsoft.AspNet.Server.Kestrel.Networking
 {
@@ -38,9 +39,26 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 
         public int Check(int statusCode)
         {
+            Exception error;
+            var result = Check(statusCode, out error);
+            if (error != null)
+            {
+                throw error;
+            }
+            return statusCode;
+        }
+
+        public int Check(int statusCode, out Exception error)
+        {
             if (statusCode < 0)
             {
-                throw new Exception("Status code " + statusCode);
+                var errorName = err_name(statusCode);
+                var errorDescription = strerror(statusCode);
+                error = new Exception("Error " + statusCode + " " + errorName + " " + errorDescription);
+            }
+            else
+            {
+                error = null;
             }
             return statusCode;
         }
@@ -235,6 +253,25 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        delegate IntPtr uv_err_name(int err);
+        uv_err_name _uv_err_name;
+        public unsafe String err_name(int err)
+        {
+            IntPtr ptr = _uv_err_name(err);
+            return ptr == IntPtr.Zero ? null : Marshal.PtrToStringAnsi(ptr);
+        }
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        delegate IntPtr uv_strerror(int err);
+        uv_strerror _uv_strerror;
+        public unsafe String strerror(int err)
+        {
+            IntPtr ptr = _uv_strerror(err);
+            return ptr == IntPtr.Zero ? null : Marshal.PtrToStringAnsi(ptr);
+        }
+
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         delegate int uv_req_size(int handleType);
         uv_req_size _uv_req_size;
         public int req_size(int handleType)
@@ -246,18 +283,18 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         delegate int uv_ip4_addr(string ip, int port, out sockaddr addr);
 
         uv_ip4_addr _uv_ip4_addr;
-        public void ip4_addr(string ip, int port, out sockaddr addr)
+        public int ip4_addr(string ip, int port, out sockaddr addr, out Exception error)
         {
-            Check(_uv_ip4_addr(ip, port, out addr));
+            return Check(_uv_ip4_addr(ip, port, out addr), out error);
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         delegate int uv_ip6_addr(string ip, int port, out sockaddr addr);
 
         uv_ip6_addr _uv_ip6_addr;
-        public void ip6_addr(string ip, int port, out sockaddr addr)
+        public int ip6_addr(string ip, int port, out sockaddr addr, out Exception error)
         {
-            Check(_uv_ip6_addr(ip, port, out addr));
+            return Check(_uv_ip6_addr(ip, port, out addr), out error);
         }
 
         public struct sockaddr
