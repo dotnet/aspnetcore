@@ -63,9 +63,7 @@ kvm alias <alias> <semver> [-x86][-x64] [-svr50][-svrc50]
 }
 
 function Kvm-Global-Setup {
-    
-		Write-Host "Global: $global";
-		If ($global)
+    If ($global)
     {
         If (Needs-Elevation)
         {
