@@ -1,6 +1,6 @@
 
 var PROJECT='AspNet'
-var VERSION='0.2.1-dev'
+var VERSION='0.2.1'
 
 use namespace='System'
 use namespace='System.IO'
@@ -44,7 +44,15 @@ var repos='${new Dictionary<string,string> {
 }}'
 
 @{
-    VERSION += "-" + BuildNumber;
+    var kBuildVersion = Environment.GetEnvironmentVariable("K_BUILD_VERSION");
+    if (!string.IsNullOrEmpty(kBuildVersion))
+    {
+        VERSION += "-" + kBuildVersion;
+    }
+    else
+    {
+        VERSION += "-" + BuildNumber;
+    }
 }
 
 #default .compile
