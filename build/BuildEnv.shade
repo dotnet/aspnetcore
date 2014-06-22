@@ -7,16 +7,7 @@ functions
     {
         get 
         {
-            string buildNumber = Environment.GetEnvironmentVariable("BUILD_NUMBER");
-            if (String.IsNullOrEmpty(buildNumber))
-            {
-                return "t" + DateTime.UtcNow.ToString("yyMMddHHmmss");
-            }
-
-            buildNumber = "alpha2-" + buildNumber.PadLeft(4, (char)'0');
-
-            return buildNumber;
-                   
+            return "t" + DateTime.UtcNow.ToString("yyMMddHHmmss");
         }
     }
   }
