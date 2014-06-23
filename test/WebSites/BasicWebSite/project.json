@@ -1,7 +1,7 @@
 ﻿{
     "dependencies": {
-        "Helios": "1.0.0-*",
-        "Microsoft.AspNet.Mvc": ""
+        "Microsoft.AspNet.Mvc": "",
+        "Microsoft.AspNet.Server.IIS": "1.0.0-*"
     },
     "configurations": {
         "net45": { },
