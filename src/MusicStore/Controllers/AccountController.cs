@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.Security;
 using Microsoft.AspNet.Mvc;
 using MusicStore.Models;
 using System.Security.Principal;
