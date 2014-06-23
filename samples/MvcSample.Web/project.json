@@ -3,13 +3,13 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "Helios": "1.0.0-*",
     "Microsoft.AspNet.Http": "1.0.0-*",
     "Microsoft.AspNet.Mvc": "",
     "Microsoft.AspNet.Mvc.Core": "",
     "Microsoft.AspNet.Mvc.ModelBinding": "",
     "Microsoft.AspNet.Mvc.Razor": "",
     "Microsoft.AspNet.Routing": "1.0.0-*",
+    "Microsoft.AspNet.Server.IIS": "1.0.0-*",
     "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
     "Microsoft.DataAnnotations": "1.0.0-*",
     "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
