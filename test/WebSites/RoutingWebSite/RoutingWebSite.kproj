@@ -10,8 +10,8 @@
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>323d0c04-b518-4a8f-8a8e-3546ad153d34</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>42cdbf4a-e238-4c0f-a416-44588363eb4c</ProjectGuid>
+    <OutputType>Web</OutputType>
   </PropertyGroup>
   <PropertyGroup Condition="$(OutputType) == 'Console'">
     <DebuggerFlavor>ConsoleDebugger</DebuggerFlavor>
@@ -24,23 +24,17 @@
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DevelopmentServerPort>11178</DevelopmentServerPort>
+  </PropertyGroup>
   <ItemGroup>
-    <Content Include="compiler\resources\BasicWebSite.Home.Index.html" />
-    <Content Include="compiler\resources\BasicWebSite.Home.PlainView.html" />
-    <Content Include="project.json" />
+    <Compile Include="Areas\Travel\FlightController.cs" />
+    <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Startup.cs" />
+    <Compile Include="TestResponseGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ActivatorTests.cs" />
-    <Compile Include="DependencyResolverTests.cs" />
-    <Compile Include="InlineConstraintTests.cs" />
-    <Compile Include="RoutingTests.cs" />
-    <Compile Include="TestAssemblyProvider.cs" />
-    <Compile Include="TestConfigurationProvider.cs" />
-    <Compile Include="TestHelper.cs" />
-    <Compile Include="BasicTests.cs" />
-    <Compile Include="HttpResponseHelpers.cs" />
-    <Compile Include="ResourceHelpers.cs" />
-    <Compile Include="TestApplicationEnvironment.cs" />
+    <Content Include="project.json" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
