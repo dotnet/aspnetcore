@@ -11,11 +11,13 @@ namespace ActivatorWebSite
     {
         public void Configure(IBuilder app)
         {
+            var configuration = app.GetTestConfiguration();
+
             // Set up application services
             app.UseServices(services =>
             {
                 // Add MVC services to the services container
-                services.AddMvc();
+                services.AddMvc(configuration);
                 services.AddInstance(new MyService());
             });
 

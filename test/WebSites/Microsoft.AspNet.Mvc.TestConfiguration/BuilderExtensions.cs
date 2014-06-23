@@ -1,0 +1,22 @@
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using Microsoft.AspNet.Mvc;
+using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.DependencyInjection;
+
+namespace Microsoft.AspNet.Builder
+{
+    public static class BuilderExtensions
+    {
+        public static Configuration GetTestConfiguration(this IBuilder app)
+        {
+            var configurationProvider = app.ApplicationServices.GetServiceOrDefault<ITestConfigurationProvider>();
+            var configuration = configurationProvider == null
+                ? new Configuration()
+                : configurationProvider.Configuration;
+
+            return configuration;
+        }
+    }
+}

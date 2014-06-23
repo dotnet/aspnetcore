@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.21722.1
+VisualStudioVersion = 14.0.21806.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{DAAE4C74-D06F-4874-A166-33305D2643CE}"
 EndProject
@@ -42,6 +42,8 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "InlineConstraintsWebSite", "test\WebSites\InlineConstraintsWebSite\InlineConstraintsWebSite.kproj", "{EA34877F-1AC1-42B7-B4E6-15A093F40CAE}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AutofacWebSite", "test\WebSites\AutofacWebSite\AutofacWebSite.kproj", "{07C0E921-FCBB-458C-AC11-3D01CE68B16B}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.TestConfiguration", "test\WebSites\Microsoft.AspNet.Mvc.TestConfiguration\Microsoft.AspNet.Mvc.TestConfiguration.kproj", "{680D75ED-601F-4D86-B01B-1072D0C31B8C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -213,6 +215,16 @@ Global
 		{07C0E921-FCBB-458C-AC11-3D01CE68B16B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{07C0E921-FCBB-458C-AC11-3D01CE68B16B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{07C0E921-FCBB-458C-AC11-3D01CE68B16B}.Release|x86.ActiveCfg = Release|Any CPU
+		{680D75ED-601F-4D86-B01B-1072D0C31B8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{680D75ED-601F-4D86-B01B-1072D0C31B8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{680D75ED-601F-4D86-B01B-1072D0C31B8C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{680D75ED-601F-4D86-B01B-1072D0C31B8C}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{680D75ED-601F-4D86-B01B-1072D0C31B8C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{680D75ED-601F-4D86-B01B-1072D0C31B8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{680D75ED-601F-4D86-B01B-1072D0C31B8C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{680D75ED-601F-4D86-B01B-1072D0C31B8C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{680D75ED-601F-4D86-B01B-1072D0C31B8C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{680D75ED-601F-4D86-B01B-1072D0C31B8C}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -235,5 +247,6 @@ Global
 		{DB79BCBA-9538-4A53-87D9-77728E2BAA39} = {16703B76-C9F7-4C75-AE6C-53D92E308E3C}
 		{EA34877F-1AC1-42B7-B4E6-15A093F40CAE} = {16703B76-C9F7-4C75-AE6C-53D92E308E3C}
 		{07C0E921-FCBB-458C-AC11-3D01CE68B16B} = {16703B76-C9F7-4C75-AE6C-53D92E308E3C}
+		{680D75ED-601F-4D86-B01B-1072D0C31B8C} = {16703B76-C9F7-4C75-AE6C-53D92E308E3C}
 	EndGlobalSection
 EndGlobal

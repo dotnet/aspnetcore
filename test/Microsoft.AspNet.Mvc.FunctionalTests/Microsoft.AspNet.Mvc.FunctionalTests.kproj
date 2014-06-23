@@ -33,6 +33,8 @@
     <Compile Include="ActivatorTests.cs" />
     <Compile Include="DependencyResolverTests.cs" />
     <Compile Include="InlineConstraintTests.cs" />
+    <Compile Include="TestAssemblyProvider.cs" />
+    <Compile Include="TestConfigurationProvider.cs" />
     <Compile Include="TestHelper.cs" />
     <Compile Include="BasicTests.cs" />
     <Compile Include="HttpResponseHelpers.cs" />

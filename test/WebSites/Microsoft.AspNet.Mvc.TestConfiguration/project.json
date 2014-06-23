@@ -1,0 +1,11 @@
+﻿{
+    "dependencies": {
+        "Microsoft.AspNet.Http":  "1.0.0-*",
+        "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
+        "Microsoft.Framework.DependencyInjection": "1.0.0-*"
+    },
+    "configurations" : {
+        "net45" : { },
+        "k10" : { }
+    }
+}

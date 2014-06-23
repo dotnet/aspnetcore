@@ -10,8 +10,8 @@
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>ea34877f-1ac1-42b7-b4e6-15a093f40cae</ProjectGuid>
-    <OutputType>Web</OutputType>
+    <ProjectGuid>680d75ed-601f-4d86-b01b-1072d0c31b8c</ProjectGuid>
+    <OutputType>Library</OutputType>
   </PropertyGroup>
   <PropertyGroup Condition="$(OutputType) == 'Console'">
     <DebuggerFlavor>ConsoleDebugger</DebuggerFlavor>
@@ -24,25 +24,12 @@
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DevelopmentServerPort>38821</DevelopmentServerPort>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DevelopmentServerPort>624661</DevelopmentServerPort>
-  </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="Controllers\UsersController.cs" />
-    <Compile Include="DefaultCommandLineArgumentBuilder.cs" />
-    <Compile Include="ICommandLineArgumentProvider.cs" />
-    <Compile Include="Startup.cs" />
+    <Compile Include="BuilderExtensions.cs" />
+    <Compile Include="ITestConfigurationProvider.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="App_Data\config.json" />
     <Content Include="project.json" />
-    <Content Include="Views\Home\Index.cshtml" />
-    <Content Include="Views\Shared\Error.cshtml" />
-    <Content Include="Views\Shared\_Layout.cshtml" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>

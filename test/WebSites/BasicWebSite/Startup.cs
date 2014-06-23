@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
+using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 
 namespace BasicWebSite
@@ -9,11 +10,13 @@ namespace BasicWebSite
     {
         public void Configure(IBuilder app)
         {
+            var configuration = app.GetTestConfiguration();
+
             // Set up application services
             app.UseServices(services =>
             {
                 // Add MVC services to the services container
-                services.AddMvc();
+                services.AddMvc(configuration);
 
                 services.AddSingleton<INestedProvider<ActionDescriptorProviderContext>, ActionDescriptorCreationCounter>();
             });

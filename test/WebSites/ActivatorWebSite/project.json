@@ -1,7 +1,8 @@
 ﻿{
     "dependencies": {
         "Microsoft.AspNet.Mvc": "",
-        "Microsoft.AspNet.Server.IIS": "1.0.0-*"
+        "Microsoft.AspNet.Server.IIS": "1.0.0-*",
+        "Microsoft.AspNet.Mvc.TestConfiguration": ""
     },
     "configurations": {
         "net45": { },

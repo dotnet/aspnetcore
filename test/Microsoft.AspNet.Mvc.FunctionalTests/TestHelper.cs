@@ -14,6 +14,7 @@ using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Infrastructure;
 using Xunit;
+using Microsoft.Framework.ConfigurationModel;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
@@ -32,12 +33,25 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // environment value so that components like the view engine work properly in the context of the
             // test.
             var appBasePath = CalculateApplicationBasePath(appEnvironment, applicationWebSiteName);
-            var provider = new ServiceCollection()
-                            .AddInstance(typeof(IApplicationEnvironment),
-                                         new TestApplicationEnvironment(appEnvironment, appBasePath))
-                            .BuildServiceProvider(originalProvider);
+            var services = new ServiceCollection();
+            services.AddInstance(
+                typeof(IApplicationEnvironment),
+                new TestApplicationEnvironment(appEnvironment, appBasePath));
 
-            return provider;
+            // Injecting a custom assembly provider via configuration setting. It's not good enough to just
+            // add the service directly since it's registered by MVC. 
+            var providerType = CreateAssemblyProviderType(applicationWebSiteName);
+
+            var configuration = new TestConfigurationProvider();
+            configuration.Configuration.Set(
+                typeof(IControllerAssemblyProvider).FullName,
+                providerType.AssemblyQualifiedName);
+
+            services.AddInstance(
+                typeof(ITestConfigurationProvider),
+                configuration);
+
+            return services.BuildServiceProvider(originalProvider);
         }
 
         // Calculate the path relative to the application base path.
@@ -52,6 +66,16 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Mvc/test/WebSites/applicationWebSiteName
             return Path.GetFullPath(Path.Combine(appBase, "..", "WebSites", applicationWebSiteName));
+        }
+
+        private static Type CreateAssemblyProviderType(string siteName)
+        {
+            // Creates a service type that will limit MVC to only the controllers in the test site.
+            // We only want this to happen when running in proc.
+            var assembly = Assembly.Load(new AssemblyName(siteName));
+
+            var providerType = typeof(TestAssemblyProvider<>).MakeGenericType(assembly.GetExportedTypes()[0]);
+            return providerType;
         }
     }
 }
