@@ -10,8 +10,8 @@ namespace Microsoft.AspNet.Identity
     internal static class Crypto
     {
         private const int Pbkdf2IterCount = 1000; // default for Rfc2898DeriveBytes
-        private const int Pbkdf2SubkeyLength = 256/8; // 256 bits
-        private const int SaltSize = 128/8; // 128 bits
+        private const int Pbkdf2SubkeyLength = 256 / 8; // 256 bits
+        private const int SaltSize = 128 / 8; // 128 bits
 
         /* =======================
          * HASHED PASSWORD FORMATS

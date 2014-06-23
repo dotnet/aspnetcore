@@ -42,12 +42,18 @@ namespace Microsoft.AspNet.Identity
         public IdentityRole()
         {
             Users = new List<IdentityUserRole<TKey>>();
+            Claims = new List<IdentityRoleClaim<TKey>>();
         }
 
         /// <summary>
         ///     Navigation property for users in the role
         /// </summary>
         public virtual ICollection<IdentityUserRole<TKey>> Users { get; private set; }
+
+        /// <summary>
+        ///     Navigation property for claims in the role
+        /// </summary>
+        public virtual ICollection<IdentityRoleClaim<TKey>> Claims { get; private set; }
 
         /// <summary>
         ///     Role id

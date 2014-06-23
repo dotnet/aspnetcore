@@ -2,7 +2,6 @@
   "version": "3.0.0-*",
   "dependencies": {
     "Microsoft.AspNet.Identity": "",
-    "EntityFramework.InMemory": "7.0.0-*",
     "EntityFramework.SqlServer": "7.0.0-*",
     "System.Security.Claims" : "1.0.0-*"
   },

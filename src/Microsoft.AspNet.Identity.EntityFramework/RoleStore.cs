@@ -2,27 +2,38 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.Entity;
 
-namespace Microsoft.AspNet.Identity.Entity
+namespace Microsoft.AspNet.Identity.EntityFramework
 {
-    public class RoleStore<TRole> : RoleStore<TRole, string> where TRole : EntityRole
+    public class RoleStore<TRole> : RoleStore<TRole, string, DbContext> where TRole : IdentityRole
     {
         public RoleStore(DbContext context) : base(context) { }
     }
 
-    public class RoleStore<TRole, TKey> : 
-        IQueryableRoleStore<TRole>
-        where TRole : EntityRole
+    public class RoleStore<TRole, TContext> : RoleStore<TRole, string, TContext> 
+        where TRole : IdentityRole
+        where TContext : DbContext
+    {
+        public RoleStore(TContext context) : base(context) { }
+    }
+
+    public class RoleStore<TRole, TKey, TContext> : 
+        IQueryableRoleStore<TRole>,
+        IRoleClaimStore<TRole>
+        where TRole : IdentityRole
         where TKey : IEquatable<TKey>
+        where TContext : DbContext
     {
         private bool _disposed;
 
-        public RoleStore(DbContext context)
+        public RoleStore(TContext context)
         {
             if (context == null)
             {
@@ -32,7 +43,7 @@ namespace Microsoft.AspNet.Identity.Entity
             AutoSaveChanges = true;
         }
 
-        public DbContext Context { get; private set; }
+        public TContext Context { get; private set; }
 
         /// <summary>
         ///     If true will call SaveChanges after CreateAsync/UpdateAsync/DeleteAsync
@@ -49,8 +60,7 @@ namespace Microsoft.AspNet.Identity.Entity
 
         public virtual Task<TRole> GetRoleAggregate(Expression<Func<TRole, bool>> filter, CancellationToken cancellationToken = default(CancellationToken))
         {
-            // TODO: return Roles.SingleOrDefaultAsync(filter, cancellationToken);
-            return Task.FromResult(Roles.SingleOrDefault(filter));
+            return Task.FromResult(Roles.FirstOrDefault(filter));
         }
 
         public async virtual Task CreateAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
@@ -123,7 +133,6 @@ namespace Microsoft.AspNet.Identity.Entity
             return Task.FromResult(0);
         }
 
-
         public virtual TKey ConvertId(string userId)
         {
             return (TKey)Convert.ChangeType(userId, typeof(TKey));
@@ -172,9 +181,56 @@ namespace Microsoft.AspNet.Identity.Entity
             _disposed = true;
         }
 
+        public Task<IList<Claim>> GetClaimsAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            ThrowIfDisposed();
+            if (role == null)
+            {
+                throw new ArgumentNullException("role");
+            }
+            IList<Claim> result = RoleClaims.Where(rc => rc.RoleId == role.Id).Select(c => new Claim(c.ClaimType, c.ClaimValue)).ToList();
+            return Task.FromResult(result);
+        }
+
+        public Task AddClaimAsync(TRole role, Claim claim, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            ThrowIfDisposed();
+            if (role == null)
+            {
+                throw new ArgumentNullException("role");
+            }
+            if (claim == null)
+            {
+                throw new ArgumentNullException("claim");
+            }
+            RoleClaims.Add(new IdentityRoleClaim { RoleId = role.Id, ClaimType = claim.Type, ClaimValue = claim.Value });
+            return Task.FromResult(0);
+        }
+
+        public Task RemoveClaimAsync(TRole role, Claim claim, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            ThrowIfDisposed();
+            if (role == null)
+            {
+                throw new ArgumentNullException("role");
+            }
+            if (claim == null)
+            {
+                throw new ArgumentNullException("claim");
+            }
+            var claims = RoleClaims.Where(uc => uc.ClaimValue == claim.Value && uc.ClaimType == claim.Type).ToList();
+            foreach (var c in claims)
+            {
+                RoleClaims.Remove(c);
+            }
+            return Task.FromResult(0);
+        }
+
         public IQueryable<TRole> Roles
         {
             get { return Context.Set<TRole>(); }
         }
+        private DbSet<IdentityRoleClaim> RoleClaims { get { return Context.Set<IdentityRoleClaim>(); } }
+
     }
 }

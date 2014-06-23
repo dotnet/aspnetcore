@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
-using System;
 
 namespace Microsoft.AspNet.Identity
 {
@@ -44,30 +44,9 @@ namespace Microsoft.AspNet.Identity
             return AddInstance(func);
         }
 
-        public class OptionsSetup<TOptions> : IOptionsSetup<TOptions>
-        {
-            public Action<TOptions> SetupAction { get; private set; }
-
-            public OptionsSetup(Action<TOptions> setupAction)
-            {
-                if (setupAction == null)
-                {
-                    throw new ArgumentNullException("setupAction");
-                }
-                SetupAction = setupAction;
-            }
-
-            public void Setup(TOptions options)
-            {
-                SetupAction(options);
-            }
-
-            public int Order { get; set; }
-        }
-
         public IdentityBuilder<TUser, TRole> SetupOptions(Action<IdentityOptions> action, int order)
         {
-            Services.AddSetup(new OptionsSetup<IdentityOptions>(action) {Order = order});
+            Services.AddSetup(new OptionsSetup<IdentityOptions>(action) { Order = order });
             return this;
         }
 
@@ -88,10 +67,10 @@ namespace Microsoft.AspNet.Identity
             return this;
         }
 
-        //public IdentityBuilder<TUser, TRole> UseTwoFactorProviders(Func<IDictionary<string, IUserTokenProvider<TUser>>> func)
+        //public IdentityBuilder<TUser, TRole> UseTwoFactorProviders(Func<IDictionary<string, 
+        //IUserTokenProvider<TUser>>> func)
         //{
         //    return Use(func);
         //}
-
     }
 }

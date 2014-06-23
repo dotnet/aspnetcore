@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Threading;
-#if NET45
-using System.Net.Mail;
-#endif
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+#if NET45
+using System.Net.Mail;
+#endif
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Identity
@@ -26,7 +26,8 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, 
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             if (manager == null)
             {
@@ -102,7 +103,8 @@ namespace Microsoft.AspNet.Identity
             else
             {
                 var owner = await manager.FindByNameAsync(userName);
-                if (owner != null && !string.Equals(await manager.GetUserIdAsync(owner), await manager.GetUserIdAsync(user)))
+                if (owner != null && 
+                    !string.Equals(await manager.GetUserIdAsync(owner), await manager.GetUserIdAsync(user)))
                 {
                     errors.Add(String.Format(CultureInfo.CurrentCulture, Resources.DuplicateName, userName));
                 }
@@ -130,7 +132,8 @@ namespace Microsoft.AspNet.Identity
             }
 #endif
             var owner = await manager.FindByEmailAsync(email);
-            if (owner != null && !string.Equals(await manager.GetUserIdAsync(owner), await manager.GetUserIdAsync(user)))
+            if (owner != null && 
+                !string.Equals(await manager.GetUserIdAsync(owner), await manager.GetUserIdAsync(user)))
             {
                 errors.Add(String.Format(CultureInfo.CurrentCulture, Resources.DuplicateEmail, email));
             }

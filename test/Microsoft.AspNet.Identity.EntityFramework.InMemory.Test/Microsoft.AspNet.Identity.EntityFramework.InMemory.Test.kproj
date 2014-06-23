@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="__ToolsVersion__" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.Props" Condition="'$(VSToolsPath)' != ''" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>813b36fe-bba5-4449-b157-6ebba5ed02ca</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <ActiveTargetFramework>net45</ActiveTargetFramework>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
+  </PropertyGroup>
+  <PropertyGroup>
+    <SchemaVersion>2.0</SchemaVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="project.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="EntityIdentityBuilderExtensions.cs" />
+    <Compile Include="InMemoryUser.cs" />
+    <Compile Include="InMemoryContext.cs" />
+    <Compile Include="InMemoryUserStore.cs" />
+    <Compile Include="InMemoryUserStoreTest.cs" />
+    <Compile Include="RoleStoreTest.cs" />
+    <Compile Include="TestIdentityFactory.cs" />
+  </ItemGroup>
+  <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
+</Project>

@@ -15,12 +15,13 @@ namespace Microsoft.AspNet.Identity
     public interface IUserClaimStore<TUser> : IUserStore<TUser> where TUser : class
     {
         /// <summary>
-        ///     Returns the claims for the user with the issuer set
+        ///     Returns the claims for the user
         /// </summary>
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<IList<Claim>> GetClaimsAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken));
+        Task<IList<Claim>> GetClaimsAsync(TUser user, 
+            CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Add a new user claim
@@ -38,6 +39,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="claim"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task RemoveClaimAsync(TUser user, Claim claim, CancellationToken cancellationToken = default(CancellationToken));
+        Task RemoveClaimAsync(TUser user, Claim claim, 
+            CancellationToken cancellationToken = default(CancellationToken));
     }
 }

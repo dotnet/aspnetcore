@@ -13,13 +13,6 @@ namespace Microsoft.AspNet.Identity
     /// <typeparam name="TKey"></typeparam>
     public class IdentityUserLogin<TKey> where TKey : IEquatable<TKey>
     {
-        // TODO: Remove
-        public virtual string Id
-        {
-            get;
-            set;
-        }
-
         /// <summary>
         ///     The login provider for the login (i.e. facebook, google)
         /// </summary>

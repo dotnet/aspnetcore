@@ -6,7 +6,7 @@ using System.Security.Claims;
 using System.Security.Principal;
 using Xunit;
 
-namespace Microsoft.AspNet.Identity.Security.Test
+namespace Microsoft.AspNet.Identity.Authentication.Test
 {
     public class IdentityExtensionsTest
     {

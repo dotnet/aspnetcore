@@ -23,8 +23,8 @@ namespace Microsoft.AspNet.Identity.Test
 
             public TestManager(IUserStore<TestUser> store, IOptionsAccessor<IdentityOptions> optionsAccessor,
                 IPasswordHasher passwordHasher, IUserValidator<TestUser> userValidator,
-                IPasswordValidator<TestUser> passwordValidator, IClaimsIdentityFactory<TestUser> claimsIdentityFactory)
-                : base(store, optionsAccessor, passwordHasher, userValidator, passwordValidator, claimsIdentityFactory) { }
+                IPasswordValidator<TestUser> passwordValidator)
+                : base(store, optionsAccessor, passwordHasher, userValidator, passwordValidator) { }
         }
 
         [Fact]
@@ -426,29 +426,18 @@ namespace Microsoft.AspNet.Identity.Test
             var passwordHasher = new PasswordHasher();
             var userValidator = new UserValidator<TestUser>();
             var passwordValidator = new PasswordValidator<TestUser>();
-            var claimsIdentityFactory = new ClaimsIdentityFactory<TestUser>();
 
             Assert.Throws<ArgumentNullException>("store",
-                () => new UserManager<TestUser>(null, null, null, null, null, null));
+                () => new UserManager<TestUser>(null, null, null, null, null));
             Assert.Throws<ArgumentNullException>("optionsAccessor",
-                () => new UserManager<TestUser>(store, null, null, null, null, null));
+                () => new UserManager<TestUser>(store, null, null, null, null));
             Assert.Throws<ArgumentNullException>("passwordHasher",
-                () => new UserManager<TestUser>(store, optionsAccessor, null, null, null, null));
-            Assert.Throws<ArgumentNullException>("userValidator",
-                () => new UserManager<TestUser>(store, optionsAccessor, passwordHasher, null, null, null));
-            Assert.Throws<ArgumentNullException>("passwordValidator",
-                () => new UserManager<TestUser>(store, optionsAccessor, passwordHasher, userValidator, null, null));
-            Assert.Throws<ArgumentNullException>("claimsIdentityFactory",
-                () => new UserManager<TestUser>(store, optionsAccessor, passwordHasher, userValidator, passwordValidator, null));
+                () => new UserManager<TestUser>(store, optionsAccessor, null, null, null));
 
-            var manager = new UserManager<TestUser>(store, optionsAccessor, passwordHasher, userValidator, passwordValidator, claimsIdentityFactory);
+            var manager = new UserManager<TestUser>(store, optionsAccessor, passwordHasher, userValidator, passwordValidator);
 
-            Assert.Throws<ArgumentNullException>("value", () => manager.ClaimsIdentityFactory = null);
             Assert.Throws<ArgumentNullException>("value", () => manager.PasswordHasher = null);
             Assert.Throws<ArgumentNullException>("value", () => manager.Options = null);
-            await
-                Assert.ThrowsAsync<ArgumentNullException>("user",
-                    async () => await manager.CreateIdentityAsync(null, "whatever"));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await manager.CreateAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await manager.CreateAsync(null, null));
             await
@@ -580,7 +569,6 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var manager = MockHelpers.TestUserManager(new NoopUserStore());
             manager.Dispose();
-            Assert.Throws<ObjectDisposedException>(() => manager.ClaimsIdentityFactory);
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.AddClaimAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.AddLoginAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.AddPasswordAsync(null, null));
@@ -603,7 +591,6 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByNameAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.CreateAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.CreateAsync(null, null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.CreateIdentityAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.UpdateAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.DeleteAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.UpdateSecurityStampAsync(null));

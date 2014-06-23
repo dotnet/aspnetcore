@@ -5,6 +5,6 @@ namespace Microsoft.AspNet.Identity
 {
     public static class DefaultAuthenticationTypes
     {
-        public static readonly string ApplicationCookie =  typeof(DefaultAuthenticationTypes).Namespace+".Application";
+        public static readonly string ApplicationCookie = typeof(DefaultAuthenticationTypes).Namespace + ".Application";
     }
 }

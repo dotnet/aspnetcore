@@ -60,7 +60,8 @@ namespace Microsoft.AspNet.Identity
         /// <param name="roleName"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task SetRoleNameAsync(TRole role, string roleName, CancellationToken cancellationToken = default(CancellationToken));
+        Task SetRoleNameAsync(TRole role, string roleName, 
+            CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Finds a role by id

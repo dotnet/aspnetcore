@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Identity
         public virtual string PasswordHash { get; set; }
 
         /// <summary>
-        ///     A random value that should change whenever a users credentials have changed (password changed, login removed)
+        /// A random value that should change whenever a users credentials change (password changed, login removed)
         /// </summary>
         public virtual string SecurityStamp { get; set; }
 
@@ -96,6 +96,5 @@ namespace Microsoft.AspNet.Identity
         ///     Associated logins for the user
         /// </summary>
         public virtual ICollection<IdentityUserLogin<TKey>> Logins { get; private set; }
-
     }
 }

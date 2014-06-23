@@ -22,7 +22,8 @@ namespace Microsoft.AspNet.Identity
         /// <param name="manager"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task<IdentityResult> ValidateAsync(string password, UserManager<TUser> manager, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<IdentityResult> ValidateAsync(string password, UserManager<TUser> manager, 
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             if (password == null)
             {
@@ -36,7 +37,8 @@ namespace Microsoft.AspNet.Identity
             var options = manager.Options.Password;
             if (string.IsNullOrWhiteSpace(password) || password.Length < options.RequiredLength)
             {
-                errors.Add(String.Format(CultureInfo.CurrentCulture, Resources.PasswordTooShort, options.RequiredLength));
+                errors.Add(String.Format(CultureInfo.CurrentCulture, Resources.PasswordTooShort, 
+                    options.RequiredLength));
             }
             if (options.RequireNonLetterOrDigit && password.All(IsLetterOrDigit))
             {

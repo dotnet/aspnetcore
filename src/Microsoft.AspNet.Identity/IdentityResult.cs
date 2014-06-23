@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Identity
         ///     Failure constructor that takes error messages
         /// </summary>
         /// <param name="errors"></param>
-        public IdentityResult(params string[] errors) : this((IEnumerable<string>) errors)
+        public IdentityResult(params string[] errors) : this((IEnumerable<string>)errors)
         {
         }
 
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Identity
         {
             if (errors == null || !errors.Any())
             {
-                errors = new[] {Resources.DefaultError};
+                errors = new[] { Resources.DefaultError };
             }
             Succeeded = false;
             Errors = errors;

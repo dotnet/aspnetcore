@@ -10,8 +10,8 @@ namespace Microsoft.AspNet.Identity.Test
     {
         public ApplicationUserManager(IUserStore<ApplicationUser> store, IOptionsAccessor<IdentityOptions> options,
             IPasswordHasher passwordHasher, IUserValidator<ApplicationUser> userValidator,
-            IPasswordValidator<ApplicationUser> passwordValidator, IClaimsIdentityFactory<ApplicationUser> claimsIdentityFactory)
-            : base(store, options, passwordHasher, userValidator, passwordValidator, claimsIdentityFactory) { }
+            IPasswordValidator<ApplicationUser> passwordValidator)
+            : base(store, options, passwordHasher, userValidator, passwordValidator) { }
     }
 
     public class ApplicationRoleManager : RoleManager<IdentityRole>

@@ -21,7 +21,10 @@
     <Content Include="project.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IdentityBuilderExtensions.cs" />
+    <Compile Include="InMemoryRoleStore.cs" />
     <Compile Include="InMemoryStoreTest.cs" />
+    <Compile Include="InMemoryUserStore.cs" />
     <Compile Include="StartupTest.cs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />

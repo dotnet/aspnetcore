@@ -19,7 +19,8 @@ namespace Microsoft.AspNet.Identity
         /// <param name="stamp"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task SetSecurityStampAsync(TUser user, string stamp, CancellationToken cancellationToken = default(CancellationToken));
+        Task SetSecurityStampAsync(TUser user, string stamp, 
+            CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Get the user security stamp
@@ -27,6 +28,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<string> GetSecurityStampAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken));
+        Task<string> GetSecurityStampAsync(TUser user, 
+            CancellationToken cancellationToken = default(CancellationToken));
     }
 }

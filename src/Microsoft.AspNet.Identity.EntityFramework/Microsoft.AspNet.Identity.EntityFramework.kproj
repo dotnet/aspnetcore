@@ -18,18 +18,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="project.json" />
+    <Content Include="Resources.resx" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EntityRole.cs" />
-    <Compile Include="EntityRoleStore.cs" />
-    <Compile Include="EntityUser.cs" />
     <Compile Include="EntityIdentityBuilderExtensions.cs" />
-    <Compile Include="IdentityContext.cs" />
-    <Compile Include="IdentitySqlContext.cs" />
-    <Compile Include="InMemoryUserStore.cs" />
+    <Compile Include="IdentityDbContext.cs" />
+    <Compile Include="Properties\Resources.Designer.cs" />
     <Compile Include="RoleStore.cs" />
-    <Compile Include="SqlUserStore.cs" />
     <Compile Include="User.cs" />
+    <Compile Include="UserStore.cs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>

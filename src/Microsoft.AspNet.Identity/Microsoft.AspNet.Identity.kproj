@@ -32,6 +32,7 @@
     <Compile Include="IdentityOptions.cs" />
     <Compile Include="IdentityResult.cs" />
     <Compile Include="IdentityRole.cs" />
+    <Compile Include="IdentityRoleClaim.cs" />
     <Compile Include="IdentityServiceCollectionExtensions.cs" />
     <Compile Include="IdentityServices.cs" />
     <Compile Include="IdentityUser.cs" />
@@ -43,6 +44,7 @@
     <Compile Include="IPasswordValidator.cs" />
     <Compile Include="IQueryableRoleStore.cs" />
     <Compile Include="IQueryableUserStore.cs" />
+    <Compile Include="IRoleClaimStore.cs" />
     <Compile Include="IRoleStore.cs" />
     <Compile Include="IRoleValidator.cs" />
     <Compile Include="IUserClaimStore.cs" />
@@ -62,7 +64,7 @@
     <Compile Include="PasswordOptions.cs" />
     <Compile Include="PasswordValidator.cs" />
     <Compile Include="PasswordVerificationResult.cs" />
-    <Compile Include="Resources.Designer.cs" />
+    <Compile Include="Properties\Resources.Designer.cs" />
     <Compile Include="Rfc6238AuthenticationService.cs" />
     <Compile Include="RoleManager.cs" />
     <Compile Include="RoleValidator.cs" />

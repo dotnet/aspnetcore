@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Identity
         public virtual int Id { get; set; }
 
         /// <summary>
-        ///     User Id for the user who owns this login
+        ///     User Id for the user who owns this claim
         /// </summary>
         public virtual TKey UserId { get; set; }
 

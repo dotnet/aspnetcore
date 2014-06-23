@@ -35,7 +35,8 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<bool> GetEmailConfirmedAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken));
+        Task<bool> GetEmailConfirmedAsync(TUser user,
+            CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Sets whether the user email is confirmed
@@ -44,7 +45,8 @@ namespace Microsoft.AspNet.Identity
         /// <param name="confirmed"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task SetEmailConfirmedAsync(TUser user, bool confirmed, CancellationToken cancellationToken = default(CancellationToken));
+        Task SetEmailConfirmedAsync(TUser user, bool confirmed,
+            CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Returns the user associated with this email

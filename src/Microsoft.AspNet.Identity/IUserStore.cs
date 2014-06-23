@@ -11,7 +11,6 @@ namespace Microsoft.AspNet.Identity
     ///     Interface that exposes basic user management apis
     /// </summary>
     /// <typeparam name="TUser"></typeparam>
-    /// <typeparam name="TKey"></typeparam>
     public interface IUserStore<TUser> : IDisposable where TUser : class
     {
         /// <summary>
@@ -37,7 +36,8 @@ namespace Microsoft.AspNet.Identity
         /// <param name="userName"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task SetUserNameAsync(TUser user, string userName, CancellationToken cancellationToken = default(CancellationToken));
+        Task SetUserNameAsync(TUser user, string userName,
+            CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Insert a new user
@@ -78,6 +78,5 @@ namespace Microsoft.AspNet.Identity
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task<TUser> FindByNameAsync(string name, CancellationToken cancellationToken = default(CancellationToken));
-
     }
 }

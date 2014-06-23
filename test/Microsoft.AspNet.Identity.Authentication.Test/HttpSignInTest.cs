@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Microsoft.AspNet.Builder;
 
-namespace Microsoft.AspNet.Identity.Security.Test
+namespace Microsoft.AspNet.Identity.Authentication.Test
 {
     public class ApplicationUser : IdentityUser { }
 
@@ -118,9 +118,11 @@ namespace Microsoft.AspNet.Identity.Security.Test
         [Fact]
         public void ConstructorNullChecks()
         {
-            Assert.Throws<ArgumentNullException>("userManager", () => new SignInManager<IdentityUser>(null, null));
+            Assert.Throws<ArgumentNullException>("userManager", () => new SignInManager<IdentityUser>(null, null, null));
             var userManager = MockHelpers.MockUserManager<IdentityUser>().Object;
-            Assert.Throws<ArgumentNullException>("authenticationManager", () => new SignInManager<IdentityUser>(userManager, null));
+            Assert.Throws<ArgumentNullException>("authenticationManager", () => new SignInManager<IdentityUser>(userManager, null, null));
+            var authManager = new Mock<IAuthenticationManager>().Object;
+            Assert.Throws<ArgumentNullException>("claimsFactory", () => new SignInManager<IdentityUser>(userManager, authManager, null));
         }
 
         //TODO: Mock fails in K (this works fine in net45)
@@ -165,7 +167,9 @@ namespace Microsoft.AspNet.Identity.Security.Test
             var context = new Mock<HttpContext>();
             var contextAccessor = new Mock<IContextAccessor<HttpContext>>();
             contextAccessor.Setup(a => a.Value).Returns(context.Object);
-            var helper = new SignInManager<TestUser>(manager.Object, new HttpAuthenticationManager(contextAccessor.Object));
+            var roleManager = MockHelpers.MockRoleManager<TestRole>();
+            var claimsFactory = new Mock<ClaimsIdentityFactory<TestUser, TestRole>>(manager.Object, roleManager.Object);
+            var helper = new SignInManager<TestUser>(manager.Object, new HttpAuthenticationManager(contextAccessor.Object), claimsFactory.Object);
 
             // Act
             var result = await helper.PasswordSignInAsync(user.UserName, "bogus", false, false);
@@ -187,14 +191,16 @@ namespace Microsoft.AspNet.Identity.Security.Test
             manager.Setup(m => m.IsLockedOutAsync(user, CancellationToken.None)).ReturnsAsync(false).Verifiable();
             manager.Setup(m => m.FindByNameAsync(user.UserName, CancellationToken.None)).ReturnsAsync(user).Verifiable();
             manager.Setup(m => m.CheckPasswordAsync(user, "password", CancellationToken.None)).ReturnsAsync(true).Verifiable();
-            manager.Setup(m => m.CreateIdentityAsync(user, DefaultAuthenticationTypes.ApplicationCookie, CancellationToken.None)).ReturnsAsync(new ClaimsIdentity("Microsoft.AspNet.Identity")).Verifiable();
             var context = new Mock<HttpContext>();
             var response = new Mock<HttpResponse>();
             context.Setup(c => c.Response).Returns(response.Object).Verifiable();
             response.Setup(r => r.SignIn(It.IsAny<ClaimsIdentity>(), It.Is<AuthenticationProperties>(v => v.IsPersistent == isPersistent))).Verifiable();
             var contextAccessor = new Mock<IContextAccessor<HttpContext>>();
             contextAccessor.Setup(a => a.Value).Returns(context.Object);
-            var helper = new SignInManager<TestUser>(manager.Object, new HttpAuthenticationManager(contextAccessor.Object));
+            var roleManager = MockHelpers.MockRoleManager<TestRole>();
+            var claimsFactory = new Mock<ClaimsIdentityFactory<TestUser, TestRole>>(manager.Object, roleManager.Object);
+            claimsFactory.Setup(m => m.CreateAsync(user, DefaultAuthenticationTypes.ApplicationCookie, CancellationToken.None)).ReturnsAsync(new ClaimsIdentity("Microsoft.AspNet.Identity")).Verifiable();
+            var helper = new SignInManager<TestUser>(manager.Object, new HttpAuthenticationManager(contextAccessor.Object), claimsFactory.Object);
 
             // Act
             var result = await helper.PasswordSignInAsync(user.UserName, "password", isPersistent, false);
@@ -205,6 +211,7 @@ namespace Microsoft.AspNet.Identity.Security.Test
             context.VerifyAll();
             response.VerifyAll();
             contextAccessor.VerifyAll();
+            claimsFactory.VerifyAll();
         }
 
         [Fact]
@@ -223,7 +230,9 @@ namespace Microsoft.AspNet.Identity.Security.Test
             context.Setup(c => c.Response).Returns(response.Object).Verifiable();
             var contextAccessor = new Mock<IContextAccessor<HttpContext>>();
             contextAccessor.Setup(a => a.Value).Returns(context.Object);
-            var helper = new SignInManager<TestUser>(manager.Object, new HttpAuthenticationManager(contextAccessor.Object));
+            var roleManager = MockHelpers.MockRoleManager<TestRole>();
+            var claimsFactory = new Mock<ClaimsIdentityFactory<TestUser, TestRole>>(manager.Object, roleManager.Object);
+            var helper = new SignInManager<TestUser>(manager.Object, new HttpAuthenticationManager(contextAccessor.Object), claimsFactory.Object);
 
             // Act
             var result = await helper.PasswordSignInAsync(user.UserName, "password", false, false);
@@ -255,7 +264,8 @@ namespace Microsoft.AspNet.Identity.Security.Test
             context.Setup(c => c.Response).Returns(response.Object).Verifiable();
             var contextAccessor = new Mock<IContextAccessor<HttpContext>>();
             contextAccessor.Setup(a => a.Value).Returns(context.Object);
-            var helper = new SignInManager<TestUser>(manager.Object, new HttpAuthenticationManager(contextAccessor.Object));
+            var roleManager = MockHelpers.MockRoleManager<TestRole>();
+            var helper = new SignInManager<TestUser>(manager.Object, new HttpAuthenticationManager(contextAccessor.Object), new ClaimsIdentityFactory<TestUser, TestRole>(manager.Object, roleManager.Object));
 
             // Act
             var result = await helper.PasswordSignInAsync(user.UserName, "password", false, false);
@@ -281,6 +291,8 @@ namespace Microsoft.AspNet.Identity.Security.Test
             manager.Setup(m => m.IsLockedOutAsync(user, CancellationToken.None)).ReturnsAsync(false).Verifiable();
             manager.Setup(m => m.FindByIdAsync(user.Id, CancellationToken.None)).ReturnsAsync(user).Verifiable();
             manager.Setup(m => m.VerifyTwoFactorTokenAsync(user, provider, code, CancellationToken.None)).ReturnsAsync(true).Verifiable();
+            manager.Setup(m => m.GetUserIdAsync(user, CancellationToken.None)).ReturnsAsync(user.Id).Verifiable();
+            manager.Setup(m => m.GetUserNameAsync(user, CancellationToken.None)).ReturnsAsync(user.UserName).Verifiable();
             var context = new Mock<HttpContext>();
             var response = new Mock<HttpResponse>();
             response.Setup(r => r.SignIn(It.IsAny<ClaimsIdentity>(), It.Is<AuthenticationProperties>(v => v.IsPersistent == isPersistent))).Verifiable();
@@ -291,7 +303,9 @@ namespace Microsoft.AspNet.Identity.Security.Test
             context.Setup(c => c.AuthenticateAsync(HttpAuthenticationManager.TwoFactorUserIdAuthenticationType)).ReturnsAsync(authResult).Verifiable();
             var contextAccessor = new Mock<IContextAccessor<HttpContext>>();
             contextAccessor.Setup(a => a.Value).Returns(context.Object);
-            var helper = new SignInManager<TestUser>(manager.Object, new HttpAuthenticationManager(contextAccessor.Object));
+            var roleManager = MockHelpers.MockRoleManager<TestRole>();
+            var claimsFactory = new ClaimsIdentityFactory<TestUser, TestRole>(manager.Object, roleManager.Object);
+            var helper = new SignInManager<TestUser>(manager.Object, new HttpAuthenticationManager(contextAccessor.Object), claimsFactory);
 
             // Act
             var result = await helper.TwoFactorSignInAsync(provider, code, isPersistent);
@@ -344,7 +358,6 @@ namespace Microsoft.AspNet.Identity.Security.Test
             manager.Setup(m => m.FindByNameAsync(user.UserName, CancellationToken.None)).ReturnsAsync(user).Verifiable();
             manager.Setup(m => m.GetUserIdAsync(user, CancellationToken.None)).ReturnsAsync(user.Id).Verifiable();
             manager.Setup(m => m.CheckPasswordAsync(user, "password", CancellationToken.None)).ReturnsAsync(true).Verifiable();
-            manager.Setup(m => m.CreateIdentityAsync(user, DefaultAuthenticationTypes.ApplicationCookie, CancellationToken.None)).ReturnsAsync(new ClaimsIdentity(DefaultAuthenticationTypes.ApplicationCookie)).Verifiable();
             var context = new Mock<HttpContext>();
             var response = new Mock<HttpResponse>();
             context.Setup(c => c.Response).Returns(response.Object).Verifiable();
@@ -356,7 +369,10 @@ namespace Microsoft.AspNet.Identity.Security.Test
             var contextAccessor = new Mock<IContextAccessor<HttpContext>>();
             contextAccessor.Setup(a => a.Value).Returns(context.Object);
             var signInService = new HttpAuthenticationManager(contextAccessor.Object);
-            var helper = new SignInManager<TestUser>(manager.Object, signInService);
+            var roleManager = MockHelpers.MockRoleManager<TestRole>();
+            var claimsFactory = new Mock<ClaimsIdentityFactory<TestUser, TestRole>>(manager.Object, roleManager.Object);
+            claimsFactory.Setup(m => m.CreateAsync(user, DefaultAuthenticationTypes.ApplicationCookie, CancellationToken.None)).ReturnsAsync(new ClaimsIdentity(DefaultAuthenticationTypes.ApplicationCookie)).Verifiable();
+            var helper = new SignInManager<TestUser>(manager.Object, signInService, claimsFactory.Object);
 
             // Act
             var result = await helper.PasswordSignInAsync(user.UserName, "password", isPersistent, false);
@@ -367,10 +383,11 @@ namespace Microsoft.AspNet.Identity.Security.Test
             context.VerifyAll();
             response.VerifyAll();
             contextAccessor.VerifyAll();
+            claimsFactory.VerifyAll();
         }
 
         [Theory]
-        [InlineData("Microsoft.AspNet.Identity.Security.Application")]
+        [InlineData("Microsoft.AspNet.Identity.Authentication.Application")]
         [InlineData("Foo")]
         public void SignOutCallsContextResponseSignOut(string authenticationType)
         {
@@ -382,7 +399,9 @@ namespace Microsoft.AspNet.Identity.Security.Test
             response.Setup(r => r.SignOut(authenticationType)).Verifiable();
             var contextAccessor = new Mock<IContextAccessor<HttpContext>>();
             contextAccessor.Setup(a => a.Value).Returns(context.Object);
-            var helper = new SignInManager<TestUser>(manager.Object, new HttpAuthenticationManager(contextAccessor.Object))
+            var roleManager = MockHelpers.MockRoleManager<TestRole>();
+            var claimsFactory = new Mock<ClaimsIdentityFactory<TestUser, TestRole>>(manager.Object, roleManager.Object);
+            var helper = new SignInManager<TestUser>(manager.Object, new HttpAuthenticationManager(contextAccessor.Object), claimsFactory.Object)
             {
                 AuthenticationType = authenticationType
             };
@@ -408,7 +427,9 @@ namespace Microsoft.AspNet.Identity.Security.Test
             var context = new Mock<HttpContext>();
             var contextAccessor = new Mock<IContextAccessor<HttpContext>>();
             contextAccessor.Setup(a => a.Value).Returns(context.Object);
-            var helper = new SignInManager<TestUser>(manager.Object, new HttpAuthenticationManager(contextAccessor.Object));
+            var roleManager = MockHelpers.MockRoleManager<TestRole>();
+            var claimsFactory = new Mock<ClaimsIdentityFactory<TestUser, TestRole>>(manager.Object, roleManager.Object);
+            var helper = new SignInManager<TestUser>(manager.Object, new HttpAuthenticationManager(contextAccessor.Object), claimsFactory.Object);
             // Act
             var result = await helper.PasswordSignInAsync(user.UserName, "bogus", false, false);
 
@@ -426,7 +447,9 @@ namespace Microsoft.AspNet.Identity.Security.Test
             var context = new Mock<HttpContext>();
             var contextAccessor = new Mock<IContextAccessor<HttpContext>>();
             contextAccessor.Setup(a => a.Value).Returns(context.Object);
-            var helper = new SignInManager<TestUser>(manager.Object, new HttpAuthenticationManager(contextAccessor.Object));
+            var roleManager = MockHelpers.MockRoleManager<TestRole>();
+            var claimsFactory = new Mock<ClaimsIdentityFactory<TestUser, TestRole>>(manager.Object, roleManager.Object);
+            var helper = new SignInManager<TestUser>(manager.Object, new HttpAuthenticationManager(contextAccessor.Object), claimsFactory.Object);
 
             // Act
             var result = await helper.PasswordSignInAsync("bogus", "bogus", false, false);
@@ -455,7 +478,9 @@ namespace Microsoft.AspNet.Identity.Security.Test
             var context = new Mock<HttpContext>();
             var contextAccessor = new Mock<IContextAccessor<HttpContext>>();
             contextAccessor.Setup(a => a.Value).Returns(context.Object);
-            var helper = new SignInManager<TestUser>(manager.Object, new HttpAuthenticationManager(contextAccessor.Object));
+            var roleManager = MockHelpers.MockRoleManager<TestRole>();
+            var claimsFactory = new Mock<ClaimsIdentityFactory<TestUser, TestRole>>(manager.Object, roleManager.Object);
+            var helper = new SignInManager<TestUser>(manager.Object, new HttpAuthenticationManager(contextAccessor.Object), claimsFactory.Object);
 
             // Act
             var result = await helper.PasswordSignInAsync(user.UserName, "bogus", false, true);

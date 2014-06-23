@@ -7,7 +7,6 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Testing;
-using Microsoft.Framework.OptionsModel;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.Test
@@ -59,6 +58,19 @@ namespace Microsoft.AspNet.Identity.Test
             IdentityResultAssert.IsSuccess(await manager.SetUserNameAsync(user, "New"));
             Assert.NotNull(await manager.FindByNameAsync("New"));
             Assert.Null(await manager.FindByNameAsync("UpdateAsync"));
+        }
+
+        [Fact]
+        public async Task CanUpdatePasswordUsingHasher()
+        {
+            var manager = CreateManager();
+            var user = new TUser() { UserName = "UpdatePassword" };
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, "password"));
+            Assert.True(await manager.CheckPasswordAsync(user, "password"));
+            user.PasswordHash = manager.PasswordHasher.HashPassword("New");
+            IdentityResultAssert.IsSuccess(await manager.UpdateAsync(user));
+            Assert.False(await manager.CheckPasswordAsync(user, "password"));
+            Assert.True(await manager.CheckPasswordAsync(user, "New"));
         }
 
         [Fact]
@@ -397,9 +409,8 @@ namespace Microsoft.AspNet.Identity.Test
                 IdentityResultAssert.IsSuccess(await manager.AddClaimAsync(user, c));
             }
 
-            var identity = await manager.CreateIdentityAsync(user, "test");
-            var claimsFactory = (ClaimsIdentityFactory<TUser>)manager.ClaimsIdentityFactory;
-            Assert.NotNull(claimsFactory);
+            var claimsFactory = new ClaimsIdentityFactory<TUser, TRole>(manager, role);
+            var identity = await claimsFactory.CreateAsync(user, "test");
             var claims = identity.Claims.ToList();
             Assert.NotNull(claims);
             Assert.True(
@@ -806,6 +817,30 @@ namespace Microsoft.AspNet.Identity.Test
         }
 
         [Fact]
+        public async Task CanAddRemoveRoleClaim()
+        {
+            var manager = CreateRoleManager();
+            var role = CreateRole("ClaimsAddRemove");
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(role));
+            Claim[] claims = { new Claim("c", "v"), new Claim("c2", "v2"), new Claim("c2", "v3") };
+            foreach (Claim c in claims)
+            {
+                IdentityResultAssert.IsSuccess(await manager.AddClaimAsync(role, c));
+            }
+            var roleClaims = await manager.GetClaimsAsync(role);
+            Assert.Equal(3, roleClaims.Count);
+            IdentityResultAssert.IsSuccess(await manager.RemoveClaimAsync(role, claims[0]));
+            roleClaims = await manager.GetClaimsAsync(role);
+            Assert.Equal(2, roleClaims.Count);
+            IdentityResultAssert.IsSuccess(await manager.RemoveClaimAsync(role, claims[1]));
+            roleClaims = await manager.GetClaimsAsync(role);
+            Assert.Equal(1, roleClaims.Count);
+            IdentityResultAssert.IsSuccess(await manager.RemoveClaimAsync(role, claims[2]));
+            roleClaims = await manager.GetClaimsAsync(role);
+            Assert.Equal(0, roleClaims.Count);
+        }
+
+        [Fact]
         public async Task CanRoleFindByIdTest()
         {
             var manager = CreateRoleManager();
@@ -967,7 +1002,6 @@ namespace Microsoft.AspNet.Identity.Test
                 }
             }
         }
-
 
         [Fact]
         public async Task RemoveUserFromRoleWithMultipleRoles()

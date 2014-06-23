@@ -35,12 +35,6 @@ namespace Microsoft.AspNet.Identity.Test
         }
 
         [Fact]
-        public void CanSpecifyClaimsIdentityFactoryInstance()
-        {
-            CanOverride<IClaimsIdentityFactory<IdentityUser>>(new ClaimsIdentityFactory<IdentityUser>());
-        }
-
-        [Fact]
         public void EnsureDefaultServices()
         {
             var services = new ServiceCollection();
@@ -55,9 +49,6 @@ namespace Microsoft.AspNet.Identity.Test
 
             var hasher = provider.GetService<IPasswordHasher>() as PasswordHasher;
             Assert.NotNull(hasher);
-
-            var claimsFactory = provider.GetService<IClaimsIdentityFactory<IdentityUser>>() as ClaimsIdentityFactory<IdentityUser>;
-            Assert.NotNull(claimsFactory);
         }
 
         private static void CanOverride<TService>(TService instance)

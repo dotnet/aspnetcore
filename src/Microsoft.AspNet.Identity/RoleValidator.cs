@@ -22,7 +22,8 @@ namespace Microsoft.AspNet.Identity
         /// <param name="role"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> ValidateAsync(RoleManager<TRole> manager, TRole role, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> ValidateAsync(RoleManager<TRole> manager, TRole role, 
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             if (manager == null)
             {
@@ -52,7 +53,8 @@ namespace Microsoft.AspNet.Identity
             else
             {
                 var owner = await manager.FindByNameAsync(roleName);
-                if (owner != null && !string.Equals(await manager.GetRoleIdAsync(owner), await manager.GetRoleIdAsync(role)))
+                if (owner != null && 
+                    !string.Equals(await manager.GetRoleIdAsync(owner), await manager.GetRoleIdAsync(role)))
                 {
                     errors.Add(String.Format(CultureInfo.CurrentCulture, Resources.DuplicateName, roleName));
                 }

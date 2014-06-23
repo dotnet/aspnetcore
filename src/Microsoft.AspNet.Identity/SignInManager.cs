@@ -13,7 +13,8 @@ namespace Microsoft.AspNet.Identity
     /// <typeparam name="TUser"></typeparam>
     public class SignInManager<TUser> where TUser : class
     {
-        public SignInManager(UserManager<TUser> userManager, IAuthenticationManager authenticationManager)
+        public SignInManager(UserManager<TUser> userManager, IAuthenticationManager authenticationManager, 
+            IClaimsIdentityFactory<TUser> claimsFactory)
         {
             if (userManager == null)
             {
@@ -23,8 +24,13 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("authenticationManager");
             }
+            if (claimsFactory == null)
+            {
+                throw new ArgumentNullException("claimsFactory");
+            }
             UserManager = userManager;
             AuthenticationManager = authenticationManager;
+            ClaimsFactory = claimsFactory;
             AuthenticationType = DefaultAuthenticationTypes.ApplicationCookie;
         }
 
@@ -33,11 +39,12 @@ namespace Microsoft.AspNet.Identity
 
         public UserManager<TUser> UserManager { get; private set; }
         public IAuthenticationManager AuthenticationManager { get; private set; }
+        public IClaimsIdentityFactory<TUser> ClaimsFactory { get; private set; }
 
         // Should this be a func?
         public virtual async Task<ClaimsIdentity> CreateUserIdentityAsync(TUser user)
         {
-            return await UserManager.CreateIdentityAsync(user, AuthenticationType);
+            return await ClaimsFactory.CreateAsync(user, AuthenticationType);
         }
 
         public virtual async Task SignInAsync(TUser user, bool isPersistent)
@@ -52,7 +59,8 @@ namespace Microsoft.AspNet.Identity
             AuthenticationManager.SignOut(AuthenticationType);
         }
 
-        public virtual async Task<SignInStatus> PasswordSignInAsync(string userName, string password, bool isPersistent, bool shouldLockout)
+        public virtual async Task<SignInStatus> PasswordSignInAsync(string userName, string password, 
+            bool isPersistent, bool shouldLockout)
         {
             var user = await UserManager.FindByNameAsync(userName);
             if (user == null)
