@@ -21,6 +21,7 @@
     <Content Include="project.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="HttpSignInTest.cs" />
     <Compile Include="IdentityBuilderExtensions.cs" />
     <Compile Include="InMemoryRoleStore.cs" />
     <Compile Include="InMemoryStoreTest.cs" />

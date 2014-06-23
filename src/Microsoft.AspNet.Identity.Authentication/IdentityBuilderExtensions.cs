@@ -8,8 +8,9 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public static class IdentityBuilderExtensions
     {
-        public static IdentityBuilder<TUser, IdentityRole> AddHttpSignIn<TUser>(this IdentityBuilder<TUser, IdentityRole> builder)
+        public static IdentityBuilder<TUser, TRole> AddHttpSignIn<TUser, TRole>(this IdentityBuilder<TUser, TRole> builder)
             where TUser : class
+            where TRole : class
         {
             // todo: review should this be scoped?
             builder.Services.AddTransient<IAuthenticationManager, HttpAuthenticationManager>();
