@@ -23,51 +23,51 @@ namespace Microsoft.AspNet.Identity.Authentication.Test
     public class HttpSignInTest
     {
 #if NET45
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task VerifyAccountControllerSignIn(bool isPersistent)
-        {
-            IBuilder app = new Builder.Builder(new ServiceCollection().BuildServiceProvider());
-            app.UseCookieAuthentication(new CookieAuthenticationOptions
-            {
-                AuthenticationType = DefaultAuthenticationTypes.ApplicationCookie
-            });
+        //[Theory]
+        //[InlineData(true)]
+        //[InlineData(false)]
+        //public async Task VerifyAccountControllerSignIn(bool isPersistent)
+        //{
+        //    IBuilder app = new Builder.Builder(new ServiceCollection().BuildServiceProvider());
+        //    app.UseCookieAuthentication(new CookieAuthenticationOptions
+        //    {
+        //        AuthenticationType = DefaultAuthenticationTypes.ApplicationCookie
+        //    });
 
-            var context = new Mock<HttpContext>();
-            var response = new Mock<HttpResponse>();
-            context.Setup(c => c.Response).Returns(response.Object).Verifiable();
-            response.Setup(r => r.SignIn(It.IsAny<ClaimsIdentity>(), It.Is<AuthenticationProperties>(v => v.IsPersistent == isPersistent))).Verifiable();
-            var contextAccessor = new Mock<IContextAccessor<HttpContext>>();
-            contextAccessor.Setup(a => a.Value).Returns(context.Object);
-            app.UseServices(services =>
-            {
-                services.Add(OptionsServices.GetDefaultServices());
-                services.AddInstance(contextAccessor.Object);
-                services.AddIdentity<ApplicationUser, IdentityRole>(s =>
-                {
-                    s.AddInMemory();
-                }).AddHttpSignIn<ApplicationUser>();
-            });
+        //    var context = new Mock<HttpContext>();
+        //    var response = new Mock<HttpResponse>();
+        //    context.Setup(c => c.Response).Returns(response.Object).Verifiable();
+        //    response.Setup(r => r.SignIn(It.IsAny<ClaimsIdentity>(), It.Is<AuthenticationProperties>(v => v.IsPersistent == isPersistent))).Verifiable();
+        //    var contextAccessor = new Mock<IContextAccessor<HttpContext>>();
+        //    contextAccessor.Setup(a => a.Value).Returns(context.Object);
+        //    app.UseServices(services =>
+        //    {
+        //        services.Add(OptionsServices.GetDefaultServices());
+        //        services.AddInstance(contextAccessor.Object);
+        //        services.AddIdentity<ApplicationUser, IdentityRole>(s =>
+        //        {
+        //            s.AddInMemory();
+        //        }).AddHttpSignIn<ApplicationUser>();
+        //    });
 
-            // Act
-            var user = new ApplicationUser
-            {
-                UserName = "Yolo"
-            };
-            const string password = "Yol0Sw@g!";
-            var userManager = app.ApplicationServices.GetService<UserManager<ApplicationUser>>();
-            var signInManager = app.ApplicationServices.GetService<SignInManager<ApplicationUser>>();
+        //    // Act
+        //    var user = new ApplicationUser
+        //    {
+        //        UserName = "Yolo"
+        //    };
+        //    const string password = "Yol0Sw@g!";
+        //    var userManager = app.ApplicationServices.GetService<UserManager<ApplicationUser>>();
+        //    var signInManager = app.ApplicationServices.GetService<SignInManager<ApplicationUser>>();
 
-            IdentityResultAssert.IsSuccess(await userManager.CreateAsync(user, password));
-            var result = await signInManager.PasswordSignInAsync(user.UserName, password, isPersistent, false);
+        //    IdentityResultAssert.IsSuccess(await userManager.CreateAsync(user, password));
+        //    var result = await signInManager.PasswordSignInAsync(user.UserName, password, isPersistent, false);
 
-            // Assert
-            Assert.Equal(SignInStatus.Success, result);
-            context.VerifyAll();
-            response.VerifyAll();
-            contextAccessor.VerifyAll();
-        }
+        //    // Assert
+        //    Assert.Equal(SignInStatus.Success, result);
+        //    context.VerifyAll();
+        //    response.VerifyAll();
+        //    contextAccessor.VerifyAll();
+        //}
 
         //[Theory]
         //[InlineData(true)]

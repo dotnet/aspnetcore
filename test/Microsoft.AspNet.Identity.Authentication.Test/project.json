@@ -4,7 +4,6 @@
     "Microsoft.AspNet.Http" : "1.0.0-*",
     "Microsoft.AspNet.HttpFeature" : "1.0.0-*",
     "Microsoft.AspNet.Identity" : "",
-    "Microsoft.AspNet.Identity.InMemory" : "",
     "Microsoft.AspNet.Identity.Authentication" : "",
     "Microsoft.AspNet.PipelineCore" : "1.0.0-*",
     "Microsoft.AspNet.RequestContainer" : "1.0.0-*",

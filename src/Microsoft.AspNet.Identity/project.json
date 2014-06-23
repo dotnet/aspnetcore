@@ -1,10 +1,10 @@
 {
-  "version": "0.1-alpha-*",
+  "version": "3.0.0-*",
   "dependencies": {
-    "Microsoft.Framework.ConfigurationModel": "0.1-alpha-*",
-    "Microsoft.Framework.DependencyInjection" : "0.1-alpha-*",
-    "Microsoft.Framework.OptionsModel": "0.1-alpha-*",
-    "System.Security.Claims" : "0.1-alpha-*"
+    "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
+    "Microsoft.Framework.DependencyInjection" : "1.0.0-*",
+    "Microsoft.Framework.OptionsModel": "1.0.0-*",
+    "System.Security.Claims" : "1.0.0-*"
   },
   "configurations": {
     "net45": {},
