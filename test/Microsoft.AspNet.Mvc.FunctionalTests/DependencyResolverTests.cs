@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if NET45
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using AutofacWebSite;
@@ -37,3 +38,4 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
     }
 }
+#endif
