@@ -31,15 +31,9 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 // Separate the usings and the class
                 writer.WriteLine();
 
-                var baseTypeVisitor = new CSharpBaseTypeVisitor(writer, Context);
-                baseTypeVisitor.Accept(Tree.Chunks);
-
-                string baseType = baseTypeVisitor.CurrentBaseType ?? Host.DefaultBaseClass;
                 new CSharpClassAttributeVisitor(writer, Context).Accept(Tree.Chunks);
 
-                IEnumerable<string> baseTypes = String.IsNullOrEmpty(baseType) ? Enumerable.Empty<string>() :
-                                                                                 new string[] { baseType };
-                using (writer.BuildClassDeclaration("public", Context.ClassName, baseTypes))
+                using (BuildClassDeclaration(writer))
                 {
                     if (Host.DesignTimeMode)
                     {
@@ -66,6 +60,18 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             }
 
             return new CodeBuilderResult(writer.GenerateCode(), writer.LineMappingManager.Mappings);
+        }
+
+        protected virtual CSharpCodeWritingScope BuildClassDeclaration(CSharpCodeWriter writer)
+        {
+            var baseTypeVisitor = new CSharpBaseTypeVisitor(writer, Context);
+            baseTypeVisitor.Accept(Tree.Chunks);
+
+            var baseType = baseTypeVisitor.CurrentBaseType ?? Host.DefaultBaseClass;
+
+            var baseTypes = string.IsNullOrEmpty(baseType) ? Enumerable.Empty<string>() : new string[] { baseType };
+
+            return writer.BuildClassDeclaration("public", Context.ClassName, baseTypes);
         }
 
         protected virtual void BuildConstructor(CSharpCodeWriter writer)
