@@ -24,6 +24,7 @@
     <Compile Include="AuthenticationHandler.cs" />
     <Compile Include="FeatureContext.cs" />
     <Compile Include="Helpers.cs" />
+    <Compile Include="IServerFactory.cs" />
     <Compile Include="LogHelper.cs" />
     <Compile Include="ServerFactory.cs" />
     <Compile Include="ServerInformation.cs" />

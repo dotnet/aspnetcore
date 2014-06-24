@@ -2,7 +2,6 @@
   "version": "1.0.0-*",
   "dependencies": {
     "Microsoft.AspNet.FeatureModel": "1.0.0-*",
-    "Microsoft.AspNet.Hosting": "1.0.0-*",
     "Microsoft.AspNet.Http": "1.0.0-*",
     "Microsoft.AspNet.HttpFeature": "1.0.0-*",
     "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
