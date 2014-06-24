@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNet.Razor.Generator.Compiler;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using Microsoft.AspNet.Razor.Generator.Compiler;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -9,7 +12,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         /// <param name="baseType">The base type of the view.</param>
         /// <param name="modelType">The type of the view's Model.</param>
-	    public ModelChunk(string baseType, string modelType)
+        public ModelChunk(string baseType, string modelType)
         {
             BaseType = baseType;
             ModelType = modelType;

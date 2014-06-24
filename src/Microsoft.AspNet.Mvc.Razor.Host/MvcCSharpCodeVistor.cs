@@ -11,7 +11,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         public MvcCSharpCodeVisitor([NotNull] CSharpCodeWriter writer,
                                     [NotNull] CodeGeneratorContext context)
             : base(writer, context)
-        { }
+        {
+        }
 
         protected override void Visit(InjectChunk chunk)
         {
