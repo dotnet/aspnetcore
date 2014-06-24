@@ -88,7 +88,5 @@ namespace Microsoft.AspNet.Identity.EntityFramework
         ///     Associated logins for the user
         /// </summary>
         public virtual ICollection<IdentityUserLogin> Logins { get; private set; }
-
     }
 }
-

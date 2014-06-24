@@ -4,12 +4,10 @@
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Security;
-using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Test;
 using Microsoft.AspNet.Security.Cookies;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
-using Microsoft.Framework.OptionsModel;
 using Moq;
 using System.Security.Claims;
 using System.Threading.Tasks;

@@ -367,8 +367,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             {
                 throw new ArgumentNullException("user");
             }
-            IList<Claim> result = UserClaims.Where(uc => uc.UserId == user.Id).Select(c => new Claim(c.ClaimType, c.ClaimValue)).ToList();
-            return Task.FromResult(result);
+            var result = UserClaims.Where(uc => uc.UserId == user.Id).Select(c => new Claim(c.ClaimType, c.ClaimValue)).ToList();
+            return Task.FromResult((IList<Claim>)result);
         }
 
         public Task AddClaimAsync(TUser user, Claim claim, CancellationToken cancellationToken = new CancellationToken())
@@ -405,7 +405,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             return Task.FromResult(0);
         }
 
-        public async virtual Task AddLoginAsync(TUser user, UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task AddLoginAsync(TUser user, UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -426,6 +426,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             // TODO: fixup so we don't have to update both
             UserLogins.Add(l);
             user.Logins.Add(l);
+            return Task.FromResult(0);
         }
 
         public virtual Task RemoveLoginAsync(TUser user, UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
@@ -462,9 +463,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework
                 throw new ArgumentNullException("user");
             }
             // todo: ensure logins loaded
-            IList<UserLoginInfo> result =
-                user.Logins.Select(l => new UserLoginInfo(l.LoginProvider, l.ProviderKey)).ToList();
-            return Task.FromResult(result);
+            var result = user.Logins.Select(l => new UserLoginInfo(l.LoginProvider, l.ProviderKey)).ToList();
+            return Task.FromResult((IList<UserLoginInfo>)result);
         }
 
         public async virtual Task<TUser> FindByLoginAsync(UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))

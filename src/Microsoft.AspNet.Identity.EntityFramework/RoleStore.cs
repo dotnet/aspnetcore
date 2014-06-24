@@ -188,8 +188,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             {
                 throw new ArgumentNullException("role");
             }
-            IList<Claim> result = RoleClaims.Where(rc => rc.RoleId == role.Id).Select(c => new Claim(c.ClaimType, c.ClaimValue)).ToList();
-            return Task.FromResult(result);
+            var result = RoleClaims.Where(rc => rc.RoleId == role.Id).Select(c => new Claim(c.ClaimType, c.ClaimValue)).ToList();
+            return Task.FromResult((IList<Claim>)result);
         }
 
         public Task AddClaimAsync(TRole role, Claim claim, CancellationToken cancellationToken = default(CancellationToken))
@@ -230,7 +230,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
         {
             get { return Context.Set<TRole>(); }
         }
-        private DbSet<IdentityRoleClaim> RoleClaims { get { return Context.Set<IdentityRoleClaim>(); } }
 
+        private DbSet<IdentityRoleClaim> RoleClaims { get { return Context.Set<IdentityRoleClaim>(); } }
     }
 }
