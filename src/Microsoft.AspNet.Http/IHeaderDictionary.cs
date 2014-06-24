@@ -18,6 +18,12 @@ namespace Microsoft.AspNet.Http
         /// <returns>the associated value from the collection as a single string or null if the key is not present.</returns>
         new string this[string key] { get; set; }
 
+        // This property is duplicated to resolve an ambiguity between IReadableStringCollection.Count and IDictionary<string, string[]>.Count
+        /// <summary>
+        /// Gets the number of elements contained in the collection.
+        /// </summary>
+        new int Count { get; }
+
         /// <summary>
         /// Get the associated values from the collection separated into individual values.
         /// Quoted values will not be split, and the quotes will be removed.
