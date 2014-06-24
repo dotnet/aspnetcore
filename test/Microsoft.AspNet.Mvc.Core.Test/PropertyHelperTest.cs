@@ -191,6 +191,23 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Fact]
+        public void GetProperties_ExcludesIndexersAndPropertiesWithoutPublicGetters()
+        {
+            // Arrange
+            var type = typeof(DerivedClassWithNonReadableProperties);
+
+
+            // Act
+            var result = PropertyHelper.GetProperties(type).ToArray();
+
+            // Assert
+            Assert.Equal(3, result.Length);
+            Assert.Equal("Visible", result[0].Name);
+            Assert.Equal("PropA", result[1].Name);
+            Assert.Equal("PropB", result[2].Name);
+        }
+
+        [Fact]
         public void MakeFastPropertySetter_SetsPropertyValues_ForPublicAndNobPublicProperties()
         {
             // Arrange
@@ -310,6 +327,28 @@ namespace Microsoft.AspNet.Mvc
                 get { return _value; }
                 set { _value = "Overriden" + value; }
             }
+        }
+
+        private class DerivedClassWithNonReadableProperties : BaseClassWithVirtual
+        {
+            public string this[int index]
+            {
+                get { return string.Empty; }
+                set { }
+            }
+
+            public int Visible { get; set; }
+
+            private string NotVisible { get; set; }
+
+            public string NotVisible2 { private get; set; }
+
+            public string NotVisible3
+            {
+                set { }
+            }
+
+            public static string NotVisible4 { get; set; }
         }
     }
 }

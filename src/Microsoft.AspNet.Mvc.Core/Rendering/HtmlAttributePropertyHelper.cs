@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         public static new PropertyHelper[] GetProperties(object instance)
         {
-            return GetProperties(instance, CreateInstance, ReflectionCache);
+            return GetProperties(instance.GetType(), CreateInstance, ReflectionCache);
         }
 
         private static PropertyHelper CreateInstance(PropertyInfo property)

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Microsoft.AspNet.Testing;
 using Xunit;
@@ -41,7 +42,35 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.True(mixed.Attributes.Any(a => a is RequiredAttribute));
             Assert.True(mixed.Attributes.Any(a => a is RangeAttribute));
         }
+        
+        [Fact]
+        public void GetMetadataForProperties_ExcludesIndexers()
+        {
+            // Arrange
+            var value = "some value";
+            var model = new ModelWithIndexer { Value = value };
+            var provider = new TestableAssociatedMetadataProvider();
+            var modelType = model.GetType();
 
+            // Act
+            provider.GetMetadataForProperties(model, modelType).ToList();
+
+            // Assert
+            Assert.Equal(2, provider.CreateMetadataFromPrototypeLog.Count);
+            Assert.Equal(value, provider.CreateMetadataFromPrototypeLog[0].Model);
+            Assert.Null(provider.CreateMetadataFromPrototypeLog[1].Model);
+
+            var valueMetadata = provider.CreateMetadataPrototypeLog.Single(m => m.ContainerType == modelType &&
+                                                                        m.PropertyName == "Value");
+            Assert.Equal(typeof(string), valueMetadata.ModelType);
+            Assert.Single(valueMetadata.Attributes.OfType<MinLengthAttribute>());
+
+            var testPropertyMetadata = provider.CreateMetadataPrototypeLog.Single(m => m.ContainerType == modelType &&
+                                                                                     m.PropertyName == "TestProperty");
+            Assert.Equal(typeof(string), testPropertyMetadata.ModelType);
+        }
+
+        // GetMetadataForProperties
         [Fact]
         public void GetMetadataForPropertyWithNullContainerReturnsMetadataWithNullValuesForProperties()
         {
@@ -150,16 +179,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         [Fact]
         public void GetMetadataForTypeIncludesAttributesOnType()
         {
-            TestableAssociatedMetadataProvider provider = new TestableAssociatedMetadataProvider();
-            ModelMetadata metadata = new ModelMetadata(provider, null, null, typeof(TypeModel), null);
+            var provider = new TestableAssociatedMetadataProvider();
+            var metadata = new ModelMetadata(provider, null, null, typeof(TypeModel), null);
             provider.CreateMetadataFromPrototypeReturnValue = metadata;
 
             // Act
-            ModelMetadata result = provider.GetMetadataForType(null, typeof(TypeModel));
+            var result = provider.GetMetadataForType(null, typeof(TypeModel));
 
             // Assert
             Assert.Same(metadata, result);
-            CreateMetadataPrototypeParams parms = provider.CreateMetadataPrototypeLog.Single(p => p.ModelType == typeof(TypeModel));
+            var parms = provider.CreateMetadataPrototypeLog.Single(p => p.ModelType == typeof(TypeModel));
             Assert.True(parms.Attributes.Any(a => a is ReadOnlyAttribute));
         }
 #endif
@@ -179,6 +208,23 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             [Required]
             [Range(10, 100)]
             public double MixedAttributes { get; set; }
+        }
+
+        private class BaseType
+        {
+            public string TestProperty { get; set; }
+        }
+
+        private class ModelWithIndexer : BaseType
+        {
+            public string this[string x]
+            {
+                get { return string.Empty; }
+                set { }
+            }
+
+            [MinLength(4)]
+            public string Value { get; set; }
         }
 
         private sealed class RequiredAttribute : Attribute

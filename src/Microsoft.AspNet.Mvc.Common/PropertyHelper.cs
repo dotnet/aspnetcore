@@ -33,13 +33,14 @@ namespace Microsoft.AspNet.Mvc
         ///
         /// This constructor does not cache the helper. For caching, use GetProperties.
         /// </summary>
-        public PropertyHelper(PropertyInfo property)
+        public PropertyHelper([NotNull] PropertyInfo property)
         {
-            Contract.Assert(property != null);
-
+            Property = property;
             Name = property.Name;
             _valueGetter = MakeFastPropertyGetter(property);
         }
+
+        public PropertyInfo Property { get; private set; }
 
         public virtual string Name { get; protected set; }
 
@@ -57,7 +58,19 @@ namespace Microsoft.AspNet.Mvc
         /// </returns>
         public static PropertyHelper[] GetProperties(object instance)
         {
-            return GetProperties(instance, CreateInstance, ReflectionCache);
+            return GetProperties(instance.GetType());
+        }
+
+        /// <summary>
+        /// Creates and caches fast property helpers that expose getters for every public get property on the
+        /// specified type.
+        /// </summary>
+        /// <param name="type">the type to extract property accessors for.</param>
+        /// <returns>a cached array of all public property getters from the type of target instance.
+        /// </returns>
+        public static PropertyHelper[] GetProperties(Type type)
+        {
+            return GetProperties(type, CreateInstance, ReflectionCache);
         }
 
         /// <summary>
@@ -181,19 +194,17 @@ namespace Microsoft.AspNet.Mvc
         }
 
         protected static PropertyHelper[] GetProperties(
-            object instance,
+            Type type,
             Func<PropertyInfo, PropertyHelper> createPropertyHelper,
             ConcurrentDictionary<Type, PropertyHelper[]> cache)
         {
             // Using an array rather than IEnumerable, as target will be called on the hot path numerous times.
             PropertyHelper[] helpers;
 
-            var type = instance.GetType();
-
             if (!cache.TryGetValue(type, out helpers))
             {
                 // We avoid loading indexed properties using the where statement.
-                // Indexed properties are not useful (or valid) for grabbing properties off an anonymous object.
+                // Indexed properties are not useful (or valid) for grabbing properties off an object.
                 var properties = type.GetRuntimeProperties().Where(
                     prop => prop.GetIndexParameters().Length == 0 &&
                     prop.GetMethod != null &&

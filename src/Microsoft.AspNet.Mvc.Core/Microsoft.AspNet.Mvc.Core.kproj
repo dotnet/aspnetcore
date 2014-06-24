@@ -136,7 +136,6 @@
     <Compile Include="DefaultControllerActivator.cs" />
     <Compile Include="IControllerFactory.cs" />
     <Compile Include="Injector.cs" />
-    <Compile Include="Internal\PropertyHelper.cs" />
     <Compile Include="Internal\TypeHelper.cs" />
     <Compile Include="Internal\UTF8EncodingWithoutBOM.cs" />
     <Compile Include="IUrlHelper.cs" />
