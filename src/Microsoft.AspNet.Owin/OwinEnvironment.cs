@@ -69,7 +69,8 @@ namespace Microsoft.AspNet.Owin
             {
                 _entries.Add(OwinConstants.CommonKeys.ClientCertificate, new FeatureMap<IHttpClientCertificateFeature>(feature => feature.ClientCertificate,
                     (feature, value) => feature.ClientCertificate = (X509Certificate)value));
-                _entries.Add(OwinConstants.CommonKeys.LoadClientCertAsync, new FeatureMap<IHttpClientCertificateFeature>(feature => new Func<Task>(feature.GetClientCertificateAsync)));
+                _entries.Add(OwinConstants.CommonKeys.LoadClientCertAsync, new FeatureMap<IHttpClientCertificateFeature>(
+                    feature => new Func<Task>(() => feature.GetClientCertificateAsync(CancellationToken.None))));
             }
 
             _context.Items[typeof(HttpContext).FullName] = _context; // Store for lookup when we transition back out of OWIN

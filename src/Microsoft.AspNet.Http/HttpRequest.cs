@@ -63,10 +63,19 @@ namespace Microsoft.AspNet.Http
         public abstract IReadableStringCollection Query { get; }
 
         /// <summary>
-        /// Gets the query value collection form collection.
+        /// Gets the form collection.
         /// </summary>
         /// <returns>The form collection parsed from the request body.</returns>
-        public abstract Task<IReadableStringCollection> GetFormAsync();
+        public virtual Task<IReadableStringCollection> GetFormAsync()
+        {
+            return GetFormAsync(CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Gets the form collection.
+        /// </summary>
+        /// <returns>The form collection parsed from the request body.</returns>
+        public abstract Task<IReadableStringCollection> GetFormAsync(CancellationToken cancel);
 
         /// <summary>
         /// Gets or set the owin.RequestProtocol.

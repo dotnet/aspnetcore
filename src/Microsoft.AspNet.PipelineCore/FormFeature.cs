@@ -3,9 +3,10 @@
 
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.FeatureModel;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.PipelineCore.Collections;
 using Microsoft.AspNet.PipelineCore.Infrastructure;
@@ -24,14 +25,22 @@ namespace Microsoft.AspNet.PipelineCore
             _features = features;
         }
 
-        public async Task<IReadableStringCollection> GetFormAsync()
+        public async Task<IReadableStringCollection> GetFormAsync(CancellationToken cancel)
         {
             var body = _request.Fetch(_features).Body;
 
             if (_bodyStream == null || _bodyStream != body)
             {
                 _bodyStream = body;
-                using (var streamReader = new StreamReader(body, Encoding.UTF8,
+                if (!_bodyStream.CanSeek)
+                {
+                    MemoryStream buffer = new MemoryStream();
+                    await _bodyStream.CopyToAsync(buffer, 4096, cancel);
+                    _bodyStream = buffer;
+                    _request.Fetch(_features).Body = _bodyStream;
+                    _bodyStream.Seek(0, SeekOrigin.Begin);
+                }
+                using (var streamReader = new StreamReader(_bodyStream, Encoding.UTF8,
                                                            detectEncodingFromByteOrderMarks: true,
                                                            bufferSize: 1024, leaveOpen: true))
                 {

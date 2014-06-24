@@ -3,6 +3,7 @@
 
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.HttpFeature;
@@ -29,7 +30,7 @@ namespace Microsoft.AspNet.PipelineCore.Tests
             var provider = new FormFeature(features.Object);
 
             // Act
-            var formCollection = await provider.GetFormAsync();
+            var formCollection = await provider.GetFormAsync(CancellationToken.None);
 
             // Assert
             Assert.Equal("bar", formCollection["foo"]);
@@ -53,16 +54,16 @@ namespace Microsoft.AspNet.PipelineCore.Tests
             var provider = new FormFeature(features.Object);
 
             // Act - 1
-            var formCollection = await provider.GetFormAsync();
+            var formCollection = await provider.GetFormAsync(CancellationToken.None);
 
             // Assert - 1
             Assert.Equal("bar", formCollection["foo"]);
             Assert.Equal("2", formCollection["baz"]);
-            Assert.Same(formCollection, await provider.GetFormAsync());
+            Assert.Same(formCollection, await provider.GetFormAsync(CancellationToken.None));
 
             // Act - 2
             request.SetupGet(r => r.Body).Returns(new MemoryStream(formContent2));
-            formCollection = await provider.GetFormAsync();
+            formCollection = await provider.GetFormAsync(CancellationToken.None);
 
             // Assert - 2
             Assert.Equal("value", formCollection["collection2"]);
