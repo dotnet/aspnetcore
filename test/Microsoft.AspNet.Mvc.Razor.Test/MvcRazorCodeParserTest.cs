@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("   Foo")
-                    .As(new SetBaseTypeCodeGenerator(DefaultBaseType + "<Foo>"))
+                    .As(new ModelCodeGenerator(DefaultBaseType, "Foo"))
             };
             Assert.Equal(expectedSpans, spans.ToArray());
         }
@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Foo?\r\n")
-                    .As(new SetBaseTypeCodeGenerator(DefaultBaseType + "<Foo?>")),
+                    .As(new ModelCodeGenerator(DefaultBaseType, "Foo?")),
                 factory.Markup("Bar")
                     .With(new MarkupCodeGenerator())
             };
@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Foo[[]][]\r\n")
-                    .As(new SetBaseTypeCodeGenerator(DefaultBaseType + "<Foo[[]][]>")),
+                    .As(new ModelCodeGenerator(DefaultBaseType, "Foo[[]][]")),
                 factory.Markup("Bar")
                     .With(new MarkupCodeGenerator())
             };
@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("$rootnamespace$.MyModel")
-                    .As(new SetBaseTypeCodeGenerator(DefaultBaseType + "<$rootnamespace$.MyModel>"))
+                    .As(new ModelCodeGenerator(DefaultBaseType, "$rootnamespace$.MyModel"))
             };
             Assert.Equal(expectedSpans, spans.ToArray());
         }
@@ -135,7 +135,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("  ")
-                    .As(new SetBaseTypeCodeGenerator(DefaultBaseType)),
+                    .As(new ModelCodeGenerator(DefaultBaseType, string.Empty)),
             };
             var expectedErrors = new[]
             {
@@ -165,13 +165,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Foo\r\n")
-                    .As(new SetBaseTypeCodeGenerator(DefaultBaseType + "<Foo>")),
+                    .As(new ModelCodeGenerator(DefaultBaseType, "Foo")),
                 factory.CodeTransition(SyntaxConstants.TransitionString)
                     .Accepts(AcceptedCharacters.None),
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Bar")
-                    .As(new SetBaseTypeCodeGenerator(DefaultBaseType + "<Bar>"))
+                    .As(new ModelCodeGenerator(DefaultBaseType, "Bar"))
             };
 
             var expectedErrors = new[]
@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Foo\r\n")
-                    .As(new SetBaseTypeCodeGenerator(DefaultBaseType + "<Foo>")),
+                    .As(new ModelCodeGenerator(DefaultBaseType, "Foo")),
                 factory.CodeTransition(SyntaxConstants.TransitionString)
                     .Accepts(AcceptedCharacters.None),
                 factory.MetaCode("inherits ")
@@ -247,7 +247,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Foo")
-                    .As(new SetBaseTypeCodeGenerator(DefaultBaseType + "<Foo>"))
+                    .As(new ModelCodeGenerator(DefaultBaseType, "Foo"))
             };
 
             var expectedErrors = new[]

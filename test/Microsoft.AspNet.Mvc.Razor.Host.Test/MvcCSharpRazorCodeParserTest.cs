@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("   Foo")
-                    .As(new SetBaseTypeCodeGenerator("RazorView<Foo>"))
+                    .As(new ModelCodeGenerator("RazorView", "Foo"))
             };
 
             // Act
@@ -57,11 +57,11 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Theory]
-        [InlineData("Foo?", "RazorView<Foo?>")]
-        [InlineData("Foo[[]][]", "RazorView<Foo[[]][]>")]
-        [InlineData("$rootnamespace$.MyModel", "RazorView<$rootnamespace$.MyModel>")]
+        [InlineData("Foo?", "Foo?")]
+        [InlineData("Foo[[]][]", "Foo[[]][]")]
+        [InlineData("$rootnamespace$.MyModel", "$rootnamespace$.MyModel")]
         public void ParseModelKeyword_InfersBaseType_FromModelName(string modelName,
-                                                                   string expectedBaseType)
+                                                                   string expectedModel)
         {
             // Arrange
             var documentContent = "@model " + modelName + Environment.NewLine + "Bar";
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code(modelName + "\r\n")
-                    .As(new SetBaseTypeCodeGenerator(expectedBaseType)),
+                    .As(new ModelCodeGenerator("RazorView", expectedModel)),
                 factory.Markup("Bar")
                     .With(new MarkupCodeGenerator())
             };
@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("  ")
-                    .As(new SetBaseTypeCodeGenerator("RazorView")),
+                    .As(new ModelCodeGenerator("RazorView", string.Empty)),
             };
             var expectedErrors = new[]
             {
@@ -135,13 +135,13 @@ namespace Microsoft.AspNet.Mvc.Razor
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Foo\r\n")
-                    .As(new SetBaseTypeCodeGenerator("RazorView<Foo>")),
+                    .As(new ModelCodeGenerator("RazorView", "Foo")),
                 factory.CodeTransition(SyntaxConstants.TransitionString)
                     .Accepts(AcceptedCharacters.None),
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Bar")
-                    .As(new SetBaseTypeCodeGenerator("RazorView<Bar>"))
+                    .As(new ModelCodeGenerator("RazorView", "Bar"))
             };
 
             var expectedErrors = new[]
@@ -176,7 +176,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Foo\r\n")
-                    .As(new SetBaseTypeCodeGenerator("RazorView<Foo>")),
+                    .As(new ModelCodeGenerator("RazorView", "Foo")),
                 factory.CodeTransition(SyntaxConstants.TransitionString)
                     .Accepts(AcceptedCharacters.None),
                 factory.MetaCode("inherits ")
@@ -223,7 +223,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Foo")
-                    .As(new SetBaseTypeCodeGenerator("RazorView<Foo>"))
+                    .As(new ModelCodeGenerator("RazorView", "Foo"))
             };
 
             var expectedErrors = new[]
