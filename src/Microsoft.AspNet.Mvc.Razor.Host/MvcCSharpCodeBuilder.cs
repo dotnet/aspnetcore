@@ -19,16 +19,20 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         protected override CSharpCodeWritingScope BuildClassDeclaration(CSharpCodeWriter writer)
         {
-            var chunks = Context.CodeTreeBuilder.CodeTree.Chunks;
+            var modelChunks = Context.CodeTreeBuilder.CodeTree.Chunks.OfType<ModelChunk>();
 
             // If there were any model chunks then we need to modify the class declaration signature.
-            if (chunks.OfType<ModelChunk>().Any())
+            if (modelChunks.Any())
             {
                 writer.Write(string.Format(CultureInfo.CurrentCulture, "public class {0} : ", Context.ClassName));
 
+                // Grab the last model chunk so it gets intellisense.
+                // NOTE: If there's more than 1 model chunk there will be a Razor error BUT we want intellisense to show up
+                // on the current model chunk that the user is typing.
+                var lastModelChunk = modelChunks.Last();
                 var modelVisitor = new ModelChunkVisitor(writer, Context);
                 // This generates the base class signature
-                modelVisitor.Accept(chunks);
+                modelVisitor.Accept(lastModelChunk);
 
                 writer.WriteLine();
 
