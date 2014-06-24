@@ -311,11 +311,27 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
         private class MockCookieCollection : IReadableStringCollection
         {
-            private Dictionary<string, string> dictionary;
+            private Dictionary<string, string> _dictionary;
+
+            public int Count
+            {
+                get
+                {
+                    return _dictionary.Count;
+                }
+            }
+
+            public ICollection<string> Keys
+            {
+                get
+                {
+                    return _dictionary.Keys;
+                }
+            }
 
             public MockCookieCollection(Dictionary<string, string> dictionary)
             {
-                this.dictionary = dictionary;
+                _dictionary = dictionary;
             }
 
             public static MockCookieCollection GetDummyInstance(string key, string value)
@@ -333,9 +349,14 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 throw new NotImplementedException();
             }
 
+            public bool ContainsKey(string key)
+            {
+                return _dictionary.ContainsKey(key);
+            }
+
             public string this[string key]
             {
-                get { return this.dictionary[key]; }
+                get { return _dictionary[key]; }
             }
 
             public IEnumerator<KeyValuePair<string, string[]>> GetEnumerator()
