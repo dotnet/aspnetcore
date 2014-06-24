@@ -2,31 +2,22 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Razor.Generator;
-using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
-    public abstract class MvcCSharpCodeVisitor : CodeVisitor<CSharpCodeWriter>
+    public abstract class MvcCSharpCodeVisitor : MvcCSharpChunkVisitor
     {
-        public MvcCSharpCodeVisitor([NotNull] CSharpCodeWriter writer, 
+        public MvcCSharpCodeVisitor([NotNull] CSharpCodeWriter writer,
                                     [NotNull] CodeGeneratorContext context)
             : base(writer, context)
+        { }
+
+        protected override void Visit(InjectChunk chunk)
         {
         }
-
-        public override void Accept(Chunk chunk)
+        protected override void Visit(ModelChunk chunk)
         {
-            if (chunk is InjectChunk)
-            {
-                Visit((InjectChunk)chunk);
-            }
-            else
-            {
-                base.Accept(chunk);
-            }
         }
-
-        protected abstract void Visit(InjectChunk chunk);
     }
 }

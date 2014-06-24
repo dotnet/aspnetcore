@@ -25,6 +25,10 @@
     <Compile Include="InjectChunk.cs" />
     <Compile Include="InjectChunkVisitor.cs" />
     <Compile Include="InjectParameterGenerator.cs" />
+    <Compile Include="ModelChunk.cs" />
+    <Compile Include="ModelChunkVisitor.cs" />
+    <Compile Include="ModelCodeGenerator.cs" />
+    <Compile Include="MvcCSharpChunkVisitor.cs" />
     <Compile Include="MvcCSharpCodeBuilder.cs" />
     <Compile Include="MvcCSharpCodeVistor.cs" />
     <Compile Include="MvcRazorCodeParser.cs" />
