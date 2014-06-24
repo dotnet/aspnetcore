@@ -661,7 +661,8 @@ namespace Microsoft.Net.Server
             var requestV2 = (UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_V2*)requestMemory.RequestBlob;
             if (!AuthenticationManager.AllowAnonymous && !AuthenticationManager.CheckAuthenticated(requestV2->pRequestInfo))
             {
-                SendError(requestMemory.RequestBlob->RequestId, HttpStatusCode.Unauthorized, AuthenticationManager.GenerateChallenges());
+                SendError(requestMemory.RequestBlob->RequestId, HttpStatusCode.Unauthorized,
+                    AuthenticationManager.GenerateChallenges(AuthenticationManager.AuthenticationTypes));
                 return false;
             }
             return true;

@@ -471,7 +471,7 @@ namespace Microsoft.Net.Server
             // 401
             if (StatusCode == (ushort)HttpStatusCode.Unauthorized)
             {
-                RequestContext.Server.AuthenticationManager.SetAuthenticationChallenge(this);
+                RequestContext.Server.AuthenticationManager.SetAuthenticationChallenge(RequestContext);
             }
 
             UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS flags = UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.NONE;

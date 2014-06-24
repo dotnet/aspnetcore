@@ -22,10 +22,10 @@ namespace Microsoft.Net.Server
     [Flags]
     public enum AuthenticationTypes
     {
-        // None = 0x0, // None is invalid, use AllowAnonymous (which must have a non-zero value).
+        None = 0x0,
         Basic = 0x1,
         // Digest = 0x2, // TODO: Verify this is no longer supported by Http.Sys
-        Ntlm = 0x4,
+        NTLM = 0x4,
         Negotiate = 0x8,
         Kerberos = 0x10,
         AllowAnonymous = 0x1000

@@ -21,6 +21,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyNeutralAttribute.cs" />
+    <Compile Include="AuthenticationHandler.cs" />
     <Compile Include="FeatureContext.cs" />
     <Compile Include="Helpers.cs" />
     <Compile Include="LogHelper.cs" />

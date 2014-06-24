@@ -65,6 +65,10 @@ namespace Microsoft.Net.Server
             }
             set
             {
+                if (_authTypes == AuthenticationTypes.None)
+                {
+                    throw new ArgumentException("value", "'None' is not a valid authentication type. Use 'AllowAnonymous' instead.");
+                }
                 _authTypes = value;
                 SetServerSecurity();
             }
@@ -106,22 +110,25 @@ namespace Microsoft.Net.Server
             }
         }
 
-        // TODO: If we're not going to support Digest then this whole list can be pre-computed and cached.
-        //  consider even pre-serialzing and caching the bytes for the !AllowAnonymous scenario.
-        internal IList<string> GenerateChallenges()
+        internal static IList<string> GenerateChallenges(AuthenticationTypes authTypes)
         {
             IList<string> challenges = new List<string>();
 
+            if (authTypes == AuthenticationTypes.None)
+            {
+                return challenges;
+            }
+
             // Order by strength.
-            if ((_authTypes & AuthenticationTypes.Kerberos) == AuthenticationTypes.Kerberos)
+            if ((authTypes & AuthenticationTypes.Kerberos) == AuthenticationTypes.Kerberos)
             {
                 challenges.Add("Kerberos");
             }
-            if ((_authTypes & AuthenticationTypes.Negotiate) == AuthenticationTypes.Negotiate)
+            if ((authTypes & AuthenticationTypes.Negotiate) == AuthenticationTypes.Negotiate)
             {
                 challenges.Add("Negotiate");
             }
-            if ((_authTypes & AuthenticationTypes.Ntlm) == AuthenticationTypes.Ntlm)
+            if ((authTypes & AuthenticationTypes.NTLM) == AuthenticationTypes.NTLM)
             {
                 challenges.Add("NTLM");
             }
@@ -131,7 +138,7 @@ namespace Microsoft.Net.Server
                 throw new NotImplementedException("Digest challenge generation has not been implemented.");
                 // challenges.Add("Digest");
             }*/
-            if ((_authTypes & AuthenticationTypes.Basic) == AuthenticationTypes.Basic)
+            if ((authTypes & AuthenticationTypes.Basic) == AuthenticationTypes.Basic)
             {
                 // TODO: Realm
                 challenges.Add("Basic");
@@ -139,9 +146,9 @@ namespace Microsoft.Net.Server
             return challenges;
         }
 
-        internal void SetAuthenticationChallenge(Response response)
+        internal void SetAuthenticationChallenge(RequestContext context)
         {
-            IList<string> challenges = GenerateChallenges();
+            IList<string> challenges = GenerateChallenges(context.AuthenticationChallenges);
 
             if (challenges.Count > 0)
             {
@@ -149,7 +156,7 @@ namespace Microsoft.Net.Server
                 // Append to the existing header, if any. Some clients (IE, Chrome) require each challenges to be sent on their own line/header.
                 string[] oldValues;
                 string[] newValues;
-                if (response.Headers.TryGetValue(HttpKnownHeaderNames.WWWAuthenticate, out oldValues))
+                if (context.Response.Headers.TryGetValue(HttpKnownHeaderNames.WWWAuthenticate, out oldValues))
                 {
                     newValues = new string[oldValues.Length + challenges.Count];
                     Array.Copy(oldValues, newValues, oldValues.Length);
@@ -160,7 +167,7 @@ namespace Microsoft.Net.Server
                     newValues = new string[challenges.Count];
                     challenges.CopyTo(newValues, 0);
                 }
-                response.Headers[HttpKnownHeaderNames.WWWAuthenticate] = newValues;
+                context.Response.Headers[HttpKnownHeaderNames.WWWAuthenticate] = newValues;
             }
         }
 
@@ -184,10 +191,30 @@ namespace Microsoft.Net.Server
                 && requestInfo->pInfo->AuthStatus == UnsafeNclNativeMethods.HttpApi.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
             {
 #if NET45
-                return new WindowsPrincipal(new WindowsIdentity(requestInfo->pInfo->AccessToken));
+                return new WindowsPrincipal(new WindowsIdentity(requestInfo->pInfo->AccessToken,
+                    GetAuthTypeFromRequest(requestInfo->pInfo->AuthType).ToString()));
 #endif
             }
-            return new ClaimsPrincipal(new ClaimsIdentity(string.Empty)); // Anonymous / !IsAuthenticated
+            return new ClaimsPrincipal(new ClaimsIdentity()); // Anonymous / !IsAuthenticated
+        }
+
+        private static AuthenticationTypes GetAuthTypeFromRequest(UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_AUTH_TYPE input)
+        {
+            switch (input)
+            {
+                case UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeBasic:
+                    return AuthenticationTypes.Basic;
+                // case UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeDigest:
+                //  return AuthenticationTypes.Digest;
+                case UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeNTLM:
+                    return AuthenticationTypes.NTLM;
+                case UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeNegotiate:
+                    return AuthenticationTypes.Negotiate;
+                case UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeKerberos:
+                    return AuthenticationTypes.Kerberos;
+                default:
+                    throw new NotImplementedException(input.ToString());
+            }
         }
     }
 }

@@ -45,14 +45,15 @@ namespace Microsoft.Net.Server
         private CancellationTokenSource _requestAbortSource;
         private CancellationToken? _disconnectToken;
 
-        internal RequestContext(WebListener httpListener, NativeRequestContext memoryBlob)
+        internal RequestContext(WebListener server, NativeRequestContext memoryBlob)
         {
             // TODO: Verbose log
-            _server = httpListener;
+            _server = server;
             _memoryBlob = memoryBlob;
             _request = new Request(this, _memoryBlob);
             _response = new Response(this);
             _request.ReleasePins();
+            AuthenticationChallenges = server.AuthenticationManager.AuthenticationTypes & ~AuthenticationTypes.AllowAnonymous;
         }
 
         public Request Request
@@ -128,6 +129,12 @@ namespace Microsoft.Net.Server
                 return Request.RequestId;
             }
         }
+
+        /// <summary>
+        /// The authentication challengest that will be added to the response if the status code is 401.
+        /// This must be a subset of the AuthenticationTypes enabled on the server.
+        /// </summary>
+        public AuthenticationTypes AuthenticationChallenges { get; set; }
 
         public bool IsUpgradableRequest
         {

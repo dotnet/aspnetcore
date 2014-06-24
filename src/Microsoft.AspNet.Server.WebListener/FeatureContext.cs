@@ -70,6 +70,7 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             _requestContext = requestContext;
             _features = new FeatureCollection();
+            _authHandler = new AuthenticationHandler(requestContext);
             PopulateFeatures();
         }
 
@@ -109,14 +110,11 @@ namespace Microsoft.AspNet.Server.WebListener
                 _features.Add(typeof(IHttpWebSocketFeature), this);
             }
 
-            // TODO: 
-            // _environment.CallCancelled = _cts.Token;
-            // _environment.User = _request.User;
-            // Channel binding
-
+            // TODO:
             /*
-            // Server
+            Server
             _environment.Listener = _server;
+            Channel binding
             _environment.ConnectionId = _request.ConnectionId;            
              */
         }

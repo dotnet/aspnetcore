@@ -16,6 +16,7 @@
 // permissions and limitations under the License.
 
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -31,12 +32,13 @@ namespace Microsoft.AspNet.Server.WebListener
         private const string Address = "http://localhost:8080/";
 
         [Theory]
+        [InlineData(AuthenticationTypes.AllowAnonymous)]
         [InlineData(AuthenticationTypes.Kerberos)]
         [InlineData(AuthenticationTypes.Negotiate)]
-        [InlineData(AuthenticationTypes.Ntlm)]
+        [InlineData(AuthenticationTypes.NTLM)]
         // [InlineData(AuthenticationTypes.Digest)]
         [InlineData(AuthenticationTypes.Basic)]
-        [InlineData(AuthenticationTypes.Kerberos | AuthenticationTypes.Negotiate | AuthenticationTypes.Ntlm | /*AuthenticationTypes.Digest |*/ AuthenticationTypes.Basic)]
+        [InlineData(AuthenticationTypes.Kerberos | AuthenticationTypes.Negotiate | AuthenticationTypes.NTLM | /*AuthenticationTypes.Digest |*/ AuthenticationTypes.Basic)]
         public async Task AuthTypes_AllowAnonymous_NoChallenge(AuthenticationTypes authType)
         {
             using (Utilities.CreateAuthServer(authType | AuthenticationTypes.AllowAnonymous, env =>
@@ -56,7 +58,7 @@ namespace Microsoft.AspNet.Server.WebListener
         [Theory]
         [InlineData(AuthenticationTypes.Kerberos)]
         [InlineData(AuthenticationTypes.Negotiate)]
-        [InlineData(AuthenticationTypes.Ntlm)]
+        [InlineData(AuthenticationTypes.NTLM)]
         // [InlineData(AuthenticationTypes.Digest)] // TODO: Not implemented
         [InlineData(AuthenticationTypes.Basic)]
         public async Task AuthType_RequireAuth_ChallengesAdded(AuthenticationTypes authType)
@@ -75,7 +77,7 @@ namespace Microsoft.AspNet.Server.WebListener
         [Theory]
         [InlineData(AuthenticationTypes.Kerberos)]
         [InlineData(AuthenticationTypes.Negotiate)]
-        [InlineData(AuthenticationTypes.Ntlm)]
+        [InlineData(AuthenticationTypes.NTLM)]
         // [InlineData(AuthenticationTypes.Digest)] // TODO: Not implemented
         [InlineData(AuthenticationTypes.Basic)]
         public async Task AuthType_AllowAnonymousButSpecify401_ChallengesAdded(AuthenticationTypes authType)
@@ -101,7 +103,7 @@ namespace Microsoft.AspNet.Server.WebListener
             using (Utilities.CreateAuthServer(
                 AuthenticationTypes.Kerberos
                 | AuthenticationTypes.Negotiate
-                | AuthenticationTypes.Ntlm
+                | AuthenticationTypes.NTLM
                 /* | AuthenticationTypes.Digest TODO: Not implemented */
                 | AuthenticationTypes.Basic
                 | AuthenticationTypes.AllowAnonymous,
@@ -123,10 +125,10 @@ namespace Microsoft.AspNet.Server.WebListener
         [Theory]
         [InlineData(AuthenticationTypes.Kerberos)]
         [InlineData(AuthenticationTypes.Negotiate)]
-        [InlineData(AuthenticationTypes.Ntlm)]
+        [InlineData(AuthenticationTypes.NTLM)]
         // [InlineData(AuthenticationTypes.Digest)] // TODO: Not implemented
         // [InlineData(AuthenticationTypes.Basic)] // Doesn't work with default creds
-        [InlineData(AuthenticationTypes.Kerberos | AuthenticationTypes.Negotiate | AuthenticationTypes.Ntlm | /* AuthenticationTypes.Digest |*/ AuthenticationTypes.Basic)]
+        [InlineData(AuthenticationTypes.Kerberos | AuthenticationTypes.Negotiate | AuthenticationTypes.NTLM | /* AuthenticationTypes.Digest |*/ AuthenticationTypes.Basic)]
         public async Task AuthTypes_AllowAnonymousButSpecify401_Success(AuthenticationTypes authType)
         {
             int requestId = 0;
@@ -159,10 +161,10 @@ namespace Microsoft.AspNet.Server.WebListener
         [Theory]
         [InlineData(AuthenticationTypes.Kerberos)]
         [InlineData(AuthenticationTypes.Negotiate)]
-        [InlineData(AuthenticationTypes.Ntlm)]
+        [InlineData(AuthenticationTypes.NTLM)]
         // [InlineData(AuthenticationTypes.Digest)] // TODO: Not implemented
         // [InlineData(AuthenticationTypes.Basic)] // Doesn't work with default creds
-        [InlineData(AuthenticationTypes.Kerberos | AuthenticationTypes.Negotiate | AuthenticationTypes.Ntlm | /* AuthenticationTypes.Digest |*/ AuthenticationTypes.Basic)]
+        [InlineData(AuthenticationTypes.Kerberos | AuthenticationTypes.Negotiate | AuthenticationTypes.NTLM | /* AuthenticationTypes.Digest |*/ AuthenticationTypes.Basic)]
         public async Task AuthTypes_RequireAuth_Success(AuthenticationTypes authType)
         {
             using (Utilities.CreateAuthServer(authType, env =>
@@ -175,6 +177,216 @@ namespace Microsoft.AspNet.Server.WebListener
             {
                 var response = await SendRequestAsync(Address, useDefaultCredentials: true);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            }
+        }
+
+        [Theory]
+        [InlineData(AuthenticationTypes.AllowAnonymous)]
+        [InlineData(AuthenticationTypes.Kerberos)]
+        [InlineData(AuthenticationTypes.Negotiate)]
+        [InlineData(AuthenticationTypes.NTLM)]
+        // [InlineData(AuthenticationTypes.Digest)]
+        [InlineData(AuthenticationTypes.Basic)]
+        // [InlineData(AuthenticationTypes.Kerberos | AuthenticationTypes.Negotiate | AuthenticationTypes.NTLM | /*AuthenticationTypes.Digest |*/ AuthenticationTypes.Basic)]
+        public async Task AuthTypes_GetSingleDescriptions(AuthenticationTypes authType)
+        {
+            using (Utilities.CreateAuthServer(authType | AuthenticationTypes.AllowAnonymous, env =>
+            {
+                var context = new DefaultHttpContext((IFeatureCollection)env);
+                var resultList = context.GetAuthenticationTypes();
+                if (authType == AuthenticationTypes.AllowAnonymous)
+                {
+                    Assert.Equal(0, resultList.Count());
+                }
+                else
+                {
+                    Assert.Equal(1, resultList.Count());
+                    var result = resultList.First();
+                    Assert.Equal(authType.ToString(), result.AuthenticationType);
+                    Assert.Equal("Windows:" + authType.ToString(), result.Caption);
+                }
+
+                return Task.FromResult(0);
+            }))
+            {
+                var response = await SendRequestAsync(Address);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal(0, response.Headers.WwwAuthenticate.Count);
+            }
+        }
+
+        [Fact]
+        public async Task AuthTypes_GetMultipleDescriptions()
+        {
+            AuthenticationTypes authType =
+                AuthenticationTypes.Kerberos
+                | AuthenticationTypes.Negotiate
+                | AuthenticationTypes.NTLM
+                | /*AuthenticationTypes.Digest
+                |*/ AuthenticationTypes.Basic;
+            using (Utilities.CreateAuthServer(authType | AuthenticationTypes.AllowAnonymous, env =>
+            {
+                var context = new DefaultHttpContext((IFeatureCollection)env);
+                var resultList = context.GetAuthenticationTypes();
+                Assert.Equal(4, resultList.Count());
+                return Task.FromResult(0);
+            }))
+            {
+                var response = await SendRequestAsync(Address);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal(0, response.Headers.WwwAuthenticate.Count);
+            }
+        }
+
+        [Theory]
+        [InlineData(AuthenticationTypes.Kerberos)]
+        [InlineData(AuthenticationTypes.Negotiate)]
+        [InlineData(AuthenticationTypes.NTLM)]
+        // [InlineData(AuthenticationTypes.Digest)]
+        [InlineData(AuthenticationTypes.Basic)]
+        [InlineData(AuthenticationTypes.Kerberos | AuthenticationTypes.Negotiate | AuthenticationTypes.NTLM | /*AuthenticationTypes.Digest |*/ AuthenticationTypes.Basic)]
+        public async Task AuthTypes_AuthenticateWithNoUser_NoResults(AuthenticationTypes authType)
+        {
+            var authTypeList = authType.ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            using (Utilities.CreateAuthServer(authType | AuthenticationTypes.AllowAnonymous, env =>
+            {
+                var context = new DefaultHttpContext((IFeatureCollection)env);
+                Assert.NotNull(context.User);
+                Assert.False(context.User.Identity.IsAuthenticated);
+                var authResults = context.Authenticate(authTypeList);
+                Assert.False(authResults.Any());
+                return Task.FromResult(0);
+            }))
+            {
+                var response = await SendRequestAsync(Address);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal(0, response.Headers.WwwAuthenticate.Count);
+            }
+        }
+
+        [Theory]
+        [InlineData(AuthenticationTypes.Kerberos)]
+        [InlineData(AuthenticationTypes.Negotiate)]
+        [InlineData(AuthenticationTypes.NTLM)]
+        // [InlineData(AuthenticationTypes.Digest)]
+        // [InlineData(AuthenticationTypes.Basic)] // Doesn't work with default creds
+        [InlineData(AuthenticationTypes.Kerberos | AuthenticationTypes.Negotiate | AuthenticationTypes.NTLM | /*AuthenticationTypes.Digest |*/ AuthenticationTypes.Basic)]
+        public async Task AuthTypes_AuthenticateWithUser_OneResult(AuthenticationTypes authType)
+        {
+            var authTypeList = authType.ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            using (Utilities.CreateAuthServer(authType, env =>
+            {
+                var context = new DefaultHttpContext((IFeatureCollection)env);
+                Assert.NotNull(context.User);
+                Assert.True(context.User.Identity.IsAuthenticated);
+                var authResults = context.Authenticate(authTypeList);
+                Assert.Equal(1, authResults.Count());
+                return Task.FromResult(0);
+            }))
+            {
+                var response = await SendRequestAsync(Address, useDefaultCredentials: true);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            }
+        }
+
+        [Theory]
+        [InlineData(AuthenticationTypes.Kerberos)]
+        [InlineData(AuthenticationTypes.Negotiate)]
+        [InlineData(AuthenticationTypes.NTLM)]
+        // [InlineData(AuthenticationTypes.Digest)]
+        [InlineData(AuthenticationTypes.Basic)]
+        [InlineData(AuthenticationTypes.Kerberos | AuthenticationTypes.Negotiate | AuthenticationTypes.NTLM | /*AuthenticationTypes.Digest |*/ AuthenticationTypes.Basic)]
+        public async Task AuthTypes_ChallengeWithoutAuthTypes_AllChallengesSent(AuthenticationTypes authType)
+        {
+            var authTypeList = authType.ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            using (Utilities.CreateAuthServer(authType | AuthenticationTypes.AllowAnonymous, env =>
+            {
+                var context = new DefaultHttpContext((IFeatureCollection)env);
+                Assert.NotNull(context.User);
+                Assert.False(context.User.Identity.IsAuthenticated);
+                context.Response.Challenge();
+                return Task.FromResult(0);
+            }))
+            {
+                var response = await SendRequestAsync(Address);
+                Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+                Assert.Equal(authTypeList.Count(), response.Headers.WwwAuthenticate.Count);
+            }
+        }
+
+        [Theory]
+        [InlineData(AuthenticationTypes.Kerberos)]
+        [InlineData(AuthenticationTypes.Negotiate)]
+        [InlineData(AuthenticationTypes.NTLM)]
+        // [InlineData(AuthenticationTypes.Digest)]
+        [InlineData(AuthenticationTypes.Basic)]
+        [InlineData(AuthenticationTypes.Kerberos | AuthenticationTypes.Negotiate | AuthenticationTypes.NTLM | /*AuthenticationTypes.Digest |*/ AuthenticationTypes.Basic)]
+        public async Task AuthTypes_ChallengeWithAllAuthTypes_AllChallengesSent(AuthenticationTypes authType)
+        {
+            var authTypeList = authType.ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            using (Utilities.CreateAuthServer(authType | AuthenticationTypes.AllowAnonymous, env =>
+            {
+                var context = new DefaultHttpContext((IFeatureCollection)env);
+                Assert.NotNull(context.User);
+                Assert.False(context.User.Identity.IsAuthenticated);
+                context.Response.Challenge(authTypeList);
+                return Task.FromResult(0);
+            }))
+            {
+                var response = await SendRequestAsync(Address);
+                Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+                Assert.Equal(authTypeList.Count(), response.Headers.WwwAuthenticate.Count);
+            }
+        }
+
+        [Theory]
+        [InlineData(AuthenticationTypes.Kerberos)]
+        [InlineData(AuthenticationTypes.Negotiate)]
+        [InlineData(AuthenticationTypes.NTLM)]
+        // [InlineData(AuthenticationTypes.Digest)]
+        [InlineData(AuthenticationTypes.Basic)]
+        public async Task AuthTypes_ChallengeOneAuthType_OneChallengeSent(AuthenticationTypes authType)
+        {
+            var authTypes = AuthenticationTypes.Kerberos | AuthenticationTypes.Negotiate | AuthenticationTypes.NTLM | /*AuthenticationTypes.Digest |*/ AuthenticationTypes.Basic;
+            using (Utilities.CreateAuthServer(authTypes | AuthenticationTypes.AllowAnonymous, env =>
+            {
+                var context = new DefaultHttpContext((IFeatureCollection)env);
+                Assert.NotNull(context.User);
+                Assert.False(context.User.Identity.IsAuthenticated);
+                context.Response.Challenge(authType.ToString());
+                return Task.FromResult(0);
+            }))
+            {
+                var response = await SendRequestAsync(Address);
+                Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+                Assert.Equal(1, response.Headers.WwwAuthenticate.Count);
+                Assert.Equal(authType.ToString(), response.Headers.WwwAuthenticate.First().Scheme);
+            }
+        }
+
+        [Theory]
+        [InlineData(AuthenticationTypes.Kerberos)]
+        [InlineData(AuthenticationTypes.Negotiate)]
+        [InlineData(AuthenticationTypes.NTLM)]
+        // [InlineData(AuthenticationTypes.Digest)]
+        [InlineData(AuthenticationTypes.Basic)]
+        public async Task AuthTypes_ChallengeDisabledAuthType_Error(AuthenticationTypes authType)
+        {
+            var authTypes = AuthenticationTypes.Kerberos | AuthenticationTypes.Negotiate | AuthenticationTypes.NTLM | /*AuthenticationTypes.Digest |*/ AuthenticationTypes.Basic;
+            authTypes = authTypes & ~authType;
+            var authTypeList = authType.ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            using (Utilities.CreateAuthServer(authTypes | AuthenticationTypes.AllowAnonymous, env =>
+            {
+                var context = new DefaultHttpContext((IFeatureCollection)env);
+                Assert.NotNull(context.User);
+                Assert.False(context.User.Identity.IsAuthenticated);
+                Assert.Throws<InvalidOperationException>(() => context.Response.Challenge(authType.ToString()));
+                return Task.FromResult(0);
+            }))
+            {
+                var response = await SendRequestAsync(Address);
+                Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+                Assert.Equal(0, response.Headers.WwwAuthenticate.Count);
             }
         }
 
