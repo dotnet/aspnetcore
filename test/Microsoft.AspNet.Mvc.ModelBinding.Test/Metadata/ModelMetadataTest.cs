@@ -28,12 +28,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Assert
             Assert.Equal(typeof(Exception), metadata.ContainerType);
             Assert.True(metadata.ConvertEmptyStringToNull);
-            Assert.Null(metadata.NullDisplayText);
+            Assert.False(metadata.IsComplexType);
+            Assert.False(metadata.IsReadOnly);
+            Assert.False(metadata.IsRequired);
+
             Assert.Null(metadata.Description);
+            Assert.Null(metadata.DisplayFormatString);
+            Assert.Null(metadata.DisplayName);
+            Assert.Null(metadata.EditFormatString);
+            Assert.Null(metadata.NullDisplayText);
+            Assert.Null(metadata.TemplateHint);
+
             Assert.Equal("model", metadata.Model);
+            Assert.Equal("model", metadata.SimpleDisplayText);
             Assert.Equal(typeof(string), metadata.ModelType);
             Assert.Equal("propertyName", metadata.PropertyName);
-            Assert.False(metadata.IsReadOnly);
         }
 #endif
 
@@ -195,6 +204,23 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         // GetDisplayName()
 
+        [Fact]
+        public void GetDisplayName_ReturnsDisplayName_IfSet()
+        {
+            // Arrange
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = new ModelMetadata(provider, null, () => null, typeof(object), "unusedName")
+            {
+                DisplayName = "displayName",
+            };
+
+            // Act
+            var result = metadata.GetDisplayName();
+
+            // Assert
+            Assert.Equal("displayName", result);
+        }
+
 #if NET45
         [Fact]
         public void ReturnsPropertyNameWhenSetAndDisplayNameIsNull()
@@ -224,6 +250,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Equal("Object", result);
         }
 #endif
+
         // SimpleDisplayText
 
         public static IEnumerable<object[]> SimpleDisplayTextData

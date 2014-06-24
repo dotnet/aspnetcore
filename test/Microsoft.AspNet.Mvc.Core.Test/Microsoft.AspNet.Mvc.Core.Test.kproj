@@ -70,7 +70,10 @@
     <Compile Include="Rendering\DefaultTemplatesUtilities.cs" />
     <Compile Include="Rendering\DefaultDisplayTemplatesTests.cs" />
     <Compile Include="Rendering\DefaultEditorTemplatesTests.cs" />
+    <Compile Include="Rendering\HtmlHelperDisplayNameExtensionsTest.cs" />
     <Compile Include="Rendering\HtmlAttributePropertyHelperTest.cs" />
+    <Compile Include="Rendering\HtmlHelperLabelExtensionsTest.cs" />
+    <Compile Include="Rendering\HtmlHelperNameExtensionsTest.cs" />
     <Compile Include="Rendering\ViewContextTests.cs" />
     <Compile Include="Rendering\ViewDataOfTTest.cs" />
     <Compile Include="KnownRouteValueConstraintTests.cs" />
