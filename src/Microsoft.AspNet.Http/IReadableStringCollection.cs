@@ -19,7 +19,22 @@ namespace Microsoft.AspNet.Http
         /// <returns></returns>
         string this[string key] { get; }
 
-        // Joined
+        /// <summary>
+        /// Gets the number of elements contained in the collection.
+        /// </summary>
+        int Count { get; }
+
+        /// <summary>
+        /// Gets a collection containing the keys.
+        /// </summary>
+        ICollection<string> Keys { get; }
+
+        /// <summary>
+        /// Determines whether the collection contains an element with the specified key.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        bool ContainsKey(string key);
 
         /// <summary>
         /// Get the associated value from the collection.  Multiple values will be merged.
@@ -30,8 +45,6 @@ namespace Microsoft.AspNet.Http
         [SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "Get", Justification = "Re-evaluate later.")]
         string Get(string key);
 
-        // Joined
-
         /// <summary>
         /// Get the associated values from the collection in their original format.
         /// Returns null if the key is not present.
@@ -39,7 +52,5 @@ namespace Microsoft.AspNet.Http
         /// <param name="key"></param>
         /// <returns></returns>
         IList<string> GetValues(string key);
-
-        // Raw
     }
 }

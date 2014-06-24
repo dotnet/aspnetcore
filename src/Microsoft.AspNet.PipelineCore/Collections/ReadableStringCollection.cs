@@ -32,6 +32,23 @@ namespace Microsoft.AspNet.PipelineCore.Collections
         private IDictionary<string, string[]> Store { get; set; }
 
         /// <summary>
+        /// Gets the number of elements contained in the collection.
+        /// </summary>
+        public int Count
+        {
+            get { return Store.Count; }
+        }
+
+        /// <summary>
+        /// Gets a collection containing the keys.
+        /// </summary>
+        public ICollection<string> Keys
+        {
+            get { return Store.Keys; }
+        }
+
+
+        /// <summary>
         /// Get the associated value from the collection.  Multiple values will be merged.
         /// Returns null if the key is not present.
         /// </summary>
@@ -40,6 +57,16 @@ namespace Microsoft.AspNet.PipelineCore.Collections
         public string this[string key]
         {
             get { return Get(key); }
+        }
+
+        /// <summary>
+        /// Determines whether the collection contains an element with the specified key.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public bool ContainsKey(string key)
+        {
+            return Store.ContainsKey(key);
         }
 
         /// <summary>
