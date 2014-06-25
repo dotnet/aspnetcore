@@ -6,7 +6,6 @@
         "Autofac": "3.3.0"
     },
     "configurations" : {
-        "net45" : { },
-        "k10" : { }
+        "net45" : { }
     }
 }
