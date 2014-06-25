@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.PipelineCore
                 _bodyStream = body;
                 if (!_bodyStream.CanSeek)
                 {
-                    MemoryStream buffer = new MemoryStream();
+                    var buffer = new MemoryStream();
                     await _bodyStream.CopyToAsync(buffer, 4096, cancel);
                     _bodyStream = buffer;
                     _request.Fetch(_features).Body = _bodyStream;

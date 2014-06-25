@@ -66,16 +66,7 @@ namespace Microsoft.AspNet.Http
         /// Gets the form collection.
         /// </summary>
         /// <returns>The form collection parsed from the request body.</returns>
-        public virtual Task<IReadableStringCollection> GetFormAsync()
-        {
-            return GetFormAsync(CancellationToken.None);
-        }
-
-        /// <summary>
-        /// Gets the form collection.
-        /// </summary>
-        /// <returns>The form collection parsed from the request body.</returns>
-        public abstract Task<IReadableStringCollection> GetFormAsync(CancellationToken cancel);
+        public abstract Task<IReadableStringCollection> GetFormAsync(CancellationToken cancel = default(CancellationToken));
 
         /// <summary>
         /// Gets or set the owin.RequestProtocol.
