@@ -19,6 +19,7 @@ using System.IO;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.HttpFeature;
@@ -87,7 +88,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var tls = httpContext.GetFeature<IHttpClientCertificateFeature>();
                 Assert.NotNull(tls);
-                await tls.GetClientCertificateAsync();
+                await tls.GetClientCertificateAsync(CancellationToken.None);
                 Assert.Null(tls.ClientCertificate);
             }))
             {
@@ -104,7 +105,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var tls = httpContext.GetFeature<IHttpClientCertificateFeature>();
                 Assert.NotNull(tls);
-                await tls.GetClientCertificateAsync();
+                await tls.GetClientCertificateAsync(CancellationToken.None);
                 Assert.NotNull(tls.ClientCertificate);
             }))
             {
