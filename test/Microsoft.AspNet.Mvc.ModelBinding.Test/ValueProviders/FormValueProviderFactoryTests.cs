@@ -10,6 +10,7 @@ using Microsoft.AspNet.Routing;
 using Moq;
 using Xunit;
 using System;
+using System.Threading;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 {
@@ -50,7 +51,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             var collection = Mock.Of<IReadableStringCollection>();
             var request = new Mock<HttpRequest>();
-            request.Setup(f => f.GetFormAsync()).Returns(Task.FromResult(collection));
+            request.Setup(f => f.GetFormAsync(CancellationToken.None)).Returns(Task.FromResult(collection));
             
             var mockHeader = new Mock<IHeaderDictionary>();
             mockHeader.Setup(h => h["Content-Type"]).Returns(contentType);
