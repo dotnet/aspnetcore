@@ -39,7 +39,7 @@ This downloads KVM from this repository and puts it on your machine. Alternative
 * Clone the repository
 * On the command line execute
  * ```kvm setup``` on Windows or
- * ```sh kvmsetup.sh && source ~/.kre/kvm/kvm.sh``` on OSX/Linux
+ * ```sh kvminstall.sh && source ~/.kre/kvm/kvm.sh``` on OSX/Linux
 
 This command will setup your environment, getting it ready to install a version of the runtime. It adds KVM to your path and puts it in your user profile. Once you have KVM then you need to get a version of the runtime:
 * Execute ```kvm install 0.1-alpha-build-0446```. This command will download the named version of the KRE and put it on your user profile ready to use. You can get the latest version by running ```kvm upgrade``` but 0446 was the last version explicitly tested. see the [KVM page](https://github.com/aspnet/Home/wiki/version-manager) for more information on KVM.
@@ -57,7 +57,7 @@ This command will setup your environment, getting it ready to install a version 
 :: getting started
 git clone https://github.com/aspnet/Home.git
 cd Home
-kvmsetup
+kvm setup
 kvm install 0.1-alpha-build-0446 -p
 
 cd samples\ConsoleApp
