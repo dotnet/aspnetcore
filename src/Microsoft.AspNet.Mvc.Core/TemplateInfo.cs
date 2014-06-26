@@ -9,13 +9,16 @@ namespace Microsoft.AspNet.Mvc
 {
     public class TemplateInfo
     {
+        private string _htmlFieldPrefix;
+        private object _formattedModelValue;
+
         // Keep a collection of visited objects to prevent infinite recursion.
         private HashSet<object> _visitedObjects;
 
         public TemplateInfo()
         {
-            FormattedModelValue = string.Empty;
-            HtmlFieldPrefix = string.Empty;
+            _htmlFieldPrefix = string.Empty;
+            _formattedModelValue = string.Empty;
             _visitedObjects = new HashSet<object>();
         }
 
@@ -26,9 +29,17 @@ namespace Microsoft.AspNet.Mvc
             _visitedObjects = new HashSet<object>(original._visitedObjects);
         }
 
-        public object FormattedModelValue { get; set; }
+        public object FormattedModelValue
+        {
+            get { return _formattedModelValue; }
+            set { _formattedModelValue = value ?? string.Empty; }
+        }
 
-        public string HtmlFieldPrefix { get; set; }
+        public string HtmlFieldPrefix
+        {
+            get { return _htmlFieldPrefix; }
+            set { _htmlFieldPrefix = value ?? string.Empty; }
+        }
 
         public int TemplateDepth
         {
