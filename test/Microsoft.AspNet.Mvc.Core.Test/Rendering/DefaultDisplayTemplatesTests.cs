@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public void ObjectTemplateDisplaysNullDisplayTextWhenObjectIsNull()
         {
             // Arrange
-            var html = DefaultTemplatesUtilities.GetHtmlHelper(null);
+            var html = DefaultTemplatesUtilities.GetHtmlHelper();
             var metadata =
                 new EmptyModelMetadataProvider()
                     .GetMetadataForType(null, typeof(DefaultTemplatesUtilities.ObjectTemplateModel));
