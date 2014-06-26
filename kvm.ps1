@@ -63,45 +63,54 @@ kvm alias <alias> <semver> [-x86][-x64] [-svr50][-svrc50]
 }
 
 function Kvm-Global-Setup {
-    If (Needs-Elevation)
+    If ($global)
     {
-        $arguments = "& '$scriptPath' setup $(Requested-Switches) -persistent"
-        Start-Process "$psHome\powershell.exe" -Verb runAs -ArgumentList $arguments -Wait
-        Write-Host "Setup complete"
-        Kvm-Help
-        break
+        If (Needs-Elevation)
+        {
+            $arguments = "& '$scriptPath' setup $(Requested-Switches) -persistent"
+            Start-Process "$psHome\powershell.exe" -Verb runAs -ArgumentList $arguments -Wait
+            Write-Host "Setup complete"
+            Kvm-Help
+            break
+        }
     }
 
     $scriptFolder = [System.IO.Path]::GetDirectoryName($scriptPath)
 
-    $kvmBinPath = "$userKrePath\bin"
+    If ($global)
+    {
+        Write-Host "Adding $globalKrePath;%USERPROFILE%\.kre to process KRE_HOME"
+        $envKreHome = $env:KRE_HOME
+        $envKreHome = Change-Path $envKreHome "%USERPROFILE%\.kre" ("%USERPROFILE%\.kre")
+        $envKreHome = Change-Path $envKreHome $globalKrePath ($globalKrePath)
+        $env:KRE_HOME = $envKreHome
 
-    Write-Host "Copying file $kvmBinPath\kvm.ps1"
-    md $kvmBinPath -Force | Out-Null
-    copy "$scriptFolder\kvm.ps1" "$kvmBinPath\kvm.ps1"
+        Write-Host "Adding $globalKrePath;%USERPROFILE%\.kre to machine KRE_HOME"
+        $machineKreHome = [Environment]::GetEnvironmentVariable("KRE_HOME", [System.EnvironmentVariableTarget]::Machine)
+        $machineKreHome = Change-Path $machineKreHome "%USERPROFILE%\.kre" ("%USERPROFILE%\.kre")
+        $machineKreHome = Change-Path $machineKreHome $globalKrePath ($globalKrePath)
+        [Environment]::SetEnvironmentVariable("KRE_HOME", $machineKreHome, [System.EnvironmentVariableTarget]::Machine)
+    }
+    else 
+    {
+        $kvmBinPath = "$userKrePath\bin"
 
-    Write-Host "Copying file $kvmBinPath\kvm.cmd"
-    copy "$scriptFolder\kvm.cmd" "$kvmBinPath\kvm.cmd"
+        Write-Host "Copying file $kvmBinPath\kvm.ps1"
+        md $kvmBinPath -Force | Out-Null
+        copy "$scriptFolder\kvm.ps1" "$kvmBinPath\kvm.ps1"
 
-    Write-Host "Adding $kvmBinPath to process PATH"
-    Set-Path (Change-Path $env:Path $kvmBinPath ($kvmBinPath))
+        Write-Host "Copying file $kvmBinPath\kvm.cmd"
+        copy "$scriptFolder\kvm.cmd" "$kvmBinPath\kvm.cmd"
 
-    Write-Host "Adding $kvmBinPath to user PATH"
-    $userPath = [Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::User)
-    $userPath = Change-Path $userPath $kvmBinPath ($kvmBinPath)
-    [Environment]::SetEnvironmentVariable("Path", $userPath, [System.EnvironmentVariableTarget]::User)
+        Write-Host "Adding $kvmBinPath to process PATH"
+        Set-Path (Change-Path $env:Path $kvmBinPath ($kvmBinPath))
 
-    Write-Host "Adding $globalKrePath;%USERPROFILE%\.kre to process KRE_HOME"
-    $envKreHome = $env:KRE_HOME
-    $envKreHome = Change-Path $envKreHome "%USERPROFILE%\.kre" ("%USERPROFILE%\.kre")
-    $envKreHome = Change-Path $envKreHome $globalKrePath ($globalKrePath)
-    $env:KRE_HOME = $envKreHome
+        Write-Host "Adding $kvmBinPath to user PATH"
+        $userPath = [Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::User)
+        $userPath = Change-Path $userPath $kvmBinPath ($kvmBinPath)
 
-    Write-Host "Adding $globalKrePath;%USERPROFILE%\.kre to machine KRE_HOME"
-    $machineKreHome = [Environment]::GetEnvironmentVariable("KRE_HOME", [System.EnvironmentVariableTarget]::Machine)
-    $machineKreHome = Change-Path $machineKreHome "%USERPROFILE%\.kre" ("%USERPROFILE%\.kre")
-    $machineKreHome = Change-Path $machineKreHome $globalKrePath ($globalKrePath)
-    [Environment]::SetEnvironmentVariable("KRE_HOME", $machineKreHome, [System.EnvironmentVariableTarget]::Machine)
+        [Environment]::SetEnvironmentVariable("Path", $userPath, [System.EnvironmentVariableTarget]::User)
+    }
 
     Write-Host "Press any key to continue ..."
     $x = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown,AllowCtrlC")
