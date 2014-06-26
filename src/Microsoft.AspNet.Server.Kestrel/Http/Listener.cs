@@ -86,13 +86,24 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public void Dispose()
         {
-            Thread.Post(OnDispose, ListenSocket);
+            Console.WriteLine("Listener.Dispose");
+            var tcs = new TaskCompletionSource<int>();
+            Thread.Post(
+                _ =>
+                {
+                    try
+                    {
+                        ListenSocket.Dispose();
+                        tcs.SetResult(0);
+                    }
+                    catch (Exception ex)
+                    {
+                        tcs.SetException(ex);
+                    }
+                }, 
+                null);
+            tcs.Task.Wait();
             ListenSocket = null;
-        }
-
-        private void OnDispose(object listenSocket)
-        {
-            ((UvHandle)listenSocket).Dispose();
         }
     }
 }
