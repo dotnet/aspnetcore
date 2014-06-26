@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Moq;
@@ -125,7 +126,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var requestContext = new Mock<HttpRequest>();
             IReadableStringCollection formsCollection =
                 new MockCookieCollection(new Dictionary<string, string>() { { "form-field-name", string.Empty } });
-            requestContext.Setup(o => o.GetFormAsync())
+            requestContext.Setup(o => o.GetFormAsync(CancellationToken.None))
                           .Returns(Task.FromResult(formsCollection));
             mockHttpContext.Setup(o => o.Request)
                            .Returns(requestContext.Object);
@@ -154,7 +155,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 new MockCookieCollection(new Dictionary<string, string>() { { "form-field-name", "invalid-value" } });
 
             var requestContext = new Mock<HttpRequest>();
-            requestContext.Setup(o => o.GetFormAsync())
+            requestContext.Setup(o => o.GetFormAsync(CancellationToken.None))
                           .Returns(Task.FromResult(formsCollection));
 
             var mockHttpContext = new Mock<HttpContext>();
@@ -194,7 +195,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var requestContext = new Mock<HttpRequest>();
             IReadableStringCollection formsCollection =
                 new MockCookieCollection(new Dictionary<string, string>() { { "form-field-name", "valid-value" } });
-            requestContext.Setup(o => o.GetFormAsync())
+            requestContext.Setup(o => o.GetFormAsync(CancellationToken.None))
                           .Returns(Task.FromResult(formsCollection));
             mockHttpContext.Setup(o => o.Request)
                            .Returns(requestContext.Object);

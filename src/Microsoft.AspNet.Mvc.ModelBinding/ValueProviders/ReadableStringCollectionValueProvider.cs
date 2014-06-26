@@ -96,10 +96,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             if (_prefixContainer == null)
             {
                 // Initialization race is OK providing data remains read-only and object identity is not significant
-                // TODO: Fix this once https://github.com/aspnet/HttpAbstractions/issues/3 is sorted out.
-
                 var collection = await GetValueCollectionAsync();
-                _prefixContainer = new PrefixContainer(collection.Select(v => v.Key).ToArray());
+                _prefixContainer = new PrefixContainer(collection.Keys);
             }
             return _prefixContainer;
         }
