@@ -27,9 +27,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator.CodeTree
 
             BaselineWriter.WriteBaseline(@"test\Microsoft.AspNet.Razor.Test\TestFiles\CodeGenerator\CS\Output\CSharpCodeBuilder.cs", result.Code);
 
-            // TODO: When paths are preserved use this.
-            //var expectedOutput = TestFile.Create("CodeGenerator.CS.Output.CSharpCodeBuilder.cs").ReadAllText();
-            var expectedOutput = TestFile.Create("CSharpCodeBuilder.cs").ReadAllText();
+            var expectedOutput = TestFile.Create("TestFiles/CodeGenerator/CS/Output/CSharpCodeBuilder.cs").ReadAllText();
 
             // Assert
             Assert.Equal(expectedOutput, result.Code);

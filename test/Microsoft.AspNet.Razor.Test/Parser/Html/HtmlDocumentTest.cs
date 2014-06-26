@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
 {
     public class HtmlDocumentTest : CsHtmlMarkupParserTestBase
     {
-        private static readonly TestFile Nested1000 = TestFile.Create("nested-1000.html");
+        private static readonly TestFile Nested1000 = TestFile.Create("TestFiles/nested-1000.html");
 
         [Fact]
         public void ParseDocumentMethodThrowsArgNullExceptionOnNullContext()

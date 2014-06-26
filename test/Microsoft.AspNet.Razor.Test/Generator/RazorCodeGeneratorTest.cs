@@ -99,13 +99,9 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 baselineName = name;
             }
 
-            // TODO: When paths are preserved use these.
-            //string sourceLocation = string.Format("/CodeGenerator/{1}/Source/{0}.{2}", name, LanguageName, FileExtension);
-            //string source = TestFile.Create(string.Format("CodeGenerator.{1}.Source.{0}.{2}", name, LanguageName, FileExtension)).ReadAllText();
-            //string expectedOutput = TestFile.Create(string.Format("CodeGenerator.{1}.Output.{0}.{2}", baselineName, LanguageName, BaselineExtension)).ReadAllText();
             string sourceLocation = string.Format("/CodeGenerator/{1}/Source/{0}.{2}", name, LanguageName, FileExtension);
-            string source = TestFile.Create(string.Format("{0}.{1}", name, FileExtension)).ReadAllText();
-            string expectedOutput = TestFile.Create(string.Format("{0}.{1}", baselineName, BaselineExtension)).ReadAllText();
+            string source = TestFile.Create(string.Format("TestFiles/CodeGenerator/CS/Source/{0}.{1}", name, FileExtension)).ReadAllText();
+            string expectedOutput = TestFile.Create(string.Format("TestFiles/CodeGenerator/CS/Output/{0}.{1}", baselineName, BaselineExtension)).ReadAllText();
 
             // Set up the host and engine
             RazorEngineHost host = CreateHost();

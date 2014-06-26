@@ -18,11 +18,8 @@ namespace Microsoft.AspNet.Razor.Test.Editor
 {
     public class RazorEditorParserTest
     {
-        // TODO: When paths are preserved use these.
-        //private static readonly TestFile SimpleCSHTMLDocument = TestFile.Create("DesignTime.Simple.cshtml");
-        //private static readonly TestFile SimpleCSHTMLDocumentGenerated = TestFile.Create("DesignTime.Simple.txt");
-        private static readonly TestFile SimpleCSHTMLDocument = TestFile.Create("Simple.cshtml");
-        private static readonly TestFile SimpleCSHTMLDocumentGenerated = TestFile.Create("Simple.txt");
+        private static readonly TestFile SimpleCSHTMLDocument = TestFile.Create("TestFiles/DesignTime/Simple.cshtml");
+        private static readonly TestFile SimpleCSHTMLDocumentGenerated = TestFile.Create("TestFiles/DesignTime/Simple.txt");
         private const string TestLinePragmaFileName = "C:\\This\\Path\\Is\\Just\\For\\Line\\Pragmas.cshtml";
 
         [Fact]

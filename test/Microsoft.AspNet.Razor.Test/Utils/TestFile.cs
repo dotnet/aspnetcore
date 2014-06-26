@@ -22,8 +22,6 @@ namespace Microsoft.AspNet.Razor.Test
 
         public static TestFile Create(string localResourceName)
         {
-            // TODO: When paths are preserved use this.
-            //return new TestFile(string.Format(ResourceNameFormat, Assembly.GetCallingAssembly().GetName().Name, localResourceName), Assembly.GetCallingAssembly());
             return new TestFile(localResourceName, Assembly.GetCallingAssembly());
         }
 
