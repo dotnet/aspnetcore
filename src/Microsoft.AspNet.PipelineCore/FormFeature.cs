@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.PipelineCore
             _features = features;
         }
 
-        public async Task<IReadableStringCollection> GetFormAsync(CancellationToken cancel)
+        public async Task<IReadableStringCollection> GetFormAsync(CancellationToken cancellationToken)
         {
             var body = _request.Fetch(_features).Body;
 
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.PipelineCore
                 if (!_bodyStream.CanSeek)
                 {
                     var buffer = new MemoryStream();
-                    await _bodyStream.CopyToAsync(buffer, 4096, cancel);
+                    await _bodyStream.CopyToAsync(buffer, 4096, cancellationToken);
                     _bodyStream = buffer;
                     _request.Fetch(_features).Body = _bodyStream;
                     _bodyStream.Seek(0, SeekOrigin.Begin);

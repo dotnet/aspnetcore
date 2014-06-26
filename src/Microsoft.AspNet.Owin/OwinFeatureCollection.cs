@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.Owin
             set { Prop(OwinConstants.CommonKeys.ClientCertificate, value); }
         }
 
-        Task<X509Certificate> IHttpClientCertificateFeature.GetClientCertificateAsync(CancellationToken cancel)
+        Task<X509Certificate> IHttpClientCertificateFeature.GetClientCertificateAsync(CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

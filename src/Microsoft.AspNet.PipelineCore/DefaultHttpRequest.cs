@@ -129,9 +129,9 @@ namespace Microsoft.AspNet.PipelineCore
             get { return QueryFeature.Query; }
         }
 
-        public override Task<IReadableStringCollection> GetFormAsync(CancellationToken cancel = default(CancellationToken))
+        public override Task<IReadableStringCollection> GetFormAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            return FormFeature.GetFormAsync(cancel);
+            return FormFeature.GetFormAsync(cancellationToken);
         }
 
         public override string Protocol

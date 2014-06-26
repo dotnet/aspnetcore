@@ -20,6 +20,6 @@ namespace Microsoft.AspNet.HttpFeature
         /// Asynchronously retrieves the client certificate, if any.
         /// </summary>
         /// <returns></returns>
-        Task<X509Certificate> GetClientCertificateAsync(CancellationToken cancel);
+        Task<X509Certificate> GetClientCertificateAsync(CancellationToken cancellationToken);
     }
 }

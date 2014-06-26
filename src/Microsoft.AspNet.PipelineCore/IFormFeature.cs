@@ -9,6 +9,6 @@ namespace Microsoft.AspNet.PipelineCore
 {
     public interface IFormFeature
     {
-        Task<IReadableStringCollection> GetFormAsync(CancellationToken cancel);
+        Task<IReadableStringCollection> GetFormAsync(CancellationToken cancellationToken);
     }
 }
