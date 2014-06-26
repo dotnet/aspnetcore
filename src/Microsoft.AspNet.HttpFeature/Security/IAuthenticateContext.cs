@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.HttpFeature.Security
     [AssemblyNeutral]
     public interface IAuthenticateContext
     {
-        IList<string> AuthenticationTypes { get; }
+        IEnumerable<string> AuthenticationTypes { get; }
 
         void Authenticated(ClaimsIdentity identity, IDictionary<string, string> properties, IDictionary<string, object> description);
 

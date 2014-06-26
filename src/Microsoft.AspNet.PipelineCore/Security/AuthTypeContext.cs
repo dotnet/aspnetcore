@@ -10,16 +10,21 @@ namespace Microsoft.AspNet.PipelineCore.Security
 {
     public class AuthTypeContext : IAuthTypeContext
     {
+        private List<AuthenticationDescription> _results;
+
         public AuthTypeContext()
         {
-            Results = new List<AuthenticationDescription>();
+            _results = new List<AuthenticationDescription>();
         }
 
-        public IList<AuthenticationDescription> Results { get; private set; }
+        public IEnumerable<AuthenticationDescription> Results
+        {
+            get { return _results; }
+        }
                 
         public void Accept(IDictionary<string, object> description)
         {
-            Results.Add(new AuthenticationDescription(description));
+            _results.Add(new AuthenticationDescription(description));
         }
     }
 }

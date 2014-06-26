@@ -178,7 +178,7 @@ namespace Microsoft.AspNet.PipelineCore
             return authTypeContext.Results;
         }
 
-        public override IEnumerable<AuthenticationResult> Authenticate(IList<string> authenticationTypes)
+        public override IEnumerable<AuthenticationResult> Authenticate(IEnumerable<string> authenticationTypes)
         {
             if (authenticationTypes == null)
             {
@@ -202,7 +202,7 @@ namespace Microsoft.AspNet.PipelineCore
             return authenticateContext.Results;
         }
 
-        public override async Task<IEnumerable<AuthenticationResult>> AuthenticateAsync(IList<string> authenticationTypes)
+        public override async Task<IEnumerable<AuthenticationResult>> AuthenticateAsync(IEnumerable<string> authenticationTypes)
         {
             if (authenticationTypes == null)
             {

@@ -55,12 +55,12 @@ namespace Microsoft.AspNet.Http
             Challenge(new[] { authenticationType }, properties);
         }
 
-        public virtual void Challenge(IList<string> authenticationTypes)
+        public virtual void Challenge(IEnumerable<string> authenticationTypes)
         {
             Challenge(authenticationTypes, properties: null);
         }
 
-        public abstract void Challenge(IList<string> authenticationTypes, AuthenticationProperties properties);
+        public abstract void Challenge(IEnumerable<string> authenticationTypes, AuthenticationProperties properties);
 
         public virtual void SignIn(ClaimsIdentity identity)
         {
@@ -72,12 +72,12 @@ namespace Microsoft.AspNet.Http
             SignIn(new[] { identity }, properties);
         }
 
-        public virtual void SignIn(IList<ClaimsIdentity> identities)
+        public virtual void SignIn(IEnumerable<ClaimsIdentity> identities)
         {
             SignIn(identities, properties: null);
         }
 
-        public abstract void SignIn(IList<ClaimsIdentity> identities, AuthenticationProperties properties);
+        public abstract void SignIn(IEnumerable<ClaimsIdentity> identities, AuthenticationProperties properties);
 
         public virtual void SignOut()
         {
@@ -89,6 +89,6 @@ namespace Microsoft.AspNet.Http
             SignOut(new[] { authenticationType });
         }
 
-        public abstract void SignOut(IList<string> authenticationTypes);
+        public abstract void SignOut(IEnumerable<string> authenticationTypes);
     }
 }

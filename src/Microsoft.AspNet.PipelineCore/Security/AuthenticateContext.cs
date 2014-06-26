@@ -14,33 +14,42 @@ namespace Microsoft.AspNet.PipelineCore.Security
 {
     public class AuthenticateContext : IAuthenticateContext
     {
-        public AuthenticateContext(IList<string> authenticationTypes)
+        private List<AuthenticationResult> _results;
+        private List<string> _accepted;
+
+        public AuthenticateContext(IEnumerable<string> authenticationTypes)
         {
             if (authenticationTypes == null)
             {
                 throw new ArgumentNullException("authenticationType");
             }
             AuthenticationTypes = authenticationTypes;
-            Results = new List<AuthenticationResult>();
-            Accepted = new List<string>();
+            _results = new List<AuthenticationResult>();
+            _accepted = new List<string>();
         }
 
-        public IList<string> AuthenticationTypes { get; private set; }
+        public IEnumerable<string> AuthenticationTypes { get; private set; }
 
-        public IList<AuthenticationResult> Results { get; private set; }
+        public IEnumerable<AuthenticationResult> Results
+        {
+            get { return _results; }
+        }
 
-        public IList<string> Accepted { get; private set; }
+        public IEnumerable<string> Accepted
+        {
+            get { return _accepted; }
+        }
 
         public void Authenticated(ClaimsIdentity identity, IDictionary<string, string> properties, IDictionary<string, object> description)
         {
             var descrip = new AuthenticationDescription(description);
-            Accepted.Add(descrip.AuthenticationType); // may not match identity.AuthType
-            Results.Add(new AuthenticationResult(identity, new AuthenticationProperties(properties), descrip));
+            _accepted.Add(descrip.AuthenticationType); // may not match identity.AuthType
+            _results.Add(new AuthenticationResult(identity, new AuthenticationProperties(properties), descrip));
         }
 
         public void NotAuthenticated(string authenticationType, IDictionary<string, string> properties, IDictionary<string, object> description)
         {
-            Accepted.Add(authenticationType);
+            _accepted.Add(authenticationType);
         }
     }
 }

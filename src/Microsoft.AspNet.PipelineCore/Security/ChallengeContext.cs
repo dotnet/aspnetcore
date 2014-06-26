@@ -12,7 +12,9 @@ namespace Microsoft.AspNet.PipelineCore.Security
 {
     public class ChallengeContext : IChallengeContext
     {
-        public ChallengeContext(IList<string> authenticationTypes, IDictionary<string, string> properties)
+        private List<string> _accepted;
+
+        public ChallengeContext(IEnumerable<string> authenticationTypes, IDictionary<string, string> properties)
         {
             if (authenticationTypes == null)
             {
@@ -20,18 +22,21 @@ namespace Microsoft.AspNet.PipelineCore.Security
             }
             AuthenticationTypes = authenticationTypes;
             Properties = properties ?? new Dictionary<string, string>(StringComparer.Ordinal);
-            Accepted = new List<string>();
+            _accepted = new List<string>();
         }
 
-        public IList<string> AuthenticationTypes { get; private set; }
+        public IEnumerable<string> AuthenticationTypes { get; private set; }
 
         public IDictionary<string, string> Properties { get; private set; }
 
-        public IList<string> Accepted { get; private set; }
+        public IEnumerable<string> Accepted
+        {
+            get { return _accepted; }
+        }
         
         public void Accept(string authenticationType, IDictionary<string, object> description)
         {
-            Accepted.Add(authenticationType);
+            _accepted.Add(authenticationType);
         }
     }
 }

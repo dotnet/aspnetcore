@@ -9,23 +9,28 @@ namespace Microsoft.AspNet.PipelineCore.Security
 {
     public class SignOutContext : ISignOutContext
     {
-        public SignOutContext(IList<string> authenticationTypes)
+        private List<string> _accepted;
+
+        public SignOutContext(IEnumerable<string> authenticationTypes)
         {
             if (authenticationTypes == null)
             {
                 throw new ArgumentNullException("authenticationTypes");
             }
             AuthenticationTypes = authenticationTypes;
-            Accepted = new List<string>();
+            _accepted = new List<string>();
         }
 
-        public IList<string> AuthenticationTypes { get; private set; }
+        public IEnumerable<string> AuthenticationTypes { get; private set; }
 
-        public IList<string> Accepted { get; private set; }
+        public IEnumerable<string> Accepted
+        {
+            get { return _accepted; }
+        }
 
         public void Accept(string authenticationType, IDictionary<string, object> description)
         {
-            Accepted.Add(authenticationType);
+            _accepted.Add(authenticationType);
         }
     }
 }

@@ -10,7 +10,9 @@ namespace Microsoft.AspNet.PipelineCore.Security
 {
     public class SignInContext : ISignInContext
     {
-        public SignInContext(IList<ClaimsIdentity> identities, IDictionary<string, string> dictionary)
+        private List<string> _accepted;
+
+        public SignInContext(IEnumerable<ClaimsIdentity> identities, IDictionary<string, string> dictionary)
         {
             if (identities == null)
             {
@@ -18,18 +20,21 @@ namespace Microsoft.AspNet.PipelineCore.Security
             }
             Identities = identities;
             Properties = dictionary ?? new Dictionary<string, string>(StringComparer.Ordinal);
-            Accepted = new List<string>();
+            _accepted = new List<string>();
         }
 
-        public IList<ClaimsIdentity> Identities { get; private set; }
+        public IEnumerable<ClaimsIdentity> Identities { get; private set; }
 
         public IDictionary<string, string> Properties { get; private set; }
 
-        public IList<string> Accepted { get; private set; }
+        public IEnumerable<string> Accepted
+        {
+            get { return _accepted; }
+        }
 
         public void Accept(string authenticationType, IDictionary<string, object> description)
         {
-            Accepted.Add(authenticationType);
+            _accepted.Add(authenticationType);
         }
     }
 }

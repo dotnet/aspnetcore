@@ -57,14 +57,14 @@ namespace Microsoft.AspNet.Http
             return Authenticate(new[] { authenticationType }).SingleOrDefault();
         }
 
-        public abstract IEnumerable<AuthenticationResult> Authenticate(IList<string> authenticationTypes);
+        public abstract IEnumerable<AuthenticationResult> Authenticate(IEnumerable<string> authenticationTypes);
 
         public virtual async Task<AuthenticationResult> AuthenticateAsync(string authenticationType)
         {
             return (await AuthenticateAsync(new[] { authenticationType })).SingleOrDefault();
         }
 
-        public abstract Task<IEnumerable<AuthenticationResult>> AuthenticateAsync(IList<string> authenticationTypes);
+        public abstract Task<IEnumerable<AuthenticationResult>> AuthenticateAsync(IEnumerable<string> authenticationTypes);
 
         public virtual Task<WebSocket> AcceptWebSocketAsync()
         {

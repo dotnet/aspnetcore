@@ -130,7 +130,7 @@ namespace Microsoft.AspNet.PipelineCore
             return Body.WriteAsync(bytes, 0, bytes.Length);
         }
 
-        public override void Challenge(IList<string> authenticationTypes, AuthenticationProperties properties)
+        public override void Challenge(IEnumerable<string> authenticationTypes, AuthenticationProperties properties)
         {
             if (authenticationTypes == null)
             {
@@ -153,7 +153,7 @@ namespace Microsoft.AspNet.PipelineCore
             }
         }
 
-        public override void SignIn(IList<ClaimsIdentity> identities, AuthenticationProperties properties)
+        public override void SignIn(IEnumerable<ClaimsIdentity> identities, AuthenticationProperties properties)
         {
             if (identities == null)
             {
@@ -175,7 +175,7 @@ namespace Microsoft.AspNet.PipelineCore
             }
         }
 
-        public override void SignOut(IList<string> authenticationTypes)
+        public override void SignOut(IEnumerable<string> authenticationTypes)
         {
             if (authenticationTypes == null)
             {
