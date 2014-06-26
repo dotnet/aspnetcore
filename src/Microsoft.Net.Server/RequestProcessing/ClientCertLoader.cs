@@ -162,8 +162,9 @@ namespace Microsoft.Net.Server
         // ERROR_NOT_FOUND - which means the client did not provide the cert
         // If this is important, the server should respond with 403 forbidden
         // HTTP.SYS will not do this for you automatically
-        internal Task LoadClientCertificateAsync()
+        internal Task LoadClientCertificateAsync(CancellationToken cancellationToken)
         {
+            // TODO: cancellation support? Abort the request?
             uint size = CertBoblSize;
             bool retry;
             do

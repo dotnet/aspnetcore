@@ -308,11 +308,11 @@ namespace Microsoft.AspNet.Server.WebListener
             set { _clientCert = value; }
         }
 
-        async Task<X509Certificate> IHttpClientCertificateFeature.GetClientCertificateAsync()
+        async Task<X509Certificate> IHttpClientCertificateFeature.GetClientCertificateAsync(CancellationToken cancellationToken)
         {
             if (_clientCert == null)
             {
-                _clientCert = await Request.GetClientCertificateAsync();
+                _clientCert = await Request.GetClientCertificateAsync(cancellationToken);
             }
             return _clientCert;
         }

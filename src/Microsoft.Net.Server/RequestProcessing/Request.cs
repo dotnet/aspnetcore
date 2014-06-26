@@ -455,7 +455,7 @@ namespace Microsoft.Net.Server
         // Populates the client certificate.  The result may be null if there is no client cert.
         // TODO: Does it make sense for this to be invoked multiple times (e.g. renegotiate)? Client and server code appear to
         // enable this, but it's unclear what Http.Sys would do.
-        public async Task<X509Certificate> GetClientCertificateAsync()
+        public async Task<X509Certificate> GetClientCertificateAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             if (SslStatus == SslStatus.Insecure)
             {
@@ -471,7 +471,7 @@ namespace Microsoft.Net.Server
             ClientCertLoader certLoader = new ClientCertLoader(RequestContext);
             try
             {
-                await certLoader.LoadClientCertificateAsync().SupressContext();
+                await certLoader.LoadClientCertificateAsync(cancellationToken).SupressContext();
                 // Populate the environment.
                 if (certLoader.ClientCert != null)
                 {
