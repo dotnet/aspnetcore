@@ -23,7 +23,7 @@ module MusicStore.Store {
         // TODO: Enable debug logging based on server config
         // TODO: Capture all logged errors and send back to server
         $logProvider.debugEnabled(true);
-        
+
         $routeProvider
             .when("/", { templateUrl: "ng-apps/MusicStore.Store/Home/Home.html" })
             .when("/albums/genres", { templateUrl: "ng-apps/MusicStore.Store/Catalog/GenreList.html" })

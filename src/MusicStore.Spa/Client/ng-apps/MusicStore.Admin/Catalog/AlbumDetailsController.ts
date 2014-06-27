@@ -13,7 +13,7 @@
         private _location: ng.ILocationService;
         private _albumApi: AlbumApi.IAlbumApiService;
         private _viewAlert: ViewAlert.IViewAlertService;
-        
+
         constructor($routeParams: IAlbumDetailsRouteParams,
                     $modal: ng.ui.bootstrap.IModalService,
                     $location: ng.ILocationService,

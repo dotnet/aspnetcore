@@ -16,7 +16,7 @@ module MusicStore.UserDetails {
             if (!this._userDetails) {
                 //var el = this._document.querySelector("[data-json-id='" + elementId + "']");
                 var el = this._document.find("#" + elementId + "[type='application/json']");
-                
+
                 if (el.length) {
                     this._userDetails = angular.fromJson(el.text());
                 } else {
