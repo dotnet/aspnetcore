@@ -167,11 +167,13 @@ Environment.NewLine;
                 result.ToString());
         }
 
-        [Fact]
-        public void EditorFor_FindsModel_EvenIfNull()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void EditorFor_FindsModel_EvenIfNullOrEmpty(string propertyValue)
         {
             // Arrange
-            var model = new DefaultTemplatesUtilities.ObjectTemplateModel();
+            var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = propertyValue, };
             var viewEngine = new Mock<IViewEngine>();
             viewEngine
                 .Setup(v => v.FindPartialView(It.IsAny<IDictionary<string, object>>(), It.IsAny<string>()))
