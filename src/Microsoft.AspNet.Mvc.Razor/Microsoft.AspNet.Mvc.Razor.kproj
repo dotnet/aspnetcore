@@ -30,9 +30,11 @@
     <Compile Include="Compilation\RoslynCompilationService.cs" />
     <Compile Include="Extensions\DictionaryExtensions.cs" />
     <Compile Include="HelperResult.cs" />
+    <Compile Include="IRazorViewActivator.cs" />
     <Compile Include="PositionTagged.cs" />
     <Compile Include="Properties\Resources.Designer.cs" />
     <Compile Include="RazorView.cs" />
+    <Compile Include="RazorViewActivator.cs" />
     <Compile Include="RazorViewOfT.cs" />
     <Compile Include="Razor\IRazorCompilationService.cs" />
     <Compile Include="Razor\RazorCompilationService.cs" />

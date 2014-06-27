@@ -11,6 +11,22 @@ namespace Microsoft.AspNet.Mvc.Razor.Host
             = new ResourceManager("Microsoft.AspNet.Mvc.Razor.Host.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// Argument cannot be null or empty.
+        /// </summary>
+        internal static string ArgumentCannotBeNullOrEmpy
+        {
+            get { return GetString("ArgumentCannotBeNullOrEmpy"); }
+        }
+
+        /// <summary>
+        /// Argument cannot be null or empty.
+        /// </summary>
+        internal static string FormatArgumentCannotBeNullOrEmpy()
+        {
+            return GetString("ArgumentCannotBeNullOrEmpy");
+        }
+
+        /// <summary>
         /// The 'inherits' keyword is not allowed when a '{0}' keyword is used.
         /// </summary>
         internal static string MvcRazorCodeParser_CannotHaveModelAndInheritsKeyword

@@ -17,11 +17,14 @@
             #pragma warning restore 219
         }
         #line hidden
-
-        #line hidden
         public __CompiledTemplate()
         {
         }
+        #line hidden
+        [Microsoft.AspNet.Mvc.ActivateAttribute]
+        public Microsoft.AspNet.Mvc.Rendering.IHtmlHelper<TModel> Html { get; private set; }
+
+        #line hidden
 
         #pragma warning disable 1998
         public override async Task ExecuteAsync()

@@ -1,14 +1,14 @@
 ﻿namespace Razor
 {
+    using System.Threading.Tasks;
+
+    public class __CompiledTemplate : RazorView<
 #line 1 ""
-using MyNamespace
+       MyModel
 
 #line default
 #line hidden
-    ;
-    using System.Threading.Tasks;
-
-    public class __CompiledTemplate : RazorView<dynamic>
+    >
     {
         private static object @__o;
         private void @__RazorDesignTimeHelpers__()
@@ -30,7 +30,13 @@ using MyNamespace
 #line hidden
         { get; private set; }
         [Microsoft.AspNet.Mvc.ActivateAttribute]
-        public Microsoft.AspNet.Mvc.Rendering.IHtmlHelper<TModel> Html { get; private set; }
+        public
+#line 3 ""
+        MyService<TModel> Html
+
+#line default
+#line hidden
+        { get; private set; }
 
         #line hidden
 

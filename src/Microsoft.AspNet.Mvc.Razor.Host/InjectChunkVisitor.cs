@@ -11,11 +11,14 @@ namespace Microsoft.AspNet.Mvc.Razor
     public class InjectChunkVisitor : MvcCSharpCodeVisitor
     {
         private readonly List<InjectChunk> _injectChunks = new List<InjectChunk>();
+        private readonly string _activateAttribute;
 
         public InjectChunkVisitor([NotNull] CSharpCodeWriter writer,
-                                  [NotNull] CodeGeneratorContext context)
+                                  [NotNull] CodeGeneratorContext context,
+                                  [NotNull] string activateAttributeName)
             : base(writer, context)
         {
+            _activateAttribute = '[' + activateAttributeName + ']';
         }
 
         public List<InjectChunk> InjectChunks
@@ -25,7 +28,14 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         protected override void Visit([NotNull] InjectChunk chunk)
         {
-            if (Context.Host.DesignTimeMode)
+            Writer.WriteLine(_activateAttribute);
+
+            // Some of the chunks that we visit are either InjectDescriptors that are added by default or 
+            // are chunks from _ViewStart files and are not associated with any Spans. Invoking 
+            // CreateExpressionMapping to produce line mappings on these chunks would fail. We'll skip 
+            // generating code mappings for these chunks. This makes sense since the chunks do not map
+            // to any code in the current view.
+            if (Context.Host.DesignTimeMode && chunk.Association != null)
             {
                 Writer.WriteLine("public");
                 var code = string.Format(CultureInfo.InvariantCulture,
