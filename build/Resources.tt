@@ -21,6 +21,7 @@
   var templateProjectItem = dte.Solution.FindProjectItem(Host.TemplateFile);
   var projectDirectory = Path.GetDirectoryName(templateProjectItem.ContainingProject.FullName);
   var ttDirectory = Path.Combine(projectDirectory, "Properties");
+  var projectNamespace = templateProjectItem.ContainingProject.Properties.Item("DefaultNamespace").Value;
   var projectName = Path.GetFileName(projectDirectory.TrimEnd('/'));
   var namedParameterMatcher = new Regex(@"\{([a-z]\w+)\}", RegexOptions.IgnoreCase);
   var numberParameterMatcher = new Regex(@"\{(\d+)\}");
@@ -74,11 +75,11 @@ namespace {0}
     using System.Reflection;
     using System.Resources;
 
-    internal static class {1}
+    internal static class {2}
     {{
         private static readonly ResourceManager _resourceManager
-            = new ResourceManager(""{0}.{1}"", typeof({1}).GetTypeInfo().Assembly);
-", projectName, fileName);
+            = new ResourceManager(""{1}.{2}"", typeof({2}).GetTypeInfo().Assembly);
+", projectNamespace, projectName, fileName);
 
     foreach (var resourceString in resourceStrings)
     {
@@ -97,7 +98,7 @@ namespace {0}
             var value = _resourceManager.GetString(name);
 
             System.Diagnostics.Debug.Assert(value != null);
-    
+
             if (formatterNames != null)
             {
                 for (var i = 0; i < formatterNames.Length; i++)
