@@ -24,6 +24,7 @@
     <Compile Include="IMvcRazorHost.cs" />
     <Compile Include="InjectChunk.cs" />
     <Compile Include="InjectChunkVisitor.cs" />
+    <Compile Include="InjectDescriptor.cs" />
     <Compile Include="InjectParameterGenerator.cs" />
     <Compile Include="ModelChunk.cs" />
     <Compile Include="ModelChunkVisitor.cs" />
@@ -33,6 +34,7 @@
     <Compile Include="MvcCSharpCodeVistor.cs" />
     <Compile Include="MvcRazorCodeParser.cs" />
     <Compile Include="MvcRazorHost.cs" />
+    <Compile Include="MvcRazorHostOptions.cs" />
     <Compile Include="Properties\Resources.Designer.cs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />

@@ -187,6 +187,22 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
+        /// View of type '{0}' cannot be activated by '{1}'.
+        /// </summary>
+        internal static string ViewCannotBeActivated
+        {
+            get { return GetString("ViewCannotBeActivated"); }
+        }
+
+        /// <summary>
+        /// View of type '{0}' cannot be activated by '{1}'.
+        /// </summary>
+        internal static string FormatViewCannotBeActivated(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ViewCannotBeActivated"), p0, p1);
+        }
+
+        /// <summary>
         /// View '{0}' must have extension '{1}' when the view represents a full path.
         /// </summary>
         internal static string ViewMustEndInExtension

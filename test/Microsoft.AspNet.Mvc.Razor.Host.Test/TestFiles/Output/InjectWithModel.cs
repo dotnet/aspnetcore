@@ -4,7 +4,7 @@
 
     public class __CompiledTemplate : RazorView<
 #line 1 ""
-       System.Collections.IEnumerable
+       MyModel
 
 #line default
 #line hidden
@@ -22,7 +22,21 @@
         }
         #line hidden
         [Microsoft.AspNet.Mvc.ActivateAttribute]
-        public Microsoft.AspNet.Mvc.Rendering.IHtmlHelper<System.Collections.IEnumerable> Html { get; private set; }
+        public
+#line 2 ""
+        MyApp MyPropertyName
+
+#line default
+#line hidden
+        { get; private set; }
+        [Microsoft.AspNet.Mvc.ActivateAttribute]
+        public
+#line 3 ""
+        MyService<TModel> Html
+
+#line default
+#line hidden
+        { get; private set; }
 
         #line hidden
 

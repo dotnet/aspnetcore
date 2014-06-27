@@ -37,6 +37,8 @@
     <Compile Include="SpanFactory\SpanFactoryExtensions.cs" />
     <Compile Include="SpanFactory\UnclassifiedSpanConstructor.cs" />
     <Compile Include="StringTextBuffer.cs" />
+    <Compile Include="TestFiles\Input\InjectWithModel.cshtml" />
+    <Compile Include="TestFiles\Output\InjectWithModel.cs" />
     <Compile Include="TestFiles\Output\Model.cs" />
     <Compile Include="TestFiles\Output\Inject.cs" />
   </ItemGroup>

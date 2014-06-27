@@ -4,8 +4,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
@@ -19,10 +17,9 @@ namespace Microsoft.AspNet.Mvc
     /// </summary>
     public class DefaultControllerActivator : IControllerActivator
     {
-        private readonly Func<Type, PropertyActivator[]> _getPropertiesToActivate;
-        private readonly Func<PropertyInfo, PropertyActivator> _createActivateInfo;
-        private readonly ReadOnlyDictionary<Type, Func<ActionContext, object>> _valueAccessorLookup;
-        private readonly ConcurrentDictionary<Type, PropertyActivator[]> _injectActions;
+        private readonly Func<Type, PropertyActivator<ActionContext>[]> _getPropertiesToActivate;
+        private readonly IReadOnlyDictionary<Type, Func<ActionContext, object>> _valueAccessorLookup;
+        private readonly ConcurrentDictionary<Type, PropertyActivator<ActionContext>[]> _injectActions;
 
         /// <summary>
         /// Initializes a new instance of the DefaultControllerActivator class.
@@ -30,9 +27,11 @@ namespace Microsoft.AspNet.Mvc
         public DefaultControllerActivator()
         {
             _valueAccessorLookup = CreateValueAccessorLookup();
-            _getPropertiesToActivate = GetPropertiesToActivate;
-            _createActivateInfo = CreateActivateInfo;
-            _injectActions = new ConcurrentDictionary<Type, PropertyActivator[]>();
+            _injectActions = new ConcurrentDictionary<Type, PropertyActivator<ActionContext>[]>();
+            _getPropertiesToActivate = type =>
+                PropertyActivator<ActionContext>.GetPropertiesToActivate(type,
+                                                                         typeof(ActivateAttribute),
+                                                                         CreateActivateInfo);
         }
 
         /// <summary>
@@ -59,7 +58,7 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        protected virtual ReadOnlyDictionary<Type, Func<ActionContext, object>> CreateValueAccessorLookup()
+        protected virtual IReadOnlyDictionary<Type, Func<ActionContext, object>> CreateValueAccessorLookup()
         {
             var dictionary = new Dictionary<Type, Func<ActionContext, object>>
             {
@@ -78,20 +77,11 @@ namespace Microsoft.AspNet.Mvc
                     }
                 }
             };
-            return new ReadOnlyDictionary<Type, Func<ActionContext, object>>(dictionary);
+            return dictionary;
         }
 
-        private PropertyActivator[] GetPropertiesToActivate(Type controllerType)
-        {
-            var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-            return controllerType.GetProperties(bindingFlags)
-                                 .Where(property => property.IsDefined(typeof(ActivateAttribute)) &&
-                                                    property.GetSetMethod(nonPublic: true) != null)
-                                 .Select(_createActivateInfo)
-                                 .ToArray();
-        }
-
-        private PropertyActivator CreateActivateInfo(PropertyInfo property)
+        private PropertyActivator<ActionContext> CreateActivateInfo(
+            PropertyInfo property)
         {
             Func<ActionContext, object> valueAccessor;
             if (!_valueAccessorLookup.TryGetValue(property.PropertyType, out valueAccessor))
@@ -103,29 +93,7 @@ namespace Microsoft.AspNet.Mvc
                 };
             }
 
-            return new PropertyActivator(property,
-                                    valueAccessor);
-        }
-
-        private sealed class PropertyActivator
-        {
-            private readonly PropertyInfo _propertyInfo;
-            private readonly Func<ActionContext, object> _valueAccessor;
-            private readonly Action<object, object> _fastPropertySetter;
-
-            public PropertyActivator(PropertyInfo propertyInfo,
-                                     Func<ActionContext, object> valueAccessor)
-            {
-                _propertyInfo = propertyInfo;
-                _valueAccessor = valueAccessor;
-                _fastPropertySetter = PropertyHelper.MakeFastPropertySetter(propertyInfo);
-            }
-
-            public void Activate(object instance, ActionContext context)
-            {
-                var value = _valueAccessor(context);
-                _fastPropertySetter(instance, value);
-            }
+            return new PropertyActivator<ActionContext>(property, valueAccessor);
         }
     }
 }

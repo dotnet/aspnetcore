@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var writer = new CSharpCodeWriter();
             var context = CreateContext();
 
-            var visitor = new InjectChunkVisitor(writer, context);
+            var visitor = new InjectChunkVisitor(writer, context, "ActivateAttribute");
 
             // Act
             visitor.Accept(new Chunk[]
@@ -41,13 +41,15 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var expected =
-@"public MyType1 MyPropertyName1 { get; private set; }
+@"[ActivateAttribute]
+public MyType1 MyPropertyName1 { get; private set; }
+[ActivateAttribute]
 public MyType2 @MyPropertyName2 { get; private set; }
 ";
             var writer = new CSharpCodeWriter();
             var context = CreateContext();
 
-            var visitor = new InjectChunkVisitor(writer, context);
+            var visitor = new InjectChunkVisitor(writer, context, "ActivateAttribute");
             var factory = SpanFactory.CreateCsHtml();
             var node = (Span)factory.Code("Some code")
                                     .As(new InjectParameterGenerator("MyType", "MyPropertyName"));
@@ -69,13 +71,15 @@ public MyType2 @MyPropertyName2 { get; private set; }
         public void Visit_WithDesignTimeHost_GeneratesPropertiesAndLinePragmas_ForInjectChunks()
         {
             // Arrange
-            var expected = @"public
+            var expected = @"[Microsoft.AspNet.Mvc.ActivateAttribute]
+public
 #line 1 """"
 MyType1 MyPropertyName1
 
 #line default
 #line hidden
 { get; private set; }
+[Microsoft.AspNet.Mvc.ActivateAttribute]
 public
 #line 1 """"
 MyType2 @MyPropertyName2
@@ -88,7 +92,7 @@ MyType2 @MyPropertyName2
             var context = CreateContext();
             context.Host.DesignTimeMode = true;
 
-            var visitor = new InjectChunkVisitor(writer, context);
+            var visitor = new InjectChunkVisitor(writer, context, "Microsoft.AspNet.Mvc.ActivateAttribute");
             var factory = SpanFactory.CreateCsHtml();
             var node = (Span)factory.Code("Some code")
                                     .As(new InjectParameterGenerator("MyType", "MyPropertyName"));
@@ -121,7 +125,40 @@ MyType2 @MyPropertyName2
             var expectedLineMappings = new List<LineMapping>
             {
                 BuildLineMapping(1, 0, 1, 32, 3, 0, 17),
-                BuildLineMapping(28, 1, 8, 442, 21, 8, 20)
+                BuildLineMapping(28, 1, 8, 573, 26, 8, 20)
+            };
+
+            // Act
+            GeneratorResults results;
+            using (var buffer = new StringTextBuffer(source))
+            {
+                results = engine.GenerateCode(buffer);
+            }
+
+            // Assert
+            Assert.True(results.Success);
+            Assert.Equal(expectedCode, results.GeneratedCode);
+            Assert.Empty(results.ParserErrors);
+            Assert.Equal(expectedLineMappings, results.DesignTimeLineMappings);
+        }
+
+        [Fact]
+        public void InjectVisitorWithModel_GeneratesCorrectLineMappings()
+        {
+            // Arrange
+            var host = new MvcRazorHost("RazorView")
+            {
+                DesignTimeMode = true
+            };
+            host.NamespaceImports.Clear();
+            var engine = new RazorTemplateEngine(host);
+            var source = ReadResource("TestFiles/Input/InjectWithModel.cshtml");
+            var expectedCode = ReadResource("TestFiles/Output/InjectWithModel.cs");
+            var expectedLineMappings = new List<LineMapping>
+            {
+                BuildLineMapping(7, 0, 7, 126, 6, 7, 7),
+                BuildLineMapping(24, 1, 8, 562, 26, 8, 20),
+                BuildLineMapping(54, 2, 8, 732, 34, 8, 22)
             };
 
             // Act
