@@ -5,7 +5,7 @@ using System;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Rendering
+namespace Microsoft.AspNet.Mvc
 {
     public class ViewDataOfTTest
     {
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void SettingModelWorksForCompatibleTypes()
         {
             // Arrange
-            string value = "some value";
+            var value = "some value";
             var viewDataOfT = new ViewDataDictionary<object>(new DataAnnotationsModelMetadataProvider());
             ViewDataDictionary viewData = viewDataOfT;
 
@@ -46,6 +46,48 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             // Assert
             Assert.Same(value, viewDataOfT.Model);
+        }
+
+        [Fact]
+        public void PropertiesInitializedCorrectly()
+        {
+            // Arrange
+            var viewData = new ViewDataDictionary<string>(new DataAnnotationsModelMetadataProvider());
+
+            // Act & Assert
+            Assert.Empty(viewData);
+            Assert.Equal(0, viewData.Count);
+            Assert.False(viewData.IsReadOnly);
+
+            Assert.NotNull(viewData.Keys);
+            Assert.Empty(viewData.Keys);
+
+            Assert.Null(viewData.Model);
+            Assert.NotNull(viewData.ModelMetadata);
+            Assert.NotNull(viewData.ModelState);
+
+            Assert.NotNull(viewData.TemplateInfo);
+            Assert.Equal(0, viewData.TemplateInfo.TemplateDepth);
+            Assert.Equal(string.Empty, viewData.TemplateInfo.FormattedModelValue);
+            Assert.Equal(string.Empty, viewData.TemplateInfo.HtmlFieldPrefix);
+
+            Assert.NotNull(viewData.Values);
+            Assert.Empty(viewData.Values);
+        }
+
+        [Fact]
+        public void TemplateInfoPropertiesAreNeverNull()
+        {
+            // Arrange
+            var viewData = new ViewDataDictionary<string>(new DataAnnotationsModelMetadataProvider());
+
+            // Act
+            viewData.TemplateInfo.FormattedModelValue = null;
+            viewData.TemplateInfo.HtmlFieldPrefix = null;
+
+            // Assert
+            Assert.Equal(string.Empty, viewData.TemplateInfo.FormattedModelValue);
+            Assert.Equal(string.Empty, viewData.TemplateInfo.HtmlFieldPrefix);
         }
     }
 }

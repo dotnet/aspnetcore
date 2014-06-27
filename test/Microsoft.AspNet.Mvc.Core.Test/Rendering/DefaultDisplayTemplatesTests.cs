@@ -9,7 +9,7 @@ using Microsoft.AspNet.Mvc.Rendering;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Core.Test
+namespace Microsoft.AspNet.Mvc.Core
 {
     public class DefaultDisplayTemplateTests
     {
