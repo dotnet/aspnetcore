@@ -151,6 +151,7 @@ namespace E2ETests
         {
             Console.WriteLine("Trying to access StoreManager that needs ManageStore claim with the current user : {0}", userName ?? "Anonymous");
             var response = httpClient.GetAsync("/StoreManager/").Result;
+            ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             Assert.Contains("<h4>Use a local account to log in.</h4>", responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Equal<string>(ApplicationBaseUrl + "Account/Login?ReturnUrl=%2FStoreManager%2F", response.RequestMessage.RequestUri.AbsoluteUri);
@@ -161,6 +162,7 @@ namespace E2ETests
         {
             Console.WriteLine("Trying to access the store inventory..");
             var response = httpClient.GetAsync("/StoreManager/").Result;
+            ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             Assert.Equal<string>(ApplicationBaseUrl + "StoreManager/", response.RequestMessage.RequestUri.AbsoluteUri);
             Console.WriteLine("Successfully acccessed the store inventory");
@@ -170,6 +172,7 @@ namespace E2ETests
         {
             Console.WriteLine("Trying to create user with not matching password and confirm password");
             var response = httpClient.GetAsync("/Account/Register").Result;
+            ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
 
             var generatedUserName = Guid.NewGuid().ToString().Replace("-", string.Empty);
@@ -193,6 +196,7 @@ namespace E2ETests
         private string RegisterValidUser()
         {
             var response = httpClient.GetAsync("/Account/Register").Result;
+            ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
 
             var generatedUserName = Guid.NewGuid().ToString().Replace("-", string.Empty);
@@ -220,6 +224,7 @@ namespace E2ETests
         {
             Console.WriteLine("Trying to register a user with name '{0}' again", userName);
             var response = httpClient.GetAsync("/Account/Register").Result;
+            ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             Console.WriteLine("Creating a new user with name '{0}'", userName);
             var formParameters = new List<KeyValuePair<string, string>>
@@ -241,6 +246,7 @@ namespace E2ETests
         {
             Console.WriteLine("Signing out from '{0}''s session", userName);
             var response = httpClient.GetAsync(string.Empty).Result;
+            ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             var formParameters = new List<KeyValuePair<string, string>>
                 {
@@ -263,6 +269,7 @@ namespace E2ETests
         private void SignInWithInvalidPassword(string userName, string invalidPassword)
         {
             var response = httpClient.GetAsync("/Account/Login").Result;
+            ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             Console.WriteLine("Signing in with user '{0}'", userName);
             var formParameters = new List<KeyValuePair<string, string>>
@@ -284,6 +291,7 @@ namespace E2ETests
         private void SignInWithUser(string userName, string password)
         {
             var response = httpClient.GetAsync("/Account/Login").Result;
+            ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             Console.WriteLine("Signing in with user '{0}'", userName);
             var formParameters = new List<KeyValuePair<string, string>>
@@ -306,6 +314,7 @@ namespace E2ETests
         private void ChangePassword(string userName)
         {
             var response = httpClient.GetAsync("/Account/Manage").Result;
+            ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             var formParameters = new List<KeyValuePair<string, string>>
                 {
@@ -328,6 +337,7 @@ namespace E2ETests
             var albumName = Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 12);
             Console.WriteLine("Trying to create an album with name '{0}'", albumName);
             var response = httpClient.GetAsync("/StoreManager/create").Result;
+            ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             var formParameters = new List<KeyValuePair<string, string>>
                 {
@@ -352,6 +362,7 @@ namespace E2ETests
         {
             Console.WriteLine("Fetching the album id of '{0}'", albumName);
             var response = httpClient.GetAsync(string.Format("/StoreManager/GetAlbumIdFromName?albumName={0}", albumName)).Result;
+            ThrowIfResponseStatusNotOk(response);
             var albumId = response.Content.ReadAsStringAsync().Result;
             Console.WriteLine("Album id for album '{0}' is '{1}'", albumName, albumId);
             return albumId;
@@ -361,11 +372,21 @@ namespace E2ETests
         {
             Console.WriteLine("Getting details of album with Id '{0}'", albumId);
             var response = httpClient.GetAsync(string.Format("/StoreManager/Details?id={0}", albumId)).Result;
+            ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             Assert.Contains(albumName, responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("http://myapp/testurl", responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("<a href=\"/StoreManager/Edit/463\">Edit</a>", responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("<a href=\"/StoreManager\">Back to List</a>", responseContent, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private void ThrowIfResponseStatusNotOk(HttpResponseMessage response)
+        {
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                Console.WriteLine(response.Content.ReadAsStringAsync().Result);
+                throw new Exception(string.Format("Received the above response with status code : {0}", response.StatusCode.ToString()));
+            }
         }
     }
 }
