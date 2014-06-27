@@ -112,8 +112,8 @@ Environment.NewLine +
             };
             host.NamespaceImports.Clear();
             var engine = new RazorTemplateEngine(host);
-            var source = ReadResource("Model.cshtml");
-            var expectedCode = ReadResource("Model.cs");
+            var source = ReadResource("TestFiles/Input/Model.cshtml");
+            var expectedCode = ReadResource("TestFiles/Output/Model.cs");
             var expectedLineMappings = new List<LineMapping>
             {
                 BuildLineMapping(7, 0, 7, 126, 6, 7, 30),

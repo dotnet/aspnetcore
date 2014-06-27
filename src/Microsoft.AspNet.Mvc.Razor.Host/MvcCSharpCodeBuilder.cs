@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             // NOTE: If there's more than 1 model chunk there will be a Razor error BUT we want intellisense to 
             // show up on the current model chunk that the user is typing.
             var modelChunk = Context.CodeTreeBuilder.CodeTree.Chunks.OfType<ModelChunk>()
-                                                                     .LastOrDefault();
+                                                                    .LastOrDefault();
 
             // If there were any model chunks then we need to modify the class declaration signature.
             if (modelChunk != null)
@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             writer.WriteLineHiddenDirective();
 
             var arguments = injectVisitor.InjectChunks
-                                         .Select(chunk => new KeyValuePair<string, string>(chunk.TypeName, 
+                                         .Select(chunk => new KeyValuePair<string, string>(chunk.TypeName,
                                                                                            chunk.MemberName));
             using (writer.BuildConstructor("public", Context.ClassName, arguments))
             {
