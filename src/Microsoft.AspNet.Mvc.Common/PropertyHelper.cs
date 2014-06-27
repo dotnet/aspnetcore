@@ -198,6 +198,10 @@ namespace Microsoft.AspNet.Mvc
             Func<PropertyInfo, PropertyHelper> createPropertyHelper,
             ConcurrentDictionary<Type, PropertyHelper[]> cache)
         {
+            // Unwrap nullable types. This means Nullable<T>.Value and Nullable<T>.HasValue will not be
+            // part of the sequence of properties returned by this method.
+            type = Nullable.GetUnderlyingType(type) ?? type;
+
             // Using an array rather than IEnumerable, as target will be called on the hot path numerous times.
             PropertyHelper[] helpers;
 
