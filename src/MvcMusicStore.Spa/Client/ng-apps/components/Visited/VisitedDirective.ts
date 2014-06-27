@@ -8,7 +8,7 @@
     //@NgDirective('select')
     class VisitedDirective implements ng.IDirective {
         private _window: ng.IWindowService;
-        
+
         constructor($window: ng.IWindowService) {
             this._window = $window;
         }
