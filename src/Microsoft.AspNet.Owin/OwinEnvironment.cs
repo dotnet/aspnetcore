@@ -241,22 +241,22 @@ namespace Microsoft.AspNet.Owin
             }
 
             public FeatureMap(Type featureInterface, Func<object, object> getter, Action<object, object> setter)
-                : this(featureInterface, getter, setter, featureCreator: null)
+                : this(featureInterface, getter, setter, featureFactory: null)
             {
             }
 
-            public FeatureMap(Type featureInterface, Func<object, object> getter, Action<object, object> setter, Func<object> featureCreator)
+            public FeatureMap(Type featureInterface, Func<object, object> getter, Action<object, object> setter, Func<object> featureFactory)
             {
                 FeatureInterface = featureInterface;
                 Getter = getter;
                 Setter = setter;
-                FeatureCreator = featureCreator;
+                FeatureFactory = featureFactory;
             }
 
             private Type FeatureInterface { get; set; }
             private Func<object, object> Getter { get; set; }
             private Action<object, object> Setter { get; set; }
-            private Func<object> FeatureCreator { get; set; }
+            private Func<object> FeatureFactory { get; set; }
 
             public bool CanSet
             {
@@ -278,13 +278,13 @@ namespace Microsoft.AspNet.Owin
                 var feature = context.GetFeature(FeatureInterface);
                 if (feature == null)
                 {
-                    if (FeatureCreator == null)
+                    if (FeatureFactory == null)
                     {
-                        throw new InvalidOperationException("Missing feature: " + FeatureInterface.FullName);
+                        throw new InvalidOperationException("Missing feature: " + FeatureInterface.FullName); // TODO: LOC
                     }
                     else
                     {
-                        feature = FeatureCreator();
+                        feature = FeatureFactory();
                         context.SetFeature(FeatureInterface, feature);
                     }
                 }
@@ -292,20 +292,20 @@ namespace Microsoft.AspNet.Owin
             }
         }
 
-        public class FeatureMap<T> : FeatureMap
+        public class FeatureMap<TFeature> : FeatureMap
         {
-            public FeatureMap(Func<T, object> getter)
-                : base(typeof(T), feature => getter((T)feature))
+            public FeatureMap(Func<TFeature, object> getter)
+                : base(typeof(TFeature), feature => getter((TFeature)feature))
             {
             }
 
-            public FeatureMap(Func<T, object> getter, Action<T, object> setter)
-                : base(typeof(T), feature => getter((T)feature), (feature, value) => setter((T)feature, value))
+            public FeatureMap(Func<TFeature, object> getter, Action<TFeature, object> setter)
+                : base(typeof(TFeature), feature => getter((TFeature)feature), (feature, value) => setter((TFeature)feature, value))
             {
             }
 
-            public FeatureMap(Func<T, object> getter, Action<T, object> setter, Func<T> creator)
-                : base(typeof(T), feature => getter((T)feature), (feature, value) => setter((T)feature, value), () => (T)creator())
+            public FeatureMap(Func<TFeature, object> getter, Action<TFeature, object> setter, Func<TFeature> featureFactory)
+                : base(typeof(TFeature), feature => getter((TFeature)feature), (feature, value) => setter((TFeature)feature, value), () => featureFactory())
             {
             }
         }
