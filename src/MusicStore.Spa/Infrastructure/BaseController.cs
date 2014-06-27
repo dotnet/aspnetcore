@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc
 {
     public class BaseController : Controller
     {
-        private IEnumerable<IModelBinder> _modelBinders;
+        private IModelBindersProvider _modelBinders;
         private IModelMetadataProvider _modelMetadataProvider;
         private IEnumerable<IModelValidatorProvider> _validatorProviders;
         private IEnumerable<IValueProviderFactory> _valueProviderFactories;
@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         public void Initialize(
-            IEnumerable<IModelBinder> modelBinders,
+            IModelBindersProvider modelBinders,
             IModelMetadataProvider modelMetadataProvider,
             IEnumerable<IModelValidatorProvider> validatorProviders,
             IEnumerable<IValueProviderFactory> valueProviderFactories)
