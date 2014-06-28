@@ -23,9 +23,10 @@
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="amd64\libuv.dll" />
+    <Content Include="native\darwin\universal\libuv.dylib" />
+    <Content Include="native\windows\amd64\libuv.dll" />
+    <Content Include="native\windows\x86\libuv.dll" />
     <Content Include="project.json" />
-    <Content Include="x86\libuv.dll" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Http\FrameDuplexStream.cs" />
@@ -44,6 +45,7 @@
     <Compile Include="Infrastructure\Disposable.cs" />
     <Compile Include="Infrastructure\KestrelThread.cs" />
     <Compile Include="Infrastructure\KestrelTrace.cs" />
+    <Compile Include="Networking\PlatformApis.cs" />
     <Compile Include="Networking\UcAsyncHandle.cs" />
     <Compile Include="Networking\UvMemory.cs" />
     <Compile Include="Networking\UvShutdownReq.cs" />
