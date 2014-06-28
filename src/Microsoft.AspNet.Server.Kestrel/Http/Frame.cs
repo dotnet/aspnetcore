@@ -63,7 +63,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         List<KeyValuePair<Action<object>, object>> _onSendingHeaders;
         object _onSendingHeadersSync = new Object();
-        Stream _duplexStream;
 
         public Frame(ConnectionContext context) : base(context)
         {
@@ -86,6 +85,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public string ReasonPhrase { get; set; }
         public IDictionary<string, string[]> ResponseHeaders { get; set; }
         public Stream ResponseBody { get; set; }
+
+        public Stream DuplexStream { get; set; }
+
 
 
         /*
@@ -175,7 +177,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             _keepAlive = MessageBody.RequestKeepAlive;
             RequestBody = new FrameRequestStream(MessageBody);
             ResponseBody = new FrameResponseStream(this);
-            _duplexStream = new FrameDuplexStream(RequestBody, ResponseBody);
+            DuplexStream = new FrameDuplexStream(RequestBody, ResponseBody);
             SocketInput.Free();
             Task.Run(ExecuteAsync);
         }

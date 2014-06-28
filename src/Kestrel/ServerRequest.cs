@@ -3,10 +3,12 @@ using Microsoft.AspNet.Server.Kestrel.Http;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Kestrel
 {
-    public class ServerRequest : IHttpRequestFeature, IHttpResponseFeature
+    public class ServerRequest : IHttpRequestFeature, IHttpResponseFeature, IHttpOpaqueUpgradeFeature
     {
         Frame _frame;
         string _scheme;
@@ -172,9 +174,40 @@ namespace Kestrel
                 _frame.ResponseBody = value;
             }
         }
+
         void IHttpResponseFeature.OnSendingHeaders(Action<object> callback, object state)
         {
             _frame.OnSendingHeaders(callback, state);
+        }
+
+        bool IHttpOpaqueUpgradeFeature.IsUpgradableRequest
+        {
+            get
+            {
+                string[] values;
+                if (_frame.RequestHeaders.TryGetValue("Connection", out values))
+                {
+                    return values.Any(value => value.IndexOf("upgrade", StringComparison.OrdinalIgnoreCase) != -1);
+                }
+                return false;
+            }
+        }
+
+        async Task<Stream> IHttpOpaqueUpgradeFeature.UpgradeAsync()
+        {
+            _frame.StatusCode = 101;
+            _frame.ReasonPhrase = "Switching Protocols";
+            _frame.ResponseHeaders["Connection"] = new string[] { "Upgrade" };
+            if (!_frame.ResponseHeaders.ContainsKey("Upgrade"))
+            {
+                string[] values;
+                if (_frame.RequestHeaders.TryGetValue("Upgrade", out values))
+                {
+                    _frame.ResponseHeaders["Upgrade"] = values;
+                }
+            }
+            _frame.ProduceStart();
+            return _frame.DuplexStream;
         }
     }
 }
