@@ -21,17 +21,39 @@ namespace Microsoft.AspNet.Server.Kestrel
             Memory = new MemoryPool();
             Libuv = new Libuv();
 
-            var library = libraryManager.GetLibraryInformation("Microsoft.AspNet.Server.Kestrel");
-            var libraryPath = library.Path;
-            if (library.Type == "Project")
-            {
-                libraryPath = Path.GetDirectoryName(libraryPath);
-            }
-            var architecture = IntPtr.Size == 4
-                ? "x86"
-                : "amd64";
-            libraryPath = Path.Combine(libraryPath, architecture, "libuv.dll");
+            var libraryPath = default(string);
 
+            if (libraryManager != null)
+            {
+                var library = libraryManager.GetLibraryInformation("Microsoft.AspNet.Server.Kestrel");
+                libraryPath = library.Path;
+                if (library.Type == "Project")
+                {
+                    libraryPath = Path.GetDirectoryName(libraryPath);
+                }
+                if (Libuv.IsWindows)
+                {
+                    var architecture = IntPtr.Size == 4
+                        ? "x86"
+                        : "amd64";
+
+                    libraryPath = Path.Combine(
+                        libraryPath, 
+                        "native",
+                        "windows",
+                        architecture, 
+                        "libuv.dll");
+                }
+                else
+                {
+                    libraryPath = Path.Combine(
+                        libraryPath,
+                        "native", 
+                        "darwin",
+                        "universal", 
+                        "libuv.dylib");
+                }
+            }
             Libuv.Load(libraryPath);
         }
 

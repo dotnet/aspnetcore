@@ -9,7 +9,14 @@ use namespace="System.Net"
     log info='Adding content to ${nupkgFile}'
     var archive='${ZipFile.Open(nupkgFile, ZipArchiveMode.Update)}'
     @{
-        archive.CreateEntryFromFile("src/Microsoft.AspNet.Server.Kestrel/amd64/libuv.dll", "amd64/libuv.dll");
-        archive.CreateEntryFromFile("src/Microsoft.AspNet.Server.Kestrel/x86/libuv.dll", "x86/libuv.dll");
+        archive.CreateEntryFromFile(
+            "src/Microsoft.AspNet.Server.Kestrel/native/windows/amd64/libuv.dll", 
+            "native/windows/amd64/libuv.dll");
+        archive.CreateEntryFromFile(
+            "src/Microsoft.AspNet.Server.Kestrel/native/windows/x86/libuv.dll", 
+            "native/windows/x86/libuv.dll");
+        archive.CreateEntryFromFile(
+            "src/Microsoft.AspNet.Server.Kestrel/native/darwin/universal/libuv.dylib", 
+            "native/darwin/universal/libuv.dylib");
         archive.Dispose();
     }
