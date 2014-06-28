@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
     {
         public void Init(UvLoopHandle loop)
         {
-            CreateHandle(loop, 256);
+            CreateHandle(loop, loop.Libuv.handle_size(Libuv.HandleType.TCP));
             _uv.tcp_init(loop, this);
         }
 

@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
     {
         public void Init(Libuv uv)
         {
-            CreateHandle(uv, 256);
+            CreateHandle(uv, uv.loop_size());
             _uv.loop_init(this);
         }
 

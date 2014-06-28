@@ -10,20 +10,20 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 {
     public class Libuv
     {
-        private IntPtr _module = IntPtr.Zero;
+        public Libuv()
+        {
+            IsWindows = PlatformApis.IsWindows();
+        }
 
-        [DllImport("kernel32")]
-        public static extern IntPtr LoadLibrary(string dllToLoad);
-
-        [DllImport("kernel32", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
-        public static extern IntPtr GetProcAddress(IntPtr hModule, string procedureName);
-
-        [DllImport("kernel32")]
-        public static extern bool FreeLibrary(IntPtr hModule);
-
+        public bool IsWindows;
+        public Func<string, IntPtr> LoadLibrary;
+        public Func<IntPtr, bool> FreeLibrary;
+        public Func<IntPtr, string, IntPtr> GetProcAddress;
 
         public void Load(string dllToLoad)
         {
+            PlatformApis.Apply(this);
+
             var module = LoadLibrary(dllToLoad);
             foreach (var field in GetType().GetTypeInfo().DeclaredFields)
             {
@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         public void loop_close(UvLoopHandle handle)
         {
             handle.Validate(closed: true);
-            Check(_uv_loop_close(handle.DangerousGetHandle()));
+            Check(_uv_loop_close(handle.InternalGetHandle()));
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -126,7 +126,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         public void close(UvHandle handle, uv_close_cb close_cb)
         {
             handle.Validate(closed: true);
-            _uv_close(handle.DangerousGetHandle(), close_cb);
+            _uv_close(handle.InternalGetHandle(), close_cb);
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -223,9 +223,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void uv_write_cb(IntPtr req, int status);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate int uv_write(UvWriteReq req, UvStreamHandle handle, Libuv.uv_buf_t[] bufs, int nbufs, uv_write_cb cb);
+        unsafe delegate int uv_write(UvWriteReq req, UvStreamHandle handle, Libuv.uv_buf_t* bufs, int nbufs, uv_write_cb cb);
         uv_write _uv_write;
-        public void write(UvWriteReq req, UvStreamHandle handle, Libuv.uv_buf_t[] bufs, int nbufs, uv_write_cb cb)
+        unsafe public void write(UvWriteReq req, UvStreamHandle handle, Libuv.uv_buf_t* bufs, int nbufs, uv_write_cb cb)
         {
             req.Validate();
             handle.Validate();
@@ -242,14 +242,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             req.Validate();
             handle.Validate();
             Check(_uv_shutdown(req, handle, cb));
-        }
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate int uv_handle_size(int handleType);
-        uv_handle_size _uv_handle_size;
-        public int handle_size(int handleType)
-        {
-            return _uv_handle_size(handleType);
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -270,13 +262,28 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             return ptr == IntPtr.Zero ? null : Marshal.PtrToStringAnsi(ptr);
         }
 
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        delegate int uv_loop_size();
+        uv_loop_size _uv_loop_size;
+        public int loop_size()
+        {
+            return _uv_loop_size();
+        }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate int uv_req_size(int handleType);
-        uv_req_size _uv_req_size;
-        public int req_size(int handleType)
+        delegate int uv_handle_size(HandleType handleType);
+        uv_handle_size _uv_handle_size;
+        public int handle_size(HandleType handleType)
         {
-            return _uv_req_size(handleType);
+            return _uv_handle_size(handleType);
+        }
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        delegate int uv_req_size(RequestType reqType);
+        uv_req_size _uv_req_size;
+        public int req_size(RequestType reqType)
+        {
+            return _uv_req_size(reqType);
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -297,20 +304,84 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             return Check(_uv_ip6_addr(ip, port, out addr), out error);
         }
 
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void uv_walk_cb(IntPtr handle, IntPtr arg);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        unsafe delegate int uv_walk(UvLoopHandle loop, uv_walk_cb walk_cb, IntPtr arg);
+        uv_walk _uv_walk;
+        unsafe public void walk(UvLoopHandle loop, uv_walk_cb walk_cb, IntPtr arg)
+        {
+            loop.Validate();
+            _uv_walk(loop, walk_cb, arg);
+        }
+
+        public uv_buf_t buf_init(IntPtr memory, int len)
+        {
+            return new uv_buf_t(memory, len, IsWindows);
+        }
+
         public struct sockaddr
         {
-            long w;
-            long x;
-            long y;
-            long z;
+            long x0;
+            long x1;
+            long x2;
+            long x3;
         }
 
         public struct uv_buf_t
         {
-            public uint len;
-            public IntPtr memory;
+            public uv_buf_t(IntPtr memory, int len, bool IsWindows)
+            {
+                if (IsWindows)
+                {
+                    x0 = (IntPtr)len;
+                    x1 = memory;
+                }
+                else
+                {
+                    x0 = memory;
+                    x1 = (IntPtr)len;
+                }
+            }
+
+            public IntPtr x0;
+            public IntPtr x1;
         }
 
+        public enum HandleType
+        {
+            Unknown = 0,
+            ASYNC,
+            CHECK,
+            FS_EVENT,
+            FS_POLL,
+            HANDLE,
+            IDLE,
+            NAMED_PIPE,
+            POLL,
+            PREPARE,
+            PROCESS,
+            STREAM,
+            TCP,
+            TIMER,
+            TTY,
+            UDP,
+            SIGNAL,
+        }
+
+        public enum RequestType
+        {
+            Unknown = 0,
+            REQ,
+            CONNECT,
+            WRITE,
+            SHUTDOWN,
+            UDP_SEND,
+            FS,
+            WORK,
+            GETADDRINFO,
+            GETNAMEINFO,
+        }        
         //int handle_size_async;
         //int handle_size_tcp;
         //int req_size_write;

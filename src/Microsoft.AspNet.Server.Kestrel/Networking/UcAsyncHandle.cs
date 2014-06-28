@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 
         public void Init(UvLoopHandle loop, Action callback)
         {
-            CreateHandle(loop, 256);
+            CreateHandle(loop, loop.Libuv.handle_size(Libuv.HandleType.ASYNC));
             _callback = callback;
             _uv.async_init(loop, this, _uv_async_cb);
         }

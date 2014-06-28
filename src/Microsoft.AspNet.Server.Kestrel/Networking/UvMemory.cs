@@ -45,6 +45,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             _threadId = loop._threadId;
         }
 
+        internal IntPtr InternalGetHandle()
+        {
+            return handle;
+        }
 
         public void Validate(bool closed = false)
         {
@@ -52,7 +56,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             Trace.Assert(!IsInvalid, "Handle is invalid");
             Trace.Assert(_threadId == Thread.CurrentThread.ManagedThreadId, "ThreadId is correct");
         }
-
 
         unsafe protected static void DestroyHandle(IntPtr memory)
         {
