@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 {
                     ListenSocket = new UvTcpHandle();
                     ListenSocket.Init(Thread.Loop);
-                    ListenSocket.Bind(new IPEndPoint(IPAddress.IPv6Any, port));
+                    ListenSocket.Bind(new IPEndPoint(IPAddress.Any, port));
                     ListenSocket.Listen(10, _connectionCallback, this);
                     tcs.SetResult(0);
                 }
@@ -86,7 +86,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public void Dispose()
         {
-            Console.WriteLine("Listener.Dispose");
             var tcs = new TaskCompletionSource<int>();
             Thread.Post(
                 _ =>

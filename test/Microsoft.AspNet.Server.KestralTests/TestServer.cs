@@ -24,8 +24,19 @@ namespace Microsoft.AspNet.Server.KestralTests
         {
             get
             {
-                var services = CallContextServiceLocator.Locator.ServiceProvider;
-                return (ILibraryManager)services.GetService(typeof(ILibraryManager));
+                try{
+                    var locator = CallContextServiceLocator.Locator;
+                    if (locator == null) 
+                    {
+                        return null;
+                    }
+                    var services = locator.ServiceProvider;
+                    if (services == null) 
+                    {
+                        return null;
+                    }
+                    return (ILibraryManager)services.GetService(typeof(ILibraryManager));
+                } catch (NullReferenceException) { return null; }
             }
         }
 

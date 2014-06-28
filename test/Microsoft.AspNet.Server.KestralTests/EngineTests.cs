@@ -35,11 +35,22 @@ namespace Microsoft.AspNet.Server.KestralTests
         {
             get
             {
-                var services = CallContextServiceLocator.Locator.ServiceProvider;
-                return (ILibraryManager)services.GetService(typeof(ILibraryManager));
+                try 
+                {
+                    var locator = CallContextServiceLocator.Locator;
+                    if (locator == null) 
+                    {
+                        return null;
+                    }
+                    var services = locator.ServiceProvider;
+                    if (services == null) 
+                    {
+                        return null;
+                    }
+                    return (ILibraryManager)services.GetService(typeof(ILibraryManager));
+                } catch (NullReferenceException) { return null; }
             }
         }
-
 
         private async Task AppChunked(Frame frame)
         {
@@ -85,6 +96,7 @@ namespace Microsoft.AspNet.Server.KestralTests
             engine.Start(1);
             var started = engine.CreateServer("http", "localhost", 54321, App);
 
+            Console.WriteLine("Started");
             var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             socket.Connect(new IPEndPoint(IPAddress.Loopback, 54321));
             socket.Send(Encoding.ASCII.GetBytes("POST / HTTP/1.0\r\n\r\nHello World"));

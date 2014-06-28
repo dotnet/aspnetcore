@@ -28,6 +28,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public void Write(ArraySegment<byte> buffer, Action<object> callback, object state)
         {
+            //TODO: need buffering that works
+            var copy = new byte[buffer.Count];
+            Array.Copy(buffer.Array, buffer.Offset, copy, 0, buffer.Count);
+            buffer = new ArraySegment<byte>(copy);
+
             KestrelTrace.Log.ConnectionWrite(0, buffer.Count);
             var req = new ThisWriteReq();
             req.Init(_thread.Loop);
@@ -70,24 +75,16 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
             public void Write()
             {
-                _pin = GCHandle.Alloc(_buffer.Array, GCHandleType.Pinned);
-                var buf = new Libuv.uv_buf_t
-                {
-                    len = (uint)_buffer.Count,
-                    memory = _pin.AddrOfPinnedObject() + _buffer.Offset
-                };
-
                 Write(
                     _socket,
-                    new[] { buf },
-                    1,
+                    new ArraySegment<ArraySegment<byte>>(
+                        new[]{_buffer}),
                     _writeCallback,
                     this);
             }
 
             private void OnWrite(UvWriteReq req, int status)
             {
-                _pin.Free();
                 KestrelTrace.Log.ConnectionWriteCallback(0, status);
                 //NOTE: pool this?
                 Dispose();

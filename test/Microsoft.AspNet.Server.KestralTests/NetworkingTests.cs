@@ -30,7 +30,16 @@ namespace Microsoft.AspNet.Server.KestralTests
         {
             get
             {
-                var services = CallContextServiceLocator.Locator.ServiceProvider;
+                var locator = CallContextServiceLocator.Locator;
+                if (locator == null) 
+                {
+                    return null;
+                }
+                var services = locator.ServiceProvider;
+                if (services == null) 
+                {
+                    return null;
+                }
                 return (ILibraryManager)services.GetService(typeof(ILibraryManager));
             }
         }
@@ -123,12 +132,13 @@ namespace Microsoft.AspNet.Server.KestralTests
             tcp.Bind(new IPEndPoint(IPAddress.Loopback, 54321));
             tcp.Listen(10, (_, status, state) =>
             {
+                Console.WriteLine("Connected");
                 var tcp2 = new UvTcpHandle();
                 tcp2.Init(loop);
                 tcp.Accept(tcp2);
                 var data = Marshal.AllocCoTaskMem(500);
                 tcp2.ReadStart(
-                    (a, b, c) => new Libuv.uv_buf_t { memory = data, len = 500 },
+                    (a, b, c) => _uv.buf_init(data, 500),
                     (__, nread, state2) =>
                     {
                         bytesRead += nread;
@@ -140,6 +150,7 @@ namespace Microsoft.AspNet.Server.KestralTests
                     null);
                 tcp.Dispose();
             }, null);
+            Console.WriteLine("Task.Run");
             var t = Task.Run(async () =>
             {
                 var socket = new Socket(
@@ -159,6 +170,93 @@ namespace Microsoft.AspNet.Server.KestralTests
                     SocketFlags.None,
                     null,
                     TaskCreationOptions.None);
+                socket.Dispose();
+            });
+            loop.Run();
+            loop.Dispose();
+            await t;
+        }
+
+        [Fact]
+        public async Task SocketCanReadAndWrite()
+        {
+            int bytesRead = 0;
+            var loop = new UvLoopHandle();
+            loop.Init(_uv);
+            var tcp = new UvTcpHandle();
+            tcp.Init(loop);
+            tcp.Bind(new IPEndPoint(IPAddress.Loopback, 54321));
+            tcp.Listen(10, (_, status, state) =>
+            {
+                Console.WriteLine("Connected");
+                var tcp2 = new UvTcpHandle();
+                tcp2.Init(loop);
+                tcp.Accept(tcp2);
+                var data = Marshal.AllocCoTaskMem(500);
+                tcp2.ReadStart(
+                    (a, b, c) => tcp2.Libuv.buf_init(data, 500),
+                    (__, nread, state2) =>
+                    {
+                        bytesRead += nread;
+                        if (nread == 0)
+                        {
+                            tcp2.Dispose();
+                        }
+                        else
+                        {
+                            for (var x = 0; x != 2; ++x)
+                            {
+                                var req = new UvWriteReq();
+                                req.Init(loop);
+                                req.Write(
+                                    tcp2,
+                                    new ArraySegment<ArraySegment<byte>>(
+                                        new[]{new ArraySegment<byte>(new byte[]{65,66,67,68,69})}
+                                        ),
+                                    (___,____,_____)=>{},
+                                    null);
+                            }
+                        }
+                    },
+                    null);
+                tcp.Dispose();
+            }, null);
+            Console.WriteLine("Task.Run");
+            var t = Task.Run(async () =>
+            {
+                var socket = new Socket(
+                    AddressFamily.InterNetwork,
+                    SocketType.Stream,
+                    ProtocolType.Tcp);
+                await Task.Factory.FromAsync(
+                    socket.BeginConnect,
+                    socket.EndConnect,
+                    new IPEndPoint(IPAddress.Loopback, 54321),
+                    null,
+                    TaskCreationOptions.None);
+                await Task.Factory.FromAsync(
+                    socket.BeginSend,
+                    socket.EndSend,
+                    new[] { new ArraySegment<byte>(new byte[] { 1, 2, 3, 4, 5 }) },
+                    SocketFlags.None,
+                    null,
+                    TaskCreationOptions.None);
+                socket.Shutdown(SocketShutdown.Send);
+                var buffer = new ArraySegment<byte>(new byte[2048]);
+                for(;;)
+                {
+                    var count = await Task.Factory.FromAsync(
+                        socket.BeginReceive,
+                        socket.EndReceive,
+                        new[] { buffer },
+                        SocketFlags.None,
+                        null,
+                        TaskCreationOptions.None);
+                    Console.WriteLine("count {0} {1}", 
+                        count,
+                        System.Text.Encoding.ASCII.GetString(buffer.Array, 0, count));
+                    if (count <= 0) break;
+                }
                 socket.Dispose();
             });
             loop.Run();

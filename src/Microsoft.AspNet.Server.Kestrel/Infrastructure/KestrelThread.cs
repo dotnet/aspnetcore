@@ -81,6 +81,17 @@ namespace Microsoft.AspNet.Server.Kestrel
             _post.Send();
         }
 
+        public Task PostAsync(Action<object> callback, object state)
+        {
+            var tcs = new TaskCompletionSource<int>();
+            lock (_workSync)
+            {
+                _workAdding.Enqueue(new Work { Callback = callback, State = state, Completion = tcs });
+            }
+            _post.Send();
+            return tcs.Task;
+        }
+
         private void ThreadStart(object parameter)
         {
             var tcs = (TaskCompletionSource<int>)parameter;
@@ -103,12 +114,19 @@ namespace Microsoft.AspNet.Server.Kestrel
                     return;
                 }
 
-                // run the loop one more time to delete the _post handle
+                // run the loop one more time to delete the open handles
                 _post.Reference();
                 _post.DangerousClose();
+                _engine.Libuv.walk(
+                    _loop, 
+                    (ptr, arg) =>
+                    {
+                        var handle = UvMemory.FromIntPtr<UvHandle>(ptr);
+                        handle.Dispose();
+                    },
+                    IntPtr.Zero);
                 var ran2 = _loop.Run();
 
-                // delete the last of the unmanaged memory
                 _loop.Dispose();
             }
             catch (Exception ex)
@@ -131,10 +149,26 @@ namespace Microsoft.AspNet.Server.Kestrel
                 try
                 {
                     work.Callback(work.State);
+                    if (work.Completion != null)
+                    {
+                        ThreadPool.QueueUserWorkItem(
+                            tcs =>
+                            {
+                                ((TaskCompletionSource<int>)tcs).SetResult(0);
+                            }, 
+                            work.Completion);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    //TODO: unhandled exceptions
+                    if (work.Completion != null)
+                    {
+                        ThreadPool.QueueUserWorkItem(_ => work.Completion.SetException(ex), null);
+                    }
+                    else
+                    {
+                        // TODO: unobserved exception?
+                    }
                 }
             }
         }
@@ -143,6 +177,7 @@ namespace Microsoft.AspNet.Server.Kestrel
         {
             public Action<object> Callback;
             public object State;
+            public TaskCompletionSource<int> Completion;
         }
     }
 }

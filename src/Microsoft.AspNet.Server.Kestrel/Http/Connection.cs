@@ -74,11 +74,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private Libuv.uv_buf_t OnAlloc(UvStreamHandle handle, int suggestedSize)
         {
-            return new Libuv.uv_buf_t
-            {
-                memory = SocketInput.Pin(2048),
-                len = 2048
-            };
+            return handle.Libuv.buf_init(
+                SocketInput.Pin(2048), 
+                2048);
         }
 
         private void OnRead(UvStreamHandle handle, int nread)
