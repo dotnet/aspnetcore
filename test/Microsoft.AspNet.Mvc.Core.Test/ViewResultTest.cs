@@ -23,17 +23,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             // Arrange
             var expected = new byte[] { 97, 98, 99, 100 };
-            var memoryStream = new MemoryStream();
-            var response = new Mock<HttpResponse>();
-            response.SetupGet(r => r.Body)
-                   .Returns(memoryStream);
-            var context = new Mock<HttpContext>();
-            context.SetupGet(c => c.Response)
-                   .Returns(response.Object);
-            var routeDictionary = new Dictionary<string, object>();
-            var actionContext = new ActionContext(context.Object,
-                                                  new RouteData() {  Values = routeDictionary },
-                                                  new ActionDescriptor());
+
             var view = new Mock<IView>();
             view.Setup(v => v.RenderAsync(It.IsAny<ViewContext>()))
                  .Callback((ViewContext v) =>
@@ -41,11 +31,85 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                      v.Writer.Write("abcd");
                  })
                  .Returns(Task.FromResult(0));
-            var serviceProvider = Mock.Of<IServiceProvider>();
+
+            var routeDictionary = new Dictionary<string, object>();
+
             var viewEngine = new Mock<IViewEngine>();
             viewEngine.Setup(v => v.FindView(routeDictionary, It.IsAny<string>()))
                       .Returns(ViewEngineResult.Found("MyView", view.Object));
-            var viewResult = new ViewResult(serviceProvider, viewEngine.Object);
+
+            var serviceProvider = new Mock<IServiceProvider>();
+            serviceProvider.Setup(sp => sp.GetService(typeof(IViewEngine))).Returns(viewEngine.Object);
+
+            var memoryStream = new MemoryStream();
+            var response = new Mock<HttpResponse>();
+            response.SetupGet(r => r.Body)
+                   .Returns(memoryStream);
+
+            var context = new Mock<HttpContext>();
+            context.SetupGet(c => c.Response)
+                   .Returns(response.Object);
+            context.SetupGet(c => c.RequestServices)
+                .Returns(serviceProvider.Object);
+            
+            var actionContext = new ActionContext(context.Object,
+                                                  new RouteData() {  Values = routeDictionary },
+                                                  new ActionDescriptor());
+            
+            
+            var viewResult = new ViewResult();
+
+            // Act
+            await viewResult.ExecuteResultAsync(actionContext);
+
+            // Assert
+            Assert.Equal(expected, memoryStream.ToArray());
+        }
+
+        [Fact]
+        public async Task ExecuteResultAsync_UsesProvidedViewEngine()
+        {
+            // Arrange
+            var expected = new byte[] { 97, 98, 99, 100 };
+
+            var view = new Mock<IView>();
+            view.Setup(v => v.RenderAsync(It.IsAny<ViewContext>()))
+                 .Callback((ViewContext v) =>
+                 {
+                     v.Writer.Write("abcd");
+                 })
+                 .Returns(Task.FromResult(0));
+
+            var routeDictionary = new Dictionary<string, object>();
+
+            var goodViewEngine = new Mock<IViewEngine>();
+            goodViewEngine.Setup(v => v.FindView(routeDictionary, It.IsAny<string>()))
+                      .Returns(ViewEngineResult.Found("MyView", view.Object));
+
+            var badViewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
+
+            var serviceProvider = new Mock<IServiceProvider>();
+            serviceProvider.Setup(sp => sp.GetService(typeof(IViewEngine))).Returns(badViewEngine.Object);
+
+            var memoryStream = new MemoryStream();
+            var response = new Mock<HttpResponse>();
+            response.SetupGet(r => r.Body)
+                   .Returns(memoryStream);
+
+            var context = new Mock<HttpContext>();
+            context.SetupGet(c => c.Response)
+                   .Returns(response.Object);
+            context.SetupGet(c => c.RequestServices)
+                .Returns(serviceProvider.Object);
+
+            var actionContext = new ActionContext(context.Object,
+                                                  new RouteData() { Values = routeDictionary },
+                                                  new ActionDescriptor());
+
+            var viewResult = new ViewResult()
+            {
+                ViewEngine = goodViewEngine.Object,
+            };
 
             // Act
             await viewResult.ExecuteResultAsync(actionContext);
@@ -63,17 +127,9 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             // Arrange
             var longString = new string('a', writtenLength);
-            var memoryStream = new MemoryStream();
-            var response = new Mock<HttpResponse>();
-            response.SetupGet(r => r.Body)
-                   .Returns(memoryStream);
-            var context = new Mock<HttpContext>();
-            context.SetupGet(c => c.Response)
-                   .Returns(response.Object);
+
             var routeDictionary = new Dictionary<string, object>();
-            var actionContext = new ActionContext(context.Object,
-                                                  new RouteData() { Values = routeDictionary },
-                                                  new ActionDescriptor());
+
             var view = new Mock<IView>();
             view.Setup(v => v.RenderAsync(It.IsAny<ViewContext>()))
                  .Callback((ViewContext v) =>
@@ -81,11 +137,28 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                      v.Writer.Write(longString);
                      throw new Exception();
                  });
-            var serviceProvider = Mock.Of<IServiceProvider>();
+
             var viewEngine = new Mock<IViewEngine>();
             viewEngine.Setup(v => v.FindView(routeDictionary, It.IsAny<string>()))
                       .Returns(ViewEngineResult.Found("MyView", view.Object));
-            var viewResult = new ViewResult(serviceProvider, viewEngine.Object);
+
+            var serviceProvider = new Mock<IServiceProvider>();
+            serviceProvider.Setup(sp => sp.GetService(typeof(IViewEngine))).Returns(viewEngine.Object);
+
+            var memoryStream = new MemoryStream();
+            var response = new Mock<HttpResponse>();
+            response.SetupGet(r => r.Body)
+                   .Returns(memoryStream);
+            var context = new Mock<HttpContext>();
+            context.SetupGet(c => c.Response)
+                   .Returns(response.Object);
+            context.SetupGet(c => c.RequestServices).Returns(serviceProvider.Object);
+            
+            var actionContext = new ActionContext(context.Object,
+                                                  new RouteData() { Values = routeDictionary },
+                                                  new ActionDescriptor());
+            
+            var viewResult = new ViewResult();
 
             // Act
             await Record.ExceptionAsync(() => viewResult.ExecuteResultAsync(actionContext));
