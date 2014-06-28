@@ -12,8 +12,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
     {
         public static bool IsWindows() 
         {
+#if K10
+            return true;
+#else
             var p = (int)Environment.OSVersion.Platform;
             return (p != 4) && (p != 6) && (p != 128);
+#endif
         }
 
         public static void Apply(Libuv libuv)
