@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Server.KestralTests
     /// <summary>
     /// Summary description for EngineTests
     /// </summary>
-    public class EngineTests
+    internal class EngineTests
     {
         private async Task App(Frame frame)
         {
