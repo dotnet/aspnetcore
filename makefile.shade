@@ -39,6 +39,7 @@ var repos='${new Dictionary<string,string> {
     {"SignalR-Server",        gitHubUriPrefix + "SignalR-Server.git"},
     {"StaticFiles",           gitHubUriPrefix + "StaticFiles.git"},
     {"WebListener",           gitHubUriPrefix + "WebListener.git"},
+    {"KestrelHttpServer",     gitHubUriPrefix + "KestrelHttpServer.git"},
     {"WebSockets",            gitHubUriPrefix + "WebSockets.git"},
     {"Entropy",               gitHubUriPrefix + "Entropy.git"},
 }}'
