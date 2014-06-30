@@ -30,6 +30,7 @@
     <Compile Include="ActionResults\RedirectResultTest.cs" />
     <Compile Include="ActionSelectionConventionTests.cs" />
     <Compile Include="AntiXsrf\AntiForgeryOptionsTests.cs" />
+    <Compile Include="Extensions\ViewEngineDscriptorExtensionsTest.cs" />
     <Compile Include="ReflectedModelBuilder\ReflectedParameterModelTests.cs" />
     <Compile Include="ReflectedModelBuilder\ReflectedActionModelTests.cs" />
     <Compile Include="ReflectedModelBuilder\ReflectedControllerModelTests.cs" />
@@ -60,6 +61,7 @@
     <Compile Include="PropertyHelperTest.cs" />
     <Compile Include="ReflectedActionDescriptorProviderTests.cs" />
     <Compile Include="ReflectedActionInvokerTest.cs" />
+    <Compile Include="Rendering\CompositeViewEngineTest.cs" />
     <Compile Include="Rendering\DefaultTemplatesUtilities.cs" />
     <Compile Include="Rendering\DefaultDisplayTemplatesTests.cs" />
     <Compile Include="Rendering\DefaultEditorTemplatesTests.cs" />
@@ -67,6 +69,8 @@
     <Compile Include="Rendering\ViewContextTests.cs" />
     <Compile Include="Rendering\ViewDataOfTTest.cs" />
     <Compile Include="KnownRouteValueConstraintTests.cs" />
+    <Compile Include="Rendering\ViewEngineDescriptorTest.cs" />
+    <Compile Include="Rendering\DefaultViewEngineProviderTest.cs" />
     <Compile Include="Routing\AttributeRoutePrecedenceTests.cs" />
     <Compile Include="Routing\AttributeRouteTemplateTests.cs" />
     <Compile Include="TestController.cs" />

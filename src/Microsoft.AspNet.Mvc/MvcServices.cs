@@ -11,6 +11,7 @@ using Microsoft.AspNet.Security;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.NestedProviders;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -25,6 +26,8 @@ namespace Microsoft.AspNet.Mvc
         {
             var describe = new ServiceDescriber(configuration);
 
+            yield return describe.Transient<IOptionsSetup<MvcOptions>, MvcOptionsSetup>();
+
             yield return describe.Transient<IControllerFactory, DefaultControllerFactory>();
             yield return describe.Singleton<IControllerActivator, DefaultControllerActivator>();
             yield return describe.Scoped<IActionSelector, DefaultActionSelector>();
@@ -36,9 +39,10 @@ namespace Microsoft.AspNet.Mvc
 
             yield return describe.Transient<ICompilationService, RoslynCompilationService>();
 
+            yield return describe.Singleton<IViewEngineProvider, DefaultViewEngineProvider>();
+            yield return describe.Scoped<ICompositeViewEngine, CompositeViewEngine>();
             yield return describe.Transient<IRazorCompilationService, RazorCompilationService>();
             yield return describe.Transient<IVirtualPathViewFactory, VirtualPathViewFactory>();
-            yield return describe.Scoped<IViewEngine, RazorViewEngine>();
 
             yield return describe.Transient<INestedProvider<ActionDescriptorProviderContext>,
                                             ReflectedActionDescriptorProvider>();

@@ -63,14 +63,14 @@ namespace Microsoft.AspNet.Mvc.Core
             return GetHtmlHelper(model, CreateViewEngine(), provider);
         }
 
-        public static HtmlHelper<TModel> GetHtmlHelper<TModel>(TModel model, IViewEngine viewEngine)
+        public static HtmlHelper<TModel> GetHtmlHelper<TModel>(TModel model, ICompositeViewEngine viewEngine)
         {
             return GetHtmlHelper(model, viewEngine, new DataAnnotationsModelMetadataProvider());
         }
 
         public static HtmlHelper<TModel> GetHtmlHelper<TModel>(
             TModel model,
-            IViewEngine viewEngine,
+            ICompositeViewEngine viewEngine,
             IModelMetadataProvider provider)
         {
             var viewData = new ViewDataDictionary<TModel>(provider);
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Mvc.Core
 
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider
-                .Setup(s => s.GetService(typeof(IViewEngine)))
+                .Setup(s => s.GetService(typeof(ICompositeViewEngine)))
                 .Returns(viewEngine);
             serviceProvider
                 .Setup(s => s.GetService(typeof(IUrlHelper)))
@@ -110,7 +110,7 @@ namespace Microsoft.AspNet.Mvc.Core
             serviceProvider
                 .Setup(s => s.GetService(typeof(IViewComponentHelper)))
                 .Returns(new Mock<IViewComponentHelper>().Object);
- 
+
             httpContext
                 .Setup(o => o.RequestServices)
                 .Returns(serviceProvider.Object);
@@ -138,7 +138,7 @@ namespace Microsoft.AspNet.Mvc.Core
             return htmlHelper;
         }
 
-        private static IViewEngine CreateViewEngine()
+        private static ICompositeViewEngine CreateViewEngine()
         {
             var view = new Mock<IView>();
             view
@@ -149,10 +149,11 @@ namespace Microsoft.AspNet.Mvc.Core
                 })
                 .Returns(Task.FromResult(0));
 
-            var viewEngine = new Mock<IViewEngine>();
+            var viewEngine = new Mock<ICompositeViewEngine>();
             viewEngine
                 .Setup(v => v.FindPartialView(It.IsAny<Dictionary<string, object>>(), It.IsAny<string>()))
                 .Returns(ViewEngineResult.Found("MyView", view.Object));
+
             return viewEngine.Object;
         }
 

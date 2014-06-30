@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         private const string HiddenListItem = @"<li style=""display:none""></li>";
 
         private readonly IUrlHelper _urlHelper;
-        private readonly IViewEngine _viewEngine;
+        private readonly ICompositeViewEngine _viewEngine;
         private readonly AntiForgery _antiForgeryInstance;
         private readonly IActionBindingContextProvider _actionBindingContextProvider;
 
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Initializes a new instance of the <see cref="HtmlHelper"/> class.
         /// </summary>
         public HtmlHelper(
-            [NotNull] IViewEngine viewEngine,
+            [NotNull] ICompositeViewEngine viewEngine,
             [NotNull] IModelMetadataProvider metadataProvider,
             [NotNull] IUrlHelper urlHelper,
             [NotNull] AntiForgery antiForgeryInstance,

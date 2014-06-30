@@ -34,12 +34,13 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             var routeDictionary = new Dictionary<string, object>();
 
-            var viewEngine = new Mock<IViewEngine>();
+            var viewEngine = new Mock<ICompositeViewEngine>();
             viewEngine.Setup(v => v.FindView(routeDictionary, It.IsAny<string>()))
                       .Returns(ViewEngineResult.Found("MyView", view.Object));
 
             var serviceProvider = new Mock<IServiceProvider>();
-            serviceProvider.Setup(sp => sp.GetService(typeof(IViewEngine))).Returns(viewEngine.Object);
+            serviceProvider.Setup(sp => sp.GetService(typeof(ICompositeViewEngine)))
+                           .Returns(viewEngine.Object);
 
             var memoryStream = new MemoryStream();
             var response = new Mock<HttpResponse>();
@@ -86,10 +87,11 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             goodViewEngine.Setup(v => v.FindView(routeDictionary, It.IsAny<string>()))
                       .Returns(ViewEngineResult.Found("MyView", view.Object));
 
-            var badViewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
+            var badViewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
 
             var serviceProvider = new Mock<IServiceProvider>();
-            serviceProvider.Setup(sp => sp.GetService(typeof(IViewEngine))).Returns(badViewEngine.Object);
+            serviceProvider.Setup(sp => sp.GetService(typeof(ICompositeViewEngine)))
+                           .Returns(badViewEngine.Object);
 
             var memoryStream = new MemoryStream();
             var response = new Mock<HttpResponse>();
@@ -138,12 +140,13 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                      throw new Exception();
                  });
 
-            var viewEngine = new Mock<IViewEngine>();
+            var viewEngine = new Mock<ICompositeViewEngine>();
             viewEngine.Setup(v => v.FindView(routeDictionary, It.IsAny<string>()))
                       .Returns(ViewEngineResult.Found("MyView", view.Object));
 
             var serviceProvider = new Mock<IServiceProvider>();
-            serviceProvider.Setup(sp => sp.GetService(typeof(IViewEngine))).Returns(viewEngine.Object);
+            serviceProvider.Setup(sp => sp.GetService(typeof(ICompositeViewEngine)))
+                           .Returns(viewEngine.Object);
 
             var memoryStream = new MemoryStream();
             var response = new Mock<HttpResponse>();

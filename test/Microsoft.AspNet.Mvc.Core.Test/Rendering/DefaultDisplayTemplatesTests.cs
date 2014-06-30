@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.Mvc.Core
 <div class=""display-field""></div>
 ";
             var model = new DefaultTemplatesUtilities.ObjectWithScaffoldColumn();
-            var viewEngine = new Mock<IViewEngine>();
+            var viewEngine = new Mock<ICompositeViewEngine>();
             viewEngine.Setup(v => v.FindPartialView(It.IsAny<IDictionary<string, object>>(), It.IsAny<string>()))
                       .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
             var htmlHelper = DefaultTemplatesUtilities.GetHtmlHelper(model, viewEngine.Object);
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Mvc.Core
         {
             // Arrange
             var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "Model string" };
-            var viewEngine = new Mock<IViewEngine>();
+            var viewEngine = new Mock<ICompositeViewEngine>();
             viewEngine
                 .Setup(v => v.FindPartialView(It.IsAny<IDictionary<string, object>>(), It.IsAny<string>()))
                 .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.Mvc.Core
         {
             // Arrange
             var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "Model string" };
-            var viewEngine = new Mock<IViewEngine>();
+            var viewEngine = new Mock<ICompositeViewEngine>();
             viewEngine
                 .Setup(v => v.FindPartialView(It.IsAny<IDictionary<string, object>>(), It.IsAny<string>()))
                 .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.Mvc.Core
         {
             // Arrange
             var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "Model string" };
-            var viewEngine = new Mock<IViewEngine>();
+            var viewEngine = new Mock<ICompositeViewEngine>();
             viewEngine
                 .Setup(v => v.FindPartialView(It.IsAny<IDictionary<string, object>>(), It.IsAny<string>()))
                 .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
@@ -160,7 +160,7 @@ namespace Microsoft.AspNet.Mvc.Core
         {
             // Arrange
             var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = propertyValue, };
-            var viewEngine = new Mock<IViewEngine>();
+            var viewEngine = new Mock<ICompositeViewEngine>();
             viewEngine
                 .Setup(v => v.FindPartialView(It.IsAny<IDictionary<string, object>>(), It.IsAny<string>()))
                 .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));

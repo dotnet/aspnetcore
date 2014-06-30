@@ -309,4 +309,7 @@
   <data name="ValueTypesCannotBeActivated" xml:space="preserve">
     <value>Value types cannot be activated by '{0}'.</value>
   </data>
+  <data name="TypeMustDeriveFromType" xml:space="preserve">
+    <value>The type '{0}' must derive from '{1}'.</value>
+  </data>
 </root>

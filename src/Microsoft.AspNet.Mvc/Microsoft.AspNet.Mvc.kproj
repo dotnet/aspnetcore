@@ -21,6 +21,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BuilderExtensions.cs" />
+    <Compile Include="MvcOptionsSetup.cs" />
     <Compile Include="MvcServiceCollectionExtensions.cs" />
     <Compile Include="MvcServices.cs" />
   </ItemGroup>

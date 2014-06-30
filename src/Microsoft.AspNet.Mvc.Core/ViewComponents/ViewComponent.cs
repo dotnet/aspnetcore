@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc
     public abstract class ViewComponent
     {
         private dynamic _viewBag;
-        private IViewEngine _viewEngine;
+        private ICompositeViewEngine _viewEngine;
 
         public HttpContext Context
         {
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc
             return new ContentViewComponentResult(content);
         }
 
-        public void Initialize(IViewEngine viewEngine)
+        public void Initialize(ICompositeViewEngine viewEngine)
         {
             _viewEngine = viewEngine;
         }

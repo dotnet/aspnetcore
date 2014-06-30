@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
                 var serviceProvider = html.ViewContext.HttpContext.RequestServices;
                 var metadataProvider = serviceProvider.GetService<IModelMetadataProvider>();
-                var viewEngine = serviceProvider.GetService<IViewEngine>();
+                var viewEngine = serviceProvider.GetService<ICompositeViewEngine>();
 
                 var index = 0;
                 foreach (var item in collection)
@@ -214,7 +214,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
 
             var serviceProvider = html.ViewContext.HttpContext.RequestServices;
-            var viewEngine = serviceProvider.GetService<IViewEngine>();
+            var viewEngine = serviceProvider.GetService<ICompositeViewEngine>();
 
             foreach (var propertyMetadata in modelMetadata.Properties.Where(pm => ShouldShow(pm, templateInfo)))
             {

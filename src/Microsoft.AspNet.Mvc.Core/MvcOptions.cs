@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ReflectedModelBuilder;
+using Microsoft.AspNet.Mvc.Rendering;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -24,6 +25,8 @@ namespace Microsoft.AspNet.Mvc
                 new ModelBinderDescriptor(new MutableObjectModelBinder()),
                 new ModelBinderDescriptor(new ComplexModelDtoModelBinder()),
             };
+
+            ViewEngines = new List<ViewEngineDescriptor>();
         }
 
         public AntiForgeryOptions AntiForgeryOptions
@@ -47,6 +50,11 @@ namespace Microsoft.AspNet.Mvc
         }
 
         public List<ModelBinderDescriptor> ModelBinders { get; private set; }
+
+        /// <summary>
+        /// Gets a list of descriptors that represent <see cref="IViewEngine"/> used by this application.
+        /// </summary>
+        public List<ViewEngineDescriptor> ViewEngines { get; private set; }
 
         public List<IReflectedApplicationModelConvention> ApplicationModelConventions { get; private set; }
     }
