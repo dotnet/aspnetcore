@@ -9,7 +9,12 @@ namespace Microsoft.AspNet.Builder
     {
         public static IBuilder UseWebSockets(this IBuilder builder)
         {
-            return builder.Use(next => new WebSocketMiddleware(next).Invoke);
+            return builder.UseWebSockets(new WebSocketOptions());
+        }
+
+        public static IBuilder UseWebSockets(this IBuilder builder, WebSocketOptions options) // TODO: [NotNull]
+        {
+            return builder.Use(next => new WebSocketMiddleware(next, options).Invoke);
         }
     }
 }

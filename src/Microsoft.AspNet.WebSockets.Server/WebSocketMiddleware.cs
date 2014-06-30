@@ -15,21 +15,27 @@ namespace Microsoft.AspNet.WebSockets.Server
 {
     public class WebSocketMiddleware
     {
-        private RequestDelegate _next;
+        private readonly RequestDelegate _next;
+        private readonly WebSocketOptions _options;
 
-        public WebSocketMiddleware(RequestDelegate next)
+        public WebSocketMiddleware(RequestDelegate next, WebSocketOptions options)
         {
             _next = next;
+            _options = options;
+
+            // TODO: validate options.
         }
 
         public Task Invoke(HttpContext context)
         {
-            // Detect if an opaque upgrade is available, and if websocket upgrade headers are present.
-            // If so, add a websocket upgrade.
+            // Detect if an opaque upgrade is available. If so, add a websocket upgrade.
             var upgradeFeature = context.GetFeature<IHttpOpaqueUpgradeFeature>();
             if (upgradeFeature != null)
             {
-                context.SetFeature<IHttpWebSocketFeature>(new UpgradeHandshake(context, upgradeFeature));
+                if (_options.ReplaceFeature || context.GetFeature<IHttpWebSocketFeature>() == null)
+                {
+                    context.SetFeature<IHttpWebSocketFeature>(new UpgradeHandshake(context, upgradeFeature, _options));
+                }
             }
 
             return _next(context);
@@ -37,13 +43,15 @@ namespace Microsoft.AspNet.WebSockets.Server
 
         private class UpgradeHandshake : IHttpWebSocketFeature
         {
-            private HttpContext _context;
-            private IHttpOpaqueUpgradeFeature _upgradeFeature;
+            private readonly HttpContext _context;
+            private readonly IHttpOpaqueUpgradeFeature _upgradeFeature;
+            private readonly WebSocketOptions _options;
 
-            public UpgradeHandshake(HttpContext context, IHttpOpaqueUpgradeFeature upgradeFeature)
+            public UpgradeHandshake(HttpContext context, IHttpOpaqueUpgradeFeature upgradeFeature, WebSocketOptions options)
             {
                 _context = context;
                 _upgradeFeature = upgradeFeature;
+                _options = options;
             }
 
             public bool IsWebSocketRequest
@@ -70,7 +78,7 @@ namespace Microsoft.AspNet.WebSockets.Server
             {
                 if (!IsWebSocketRequest)
                 {
-                    throw new InvalidOperationException("Not a WebSocket request.");
+                    throw new InvalidOperationException("Not a WebSocket request."); // TODO: LOC
                 }
                 
                 string subProtocol = null;
@@ -79,8 +87,8 @@ namespace Microsoft.AspNet.WebSockets.Server
                     subProtocol = acceptContext.SubProtocol;
                 }
 
-                TimeSpan keepAliveInterval = TimeSpan.FromMinutes(2); // TODO:
-                int receiveBufferSize = 4 * 1024; // TODO:
+                TimeSpan keepAliveInterval = _options.KeepAliveInterval;
+                int receiveBufferSize = _options.ReceiveBufferSize;
                 var advancedAcceptContext = acceptContext as WebSocketAcceptContext;
                 if (advancedAcceptContext != null)
                 {
@@ -105,14 +113,6 @@ namespace Microsoft.AspNet.WebSockets.Server
 
                 return CommonWebSocket.CreateServerWebSocket(opaqueTransport, subProtocol, keepAliveInterval, receiveBufferSize);
             }
-        }
-
-        public class WebSocketAcceptContext : IWebSocketAcceptContext
-        {
-            public string SubProtocol { get; set; }
-            public int? ReceiveBufferSize { get; set; }
-            public TimeSpan? KeepAliveInterval { get; set; }
-            // public ArraySegment<byte>? Buffer { get; set; } // TODO
         }
     }
 }
