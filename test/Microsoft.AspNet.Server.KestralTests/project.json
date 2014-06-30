@@ -2,8 +2,6 @@
     "version": "1.0.0-*",
     "dependencies": {
         "Xunit.KRunner": "1.0.0-*",
-        "xunit.assert": "2.0.0-*",
-        "xunit.abstractions": "2.0.0-*",
         "Microsoft.AspNet.Server.Kestrel": "1.0.0-*"
     },
     "configurations": {
