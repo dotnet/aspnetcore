@@ -141,6 +141,10 @@ namespace Microsoft.AspNet.Security.Infrastructure
                 {
                     context.Authenticated(ticket.Identity, ticket.Properties.Dictionary, BaseOptions.Description.Dictionary);
                 }
+                else
+                {
+                    context.NotAuthenticated(BaseOptions.AuthenticationType, properties: null, description: BaseOptions.Description.Dictionary);
+                }
             }
 
             if (PriorHandler != null)
