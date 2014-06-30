@@ -234,11 +234,7 @@ namespace Microsoft.AspNet.Owin
             set { Prop(OwinConstants.Security.User, value); }
         }
 
-        IAuthenticationHandler IHttpAuthenticationFeature.Handler
-        {
-            get { throw new NotImplementedException(); }
-            set { throw new NotImplementedException(); }
-        }
+        IAuthenticationHandler IHttpAuthenticationFeature.Handler { get; set; }
 
         public int Revision
         {
