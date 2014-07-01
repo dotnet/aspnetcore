@@ -422,7 +422,6 @@ namespace Microsoft.AspNet.Server.WebListener
             set { _user = value; }
         }
 
-        // TODO: Hook this server up as the default handler, have it issue challenges for configured auth types by name.
         IAuthenticationHandler IHttpAuthenticationFeature.Handler
         {
             get { return _authHandler; }

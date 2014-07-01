@@ -32,6 +32,7 @@ using System.Security.Cryptography.X509Certificates;
 #if NET45
 using System.Security.Principal;
 #endif
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Net.Server
