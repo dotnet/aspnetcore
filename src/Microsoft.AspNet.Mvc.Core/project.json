@@ -41,7 +41,7 @@
         "System.Runtime.InteropServices": "4.0.20.0",
         "System.Security.Claims": "1.0.0-*",
         "System.Security.Cryptography": "4.0.0.0",
-        "System.Security.Cryptography.HashAlgorithms.SHA2": "4.0.0.0",
+        "System.Security.Cryptography.Hashing.Algorithms": "4.0.0.0",
         "System.Security.Principal": "4.0.0.0",
         "System.Text.Encoding": "4.0.20.0",
         "System.Threading": "4.0.0.0",
