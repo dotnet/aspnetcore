@@ -155,7 +155,7 @@ namespace Microsoft.AspNet.Owin
 
         private class MoqHttpRequestLifetimeFeature : IHttpRequestLifetimeFeature
         {
-            public CancellationToken OnRequestAborted { get; private set; }
+            public CancellationToken RequestAborted { get; private set; }
 
             public void Abort()
             {

@@ -109,14 +109,14 @@ namespace Microsoft.AspNet.PipelineCore
 
         public int Revision { get { return _features.Revision; } }
 
-        public override CancellationToken OnRequestAborted
+        public override CancellationToken RequestAborted
         {
             get
             {
                 var lifetime = LifetimeFeature;
                 if (lifetime != null)
                 {
-                    return lifetime.OnRequestAborted;
+                    return lifetime.RequestAborted;
                 }
                 return CancellationToken.None;
             }

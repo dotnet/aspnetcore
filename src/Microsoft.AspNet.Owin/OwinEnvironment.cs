@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Owin
             _context = context;
             _entries = new Dictionary<string, FeatureMap>()
             {
-                { OwinConstants.CallCancelled, new FeatureMap<IHttpRequestLifetimeFeature>(feature => feature.OnRequestAborted) },
+                { OwinConstants.CallCancelled, new FeatureMap<IHttpRequestLifetimeFeature>(feature => feature.RequestAborted) },
                 { OwinConstants.RequestProtocol, new FeatureMap<IHttpRequestFeature>(feature => feature.Protocol, (feature, value) => feature.Protocol = Convert.ToString(value)) },
                 { OwinConstants.RequestScheme, new FeatureMap<IHttpRequestFeature>(feature => feature.Scheme, (feature, value) => feature.Scheme = Convert.ToString(value)) },
                 { OwinConstants.RequestMethod, new FeatureMap<IHttpRequestFeature>(feature => feature.Method, (feature, value) => feature.Method = Convert.ToString(value)) },

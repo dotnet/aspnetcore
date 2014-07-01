@@ -218,7 +218,7 @@ namespace Microsoft.AspNet.Owin
             return Prop<X509Certificate>(OwinConstants.CommonKeys.ClientCertificate);
         }
 
-        CancellationToken IHttpRequestLifetimeFeature.OnRequestAborted
+        CancellationToken IHttpRequestLifetimeFeature.RequestAborted
         {
             get { return Prop<CancellationToken>(OwinConstants.CallCancelled); }
         }

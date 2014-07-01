@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Http
 
         public abstract IServiceProvider RequestServices { get; set; }
 
-        public abstract CancellationToken OnRequestAborted { get; }
+        public abstract CancellationToken RequestAborted { get; }
 
         public abstract bool IsWebSocketRequest { get; }
 
