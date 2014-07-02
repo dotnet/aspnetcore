@@ -370,7 +370,7 @@ namespace Microsoft.AspNet.Server.WebListener
             return Response.SendFileAsync(path, offset, length, cancellation);
         }
 
-        CancellationToken IHttpRequestLifetimeFeature.OnRequestAborted
+        CancellationToken IHttpRequestLifetimeFeature.RequestAborted
         {
             get { return _requestContext.DisconnectToken; }
         }

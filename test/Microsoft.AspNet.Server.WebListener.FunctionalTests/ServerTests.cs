@@ -194,7 +194,7 @@ namespace Microsoft.AspNet.Server.WebListener
             using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
-                CancellationToken ct = httpContext.OnRequestAborted;
+                CancellationToken ct = httpContext.RequestAborted;
                 Assert.True(ct.CanBeCanceled, "CanBeCanceled");
                 Assert.False(ct.IsCancellationRequested, "IsCancellationRequested");
                 ct.Register(() => canceled.Set());
@@ -228,7 +228,7 @@ namespace Microsoft.AspNet.Server.WebListener
             using (Utilities.CreateHttpServer(env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
-                CancellationToken ct = httpContext.OnRequestAborted;
+                CancellationToken ct = httpContext.RequestAborted;
                 Assert.True(ct.CanBeCanceled, "CanBeCanceled");
                 Assert.False(ct.IsCancellationRequested, "IsCancellationRequested");
                 ct.Register(() => canceled.Set());
