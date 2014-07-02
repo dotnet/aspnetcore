@@ -46,18 +46,21 @@ default Configuration='Release'
   var nativeProjects ='${Files.Include(Path.Combine(BASE_DIR, "src", "**", "*.vcxproj"))}'
 
   @{
-      if(!File.Exists(msbuild))
+      if (nativeProjects.Any())
       {
-          Log.Warn("msbuild version 12 not found. Please ensure you have the VS 2013 C++ SDK installed.");
-          Environment.Exit(1);
-      }
-      else
-      {
-          foreach (var project in nativeProjects)
-          {
-              Exec(msbuild, project + " /p:Configuration=" + Configuration + ";Platform=Win32");
-              Exec(msbuild, project + " /p:Configuration=" + Configuration + ";Platform=x64");
-          }
+        if (!File.Exists(msbuild))
+        {
+            Log.Warn("msbuild version 12 not found. Please ensure you have the VS 2013 C++ SDK installed.");
+            Environment.Exit(1);
+        }
+        else
+        {
+            foreach (var project in nativeProjects)
+            {
+                Exec(msbuild, project + " /p:Configuration=" + Configuration + ";Platform=Win32");
+                Exec(msbuild, project + " /p:Configuration=" + Configuration + ";Platform=x64");
+            }
+        }
       }
   }
 
