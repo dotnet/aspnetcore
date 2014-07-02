@@ -319,14 +319,14 @@ namespace Microsoft.AspNet.StaticFiles
             var sendFile = _context.GetFeature<IHttpSendFileFeature>();
             if (sendFile != null && !string.IsNullOrEmpty(physicalPath))
             {
-                await sendFile.SendFileAsync(physicalPath, 0, _length, _context.OnRequestAborted);
+                await sendFile.SendFileAsync(physicalPath, 0, _length, _context.RequestAborted);
                 return;
             }
 
             Stream readStream = _fileInfo.CreateReadStream();
             try
             {
-                await StreamCopyOperation.CopyToAsync(readStream, _response.Body, _length, _context.OnRequestAborted);
+                await StreamCopyOperation.CopyToAsync(readStream, _response.Body, _length, _context.RequestAborted);
             }
             finally
             {
@@ -365,7 +365,7 @@ namespace Microsoft.AspNet.StaticFiles
             var sendFile = _context.GetFeature<IHttpSendFileFeature>();
             if (sendFile != null && !string.IsNullOrEmpty(physicalPath))
             {
-                await sendFile.SendFileAsync(physicalPath, start, length, _context.OnRequestAborted);
+                await sendFile.SendFileAsync(physicalPath, start, length, _context.RequestAborted);
                 return;
             }
 
@@ -373,7 +373,7 @@ namespace Microsoft.AspNet.StaticFiles
             try
             {
                 readStream.Seek(start, SeekOrigin.Begin); // TODO: What if !CanSeek?
-                await StreamCopyOperation.CopyToAsync(readStream, _response.Body, length, _context.OnRequestAborted);
+                await StreamCopyOperation.CopyToAsync(readStream, _response.Body, length, _context.RequestAborted);
             }
             finally
             {
