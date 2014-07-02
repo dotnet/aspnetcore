@@ -40,6 +40,7 @@
     <Compile Include="Constraints\AlphaRouteConstraintTests.cs" />
     <Compile Include="Constraints\RegexConstraintTests.cs" />
     <Compile Include="Constraints\IntRouteConstraintsTests.cs" />
+    <Compile Include="Constraints\RequiredRouteConstraintTests.cs" />
     <Compile Include="DefaultInlineConstraintResolverTest.cs" />
     <Compile Include="RouteCollectionTest.cs" />
     <Compile Include="InlineRouteParameterParserTests.cs" />

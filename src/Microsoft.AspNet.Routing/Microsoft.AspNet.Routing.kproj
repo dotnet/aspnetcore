@@ -41,6 +41,7 @@
     <Compile Include="Constraints\BoolRouteConstraint.cs" />
     <Compile Include="Constraints\IntRouteConstraint.cs" />
     <Compile Include="Constraints\RegexRouteConstraint.cs" />
+    <Compile Include="Constraints\RequiredRouteConstraint.cs" />
     <Compile Include="DefaultInlineConstraintResolver.cs" />
     <Compile Include="IInlineConstraintResolver.cs" />
     <Compile Include="INamedRouter.cs" />

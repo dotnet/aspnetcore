@@ -20,6 +20,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <DevelopmentServerPort>28778</DevelopmentServerPort>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DevelopmentServerPort>22209</DevelopmentServerPort>
+  </PropertyGroup>
   <ItemGroup>
     <Content Include="project.json" />
     <Content Include="web.config" />
