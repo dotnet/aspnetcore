@@ -62,6 +62,8 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Scoped<IActionBindingContextProvider, DefaultActionBindingContextProvider>();
 
             yield return describe.Transient<IInputFormatter, JsonInputFormatter>();
+            yield return describe.Transient<IInputFormatter, XmlSerializerInputFormatter>();
+            yield return describe.Transient<IInputFormatter, XmlDataContractSerializerInputFormatter>();
             yield return describe.Transient<IInputFormatterProvider, TempInputFormatterProvider>();
 
             yield return describe.Transient<IModelBinderProvider, DefaultModelBindersProvider>();

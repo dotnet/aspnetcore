@@ -40,12 +40,16 @@
     <Compile Include="Binders\MutableObjectModelBinder.cs" />
     <Compile Include="Binders\TypeConverterModelBinder.cs" />
     <Compile Include="Binders\TypeMatchModelBinder.cs" />
+    <Compile Include="Formatters\XmlDataContractSerializerInputFormatter.cs" />
+    <Compile Include="Formatters\DelegatingStream.cs" />
+    <Compile Include="Formatters\FormattingUtilities.cs" />
     <Compile Include="Formatters\IInputFormatter.cs" />
     <Compile Include="Formatters\IInputFormatterProvider.cs" />
     <Compile Include="Formatters\InputFormatterContext.cs" />
     <Compile Include="Formatters\InputFormatterProviderContext.cs" />
     <Compile Include="Formatters\JsonInputFormatter.cs" />
     <Compile Include="Formatters\TempInputFormatterProvider.cs" />
+    <Compile Include="Formatters\XmlSerializerInputFormatter.cs" />
     <Compile Include="Internal\CollectionExtensions.cs" />
     <Compile Include="Internal\CollectionModelBinderUtil.cs" />
     <Compile Include="Internal\ContentTypeHeaderValue.cs" />

@@ -10,6 +10,7 @@
     "Microsoft.AspNet.Testing": "1.0.0-*",
     "Microsoft.DataAnnotations" : "1.0.0-*",
     "Microsoft.Framework.DependencyInjection": "1.0.0-*",
+    "Moq": "4.2.1312.1622",
     "Newtonsoft.Json": "5.0.8",
     "Xunit.KRunner": "1.0.0-*"
   },
@@ -17,9 +18,8 @@
     "test": "Xunit.KRunner"
   },
   "frameworks": {
-    "net45": { 
-      dependencies: {
-        "Moq": "4.2.1312.1622",
+    "net45": {
+      "dependencies": {
         "System.ComponentModel.DataAnnotations": "",
         "System.Reflection": "",
         "System.Runtime": "",
@@ -27,7 +27,7 @@
       }
     },
     "k10" : { 
-      dependencies: {
+      "dependencies": {
         "System.Collections": "4.0.10.0",
         "System.ComponentModel": "4.0.0.0",
         "System.Globalization": "4.0.10.0",

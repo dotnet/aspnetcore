@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc
             _settings = settings;
             _indent = indent;
             SupportedEncodings.Add(Encodings.UTF8EncodingWithoutBOM);
-            SupportedEncodings.Add(Encodings.UnicodeEncodingWithBOM);
+            SupportedEncodings.Add(Encodings.UTF16EncodingLittleEndian);
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/json"));
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/json"));
         }

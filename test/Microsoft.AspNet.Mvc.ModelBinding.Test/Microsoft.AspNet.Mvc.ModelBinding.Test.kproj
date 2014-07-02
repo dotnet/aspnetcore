@@ -32,7 +32,10 @@
     <Compile Include="Binders\ModelBindingContextTest.cs" />
     <Compile Include="Binders\MutableObjectModelBinderTest.cs" />
     <Compile Include="Binders\TypeConverterModelBinderTest.cs" />
+    <Compile Include="Formatters\XmlDataContractSerializerInputFormatterTests.cs" />
+    <Compile Include="Formatters\DelegatingStreamTests.cs" />
     <Compile Include="Formatters\JsonInputFormatterTest.cs" />
+    <Compile Include="Formatters\XmlSerializerInputFormatterTests.cs" />
     <Compile Include="Internal\TypeExtensionTests.cs" />
     <Compile Include="Metadata\AssociatedMetadataProviderTest.cs" />
     <Compile Include="Metadata\CachedDataAnnotationsMetadataAttributesTest.cs" />
