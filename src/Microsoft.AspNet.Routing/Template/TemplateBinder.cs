@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Routing.Template
         }
 
         // Step 1: Get the list of values we're going to try to use to match and generate this URI
-        public IDictionary<string, object> GetAcceptedValues(IDictionary<string, object> ambientValues,
+        public TemplateValuesResult GetValues(IDictionary<string, object> ambientValues,
                                                              IDictionary<string, object> values)
         {
             var context = new TemplateBindingContext(_defaults, values);
@@ -145,7 +145,29 @@ namespace Microsoft.AspNet.Routing.Template
                 }
             }
 
-            return context.AcceptedValues;
+            // Add any ambient values that don't match parameters - they need to be visible to constraints
+            // but they will ignored by link generation.
+            var combinedValues = new Dictionary<string, object>(context.AcceptedValues, StringComparer.OrdinalIgnoreCase);
+            if (ambientValues != null)
+            {
+                foreach (var kvp in ambientValues)
+                {
+                    if (IsRoutePartNonEmpty(kvp.Value))
+                    {
+                        var parameter = GetParameter(kvp.Key);
+                        if (parameter == null && !context.AcceptedValues.ContainsKey(kvp.Key))
+                        {
+                            combinedValues.Add(kvp.Key, kvp.Value);
+                        }
+                    }
+                }
+            }
+
+            return new TemplateValuesResult()
+            {
+                AcceptedValues = context.AcceptedValues,
+                CombinedValues = combinedValues,
+            };
         }
 
         // Step 2: If the route is a match generate the appropriate URI

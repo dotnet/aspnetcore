@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Routing.Template
 
         public string GetVirtualPath(VirtualPathContext context)
         {
-            var values = _binder.GetAcceptedValues(context.AmbientValues, context.Values);
+            var values = _binder.GetValues(context.AmbientValues, context.Values);
             if (values == null)
             {
                 // We're missing one of the required values for this route.
@@ -111,7 +111,7 @@ namespace Microsoft.AspNet.Routing.Template
             }
 
             if (!RouteConstraintMatcher.Match(Constraints,
-                                              values,
+                                              values.CombinedValues,
                                               context.Context,
                                               this,
                                               RouteDirection.UrlGeneration))
@@ -120,7 +120,7 @@ namespace Microsoft.AspNet.Routing.Template
             }
 
             // Validate that the target can accept these values.
-            var childContext = CreateChildVirtualPathContext(context, values);
+            var childContext = CreateChildVirtualPathContext(context, values.AcceptedValues);
             var path = _target.GetVirtualPath(childContext);
             if (path != null)
             {
@@ -134,7 +134,7 @@ namespace Microsoft.AspNet.Routing.Template
                 return null;
             }
 
-            path = _binder.BindValues(values);
+            path = _binder.BindValues(values.AcceptedValues);
             if (path != null)
             {
                 context.IsBound = true;

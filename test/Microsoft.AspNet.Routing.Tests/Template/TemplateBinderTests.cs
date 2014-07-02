@@ -138,8 +138,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                                             defaults);
 
             // Act & Assert
-            var acceptedValues = binder.GetAcceptedValues(null, values);
-            if (acceptedValues == null)
+            var result = binder.GetValues(ambientValues: null, values: values);
+            if (result == null)
             {
                 if (expected == null)
                 {
@@ -147,11 +147,11 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                 }
                 else
                 {
-                    Assert.NotNull(acceptedValues);
+                    Assert.NotNull(result);
                 }
             }
 
-            var boundTemplate = binder.BindValues(acceptedValues);
+            var boundTemplate = binder.BindValues(result.AcceptedValues);
             if (expected == null)
             {
                 Assert.Null(boundTemplate);
@@ -971,8 +971,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var binder = new TemplateBinder(TemplateParser.Parse(template, _inlineConstraintResolver), defaults);
 
             // Act & Assert
-            var acceptedValues = binder.GetAcceptedValues(ambientValues, values);
-            if (acceptedValues == null)
+            var result = binder.GetValues(ambientValues, values);
+            if (result == null)
             {
                 if (expected == null)
                 {
@@ -980,11 +980,11 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                 }
                 else
                 {
-                    Assert.NotNull(acceptedValues);
+                    Assert.NotNull(result);
                 }
             }
 
-            var boundTemplate = binder.BindValues(acceptedValues);
+            var boundTemplate = binder.BindValues(result.AcceptedValues);
             if (expected == null)
             {
                 Assert.Null(boundTemplate);

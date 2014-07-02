@@ -364,6 +364,117 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             Assert.Equal(expectedValues, childContext.ProvidedValues);
         }
 
+        // Any ambient values from the current request should be visible to constraint, even
+        // if they have nothing to do with the route generating a link
+        [Fact]
+        public void GetVirtualPath_ConstraintsSeeAmbientValues()
+        {
+            // Arrange
+            var constraint = new CapturingConstraint();
+            var route = CreateRoute(
+                template: "slug/{controller}/{action}",
+                defaults: null,
+                accept: true,
+                constraints: new { c = constraint });
+
+            var context = CreateVirtualPathContext(
+                values: new { action = "Store" }, 
+                ambientValues: new { Controller = "Home", action = "Blog", extra = "42" });
+
+            var expectedValues = new RouteValueDictionary(
+                new { controller = "Home", action = "Store", extra = "42" });
+
+            // Act
+            var path = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal("slug/Home/Store", path);
+            Assert.Equal(expectedValues, constraint.Values);
+        }
+
+        // Non-parameter default values from the routing generating a link are not in the 'values'
+        // collection when constraints are processed.
+        [Fact]
+        public void GetVirtualPath_ConstraintsDontSeeDefaults_WhenTheyArentParameters()
+        {
+            // Arrange
+            var constraint = new CapturingConstraint();
+            var route = CreateRoute(
+                template: "slug/{controller}/{action}",
+                defaults: new { otherthing = "17" },
+                accept: true,
+                constraints: new { c = constraint });
+
+            var context = CreateVirtualPathContext(
+                values: new { action = "Store" },
+                ambientValues: new { Controller = "Home", action = "Blog" });
+
+            var expectedValues = new RouteValueDictionary(
+                new { controller = "Home", action = "Store" });
+
+            // Act
+            var path = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal("slug/Home/Store", path);
+            Assert.Equal(expectedValues, constraint.Values);
+        }
+
+        // Default values are visible to the constraint when they are used to fill a parameter.
+        [Fact]
+        public void GetVirtualPath_ConstraintsSeesDefault_WhenThereItsAParamter()
+        {
+            // Arrange
+            var constraint = new CapturingConstraint();
+            var route = CreateRoute(
+                template: "slug/{controller}/{action}",
+                defaults: new { action = "Index" },
+                accept: true,
+                constraints: new { c = constraint });
+
+            var context = CreateVirtualPathContext(
+                values: new { controller = "Shopping" },
+                ambientValues: new { Controller = "Home", action = "Blog" });
+
+            var expectedValues = new RouteValueDictionary(
+                new { controller = "Shopping", action = "Index" });
+
+            // Act
+            var path = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal("slug/Shopping", path);
+            Assert.Equal(expectedValues, constraint.Values);
+        }
+
+        // Default values from the routing generating a link are in the 'values' collection when
+        // constraints are processed - IFF they are specified as values or ambient values.
+        [Fact]
+        public void GetVirtualPath_ConstraintsSeeDefaults_IfTheyAreSpecifiedOrAmbient()
+        {
+            // Arrange
+            var constraint = new CapturingConstraint();
+            var route = CreateRoute(
+                template: "slug/{controller}/{action}",
+                defaults: new { otherthing = "17", thirdthing = "13" },
+                accept: true,
+                constraints: new { c = constraint });
+
+            var context = CreateVirtualPathContext(
+                values: new { action = "Store", thirdthing = "13" },
+                ambientValues: new { Controller = "Home", action = "Blog", otherthing = "17" });
+
+            var expectedValues = new RouteValueDictionary(
+                new { controller = "Home", action = "Store", otherthing = "17", thirdthing = "13" });
+
+            // Act
+            var path = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal("slug/Home/Store", path);
+            Assert.Equal(expectedValues.OrderBy(kvp => kvp.Key), constraint.Values.OrderBy(kvp => kvp.Key));
+        }
+
         private static VirtualPathContext CreateVirtualPathContext(object values)
         {
             return CreateVirtualPathContext(new RouteValueDictionary(values), null);
@@ -520,12 +631,12 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             return new TemplateRoute(CreateTarget(accept), template, _inlineConstraintResolver);
         }
 
-        private static TemplateRoute CreateRoute(string template, object defaults, bool accept = true, IDictionary<string, object> constraints = null)
+        private static TemplateRoute CreateRoute(string template, object defaults, bool accept = true, object constraints = null)
         {
             return new TemplateRoute(CreateTarget(accept),
                                      template,
                                      new RouteValueDictionary(defaults),
-                                     constraints,
+                                     (constraints as IDictionary<string, object>) ?? new RouteValueDictionary(constraints),
                                      _inlineConstraintResolver);
         }
 
@@ -568,6 +679,22 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var resolverMock = new Mock<IInlineConstraintResolver>();
             resolverMock.Setup(o => o.ResolveConstraint("int")).Returns(new IntRouteConstraint());
             return resolverMock.Object;
+        }
+
+        private class CapturingConstraint : IRouteConstraint
+        {
+            public IDictionary<string, object> Values { get; private set; }
+
+            public bool Match(
+                HttpContext httpContext, 
+                IRouter route, 
+                string routeKey, 
+                IDictionary<string, object> values, 
+                RouteDirection routeDirection)
+            {
+                Values = new RouteValueDictionary(values);
+                return true;
+            }
         }
     }
 }

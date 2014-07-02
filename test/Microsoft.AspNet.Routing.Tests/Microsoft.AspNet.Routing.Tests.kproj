@@ -43,7 +43,6 @@
     <Compile Include="DefaultInlineConstraintResolverTest.cs" />
     <Compile Include="RouteCollectionTest.cs" />
     <Compile Include="InlineRouteParameterParserTests.cs" />
-    <Compile Include="DefaultValueTests.cs" />
     <Compile Include="RouteOptionsTests.cs" />
     <Compile Include="RouteValueDictionaryTests.cs" />
     <Compile Include="TemplateParserDefaultValuesTests.cs" />
