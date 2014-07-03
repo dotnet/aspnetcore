@@ -24,7 +24,7 @@
     <Compile Include="IHttpApplicationFeature.cs" />
     <Compile Include="IHttpBufferingFeature.cs" />
     <Compile Include="IHttpConnectionFeature.cs" />
-    <Compile Include="IHttpOpaqueUpgradeFeature.cs" />
+    <Compile Include="IHttpUpgradeFeature.cs" />
     <Compile Include="IHttpRequestFeature.cs" />
     <Compile Include="IHttpRequestLifetimeFeature.cs" />
     <Compile Include="IHttpResponseFeature.cs" />
