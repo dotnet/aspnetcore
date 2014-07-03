@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Kestrel
 {
-    public class ServerRequest : IHttpRequestFeature, IHttpResponseFeature, IHttpOpaqueUpgradeFeature
+    public class ServerRequest : IHttpRequestFeature, IHttpResponseFeature, IHttpUpgradeFeature
     {
         Frame _frame;
         string _scheme;
@@ -180,7 +180,7 @@ namespace Kestrel
             _frame.OnSendingHeaders(callback, state);
         }
 
-        bool IHttpOpaqueUpgradeFeature.IsUpgradableRequest
+        bool IHttpUpgradeFeature.IsUpgradableRequest
         {
             get
             {
@@ -193,7 +193,7 @@ namespace Kestrel
             }
         }
 
-        async Task<Stream> IHttpOpaqueUpgradeFeature.UpgradeAsync()
+        async Task<Stream> IHttpUpgradeFeature.UpgradeAsync()
         {
             _frame.StatusCode = 101;
             _frame.ReasonPhrase = "Switching Protocols";
