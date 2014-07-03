@@ -44,13 +44,7 @@ namespace MusicStore.Controllers
                 }
                 else
                 {
-                    // TODO [EF] Swap to store generated identity key when supported
-                    var nextId = db.Orders.Any()
-                        ? db.Orders.Max(o => o.OrderId) + 1
-                        : 1;
-
-                    order.OrderId = nextId;
-                    order.Username = this.Context.User.Identity.GetUserName();
+                    order.Username = Context.User.Identity.GetUserName();
                     order.OrderDate = DateTime.Now;
 
                     //Add the Order
@@ -82,7 +76,7 @@ namespace MusicStore.Controllers
             // Validate customer owns this order
             bool isValid = db.Orders.Any(
                 o => o.OrderId == id &&
-                o.Username == this.Context.User.Identity.GetUserName());
+                o.Username == Context.User.Identity.GetUserName());
 
             if (isValid)
             {

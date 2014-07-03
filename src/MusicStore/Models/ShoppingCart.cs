@@ -32,15 +32,9 @@ namespace MusicStore.Models
 
             if (cartItem == null)
             {
-                // TODO [EF] Swap to store generated key once we support identity pattern
-                var nextCartItemId = _db.CartItems.Any()
-                    ? _db.CartItems.Max(c => c.CartItemId) + 1
-                    : 1;
-
                 // Create a new cart item if no cart item exists
                 cartItem = new CartItem
                 {
-                    CartItemId = nextCartItemId,
                     AlbumId = album.AlbumId,
                     CartId = ShoppingCartId,
                     Count = 1,
@@ -53,9 +47,6 @@ namespace MusicStore.Models
             {
                 // If the item does exist in the cart, then add one to the quantity
                 cartItem.Count++;
-
-                // TODO [EF] Remove this line once change detection is available
-                _db.ChangeTracker.Entry(cartItem).State = EntityState.Modified;
             }
         }
 
@@ -73,10 +64,6 @@ namespace MusicStore.Models
                 if (cartItem.Count > 1)
                 {
                     cartItem.Count--;
-
-                    // TODO [EF] Remove this line once change detection is available
-                    _db.ChangeTracker.Entry(cartItem).State = EntityState.Modified;
-
                     itemCount = cartItem.Count;
                 }
                 else
@@ -91,12 +78,7 @@ namespace MusicStore.Models
         public void EmptyCart()
         {
             var cartItems = _db.CartItems.Where(cart => cart.CartId == ShoppingCartId);
-
-            foreach (var cartItem in cartItems)
-            {
-                // TODO [EF] Change to DbSet.Remove once querying attaches instances
-                _db.ChangeTracker.Entry(cartItem).State = EntityState.Deleted;
-            }
+            _db.CartItems.RemoveRange(cartItems);
         }
 
         public List<CartItem> GetCartItems()
@@ -145,11 +127,6 @@ namespace MusicStore.Models
 
             var cartItems = GetCartItems();
 
-            // TODO [EF] Swap to store generated identity key when supported
-            var nextId = _db.OrderDetails.Any()
-                ? _db.OrderDetails.Max(o => o.OrderDetailId) + 1
-                : 1;
-
             // Iterate over the items in the cart, adding the order details for each
             foreach (var item in cartItems)
             {
@@ -158,7 +135,6 @@ namespace MusicStore.Models
 
                 var orderDetail = new OrderDetail
                 {
-                    OrderDetailId = nextId,
                     AlbumId = item.AlbumId,
                     OrderId = order.OrderId,
                     UnitPrice = album.Price,
@@ -169,8 +145,6 @@ namespace MusicStore.Models
                 orderTotal += (item.Count * album.Price);
 
                 _db.OrderDetails.Add(orderDetail);
-
-                nextId++;
             }
 
             // Set the order's total to the orderTotal count

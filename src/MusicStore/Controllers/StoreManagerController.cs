@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.Data.Entity;
 using MusicStore.Models;
@@ -66,12 +65,6 @@ namespace MusicStore.Controllers
         {
             if (ModelState.IsValid)
             {
-                // TODO [EF] Swap to store generated identity key when supported
-                var nextId = db.Albums.Any()
-                    ? db.Albums.Max(o => o.AlbumId) + 1
-                    : 1;
-
-                album.AlbumId = nextId;
                 db.Albums.Add(album);
                 db.SaveChanges();
                 return RedirectToAction("Index");
@@ -92,6 +85,7 @@ namespace MusicStore.Controllers
             {
                 return new HttpStatusCodeResult(404);
             }
+
             ViewBag.GenreId = new SelectList(db.Genres, "GenreId", "Name", album.GenreId);
             ViewBag.ArtistId = new SelectList(db.Artists, "ArtistId", "Name", album.ArtistId);
             return View(album);
@@ -108,6 +102,7 @@ namespace MusicStore.Controllers
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
+
             ViewBag.GenreId = new SelectList(db.Genres, "GenreId", "Name", album.GenreId);
             ViewBag.ArtistId = new SelectList(db.Artists, "ArtistId", "Name", album.ArtistId);
             return View(album);
