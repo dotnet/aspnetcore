@@ -54,6 +54,9 @@ namespace E2ETests
                 Console.WriteLine("[Time]: Approximate time taken for application initialization : '{0}' seconds", (initializationCompleteTime - testStartTime).TotalSeconds);
                 VerifyHomePage(response, responseContent);
 
+                //Verify the static file middleware can serve static content
+                VerifyStaticContentServed();
+
                 //Making a request to a protected resource should automatically redirect to login page
                 AccessStoreWithoutPermissions();
 
@@ -139,6 +142,19 @@ namespace E2ETests
                 DbUtils.DropDatabase(musicStoreDbName);
                 DbUtils.DropDatabase(musicStoreIdentityDbName);
             }
+        }
+
+        private void VerifyStaticContentServed()
+        {
+            Console.WriteLine("Validating if static contents are served..");
+            Console.WriteLine("Fetching favicon.ico..");
+            var response = httpClient.GetAsync("/favicon.ico").Result;
+            ThrowIfResponseStatusNotOk(response);
+
+            Console.WriteLine("Fetching /Content/bootstrap.css..");
+            response = httpClient.GetAsync("/Content/bootstrap.css").Result;
+            ThrowIfResponseStatusNotOk(response);
+            Console.WriteLine("Verified static contents are served successfully");
         }
 
         private void VerifyHomePage(HttpResponseMessage response, string responseContent)
