@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Server.WebListener
         private AuthenticationTypes _customChallenges;
 
         internal AuthenticationHandler(RequestContext requestContext)
-	    {
+        {
             _requestContext = requestContext;
             _authTypes = requestContext.AuthenticationChallenges;
             _customChallenges = AuthenticationTypes.None;
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Server.WebListener
             {
                 var authString = authType.ToString();
                 // Not including any auth types means it's a blanket challenge for any auth type.
-                if (context.AuthenticationTypes == null || context.AuthenticationTypes.Count == 0
+                if (context.AuthenticationTypes == null || !context.AuthenticationTypes.Any()
                     || context.AuthenticationTypes.Contains(authString, StringComparer.Ordinal))
                 {
                     _customChallenges |= authType;
