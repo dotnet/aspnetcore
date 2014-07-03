@@ -109,8 +109,8 @@ namespace MusicStore.Controllers
         }
 
         //
-        // GET: /StoreManager/Delete/5
-        public IActionResult Delete(int id = 0)
+        // GET: /StoreManager/RemoveAlbum/5
+        public IActionResult RemoveAlbum(int id = 0)
         {
             Album album = db.Albums.Single(a => a.AlbumId == id);
             if (album == null)
@@ -121,13 +121,12 @@ namespace MusicStore.Controllers
         }
 
         //
-        // POST: /StoreManager/Delete/5
-        [HttpPost, ActionName("Delete")]
-        public IActionResult DeleteConfirmed(int id)
+        // POST: /StoreManager/RemoveAlbum/5
+        [HttpPost, ActionName("RemoveAlbum")]
+        public IActionResult RemoveAlbumConfirmed(int id)
         {
             Album album = db.Albums.Single(a => a.AlbumId == id);
-            // TODO [EF] Replace with DbSet.Remove when querying attaches instances
-            db.ChangeTracker.Entry(album).State = EntityState.Deleted;
+            db.Albums.Remove(album);
             db.SaveChanges();
             return RedirectToAction("Index");
         }
@@ -136,10 +135,16 @@ namespace MusicStore.Controllers
         // GET: /StoreManager/GetAlbumIdFromName
         // Note: Added for automated testing purpose. Application does not use this.
         [HttpGet]
-        public int GetAlbumIdFromName(string albumName)
+        public IActionResult GetAlbumIdFromName(string albumName)
         {
-            var album = db.Albums.Single(a => a.Title == albumName);
-            return album.AlbumId;
+            var album = db.Albums.Where(a => a.Title == albumName).FirstOrDefault();
+
+            if (album == null)
+            {
+                return new HttpStatusCodeResult(404);
+            }
+
+            return new ContentResult { Content = album.AlbumId.ToString(), ContentType = "text/plain" };
         }
     }
 }

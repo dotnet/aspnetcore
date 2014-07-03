@@ -15,6 +15,7 @@
 
 @using (Html.BeginForm())
 {
+    @Html.AntiForgeryToken()
     <h2>Address And Payment</h2>
     <fieldset>
         <legend>Shipping Information</legend>

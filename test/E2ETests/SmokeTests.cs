@@ -105,6 +105,13 @@ namespace E2ETests
                 //Get details of the album
                 VerifyAlbumDetails(albumId, albumName);
 
+                //Add an album to cart and checkout the same
+                AddAlbumToCart(albumId, albumName);
+                CheckOutCartItems();
+
+                //Delete the album from store
+                DeleteAlbum(albumId, albumName);
+
                 //Logout from this user session - This should take back to the home page
                 SignOutUser("Administrator");
 
@@ -405,6 +412,65 @@ namespace E2ETests
             Assert.Contains("http://myapp/testurl", responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("<a href=\"/StoreManager/Edit/463\">Edit</a>", responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("<a href=\"/StoreManager\">Back to List</a>", responseContent, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private void AddAlbumToCart(string albumId, string albumName)
+        {
+            Console.WriteLine("Adding album id '{0}' to the cart", albumId);
+            var response = httpClient.GetAsync(string.Format("/ShoppingCart/AddToCart?id={0}", albumId)).Result;
+            ThrowIfResponseStatusNotOk(response);
+            var responseContent = response.Content.ReadAsStringAsync().Result;
+            Assert.Contains(albumName, responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("<span class=\"glyphicon glyphicon glyphicon-shopping-cart\"></span>", responseContent, StringComparison.OrdinalIgnoreCase);
+            Console.WriteLine("Verified that album is added to cart");
+        }
+
+        private void CheckOutCartItems()
+        {
+            Console.WriteLine("Checking out the cart contents...");
+            var response = httpClient.GetAsync("/Checkout/AddressAndPayment").Result;
+            ThrowIfResponseStatusNotOk(response);
+            var responseContent = response.Content.ReadAsStringAsync().Result;
+
+            var formParameters = new List<KeyValuePair<string, string>>
+                {
+                    new KeyValuePair<string, string>("__RequestVerificationToken", HtmlDOMHelper.RetrieveAntiForgeryToken(responseContent, "/Checkout/AddressAndPayment")),
+                    new KeyValuePair<string, string>("FirstName", "FirstNameValue"),
+                    new KeyValuePair<string, string>("LastName", "LastNameValue"),
+                    new KeyValuePair<string, string>("Address", "AddressValue"),
+                    new KeyValuePair<string, string>("City", "Redmond"),
+                    new KeyValuePair<string, string>("State", "WA"),
+                    new KeyValuePair<string, string>("PostalCode", "98052"),
+                    new KeyValuePair<string, string>("Country", "USA"),
+                    new KeyValuePair<string, string>("Phone", "PhoneValue"),
+                    new KeyValuePair<string, string>("Email", "email@email.com"),
+                    new KeyValuePair<string, string>("PromoCode", "FREE"),
+                };
+
+            var content = new FormUrlEncodedContent(formParameters.ToArray());
+            response = httpClient.PostAsync("/Checkout/AddressAndPayment", content).Result;
+            responseContent = response.Content.ReadAsStringAsync().Result;
+            Assert.Contains("<h2>Checkout Complete</h2>", responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.StartsWith(ApplicationBaseUrl + "Checkout/Complete/", response.RequestMessage.RequestUri.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private void DeleteAlbum(string albumId, string albumName)
+        {
+            Console.WriteLine("Deleting album '{0}' from the store..", albumName);
+
+            var formParameters = new List<KeyValuePair<string, string>>
+                {
+                    new KeyValuePair<string, string>("id", albumId)
+                };
+
+            var content = new FormUrlEncodedContent(formParameters.ToArray());
+            var response = httpClient.PostAsync("/StoreManager/RemoveAlbum", content).Result;
+            ThrowIfResponseStatusNotOk(response);
+
+            Console.WriteLine("Verifying if the album '{0}' is deleted from store", albumName);
+            response = httpClient.GetAsync(string.Format("/StoreManager/GetAlbumIdFromName?albumName={0}", albumName)).Result;
+            Assert.Equal<HttpStatusCode>(HttpStatusCode.NotFound, response.StatusCode);
+            Console.WriteLine("Album is successfully deleted from the store.", albumName, albumId);
         }
 
         private void ThrowIfResponseStatusNotOk(HttpResponseMessage response)

@@ -31,6 +31,7 @@ namespace MusicStore.Controllers
         // POST: /Checkout/AddressAndPayment
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddressAndPayment(Order order)
         {
             var formCollection = await Context.Request.GetFormAsync();
