@@ -16,12 +16,16 @@ namespace E2ETests
         private HttpClientHandler httpClientHandler;
 
         [Theory]
-        [InlineData(HostType.Helios, KreFlavor.DesktopClr, "http://localhost:5001/")]
-        [InlineData(HostType.SelfHost, KreFlavor.DesktopClr, "http://localhost:5002/")]
-        [InlineData(HostType.Helios, KreFlavor.CoreClr, "http://localhost:5001/")]
-        [InlineData(HostType.SelfHost, KreFlavor.CoreClr, "http://localhost:5002/")]
-        public void SmokeTestSuite(HostType hostType, KreFlavor kreFlavor, string applicationBaseUrl)
+        [InlineData(ServerType.Helios, KreFlavor.DesktopClr, "http://localhost:5001/")]
+        [InlineData(ServerType.WebListener, KreFlavor.DesktopClr, "http://localhost:5002/")]
+        [InlineData(ServerType.Kestrel, KreFlavor.DesktopClr, "http://localhost:5004/")]
+        [InlineData(ServerType.Helios, KreFlavor.CoreClr, "http://localhost:5001/")]
+        [InlineData(ServerType.WebListener, KreFlavor.CoreClr, "http://localhost:5002/")]
+        [InlineData(ServerType.Kestrel, KreFlavor.CoreClr, "http://localhost:5004/")]
+        public void SmokeTestSuite(ServerType hostType, KreFlavor kreFlavor, string applicationBaseUrl)
         {
+            Console.WriteLine("Variation Details : HostType = {0}, KreFlavor = {1}, applicationBaseUrl = {2}", hostType, kreFlavor, applicationBaseUrl);
+
             var testStartTime = DateTime.Now;
             var musicStoreDbName = Guid.NewGuid().ToString().Replace("-", string.Empty);
             var musicStoreIdentityDbName = Guid.NewGuid().ToString().Replace("-", string.Empty);
@@ -35,6 +39,7 @@ namespace E2ETests
 
             ApplicationBaseUrl = applicationBaseUrl;
             Process hostProcess = null;
+            bool testSuccessful = false;
 
             try
             {
@@ -103,9 +108,15 @@ namespace E2ETests
                 var testCompletionTime = DateTime.Now;
                 Console.WriteLine("[Time]: All tests completed in '{0}' seconds", (testCompletionTime - initializationCompleteTime).TotalSeconds);
                 Console.WriteLine("[Time]: Total time taken for this test variation '{0}' seconds", (testCompletionTime - testStartTime).TotalSeconds);
+                testSuccessful = true;
             }
             finally
             {
+                if (!testSuccessful)
+                {
+                    Console.WriteLine("Some tests failed. Proceeding with cleanup.");
+                }
+
                 if (hostProcess != null && !hostProcess.HasExited)
                 {
                     //Shutdown the host process

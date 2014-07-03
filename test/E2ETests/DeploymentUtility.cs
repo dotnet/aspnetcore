@@ -43,7 +43,7 @@ namespace E2ETests
 
         private const string APP_RELATIVE_PATH = @"..\..\src\MusicStore\";
 
-        public static Process StartApplication(HostType hostType, KreFlavor kreFlavor, string identityDbName)
+        public static Process StartApplication(ServerType hostType, KreFlavor kreFlavor, string identityDbName)
         {
             string applicationPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, APP_RELATIVE_PATH));
             //Tweak the %PATH% to the point to the right KREFLAVOR
@@ -53,13 +53,13 @@ namespace E2ETests
             Environment.SetEnvironmentVariable("KRE_DEFAULT_LIB", string.Empty);
             Process hostProcess = null;
 
-            if (hostType == HostType.Helios)
+            if (hostType == ServerType.Helios)
             {
                 hostProcess = StartHeliosHost(applicationPath);
             }
             else
             {
-                hostProcess = StartSelfHost(applicationPath, identityDbName);
+                hostProcess = StartSelfHost(hostType, applicationPath, identityDbName);
             }
 
             //Restore the KRE_DEFAULT_LIB after starting the host process
@@ -85,12 +85,14 @@ namespace E2ETests
             return hostProcess;
         }
 
-        private static Process StartSelfHost(string applicationPath, string identityDbName)
+        private static Process StartSelfHost(ServerType hostType, string applicationPath, string identityDbName)
         {
+            Console.WriteLine(string.Format("Executing klr.exe --appbase {0} \"Microsoft.Framework.ApplicationHost\" {1}", applicationPath, hostType.ToString()));
+
             var startInfo = new ProcessStartInfo
             {
                 FileName = "klr.exe",
-                Arguments = string.Format("--appbase {0} \"Microsoft.Framework.ApplicationHost\" web", applicationPath),
+                Arguments = string.Format("--appbase {0} \"Microsoft.Framework.ApplicationHost\" {1}", applicationPath, hostType.ToString()),
                 UseShellExecute = true,
                 CreateNoWindow = true
             };

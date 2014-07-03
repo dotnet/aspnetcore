@@ -5,6 +5,7 @@
     "description": "Music store application on K",
     "version": "1.0.0-*",
     "dependencies": {
+        "Kestrel": "1.0.0-*",
         "Microsoft.AspNet.Server.IIS": "1.0.0-*",
         "Microsoft.AspNet.Mvc": "6.0.0-*",
         "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
@@ -18,13 +19,12 @@
         "Microsoft.Framework.OptionsModel": "1.0.0-*"
     },
     "commands": {
-        "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5002",
+        "WebListener": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5002",
+        "Kestrel": "Microsoft.AspNet.Hosting --server Kestrel --server.urls http://localhost:5004",
         "run": "run server.urls=http://localhost:5003"
     },
     "configurations": {
-        "net451": {
-        },
-        "k10": {
-        }
+        "net451": { },
+        "k10": { }
     }
 }
