@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Server.WebListener
         IHttpRequestLifetimeFeature,
         IHttpWebSocketFeature,
         IHttpAuthenticationFeature,
-        IHttpOpaqueUpgradeFeature
+        IHttpUpgradeFeature
     {
         private RequestContext _requestContext;
         private FeatureCollection _features;
@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.Server.WebListener
             // Win8+
             if (WebSocketHelpers.AreWebSocketsSupported)
             {
-                _features.Add(typeof(IHttpOpaqueUpgradeFeature), this);
+                _features.Add(typeof(IHttpUpgradeFeature), this);
                 _features.Add(typeof(IHttpWebSocketFeature), this);
             }
 
@@ -380,12 +380,12 @@ namespace Microsoft.AspNet.Server.WebListener
             _requestContext.Abort();
         }
 
-        bool IHttpOpaqueUpgradeFeature.IsUpgradableRequest
+        bool IHttpUpgradeFeature.IsUpgradableRequest
         {
             get { return _requestContext.IsUpgradableRequest; }
         }
 
-        Task<Stream> IHttpOpaqueUpgradeFeature.UpgradeAsync()
+        Task<Stream> IHttpUpgradeFeature.UpgradeAsync()
         {
             return _requestContext.UpgradeAsync();
         }
