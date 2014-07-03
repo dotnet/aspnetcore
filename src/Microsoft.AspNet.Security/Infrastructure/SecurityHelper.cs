@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Security.Infrastructure
             context.User = newClaimsPrincipal;
         }
 
-        public static bool LookupChallenge(IList<string> authenticationTypes, string authenticationType, AuthenticationMode authenticationMode)
+        public static bool LookupChallenge(IEnumerable<string> authenticationTypes, string authenticationType, AuthenticationMode authenticationMode)
         {
             bool challengeHasAuthenticationTypes = authenticationTypes != null && authenticationTypes.Any();
             if (!challengeHasAuthenticationTypes)
@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Security.Infrastructure
         /// Find response sign-in details for a specific authentication middleware
         /// </summary>
         /// <param name="authenticationType">The authentication type to look for</param>
-        public static bool LookupSignIn(IList<ClaimsIdentity> identities, string authenticationType, out ClaimsIdentity identity)
+        public static bool LookupSignIn(IEnumerable<ClaimsIdentity> identities, string authenticationType, out ClaimsIdentity identity)
         {
             identity = null;
             foreach (var claimsIdentity in identities)
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Security.Infrastructure
         /// </summary>
         /// <param name="authenticationType">The authentication type to look for</param>
         /// <param name="authenticationMode">The authentication mode the middleware is running under</param>
-        public static bool LookupSignOut(IList<string> authenticationTypes, string authenticationType, AuthenticationMode authenticationMode)
+        public static bool LookupSignOut(IEnumerable<string> authenticationTypes, string authenticationType, AuthenticationMode authenticationMode)
         {
             bool singOutHasAuthenticationTypes = authenticationTypes != null && authenticationTypes.Any();
             if (!singOutHasAuthenticationTypes)
