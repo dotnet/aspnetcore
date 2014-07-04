@@ -18,6 +18,7 @@ namespace MvcSample.Web
     {
         public void Configure(IBuilder app)
         {
+            app.UseFileServer();
 #if NET45
             var configuration = new Configuration()
                                     .AddJsonFile(@"App_Data\config.json")
