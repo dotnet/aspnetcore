@@ -93,6 +93,21 @@ namespace Microsoft.AspNet.Hosting
             {
                 return false;
             }
+
+            public IDisposable BeginScope(object state)
+            {
+                return NullScope.Instance;
+            }
+        }
+
+        private class NullScope : IDisposable
+        {
+            public static NullScope Instance = new NullScope();
+
+            public void Dispose()
+            {
+                // intentionally does nothing
+            }
         }
     }
 }
