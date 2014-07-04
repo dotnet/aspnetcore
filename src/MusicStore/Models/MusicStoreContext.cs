@@ -25,7 +25,7 @@ namespace MusicStore.Models
         {
             builder.Entity<Album>().Key(a => a.AlbumId);
             builder.Entity<Artist>().Key(a => a.ArtistId);
-            builder.Entity<Order>().Key(o => o.OrderId).StorageName("Order");
+            builder.Entity<Order>().Key(o => o.OrderId).Properties(p => p.Property(o => o.OrderId).ColumnName("Order"));
             builder.Entity<Genre>().Key(g => g.GenreId);
             builder.Entity<CartItem>().Key(c => c.CartItemId);
             builder.Entity<OrderDetail>().Key(o => o.OrderDetailId);
