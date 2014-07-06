@@ -10,6 +10,8 @@ param(
   [switch] $x64 = $false,
   [switch] $svr50 = $false,
   [switch] $svrc50 = $false,
+  [alias("a")]
+  [string] $alias = $null,
   [parameter(Position=1, ValueFromRemainingArguments=$true)]
   [string[]]$args=@()
 )
@@ -18,12 +20,18 @@ $userKrePath = $env:USERPROFILE + "\.kre"
 $userKrePackages = $userKrePath + "\packages"
 $globalKrePath = $env:ProgramFiles + "\KRE"
 $globalKrePackages = $globalKrePath + "\packages"
+$feed = $env:KRE_NUGET_API_URL
+
+if (!$feed)
+{
+    $feed = "https://www.myget.org/F/aspnetvnext/api/v2";
+}
 
 $scriptPath = $myInvocation.MyCommand.Definition
 
 function Kvm-Help {
 @"
-K Runtime Environment Version Manager - Build 538
+K Runtime Environment Version Manager - Build 10002
 
 USAGE: kvm <command> [options]
 
@@ -35,20 +43,24 @@ kvm upgrade [-x86][-x64] [-svr50][-svrc50] [-g|-global] [-proxy <ADDRESS>]
   -f|-force         upgrade even if latest is already installed
   -proxy <ADDRESS>  use given address as proxy when accessing remote server
 
-kvm install <semver>|<alias>|<nupkg> [-x86][-x64] [-svr50][-svrc50] [-g|-global]
-  install requested KRE from feed
+kvm install <semver>|<alias>|<nupkg>|latest [-x86][-x64] [-svr50][-svrc50] [-a|-alias <alias>] [-g|-global] [-f|-force]
+  <semver>|<alias>  install requested KRE from feed
+  <nupkg>           install requested KRE from package on local filesystem
+  latest            install latest KRE from feed
   add KRE bin to path of current command line
+  -p|-persistent    add KRE bin to PATH environment variables persistently
+  -a|-alias <alias> set alias <alias> for requested KRE on install
   -g|-global        install to machine-wide location
   -f|-force         install even if specified version is already installed
 
 kvm use <semver>|<alias>|none [-x86][-x64] [-svr50][-svrc50] [-p|-persistent] [-g|-global]
-  <semver>|<alias>  add KRE bin to path of current command line   
+  <semver>|<alias>  add KRE bin to path of current command line
   none              remove KRE bin from path of current command line
   -p|-persistent    add KRE bin to PATH environment variables persistently
   -g|-global        combined with -p to change machine PATH instead of user PATH
 
 kvm list
-  list KRE versions installed 
+  list KRE versions installed
 
 kvm alias
   list KRE aliases which have been defined
@@ -56,8 +68,9 @@ kvm alias
 kvm alias <alias>
   display value of named alias
 
-kvm alias <alias> <semver> [-x86][-x64] [-svr50][-svrc50]
-  set alias to specific version
+kvm alias <alias> <semver>|<alias> [-x86][-x64] [-svr50][-svrc50]
+  <alias>            The name of the alias to set
+  <semver>|<alias>   The KRE version to set the alias to. Alternatively use the version of the specified alias
 
 "@ | Write-Host
 }
@@ -109,21 +122,19 @@ function Kvm-Global-Setup {
 
 function Kvm-Global-Upgrade {
     $persistent = $true
+    $alias="default"
     If (Needs-Elevation) {
         $arguments = "& '$scriptPath' upgrade -global $(Requested-Switches)"
         Start-Process "$psHome\powershell.exe" -Verb runAs -ArgumentList $arguments -Wait
         break
     }
-    $version = Kvm-Find-Latest (Requested-Platform "svr50") (Requested-Architecture "x86")
-    Kvm-Global-Install $version
-    Kvm-Alias-Set "default" $version
+    Kvm-Global-Install "latest"
 }
 
 function Kvm-Upgrade {
     $persistent = $true
-    $version = Kvm-Find-Latest (Requested-Platform "svr50") (Requested-Architecture "x86")
-    Kvm-Install $version
-    Kvm-Alias-Set "default" $version
+    $alias="default"
+    Kvm-Install "latest"
 }
 
 function Add-Proxy-If-Specified {
@@ -152,20 +163,16 @@ param(
 )
     Write-Host "Determining latest version"
 
-    $url = "https://www.myget.org/F/aspnetvnext/api/v2/GetUpdates()?packageIds=%27KRE-$platform-$architecture%27&versions=%270.0%27&includePrerelease=true&includeAllVersions=false"
+    $url = "$feed/GetUpdates()?packageIds=%27KRE-$platform-$architecture%27&versions=%270.0%27&includePrerelease=true&includeAllVersions=false"
 
     $wc = New-Object System.Net.WebClient
     $wc.Credentials = new-object System.Net.NetworkCredential("aspnetreadonly", "4d8a2d9c-7b80-4162-9978-47e918c9658c")
     Add-Proxy-If-Specified($wc)
     [xml]$xml = $wc.DownloadString($url)
 
-    $version = Select-Xml "//d:Version" -Namespace @{d='http://schemas.microsoft.com/ado/2007/08/dataservices'} $xml 
+    $version = Select-Xml "//d:Version" -Namespace @{d='http://schemas.microsoft.com/ado/2007/08/dataservices'} $xml
 
     return $version
-}
-
-function Kvm-Install-Latest {
-    Kvm-Install (Kvm-Find-Latest (Requested-Platform "svr50") (Requested-Architecture "x86"))
 }
 
 function Do-Kvm-Download {
@@ -175,7 +182,7 @@ param(
 )
     $parts = $kreFullName.Split(".", 2)
 
-    $url = "https://www.myget.org/F/aspnetvnext/api/v2/package/" + $parts[0] + "/" + $parts[1]
+    $url = "$feed/package/" + $parts[0] + "/" + $parts[1]
     $kreFolder = Join-Path $packagesFolder $kreFullName
     $kreFile = Join-Path $kreFolder "$kreFullName.nupkg"
 
@@ -189,13 +196,13 @@ param(
       }
     }
 
-    Write-Host "Downloading" $kreFullName "from https://www.myget.org/F/aspnetvnext/api/v2/"
+    Write-Host "Downloading" $kreFullName "from $feed"
 
     #Downloading to temp location
     $kreTempDownload = Join-Path $packagesFolder "temp"
     $tempKreFile = Join-Path $kreTempDownload "$kreFullName.nupkg"
 
-    if(Test-Path $kreTempDownload) {  
+    if(Test-Path $kreTempDownload) {
       del "$kreTempDownload\*" -recurse
     } else {
       md $kreTempDownload -Force | Out-Null
@@ -208,7 +215,7 @@ param(
 
     Do-Kvm-Unpack $tempKreFile $kreTempDownload
 
-    md $kreFolder -Force | Out-Null   
+    md $kreFolder -Force | Out-Null
     Write-Host "Installing to $kreFolder"
     mv "$kreTempDownload\*" $kreFolder
 }
@@ -233,7 +240,7 @@ param(
       #make it a nupkg again
       Rename-Item $kreZip $kreFile
     }
-    
+
     If (Test-Path ($kreFolder + "\[Content_Types].xml")) {
         Remove-Item ($kreFolder + "\[Content_Types].xml")
     }
@@ -256,10 +263,17 @@ param(
         break
     }
 
+    if ($versionOrAlias -eq "latest") {
+        $versionOrAlias = Kvm-Find-Latest (Requested-Platform "svr50") (Requested-Architecture "x86")
+    }
+
     $kreFullName = Requested-VersionOrAlias $versionOrAlias
 
     Do-Kvm-Download $kreFullName $globalKrePackages
     Kvm-Use $versionOrAlias
+    if (![string]::IsNullOrWhiteSpace($alias)) {
+        Kvm-Alias-Set $alias $versionOrAlias
+    }
 }
 
 function Kvm-Install {
@@ -276,36 +290,44 @@ param(
             del $kreFolder -Recurse -Force
             $folderExists = $false;
         }
-        
+
         if($folderExists) {
             Write-Host "Target folder '$kreFolder' already exists"
         } else {
             $tempUnpackFolder = Join-Path $userKrePackages "temp"
             $tempKreFile = Join-Path $tempUnpackFolder "$kreFullName.nupkg"
-        
-            if(Test-Path $tempUnpackFolder) {  
+
+            if(Test-Path $tempUnpackFolder) {
                 del "$tempUnpackFolder\*" -recurse
             } else {
                 md $tempUnpackFolder -Force | Out-Null
             }
             copy $versionOrAlias $tempKreFile
-                        
+
             Do-Kvm-Unpack $tempKreFile $tempUnpackFolder
             md $kreFolder -Force | Out-Null
             Write-Host "Installing to $kreFolder"
             mv "$tempUnpackFolder\*" $kreFolder
         }
 
-        $kreBin = "$kreFolder\bin"
-        Write-Host "Adding" $kreBin "to process PATH"
-        Set-Path (Change-Path $env:Path $kreBin ($globalKrePackages, $userKrePackages))
+        $packageVersion = Package-Version $kreFullName
+        Kvm-Use $packageVersion
+        if (![string]::IsNullOrWhiteSpace($alias)) {
+            Kvm-Alias-Set $alias $packageVersion
+        }
     }
     else
     {
+        if ($versionOrAlias -eq "latest") {
+            $versionOrAlias = Kvm-Find-Latest (Requested-Platform "svr50") (Requested-Architecture "x86")
+        }
         $kreFullName = Requested-VersionOrAlias $versionOrAlias
 
         Do-Kvm-Download $kreFullName $userKrePackages
         Kvm-Use $versionOrAlias
+        if (![string]::IsNullOrWhiteSpace($alias)) {
+            Kvm-Alias-Set $alias $versionOrAlias
+        }
     }
 }
 
@@ -325,7 +347,7 @@ function Kvm-List {
 }
 
 filter List-Parts {
-  $hasBin = Test-Path($_.FullName+"\bin") 
+  $hasBin = Test-Path($_.FullName+"\bin")
   if (!$hasBin) {
     return
   }
@@ -363,7 +385,7 @@ param(
       Write-Host "Removing KRE from process PATH"
       Set-Path (Change-Path $env:Path "" ($globalKrePackages, $userKrePackages))
 
-      if ($persistent) {  
+      if ($persistent) {
           Write-Host "Removing KRE from machine PATH"
           $machinePath = [Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::Machine)
           $machinePath = Change-Path $machinePath "" ($globalKrePackages, $userKrePackages)
@@ -378,7 +400,7 @@ param(
     if ($kreBin -eq $null) {
       Write-Host "Cannot find $kreFullName, do you need to run 'kvm install $versionOrAlias'?"
       return
-    } 
+    }
 
     Write-Host "Adding" $kreBin "to process PATH"
     Set-Path (Change-Path $env:Path $kreBin ($globalKrePackages, $userKrePackages))
@@ -399,7 +421,7 @@ param(
       Write-Host "Removing KRE from process PATH"
       Set-Path (Change-Path $env:Path "" ($globalKrePackages, $userKrePackages))
 
-      if ($persistent) {  
+      if ($persistent) {
           Write-Host "Removing KRE from user PATH"
           $userPath = [Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::User)
           $userPath = Change-Path $userPath "" ($globalKrePackages, $userKrePackages)
@@ -414,12 +436,12 @@ param(
     if ($kreBin -eq $null) {
       Write-Host "Cannot find $kreFullName, do you need to run 'kvm install $versionOrAlias'?"
       return
-    } 
+    }
 
     Write-Host "Adding" $kreBin "to process PATH"
     Set-Path (Change-Path $env:Path $kreBin ($globalKrePackages, $userKrePackages))
 
-    if ($persistent) {  
+    if ($persistent) {
         Write-Host "Adding $kreBin to user PATH"
         $userPath = [Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::User)
         $userPath = Change-Path $userPath $kreBin ($globalKrePackages, $userKrePackages)
@@ -438,7 +460,12 @@ param(
   [string] $name
 )
     md ($userKrePath + "\alias\") -Force | Out-Null
-    Write-Host "Alias '$name' is set to" (Get-Content ($userKrePath + "\alias\" + $name + ".txt"))
+    $aliasFilePath=$userKrePath + "\alias\" + $name + ".txt"
+    if (!(Test-Path $aliasFilePath)) {
+        Write-Host "Alias '$name' does not exist"
+    } else {
+        Write-Host "Alias '$name' is set to" (Get-Content ($userKrePath + "\alias\" + $name + ".txt"))
+    }
 }
 
 function Kvm-Alias-Set {
@@ -446,7 +473,7 @@ param(
   [string] $name,
   [string] $value
 )
-    $kreFullName = "KRE-" + (Requested-Platform "svr50") + "-" + (Requested-Architecture "x86") + "." + $value
+    $kreFullName = Requested-VersionOrAlias $value
 
     Write-Host "Setting alias '$name' to '$kreFullName'"
     md ($userKrePath + "\alias\") -Force | Out-Null
@@ -469,6 +496,13 @@ param(
     }
   }
   return $null
+}
+
+function Package-Version() {
+param(
+  [string] $kreFullName
+)
+    return $kreFullName -replace '[^.]*.(.*)', '$1'
 }
 
 function Requested-VersionOrAlias() {
@@ -496,7 +530,7 @@ param(
 )
     if ($svr50 -and $svrc50) {
         Throw "This command cannot accept both -svr50 and -svrc50"
-    } 
+    }
     if ($svr50) {
         return "svr50"
     }
@@ -512,7 +546,7 @@ param(
 )
     if ($x86 -and $x64) {
         Throw "This command cannot accept both -x86 and -x64"
-    } 
+    }
     if ($x86) {
         return "x86"
     }
@@ -534,7 +568,7 @@ param(
       foreach($removePath in $removePaths) {
         if ($portion.StartsWith($removePath)) {
           $skip = $true
-        }      
+        }
       }
       if (!$skip) {
         $newPath = $newPath + ";" + $portion
@@ -574,7 +608,6 @@ function Requested-Switches() {
     switch -wildcard ($command + " " + $args.Count) {
       "setup 0"           {Kvm-Global-Setup}
       "upgrade 0"         {Kvm-Global-Upgrade}
-#      "install 0"         {Kvm-Global-Install-Latest}
       "install 1"         {Kvm-Global-Install $args[0]}
 #      "list 0"            {Kvm-Global-List}
       "use 1"             {Kvm-Global-Use $args[0]}
@@ -584,7 +617,6 @@ function Requested-Switches() {
     switch -wildcard ($command + " " + $args.Count) {
       "setup 0"           {Kvm-Global-Setup}
       "upgrade 0"         {Kvm-Upgrade}
-#      "install 0"         {Kvm-Install-Latest}
       "install 1"         {Kvm-Install $args[0]}
       "list 0"            {Kvm-List}
       "use 1"             {Kvm-Use $args[0]}

@@ -17,7 +17,9 @@ KRE_USER_PACKAGES="$KRE_USER_HOME/packages"
 KRE_MONO45=
 KRE_X86=
 KRE_X64=
-KRE_NUGET_API_URL="https://www.myget.org/F/aspnetvnext/api/v2"
+if [ -z "$KRE_FEED" ]; then
+    KRE_FEED="https://www.myget.org/F/aspnetvnext/api/v2"
+fi
 
 _kvm_find_latest() {
     local platform="mono45"
@@ -28,11 +30,10 @@ _kvm_find_latest() {
         return 1
     fi
 
-    local url="$KRE_NUGET_API_URL/GetUpdates()?packageIds=%27KRE-$platform-$architecture%27&versions=%270.0%27&includePrerelease=true&includeAllVersions=false"
-    local cmd=
-    local xml="$(curl $url 2>/dev/null)"
+    local url="$KRE_FEED/GetUpdates()?packageIds=%27KRE-$platform-$architecture%27&versions=%270.0%27&includePrerelease=true&includeAllVersions=false"
+    xml="$(curl $url 2>/dev/null)"
+    echo $xml | grep \<[a-zA-Z]:Version\>* >> /dev/null || return 1
     version="$(echo $xml | sed 's/.*<[a-zA-Z]:Version>\([^<]*\).*/\1/')"
-    [[ $xml == $version ]] && return 1
     echo $version
 }
 
@@ -48,13 +49,28 @@ _kvm_prepend_path() {
     fi
 }
 
+_kvm_package_version() {
+    local kreFullName="$1"
+    echo "$kreFullName" | sed "s/[^.]*.\(.*\)/\1/"
+}
+
+_kvm_package_name() {
+    local kreFullName="$1"
+    echo "$kreFullName" | sed "s/\([^.]*\).*/\1/"
+}
+
+_kvm_package_runtime() {
+    local kreFullName="$1"
+    echo "$kreFullName" | sed "s/KRE-\([^-]*\).*/\1/"
+}
+
 _kvm_download() {
     local kreFullName="$1"
     local kreFolder="$2"
 
-    local pkgName=$(echo "$kreFullName" | sed "s/\([^.]*\).*/\1/")
-    local pkgVersion=$(echo "$kreFullName" | sed "s/[^.]*.\(.*\)/\1/")
-    local url="$KRE_NUGET_API_URL/package/$pkgName/$pkgVersion"
+    local pkgName=$(_kvm_package_name "$kreFullName")
+    local pkgVersion=$(_kvm_package_version "$kreFullName")
+    local url="$KRE_FEED/package/$pkgName/$pkgVersion"
     local kreFile="$kreFolder/$kreFullName.nupkg"
 
     if [ -e "$kreFolder" ]; then
@@ -62,7 +78,7 @@ _kvm_download() {
         return 0
     fi
 
-    echo "Downloading $kreFullName from $KRE_NUGET_API_URL"
+    echo "Downloading $kreFullName from $KRE_FEED"
 
     if ! _kvm_has "curl"; then
         echo "KVM Needs curl to proceed." >&2;
@@ -73,8 +89,8 @@ _kvm_download() {
 
     local httpResult=$(curl -L -D - -u aspnetreadonly:4d8a2d9c-7b80-4162-9978-47e918c9658c "$url" -o "$kreFile" 2>/dev/null | grep "^HTTP/1.1" | head -n 1 | sed "s/HTTP.1.1 \([0-9]*\).*/\1/")
 
-    [[ $httpResult == "404" ]] && echo "$kreFullName was not found in repository $KRE_NUGET_API_URL" && return 1
-    [[ $httpResult != "302" ]] && echo "Http Error $httpResult fetching $kreFullName from $KRE_NUGET_API_URL" && return 1
+    [[ $httpResult == "404" ]] && echo "$kreFullName was not found in repository $KRE_FEED" && return 1
+    [[ $httpResult != "302" && $httpResult != "200" ]] && echo "HTTP Error $httpResult fetching $kreFullName from $KRE_FEED" && return 1
 
     _kvm_unpack $kreFile $kreFolder
 }
@@ -153,23 +169,27 @@ kvm()
     case $1 in
         "help" )
             echo ""
-            echo "K Runtime Environment Version Manager - Build {{BUILD_NUMBER}}"
+            echo "K Runtime Environment Version Manager - Build 10002"
             echo ""
             echo "USAGE: kvm <command> [options]"
             echo ""
             echo "kvm upgrade"
             echo "install latest KRE from feed"
-            echo "set 'default' alias to installed version"
-            echo "add KRE bin to user PATH environment variable persistently"
+            echo "add KRE bin to path of current command line"
+            echo "set installed version as default"
             echo ""
-            echo "kvm install <semver>|<alias>|<nupkg>"
-            echo "install requested KRE from feed"
+            echo "kvm install <semver>|<alias>|<nupkg>|latest [-a|-alias <alias>] [-p -persistent]"
+            echo "<semver>|<alias>  install requested KRE from feed"
+            echo "<nupkg>           install requested KRE from local package on filesystem"
+            echo "latest            install latest version of KRE from feed"
+            echo "-a|-alias <alias> set alias <alias> for requested KRE on install"
+            echo "-p -persistent    set installed version as default"
             echo "add KRE bin to path of current command line"
             echo ""
             echo "kvm use <semver>|<alias>|none [-p -persistent]"
             echo "<semver>|<alias>  add KRE bin to path of current command line   "
             echo "none              remove KRE bin from path of current command line"
-            echo "-p -persistent   set selected version as default"
+            echo "-p -persistent    set selected version as default"
             echo ""
             echo "kvm list"
             echo "list KRE versions installed "
@@ -181,46 +201,64 @@ kvm()
             echo "display value of named alias"
             echo ""
             echo "kvm alias <alias> <semver>"
-            echo "set alias to specific version"
+            echo "<alias>            The name of the alias to set"
+            echo "<semver>|<alias>   The KRE version to set the alias to. Alternatively use the version of the specified alias"
             echo ""
             echo ""
         ;;
 
         "upgrade" )
             [ $# -ne 1 ] && kvm help && return
-            echo "Determining latest version"
-            local version=$(_kvm_find_latest mono45 x86)
-            echo $version
-            kvm install $version
-            kvm alias default $version
+            kvm install latest -p
         ;;
 
         "install" )
-            [ $# -ne 2 ] && kvm help && return
-
-            local versionOrAlias="$2"
-
-            if [ "$versionOrAlias" == *.nupkg ]; then
-                local kreFullName=$(echo $versionOrAlias | sed "s/\(.*\)\.nupkg/\1/")
+            [ $# -lt 2 ] && kvm help && return
+            shift
+            local persistant=
+            local versionOrAlias=
+            local alias=
+            while [ $# -ne 0 ]
+            do
+                if [[ $1 == "-p" || $1 == "-persistant" ]]; then
+                    local persistent="-p"
+                elif [[ $1 == "-a" || $1 == "-alias" ]]; then
+                    local alias=$2
+                    shift
+                elif [[ -n $1 ]]; then
+                    [[ -n $versionOrAlias ]] && echo "Invalid option $1" && kvm help && return 1
+                    local versionOrAlias=$1
+                fi
+                shift
+            done
+            if [[ "$versionOrAlias" == "latest" ]]; then
+                echo "Determining latest version"
+                versionOrAlias=$(_kvm_find_latest mono45 x86)
+                [[ $? == 1 ]] && echo "Error: Could not find latest version from feed $KRE_FEED" && return 1
+                echo "Latest version is $versionOrAlias"
+            fi
+            if [[ "$versionOrAlias" == *.nupkg ]]; then
+                local kreFullName=$(basename $versionOrAlias | sed "s/\(.*\)\.nupkg/\1/")
+                local kreVersion=$(_kvm_package_version "$kreFullName")
                 local kreFolder="$KRE_USER_PACKAGES/$kreFullName"
                 local kreFile="$kreFolder/$kreFullName.nupkg"
 
                 if [ -e "$kreFolder" ]; then
-                  echo "Target folder '$kreFolder' already exists"
+                  echo "$kreFullName already installed"
                 else
                   mkdir "$kreFolder" > /dev/null 2>&1
                   cp -a "$versionOrAlias" "$kreFile"
                   _kvm_unpack "$kreFile" "$kreFolder"
                 fi
-
-                echo "Adding $kreBin to current PATH"
-                PATH=$(_kvm_strip_path "$PATH" "/bin")
-                PATH=(_kvm_prepend_path "$PATH" "$kreBin")
+                kvm use "$kreVersion" "$persistent"
+                [[ -n $alias ]] && kvm alias "$alias" "$kreVersion"
             else
                 local kreFullName="$(_kvm_requested_version_or_alias $versionOrAlias)"
                 local kreFolder="$KRE_USER_PACKAGES/$kreFullName"
                 _kvm_download "$kreFullName" "$kreFolder"
-                kvm use "$versionOrAlias"
+                [[ $? == 1 ]] && return
+                kvm use "$versionOrAlias" "$persistent"
+                [[ -n $alias ]] && kvm alias "$alias" "$versionOrAlias"
             fi
         ;;
 
@@ -229,13 +267,12 @@ kvm()
             [ $# -lt 2 ] && kvm help && return
 
             shift
-            local persistant=
-
+            local persistent=
             while [ $# -ne 0 ]
             do
-                if [[ $1 == "-p" || $1 == "-persistant" ]]; then
-                    local persistant="true"
-                else
+                if [[ $1 == "-p" || $1 == "-persistent" ]]; then
+                    local persistent="true"
+                elif [[ -n $1 ]]; then
                     local versionOrAlias=$1
                 fi
                 shift
@@ -244,7 +281,7 @@ kvm()
             if [[ $versionOrAlias == "none" ]]; then
                 echo "Removing KRE from process PATH"
                 # Strip other version from PATH
-                PATH=`_kvm_strip_path "$PATH" "/bin"`
+                PATH=$(_kvm_strip_path "$PATH" "/bin")
 
                 if [[ -n $persistent && -e "$KRE_USER_HOME/alias/default.alias" ]]; then
                     echo "Setting default KRE to none"
@@ -263,20 +300,30 @@ kvm()
 
             echo "Adding" $kreBin "to process PATH"
 
-            PATH=`_kvm_strip_path "$PATH" "/bin"`
-            PATH=`_kvm_prepend_path "$PATH" "$kreBin"`
+            PATH=$(_kvm_strip_path "$PATH" "/bin")
+            PATH=$(_kvm_prepend_path "$PATH" "$kreBin")
 
             if [[ -n $persistent ]]; then
-                echo "Setting  $kreBin as default KRE"
-                kvm alias default "$versionOrAlias"
+                local kreVersion=$(_kvm_package_version "$kreFullName")
+                kvm alias default "$kreVersion"
             fi
         ;;
 
         "alias" )
             [[ $# -gt 3 ]] && kvm help && return
 
+            [[ ! -e "$KRE_USER_HOME/alias/" ]] && mkdir "$KRE_USER_HOME/alias/" > /dev/null
+
             if [[ $# == 1 ]]; then
-                for f in $(find "$KRE_USER_HOME/alias" -name *.alias); do printf "%-20s %s\n" "$(basename $f | sed 's/.alias//')" "$(cat $f)"; done
+                echo ""
+                local format="%-20s %s\n"
+                printf "$format" "Alias" "Name"
+                printf "$format" "-----" "----"
+                for _kvm_file in $(find "$KRE_USER_HOME/alias" -name *.alias); do
+                    local alias="$(basename $_kvm_file | sed 's/.alias//')"
+                    local name="$(cat $_kvm_file)"
+                    printf "$format" "$alias" "$name"
+                done
                 echo ""
                 return
             fi
@@ -290,13 +337,11 @@ kvm()
                 return
             fi
 
-            local semver="$3"
-            local kreFullName="KRE-$(_kvm_requested_platform mono45)-$(_kvm_requested_architecture x86).$semver"
+            local kreFullName=$(_kvm_requested_version_or_alias "$3")
 
-            [[ ! -d "$KRE_USER_PACKAGES/$kreFullName" ]] && echo "$semver is not an installed KRE version." && return 1
+            [[ ! -d "$KRE_USER_PACKAGES/$kreFullName" ]] && echo "$kreFullName is not an installed KRE version." && return 1
 
             echo "Setting alias '$name' to '$kreFullName'"
-            [[ ! -e "$KRE_USER_HOME/alias/" ]] && mkdir "$KRE_USER_HOME/alias/" > /dev/null
 
             echo "$kreFullName" > "$KRE_USER_HOME/alias/$name.alias"
         ;;
@@ -310,22 +355,22 @@ kvm()
             if [ $# == 2 ]; then
                 local versionOrAlias=$2
                 local searchGlob=$(_kvm_requested_version_or_alias "$versionOrAlias")
-                echo $searchGlob
             fi
-
-            for f in $(find $KRE_USER_PACKAGES/* -name $searchGlob -type d -prune -exec basename {} \;); do
-                #TODO: Format, extract package, version arch etc
-                echo -n $f
-                if [[ $PATH == *"$KRE_USER_PACKAGES/$f/bin"* ]]; then
-                    echo " *"
-                else
-                    echo ""
-                fi
+            echo ""
+            local formatString="%-6s %-20s %-7s %-12s %s\n"
+            printf "$formatString" "Active" "Version" "Runtime" "Architecture" "Location"
+            printf "$formatString" "------" "-------" "-------" "------------" "--------"
+            for f in $(find $KRE_USER_PACKAGES/* -name "$searchGlob" -type d -prune -exec basename {} \;); do
+                local active=""
+                [[ $PATH == *"$KRE_USER_PACKAGES/$f/bin"* ]] && local active="  *"
+                local pkgName=$(_kvm_package_runtime "$f")
+                local pkgVersion=$(_kvm_package_version "$f")
+                printf "$formatString" "$active" "$pkgVersion" "$pkgName" "x86" "$KRE_USER_PACKAGES"
                 [[ $# == 2 ]] && echo "" &&  return 0
             done
 
             echo ""
-            [[ $# == 2 ]] && return 1 # kvm list xxx - xxx was not found
+            [[ $# == 2 ]] && echo "$versionOrAlias not found" && return 1
         ;;
 
         *)
