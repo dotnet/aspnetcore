@@ -3,6 +3,7 @@
 
 using Microsoft.AspNet.Server.Kestrel.Networking;
 using System;
+using System.Diagnostics;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -31,13 +32,20 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     /// </summary>
     public class Listener : ListenerContext, IDisposable
     {
-        private static readonly Action<UvStreamHandle, int, object> _connectionCallback = ConnectionCallback;
+        private static readonly Action<UvStreamHandle, int, Exception, object> _connectionCallback = ConnectionCallback;
 
         UvTcpHandle ListenSocket { get; set; }
 
-        private static void ConnectionCallback(UvStreamHandle stream, int status, object state)
+        private static void ConnectionCallback(UvStreamHandle stream, int status, Exception error, object state)
         {
-            ((Listener)state).OnConnection(stream, status);
+            if (error != null)
+            {
+                Trace.WriteLine("Listener.ConnectionCallback " + error.ToString());
+            }
+            else
+            {
+                ((Listener)state).OnConnection(stream, status);
+            }
         }
 
         public Listener(IMemoryPool memory)
@@ -99,7 +107,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     {
                         tcs.SetException(ex);
                     }
-                }, 
+                },
                 null);
             tcs.Task.Wait();
             ListenSocket = null;

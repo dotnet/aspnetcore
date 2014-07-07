@@ -12,7 +12,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.AspNet.Server.KestralTests
+namespace Microsoft.AspNet.Server.KestrelTests
 {
     /// <summary>
     /// Summary description for NetworkingTests
@@ -31,12 +31,12 @@ namespace Microsoft.AspNet.Server.KestralTests
             get
             {
                 var locator = CallContextServiceLocator.Locator;
-                if (locator == null) 
+                if (locator == null)
                 {
                     return null;
                 }
                 var services = locator.ServiceProvider;
-                if (services == null) 
+                if (services == null)
                 {
                     return null;
                 }
@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.Server.KestralTests
             var tcp = new UvTcpHandle();
             tcp.Init(loop);
             tcp.Bind(new IPEndPoint(IPAddress.Loopback, 54321));
-            tcp.Listen(10, (stream, status, state) =>
+            tcp.Listen(10, (stream, status, error, state) =>
             {
                 var tcp2 = new UvTcpHandle();
                 tcp2.Init(loop);
@@ -130,7 +130,7 @@ namespace Microsoft.AspNet.Server.KestralTests
             var tcp = new UvTcpHandle();
             tcp.Init(loop);
             tcp.Bind(new IPEndPoint(IPAddress.Loopback, 54321));
-            tcp.Listen(10, (_, status, state) =>
+            tcp.Listen(10, (_, status, error, state) =>
             {
                 Console.WriteLine("Connected");
                 var tcp2 = new UvTcpHandle();
@@ -139,7 +139,7 @@ namespace Microsoft.AspNet.Server.KestralTests
                 var data = Marshal.AllocCoTaskMem(500);
                 tcp2.ReadStart(
                     (a, b, c) => _uv.buf_init(data, 500),
-                    (__, nread, state2) =>
+                    (__, nread, error2, state2) =>
                     {
                         bytesRead += nread;
                         if (nread == 0)
@@ -186,7 +186,7 @@ namespace Microsoft.AspNet.Server.KestralTests
             var tcp = new UvTcpHandle();
             tcp.Init(loop);
             tcp.Bind(new IPEndPoint(IPAddress.Loopback, 54321));
-            tcp.Listen(10, (_, status, state) =>
+            tcp.Listen(10, (_, status, error, state) =>
             {
                 Console.WriteLine("Connected");
                 var tcp2 = new UvTcpHandle();
@@ -195,7 +195,7 @@ namespace Microsoft.AspNet.Server.KestralTests
                 var data = Marshal.AllocCoTaskMem(500);
                 tcp2.ReadStart(
                     (a, b, c) => tcp2.Libuv.buf_init(data, 500),
-                    (__, nread, state2) =>
+                    (__, nread, error2, state2) =>
                     {
                         bytesRead += nread;
                         if (nread == 0)
@@ -211,9 +211,9 @@ namespace Microsoft.AspNet.Server.KestralTests
                                 req.Write(
                                     tcp2,
                                     new ArraySegment<ArraySegment<byte>>(
-                                        new[]{new ArraySegment<byte>(new byte[]{65,66,67,68,69})}
+                                        new[] { new ArraySegment<byte>(new byte[] { 65, 66, 67, 68, 69 }) }
                                         ),
-                                    (___,____,_____)=>{},
+                                    (_1, _2, _3, _4) => { },
                                     null);
                             }
                         }
@@ -243,7 +243,7 @@ namespace Microsoft.AspNet.Server.KestralTests
                     TaskCreationOptions.None);
                 socket.Shutdown(SocketShutdown.Send);
                 var buffer = new ArraySegment<byte>(new byte[2048]);
-                for(;;)
+                for (; ;)
                 {
                     var count = await Task.Factory.FromAsync(
                         socket.BeginReceive,
@@ -252,7 +252,7 @@ namespace Microsoft.AspNet.Server.KestralTests
                         SocketFlags.None,
                         null,
                         TaskCreationOptions.None);
-                    Console.WriteLine("count {0} {1}", 
+                    Console.WriteLine("count {0} {1}",
                         count,
                         System.Text.Encoding.ASCII.GetString(buffer.Array, 0, count));
                     if (count <= 0) break;

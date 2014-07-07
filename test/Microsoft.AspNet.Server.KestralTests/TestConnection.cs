@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.AspNet.Server.KestralTests
+namespace Microsoft.AspNet.Server.KestrelTests
 {
     /// <summary>
     /// Summary description for TestConnection

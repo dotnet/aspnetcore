@@ -5,7 +5,7 @@ using Microsoft.Framework.Runtime.Infrastructure;
 using System;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Server.KestralTests
+namespace Microsoft.AspNet.Server.KestrelTests
 {
     /// <summary>
     /// Summary description for TestServer

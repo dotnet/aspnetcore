@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Server.Kestrel.Networking;
+using System.Diagnostics;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
@@ -39,7 +40,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
     public class Connection : ConnectionContext, IConnectionControl
     {
-        private static readonly Action<UvStreamHandle, int, object> _readCallback = ReadCallback;
+        private static readonly Action<UvStreamHandle, int, Exception, object> _readCallback = ReadCallback;
         private static readonly Func<UvStreamHandle, int, object, Libuv.uv_buf_t> _allocCallback = AllocCallback;
 
         private static Libuv.uv_buf_t AllocCallback(UvStreamHandle handle, int suggestedSize, object state)
@@ -47,9 +48,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return ((Connection)state).OnAlloc(handle, suggestedSize);
         }
 
-        private static void ReadCallback(UvStreamHandle handle, int nread, object state)
+        private static void ReadCallback(UvStreamHandle handle, int nread, Exception error, object state)
         {
-            ((Connection)state).OnRead(handle, nread);
+            ((Connection)state).OnRead(handle, nread, error);
         }
 
         private readonly UvStreamHandle _socket;
@@ -79,14 +80,19 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 2048);
         }
 
-        private void OnRead(UvStreamHandle handle, int nread)
+        private void OnRead(UvStreamHandle handle, int nread, Exception error)
         {
             SocketInput.Unpin(nread);
 
-            if (nread == 0)
+            if (nread == 0 || error != null)
             {
                 SocketInput.RemoteIntakeFin = true;
                 KestrelTrace.Log.ConnectionReadFin(_connectionId);
+
+                if (error != null)
+                {
+                    Trace.WriteLine("Connection.OnRead " + error.ToString());
+                }
             }
             else
             {

@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     /// </summary>
     public interface ISocketOutput
     {
-        void Write(ArraySegment<byte> buffer, Action<object> callback, object state);
+        void Write(ArraySegment<byte> buffer, Action<Exception, object> callback, object state);
     }
 
     public class SocketOutput : ISocketOutput
@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             _socket = socket;
         }
 
-        public void Write(ArraySegment<byte> buffer, Action<object> callback, object state)
+        public void Write(ArraySegment<byte> buffer, Action<Exception, object> callback, object state)
         {
             //TODO: need buffering that works
             var copy = new byte[buffer.Count];
@@ -45,17 +45,17 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public class ThisWriteReq : UvWriteReq
         {
-            private static readonly Action<UvWriteReq, int, object> _writeCallback = WriteCallback;
-            private static void WriteCallback(UvWriteReq req, int status, object state)
+            private static readonly Action<UvWriteReq, int, Exception, object> _writeCallback = WriteCallback;
+            private static void WriteCallback(UvWriteReq req, int status, Exception error, object state)
             {
-                ((ThisWriteReq)state).OnWrite(req, status);
+                ((ThisWriteReq)state).OnWrite(req, status, error);
             }
 
             SocketOutput _self;
             ArraySegment<byte> _buffer;
             Action<Exception> _drained;
             UvStreamHandle _socket;
-            Action<object> _callback;
+            Action<Exception, object> _callback;
             object _state;
             GCHandle _pin;
 
@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 SocketOutput socketOutput,
                 UvStreamHandle socket,
                 ArraySegment<byte> buffer,
-                Action<object> callback,
+                Action<Exception, object> callback,
                 object state)
             {
                 _self = socketOutput;
@@ -83,12 +83,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     this);
             }
 
-            private void OnWrite(UvWriteReq req, int status)
+            private void OnWrite(UvWriteReq req, int status, Exception error)
             {
                 KestrelTrace.Log.ConnectionWriteCallback(0, status);
                 //NOTE: pool this?
                 Dispose();
-                _callback(_state);
+                _callback(error, _state);
             }
         }
 

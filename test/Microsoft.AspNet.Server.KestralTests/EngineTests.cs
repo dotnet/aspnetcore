@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.AspNet.Server.KestralTests
+namespace Microsoft.AspNet.Server.KestrelTests
 {
     /// <summary>
     /// Summary description for EngineTests
@@ -35,20 +35,22 @@ namespace Microsoft.AspNet.Server.KestralTests
         {
             get
             {
-                try 
+                try
                 {
                     var locator = CallContextServiceLocator.Locator;
-                    if (locator == null) 
+                    if (locator == null)
                     {
                         return null;
                     }
                     var services = locator.ServiceProvider;
-                    if (services == null) 
+                    if (services == null)
                     {
                         return null;
                     }
                     return (ILibraryManager)services.GetService(typeof(ILibraryManager));
-                } catch (NullReferenceException) { return null; }
+                }
+                catch (NullReferenceException)
+                { return null; }
             }
         }
 
@@ -314,5 +316,29 @@ namespace Microsoft.AspNet.Server.KestralTests
             }
         }
 
+
+        [Fact]
+        public async Task DisconnectingClient()
+        {
+            using (var server = new TestServer(App))
+            {
+                var socket = new Socket(SocketType.Stream, ProtocolType.IP);
+                socket.Connect(IPAddress.Loopback, 54321);
+                await Task.Delay(200);
+                socket.Disconnect(false);
+                socket.Dispose();
+
+                await Task.Delay(200);
+                using (var connection = new TestConnection())
+                {
+                    await connection.SendEnd(
+                        "GET / HTTP/1.0",
+                        "\r\n");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.0 200 OK",
+                        "\r\n");
+                }
+            }
+        }
     }
 }

@@ -25,7 +25,21 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
             var tcs = new TaskCompletionSource<int>();
-            _context.FrameControl.Write(new ArraySegment<byte>(new byte[0]), x => ((TaskCompletionSource<int>)x).SetResult(0), tcs);
+            _context.FrameControl.Write(
+                new ArraySegment<byte>(new byte[0]),
+                (error, arg) =>
+                {
+                    var tcsArg = (TaskCompletionSource<int>)arg;
+                    if (error != null)
+                    {
+                        tcsArg.SetException(error);
+                    }
+                    else
+                    {
+                        tcsArg.SetResult(0);
+                    }
+                },
+                tcs);
             return tcs.Task;
         }
 
@@ -52,7 +66,21 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             var tcs = new TaskCompletionSource<int>();
-            _context.FrameControl.Write(new ArraySegment<byte>(buffer, offset, count), x => ((TaskCompletionSource<int>)x).SetResult(0), tcs);
+            _context.FrameControl.Write(
+                new ArraySegment<byte>(buffer, offset, count),
+                (error, arg) =>
+                {
+                    var tcsArg = (TaskCompletionSource<int>)arg;
+                    if (error != null)
+                    {
+                        tcsArg.SetException(error);
+                    }
+                    else
+                    {
+                        tcsArg.SetResult(0);
+                    }
+                },
+                tcs);
             return tcs.Task;
         }
 

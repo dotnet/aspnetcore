@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -38,7 +39,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     public interface IFrameControl
     {
         void ProduceContinue();
-        void Write(ArraySegment<byte> data, Action<object> callback, object state);
+        void Write(ArraySegment<byte> data, Action<Exception, object> callback, object state);
     }
 
     public class Frame : FrameContext, IFrameControl
@@ -229,7 +230,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         }
 
 
-        public void Write(ArraySegment<byte> data, Action<object> callback, object state)
+        public void Write(ArraySegment<byte> data, Action<Exception, object> callback, object state)
         {
             ProduceStart();
             SocketOutput.Write(data, callback, state);
@@ -255,7 +256,16 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 RequestHeaders.TryGetValue("Expect", out expect) &&
                 (expect.FirstOrDefault() ?? "").Equals("100-continue", StringComparison.OrdinalIgnoreCase))
             {
-                SocketOutput.Write(new ArraySegment<byte>(_continueBytes, 0, _continueBytes.Length), _ => { }, null);
+                SocketOutput.Write(
+                    new ArraySegment<byte>(_continueBytes, 0, _continueBytes.Length),
+                    (error, _) =>
+                    {
+                        if (error != null)
+                        {
+                            Trace.WriteLine("ProduceContinue " + error.ToString());
+                        }
+                    },
+                    null);
             }
         }
 
@@ -269,7 +279,17 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             var status = ReasonPhrases.ToStatus(StatusCode, ReasonPhrase);
 
             var responseHeader = CreateResponseHeader(status, ResponseHeaders);
-            SocketOutput.Write(responseHeader.Item1, x => ((IDisposable)x).Dispose(), responseHeader.Item2);
+            SocketOutput.Write(
+                responseHeader.Item1,
+                (error, x) =>
+                {
+                    if (error != null)
+                    {
+                        Trace.WriteLine("ProduceStart " + error.ToString());
+                    }
+                    ((IDisposable)x).Dispose();
+                },
+                responseHeader.Item2);
         }
 
         public void ProduceEnd(Exception ex)

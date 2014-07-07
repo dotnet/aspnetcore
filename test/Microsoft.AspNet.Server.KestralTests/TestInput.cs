@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.AspNet.Server.Kestrel.Http;
 
-namespace Microsoft.AspNet.Server.KestralTests
+namespace Microsoft.AspNet.Server.KestrelTests
 {
     class TestInput : IConnectionControl, IFrameControl
     {
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Server.KestralTests
         {
         }
 
-        public void Write(ArraySegment<byte> data, Action<object> callback, object state)
+        public void Write(ArraySegment<byte> data, Action<Exception, object> callback, object state)
         {
         }
         public void End(ProduceEndType endType)

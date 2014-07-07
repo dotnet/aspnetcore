@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNet.Server.Kestrel.Networking
@@ -16,12 +17,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 
         IntPtr _bufs;
 
-        Action<UvWriteReq, int, object> _callback;
+        Action<UvWriteReq, int, Exception, object> _callback;
         object _state;
         const int BUFFER_COUNT = 4;
 
         List<GCHandle> _pins = new List<GCHandle>();
-            
+
         public void Init(UvLoopHandle loop)
         {
             var requestSize = loop.Libuv.req_size(Libuv.RequestType.WRITE);
@@ -30,7 +31,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             _bufs = handle + requestSize;
         }
 
-        public unsafe void Write(UvStreamHandle handle, ArraySegment<ArraySegment<byte>> bufs, Action<UvWriteReq, int, object> callback, object state)
+        public unsafe void Write(
+            UvStreamHandle handle,
+            ArraySegment<ArraySegment<byte>> bufs,
+            Action<UvWriteReq, int, Exception, object> callback,
+            object state)
         {
             var pBuffers = (Libuv.uv_buf_t*)_bufs;
             var nBuffers = bufs.Count;
@@ -59,14 +64,32 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         private static void UvWriteCb(IntPtr ptr, int status)
         {
             var req = FromIntPtr<UvWriteReq>(ptr);
-            foreach(var pin in req._pins)
+            foreach (var pin in req._pins)
             {
                 pin.Free();
             }
             req._pins.Clear();
-            req._callback(req, status, req._state);
+
+            var callback = req._callback;
             req._callback = null;
+
+            var state = req._state;
             req._state = null;
+
+            Exception error = null;
+            if (status < 0)
+            {
+                req.Libuv.Check(status, out error);
+            }
+
+            try
+            {
+                callback(req, status, error, state);
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine("UvWriteCb " + ex.ToString());
+            }
         }
     }
 

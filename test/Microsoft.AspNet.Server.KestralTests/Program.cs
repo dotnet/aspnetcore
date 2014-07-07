@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Microsoft.AspNet.Server.KestralTests
+namespace Microsoft.AspNet.Server.KestrelTests
 {
     /// <summary>
     /// Summary description for Program
@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Server.KestralTests
     {
         public void Main()
         {
-            new EngineTests().Http11().Wait();
+            new EngineTests().DisconnectingClient().Wait();
         }
     }
 }

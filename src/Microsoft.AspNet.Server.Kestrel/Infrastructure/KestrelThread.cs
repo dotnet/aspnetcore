@@ -105,6 +105,7 @@ namespace Microsoft.AspNet.Server.Kestrel
             {
                 tcs.SetException(ex);
             }
+
             try
             {
                 var ran1 = _loop.Run();

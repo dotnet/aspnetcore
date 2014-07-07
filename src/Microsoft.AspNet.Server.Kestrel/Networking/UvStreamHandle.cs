@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 
 namespace Microsoft.AspNet.Server.Kestrel.Networking
 {
@@ -11,16 +12,16 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         private readonly static Libuv.uv_alloc_cb _uv_alloc_cb = UvAllocCb;
         private readonly static Libuv.uv_read_cb _uv_read_cb = UvReadCb;
 
-        public Action<UvStreamHandle, int, object> _connectionCallback;
+        public Action<UvStreamHandle, int, Exception, object> _connectionCallback;
         public object _connectionState;
 
         public Func<UvStreamHandle, int, object, Libuv.uv_buf_t> _allocCallback;
 
-        public Action<UvStreamHandle, int, object> _readCallback;
+        public Action<UvStreamHandle, int, Exception, object> _readCallback;
         public object _readState;
 
 
-        public void Listen(int backlog, Action<UvStreamHandle, int, object> callback, object state)
+        public void Listen(int backlog, Action<UvStreamHandle, int, Exception, object> callback, object state)
         {
             _connectionCallback = callback;
             _connectionState = state;
@@ -34,7 +35,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 
         public void ReadStart(
             Func<UvStreamHandle, int, object, Libuv.uv_buf_t> allocCallback,
-            Action<UvStreamHandle, int, object> readCallback,
+            Action<UvStreamHandle, int, Exception, object> readCallback,
             object state)
         {
             _allocCallback = allocCallback;
@@ -57,28 +58,57 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         private static void UvConnectionCb(IntPtr handle, int status)
         {
             var stream = FromIntPtr<UvStreamHandle>(handle);
-            stream._connectionCallback(stream, status, stream._connectionState);
+
+            Exception error;
+            status = stream.Libuv.Check(status, out error);
+
+            try
+            {
+                stream._connectionCallback(stream, status, error, stream._connectionState);
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine("UvConnectionCb " + ex.ToString());
+            }
         }
+
 
         private static void UvAllocCb(IntPtr handle, int suggested_size, out Libuv.uv_buf_t buf)
         {
             var stream = FromIntPtr<UvStreamHandle>(handle);
-            buf = stream._allocCallback(stream, suggested_size, stream._readState);
+            try
+            {
+                buf = stream._allocCallback(stream, suggested_size, stream._readState);
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine("UvAllocCb " + ex.ToString());
+                buf = stream.Libuv.buf_init(IntPtr.Zero, 0);
+                throw;
+            }
         }
 
         private static void UvReadCb(IntPtr handle, int nread, ref Libuv.uv_buf_t buf)
         {
             var stream = FromIntPtr<UvStreamHandle>(handle);
 
-            if (nread == -4095)
+            try
             {
-                stream._readCallback(stream, 0, stream._readState);
-                return;
+                if (nread < 0)
+                {
+                    Exception error;
+                    stream._uv.Check(nread, out error);
+                    stream._readCallback(stream, 0, error, stream._readState);
+                }
+                else
+                {
+                    stream._readCallback(stream, nread, null, stream._readState);
+                }
             }
-
-            var length = stream._uv.Check(nread);
-
-            stream._readCallback(stream, nread, stream._readState);
+            catch (Exception ex)
+            {
+                Trace.WriteLine("UbReadCb " + ex.ToString());
+            }
         }
 
     }
