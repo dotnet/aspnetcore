@@ -11,11 +11,11 @@
     "Microsoft.AspNet.Routing": "1.0.0-*",
     "Microsoft.AspNet.Server.IIS": "1.0.0-*",
     "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
+    "Microsoft.AspNet.StaticFiles": "1.0.0-*",
     "Microsoft.DataAnnotations": "1.0.0-*",
     "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
     "Microsoft.Framework.DependencyInjection": "1.0.0-*",
-    "Microsoft.Framework.OptionsModel": "1.0.0-*",
-    "Microsoft.AspNet.StaticFiles": "1.0.0-*"
+    "Microsoft.Framework.OptionsModel": "1.0.0-*"
   },
   "commands": { "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001" },
   "configurations": {
