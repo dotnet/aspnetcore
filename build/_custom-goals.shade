@@ -18,5 +18,23 @@ use namespace="System.Net"
         archive.CreateEntryFromFile(
             "src/Microsoft.AspNet.Server.Kestrel/native/darwin/universal/libuv.dylib", 
             "native/darwin/universal/libuv.dylib");
+
+        XDocument doc;
+        var entry = archive.GetEntry("[Content_Types].xml");
+        using (var stream = entry.Open())
+        {
+            doc = XDocument.Load(stream);
+        }
+        doc.Root.Add(
+            new XElement(
+                XName.Get("Default", "http://schemas.openxmlformats.org/package/2006/content-types"),
+                new XAttribute("Extension", "dylib"),
+                new XAttribute("ContentType", "application/octet")
+            ));
+        using (var stream = entry.Open())
+        {
+            doc.Save(stream);
+        }
+
         archive.Dispose();
     }
