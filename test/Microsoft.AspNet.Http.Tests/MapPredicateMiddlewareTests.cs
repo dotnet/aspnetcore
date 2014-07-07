@@ -176,9 +176,7 @@ namespace Microsoft.AspNet.Builder.Extensions
 
         private HttpContext CreateRequest()
         {
-            HttpContext context = new DefaultHttpContext(new FeatureModel.FeatureCollection());
-            context.SetFeature<IHttpRequestFeature>(new FakeHttpRequestFeature());
-            context.SetFeature<IHttpResponseFeature>(new FakeHttpResponseFeature());
+            HttpContext context = new DefaultHttpContext();
             return context;
         }
     }

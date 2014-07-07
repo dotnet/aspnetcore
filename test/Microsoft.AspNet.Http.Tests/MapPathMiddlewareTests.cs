@@ -187,9 +187,7 @@ namespace Microsoft.AspNet.Builder.Extensions
 
         private HttpContext CreateRequest(string basePath, string requestPath)
         {
-            HttpContext context = new DefaultHttpContext(new FeatureModel.FeatureCollection());
-            context.SetFeature<IHttpRequestFeature>(new FakeHttpRequestFeature());
-            context.SetFeature<IHttpResponseFeature>(new FakeHttpResponseFeature());
+            HttpContext context = new DefaultHttpContext();
             context.Request.PathBase = new PathString(basePath);
             context.Request.Path = new PathString(requestPath);
             return context;

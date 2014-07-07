@@ -5,9 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.HttpFeature;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.PipelineCore.Tests
@@ -57,9 +55,9 @@ namespace Microsoft.AspNet.PipelineCore.Tests
             // Arrange
             const string expected = "localhost:9001";
 
-            var headers = new Dictionary<string, string[]>(StringComparer.Ordinal)
+            var headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
             {
-                { "Host", new string[]{ expected } },
+                { "Host", new string[] { expected } },
             };
 
             var request = CreateRequest(headers);
@@ -77,7 +75,7 @@ namespace Microsoft.AspNet.PipelineCore.Tests
             // Arrange
             const string expected = "löcalhöst";
 
-            var headers = new Dictionary<string, string[]>(StringComparer.Ordinal)
+            var headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
             {
                 { "Host", new string[]{ "xn--lcalhst-90ae" } },
             };
@@ -97,7 +95,7 @@ namespace Microsoft.AspNet.PipelineCore.Tests
             // Arrange
             const string expected = "xn--lcalhst-90ae";
 
-            var headers = new Dictionary<string, string[]>(StringComparer.Ordinal);
+            var headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
 
             var request = CreateRequest(headers);
 
@@ -108,25 +106,19 @@ namespace Microsoft.AspNet.PipelineCore.Tests
             Assert.Equal(expected, headers["Host"][0]);
         }
 
-        private static DefaultHttpRequest CreateRequest(IDictionary<string, string[]> headers)
+        private static HttpRequest CreateRequest(IDictionary<string, string[]> headers)
         {
-            var requestInfo = new Mock<IHttpRequestFeature>();
-            requestInfo.SetupGet(r => r.Headers).Returns(headers);
-
-            var features = new FeatureCollection();
-            features.Add(typeof(IHttpRequestFeature), requestInfo.Object);
-
-            var context = new DefaultHttpContext(features);
-            return new DefaultHttpRequest(context, features);
+            var context = new DefaultHttpContext();
+            context.GetFeature<IHttpRequestFeature>().Headers = headers;
+            return context.Request;
         }
 
- 		private static DefaultHttpRequest GetRequestWithContentLength(string contentLength = null)
+        private static HttpRequest GetRequestWithContentLength(string contentLength = null)
         {
-            var headers = new Dictionary<string, string[]>(StringComparer.Ordinal);
+            var headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
             if (contentLength != null)
             {
                 headers.Add("Content-Length", new[] { contentLength });
-                
             }
 
  		    return CreateRequest(headers);

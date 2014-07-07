@@ -80,25 +80,8 @@ namespace Microsoft.AspNet.PipelineCore.Tests
 
         private HttpContext CreateContext()
         {
-            var context = new DefaultHttpContext(new FeatureCollection());
-            context.SetFeature<IHttpResponseFeature>(new FakeHttpResponse());
+            var context = new DefaultHttpContext();
             return context;
-        }
-
-        private class FakeHttpResponse : IHttpResponseFeature
-        {
-            public int StatusCode { get; set; }
-
-            public string ReasonPhrase { get; set; }
-
-            public IDictionary<string, string[]> Headers { get; set; }
-
-            public Stream Body { get; set; }
-
-            public void OnSendingHeaders(Action<object> callback, object state)
-            {
-                throw new NotImplementedException();
-            }
         }
     }
 }

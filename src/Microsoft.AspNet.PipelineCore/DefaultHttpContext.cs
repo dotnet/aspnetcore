@@ -33,6 +33,13 @@ namespace Microsoft.AspNet.PipelineCore
         private FeatureReference<IHttpWebSocketFeature> _webSockets;
         private IFeatureCollection _features;
 
+        public DefaultHttpContext()
+            : this(new FeatureCollection())
+        {
+            SetFeature<IHttpRequestFeature>(new DeafultHttpRequestFeature());
+            SetFeature<IHttpResponseFeature>(new DefaultHttpResponseFeature());
+        }
+
         public DefaultHttpContext(IFeatureCollection features)
         {
             _features = features;

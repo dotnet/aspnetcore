@@ -1,16 +1,11 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
-using System.Threading;
-using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.HttpFeature;
-using Microsoft.AspNet.HttpFeature.Security;
 using Microsoft.AspNet.PipelineCore;
 using Xunit;
 
@@ -101,66 +96,8 @@ namespace Microsoft.AspNet.Owin
 
         private HttpContext CreateContext()
         {
-            var features = new FeatureCollection();
-            features.Add(typeof(IHttpRequestFeature), new MoqHttpRequestFeature());
-            features.Add(typeof(IHttpResponseFeature), new MoqHttpResponseFeature());
-            features.Add(typeof(IHttpRequestLifetimeFeature), new MoqHttpRequestLifetimeFeature());
-            return new DefaultHttpContext(features);
-        }
-
-        private class MoqHttpRequestFeature : IHttpRequestFeature
-        {
-            public MoqHttpRequestFeature()
-            {
-                Headers = new Dictionary<string, string[]>();
-            }
-
-            public string Method { get; set; }
-
-            public string Scheme { get; set; }
-
-            public string Protocol { get; set; }
-
-            public Stream Body { get; set; }
-
-            public string PathBase { get; set; }
-
-            public string Path { get; set; }
-
-            public string QueryString { get; set; }
-
-            public IDictionary<string, string[]> Headers { get; set; }
-        }
-
-        private class MoqHttpResponseFeature : IHttpResponseFeature
-        {
-            public MoqHttpResponseFeature()
-            {
-                Headers = new Dictionary<string, string[]>();
-            }
-
-            public Stream Body { get; set; }
-
-            public int StatusCode { get; set; }
-
-            public string ReasonPhrase { get; set; }
-
-            public IDictionary<string, string[]> Headers { get; set; }
-
-            public void OnSendingHeaders(Action<object> callback, object state)
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        private class MoqHttpRequestLifetimeFeature : IHttpRequestLifetimeFeature
-        {
-            public CancellationToken RequestAborted { get; private set; }
-
-            public void Abort()
-            {
-                throw new NotImplementedException();
-            }
+            var context = new DefaultHttpContext();
+            return context;
         }
     }
 }
