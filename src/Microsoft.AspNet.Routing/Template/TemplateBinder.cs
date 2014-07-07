@@ -292,7 +292,14 @@ namespace Microsoft.AspNet.Routing.Template
             return null;
         }
 
-        private static bool RoutePartsEqual(object a, object b)
+
+        /// <summary>
+        /// Compares two objects for equality as parts of a case-insensitive path.
+        /// </summary>
+        /// <param name="a">An object to compare.</param>
+        /// <param name="b">An object to compare.</param>
+        /// <returns>True if the object are equal, otherwise false.</returns>
+        public static bool RoutePartsEqual(object a, object b)
         {
             var sa = a as string;
             var sb = b as string;

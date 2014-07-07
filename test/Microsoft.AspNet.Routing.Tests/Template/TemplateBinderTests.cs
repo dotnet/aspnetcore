@@ -1032,6 +1032,25 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                 expected);
         }
 
+        [Theory]
+        [InlineData(null, null, true)]
+        [InlineData("blog", null, false)]
+        [InlineData(null, "store", false)]
+        [InlineData("Cool", "cool", true)]
+        [InlineData("Co0l", "cool", false)]
+        public void RoutePartsEqualTest(object left, object right, bool expected)
+        {
+            // Arrange & Act & Assert
+            if (expected)
+            {
+                Assert.True(TemplateBinder.RoutePartsEqual(left, right));
+            }
+            else
+            {
+                Assert.False(TemplateBinder.RoutePartsEqual(left, right));
+            }
+        }
+
         private static IInlineConstraintResolver GetInlineConstraintResolver()
         {
             var services = new ServiceCollection { OptionsServices.GetDefaultServices() };
