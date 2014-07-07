@@ -76,30 +76,43 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private Libuv.uv_buf_t OnAlloc(UvStreamHandle handle, int suggestedSize)
         {
             return handle.Libuv.buf_init(
-                SocketInput.Pin(2048), 
+                SocketInput.Pin(2048),
                 2048);
         }
 
-        private void OnRead(UvStreamHandle handle, int nread, Exception error)
+        private void OnRead(UvStreamHandle handle, int status, Exception error)
         {
-            SocketInput.Unpin(nread);
+            SocketInput.Unpin(status);
 
-            if (nread == 0 || error != null)
+            var normalRead = error == null && status > 0;
+            var normalDone = status == 0 || status == -4077 || status == -4095;
+            var errorDone = !(normalDone || normalRead);
+
+            if (normalRead)
             {
-                SocketInput.RemoteIntakeFin = true;
+                KestrelTrace.Log.ConnectionRead(_connectionId, status);
+            }
+            else if (normalDone || errorDone)
+            {
                 KestrelTrace.Log.ConnectionReadFin(_connectionId);
 
-                if (error != null)
+                SocketInput.RemoteIntakeFin = true;
+
+                if (errorDone && error != null)
                 {
                     Trace.WriteLine("Connection.OnRead " + error.ToString());
                 }
             }
-            else
-            {
-                KestrelTrace.Log.ConnectionRead(_connectionId, nread);
-            }
 
-            _frame.Consume();
+
+            try
+            {
+                _frame.Consume();
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine("Connection._frame.Consume " + ex.ToString());
+            }
         }
 
         void IConnectionControl.Pause()

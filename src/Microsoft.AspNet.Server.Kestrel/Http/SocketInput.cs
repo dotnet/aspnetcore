@@ -90,16 +90,24 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
             Buffer = new ArraySegment<byte>(Buffer.Array, Buffer.Offset, Buffer.Count + count);
         }
+
         public IntPtr Pin(int minimumSize)
         {
             var segment = Available(minimumSize);
             _gcHandle = GCHandle.Alloc(segment.Array, GCHandleType.Pinned);
             return _gcHandle.AddrOfPinnedObject() + segment.Offset;
         }
+
         public void Unpin(int count)
         {
-            _gcHandle.Free();
-            Extend(count);
+            // read_cb may called without an earlier alloc_cb 
+            // this does not need to be thread-safe
+            // IsAllocated is checked only because Unpin can be called redundantly
+            if (_gcHandle.IsAllocated)
+            {
+                _gcHandle.Free();
+                Extend(count);
+            }
         }
 
     }

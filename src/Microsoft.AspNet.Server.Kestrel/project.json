@@ -4,8 +4,17 @@
         "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
     },
     "configurations": {
-        "net45": { },
+        "net45": {
+            "compilationOptions": {
+                "define": [ "TRACE", "NET45" ],
+                "allowUnsafe": true
+            }
+        },
         "k10": {
+            "compilationOptions": {
+                "define": [ "TRACE", "K10" ],
+                "allowUnsafe": true
+            },
             "dependencies": {
                 "System.Threading.ThreadPool": "4.0.10.0",
                 "System.Diagnostics.Debug": "4.0.10.0",
