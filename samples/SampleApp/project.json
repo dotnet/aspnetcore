@@ -3,7 +3,7 @@
     "dependencies": {
         "Kestrel": "1.0.0-*",
         "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
-        "Microsoft.AspNet.WebSockets.Middleware": "1.0.0-*"
+        "Microsoft.AspNet.WebSockets.Server": "1.0.0-*"
     },
     "configurations": {
         "net45": { },
