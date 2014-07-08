@@ -33,8 +33,6 @@ namespace Microsoft.AspNet.Http
 
         public abstract void Redirect(string location, bool permanent);
 
-        public abstract Task WriteAsync(string data);
-
         public virtual void Challenge()
         {
             Challenge(new string[0]);

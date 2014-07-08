@@ -124,12 +124,6 @@ namespace Microsoft.AspNet.PipelineCore
             Headers.Set(Constants.Headers.Location, location);
         }
 
-        public override Task WriteAsync(string data)
-        {
-            var bytes = Encoding.UTF8.GetBytes(data);
-            return Body.WriteAsync(bytes, 0, bytes.Length);
-        }
-
         public override void Challenge(IEnumerable<string> authenticationTypes, AuthenticationProperties properties)
         {
             if (authenticationTypes == null)

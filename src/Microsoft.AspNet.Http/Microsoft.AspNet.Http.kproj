@@ -33,6 +33,7 @@
     <Compile Include="HttpContext.cs" />
     <Compile Include="HttpRequest.cs" />
     <Compile Include="HttpResponse.cs" />
+    <Compile Include="HttpResponseWritingExtensions.cs" />
     <Compile Include="IBuilder.cs" />
     <Compile Include="IFormCollection.cs" />
     <Compile Include="IHeaderDictionary.cs" />

@@ -21,6 +21,7 @@
     <Content Include="project.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="HttpResponseWritingExtensionsTests.cs" />
     <Compile Include="MapPathMiddlewareTests.cs" />
     <Compile Include="MapPredicateMiddlewareTests.cs" />
     <Compile Include="PathStringTests.cs" />

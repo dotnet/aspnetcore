@@ -1,0 +1,20 @@
+﻿{
+  "dependencies": {
+    "Microsoft.AspNet.Http": "",
+    "Microsoft.AspNet.Http.Extensions": "",
+    "Microsoft.AspNet.HttpFeature": "",
+    "Microsoft.AspNet.PipelineCore": "",
+    "Xunit.KRunner": "1.0.0-*"
+  },
+  "commands": {
+    "test": "Xunit.KRunner"
+  },
+  "configurations": {
+    "net45": {
+      "dependencies": {
+        "Shouldly": "1.1.1.1",
+        "System.Runtime":  ""
+      }
+    }
+  }
+}
