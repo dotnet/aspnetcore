@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Internal;
@@ -48,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             // Assert
             httpResponse.VerifySet(r => r.ContentType = expectedContentType);
             // The following verifies the correct Content was written to Body
-            httpResponse.Verify(o => o.WriteAsync(input), Times.Exactly(1));
+            httpResponse.Verify(o => o.WriteAsync(input, CancellationToken.None), Times.Exactly(1));
         }
 
         [Fact]
