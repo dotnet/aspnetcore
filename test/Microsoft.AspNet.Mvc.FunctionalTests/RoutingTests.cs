@@ -143,12 +143,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act
             var response = await client.GetAsync("http://localhost/Store/Shop/Products");
+
+            // Assert
             Assert.Equal(200, response.StatusCode);
 
             var body = await response.ReadBodyAsStringAsync();
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
 
-            // Assert
             Assert.Contains("/Store/Shop/Products", result.ExpectedUrls);
             Assert.Equal("Store", result.Controller);
             Assert.Equal("ListProducts", result.Action);
@@ -180,13 +181,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act
             var response = await client.GetAsync("http://localhost/Home/About");
-            Assert.Equal(200, response.StatusCode);
 
             // Assert
+            Assert.Equal(200, response.StatusCode);
+
             var body = await response.ReadBodyAsStringAsync();
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
 
-            // Assert
             Assert.Contains("/Home/About", result.ExpectedUrls);
             Assert.Equal("Store", result.Controller);
             Assert.Equal("About", result.Action);
@@ -210,13 +211,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act
             var response = await client.GetAsync("http://localhost/Blog/Edit/5");
-            Assert.Equal(200, response.StatusCode);
 
             // Assert
+            Assert.Equal(200, response.StatusCode);
+
             var body = await response.ReadBodyAsStringAsync();
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
 
-            // Assert
             Assert.Contains("/Blog/Edit/5", result.ExpectedUrls);
             Assert.Equal("Blog", result.Controller);
             Assert.Equal("Edit", result.Action);
@@ -245,9 +246,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act
             var response = await client.GetAsync("http://localhost/api/Employee");
-            Assert.Equal(200, response.StatusCode);
 
             // Assert
+            Assert.Equal(200, response.StatusCode);
+
             var body = await response.ReadBodyAsStringAsync();
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
 
@@ -267,16 +269,41 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act
             var response = await client.GetAsync("http://localhost/api/Employee/5/Boss");
-            Assert.Equal(200, response.StatusCode);
 
             // Assert
+            Assert.Equal(200, response.StatusCode);
+
             var body = await response.ReadBodyAsStringAsync();
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
 
-            // Assert
             Assert.Contains("/api/Employee/5/Boss", result.ExpectedUrls);
             Assert.Equal("Employee", result.Controller);
             Assert.Equal("GetBoss", result.Action);
+
+            Assert.Contains(
+                new KeyValuePair<string, object>("id", "5"),
+                result.RouteValues);
+        }
+
+        [Fact]
+        public async Task AttributeRoutedAction_ActionLevelRouteWithTildeSlash_OverridesControllerLevelRoute()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            // Act
+            var response = await client.GetAsync("http://localhost/Manager/5");
+
+            // Assert
+            Assert.Equal(200, response.StatusCode);
+
+            var body = await response.ReadBodyAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Contains("/Manager/5", result.ExpectedUrls);
+            Assert.Equal("Employee", result.Controller);
+            Assert.Equal("GetManager", result.Action);
 
             Assert.Contains(
                 new KeyValuePair<string, object>("id", "5"),

@@ -31,5 +31,11 @@ namespace RoutingWebSite
         {
             return _generator.Generate("/api/Employee/" + id + "/Boss");
         }
+
+        [HttpGet("~/Manager/{id}")]
+        public IActionResult GetManager(int id)
+        {
+            return _generator.Generate("/Manager/" + id);
+        }
     }
 }

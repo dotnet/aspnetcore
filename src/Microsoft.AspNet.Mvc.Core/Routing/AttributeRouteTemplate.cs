@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+
 namespace Microsoft.AspNet.Mvc.Routing
 {
     /// <summary>
@@ -16,34 +18,80 @@ namespace Microsoft.AspNet.Mvc.Routing
         /// <returns>A combined template.</returns>
         public static string Combine(string left, string right)
         {
+            var result = CombineCore(left, right);
+            return CleanTemplate(result);
+        }
+
+        private static string CombineCore(string left, string right)
+        {
             if (left == null && right == null)
             {
                 return null;
             }
             else if (left == null)
             {
-                return right.Trim('/');
+                return right;
             }
             else if (right == null)
             {
-                return left.Trim('/');
+                return left;
             }
 
-            // Neither is null
-            var trimmedLeft = left.Trim('/');
-            var trimmedRight = right.Trim('/');
-
-            if (trimmedLeft == string.Empty)
+            if (right.StartsWith("~/", StringComparison.OrdinalIgnoreCase) ||
+                right.StartsWith("/", StringComparison.OrdinalIgnoreCase) ||
+                left.Equals("~/", StringComparison.OrdinalIgnoreCase) ||
+                left.Equals("/", StringComparison.OrdinalIgnoreCase))
             {
-                return trimmedRight;
+                return right;
             }
-            else if (trimmedRight == string.Empty)
+
+            if (left.EndsWith("/", StringComparison.OrdinalIgnoreCase))
             {
-                return trimmedLeft;
+                return left + right;
             }
 
             // Both templates contain some text.
-            return trimmedLeft + '/' + trimmedRight;
+            return left + '/' + right;
+        }
+
+        private static string CleanTemplate(string result)
+        {
+            if (result == null)
+            {
+                return null;
+            }
+
+            // This is an invalid combined template, so we don't want to
+            // accidentally clean it and produce a valid template. For that
+            // reason we ignore the clean up process for it.
+            if (result.Equals("//", StringComparison.OrdinalIgnoreCase))
+            {
+                return result;
+            }
+
+            var startIndex = 0;
+            if (result.StartsWith("/", StringComparison.OrdinalIgnoreCase))
+            {
+                startIndex = 1;
+            }
+            else if (result.StartsWith("~/", StringComparison.OrdinalIgnoreCase))
+            {
+                startIndex = 2;
+            }
+
+            // We are in the case where the string is "/" or "~/"
+            if (startIndex == result.Length)
+            {
+                return "";
+            }
+
+            var subStringLength = result.Length - startIndex;
+            if (result.EndsWith("/", StringComparison.OrdinalIgnoreCase))
+            {
+                subStringLength--;
+            }
+
+            return result.Substring(startIndex, subStringLength);
         }
     }
 }
