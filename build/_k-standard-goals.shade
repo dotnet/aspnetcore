@@ -115,29 +115,29 @@ functions @{
                       .Select(p => Path.GetDirectoryName(p))
                       .Distinct();
     }
-    bool TestCommand(string program, string commandline = null) {
+    bool TestCommand(string program, string commandline) {
       // Tests whether a given command succeeds at the command line.
       // Useful for testing whether a given command is installed and on the path, e.g. node
       var processStartInfo = new ProcessStartInfo {
         UseShellExecute = false,
-        WorkingDirectory = Directory.GetCurrentDirectory(),
-        FileName = program,
-        Arguments = commandline,
+        FileName = "cmd",
+        Arguments = "/C " + program + " " + commandline,
       };
       try {
         Log.Info(string.Format("Testing for command: {0} {1}", program, commandline));
         var process = Process.Start(processStartInfo);
         process.WaitForExit();
         if (process.ExitCode == 0) {
-          Log.Info("   command found");
+          Log.Info("   command found (0 exit code)");
           return true;
         }
         else {
-          Log.Warn("   command not found");
+          Log.Warn("   command not found (non-0 exit code)");
           return false;
         }
       }
-      catch (Exception) {
+      catch (Exception ex) {
+        Log.Warn("   command exception: " + ex.ToString());
         Log.Warn("   command not found");
         return false;
       }
