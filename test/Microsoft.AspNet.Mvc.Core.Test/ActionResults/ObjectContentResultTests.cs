@@ -35,10 +35,11 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             // Arrange
             var expectedContentType = "text/plain";
             var input = "testInput";
+            var stream = new MemoryStream();
 
             var httpResponse = new Mock<HttpResponse>();
             httpResponse.SetupSet(r => r.ContentType = expectedContentType).Verifiable();
-            httpResponse.Object.Body = new MemoryStream();
+            httpResponse.SetupGet(r => r.Body).Returns(stream);
 
             var actionContext = CreateMockActionContext(httpResponse.Object);
 
