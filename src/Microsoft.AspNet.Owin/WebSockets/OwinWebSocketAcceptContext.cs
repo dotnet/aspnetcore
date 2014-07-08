@@ -8,10 +8,15 @@ namespace Microsoft.AspNet.Owin
 {
     public class OwinWebSocketAcceptContext : IWebSocketAcceptContext
     {
-        private IDictionary<string, object> _options = new Dictionary<string, object>(1);
+        private IDictionary<string, object> _options;
 
-	    public OwinWebSocketAcceptContext()
+	    public OwinWebSocketAcceptContext() : this(new Dictionary<string, object>(1))
 	    {
+        }
+
+        public OwinWebSocketAcceptContext(IDictionary<string, object> options)
+        {
+            _options = options;
         }
 
         public string SubProtocol
@@ -19,7 +24,7 @@ namespace Microsoft.AspNet.Owin
             get
             {
                 object obj;
-                if (_options.TryGetValue(OwinConstants.WebSocket.SubProtocol, out obj))
+                if (_options != null && _options.TryGetValue(OwinConstants.WebSocket.SubProtocol, out obj))
                 {
                     return (string)obj;
                 }
@@ -27,6 +32,10 @@ namespace Microsoft.AspNet.Owin
             }
             set
             {
+                if (_options == null)
+                {
+                    _options = new Dictionary<string, object>(1);
+                }
                 _options[OwinConstants.WebSocket.SubProtocol] = value;
             }
         }

@@ -29,6 +29,8 @@
     <Compile Include="WebSockets\OwinWebSocketAcceptContext.cs" />
     <Compile Include="WebSockets\OwinWebSocketAdapter.cs" />
     <Compile Include="WebSockets\OwinWebSocketAcceptAdapter.cs" />
+    <Compile Include="WebSockets\WebSocketAcceptAdapter.cs" />
+    <Compile Include="WebSockets\WebSocketAdapter.cs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>

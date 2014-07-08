@@ -130,6 +130,7 @@ namespace Microsoft.AspNet.Owin
             // 3.1. Startup
 
             public const string Version = "websocket.Version";
+            public const string VersionValue = "1.0";
 
             // 3.2. Per Request
 
