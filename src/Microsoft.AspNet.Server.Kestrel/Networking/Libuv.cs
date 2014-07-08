@@ -128,6 +128,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             handle.Validate(closed: true);
             _uv_close(handle.InternalGetHandle(), close_cb);
         }
+        public void close(IntPtr handle, uv_close_cb close_cb)
+        {
+            _uv_close(handle, close_cb);
+        }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void uv_async_cb(IntPtr handle);

@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
     public abstract class UvMemory : SafeHandle
     {
         protected Libuv _uv;
-        int _threadId;
+        private int _threadId;
 
         public UvMemory() : base(IntPtr.Zero, true)
         {
@@ -30,19 +30,36 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             }
         }
 
-        unsafe protected void CreateHandle(Libuv uv, int size)
+        public int ThreadId
+        {
+            get
+            {
+                return _threadId;
+            }
+            private set
+            {
+                _threadId = value;
+            }
+        }
+
+        unsafe protected void CreateMemory(Libuv uv, int threadId, int size)
         {
             _uv = uv;
-            _threadId = Thread.CurrentThread.ManagedThreadId;
-
+            ThreadId = threadId;
+            
             handle = Marshal.AllocCoTaskMem(size);
             *(IntPtr*)handle = GCHandle.ToIntPtr(GCHandle.Alloc(this, GCHandleType.Weak));
         }
 
-        protected void CreateHandle(UvLoopHandle loop, int size)
+        unsafe protected static void DestroyMemory(IntPtr memory)
         {
-            CreateHandle(loop._uv, size);
-            _threadId = loop._threadId;
+            var gcHandlePtr = *(IntPtr*)memory;
+            if (gcHandlePtr != IntPtr.Zero)
+            {
+                var gcHandle = GCHandle.FromIntPtr(gcHandlePtr);
+                gcHandle.Free();
+            }
+            Marshal.FreeCoTaskMem(memory);
         }
 
         internal IntPtr InternalGetHandle()
@@ -55,16 +72,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             Trace.Assert(closed || !IsClosed, "Handle is closed");
             Trace.Assert(!IsInvalid, "Handle is invalid");
             Trace.Assert(_threadId == Thread.CurrentThread.ManagedThreadId, "ThreadId is incorrect");
-        }
-
-        unsafe protected static void DestroyHandle(IntPtr memory)
-        {
-            var gcHandlePtr = *(IntPtr*)memory;
-            if (gcHandlePtr != IntPtr.Zero)
-            {
-                GCHandle.FromIntPtr(gcHandlePtr).Free();
-            }
-            Marshal.FreeCoTaskMem(memory);
         }
 
         unsafe public static THandle FromIntPtr<THandle>(IntPtr handle)

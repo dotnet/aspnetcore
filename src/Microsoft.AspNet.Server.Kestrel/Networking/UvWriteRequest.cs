@@ -27,7 +27,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         {
             var requestSize = loop.Libuv.req_size(Libuv.RequestType.WRITE);
             var bufferSize = Marshal.SizeOf(typeof(Libuv.uv_buf_t)) * BUFFER_COUNT;
-            CreateHandle(loop, requestSize + bufferSize);
+            CreateMemory(
+                loop.Libuv,
+                loop.ThreadId,
+                requestSize + bufferSize);
             _bufs = handle + requestSize;
         }
 
@@ -37,17 +40,23 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             Action<UvWriteReq, int, Exception, object> callback,
             object state)
         {
+            // add GCHandle to keeps this SafeHandle alive while request processing
+            _pins.Add(GCHandle.Alloc(this, GCHandleType.Normal));
+
             var pBuffers = (Libuv.uv_buf_t*)_bufs;
             var nBuffers = bufs.Count;
             if (nBuffers > BUFFER_COUNT)
             {
+                // create and pin buffer array when it's larger than the pre-allocated one
                 var bufArray = new Libuv.uv_buf_t[nBuffers];
                 var gcHandle = GCHandle.Alloc(bufArray, GCHandleType.Pinned);
                 _pins.Add(gcHandle);
                 pBuffers = (Libuv.uv_buf_t*)gcHandle.AddrOfPinnedObject();
             }
+
             for (var index = 0; index != nBuffers; ++index)
             {
+                // create and pin each segment being written
                 var buf = bufs.Array[bufs.Offset + index];
 
                 var gcHandle = GCHandle.Alloc(buf.Array, GCHandleType.Pinned);
@@ -56,6 +65,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
                     gcHandle.AddrOfPinnedObject() + buf.Offset,
                     buf.Count);
             }
+
             _callback = callback;
             _state = state;
             _uv.write(this, handle, pBuffers, nBuffers, _uv_write_cb);
@@ -97,7 +107,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
     {
         protected override bool ReleaseHandle()
         {
-            DestroyHandle(handle);
+            DestroyMemory(handle);
             handle = IntPtr.Zero;
             return true;
         }

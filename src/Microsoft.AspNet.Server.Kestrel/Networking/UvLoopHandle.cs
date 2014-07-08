@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading;
 
 namespace Microsoft.AspNet.Server.Kestrel.Networking
 {
@@ -9,7 +10,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
     {
         public void Init(Libuv uv)
         {
-            CreateHandle(uv, uv.loop_size());
+            CreateMemory(
+                uv, 
+                Thread.CurrentThread.ManagedThreadId,
+                uv.loop_size());
+
             _uv.loop_init(this);
         }
 
@@ -30,7 +35,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             {
                 _uv.loop_close(this);
                 handle = IntPtr.Zero;
-                DestroyHandle(memory);
+                DestroyMemory(memory);
             }
             return true;
         }

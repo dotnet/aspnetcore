@@ -4,6 +4,7 @@
 using Microsoft.AspNet.Server.Kestrel.Networking;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,6 +22,8 @@ namespace Microsoft.AspNet.Server.Kestrel
         UvAsyncHandle _post;
         Queue<Work> _workAdding = new Queue<Work>();
         Queue<Work> _workRunning = new Queue<Work>();
+        Queue<CloseHandle> _closeHandleAdding = new Queue<CloseHandle>();
+        Queue<CloseHandle> _closeHandleRunning = new Queue<CloseHandle>();
         object _workSync = new Object();
         bool _stopImmediate = false;
         private ExceptionDispatchInfo _closeError;
@@ -31,9 +34,12 @@ namespace Microsoft.AspNet.Server.Kestrel
             _loop = new UvLoopHandle();
             _post = new UvAsyncHandle();
             _thread = new Thread(ThreadStart);
+            QueueCloseHandle = PostCloseHandle;
         }
 
         public UvLoopHandle Loop { get { return _loop; } }
+
+        public Action<Action<IntPtr>, IntPtr> QueueCloseHandle { get; internal set; }
 
         public Task StartAsync()
         {
@@ -92,6 +98,15 @@ namespace Microsoft.AspNet.Server.Kestrel
             return tcs.Task;
         }
 
+        private void PostCloseHandle(Action<IntPtr> callback, IntPtr handle)
+        {
+            lock (_workSync)
+            {
+                _closeHandleAdding.Enqueue(new CloseHandle { Callback = callback, Handle = handle });
+            }
+            _post.Send();
+        }
+
         private void ThreadStart(object parameter)
         {
             var tcs = (TaskCompletionSource<int>)parameter;
@@ -119,7 +134,7 @@ namespace Microsoft.AspNet.Server.Kestrel
                 _post.Reference();
                 _post.DangerousClose();
                 _engine.Libuv.walk(
-                    _loop, 
+                    _loop,
                     (ptr, arg) =>
                     {
                         var handle = UvMemory.FromIntPtr<UvHandle>(ptr);
@@ -138,12 +153,19 @@ namespace Microsoft.AspNet.Server.Kestrel
 
         private void OnPost()
         {
-            var queue = _workAdding;
+            DoPostWork();
+            DoPostCloseHandle();
+        }
+
+        private void DoPostWork()
+        {
+            Queue<Work> queue;
             lock (_workSync)
             {
+                queue = _workAdding;
                 _workAdding = _workRunning;
+                _workRunning = queue;
             }
-            _workRunning = queue;
             while (queue.Count != 0)
             {
                 var work = queue.Dequeue();
@@ -156,7 +178,7 @@ namespace Microsoft.AspNet.Server.Kestrel
                             tcs =>
                             {
                                 ((TaskCompletionSource<int>)tcs).SetResult(0);
-                            }, 
+                            },
                             work.Completion);
                     }
                 }
@@ -168,8 +190,30 @@ namespace Microsoft.AspNet.Server.Kestrel
                     }
                     else
                     {
-                        // TODO: unobserved exception?
+                        Trace.WriteLine("KestrelThread.DoPostWork " + ex.ToString());
                     }
+                }
+            }
+        }
+        private void DoPostCloseHandle()
+        {
+            Queue<CloseHandle> queue;
+            lock (_workSync)
+            {
+                queue = _closeHandleAdding;
+                _closeHandleAdding = _closeHandleRunning;
+                _closeHandleRunning = queue;
+            }            
+            while (queue.Count != 0)
+            {
+                var closeHandle = queue.Dequeue();
+                try
+                {
+                    closeHandle.Callback(closeHandle.Handle);
+                }
+                catch (Exception ex)
+                {
+                    Trace.WriteLine("KestrelThread.DoPostCloseHandle " + ex.ToString());
                 }
             }
         }
@@ -179,6 +223,11 @@ namespace Microsoft.AspNet.Server.Kestrel
             public Action<object> Callback;
             public object State;
             public TaskCompletionSource<int> Completion;
+        }
+        private struct CloseHandle
+        {
+            public Action<IntPtr> Callback;
+            public IntPtr Handle;
         }
     }
 }

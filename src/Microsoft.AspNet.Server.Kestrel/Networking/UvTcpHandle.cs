@@ -10,7 +10,21 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
     {
         public void Init(UvLoopHandle loop)
         {
-            CreateHandle(loop, loop.Libuv.handle_size(Libuv.HandleType.TCP));
+            CreateMemory(
+                loop.Libuv,
+                loop.ThreadId, 
+                loop.Libuv.handle_size(Libuv.HandleType.TCP));
+
+            _uv.tcp_init(loop, this);
+        }
+
+        public void Init(UvLoopHandle loop, Action<Action<IntPtr>, IntPtr> queueCloseHandle)
+        {
+            CreateHandle(
+                loop.Libuv, 
+                loop.ThreadId,
+                loop.Libuv.handle_size(Libuv.HandleType.TCP), queueCloseHandle);
+
             _uv.tcp_init(loop, this);
         }
 
