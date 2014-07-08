@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             // Assert
             httpResponse.VerifySet(r => r.ContentType = expectedContentType);
             // The following verifies the correct Content was written to Body
-            httpResponse.Verify(o => o.WriteAsync(input, CancellationToken.None), Times.Exactly(1));
+            Assert.Equal(input.Length, httpResponse.Object.Body.Length);
         }
 
         [Fact]
