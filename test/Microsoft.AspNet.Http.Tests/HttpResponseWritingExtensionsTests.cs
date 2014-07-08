@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder.Extensions;
-using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.PipelineCore;
 using Xunit;
 
@@ -33,6 +32,7 @@ namespace Microsoft.AspNet.Http
         private HttpContext CreateRequest()
         {
             HttpContext context = new DefaultHttpContext();
+            context.Response.Body = new MemoryStream();
             return context;
         }
     }
