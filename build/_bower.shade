@@ -1,9 +1,13 @@
 default currentDir = '${Directory.GetCurrentDirectory()}'
 default nodeDir = '${Path.Combine(currentDir, "bin", "nodejs")}'
-var bowerInstalled = '${Directory.Exists(Path.Combine(nodeDir, "node_modules", "bower"))}'
 
-- // Install bower locally
-npm npmCommand='install --prefix ${nodeDir} bower' if='!bowerInstalled' once='installBower'
+var bowerGloballyInstalled = '${TestCommand("bower --version")}'
+var bowerInstalled = '${Directory.Exists(Path.Combine(nodeDir, "node_modules", "bower"))}'
+var bowerCmd = '${ bowerGloballyInstalled ? "bower" : Path.Combine(nodeDir, "node_modules", "bower", "bin", "bower") }'
+
+- // Install bower locally if not already installed either globally or locally
+npm npmCommand='install --prefix ${nodeDir} bower' if='!(bowerGloballyInstalled || bowerInstalled)' once='installBower'
 
 - // Run bower
-node nodeCommand='${Path.Combine(nodeDir, "node_modules", "bower", "bin", "bower")} ${bowerCommand}' workingdir='${bowerDir}'
+exec program='${bowerCmd}' commandline='${bowerCommand}' if='bowerGloballyInstalled'
+node nodeCommand='${bowerCmd} ${bowerCommand}' workingdir='${bowerDir}' if='!bowerGloballyInstalled'

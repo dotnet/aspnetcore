@@ -115,6 +115,33 @@ functions @{
                       .Select(p => Path.GetDirectoryName(p))
                       .Distinct();
     }
+    bool TestCommand(string program, string commandline = null) {
+      // Tests whether a given command succeeds at the command line.
+      // Useful for testing whether a given command is installed and on the path, e.g. node
+      var processStartInfo = new ProcessStartInfo {
+        UseShellExecute = false,
+        WorkingDirectory = Directory.GetCurrentDirectory(),
+        FileName = program,
+        Arguments = commandline,
+      };
+      try {
+        Log.Info(string.Format("Testing for command: {0} {1}", program, commandline));
+        var process = Process.Start(processStartInfo);
+        process.WaitForExit();
+        if (process.ExitCode == 0) {
+          Log.Info("   command found");
+          return true;
+        }
+        else {
+          Log.Warn("   command not found");
+          return false;
+        }
+      }
+      catch (Exception) {
+        Log.Warn("   command not found");
+        return false;
+      }
+    }
 }
 
 macro name='Exec' program='string' commandline='string'

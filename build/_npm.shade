@@ -1,7 +1,9 @@
 default currentDir = '${Directory.GetCurrentDirectory()}'
 default nodeDir = '${Path.Combine(currentDir, "bin", "nodejs")}'
 default npmDir = '${currentDir}'
-var npmCmd = '${Path.Combine(nodeDir, "npm.cmd")}'
+
+var npmGloballyInstalled = '${TestCommand("npm --version")}'
+var npmCmd = '${ npmGloballyInstalled ? "npm" : Path.Combine(nodeDir, "npm.cmd") }'
 
 node-install once='installNode'
 exec program='${npmCmd}' commandline='${npmCommand}' workingdir='${npmDir}'
