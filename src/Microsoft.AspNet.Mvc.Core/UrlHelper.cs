@@ -46,24 +46,6 @@ namespace Microsoft.AspNet.Mvc
                 valuesDictionary["controller"] = controller;
             }
 
-            var context = new VirtualPathContext(_httpContext, _ambientValues, valuesDictionary);
-            var actions = _actionSelector.GetCandidateActions(context);
-
-            var actionCandidate = actions.FirstOrDefault();
-            if (actionCandidate == null)
-            {
-                return null;
-            }
-
-            foreach (var constraint in actionCandidate.RouteConstraints)
-            {
-                if (constraint.KeyHandling == RouteKeyHandling.DenyKey &&
-                    _ambientValues.ContainsKey(constraint.RouteKey))
-                {
-                    valuesDictionary[constraint.RouteKey] = null;
-                }
-            }
-
             var path = GeneratePathFromRoute(valuesDictionary);
             if (path == null)
             {

@@ -14,7 +14,5 @@ namespace Microsoft.AspNet.Mvc
         bool Match(ActionDescriptor descriptor, RouteContext context);
 
         bool HasValidAction(VirtualPathContext context);
-
-        IEnumerable<ActionDescriptor> GetCandidateActions(VirtualPathContext context);
     }
 }
