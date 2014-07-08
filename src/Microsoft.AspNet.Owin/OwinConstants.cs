@@ -134,6 +134,7 @@ namespace Microsoft.AspNet.Owin
             // 3.2. Per Request
 
             public const string Accept = "websocket.Accept";
+            public const string AcceptAlt = "websocket.AcceptAlt"; // Non-spec
 
             // 4. Accept
 

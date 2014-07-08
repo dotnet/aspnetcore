@@ -7,15 +7,16 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.WebSockets;
 using System.Reflection;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.HttpFeature.Security;
-using Microsoft.AspNet.FeatureModel;
 
 namespace Microsoft.AspNet.Owin
 {
@@ -30,6 +31,7 @@ namespace Microsoft.AspNet.Owin
         IHttpClientCertificateFeature,
         IHttpRequestLifetimeFeature,
         IHttpAuthenticationFeature,
+        IHttpWebSocketFeature,
         IOwinEnvironmentFeature
     {
         public IDictionary<string, object> Environment { get; set; }
@@ -236,6 +238,32 @@ namespace Microsoft.AspNet.Owin
 
         IAuthenticationHandler IHttpAuthenticationFeature.Handler { get; set; }
 
+        /// <summary>
+        /// Gets or sets if the underlying server supports WebSockets. This is disabled by default.
+        /// The value should be consistant across requests.
+        /// </summary>
+        public bool SupportsWebSockets { get; set; }
+
+        bool IHttpWebSocketFeature.IsWebSocketRequest
+        {
+            get
+            {
+                object obj;
+                return Environment.TryGetValue(OwinConstants.WebSocket.AcceptAlt, out obj);
+            }
+        }
+
+        Task<WebSocket> IHttpWebSocketFeature.AcceptAsync(IWebSocketAcceptContext context)
+        {
+            object obj;
+            if (!Environment.TryGetValue(OwinConstants.WebSocket.AcceptAlt, out obj))
+            {
+                throw new NotSupportedException("WebSockets are not supported"); // TODO: LOC
+            }
+            var accept = (Func<IWebSocketAcceptContext, Task<WebSocket>>)obj;
+            return accept(context);
+        }
+
         public int Revision
         {
             get { return 0; } // Not modifiable
@@ -259,6 +287,10 @@ namespace Microsoft.AspNet.Owin
                 else if (key == typeof(IHttpClientCertificateFeature))
                 {
                     return SupportsClientCerts;
+                }
+                else if (key == typeof(IHttpWebSocketFeature))
+                {
+                    return SupportsWebSockets;
                 }
 
                 // The rest of the features are always supported.
@@ -287,6 +319,10 @@ namespace Microsoft.AspNet.Owin
                 if (SupportsClientCerts)
                 {
                     keys.Add(typeof(IHttpClientCertificateFeature));
+                }
+                if (SupportsWebSockets)
+                {
+                    keys.Add(typeof(IHttpWebSocketFeature));
                 }
                 return keys;
             }

@@ -1,0 +1,129 @@
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Collections.Generic;
+using System.Net.WebSockets;
+using System.Threading.Tasks;
+using Microsoft.AspNet.HttpFeature;
+
+namespace Microsoft.AspNet.Owin
+{
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+    using WebSocketAccept =
+        Action
+        <
+            IDictionary<string, object>, // WebSocket Accept parameters
+            Func // WebSocketFunc callback
+            <
+                IDictionary<string, object>, // WebSocket environment
+                Task // Complete
+            >
+        >;
+    using WebSocketAcceptAlt =
+        Func
+        <
+            IWebSocketAcceptContext, // WebSocket Accept parameters
+            Task<WebSocket>
+        >;
+
+    public class OwinWebSocketAcceptAdapter
+    {
+        private WebSocketAccept _owinWebSocketAccept;
+        private TaskCompletionSource<int> _requestTcs = new TaskCompletionSource<int>();
+        private TaskCompletionSource<WebSocket> _acceptTcs = new TaskCompletionSource<WebSocket>();
+        private TaskCompletionSource<int> _upstreamWentAsync = new TaskCompletionSource<int>();
+        private string _subProtocol = null;
+
+        private OwinWebSocketAcceptAdapter(WebSocketAccept owinWebSocketAccept)
+        {
+            _owinWebSocketAccept = owinWebSocketAccept;
+        }
+
+        private Task RequestTask { get { return _requestTcs.Task; } }
+        private Task UpstreamTask { get; set; }
+        private TaskCompletionSource<int> UpstreamWentAsyncTcs { get { return _upstreamWentAsync; } }
+
+        private async Task<WebSocket> AcceptWebSocketAsync(IWebSocketAcceptContext context)
+        {
+            IDictionary<string, object> options = null;
+            if (context is OwinWebSocketAcceptContext)
+            {
+                var acceptContext = context as OwinWebSocketAcceptContext;
+                options = acceptContext.Options;
+                _subProtocol = acceptContext.SubProtocol;
+            }
+            else if (context != null && context.SubProtocol != null)
+            {
+                options = new Dictionary<string, object>(1)
+                {
+                    { OwinConstants.WebSocket.SubProtocol, context.SubProtocol }
+                };
+                _subProtocol = context.SubProtocol;
+            }
+
+            // Accept may have been called synchronously on the original request thread, we might not have a task yet. Go async.
+            await _upstreamWentAsync.Task;
+
+            _owinWebSocketAccept(options, OwinAcceptCallback);
+            _requestTcs.TrySetResult(0); // Let the pipeline unwind.
+
+            return await _acceptTcs.Task;
+        }
+
+        private Task OwinAcceptCallback(IDictionary<string, object> webSocketContext)
+        {
+            _acceptTcs.TrySetResult(new OwinWebSocketAdapter(webSocketContext, _subProtocol));
+            return UpstreamTask;
+        }
+
+        // Make sure declined websocket requests complete. This is a no-op for accepted websocket requests.
+        private void EnsureCompleted(Task task)
+        {
+            if (task.IsCanceled)
+            {
+                _requestTcs.TrySetCanceled();
+            }
+            else if (task.IsFaulted)
+            {
+                _requestTcs.TrySetException(task.Exception);
+            }
+            else
+            {
+                _requestTcs.TrySetResult(0);
+            }
+        }
+
+        public static AppFunc AdaptWebSockets(AppFunc next)
+        {
+            return environment =>
+            {
+                object accept;
+                if (environment.TryGetValue(OwinConstants.WebSocket.Accept, out accept) && accept is WebSocketAccept)
+                {
+                    var adapter = new OwinWebSocketAcceptAdapter((WebSocketAccept)accept);
+
+                    environment[OwinConstants.WebSocket.AcceptAlt] = new WebSocketAcceptAlt(adapter.AcceptWebSocketAsync);
+
+                    try
+                    {
+                        adapter.UpstreamTask = next(environment);
+                        adapter.UpstreamWentAsyncTcs.TrySetResult(0);
+                        adapter.UpstreamTask.ContinueWith(adapter.EnsureCompleted, TaskContinuationOptions.ExecuteSynchronously);
+                    }
+                    catch (Exception ex)
+                    {
+                        adapter.UpstreamWentAsyncTcs.TrySetException(ex);
+                        throw;
+                    }
+
+                    return adapter.RequestTask;
+                }
+                else
+                {
+                    return next(environment);
+                }
+            };
+        }
+    }
+}
