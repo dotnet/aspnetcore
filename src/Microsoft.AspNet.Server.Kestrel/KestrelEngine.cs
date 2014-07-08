@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Server.Kestrel
         {
             foreach (var thread in Threads)
             {
-                thread.Stop(TimeSpan.FromSeconds(45));
+                thread.Stop(TimeSpan.FromSeconds(2.5));
             }
             Threads.Clear();
         }

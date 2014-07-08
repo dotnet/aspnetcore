@@ -95,8 +95,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             else if (normalDone || errorDone)
             {
                 KestrelTrace.Log.ConnectionReadFin(_connectionId);
-
                 SocketInput.RemoteIntakeFin = true;
+                _socket.ReadStop();
 
                 if (errorDone && error != null)
                 {

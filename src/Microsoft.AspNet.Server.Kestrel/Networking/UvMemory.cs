@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             _threadId = Thread.CurrentThread.ManagedThreadId;
 
             handle = Marshal.AllocCoTaskMem(size);
-            *(IntPtr*)handle = GCHandle.ToIntPtr(GCHandle.Alloc(this));
+            *(IntPtr*)handle = GCHandle.ToIntPtr(GCHandle.Alloc(this, GCHandleType.Weak));
         }
 
         protected void CreateHandle(UvLoopHandle loop, int size)
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         {
             Trace.Assert(closed || !IsClosed, "Handle is closed");
             Trace.Assert(!IsInvalid, "Handle is invalid");
-            Trace.Assert(_threadId == Thread.CurrentThread.ManagedThreadId, "ThreadId is correct");
+            Trace.Assert(_threadId == Thread.CurrentThread.ManagedThreadId, "ThreadId is incorrect");
         }
 
         unsafe protected static void DestroyHandle(IntPtr memory)

@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNet.Server.Kestrel.Networking
 {
@@ -12,19 +13,33 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         private readonly static Libuv.uv_alloc_cb _uv_alloc_cb = UvAllocCb;
         private readonly static Libuv.uv_read_cb _uv_read_cb = UvReadCb;
 
-        public Action<UvStreamHandle, int, Exception, object> _connectionCallback;
-        public object _connectionState;
+        public Action<UvStreamHandle, int, Exception, object> _listenCallback;
+        public object _listenState;
+        private GCHandle _listenVitality;
 
         public Func<UvStreamHandle, int, object, Libuv.uv_buf_t> _allocCallback;
-
         public Action<UvStreamHandle, int, Exception, object> _readCallback;
         public object _readState;
+        private GCHandle _readVitality;
 
+        protected override bool ReleaseHandle()
+        {
+            if (_listenVitality.IsAllocated)
+            {
+                _listenVitality.Free();
+            }
+            if (_readVitality.IsAllocated)
+            {
+                _readVitality.Free();
+            }
+            return base.ReleaseHandle();
+        }
 
         public void Listen(int backlog, Action<UvStreamHandle, int, Exception, object> callback, object state)
         {
-            _connectionCallback = callback;
-            _connectionState = state;
+            _listenCallback = callback;
+            _listenState = state;
+            _listenVitality = GCHandle.Alloc(this, GCHandleType.Normal);
             _uv.listen(this, 10, _uv_connection_cb);
         }
 
@@ -41,11 +56,16 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             _allocCallback = allocCallback;
             _readCallback = readCallback;
             _readState = state;
+            _readVitality = GCHandle.Alloc(this, GCHandleType.Normal);
             _uv.read_start(this, _uv_alloc_cb, _uv_read_cb);
         }
 
         public void ReadStop()
         {
+            _allocCallback = null;
+            _readCallback = null;
+            _readState = null;
+            _readVitality.Free();
             _uv.read_stop(this);
         }
 
@@ -64,7 +84,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 
             try
             {
-                stream._connectionCallback(stream, status, error, stream._connectionState);
+                stream._listenCallback(stream, status, error, stream._listenState);
             }
             catch (Exception ex)
             {
