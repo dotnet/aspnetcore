@@ -17,15 +17,7 @@ namespace Microsoft.AspNet.Mvc
         public MvcOptions()
         {
             ApplicationModelConventions = new List<IReflectedApplicationModelConvention>();
-            ModelBinders = new List<ModelBinderDescriptor>
-            {
-                new ModelBinderDescriptor(new TypeConverterModelBinder()),
-                new ModelBinderDescriptor(new TypeMatchModelBinder()),
-                new ModelBinderDescriptor(typeof(GenericModelBinder)),
-                new ModelBinderDescriptor(new MutableObjectModelBinder()),
-                new ModelBinderDescriptor(new ComplexModelDtoModelBinder()),
-            };
-
+            ModelBinders = new List<ModelBinderDescriptor>();
             ViewEngines = new List<ViewEngineDescriptor>();
         }
 

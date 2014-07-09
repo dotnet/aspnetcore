@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.Framework.OptionsModel;
 
@@ -20,7 +21,15 @@ namespace Microsoft.AspNet.Mvc
         /// <inheritdoc />
         public void Setup(MvcOptions options)
         {
+            // Set up ViewEngines
             options.ViewEngines.Add(typeof(RazorViewEngine));
+
+            // Set up ModelBinding
+            options.ModelBinders.Add(new TypeConverterModelBinder());
+            options.ModelBinders.Add(new TypeMatchModelBinder());
+            options.ModelBinders.Add(typeof(GenericModelBinder));
+            options.ModelBinders.Add(new MutableObjectModelBinder());
+            options.ModelBinders.Add(new ComplexModelDtoModelBinder());
         }
     }
 }
