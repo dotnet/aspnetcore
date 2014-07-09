@@ -6,7 +6,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 {
     public class AngularHtmlHelper<TModel> : HtmlHelper<TModel>
     {
-        public AngularHtmlHelper(IViewEngine viewEngine, IModelMetadataProvider metadataProvider, IUrlHelper urlHelper, AntiForgery antiForgeryInstance, IActionBindingContextProvider actionBindingContextProvider)
+        public AngularHtmlHelper(ICompositeViewEngine viewEngine, IModelMetadataProvider metadataProvider, IUrlHelper urlHelper, AntiForgery antiForgeryInstance, IActionBindingContextProvider actionBindingContextProvider)
             : base(viewEngine, metadataProvider, urlHelper, antiForgeryInstance, actionBindingContextProvider)
         {
             
