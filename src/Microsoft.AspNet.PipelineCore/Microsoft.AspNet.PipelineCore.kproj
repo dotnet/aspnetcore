@@ -27,7 +27,7 @@
     <Compile Include="Collections\ReadableStringCollection.cs" />
     <Compile Include="Collections\RequestCookiesCollection.cs" />
     <Compile Include="Collections\ResponseCookies.cs" />
-    <Compile Include="DeafultHttpRequestFeature.cs" />
+    <Compile Include="DefaultHttpRequestFeature.cs" />
     <Compile Include="DefaultHttpResponseFeature.cs" />
     <Compile Include="FormFeature.cs" />
     <Compile Include="ItemsFeature.cs" />

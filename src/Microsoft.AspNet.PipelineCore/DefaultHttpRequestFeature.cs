@@ -8,9 +8,9 @@ using Microsoft.AspNet.HttpFeature;
 
 namespace Microsoft.AspNet.PipelineCore
 {
-    public class DeafultHttpRequestFeature : IHttpRequestFeature
+    public class DefaultHttpRequestFeature : IHttpRequestFeature
     {
-        public DeafultHttpRequestFeature()
+        public DefaultHttpRequestFeature()
         {
             Headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
             Body = Stream.Null;

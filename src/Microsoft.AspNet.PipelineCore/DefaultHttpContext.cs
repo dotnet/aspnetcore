@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.PipelineCore
         public DefaultHttpContext()
             : this(new FeatureCollection())
         {
-            SetFeature<IHttpRequestFeature>(new DeafultHttpRequestFeature());
+            SetFeature<IHttpRequestFeature>(new DefaultHttpRequestFeature());
             SetFeature<IHttpResponseFeature>(new DefaultHttpResponseFeature());
         }
 
