@@ -53,11 +53,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
             SocketOutput _self;
             ArraySegment<byte> _buffer;
-            Action<Exception> _drained;
             UvStreamHandle _socket;
             Action<Exception, object> _callback;
             object _state;
-            GCHandle _pin;
 
             internal void Contextualize(
                 SocketOutput socketOutput,
@@ -87,8 +85,14 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 KestrelTrace.Log.ConnectionWriteCallback(0, status);
                 //NOTE: pool this?
+
+                var callback = _callback;
+                _callback = null;
+                var state = _state;
+                _state = null;
+
                 Dispose();
-                _callback(error, _state);
+                callback(error, state);
             }
         }
 
