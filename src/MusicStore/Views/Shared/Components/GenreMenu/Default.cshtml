@@ -1,7 +1,7 @@
 ﻿@model IEnumerable<MusicStore.Models.Genre>
 
     <li class="dropdown">
-        <a href="@Url.Action("Store")" class="dropdown-toggle" data-toggle="dropdown">Store <b class="caret"></b></a>
+        <a href="@Url.Action("Index", "Store")" class="dropdown-toggle" data-toggle="dropdown">Store <b class="caret"></b></a>
         <ul class="dropdown-menu">
             @foreach (var genre in Model)
             {
