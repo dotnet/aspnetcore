@@ -11,6 +11,67 @@ namespace Microsoft.AspNet.Mvc.Rendering
     public class CompositeViewEngineTest
     {
         [Fact]
+        public void FindView_ReturnsNotFoundResult_WhenNoViewEnginesAreRegistered()
+        {
+            // Arrange
+            var viewName = "test-view";
+            var provider = new Mock<IViewEngineProvider>();
+            provider.SetupGet(p => p.ViewEngines)
+                    .Returns(new IViewEngine[0]);
+            var compositeViewEngine = new CompositeViewEngine(provider.Object);
+
+            // Act
+            var result = compositeViewEngine.FindView(new Dictionary<string, object>(), viewName);
+
+            // Assert
+            Assert.False(result.Success);
+            Assert.Empty(result.SearchedLocations);
+        }
+
+        [Fact]
+        public void FindView_ReturnsNotFoundResult_WhenExactlyOneViewEngineIsRegisteredWhichReturnsNotFoundResult()
+        {
+            // Arrange
+            var viewName = "test-view";
+            var provider = new Mock<IViewEngineProvider>();
+            var engine = new Mock<IViewEngine>();
+            engine.Setup(e => e.FindView(It.IsAny<IDictionary<string, object>>(), It.IsAny<string>()))
+                   .Returns(ViewEngineResult.NotFound(viewName, new[] { "controller/test-view" }));
+            provider.SetupGet(p => p.ViewEngines)
+                    .Returns(new[] { engine.Object });
+            var compositeViewEngine = new CompositeViewEngine(provider.Object);
+
+            // Act
+            var result = compositeViewEngine.FindView(new Dictionary<string, object>(), viewName);
+
+            // Assert
+            Assert.False(result.Success);
+            Assert.Equal(new[] { "controller/test-view" }, result.SearchedLocations);
+        }
+
+        [Fact]
+        public void FindView_ReturnsView_WhenExactlyOneViewEngineIsRegisteredWhichReturnsAFoundResult()
+        {
+            // Arrange
+            var viewName = "test-view";
+            var provider = new Mock<IViewEngineProvider>();
+            var engine = new Mock<IViewEngine>();
+            var view = Mock.Of<IView>();
+            engine.Setup(e => e.FindView(It.IsAny<IDictionary<string, object>>(), It.IsAny<string>()))
+                   .Returns(ViewEngineResult.Found(viewName, view));
+            provider.SetupGet(p => p.ViewEngines)
+                    .Returns(new[] { engine.Object });
+            var compositeViewEngine = new CompositeViewEngine(provider.Object);
+
+            // Act
+            var result = compositeViewEngine.FindView(new Dictionary<string, object>(), viewName);
+
+            // Assert
+            Assert.True(result.Success);
+            Assert.Same(view, result.View);
+        }
+
+        [Fact]
         public void FindView_ReturnsViewFromFirstViewEngineWithFoundResult()
         {
             // Arrange
@@ -67,6 +128,67 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Assert
             Assert.False(result.Success);
             Assert.Equal(new[] { "1", "2", "3", "4", "5" }, result.SearchedLocations);
+        }
+
+        [Fact]
+        public void FindPartialView_ReturnsNotFoundResult_WhenNoViewEnginesAreRegistered()
+        {
+            // Arrange
+            var viewName = "my-partial-view";
+            var provider = new Mock<IViewEngineProvider>();
+            provider.SetupGet(p => p.ViewEngines)
+                    .Returns(new IViewEngine[0]);
+            var compositeViewEngine = new CompositeViewEngine(provider.Object);
+
+            // Act
+            var result = compositeViewEngine.FindPartialView(new Dictionary<string, object>(), viewName);
+
+            // Assert
+            Assert.False(result.Success);
+            Assert.Empty(result.SearchedLocations);
+        }
+
+        [Fact]
+        public void FindPartialView_ReturnsNotFoundResult_WhenExactlyOneViewEngineIsRegisteredWhichReturnsNotFoundResult()
+        {
+            // Arrange
+            var viewName = "partial-view";
+            var provider = new Mock<IViewEngineProvider>();
+            var engine = new Mock<IViewEngine>();
+            engine.Setup(e => e.FindPartialView(It.IsAny<IDictionary<string, object>>(), It.IsAny<string>()))
+                   .Returns(ViewEngineResult.NotFound(viewName, new[] { "shared/partial-view" }));
+            provider.SetupGet(p => p.ViewEngines)
+                    .Returns(new[] { engine.Object });
+            var compositeViewEngine = new CompositeViewEngine(provider.Object);
+
+            // Act
+            var result = compositeViewEngine.FindPartialView(new Dictionary<string, object>(), viewName);
+
+            // Assert
+            Assert.False(result.Success);
+            Assert.Equal(new[] { "shared/partial-view" }, result.SearchedLocations);
+        }
+
+        [Fact]
+        public void FindPartialView_ReturnsView_WhenExactlyOneViewEngineIsRegisteredWhichReturnsAFoundResult()
+        {
+            // Arrange
+            var viewName = "test-view";
+            var provider = new Mock<IViewEngineProvider>();
+            var engine = new Mock<IViewEngine>();
+            var view = Mock.Of<IView>();
+            engine.Setup(e => e.FindPartialView(It.IsAny<IDictionary<string, object>>(), It.IsAny<string>()))
+                   .Returns(ViewEngineResult.Found(viewName, view));
+            provider.SetupGet(p => p.ViewEngines)
+                    .Returns(new[] { engine.Object });
+            var compositeViewEngine = new CompositeViewEngine(provider.Object);
+
+            // Act
+            var result = compositeViewEngine.FindPartialView(new Dictionary<string, object>(), viewName);
+
+            // Assert
+            Assert.True(result.Success);
+            Assert.Same(view, result.View);
         }
 
         [Fact]

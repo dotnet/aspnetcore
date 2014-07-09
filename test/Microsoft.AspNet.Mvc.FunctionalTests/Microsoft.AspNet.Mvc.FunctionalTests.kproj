@@ -31,6 +31,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActivatorTests.cs" />
+    <Compile Include="CompositeViewEngineTests.cs" />
     <Compile Include="DependencyResolverTests.cs" />
     <Compile Include="InlineConstraintTests.cs" />
     <Compile Include="RoutingTests.cs" />
