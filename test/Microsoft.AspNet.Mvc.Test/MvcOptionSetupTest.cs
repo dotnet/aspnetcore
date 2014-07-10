@@ -42,5 +42,23 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(typeof(MutableObjectModelBinder), mvcOptions.ModelBinders[3].ModelBinderType);
             Assert.Equal(typeof(ComplexModelDtoModelBinder), mvcOptions.ModelBinders[4].ModelBinderType);
         }
+
+        [Fact]
+        public void Setup_SetsUpValueProviders()
+        {
+            // Arrange
+            var mvcOptions = new MvcOptions();
+            var setup = new MvcOptionsSetup();
+
+            // Act
+            setup.Setup(mvcOptions);
+
+            // Assert
+            var valueProviders = mvcOptions.ValueProviderFactories;
+            Assert.Equal(3, valueProviders.Count);
+            Assert.IsType<RouteValueValueProviderFactory>(valueProviders[0]);
+            Assert.IsType<QueryStringValueProviderFactory>(valueProviders[1]);
+            Assert.IsType<FormValueProviderFactory>(valueProviders[2]);
+        }
     }
 }

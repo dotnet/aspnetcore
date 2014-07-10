@@ -14,6 +14,7 @@
         "Microsoft.Framework.DependencyInjection": "1.0.0-*",
         "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*",
         "RoutingWebSite": "",
+        "ValueProvidersSite":  "",
         "Xunit.KRunner": "1.0.0-*"
     },
     "commands": {

@@ -13,9 +13,10 @@ namespace Microsoft.AspNet.Mvc
     public class MvcOptionsSetup : IOptionsSetup<MvcOptions>
     {
         /// <inheritdoc />
+        /// <remarks>Order is -1 to allow MvcOptionsSetup to run before a user call to SetupOptions.</remarks>
         public int Order
         {
-            get { return 1; }
+            get { return -1; }
         }
 
         /// <inheritdoc />
@@ -30,6 +31,11 @@ namespace Microsoft.AspNet.Mvc
             options.ModelBinders.Add(typeof(GenericModelBinder));
             options.ModelBinders.Add(new MutableObjectModelBinder());
             options.ModelBinders.Add(new ComplexModelDtoModelBinder());
+
+            // Set up ValueProviders
+            options.ValueProviderFactories.Add(new RouteValueValueProviderFactory());
+            options.ValueProviderFactories.Add(new QueryStringValueProviderFactory());
+            options.ValueProviderFactories.Add(new FormValueProviderFactory());
         }
     }
 }

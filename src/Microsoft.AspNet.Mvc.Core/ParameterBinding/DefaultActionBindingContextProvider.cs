@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -20,13 +21,13 @@ namespace Microsoft.AspNet.Mvc
 
         public DefaultActionBindingContextProvider(IModelMetadataProvider modelMetadataProvider,
                                                    ICompositeModelBinder compositeModelBinder,
-                                                   IEnumerable<IValueProviderFactory> valueProviderFactories,
+                                                   IOptionsAccessor<MvcOptions> mvcOptionsAccessor,
                                                    IInputFormatterProvider inputFormatterProvider,
                                                    IEnumerable<IModelValidatorProvider> validatorProviders)
         {
             _modelMetadataProvider = modelMetadataProvider;
             _compositeModelBinder = compositeModelBinder;
-            _valueProviderFactories = valueProviderFactories;
+            _valueProviderFactories = mvcOptionsAccessor.Options.ValueProviderFactories;
             _inputFormatterProvider = inputFormatterProvider;
             _validatorProviders = validatorProviders;
         }
