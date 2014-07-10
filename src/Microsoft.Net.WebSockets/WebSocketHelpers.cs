@@ -22,10 +22,12 @@
 //------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
@@ -132,9 +134,9 @@ namespace Microsoft.Net.WebSockets
         }
 
         // return value here signifies if a Sec-WebSocket-Protocol header should be returned by the server. 
-        public static bool ProcessWebSocketProtocolHeader(string clientSecWebSocketProtocol, string subProtocol)
+        public static bool ProcessWebSocketProtocolHeader(IEnumerable<string> clientSecWebSocketProtocols, string subProtocol)
         {
-            if (string.IsNullOrEmpty(clientSecWebSocketProtocol))
+            if (clientSecWebSocketProtocols == null || !clientSecWebSocketProtocols.Any())
             {
                 // client hasn't specified any Sec-WebSocket-Protocol header
                 if (subProtocol != null)
@@ -158,14 +160,10 @@ namespace Microsoft.Net.WebSockets
             // here, we know that the client has specified something, it's not empty
             // and the server has specified exactly one protocol
 
-            string[] requestProtocols = clientSecWebSocketProtocol.Split(new char[] { ',' },
-                StringSplitOptions.RemoveEmptyEntries);
-
             // client specified protocols, serverOptions has exactly 1 non-empty entry. Check that 
             // this exists in the list the client specified. 
-            for (int i = 0; i < requestProtocols.Length; i++)
+            foreach (var currentRequestProtocol in clientSecWebSocketProtocols)
             {
-                string currentRequestProtocol = requestProtocols[i].Trim();
                 if (string.Compare(subProtocol, currentRequestProtocol, StringComparison.OrdinalIgnoreCase) == 0)
                 {
                     return true;
@@ -174,7 +172,7 @@ namespace Microsoft.Net.WebSockets
 
             throw new WebSocketException(WebSocketError.UnsupportedProtocol,
                 SR.GetString(SR.net_WebSockets_AcceptUnsupportedProtocol,
-                    clientSecWebSocketProtocol,
+                    string.Join(", ", clientSecWebSocketProtocols),
                     subProtocol));
         }
 

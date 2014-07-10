@@ -25,7 +25,7 @@ namespace Microsoft.Net.Server
                 byte[] body = Encoding.UTF8.GetBytes("Hello World");
                 context.Response.Body.Write(body, 0, body.Length);
 
-                context.Response.Headers["Upgrade"] = new[] { "WebSocket" }; // Win8.1 blocks anything but WebSocket
+                context.Response.Headers["Upgrade"] = "WebSocket"; // Win8.1 blocks anything but WebSocket
                 Assert.ThrowsAsync<InvalidOperationException>(async () => await context.UpgradeAsync());
                 context.Dispose();
                 HttpResponseMessage response = await clientTask;
@@ -44,7 +44,7 @@ namespace Microsoft.Net.Server
 
                 var context = await server.GetContextAsync();
                 Assert.True(context.IsUpgradableRequest);
-                context.Response.Headers["Upgrade"] = new[] { "WebSocket" }; // Win8.1 blocks anything but WebSocket
+                context.Response.Headers["Upgrade"] = "WebSocket"; // Win8.1 blocks anything but WebSocket
                 Stream serverStream = await context.UpgradeAsync();
                 Assert.True(serverStream.CanRead);
                 Assert.True(serverStream.CanWrite);
@@ -86,7 +86,7 @@ namespace Microsoft.Net.Server
 
                 var context = await server.GetContextAsync();
                 Assert.True(context.IsUpgradableRequest);
-                context.Response.Headers["Upgrade"] = new[] { "WebSocket" }; // Win8.1 blocks anything but WebSocket
+                context.Response.Headers["Upgrade"] = "WebSocket"; // Win8.1 blocks anything but WebSocket
                 Stream serverStream = await context.UpgradeAsync();
                 Stream clientStream = await clientTask;
 

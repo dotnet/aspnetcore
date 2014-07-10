@@ -61,7 +61,7 @@ namespace Microsoft.Net.Server
 
         private X509Certificate _clientCert;
 
-        private IDictionary<string, string[]> _headers;
+        private HeaderCollection _headers;
         private BoundaryType _contentBoundaryType;
         private long? _contentLength;
         private Stream _nativeStream;
@@ -140,7 +140,7 @@ namespace Microsoft.Net.Server
             }
 
             _httpMethod = UnsafeNclNativeMethods.HttpApi.GetVerb(RequestBuffer, OriginalBlobAddress);
-            _headers = new RequestHeaders(_nativeRequestContext);
+            _headers = new HeaderCollection(new RequestHeaders(_nativeRequestContext));
 
             UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_V2* requestV2 = (UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_V2*)memoryBlob.RequestBlob;
             _user = AuthenticationManager.GetUser(requestV2->pRequestInfo);
@@ -250,7 +250,7 @@ namespace Microsoft.Net.Server
             }
         }
 
-        public IDictionary<string, string[]> Headers
+        public HeaderCollection Headers
         {
             get { return _headers; }
         }
@@ -422,17 +422,6 @@ namespace Microsoft.Net.Server
         internal UnsafeNclNativeMethods.HttpApi.HTTP_VERB GetKnownMethod()
         {
             return UnsafeNclNativeMethods.HttpApi.GetKnownVerb(RequestBuffer, OriginalBlobAddress);
-        }
-
-        // TODO: We need an easier to user header collection that has this built in
-        internal string GetHeader(string headerName)
-        {
-            string[] values;
-            if (Headers.TryGetValue(headerName, out values))
-            {
-                return string.Join(", ", values);
-            }
-            return string.Empty;
         }
 
         // Populates the client certificate.  The result may be null if there is no client cert.

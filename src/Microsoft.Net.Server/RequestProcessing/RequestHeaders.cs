@@ -102,17 +102,27 @@ namespace Microsoft.Net.Server
             }
         }
 
-        bool IDictionary<string, string[]>.ContainsKey(string key)
+        public bool ContainsKey(string key)
         {
             return PropertiesContainsKey(key) || Extra.ContainsKey(key);
         }
 
-        ICollection<string> IDictionary<string, string[]>.Keys
+        public ICollection<string> Keys
         {
             get { return PropertiesKeys().Concat(Extra.Keys).ToArray(); }
         }
 
-        bool IDictionary<string, string[]>.Remove(string key)
+        ICollection<string[]> IDictionary<string, string[]>.Values
+        {
+            get { return PropertiesValues().Concat(Extra.Values).ToArray(); }
+        }
+
+        public int Count
+        {
+            get { return PropertiesKeys().Count() + Extra.Count; }
+        }
+
+        public bool Remove(string key)
         {
             // Although this is a mutating operation, Extra is used instead of StrongExtra,
             // because if a real dictionary has not been allocated the default behavior of the
@@ -120,14 +130,9 @@ namespace Microsoft.Net.Server
             return PropertiesTryRemove(key) || Extra.Remove(key);
         }
 
-        bool IDictionary<string, string[]>.TryGetValue(string key, out string[] value)
+        public bool TryGetValue(string key, out string[] value)
         {
             return PropertiesTryGetValue(key, out value) || Extra.TryGetValue(key, out value);
-        }
-
-        ICollection<string[]> IDictionary<string, string[]>.Values
-        {
-            get { return PropertiesValues().Concat(Extra.Values).ToArray(); }
         }
 
         void ICollection<KeyValuePair<string, string[]>>.Add(KeyValuePair<string, string[]> item)
@@ -153,11 +158,6 @@ namespace Microsoft.Net.Server
         void ICollection<KeyValuePair<string, string[]>>.CopyTo(KeyValuePair<string, string[]>[] array, int arrayIndex)
         {
             PropertiesEnumerable().Concat(Extra).ToArray().CopyTo(array, arrayIndex);
-        }
-
-        int ICollection<KeyValuePair<string, string[]>>.Count
-        {
-            get { return PropertiesKeys().Count() + Extra.Count; }
         }
 
         bool ICollection<KeyValuePair<string, string[]>>.IsReadOnly

@@ -48,7 +48,7 @@ namespace HelloWorld
                     // Request
                     // context.Request.ProtocolVersion
                     // context.Request.IsLocal
-                    // context.Request.Headers // TODO: Header helpers?
+                    // context.Request.Headers
                     // context.Request.Method
                     // context.Request.Body
                     // Content-Length - long?

@@ -22,7 +22,6 @@
     <Compile Include="AuthenticationManager.cs" />
     <Compile Include="AuthenticationTypes.cs" />
     <Compile Include="Constants.cs" />
-    <Compile Include="DictionaryExtensions.cs" />
     <Compile Include="fx\Microsoft\Win32\SafeHandles\CriticalHandleZeroOrMinusOneIsInvalid.cs" />
     <Compile Include="fx\Microsoft\Win32\SafeHandles\SafeHandleZeroOrMinusOneIsInvalid.cs" />
     <Compile Include="fx\System\Diagnostics\TraceEventType.cs" />
@@ -52,6 +51,8 @@
     <Compile Include="NativeInterop\SocketAddress.cs" />
     <Compile Include="NativeInterop\SSPIHandle.cs" />
     <Compile Include="NativeInterop\UnsafeNativeMethods.cs" />
+    <Compile Include="RequestProcessing\HeaderCollection.cs" />
+    <Compile Include="RequestProcessing\HeaderParser.cs" />
     <Compile Include="WebListener.cs" />
     <Compile Include="RequestProcessing\BoundaryType.cs" />
     <Compile Include="RequestProcessing\ClientCertLoader.cs" />

@@ -961,9 +961,9 @@ namespace Microsoft.Net.Server
                                 {
                                     headerValue = string.Empty;
                                 }
-                                // Note that Http.Sys currently collapses all headers of the same name to a single string, so
-                                // append will just set.                               
-                                unknownHeaders.Append(headerName, headerValue);
+                                // Note that Http.Sys currently collapses all headers of the same name to a single coma seperated string,
+                                // so we can just call Set.
+                                unknownHeaders[headerName] = new[] { headerValue };
                             }
                             pUnknownHeader++;
                         }

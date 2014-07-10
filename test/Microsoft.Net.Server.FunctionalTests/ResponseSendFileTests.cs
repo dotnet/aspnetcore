@@ -4,9 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -91,7 +89,7 @@ namespace Microsoft.Net.Server
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
 
                 var context = await server.GetContextAsync();
-                context.Response.Headers["Transfer-EncodinG"] = new[] { "CHUNKED" };
+                context.Response.Headers["Transfer-EncodinG"] = "CHUNKED";
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
                 context.Dispose();
 
@@ -112,7 +110,7 @@ namespace Microsoft.Net.Server
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
 
                 var context = await server.GetContextAsync();
-                context.Response.Headers["Transfer-EncodinG"] = new[] { "CHUNKED" };
+                context.Response.Headers["Transfer-EncodinG"] = "CHUNKED";
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
                 context.Dispose();
@@ -206,7 +204,7 @@ namespace Microsoft.Net.Server
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
 
                 var context = await server.GetContextAsync();
-                context.Response.Headers["Content-lenGth"] = new[] { FileLength.ToString() };
+                context.Response.Headers["Content-lenGth"] = FileLength.ToString();
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
 
                 HttpResponseMessage response = await responseTask;
@@ -227,7 +225,7 @@ namespace Microsoft.Net.Server
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
 
                 var context = await server.GetContextAsync();
-                context.Response.Headers["Content-lenGth"] = new[] { "10" };
+                context.Response.Headers["Content-lenGth"] = "10";
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, 10, CancellationToken.None);
                 context.Dispose();
 
@@ -249,7 +247,7 @@ namespace Microsoft.Net.Server
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
 
                 var context = await server.GetContextAsync();
-                context.Response.Headers["Content-lenGth"] = new[] { "0" };
+                context.Response.Headers["Content-lenGth"] = "0";
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, 0, CancellationToken.None);
                 context.Dispose();
 

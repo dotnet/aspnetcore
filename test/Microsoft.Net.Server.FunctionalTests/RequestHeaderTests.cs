@@ -25,9 +25,11 @@ namespace Microsoft.Net.Server
                 // NOTE: The System.Net client only sends the Connection: keep-alive header on the first connection per service-point.
                 // Assert.Equal(2, requestHeaders.Count);
                 // Assert.Equal("Keep-Alive", requestHeaders.Get("Connection"));
-                Assert.Equal("localhost:8080", requestHeaders["Host"].First());
+                Assert.Equal("localhost:8080", requestHeaders["Host"]);
                 string[] values;
                 Assert.False(requestHeaders.TryGetValue("Accept", out values));
+                Assert.False(requestHeaders.ContainsKey("Accept"));
+                Assert.Null(requestHeaders["Accept"]);
                 context.Dispose();
 
                 string response = await responseTask;
@@ -46,13 +48,15 @@ namespace Microsoft.Net.Server
                 var context = await server.GetContextAsync();
                 var requestHeaders = context.Request.Headers;
                 Assert.Equal(4, requestHeaders.Count);
-                Assert.Equal("localhost:8080", requestHeaders["Host"].First());
-                Assert.Equal("close", requestHeaders["Connection"].First());
-                Assert.Equal(1, requestHeaders["Custom-Header"].Length);
+                Assert.Equal("localhost:8080", requestHeaders["Host"]);
+                Assert.Equal(new[] { "localhost:8080" }, requestHeaders.GetValues("Host"));
+                Assert.Equal("close", requestHeaders["Connection"]);
+                Assert.Equal(new[] { "close" }, requestHeaders.GetValues("Connection"));
                 // Apparently Http.Sys squashes request headers together.
-                Assert.Equal("custom1, and custom2, custom3", requestHeaders["Custom-Header"].First());
-                Assert.Equal(1, requestHeaders["Spacer-Header"].Length);
-                Assert.Equal("spacervalue, spacervalue", requestHeaders["Spacer-Header"].First());
+                Assert.Equal("custom1, and custom2, custom3", requestHeaders["Custom-Header"]);
+                Assert.Equal(new[] { "custom1", "and custom2", "custom3" }, requestHeaders.GetValues("Custom-Header"));
+                Assert.Equal("spacervalue, spacervalue", requestHeaders["Spacer-Header"]);
+                Assert.Equal(new[] { "spacervalue", "spacervalue" }, requestHeaders.GetValues("Spacer-Header"));
                 context.Dispose();
 
                 await responseTask;

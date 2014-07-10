@@ -179,28 +179,28 @@ namespace Microsoft.Net.Server
                 }
 
                 // Connection: Upgrade (some odd clients send Upgrade,KeepAlive)
-                string connection = Request.GetHeader(HttpKnownHeaderNames.Connection);
+                string connection = Request.Headers[HttpKnownHeaderNames.Connection] ?? string.Empty;
                 if (connection.IndexOf(HttpKnownHeaderNames.Upgrade, StringComparison.OrdinalIgnoreCase) < 0)
                 {
                     return false;
                 }
 
                 // Upgrade: websocket
-                string upgrade = Request.GetHeader(HttpKnownHeaderNames.Upgrade);
+                string upgrade = Request.Headers[HttpKnownHeaderNames.Upgrade];
                 if (!string.Equals(WebSocketHelpers.WebSocketUpgradeToken, upgrade, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }
 
                 // Sec-WebSocket-Version: 13
-                string version = Request.GetHeader(HttpKnownHeaderNames.SecWebSocketVersion);
+                string version = Request.Headers[HttpKnownHeaderNames.SecWebSocketVersion];
                 if (!string.Equals(WebSocketConstants.SupportedProtocolVersion, version, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }
 
                 // Sec-WebSocket-Key: {base64string}
-                string key = Request.GetHeader(HttpKnownHeaderNames.SecWebSocketKey);
+                string key = Request.Headers[HttpKnownHeaderNames.SecWebSocketKey];
                 if (!WebSocketHelpers.IsValidWebSocketKey(key))
                 {
                     return false;
@@ -229,28 +229,28 @@ namespace Microsoft.Net.Server
             }
 
             // Connection: Upgrade (some odd clients send Upgrade,KeepAlive)
-            string connection = Request.GetHeader(HttpKnownHeaderNames.Connection);
+            string connection = Request.Headers[HttpKnownHeaderNames.Connection] ?? string.Empty;
             if (connection.IndexOf(HttpKnownHeaderNames.Upgrade, StringComparison.OrdinalIgnoreCase) < 0)
             {
                 throw new InvalidOperationException("The Connection header is invalid: " + connection);
             }
 
             // Upgrade: websocket
-            string upgrade = Request.GetHeader(HttpKnownHeaderNames.Upgrade);
+            string upgrade = Request.Headers[HttpKnownHeaderNames.Upgrade];
             if (!string.Equals(WebSocketHelpers.WebSocketUpgradeToken, upgrade, StringComparison.OrdinalIgnoreCase))
             {
                 throw new InvalidOperationException("The Upgrade header is invalid: " + upgrade);
             }
 
             // Sec-WebSocket-Version: 13
-            string version = Request.GetHeader(HttpKnownHeaderNames.SecWebSocketVersion);
+            string version = Request.Headers[HttpKnownHeaderNames.SecWebSocketVersion];
             if (!string.Equals(WebSocketConstants.SupportedProtocolVersion, version, StringComparison.OrdinalIgnoreCase))
             {
                 throw new InvalidOperationException("The Sec-WebSocket-Version header is invalid or not supported: " + version);
             }
 
             // Sec-WebSocket-Key: {base64string}
-            string key = Request.GetHeader(HttpKnownHeaderNames.SecWebSocketKey);
+            string key = Request.Headers[HttpKnownHeaderNames.SecWebSocketKey];
             if (!WebSocketHelpers.IsValidWebSocketKey(key))
             {
                 throw new InvalidOperationException("The Sec-WebSocket-Key header is invalid: " + upgrade);
@@ -317,29 +317,22 @@ namespace Microsoft.Net.Server
         {
             try
             {
-                // TODO: We need a better header collection API.
                 ValidateWebSocketRequest();
 
-                string subProtocols = string.Empty;
-                string[] values;
-                if (Request.Headers.TryGetValue(HttpKnownHeaderNames.SecWebSocketProtocol, out values))
-                {
-                    subProtocols = string.Join(", ", values);
-                }
-
+                var subProtocols = Request.Headers.GetValues(HttpKnownHeaderNames.SecWebSocketProtocol);
                 bool shouldSendSecWebSocketProtocolHeader = WebSocketHelpers.ProcessWebSocketProtocolHeader(subProtocols, subProtocol);
                 if (shouldSendSecWebSocketProtocolHeader)
                 {
-                    Response.Headers[HttpKnownHeaderNames.SecWebSocketProtocol] = new[] { subProtocol };
+                    Response.Headers[HttpKnownHeaderNames.SecWebSocketProtocol] = subProtocol;
                 }
 
                 // negotiate the websocket key return value
-                string secWebSocketKey = Request.Headers[HttpKnownHeaderNames.SecWebSocketKey].First();
+                string secWebSocketKey = Request.Headers[HttpKnownHeaderNames.SecWebSocketKey];
                 string secWebSocketAccept = WebSocketHelpers.GetSecWebSocketAcceptString(secWebSocketKey);
 
-                Response.Headers.Add(HttpKnownHeaderNames.Connection, new[] { HttpKnownHeaderNames.Upgrade });
-                Response.Headers.Add(HttpKnownHeaderNames.Upgrade, new[] { WebSocketHelpers.WebSocketUpgradeToken });
-                Response.Headers.Add(HttpKnownHeaderNames.SecWebSocketAccept, new[] { secWebSocketAccept });
+                Response.Headers.AppendValues(HttpKnownHeaderNames.Connection, HttpKnownHeaderNames.Upgrade);
+                Response.Headers.AppendValues(HttpKnownHeaderNames.Upgrade, WebSocketHelpers.WebSocketUpgradeToken);
+                Response.Headers.AppendValues(HttpKnownHeaderNames.SecWebSocketAccept, secWebSocketAccept);
 
                 Stream opaqueStream = await UpgradeAsync();
 

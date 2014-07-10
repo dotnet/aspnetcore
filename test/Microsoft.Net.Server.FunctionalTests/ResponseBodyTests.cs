@@ -45,7 +45,7 @@ namespace Microsoft.Net.Server
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
 
                 var context = await server.GetContextAsync();
-                context.Request.Headers["transfeR-Encoding"] = new[] { " CHunked " };
+                context.Request.Headers["transfeR-Encoding"] = " CHunked ";
                 Stream stream = context.Response.Body;
                 stream.EndWrite(stream.BeginWrite(new byte[10], 0, 10, null, null));
                 stream.Write(new byte[10], 0, 10);
@@ -70,7 +70,7 @@ namespace Microsoft.Net.Server
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
 
                 var context = await server.GetContextAsync();
-                context.Response.Headers["Content-lenGth"] = new[] { " 30 " };
+                context.Response.Headers["Content-lenGth"] = " 30 ";
                 Stream stream = context.Response.Body;
                 stream.EndWrite(stream.BeginWrite(new byte[10], 0, 10, null, null));
                 stream.Write(new byte[10], 0, 10);
@@ -132,7 +132,7 @@ namespace Microsoft.Net.Server
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
 
                 var context = await server.GetContextAsync();
-                context.Response.Headers["Content-lenGth"] = new[] { " 20 " };
+                context.Response.Headers["Content-lenGth"] = " 20 ";
                 context.Response.Body.Write(new byte[5], 0, 5);
                 context.Dispose();
 
@@ -148,7 +148,7 @@ namespace Microsoft.Net.Server
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
 
                 var context = await server.GetContextAsync();
-                context.Response.Headers["Content-lenGth"] = new[] { " 10 " };
+                context.Response.Headers["Content-lenGth"] = " 10 ";
                 context.Response.Body.Write(new byte[5], 0, 5);
                 Assert.Throws<InvalidOperationException>(() => context.Response.Body.Write(new byte[6], 0, 6));
                 context.Dispose();
@@ -165,7 +165,7 @@ namespace Microsoft.Net.Server
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
 
                 var context = await server.GetContextAsync();
-                context.Response.Headers["Content-lenGth"] = new[] { " 10 " };
+                context.Response.Headers["Content-lenGth"] = " 10 ";
                 context.Response.Body.Write(new byte[10], 0, 10);
                 Assert.Throws<ObjectDisposedException>(() => context.Response.Body.Write(new byte[6], 0, 6));
                 context.Dispose();

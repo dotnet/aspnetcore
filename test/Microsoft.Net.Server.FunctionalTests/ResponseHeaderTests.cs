@@ -44,7 +44,7 @@ namespace Microsoft.Net.Server
 
                 var context = await server.GetContextAsync();
                 var responseHeaders = context.Response.Headers;
-                responseHeaders["WWW-Authenticate"] = new string[] { "custom1" };
+                responseHeaders["WWW-Authenticate"] = "custom1";
                 context.Dispose();
 
                 // HttpClient would merge the headers no matter what
@@ -68,7 +68,7 @@ namespace Microsoft.Net.Server
 
                 var context = await server.GetContextAsync();
                 var responseHeaders = context.Response.Headers;
-                responseHeaders["WWW-Authenticate"] = new string[] { "custom1, and custom2", "custom3" };
+                responseHeaders.SetValues("WWW-Authenticate", "custom1, and custom2", "custom3");
                 context.Dispose();
 
                 // HttpClient would merge the headers no matter what
@@ -92,7 +92,7 @@ namespace Microsoft.Net.Server
 
                 var context = await server.GetContextAsync();
                 var responseHeaders = context.Response.Headers;
-                responseHeaders["Custom-Header1"] = new string[] { "custom1, and custom2", "custom3" };
+                responseHeaders.SetValues("Custom-Header1", "custom1, and custom2", "custom3");
                 context.Dispose();
 
                 // HttpClient would merge the headers no matter what
@@ -115,7 +115,7 @@ namespace Microsoft.Net.Server
 
                 var context = await server.GetContextAsync();
                 var responseHeaders = context.Response.Headers;
-                responseHeaders["Connection"] = new string[] { "Close" };
+                responseHeaders["Connection"] = "Close";
                 context.Dispose();
 
                 HttpResponseMessage response = await responseTask;
@@ -198,7 +198,7 @@ namespace Microsoft.Net.Server
 
                     var context = await server.GetContextAsync();
                     var responseHeaders = context.Response.Headers;
-                    responseHeaders["Transfer-Encoding"] = new string[] { "chunked" };
+                    responseHeaders["Transfer-Encoding"] = "chunked";
                     await context.Response.Body.WriteAsync(new byte[10], 0, 10);
                     context.Dispose();
 
@@ -223,8 +223,8 @@ namespace Microsoft.Net.Server
                 var context = await server.GetContextAsync();
                 var responseHeaders = context.Response.Headers;
 
-                responseHeaders.Add("Custom1", new string[] { "value1a", "value1b" });
-                responseHeaders.Add("Custom2", new string[] { "value2a, value2b" });
+                responseHeaders.SetValues("Custom1", "value1a", "value1b");
+                responseHeaders.SetValues("Custom2", "value2a, value2b");
                 var body = context.Response.Body;
                 body.Flush();
                 Assert.Throws<InvalidOperationException>(() => context.Response.StatusCode = 404);
@@ -254,12 +254,12 @@ namespace Microsoft.Net.Server
                 var context = await server.GetContextAsync();
                 var responseHeaders = context.Response.Headers;
 
-                responseHeaders.Add("Custom1", new string[] { "value1a", "value1b" });
-                responseHeaders.Add("Custom2", new string[] { "value2a, value2b" });
+                responseHeaders.SetValues("Custom1", "value1a", "value1b");
+                responseHeaders.SetValues("Custom2", "value2a, value2b");
                 var body = context.Response.Body;
                 await body.FlushAsync();
                 Assert.Throws<InvalidOperationException>(() => context.Response.StatusCode = 404);
-                responseHeaders.Add("Custom3", new string[] { "value3a, value3b", "value3c" }); // Ignored
+                responseHeaders.SetValues("Custom3", "value3a, value3b", "value3c"); // Ignored
 
                 context.Dispose();
 

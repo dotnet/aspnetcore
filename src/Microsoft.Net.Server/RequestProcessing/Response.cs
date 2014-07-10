@@ -38,7 +38,7 @@ namespace Microsoft.Net.Server
         private static readonly string[] ZeroContentLength = new[] { "0" };
 
         private ResponseState _responseState;
-        private IDictionary<string, string[]> _headers;
+        private HeaderCollection _headers;
         private string _reasonPhrase;
         private ResponseStream _nativeStream;
         private long _contentLength;
@@ -53,7 +53,7 @@ namespace Microsoft.Net.Server
             // TODO: Verbose log
             _requestContext = httpContext;
             _nativeResponse = new UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_V2();
-            _headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
+            _headers = new HeaderCollection();
             _boundaryType = BoundaryType.None;
             _nativeResponse.Response_V1.StatusCode = (ushort)HttpStatusCode.OK;
             _nativeResponse.Response_V1.Version.MajorVersion = 1;
@@ -156,17 +156,9 @@ namespace Microsoft.Net.Server
             return true;
         }
 
-        public IDictionary<string, string[]> Headers
+        public HeaderCollection Headers
         {
             get { return _headers; }
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException("value");
-                }
-                _headers = value;
-            }
         }
 
         internal long CalculatedLength
@@ -214,11 +206,11 @@ namespace Microsoft.Net.Server
 
                     if (value.Value == 0)
                     {
-                        Headers[HttpKnownHeaderNames.ContentLength] = ZeroContentLength;
+                        ((IDictionary<string, string[]>)Headers)[HttpKnownHeaderNames.ContentLength] = ZeroContentLength;
                     }
                     else
                     {
-                        Headers[HttpKnownHeaderNames.ContentLength] = new[] { value.Value.ToString(CultureInfo.InvariantCulture) };
+                        Headers[HttpKnownHeaderNames.ContentLength] = value.Value.ToString(CultureInfo.InvariantCulture);
                     }
                 }
             }
@@ -239,7 +231,7 @@ namespace Microsoft.Net.Server
                 }
                 else
                 {
-                    Headers[HttpKnownHeaderNames.ContentType] = new[] { value };
+                    Headers[HttpKnownHeaderNames.ContentType] = value;
                 }
             }
         }
@@ -535,7 +527,7 @@ namespace Microsoft.Net.Server
             else if (endOfRequest)
             {
                 // The request is ending without a body, add a Content-Length: 0 header.
-                Headers[HttpKnownHeaderNames.ContentLength] = new string[] { "0" };
+                Headers[HttpKnownHeaderNames.ContentLength] = "0";
                 _boundaryType = BoundaryType.ContentLength;
                 _contentLength = 0;
                 flags = UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.NONE;
@@ -551,7 +543,7 @@ namespace Microsoft.Net.Server
                 }
                 else
                 {
-                    Headers[HttpKnownHeaderNames.TransferEncoding] = new string[] { "chunked" };
+                    Headers[HttpKnownHeaderNames.TransferEncoding] = "chunked";
                     _boundaryType = BoundaryType.Chunked;
                 }
 
@@ -561,7 +553,7 @@ namespace Microsoft.Net.Server
                 }
                 else
                 {
-                    Headers[HttpKnownHeaderNames.ContentLength] = new string[] { "0" };
+                    Headers[HttpKnownHeaderNames.ContentLength] = "0";
                     _contentLength = 0;
                     _boundaryType = BoundaryType.ContentLength;
                 }
@@ -583,7 +575,7 @@ namespace Microsoft.Net.Server
             {
                 if (Request.ProtocolVersion.Minor == 0 && !keepAliveSet)
                 {
-                    Headers[HttpKnownHeaderNames.KeepAlive] = new string[] { "true" };
+                    Headers[HttpKnownHeaderNames.KeepAlive] = "true";
                 }
             }
             return flags;

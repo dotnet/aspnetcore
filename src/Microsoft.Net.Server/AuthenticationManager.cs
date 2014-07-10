@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Principal;
@@ -152,22 +153,7 @@ namespace Microsoft.Net.Server
 
             if (challenges.Count > 0)
             {
-                // TODO: We need a better header API that just lets us append values.
-                // Append to the existing header, if any. Some clients (IE, Chrome) require each challenges to be sent on their own line/header.
-                string[] oldValues;
-                string[] newValues;
-                if (context.Response.Headers.TryGetValue(HttpKnownHeaderNames.WWWAuthenticate, out oldValues))
-                {
-                    newValues = new string[oldValues.Length + challenges.Count];
-                    Array.Copy(oldValues, newValues, oldValues.Length);
-                    challenges.CopyTo(newValues, oldValues.Length);
-                }
-                else
-                {
-                    newValues = new string[challenges.Count];
-                    challenges.CopyTo(newValues, 0);
-                }
-                context.Response.Headers[HttpKnownHeaderNames.WWWAuthenticate] = newValues;
+                context.Response.Headers.AppendValues(HttpKnownHeaderNames.WWWAuthenticate, challenges.ToArray());
             }
         }
 
