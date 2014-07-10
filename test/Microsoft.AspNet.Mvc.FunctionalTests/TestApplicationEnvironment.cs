@@ -36,6 +36,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             get { return _applicationBasePath; }
         }
 
+        public string Configuration
+        {
+            get
+            {
+                return _originalAppEnvironment.Configuration;
+            }
+        }
+
         public FrameworkName TargetFramework
         {
             get { return _originalAppEnvironment.TargetFramework; }
