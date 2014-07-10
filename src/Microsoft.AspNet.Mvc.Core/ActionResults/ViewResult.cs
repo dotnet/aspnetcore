@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
-using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.Framework.DependencyInjection;
 
@@ -33,7 +32,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 context.HttpContext.Response.ContentType = "text/html; charset=utf-8";
                 var wrappedStream = new StreamWrapper(context.HttpContext.Response.Body);
-                var encoding = UTF8EncodingWithoutBOM.Encoding;
+                var encoding = Encodings.UTF8EncodingWithoutBOM;
                 using (var writer = new StreamWriter(wrappedStream, encoding, BufferSize, leaveOpen: true))
                 {
                     try

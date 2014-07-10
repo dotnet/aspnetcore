@@ -9,6 +9,10 @@
   },
   "configurations": {
     "net45": {},
-    "k10": {}
+    "k10": {
+        "dependencies": {
+            "System.Text.Encoding.Extensions": "4.0.10.0"
+        }
     }
+  }
 }

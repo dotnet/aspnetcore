@@ -139,7 +139,6 @@
     <Compile Include="IControllerFactory.cs" />
     <Compile Include="Injector.cs" />
     <Compile Include="Internal\TypeHelper.cs" />
-    <Compile Include="Internal\UTF8EncodingWithoutBOM.cs" />
     <Compile Include="IUrlHelper.cs" />
     <Compile Include="JsonOutputFormatter.cs" />
     <Compile Include="MvcOptions.cs" />

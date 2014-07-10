@@ -6,7 +6,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Routing;
 using Moq;
 using Xunit;
@@ -64,7 +63,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             var actionContext = CreateMockActionContext(httpResponse);
 
             var tempStream = new MemoryStream();
-            using (var writer = new StreamWriter(tempStream, UTF8EncodingWithoutBOM.Encoding, 1024, leaveOpen: true))
+            using (var writer = new StreamWriter(tempStream, Encodings.UTF8EncodingWithoutBOM, 1024, leaveOpen: true))
             {
                 var formatter = new JsonOutputFormatter(JsonOutputFormatter.CreateDefaultSettings(), false);
                 formatter.WriteObject(writer, nonStringValue);
