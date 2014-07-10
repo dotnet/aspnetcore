@@ -10,8 +10,8 @@ namespace Microsoft.AspNet.Owin
     {
         private IDictionary<string, object> _options;
 
-	    public OwinWebSocketAcceptContext() : this(new Dictionary<string, object>(1))
-	    {
+        public OwinWebSocketAcceptContext() : this(new Dictionary<string, object>(1))
+        {
         }
 
         public OwinWebSocketAcceptContext(IDictionary<string, object> options)

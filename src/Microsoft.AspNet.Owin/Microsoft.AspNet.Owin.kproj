@@ -23,6 +23,7 @@
     <Compile Include="IOwinEnvironmentFeature.cs" />
     <Compile Include="OwinConstants.cs" />
     <Compile Include="OwinEnvironment.cs" />
+    <Compile Include="OwinEnvironmentFeature.cs" />
     <Compile Include="OwinExtensions.cs" />
     <Compile Include="OwinFeatureCollection.cs" />
     <Compile Include="Utilities.cs" />

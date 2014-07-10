@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Builder
     {
         public static AddMiddleware UseOwin(this IBuilder builder)
         {
-            return middleware =>
+            AddMiddleware add = middleware =>
             {
                 Func<RequestDelegate, RequestDelegate> middleware1 = next1 =>
                 {
@@ -36,11 +36,26 @@ namespace Microsoft.AspNet.Builder
                     var app = middleware(exitMiddlware);
                     return httpContext =>
                     {
-                        return app.Invoke(new OwinEnvironment(httpContext));
+                        // Use the existing OWIN env if there is one.
+                        IDictionary<string, object> env;
+                        var owinEnvFeature = httpContext.GetFeature<IOwinEnvironmentFeature>();
+                        if (owinEnvFeature != null)
+                        {
+                            env = owinEnvFeature.Environment;
+                            env[typeof(HttpContext).FullName] = httpContext;
+                        }
+                        else
+                        {
+                            env = new OwinEnvironment(httpContext);
+                        }
+                        return app.Invoke(env);
                     };
                 };
                 builder.Use(middleware1);
             };
+            // Adapt WebSockets by default.
+            add(WebSocketAcceptAdapter.AdaptWebSockets);
+            return add;
         }
 
         public static IBuilder UseOwin(this IBuilder builder, Action<AddMiddleware> pipeline)
@@ -51,6 +66,8 @@ namespace Microsoft.AspNet.Builder
 
         public static IBuilder UseBuilder(this AddMiddleware app)
         {
+            // Adapt WebSockets by default.
+            app(OwinWebSocketAcceptAdapter.AdaptWebSockets);
             var builder = new Builder(serviceProvider: null);
 
             CreateMiddleware middleware = CreateMiddlewareFactory(exit =>
@@ -74,10 +91,22 @@ namespace Microsoft.AspNet.Builder
 
                 return env =>
                 {
-                    return app.Invoke(
-                        new DefaultHttpContext(
-                            new FeatureCollection(
-                                    new OwinFeatureCollection(env))));
+                    // Use the existing HttpContext if there is one.
+                    HttpContext context;
+                    object obj;
+                    if (env.TryGetValue(typeof(HttpContext).FullName, out obj))
+                    {
+                        context = (HttpContext)obj;
+                        context.SetFeature<IOwinEnvironmentFeature>(new OwinEnvironmentFeature() { Environment = env });
+                    }
+                    else
+                    {
+                        context = new DefaultHttpContext(
+                                    new FeatureCollection(
+                                        new OwinFeatureCollection(env)));
+                    }
+
+                    return app.Invoke(context);
                 };
             };
         }

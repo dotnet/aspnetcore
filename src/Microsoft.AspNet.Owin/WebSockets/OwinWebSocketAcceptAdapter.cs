@@ -27,6 +27,10 @@ namespace Microsoft.AspNet.Owin
             Task<WebSocket>
         >;
 
+    /// <summary>
+    /// This adapts the OWIN WebSocket accept flow to match the ASP.NET WebSocket Accept flow.
+    /// This enables ASP.NET components to use WebSockets on OWIN based servers.
+    /// </summary>
     public class OwinWebSocketAcceptAdapter
     {
         private WebSocketAccept _owinWebSocketAccept;
@@ -94,6 +98,16 @@ namespace Microsoft.AspNet.Owin
             }
         }
 
+        // Order of operations:
+        // 1. A WebSocket handshake request is received by the middleware.
+        // 2. The middleware inserts an alternate Accept signature into the OWIN environment.
+        // 3. The middleware invokes Next and stores Next's Task locally. It then returns an alternate Task to the server.
+        // 4. The OwinFeatureCollection adapts the alternate Accept signature to IHttpWebSocketFeature.AcceptAsync.
+        // 5. A component later in the pipleline invokes IHttpWebSocketFeature.AcceptAsync (mapped to AcceptWebSocketAsync).
+        // 6. The middleware calls the OWIN Accept, providing a local callback, and returns an incomplete Task.
+        // 7. The middleware completes the alternate Task it returned from Invoke, telling the server that the request pipeline has completed.
+        // 8. The server invokes the middleware's callback, which creats a WebSocket adapter complete's the orriginal Accept Task with it.
+        // 9. The middleware waits while the application uses the WebSocket, where the end is signaled by the Next's Task completion.
         public static AppFunc AdaptWebSockets(AppFunc next)
         {
             return environment =>

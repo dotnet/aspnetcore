@@ -39,6 +39,7 @@ namespace Microsoft.AspNet.Owin
         public OwinFeatureCollection(IDictionary<string, object> environment)
         {
             Environment = environment;
+            SupportsWebSockets = true;
         }
 
         T Prop<T>(string key)
@@ -239,7 +240,7 @@ namespace Microsoft.AspNet.Owin
         IAuthenticationHandler IHttpAuthenticationFeature.Handler { get; set; }
 
         /// <summary>
-        /// Gets or sets if the underlying server supports WebSockets. This is disabled by default.
+        /// Gets or sets if the underlying server supports WebSockets. This is enabled by default.
         /// The value should be consistant across requests.
         /// </summary>
         public bool SupportsWebSockets { get; set; }

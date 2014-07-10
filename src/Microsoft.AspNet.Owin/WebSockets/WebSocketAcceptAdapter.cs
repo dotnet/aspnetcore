@@ -28,6 +28,10 @@ namespace Microsoft.AspNet.Owin
             Task<WebSocket>
         >;
 
+    /// <summary>
+    /// This adapts the ASP.NET WebSocket Accept flow to match the OWIN WebSocket accept flow.
+    /// This enables OWIN based components to use WebSockets on ASP.NET servers.
+    /// </summary>
     public class WebSocketAcceptAdapter
     {
         private IDictionary<string, object> _env;
@@ -63,7 +67,7 @@ namespace Microsoft.AspNet.Owin
                     {
                         IWebSocketAcceptContext acceptContext = null;
                         object obj;
-                        if (adapter._options.TryGetValue(typeof(IWebSocketAcceptContext).FullName, out obj))
+                        if (adapter._options != null && adapter._options.TryGetValue(typeof(IWebSocketAcceptContext).FullName, out obj))
                         {
                             acceptContext = obj as IWebSocketAcceptContext;
                         }
