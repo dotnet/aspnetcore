@@ -6,11 +6,14 @@ k-build
 projectFile='' 
     Required. Path to the project.json to build.
 
+configuration=''
+    Optional. The configuration to build in. Defaults to 'debug'.
 */}
 
+default configuration = 'debug'
 var projectFolder='${Path.GetDirectoryName(projectFile)}'
 var projectName='${Path.GetFileName(projectFolder)}'
-var projectBin='${Path.Combine(projectFolder, "bin")}'
+var projectBin='${Path.Combine(projectFolder, "bin", configuration)}'
 
 directory delete="${projectBin}"
 exec program='cmd' commandline='/C kpm build ${projectFolder}' if='!IsMono'

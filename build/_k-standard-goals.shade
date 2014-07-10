@@ -9,8 +9,8 @@ default BASE_DIR='${Directory.GetCurrentDirectory()}'
 default TARGET_DIR='${Path.Combine(BASE_DIR, "artifacts")}'
 default BUILD_DIR='${Path.Combine(TARGET_DIR, "build")}'
 default TEST_DIR='${Path.Combine(TARGET_DIR, "test")}'
-default Configuration='Release'
-
+default Configuration='${E("Configuration")}'
+    
 @{
   if (string.IsNullOrEmpty(E("K_BUILD_VERSION")))
   {
@@ -19,6 +19,11 @@ default Configuration='Release'
   if (string.IsNullOrEmpty(E("K_AUTHOR")))
   {
     E("K_AUTHOR", AUTHORS);
+  }
+  if (string.IsNullOrEmpty(Configuration))
+  {
+    Configuration = "debug";
+    E("Configuration", Configuration);
   }
 }
 
@@ -32,7 +37,7 @@ default Configuration='Release'
   k-clean each='var projectFile in Files.Include("src/**/project.json")'
 
 #build-compile target='compile'
-  k-build each='var projectFile in Files.Include("src/**/project.json")'
+  k-build each='var projectFile in Files.Include("src/**/project.json")' configuration='${Configuration}'
   @{
     foreach (var nupkg in Files.Include(Path.Combine(BUILD_DIR, "*/*.nupkg"))) 
     {
