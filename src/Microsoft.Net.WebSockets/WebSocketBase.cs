@@ -482,7 +482,7 @@ namespace Microsoft.Net.WebSockets
 
                 _state = WebSocketState.Aborted;
 
-#if DEBUG
+#if DEBUG && NET45
                 string stackTrace = new StackTrace().ToString();
                 if (_closeStack == null)
                 {
@@ -715,7 +715,7 @@ namespace Microsoft.Net.WebSockets
 
             _state = WebSocketState.Closed;
 
-#if DEBUG
+#if DEBUG && NET45
             if (_closeStack == null)
             {
                 _closeStack = new StackTrace().ToString();
