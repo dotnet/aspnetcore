@@ -38,6 +38,14 @@ namespace Microsoft.AspNet.TestHost.Tests
             get { return Environment.CurrentDirectory; }
         }
 
+        public string Configuration
+        {
+            get
+            {
+                return "debug";
+            }
+        }
+
         public FrameworkName TargetFramework
         {
             get { return new FrameworkName(".NETFramework", new Version(4, 5)); }
