@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 
-#if DEBUG
+#if DIAGNOSTICS_PAGE_MIDDLEWARE
 using System;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Diagnostics;
