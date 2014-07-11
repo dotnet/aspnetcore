@@ -3,17 +3,41 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNet.Mvc.Routing;
 
 namespace Microsoft.AspNet.Mvc
 {
+    /// <summary>
+    /// Identifies an action that only supports the HTTP DELETE method.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-    public sealed class HttpDeleteAttribute : Attribute, IActionHttpMethodProvider
+    public class HttpDeleteAttribute : Attribute, IActionHttpMethodProvider, IRouteTemplateProvider
     {
         private static readonly IEnumerable<string> _supportedMethods = new string[] { "DELETE" };
 
+        /// <summary>
+        /// Creates a new <see cref="HttpDeleteAttribute"/>.
+        /// </summary>
+        public HttpDeleteAttribute()
+        {
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="HttpDeleteAttribute"/> with the given route template.
+        /// </summary>
+        /// <param name="template">The route template. May not be null.</param>
+        public HttpDeleteAttribute([NotNull] string template)
+        {
+            Template = template;
+        }
+
+        /// <inheritdoc />
         public IEnumerable<string> HttpMethods
         {
             get { return _supportedMethods; }
         }
+
+        /// <inheritdoc />
+        public string Template { get; private set; }
     }
 }

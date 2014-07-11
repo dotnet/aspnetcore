@@ -36,6 +36,7 @@
     <Compile Include="Controllers\EmployeeController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\StoreController.cs" />
+    <Compile Include="HttpMergeAttribute.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="TestResponseGenerator.cs" />
   </ItemGroup>

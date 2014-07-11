@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Mvc
     /// Identifies an action that only supports the HTTP GET method.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-    public sealed class HttpGetAttribute : Attribute, IActionHttpMethodProvider, IRouteTemplateProvider
+    public class HttpGetAttribute : Attribute, IActionHttpMethodProvider, IRouteTemplateProvider
     {
         private static readonly IEnumerable<string> _supportedMethods = new string[] { "GET" };
 
