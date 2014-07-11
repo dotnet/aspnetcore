@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class ObjectContentResult : ActionResult
+    public class ObjectResult : ActionResult
     {
         public object Value { get; set; }
 
-        public ObjectContentResult(object value)
+        public ObjectResult(object value)
         {
             Value = value;
         }

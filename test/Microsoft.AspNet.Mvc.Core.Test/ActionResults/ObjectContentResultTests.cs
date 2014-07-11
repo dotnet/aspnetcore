@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             var actionContext = CreateMockActionContext();
 
             // Act
-            var result = new ObjectContentResult(input);
+            var result = new ObjectResult(input);
 
             // Assert
             Assert.Equal(input, result.Value);
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             var actionContext = CreateMockActionContext(httpResponse.Object);
 
             // Act
-            var result = new ObjectContentResult(input);
+            var result = new ObjectResult(input);
             await result.ExecuteResultAsync(actionContext);
 
             // Assert
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             }
 
             // Act
-            var result = new ObjectContentResult(nonStringValue);
+            var result = new ObjectResult(nonStringValue);
             await result.ExecuteResultAsync(actionContext);
 
             // Assert

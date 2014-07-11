@@ -1261,7 +1261,7 @@ namespace Microsoft.AspNet.Mvc
             var actualResult = ReflectedActionInvoker.CreateActionResult(type, input);
 
             // Assert
-            var contentResult = Assert.IsType<ObjectContentResult>(actualResult);
+            var contentResult = Assert.IsType<ObjectResult>(actualResult);
             Assert.Same(input, contentResult.Value);
         }
 

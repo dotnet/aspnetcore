@@ -8,9 +8,16 @@ namespace Microsoft.AspNet.Mvc
     internal static class Encodings
     {
         /// <summary>
-        /// Returns UTF8 Encoding without BOM and throws on invalid bytes
+        /// Returns UTF8 Encoding without BOM and throws on invalid bytes.
         /// </summary>
         public static readonly Encoding UTF8EncodingWithoutBOM
             = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+
+        /// <summary>
+        /// Returns UTF16 Encoding which uses littleEndian byte order with BOM and throws on invalid bytes.
+        /// </summary>
+        public static readonly Encoding UnicodeEncodingWithBOM = new UnicodeEncoding(bigEndian: false,
+                                                                                     byteOrderMark: true,
+                                                                                     throwOnInvalidBytes: true);
     }
 }

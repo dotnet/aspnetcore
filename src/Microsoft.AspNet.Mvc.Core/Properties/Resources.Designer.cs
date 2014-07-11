@@ -1050,6 +1050,22 @@ namespace Microsoft.AspNet.Mvc.Core
             return string.Format(CultureInfo.CurrentCulture, GetString("TypeMustDeriveFromType"), p0, p1);
         }
 
+        /// <summary>
+        /// No encoding found for output formatter '{0}'. There must be at least one supported encoding registered in order for the output formatter to write content.
+        /// </summary>
+        internal static string OutputFormatterNoEncoding
+        {
+            get { return GetString("OutputFormatterNoEncoding"); }
+        }
+
+        /// <summary>
+        /// No encoding found for output formatter '{0}'. There must be at least one supported encoding registered in order for the output formatter to write content.
+        /// </summary>
+        internal static string FormatOutputFormatterNoEncoding(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("OutputFormatterNoEncoding"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

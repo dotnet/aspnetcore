@@ -33,6 +33,7 @@
     <Compile Include="ExpiringFileInfoCacheTest.cs" />
     <Compile Include="DefaultActionDiscoveryConventionsTests.cs" />
     <Compile Include="Extensions\ViewEngineDscriptorExtensionsTest.cs" />
+    <Compile Include="Formatters\OutputFormatterTests.cs" />
     <Compile Include="ReflectedModelBuilder\ReflectedParameterModelTests.cs" />
     <Compile Include="ReflectedModelBuilder\ReflectedActionModelTests.cs" />
     <Compile Include="ReflectedModelBuilder\ReflectedControllerModelTests.cs" />

@@ -18,7 +18,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="project.json" />
-    <Content Include="Resources.resx" />
+    <Content Include="Resources.resx">
+      <SubType>Designer</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AcceptVerbsAttribute.cs" />
@@ -30,6 +32,9 @@
     <Compile Include="ExpiringFileInfoCache.cs" />
     <Compile Include="Extensions\ViewEngineDescriptorExtensions.cs" />
     <Compile Include="IExpiringFileInfoCache.cs" />
+    <Compile Include="Formatters\OutputFormatterContext.cs" />
+    <Compile Include="Formatters\JsonOutputFormatter.cs" />
+    <Compile Include="Formatters\OutputFormatter.cs" />
     <Compile Include="ReflectedActionDescriptor.cs" />
     <Compile Include="ReflectedActionDescriptorProvider.cs" />
     <Compile Include="ReflectedModelBuilder\IReflectedApplicationModelConvention.cs" />
@@ -47,7 +52,7 @@
     <Compile Include="ActionResults\HttpStatusCodeResult.cs" />
     <Compile Include="ActionResults\JsonResult.cs" />
     <Compile Include="ActionResults\NoContentResult.cs" />
-    <Compile Include="ActionResults\ObjectContentResult.cs" />
+    <Compile Include="ActionResults\ObjectResult.cs" />
     <Compile Include="ActionResults\RedirectResult.cs" />
     <Compile Include="ActionResults\RedirectToActionResult.cs" />
     <Compile Include="ActionResults\RedirectToRouteResult.cs" />
@@ -142,7 +147,6 @@
     <Compile Include="Injector.cs" />
     <Compile Include="Internal\TypeHelper.cs" />
     <Compile Include="IUrlHelper.cs" />
-    <Compile Include="JsonOutputFormatter.cs" />
     <Compile Include="MvcOptions.cs" />
     <Compile Include="MvcRouteHandler.cs" />
     <Compile Include="NonActionAttribute.cs" />
