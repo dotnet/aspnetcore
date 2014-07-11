@@ -78,7 +78,7 @@ kvm alias <alias> <semver>|<alias> [-x86][-x64] [-svr50][-svrc50]
 function Kvm-Global-Setup {
     If (Needs-Elevation)
     {
-        $arguments = "& '$scriptPath' setup $(Requested-Switches) -persistent"
+        $arguments = "-ExecutionPolicy unrestricted & '$scriptPath' setup $(Requested-Switches) -persistent"
         Start-Process "$psHome\powershell.exe" -Verb runAs -ArgumentList $arguments -Wait
         Write-Host "Setup complete"
         Kvm-Help
