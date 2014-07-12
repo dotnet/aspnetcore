@@ -20,6 +20,11 @@ namespace Microsoft.AspNet.Mvc
         {
             get
             {
+                if (ActionContext == null)
+                {
+                    return null;
+                }
+
                 return ActionContext.HttpContext;
             }
         }
@@ -28,6 +33,11 @@ namespace Microsoft.AspNet.Mvc
         {
             get
             {
+                if (ViewData == null)
+                {
+                    return null;
+                }
+
                 return ViewData.ModelState;
             }
         }
@@ -37,6 +47,9 @@ namespace Microsoft.AspNet.Mvc
 
         [Activate]
         public IUrlHelper Url { get; set; }
+
+        [Activate]
+        public IActionBindingContextProvider BindingContextProvider { get; set; }
 
         public IPrincipal User
         {
@@ -437,6 +450,73 @@ namespace Microsoft.AspNet.Mvc
             {
                 OnActionExecuted(await next());
             }
+        }
+
+        /// <summary>
+        /// Updates the specified model instance using values from the controller's current value provider.
+        /// </summary>
+        /// <typeparam name="TModel">The type of the model object.</typeparam>
+        /// <param name="model">The model instance to update.</param>
+        /// <returns>true if the update is successful; otherwise, false.</returns>
+        [NonAction]
+        public virtual Task<bool> TryUpdateModelAsync<TModel>([NotNull] TModel model)
+            where TModel : class
+        {
+            return TryUpdateModelAsync(model, prefix: typeof(TModel).Name);
+        }
+
+        /// <summary>
+        /// Updates the specified model instance using values from the controller's current value provider
+        /// and a prefix.
+        /// </summary>
+        /// <typeparam name="TModel">The type of the model object.</typeparam>
+        /// <param name="model">The model instance to update.</param>
+        /// <param name="prefix">The prefix to use when looking up values in the value provider.</param>
+        /// <returns>true if the update is successful; otherwise, false.</returns>
+        [NonAction]
+        public virtual async Task<bool> TryUpdateModelAsync<TModel>([NotNull] TModel model,
+                                                                    [NotNull] string prefix)
+            where TModel : class
+        {
+            if (BindingContextProvider == null)
+            {
+                var message = Resources.FormatPropertyOfTypeCannotBeNull("BindingContextProvider", GetType().FullName);
+                throw new InvalidOperationException(message);
+            }
+
+            var bindingContext = await BindingContextProvider.GetActionBindingContextAsync(ActionContext);
+            return await TryUpdateModelAsync(model, prefix, bindingContext.ValueProvider);
+        }
+
+        /// <summary>
+        /// Updates the specified model instance using the value provider and a prefix.
+        /// </summary>
+        /// <typeparam name="TModel">The type of the model object.</typeparam>
+        /// <param name="model">The model instance to update.</param>
+        /// <param name="prefix">The prefix to use when looking up values in the value provider.</param>
+        /// <param name="valueProvider">The value provider used for looking up values.</param>
+        /// <returns>true if the update is successful; otherwise, false.</returns>
+        [NonAction]
+        public virtual async Task<bool> TryUpdateModelAsync<TModel>([NotNull] TModel model,
+                                                                    [NotNull] string prefix,
+                                                                    [NotNull] IValueProvider valueProvider)
+            where TModel : class
+        {
+            if (BindingContextProvider == null)
+            {
+                var message = Resources.FormatPropertyOfTypeCannotBeNull("BindingContextProvider", GetType().FullName);
+                throw new InvalidOperationException(message);
+            }
+
+            var bindingContext = await BindingContextProvider.GetActionBindingContextAsync(ActionContext);
+            return await ModelBindingHelper.TryUpdateModelAsync(model,
+                                                                prefix,
+                                                                ActionContext.HttpContext,
+                                                                ModelState,
+                                                                bindingContext.MetadataProvider,
+                                                                bindingContext.ModelBinder,
+                                                                valueProvider,
+                                                                bindingContext.ValidatorProviders);
         }
     }
 }

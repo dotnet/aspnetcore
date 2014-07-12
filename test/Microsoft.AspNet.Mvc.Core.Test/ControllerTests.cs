@@ -13,6 +13,7 @@ using Microsoft.AspNet.Testing;
 using Moq;
 #endif
 using Xunit;
+using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Mvc.Test
 {
@@ -25,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 return typeof(Controller).GetTypeInfo()
                     .DeclaredMethods
                     .Where(method => method.IsPublic && !method.IsSpecialName)
-                    .Select(method => new [] { method });
+                    .Select(method => new[] { method });
             }
         }
 
@@ -541,6 +542,133 @@ namespace Microsoft.AspNet.Mvc.Test
             await ActionFilterAttributeTests.ActionFilter_Calls_OnActionExecuted(
                 new Mock<Controller>());
         }
+
+        [Fact]
+        public async Task TryUpdateModel_UsesModelTypeNameIfNotSpecified()
+        {
+            var metadataProvider = new DataAnnotationsModelMetadataProvider();
+            var valueProvider = Mock.Of<IValueProvider>();
+            var binder = new Mock<IModelBinder>();
+            binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                  .Callback((ModelBindingContext b) =>
+                  {
+                      Assert.Equal(typeof(MyModel).Name, b.ModelName);
+                      Assert.Same(valueProvider, b.ValueProvider);
+                  })
+                  .Returns(Task.FromResult(false))
+                  .Verifiable();
+            var model = new MyModel();
+            var actionContext = new ActionContext(Mock.Of<HttpContext>(), new RouteData(), new ActionDescriptor());
+            var bindingContext = new ActionBindingContext(actionContext,
+                                                          metadataProvider,
+                                                          binder.Object,
+                                                          valueProvider,
+                                                          Mock.Of<IInputFormatterProvider>(),
+                                                          Enumerable.Empty<IModelValidatorProvider>());
+            var bindingContextProvider = new Mock<IActionBindingContextProvider>();
+            bindingContextProvider.Setup(b => b.GetActionBindingContextAsync(actionContext))
+                                  .Returns(Task.FromResult(bindingContext));
+            var viewData = new ViewDataDictionary(metadataProvider, new ModelStateDictionary());
+            var controller = new Controller
+            {
+                ActionContext = actionContext,
+                BindingContextProvider = bindingContextProvider.Object,
+                ViewData = viewData
+            };
+
+            // Act
+            var result = await controller.TryUpdateModelAsync(model);
+
+            // Assert
+            binder.Verify();
+        }
+
+        [Fact]
+        public async Task TryUpdateModel_UsesModelTypeNameIfSpecified()
+        {
+            var metadataProvider = new DataAnnotationsModelMetadataProvider();
+            var valueProvider = Mock.Of<IValueProvider>();
+            var binder = new Mock<IModelBinder>();
+            var modelName = "mymodel";
+            binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                  .Callback((ModelBindingContext b) =>
+                  {
+                      Assert.Equal(modelName, b.ModelName);
+                      Assert.Same(valueProvider, b.ValueProvider);
+                  })
+                  .Returns(Task.FromResult(false))
+                  .Verifiable();
+            var model = new MyModel();
+            var actionContext = new ActionContext(Mock.Of<HttpContext>(), new RouteData(), new ActionDescriptor());
+            var bindingContext = new ActionBindingContext(actionContext,
+                                                          metadataProvider,
+                                                          binder.Object,
+                                                          valueProvider,
+                                                          Mock.Of<IInputFormatterProvider>(),
+                                                          Enumerable.Empty<IModelValidatorProvider>());
+            var bindingContextProvider = new Mock<IActionBindingContextProvider>();
+            bindingContextProvider.Setup(b => b.GetActionBindingContextAsync(actionContext))
+                                  .Returns(Task.FromResult(bindingContext));
+            var viewData = new ViewDataDictionary(metadataProvider, new ModelStateDictionary());
+            var controller = new Controller
+            {
+                ActionContext = actionContext,
+                BindingContextProvider = bindingContextProvider.Object,
+                ViewData = viewData
+            };
+
+            // Act
+            var result = await controller.TryUpdateModelAsync(model, modelName);
+
+            // Assert
+            binder.Verify();
+        }
+
+        [Fact]
+        public async Task TryUpdateModel_UsesModelValueProviderIfSpecified()
+        {
+            var metadataProvider = new DataAnnotationsModelMetadataProvider();
+            var valueProvider = Mock.Of<IValueProvider>();
+            var binder = new Mock<IModelBinder>();
+            var modelName = "mymodel";
+            binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                  .Callback((ModelBindingContext b) =>
+                  {
+                      Assert.Equal(modelName, b.ModelName);
+                      Assert.Same(valueProvider, b.ValueProvider);
+                  })
+                  .Returns(Task.FromResult(false))
+                  .Verifiable();
+            var model = new MyModel();
+            var actionContext = new ActionContext(Mock.Of<HttpContext>(), new RouteData(), new ActionDescriptor());
+            var bindingContext = new ActionBindingContext(actionContext,
+                                                          metadataProvider,
+                                                          binder.Object,
+                                                          Mock.Of<IValueProvider>(),
+                                                          Mock.Of<IInputFormatterProvider>(),
+                                                          Enumerable.Empty<IModelValidatorProvider>());
+            var bindingContextProvider = new Mock<IActionBindingContextProvider>();
+            bindingContextProvider.Setup(b => b.GetActionBindingContextAsync(actionContext))
+                                  .Returns(Task.FromResult(bindingContext));
+            var viewData = new ViewDataDictionary(metadataProvider, new ModelStateDictionary());
+            var controller = new Controller
+            {
+                ActionContext = actionContext,
+                BindingContextProvider = bindingContextProvider.Object,
+                ViewData = viewData
+            };
+
+            // Act
+            var result = await controller.TryUpdateModelAsync(model, modelName, valueProvider);
+
+            // Assert
+            binder.Verify();
+        }
 #endif
+
+        private class MyModel
+        {
+            public string Foo { get; set; }
+        }
     }
 }
