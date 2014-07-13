@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Microsoft.Framework.Runtime;
+using Microsoft.Framework.Runtime.Infrastructure;
 
 namespace E2ETests
 {
@@ -32,9 +34,12 @@ namespace E2ETests
         /// <param name="applicationPath"></param>
         private static void CopyAspNetLoader(string applicationPath)
         {
-            string packagesDirectory = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\Packages"));
-            var aspNetLoaderSrcPath = Path.Combine(Directory.GetDirectories(packagesDirectory, "Microsoft.AspNet.Loader.IIS.Interop.*").First(), @"tools\AspNet.Loader.dll");
-            var aspNetLoaderDestPath = Path.Combine(applicationPath, @"bin\AspNet.Loader.dll");
+            var libraryManager = (ILibraryManager)CallContextServiceLocator.Locator.ServiceProvider.GetService(typeof(ILibraryManager));
+            var interopLibrary = libraryManager.GetLibraryInformation("Microsoft.AspNet.Loader.IIS.Interop");
+
+            var aspNetLoaderSrcPath = Path.Combine(interopLibrary.Path, "tools", "AspNet.Loader.dll");
+            var aspNetLoaderDestPath = Path.Combine(applicationPath, "bin", "AspNet.Loader.dll");
+
             if (!File.Exists(aspNetLoaderDestPath))
             {
                 File.Copy(aspNetLoaderSrcPath, aspNetLoaderDestPath);
@@ -112,8 +117,8 @@ namespace E2ETests
             Console.WriteLine();
             Console.WriteLine("Current %PATH% value : {0}", pathValue);
 
-            pathValue = (kreFlavor == KreFlavor.CoreClr) ? 
-                pathValue.Replace("KRE-svr50-", "KRE-svrc50-") : 
+            pathValue = (kreFlavor == KreFlavor.CoreClr) ?
+                pathValue.Replace("KRE-svr50-", "KRE-svrc50-") :
                 pathValue.Replace("KRE-svrc50-", "KRE-svr50-");
 
             Console.WriteLine();
