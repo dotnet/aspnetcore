@@ -126,7 +126,7 @@ namespace Microsoft.AspNet.Diagnostics
             var stackTrace = ex.StackTrace;
             if (!string.IsNullOrEmpty(stackTrace))
             {
-                var heap = new Chunk { Text = stackTrace + Environment.NewLine, End = stackTrace.Length + 2 };
+                var heap = new Chunk { Text = stackTrace + Environment.NewLine, End = stackTrace.Length + Environment.NewLine.Length };
                 for (Chunk line = heap.Advance(Environment.NewLine); line.HasValue; line = heap.Advance(Environment.NewLine))
                 {
                     yield return StackFrame(line, showSource);
