@@ -25,7 +25,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="project.json" />
-    <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DelegateRouteEndpoint.cs" />
