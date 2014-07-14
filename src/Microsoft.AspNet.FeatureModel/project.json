@@ -5,7 +5,7 @@
     "net45": {},
     "k10": {
       "dependencies": {
-        "System.Collections": "4.0.0.0",
+        "System.Collections": "4.0.10.0",
         "System.Linq": "4.0.0.0",
         "System.Reflection": "4.0.10.0",
         "System.Reflection.TypeExtensions": "4.0.0.0",
