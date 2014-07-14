@@ -1,4 +1,4 @@
-{
+﻿{
   "dependencies": {
     "Microsoft.AspNet.FeatureModel": "",
     "Microsoft.AspNet.Http": "",
@@ -8,7 +8,7 @@
   "commands": {
     "test": "Xunit.KRunner"
   },
-  "configurations": {
+  "frameworks": {
     "net45": { 
       "dependencies": {
         "Shouldly": "1.1.1.1",

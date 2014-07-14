@@ -1,4 +1,4 @@
-{
+﻿{
   "dependencies": {
     "Microsoft.AspNet.Http": "",
     "Microsoft.AspNet.HttpFeature": "",
@@ -9,7 +9,7 @@
   "commands": {
     "test": "Xunit.KRunner"
   },
-  "configurations": {
+  "frameworks": {
     "net45": { 
       "dependencies": {
         "Shouldly": "1.1.1.1",

@@ -3,7 +3,7 @@
     "dependencies": {
         "Microsoft.AspNet.Http": ""
     },
-    "configurations" : {
+    "frameworks" : {
         "net45" : {
         },
         "k10" : { 

@@ -1,4 +1,4 @@
-
+﻿
 {
   "version": "1.0.0-*",
   "dependencies": {
@@ -6,7 +6,7 @@
     "Microsoft.AspNet.Http": "",
     "Microsoft.AspNet.HttpFeature": ""
   },
-  "configurations": {
+  "frameworks": {
     "net45": {},
     "k10": {
       "dependencies": {
