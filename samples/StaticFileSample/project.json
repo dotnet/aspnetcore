@@ -1,11 +1,11 @@
-{
+﻿{
   "dependencies": {
     "Helios": "1.0.0-*",
     "Microsoft.AspNet.FileSystems": "1.0.0-*",
     "Microsoft.AspNet.Http": "1.0.0-*",
     "Microsoft.AspNet.StaticFiles": ""
   },
-  "configurations": {
+  "frameworks": {
     "net45": {
     },
     "k10": {
