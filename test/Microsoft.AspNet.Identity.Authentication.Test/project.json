@@ -1,4 +1,4 @@
-{
+﻿{
   "dependencies": {
     "Microsoft.AspNet.FeatureModel" : "1.0.0-*",
     "Microsoft.AspNet.Http" : "1.0.0-*",
@@ -18,7 +18,7 @@
     "Xunit.KRunner": "1.0.0-*"
   },
   "code": "**\\*.cs;..\\Shared\\*.cs",
-  "configurations": {
+  "frameworks": {
     "net45": {
       "dependencies": {
         "Moq" : "4.2.1312.1622",

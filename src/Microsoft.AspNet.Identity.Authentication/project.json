@@ -1,4 +1,4 @@
-{
+﻿{
   "version": "3.0.0-*",
   "dependencies": {
     "Microsoft.AspNet.Http" : "1.0.0-*",
@@ -7,7 +7,7 @@
     "Microsoft.Framework.DependencyInjection" : "1.0.0-*",
     "System.Security.Claims" : "1.0.0-*"
   },
-  "configurations": {
+  "frameworks": {
     "net45": {},
     "k10": {
       "dependencies": {

@@ -1,11 +1,11 @@
-{
+﻿{
   "version": "3.0.0-*",
   "dependencies": {
     "Microsoft.AspNet.Identity": "",
     "EntityFramework.SqlServer": "7.0.0-*",
     "System.Security.Claims" : "1.0.0-*"
   },
-  "configurations": {
+  "frameworks": {
     "net451": {
       "dependencies": {
         "System.Collections": "",

@@ -1,4 +1,4 @@
-{
+﻿{
   "version": "3.0.0-*",
   "dependencies": {
     "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
@@ -6,7 +6,7 @@
     "Microsoft.Framework.OptionsModel": "1.0.0-*",
     "System.Security.Claims" : "1.0.0-*"
   },
-  "configurations": {
+  "frameworks": {
     "net45": {},
     "k10": {
       "dependencies": {
