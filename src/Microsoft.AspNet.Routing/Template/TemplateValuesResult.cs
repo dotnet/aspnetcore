@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Routing.Template
         /// <summary>
         /// The set of values that will appear in the URL.
         /// </summary>
-        public Dictionary<string, object> AcceptedValues { get; set; }
+        public IDictionary<string, object> AcceptedValues { get; set; }
 
         /// <summary>
         /// The set of values that that were supplied for URL generation. 
@@ -26,6 +26,6 @@ namespace Microsoft.AspNet.Routing.Template
         /// Implicit (ambient) values which are invalidated due to changes in values lexically earlier in the 
         /// route template are excluded from this set.
         /// </remarks>
-        public Dictionary<string, object> CombinedValues { get; set; }
+        public IDictionary<string, object> CombinedValues { get; set; }
     }
 }
