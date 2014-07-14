@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
 
@@ -16,20 +15,20 @@ namespace Microsoft.AspNet.Mvc
     /// <summary>
     /// Writes an object to the output stream.
     /// </summary>
-    public abstract class OutputFormatter
+    public abstract class OutputFormatter : IOutputFormatter
     {
         /// <summary>
         /// Gets the mutable collection of character encodings supported by
         /// this <see cref="OutputFormatter"/> instance. The encodings are
         /// used when writing the data.
         /// </summary>
-        public List<Encoding> SupportedEncodings { get; private set; }
+        public IList<Encoding> SupportedEncodings { get; private set; }
 
         /// <summary>
         /// Gets the mutable collection of <see cref="MediaTypeHeaderValue"/> elements supported by
         /// this <see cref="OutputFormatter"/> instance.
         /// </summary>
-        public List<MediaTypeHeaderValue> SupportedMediaTypes { get; private set; }
+        public IList<MediaTypeHeaderValue> SupportedMediaTypes { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OutputFormatter"/> class.
@@ -44,60 +43,133 @@ namespace Microsoft.AspNet.Mvc
         /// Determines the best <see cref="Encoding"/> amongst the supported encodings
         /// for reading or writing an HTTP entity body based on the provided <paramref name="contentTypeHeader"/>.
         /// </summary>
-        /// <param name="contentTypeHeader">The content type header provided as part of the request or response.</param>
+        /// <param name="context">The formatter context associated with the call.
+        /// </param>
         /// <returns>The <see cref="Encoding"/> to use when reading the request or writing the response.</returns>
-        public virtual Encoding SelectCharacterEncoding(MediaTypeHeaderValue contentTypeHeader)
+        public virtual Encoding SelectCharacterEncoding(OutputFormatterContext context)
         {
-            Encoding encoding = null;
-            if (contentTypeHeader != null)
+            var request = context.ActionContext.HttpContext.Request;
+            var encoding = MatchAcceptCharacterEncoding(request.AcceptCharset);
+            if (encoding == null)
             {
-                // Find encoding based on content type charset parameter
-                var charset = contentTypeHeader.Charset;
-                if (!String.IsNullOrWhiteSpace(charset))
+                // Match based on request acceptHeader.
+                var requestContentType = MediaTypeHeaderValue.Parse(request.ContentType);
+                if (requestContentType != null && !string.IsNullOrEmpty(requestContentType.Charset))
                 {
+                    var requestCharset = requestContentType.Charset;
                     encoding = SupportedEncodings.FirstOrDefault(
-                                                    supportedEncoding => 
-                                                        charset.Equals(supportedEncoding.WebName, 
-                                                                       StringComparison.OrdinalIgnoreCase));
+                                                            supportedEncoding =>
+                                                                requestCharset.Equals(supportedEncoding.WebName));
                 }
             }
 
-            if (encoding == null)
+            encoding = encoding ?? SupportedEncodings.FirstOrDefault();
+            return encoding;
+        }
+       
+        /// <inheritdoc />
+        public virtual bool CanWriteResult(OutputFormatterContext context, MediaTypeHeaderValue contentType)
+        {
+            MediaTypeHeaderValue mediaType = null;
+            if (contentType == null)
             {
-                // We didn't find a character encoding match based on the content headers.
-                // Instead we try getting the default character encoding.
-                if (SupportedEncodings.Count > 0)
-                {
-                    encoding = SupportedEncodings[0];
-                }
+                // If the desired content type is set to null, the current formatter is free to choose the 
+                // response media type. 
+                mediaType = SupportedMediaTypes.FirstOrDefault();
+            }
+            else
+            {
+                // Since supportedMedia Type is going to be more specific check if supportedMediaType is a subset
+                // of the content type which is typically what we get on acceptHeader.
+                mediaType = SupportedMediaTypes
+                                  .FirstOrDefault(supportedMediaType => supportedMediaType.IsSubsetOf(contentType));
             }
 
-            if (encoding == null)
+            if (mediaType != null)
+            {
+                context.SelectedContentType = mediaType;
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <inheritdoc />
+        public async Task WriteAsync(OutputFormatterContext context)
+        {
+            WriteResponseContentHeaders(context);
+            await WriteResponseBodyAsync(context);
+        }
+
+        /// <summary>
+        /// Sets the content-type headers with charset value to the HttpResponse.
+        /// </summary>
+        /// <param name="context">The formatter context associated with the call.</param>
+        public virtual void WriteResponseContentHeaders(OutputFormatterContext context)
+        {
+            var selectedMediaType = context.SelectedContentType;
+
+            // If content type is not set then set it based on supported media types.
+            selectedMediaType = selectedMediaType ?? SupportedMediaTypes.FirstOrDefault();
+            if (selectedMediaType == null)
+            {
+                throw new InvalidOperationException(Resources.FormatOutputFormatterNoMediaType(GetType().FullName));
+            }
+
+            var selectedEncoding = SelectCharacterEncoding(context);
+            if (selectedEncoding == null)
             {
                 // No supported encoding was found so there is no way for us to start writing.
                 throw new InvalidOperationException(Resources.FormatOutputFormatterNoEncoding(GetType().FullName));
             }
 
-            return encoding;
+            context.SelectedEncoding = selectedEncoding;
+
+            // Override the content type value even if one already existed. 
+            selectedMediaType.Charset = selectedEncoding.WebName;
+            var response = context.ActionContext.HttpContext.Response;
+            response.ContentType = selectedMediaType.RawValue;
         }
 
         /// <summary>
-        /// Determines whether this <see cref="OutputFormatter"/> can serialize
-        /// an object of the specified type.
+        /// Writes the response body.
         /// </summary>
-        /// <param name="context">The formatter context associated with the call</param>
-        /// <param name="contentType">The desired contentType on the response.</param>
-        /// <returns>True if this <see cref="OutputFormatter"/> is able to serialize the object
-        /// represent by <paramref name="context"/>'s ObjectResult and supports the passed in 
-        /// <paramref name="contentType"/>. 
-        /// False otherwise.</returns>
-        public abstract bool CanWriteResult(OutputFormatterContext context, MediaTypeHeaderValue contentType);
+        /// <param name="context">The formatter context associated with the call.</param>
+        /// <returns>A task which can write the response body.</returns>
+        public abstract Task WriteResponseBodyAsync(OutputFormatterContext context);
 
-        /// <summary>
-        /// Writes given <paramref name="value"/> to the HttpResponse <paramref name="response"/> body stream. 
-        /// </summary>
-        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
-        /// <returns>A Task that serializes the value to the <paramref name="context"/>'s response message.</returns>
-        public abstract Task WriteAsync(OutputFormatterContext context, CancellationToken cancellationToken);
+        private Encoding MatchAcceptCharacterEncoding(string acceptCharsetHeader)
+        {
+            var acceptCharsetHeaders = HeaderParsingHelpers
+                                                .GetAcceptCharsetHeaders(acceptCharsetHeader);
+
+            if (acceptCharsetHeaders != null && acceptCharsetHeaders.Count > 0)
+            {
+                var sortedAcceptCharsetHeaders = acceptCharsetHeaders
+                                                    .Where(acceptCharset =>
+                                                                acceptCharset.Quality != FormattingUtilities.NoMatch)
+                                                    .OrderByDescending(
+                                                        m => m, StringWithQualityHeaderValueComparer.QualityComparer);
+
+                foreach (var acceptCharset in sortedAcceptCharsetHeaders)
+                {
+                    var charset = acceptCharset.Value;
+                    if (!string.IsNullOrWhiteSpace(charset))
+                    {
+                        var encoding = SupportedEncodings.FirstOrDefault(
+                                                        supportedEncoding =>
+                                                            charset.Equals(supportedEncoding.WebName,
+                                                                           StringComparison.OrdinalIgnoreCase) ||
+                                                            charset.Equals("*", StringComparison.OrdinalIgnoreCase));
+                        if (encoding != null)
+                        {
+                            return encoding;
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
     }
 }

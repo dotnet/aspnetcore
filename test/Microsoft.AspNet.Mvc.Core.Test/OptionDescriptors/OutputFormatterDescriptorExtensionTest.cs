@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if NET45
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Mvc.OptionDescriptors;
 using Moq;
 using Xunit;
 
@@ -19,13 +19,13 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Arrange
             var collection = new List<OutputFormatterDescriptor>
             {
-                new OutputFormatterDescriptor(Mock.Of<OutputFormatter>()),
-                new OutputFormatterDescriptor(Mock.Of<OutputFormatter>())
+                new OutputFormatterDescriptor(Mock.Of<IOutputFormatter>()),
+                new OutputFormatterDescriptor(Mock.Of<IOutputFormatter>())
             };
 
             // Act & Assert
-            Assert.Throws<ArgumentOutOfRangeException>("index",
-                                                       () => collection.Insert(index, typeof(OutputFormatter)));
+            Assert.Throws<ArgumentOutOfRangeException>("index", 
+                                                       () => collection.Insert(index, typeof(IOutputFormatter)));
         }
 
         [Theory]
@@ -36,10 +36,10 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Arrange
             var collection = new List<OutputFormatterDescriptor>
             {
-                new OutputFormatterDescriptor(Mock.Of<OutputFormatter>()),
-                new OutputFormatterDescriptor(Mock.Of<OutputFormatter>())
+                new OutputFormatterDescriptor(Mock.Of<IOutputFormatter>()),
+                new OutputFormatterDescriptor(Mock.Of<IOutputFormatter>())
             };
-            var formatter = Mock.Of<OutputFormatter>();
+            var formatter = Mock.Of<IOutputFormatter>();
 
             // Act & Assert
             Assert.Throws<ArgumentOutOfRangeException>("index", () => collection.Insert(index, formatter));
@@ -49,8 +49,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public void OutputFormatterDescriptors_AddsTypesAndInstances()
         {
             // Arrange
-            var formatter1 = Mock.Of<OutputFormatter>();
-            var formatter2 = Mock.Of<OutputFormatter>();
+            var formatter1 = Mock.Of<IOutputFormatter>();
+            var formatter2 = Mock.Of<IOutputFormatter>();
             var type1 = typeof(JsonOutputFormatter);
             var type2 = typeof(OutputFormatter);
             var collection = new List<OutputFormatterDescriptor>();
@@ -63,10 +63,11 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             // Assert
             Assert.Equal(4, collection.Count);
-            Assert.Equal(formatter1, collection[0].Instance);
-            Assert.Equal(formatter2, collection[1].Instance);
-            Assert.Equal(type2, collection[2].OptionType);
-            Assert.Equal(type1, collection[3].OptionType);
+            Assert.Equal(formatter1, collection[0].OutputFormatter);
+            Assert.Equal(formatter2, collection[1].OutputFormatter);
+            Assert.Equal(type2, collection[2].OutputFormatterType);
+            Assert.Equal(type1, collection[3].OutputFormatterType);
         }
     }
 }
+#endif

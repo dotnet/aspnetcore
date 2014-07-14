@@ -24,6 +24,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="Project.json" />
+    <Content Include="TestFiles\Input\InjectWithModel.cshtml" />
     <Content Include="TestFiles\Input\Model.cshtml" />
     <Content Include="TestFiles\Input\Inject.cshtml" />
   </ItemGroup>
@@ -37,7 +38,6 @@
     <Compile Include="SpanFactory\SpanFactoryExtensions.cs" />
     <Compile Include="SpanFactory\UnclassifiedSpanConstructor.cs" />
     <Compile Include="StringTextBuffer.cs" />
-    <Compile Include="TestFiles\Input\InjectWithModel.cshtml" />
     <Compile Include="TestFiles\Output\InjectWithModel.cs" />
     <Compile Include="TestFiles\Output\Model.cs" />
     <Compile Include="TestFiles\Output\Inject.cs" />

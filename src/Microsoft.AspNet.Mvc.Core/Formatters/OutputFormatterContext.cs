@@ -2,16 +2,40 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Http;
+using System.Text;
+using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
 
 namespace Microsoft.AspNet.Mvc
 {
+    /// <summary>
+    /// Represents information used by a formatter for participating in 
+    /// output content negotiation and in writing out the response. 
+    /// </summary>
     public class OutputFormatterContext
     {
-        public ObjectResult ObjectResult { get; set; }
+        /// <summary>
+        /// The return value of the action method. 
+        /// </summary>
+        public object Object { get; set; }
 
+        /// <summary>
+        /// The declared return type of the action.  
+        /// </summary>
         public Type DeclaredType { get; set; }
 
-        public HttpContext HttpContext { get; set; }
+        /// <summary>
+        /// Action context associated with the current call. 
+        /// </summary>
+        public ActionContext ActionContext { get; set; }
+
+        /// <summary>
+        /// The encoding which is chosen by the selected formatter. 
+        /// </summary>
+        public Encoding SelectedEncoding { get; set; }
+
+        /// <summary>
+        /// The content type which is chosen by the selected formatter.
+        /// </summary>
+        public MediaTypeHeaderValue SelectedContentType { get; set; }
     }
 }

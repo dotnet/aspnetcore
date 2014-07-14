@@ -13,10 +13,10 @@ namespace Microsoft.AspNet.Mvc
     public static class OutputFormatterDescriptorExtensions
     {
         /// <summary>
-        /// Adds a type representing a <see cref="OutputFormatter"/> to a descriptor collection.
+        /// Adds a type representing a <see cref="IOutputFormatter"/> to a descriptor collection.
         /// </summary>
         /// <param name="descriptors">A list of OutputFormatterDescriptors</param>
-        /// <param name="outputFormatterType">Type representing an <see cref="OutputFormatter"/>.</param>
+        /// <param name="outputFormatterType">Type representing an <see cref="IOutputFormatter"/>.</param>
         /// <returns>OutputFormatterDescriptor representing the added instance.</returns>
         public static OutputFormatterDescriptor Add([NotNull] this IList<OutputFormatterDescriptor> descriptors,
                                                     [NotNull] Type outputFormatterType)
@@ -27,10 +27,10 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Inserts a type representing a <see cref="OutputFormatter"/> to a descriptor collection.
+        /// Inserts a type representing a <see cref="IOutputFormatter"/> to a descriptor collection.
         /// </summary>
         /// <param name="descriptors">A list of OutputFormatterDescriptors</param>
-        /// <param name="outputFormatterType">Type representing an <see cref="OutputFormatter"/>.</param>
+        /// <param name="outputFormatterType">Type representing an <see cref="IOutputFormatter"/>.</param>
         /// <returns>OutputFormatterDescriptor representing the inserted instance.</returns>
         public static OutputFormatterDescriptor Insert([NotNull] this IList<OutputFormatterDescriptor> descriptors,
                                                        int index,
@@ -47,13 +47,13 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Adds an <see cref="OutputFormatter"/> to a descriptor collection.
+        /// Adds an <see cref="IOutputFormatter"/> to a descriptor collection.
         /// </summary>
         /// <param name="descriptors">A list of OutputFormatterDescriptors</param>
-        /// <param name="outputFormatter">An <see cref="OutputFormatter"/> instance.</param>
+        /// <param name="outputFormatter">An <see cref="IOutputFormatter"/> instance.</param>
         /// <returns>OutputFormatterDescriptor representing the added instance.</returns>
         public static OutputFormatterDescriptor Add([NotNull] this IList<OutputFormatterDescriptor> descriptors,
-                                                    [NotNull] OutputFormatter outputFormatter)
+                                                [NotNull] IOutputFormatter outputFormatter)
         {
             var descriptor = new OutputFormatterDescriptor(outputFormatter);
             descriptors.Add(descriptor);
@@ -61,14 +61,14 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Insert an <see cref="OutputFormatter"/> to a descriptor collection.
+        /// Insert an <see cref="IOutputFormatter"/> to a descriptor collection.
         /// </summary>
         /// <param name="descriptors">A list of OutputFormatterDescriptors</param>
-        /// <param name="outputFormatter">An <see cref="OutputFormatter"/> instance.</param>
+        /// <param name="outputFormatter">An <see cref="IOutputFormatter"/> instance.</param>
         /// <returns>OutputFormatterDescriptor representing the added instance.</returns>
         public static OutputFormatterDescriptor Insert([NotNull] this IList<OutputFormatterDescriptor> descriptors,
                                                        int index,
-                                                       [NotNull] OutputFormatter outputFormatter)
+                                                   [NotNull] IOutputFormatter outputFormatter)
         {
             if (index < 0 || index > descriptors.Count)
             {

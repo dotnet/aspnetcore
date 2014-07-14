@@ -73,28 +73,16 @@ namespace Microsoft.AspNet.Mvc
             return jsonSerializer;
         }
 
-        public override bool CanWriteResult(OutputFormatterContext context, MediaTypeHeaderValue contentType)
+        public override Task WriteResponseBodyAsync(OutputFormatterContext context)
         {
-            return SupportedMediaTypes.Any(supportedMediaType => 
-                                            contentType.RawValue.Equals(supportedMediaType.RawValue,
-                                                                        StringComparison.OrdinalIgnoreCase));
-        }
-
-        public override Task WriteAsync(OutputFormatterContext context,
-                                        CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            var response = context.HttpContext.Response;
-
-            // The content type including the encoding should have been set already. 
-            // In case it was not present, a default will be selected. 
-            var selectedEncoding = SelectCharacterEncoding(MediaTypeHeaderValue.Parse(response.ContentType));
-            using (var writer = new StreamWriter(response.Body, selectedEncoding))
+            var response = context.ActionContext.HttpContext.Response;
+            var selectedEncoding = context.SelectedEncoding;
+            using (var writer = new StreamWriter(response.Body, selectedEncoding, 1024, leaveOpen: true))
             {
                 using (var jsonWriter = CreateJsonWriter(writer))
                 {
                     var jsonSerializer = CreateJsonSerializer();
-                    jsonSerializer.Serialize(jsonWriter, context.ObjectResult.Value);
+                    jsonSerializer.Serialize(jsonWriter, context.Object);
 
                     // We're explicitly calling flush here to simplify the debugging experience because the
                     // underlying TextWriter might be long-lived. If this method ends up being called repeatedly
