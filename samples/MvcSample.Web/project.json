@@ -1,4 +1,4 @@
-{
+﻿{
   "compilationOptions": {
     "warningsAsErrors": true
   },
@@ -18,7 +18,7 @@
     "Microsoft.Framework.OptionsModel": "1.0.0-*"
   },
   "commands": { "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001" },
-  "configurations": {
+  "frameworks": {
     "net45": {
       "dependencies": {
         "System.ComponentModel.DataAnnotations": "",

@@ -1,4 +1,4 @@
-{
+﻿{
   "compilationOptions": {
     "warningsAsErrors": true
   },
@@ -17,7 +17,7 @@
   "commands": {
     "test": "Xunit.KRunner"
   },
-  "configurations": {
+  "frameworks": {
     "net45": { }
   }
 }

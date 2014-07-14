@@ -4,7 +4,7 @@
         "Microsoft.AspNet.Mvc.TestConfiguration": "",
         "Microsoft.AspNet.Server.IIS": "1.0.0-*"
     },
-    "configurations": {
+    "frameworks": {
         "net45": { },
         "k10": { }
     }

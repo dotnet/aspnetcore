@@ -1,4 +1,4 @@
-{
+﻿{
   "version": "6.0.0-*",
   "compilationOptions": {
     "warningsAsErrors": true
@@ -15,7 +15,7 @@
     "Microsoft.Framework.OptionsModel": "1.0.0-*",
     "Newtonsoft.Json": "5.0.8"
   },
-  "configurations": {
+  "frameworks": {
     "net45": {},
     "k10": {
       "dependencies": {

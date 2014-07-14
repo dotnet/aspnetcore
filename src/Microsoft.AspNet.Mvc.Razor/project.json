@@ -1,4 +1,4 @@
-{
+﻿{
   "version": "6.0.0-*",
   "compilationOptions": {
     "warningsAsErrors": false
@@ -15,7 +15,7 @@
     "Microsoft.Framework.DependencyInjection": "1.0.0-*",
     "Microsoft.Framework.Runtime.Interfaces":  "1.0.0-*"
   },
-  "configurations": {
+  "frameworks": {
     "net45": {
       "dependencies": {
         "System.Collections": "",

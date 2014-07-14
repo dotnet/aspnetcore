@@ -4,7 +4,7 @@
         "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
         "Microsoft.Framework.DependencyInjection": "1.0.0-*"
     },
-    "configurations" : {
+    "frameworks" : {
         "net45" : { },
         "k10" : { }
     }

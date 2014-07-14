@@ -1,4 +1,4 @@
-{
+﻿{
   "version": "6.0.0-*",
   "compilationOptions": {
     "warningsAsErrors": true
@@ -7,7 +7,7 @@
     "Microsoft.AspNet.Mvc.Common": "",
     "Microsoft.AspNet.Razor": "4.0.0-*"
   },
-  "configurations": {
+  "frameworks": {
     "net45": {
       "dependencies": {
         "System.Collections": "",

@@ -5,7 +5,7 @@
         "Microsoft.AspNet.Mvc.TestConfiguration": "",
         "Microsoft.Framework.ConfigurationModel.Json": "1.0.0-*"
     },
-    "configurations": {
+    "frameworks": {
         "net45": { },
         "k10": { }
     }
