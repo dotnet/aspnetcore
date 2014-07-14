@@ -26,12 +26,11 @@ projectFile=''
         var projectFolder = Path.GetDirectoryName(projectFile);
         
         object configsObject;
-        var configs = project.TryGetValue("configurations", out configsObject)
+        var configs = project.TryGetValue("frameworks", out configsObject)
             ? (Dictionary<string, object>)configsObject
             : new Dictionary<string, object>
                 {
-                    { "net45", new Dictionary<string, object>() },
-                    { "k10", new Dictionary<string, object>() }
+                    { "net45", new Dictionary<string, object>() } // Assume net45 only if none specified
                 };
         
         // Currently only net* and k* targets are supported. See aspnet/Universe#53
