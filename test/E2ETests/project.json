@@ -1,4 +1,4 @@
-{
+﻿{
     "commands": {
         "test": "Xunit.KRunner"
     },
@@ -7,7 +7,7 @@
         "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*",
         "Xunit.KRunner": "1.0.0-*"
     },
-    "configurations": {
+    "frameworks": {
         "net45": {
             "dependencies": {
                 "System.Runtime": "",

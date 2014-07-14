@@ -21,7 +21,7 @@
         "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5002",
         "run": "run server.urls=http://localhost:5003"
     },
-    "configurations": {
+    "frameworks": {
         "net451": { },
         "k10": { }
     }
