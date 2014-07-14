@@ -24,6 +24,7 @@ namespace Microsoft.AspNet.Mvc
             ModelBinders = new List<ModelBinderDescriptor>();
             ViewEngines = new List<ViewEngineDescriptor>();
             ValueProviderFactories = new List<IValueProviderFactory>();
+            OutputFormatters = new List<OutputFormatterDescriptor>();
         }
 
         /// <summary>
@@ -49,6 +50,8 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
+        public List<OutputFormatterDescriptor> OutputFormatters { get; private set; }
+        
         /// <summary>
         /// Provides programmatic configuration for the default <see cref="IViewEngine" />.
         /// </summary>

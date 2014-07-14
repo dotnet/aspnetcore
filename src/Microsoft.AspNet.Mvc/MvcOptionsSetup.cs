@@ -33,9 +33,13 @@ namespace Microsoft.AspNet.Mvc
             options.ModelBinders.Add(new ComplexModelDtoModelBinder());
 
             // Set up ValueProviders
-            options.ValueProviderFactories.Add(new RouteValueValueProviderFactory());
+            options.ValueProviderFactories.Add(new RouteValueValueProviderFactory());            
             options.ValueProviderFactories.Add(new QueryStringValueProviderFactory());
             options.ValueProviderFactories.Add(new FormValueProviderFactory());
+
+            // Set up OutputFormatters
+            options.OutputFormatters.Add(new OutputFormatterDescriptor(
+                new JsonOutputFormatter(JsonOutputFormatter.CreateDefaultSettings(), indent: false)));
         }
     }
 }

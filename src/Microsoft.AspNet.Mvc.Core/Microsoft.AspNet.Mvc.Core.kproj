@@ -35,6 +35,8 @@
     <Compile Include="Formatters\OutputFormatterContext.cs" />
     <Compile Include="Formatters\JsonOutputFormatter.cs" />
     <Compile Include="Formatters\OutputFormatter.cs" />
+    <Compile Include="Formatters\OutputFormatterDescriptor.cs" />
+    <Compile Include="OutputFormatterDescriptorExtensions.cs" />
     <Compile Include="ReflectedActionDescriptor.cs" />
     <Compile Include="ReflectedActionDescriptorProvider.cs" />
     <Compile Include="ReflectedModelBuilder\IReflectedApplicationModelConvention.cs" />

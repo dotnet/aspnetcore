@@ -60,5 +60,20 @@ namespace Microsoft.AspNet.Mvc
             Assert.IsType<QueryStringValueProviderFactory>(valueProviders[1]);
             Assert.IsType<FormValueProviderFactory>(valueProviders[2]);
         }
+        
+        [Fact]
+        public void Setup_SetsUpOutputFormatters()
+        {
+            // Arrange
+            var mvcOptions = new MvcOptions();
+            var setup = new MvcOptionsSetup();
+
+            // Act
+            setup.Setup(mvcOptions);
+
+            // Assert
+            Assert.Equal(1, mvcOptions.OutputFormatters.Count);
+            Assert.IsType<JsonOutputFormatter>(mvcOptions.OutputFormatters[0].OutputFormatter);
+        }
     }
 }
