@@ -1,10 +1,10 @@
-{
+﻿{
   "dependencies": {
     "Microsoft.AspNet.Hosting": "",
     "Microsoft.AspNet.RequestContainer": "",
     "Xunit.KRunner": "1.0.0-*"
   },
-  "configurations": {
+  "frameworks": {
     "net45": {
         "dependencies": {
             "System.Runtime" : ""

@@ -1,4 +1,4 @@
-{
+﻿{
   "version": "1.0.0-*",
   "dependencies": {
     "Microsoft.AspNet.FeatureModel": "1.0.0-*",
@@ -10,7 +10,7 @@
     "Microsoft.Framework.Logging": "1.0.0-*",
     "Microsoft.Framework.Runtime.Interfaces":  "1.0.0-*"
   },
-  "configurations": {
+  "frameworks": {
     "net45": {},
     "k10": {
       "dependencies": {

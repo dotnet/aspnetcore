@@ -1,4 +1,4 @@
-{
+﻿{
   "dependencies": {
     "Microsoft.AspNet.Hosting": "",
     "Microsoft.AspNet.TestHost": "",
@@ -8,7 +8,7 @@
   "commands": {
     "test": "Xunit.KRunner"
   },
-  "configurations": {
+  "frameworks": {
     "net45": { 
         "dependencies": {
             "System.Runtime": ""

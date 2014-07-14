@@ -1,9 +1,9 @@
-{
+﻿{
   "version" : "1.0.0-*",
   "dependencies": {
     "Microsoft.AspNet.Hosting": ""
   },
-  "configurations": {
+  "frameworks": {
     "net45": { },
     "k10" : {
         "dependencies": {
