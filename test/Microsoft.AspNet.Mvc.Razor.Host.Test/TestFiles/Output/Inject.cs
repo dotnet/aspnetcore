@@ -17,11 +17,6 @@ using MyNamespace
             #pragma warning restore 219
         }
         #line hidden
-        public __CompiledTemplate()
-        {
-        }
-        #line hidden
-        [Microsoft.AspNet.Mvc.ActivateAttribute]
         public
 #line 2 ""
         MyApp MyPropertyName
@@ -29,10 +24,12 @@ using MyNamespace
 #line default
 #line hidden
         { get; private set; }
-        [Microsoft.AspNet.Mvc.ActivateAttribute]
-        public Microsoft.AspNet.Mvc.Rendering.IHtmlHelper<TModel> Html { get; private set; }
 
         #line hidden
+        public __CompiledTemplate(MyApp MyPropertyName)
+        {
+            this.MyPropertyName = MyPropertyName;
+        }
 
         #pragma warning disable 1998
         public override async Task ExecuteAsync()

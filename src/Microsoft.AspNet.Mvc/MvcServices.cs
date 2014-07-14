@@ -43,7 +43,6 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Scoped<ICompositeViewEngine, CompositeViewEngine>();
             yield return describe.Transient<IRazorCompilationService, RazorCompilationService>();
             yield return describe.Transient<IVirtualPathViewFactory, VirtualPathViewFactory>();
-            yield return describe.Singleton<IRazorViewActivator, RazorViewActivator>();
 
             yield return describe.Transient<INestedProvider<ActionDescriptorProviderContext>,
                                             ReflectedActionDescriptorProvider>();

@@ -23,7 +23,6 @@
     <Compile Include="Encodings.cs" />
     <Compile Include="NotNullArgument.cs" />
     <Compile Include="PlatformHelper.cs" />
-    <Compile Include="PropertyActivator.cs" />
     <Compile Include="PropertyHelper.cs" />
     <Compile Include="TypeExtensions.cs" />
   </ItemGroup>
