@@ -13,7 +13,8 @@ namespace Microsoft.AspNet.Mvc.Razor
 {
     public class RazorCompilationService : IRazorCompilationService
     {
-        private static readonly CompilerCache _cache = new CompilerCache();
+        // This class must be registered as a singleton service for the caching to work.
+        private readonly CompilerCache _cache = new CompilerCache();
         private readonly IApplicationEnvironment _environment;
         private readonly ICompilationService _baseCompilationService;
         private readonly IMvcRazorHost _razorHost;

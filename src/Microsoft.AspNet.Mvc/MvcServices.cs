@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Razor;
@@ -41,9 +42,12 @@ namespace Microsoft.AspNet.Mvc
 
             yield return describe.Singleton<IViewEngineProvider, DefaultViewEngineProvider>();
             yield return describe.Scoped<ICompositeViewEngine, CompositeViewEngine>();
-            yield return describe.Transient<IRazorCompilationService, RazorCompilationService>();
-            yield return describe.Transient<IVirtualPathViewFactory, VirtualPathViewFactory>();
+            yield return describe.Singleton<IRazorCompilationService, RazorCompilationService>();
+
             yield return describe.Singleton<IRazorViewActivator, RazorViewActivator>();
+            // Virtual path view factory needs to stay scoped so views can get get scoped services.
+            yield return describe.Scoped<IVirtualPathViewFactory, VirtualPathViewFactory>();
+            yield return describe.Singleton<IFileInfoCache, ExpiringFileInfoCache>();
 
             yield return describe.Transient<INestedProvider<ActionDescriptorProviderContext>,
                                             ReflectedActionDescriptorProvider>();

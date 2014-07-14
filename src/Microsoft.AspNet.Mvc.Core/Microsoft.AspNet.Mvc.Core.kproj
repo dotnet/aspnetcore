@@ -27,7 +27,9 @@
     <Compile Include="ActionDescriptor.cs" />
     <Compile Include="ActionDescriptorProviderContext.cs" />
     <Compile Include="ActionDescriptorsCollection.cs" />
+    <Compile Include="ExpiringFileInfoCache.cs" />
     <Compile Include="Extensions\ViewEngineDescriptorExtensions.cs" />
+    <Compile Include="IExpiringFileInfoCache.cs" />
     <Compile Include="ReflectedActionDescriptor.cs" />
     <Compile Include="ReflectedActionDescriptorProvider.cs" />
     <Compile Include="ReflectedModelBuilder\IReflectedApplicationModelConvention.cs" />
@@ -207,6 +209,7 @@
     <Compile Include="Rendering\SelectListItem.cs" />
     <Compile Include="Rendering\UnobtrusiveValidationAttributesGenerator.cs" />
     <Compile Include="Rendering\ViewEngineDescriptor.cs" />
+    <Compile Include="Rendering\RazorViewEngineOptions.cs" />
     <Compile Include="Rendering\ViewEngineResult.cs" />
     <Compile Include="RouteAttribute.cs" />
     <Compile Include="RouteConstraintAttribute.cs" />
