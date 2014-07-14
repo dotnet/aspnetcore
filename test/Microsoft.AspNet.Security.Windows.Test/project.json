@@ -1,4 +1,4 @@
-{
+﻿{
   "dependencies": {
     "Microsoft.AspNet.Security.Windows" : "",
     "Microsoft.AspNet.Server.WebListener" : "",
@@ -7,7 +7,7 @@
     "xunit.core": "2.0.0-aspnet-*",
     "xunit.execution": "2.0.0-aspnet-*"
   },
-  "configurations": {
+  "frameworks": {
     "net45": {
       "dependencies": {
           "System.Net.Http": "",

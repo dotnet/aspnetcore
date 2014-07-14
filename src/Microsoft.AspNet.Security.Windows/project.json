@@ -1,9 +1,9 @@
-{
+﻿{
      "version": "1.0.0-*",
      "dependencies": {
      },
      "compilationOptions" : { "allowUnsafe": true },
-     "configurations":
+     "frameworks":
      {
             "net45" : {
                  "dependencies": {

@@ -1,10 +1,10 @@
-{
+﻿{
      "version": "1.0.0-*",
      "dependencies": {
         "Microsoft.Net.WebSocketAbstractions": "1.0.0-*"
      },
      "compilationOptions" : { "allowUnsafe": true },
-     "configurations": {
+     "frameworks": {
           "net45" : { },
           "k10" : {
                "dependencies": {

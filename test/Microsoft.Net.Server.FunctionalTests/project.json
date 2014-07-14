@@ -1,4 +1,4 @@
-{
+﻿{
      "commands": {
           "test": "Xunit.KRunner"
      },
@@ -6,7 +6,7 @@
           "Microsoft.Net.Server" : "",
           "Xunit.KRunner": "1.0.0-*"
      },
-     "configurations": {
+     "frameworks": {
         "net45": {
             "dependencies": {
                 "System.Net.Http": "",
