@@ -9,7 +9,7 @@
     "commands": {
         "test": "Xunit.KRunner"
     },
-    "configurations": {
+    "frameworks": {
         "net45": { }
     }
 }

@@ -1,4 +1,4 @@
-{
+﻿{
     "version": "4.0.0-*",
     "dependencies": {
         "System.Collections": "4.0.0.0",
@@ -17,7 +17,7 @@
         "System.Threading.Tasks": "4.0.10.0",
         "System.Threading.Thread": "4.0.0.0"
     },
-    "configurations": {
+    "frameworks": {
         "net45": { },
         "k10": { }
     }
