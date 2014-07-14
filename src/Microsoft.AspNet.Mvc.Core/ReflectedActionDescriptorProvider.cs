@@ -215,9 +215,18 @@ namespace Microsoft.AspNet.Mvc
                         // Skip duplicates
                         if (!HasConstraint(actionDescriptor.RouteConstraints, constraintAttribute.RouteKey))
                         {
-                            actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
-                                constraintAttribute.RouteKey,
-                                constraintAttribute.RouteValue));
+                            if (constraintAttribute.RouteValue == null)
+                            {
+                                actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
+                                    constraintAttribute.RouteKey,
+                                    constraintAttribute.RouteKeyHandling));
+                            }
+                            else
+                            {
+                                actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
+                                    constraintAttribute.RouteKey,
+                                    constraintAttribute.RouteValue));
+                            }
                         }
                     }
 
@@ -229,7 +238,13 @@ namespace Microsoft.AspNet.Mvc
                         // want to provide these values as ambient values.
                         foreach (var constraint in actionDescriptor.RouteConstraints)
                         {
-                            actionDescriptor.RouteValueDefaults.Add(constraint.RouteKey, constraint.RouteValue);
+                            // We don't need to do anything with attribute routing for 'catch all' behavior. Order
+                            // and predecedence of attribute routes allow this kind of behavior.
+                            if (constraint.KeyHandling == RouteKeyHandling.RequireKey ||
+                                constraint.KeyHandling == RouteKeyHandling.DenyKey)
+                            {
+                                actionDescriptor.RouteValueDefaults.Add(constraint.RouteKey, constraint.RouteValue);
+                            }
                         }
 
                         // Replaces tokens like [controller]/[action] in the route template with the actual values

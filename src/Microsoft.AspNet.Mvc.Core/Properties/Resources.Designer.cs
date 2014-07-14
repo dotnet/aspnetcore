@@ -1226,6 +1226,22 @@ namespace Microsoft.AspNet.Mvc.Core
             return GetString("AttributeRoute_TokenReplacement_UnescapedBraceInToken");
         }
 
+        /// <summary>
+        /// The value must be either '{0}' or '{1}'.
+        /// </summary>
+        internal static string RouteConstraintAttribute_InvalidKeyHandlingValue
+        {
+            get { return GetString("RouteConstraintAttribute_InvalidKeyHandlingValue"); }
+        }
+
+        /// <summary>
+        /// The value must be either '{0}' or '{1}'.
+        /// </summary>
+        internal static string FormatRouteConstraintAttribute_InvalidKeyHandlingValue(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("RouteConstraintAttribute_InvalidKeyHandlingValue"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

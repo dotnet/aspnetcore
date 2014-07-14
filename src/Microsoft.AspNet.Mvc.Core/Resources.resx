@@ -348,4 +348,7 @@
   <data name="AttributeRoute_TokenReplacement_UnescapedBraceInToken" xml:space="preserve">
     <value>An unescaped '[' token is not allowed inside of a replacement token. Use '[[' to escape.</value>
   </data>
+  <data name="RouteConstraintAttribute_InvalidKeyHandlingValue" xml:space="preserve">
+    <value>The value must be either '{0}' or '{1}'.</value>
+  </data>
 </root>

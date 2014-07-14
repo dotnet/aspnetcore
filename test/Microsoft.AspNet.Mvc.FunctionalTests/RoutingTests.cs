@@ -817,6 +817,110 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("/Admin/Users/All", result.Link);
         }
 
+        [Fact]
+        public async Task ControllerWithCatchAll_CanReachSpecificCountry()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            // Act
+            var response = await client.GetAsync("http://localhost/api/Products/US/GetProducts");
+
+            // Assert
+            Assert.Equal(200, response.StatusCode);
+
+            var body = await response.ReadBodyAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Contains("/api/Products/US/GetProducts", result.ExpectedUrls);
+            Assert.Equal("Products", result.Controller);
+            Assert.Equal("GetProducts", result.Action);
+            Assert.Equal(
+                new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+                {
+                    { "country", "US" },
+                    { "action", "GetProducts" },
+                    { "controller", "Products" },
+                },
+                result.RouteValues);
+        }
+
+        // The 'default' route doesn't provide a value for {country}
+        [Fact]
+        public async Task ControllerWithCatchAll_CannotReachWithoutCountry()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            // Act
+            var response = await client.GetAsync("http://localhost/Products/GetProducts");
+
+            // Assert
+            Assert.Equal(404, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task ControllerWithCatchAll_GenerateLinkForSpecificCountry()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            // Act
+            var url = 
+                LinkFrom("http://localhost/")
+                .To(new { action = "GetProducts", controller = "Products", country = "US" });
+            var response = await client.GetAsync(url);
+
+            var body = await response.ReadBodyAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            // Assert
+            Assert.Equal("/api/Products/US/GetProducts", result.Link);
+        }
+
+        [Fact]
+        public async Task ControllerWithCatchAll_GenerateLinkForFallback()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            // Act
+            var url =
+                LinkFrom("http://localhost/")
+                .To(new { action = "GetProducts", controller = "Products", country = "CA" });
+            var response = await client.GetAsync(url);
+
+            var body = await response.ReadBodyAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            // Assert
+            Assert.Equal("/api/Products/CA/GetProducts", result.Link);
+        }
+
+        [Fact]
+        public async Task ControllerWithCatchAll_GenerateLink_FailsWithoutCountry()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            // Act
+            var url =
+                LinkFrom("http://localhost/")
+                .To(new { action = "GetProducts", controller = "Products", country = (string)null });
+            var response = await client.GetAsync(url);
+
+            var body = await response.ReadBodyAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            // Assert
+            Assert.Null(result.Link);
+        }
+
         private static LinkBuilder LinkFrom(string url)
         {
             return new LinkBuilder(url);

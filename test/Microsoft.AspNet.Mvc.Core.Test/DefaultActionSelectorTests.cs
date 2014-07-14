@@ -176,6 +176,92 @@ namespace Microsoft.AspNet.Mvc
             Assert.Same(action, actionWithConstraints);
         }
 
+        [Fact]
+        public async Task SelectAsync_WithCatchAll_PrefersNonCatchAll()
+        {
+            // Arrange
+            var actions = new ActionDescriptor[]
+            {
+                CreateAction(area: null, controller: "Store", action: "Buy"),
+                CreateAction(area: null, controller: "Store", action: "Buy"),
+                CreateAction(area: null, controller: "Store", action: "Buy"),
+            };
+
+            actions[0].RouteConstraints.Add(new RouteDataActionConstraint("country", "CA"));
+            actions[1].RouteConstraints.Add(new RouteDataActionConstraint("country", "US"));
+            actions[2].RouteConstraints.Add(new RouteDataActionConstraint("country", RouteKeyHandling.CatchAll));
+
+            var selector = CreateSelector(actions);
+            var context = CreateRouteContext("GET");
+
+            context.RouteData.Values.Add("controller", "Store");
+            context.RouteData.Values.Add("action", "Buy");
+            context.RouteData.Values.Add("country", "CA");
+
+            // Act
+            var action = await selector.SelectAsync(context);
+
+            // Assert
+            Assert.Same(action, actions[0]);
+        }
+
+        [Fact]
+        public async Task SelectAsync_WithCatchAll_CatchAllIsOnlyMatch()
+        {
+            // Arrange
+            var actions = new ActionDescriptor[]
+            {
+                CreateAction(area: null, controller: "Store", action: "Buy"),
+                CreateAction(area: null, controller: "Store", action: "Buy"),
+                CreateAction(area: null, controller: "Store", action: "Buy"),
+            };
+
+            actions[0].RouteConstraints.Add(new RouteDataActionConstraint("country", "CA"));
+            actions[1].RouteConstraints.Add(new RouteDataActionConstraint("country", "US"));
+            actions[2].RouteConstraints.Add(new RouteDataActionConstraint("country", RouteKeyHandling.CatchAll));
+
+            var selector = CreateSelector(actions);
+            var context = CreateRouteContext("GET");
+
+            context.RouteData.Values.Add("controller", "Store");
+            context.RouteData.Values.Add("action", "Buy");
+            context.RouteData.Values.Add("country", "DE");
+
+            // Act
+            var action = await selector.SelectAsync(context);
+
+            // Assert
+            Assert.Same(action, actions[2]);
+        }
+
+        [Fact]
+        public async Task SelectAsync_WithCatchAll_NoMatch()
+        {
+            // Arrange
+            var actions = new ActionDescriptor[]
+            {
+                CreateAction(area: null, controller: "Store", action: "Buy"),
+                CreateAction(area: null, controller: "Store", action: "Buy"),
+                CreateAction(area: null, controller: "Store", action: "Buy"),
+            };
+
+            actions[0].RouteConstraints.Add(new RouteDataActionConstraint("country", "CA"));
+            actions[1].RouteConstraints.Add(new RouteDataActionConstraint("country", "US"));
+            actions[2].RouteConstraints.Add(new RouteDataActionConstraint("country", RouteKeyHandling.CatchAll));
+
+            var selector = CreateSelector(actions);
+            var context = CreateRouteContext("GET");
+
+            context.RouteData.Values.Add("controller", "Store");
+            context.RouteData.Values.Add("action", "Buy");
+
+            // Act
+            var action = await selector.SelectAsync(context);
+
+            // Assert
+            Assert.Null(action);
+        }
+
         private static ActionDescriptor[] GetActions()
         {
             return new ActionDescriptor[]
@@ -268,6 +354,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 Name = string.Format("Area: {0}, Controller: {1}, Action: {2}", area, controller, action),
                 RouteConstraints = new List<RouteDataActionConstraint>(),
+                Parameters = new List<ParameterDescriptor>(),
             };
 
             actionDescriptor.RouteConstraints.Add(

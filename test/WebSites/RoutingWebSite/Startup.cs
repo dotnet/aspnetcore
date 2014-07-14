@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Mvc;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 
 namespace RoutingWebSite
@@ -27,6 +28,11 @@ namespace RoutingWebSite
 
                 routes.MapRoute("ActionAsMethod", "{controller}/{action}",
                     defaults: new { controller = "Home", action = "Index" });
+
+                routes.MapRoute(
+                    "products",
+                    "api/Products/{country}/{action}",
+                    defaults: new { controller = "Products" });
             });
         }
     }
