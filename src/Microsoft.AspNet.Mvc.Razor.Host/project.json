@@ -18,7 +18,7 @@
     },
     "k10": {
       "dependencies": {
-        "System.Collections": "4.0.0.0",
+        "System.Collections": "4.0.10.0",
         "System.Collections.Concurrent": "4.0.0.0",
         "System.ComponentModel": "4.0.0.0",
         "System.Diagnostics.Contracts": "4.0.0.0",
