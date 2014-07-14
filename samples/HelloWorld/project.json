@@ -1,4 +1,4 @@
-﻿{
+{
   "dependencies": {
     "Microsoft.Net.Server" : ""
   },
@@ -6,7 +6,7 @@
     "net45": { },
     "k10" : { 
         "dependencies": {
-            "System.Collections": "4.0.0.0",
+            "System.Collections": "4.0.10.0",
             "System.Console" : "4.0.0.0",
             "System.Globalization": "4.0.10.0",
             "System.IO" : "4.0.0.0",

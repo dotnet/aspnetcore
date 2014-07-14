@@ -1,4 +1,4 @@
-﻿{
+{
      "version": "1.0.0-*",
      "dependencies": {
         "Microsoft.Net.WebSocketAbstractions": "1.0.0-*"
@@ -9,7 +9,7 @@
           "k10" : {
                "dependencies": {
                     "Microsoft.Win32.Primitives": "4.0.0.0",
-                    "System.Collections": "4.0.0.0",
+                    "System.Collections": "4.0.10.0",
                     "System.Collections.Concurrent": "4.0.0.0",
                     "System.Diagnostics.Contracts": "4.0.0.0",
                     "System.Diagnostics.Debug": "4.0.10.0",
