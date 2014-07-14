@@ -29,7 +29,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="Models\DummyClass.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -43,7 +43,6 @@ namespace Microsoft.AspNet.Mvc
         {
             switch (keyHandling)
             {
-                case RouteKeyHandling.AcceptAlways:
                 case RouteKeyHandling.CatchAll:
                 case RouteKeyHandling.DenyKey:
                 case RouteKeyHandling.RequireKey:
@@ -81,9 +80,6 @@ namespace Microsoft.AspNet.Mvc
             object value;
             switch (KeyHandling)
             {
-                case RouteKeyHandling.AcceptAlways:
-                    return true;
-
                 case RouteKeyHandling.CatchAll:
                     return routeValues.ContainsKey(RouteKey);
 

@@ -9,6 +9,7 @@ using Microsoft.AspNet.Mvc.OptionDescriptors;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.Razor.Compilation;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Security;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
@@ -32,7 +33,10 @@ namespace Microsoft.AspNet.Mvc
 
             yield return describe.Transient<IControllerFactory, DefaultControllerFactory>();
             yield return describe.Singleton<IControllerActivator, DefaultControllerActivator>();
+
+            yield return describe.Singleton<IActionSelectorDecisionTreeProvider, ActionSelectorDecisionTreeProvider>();
             yield return describe.Scoped<IActionSelector, DefaultActionSelector>();
+
             yield return describe.Transient<IActionInvokerFactory, ActionInvokerFactory>();
             yield return describe.Transient<IControllerAssemblyProvider, DefaultControllerAssemblyProvider>();
             yield return describe.Transient<IActionDiscoveryConventions, DefaultActionDiscoveryConventions>();

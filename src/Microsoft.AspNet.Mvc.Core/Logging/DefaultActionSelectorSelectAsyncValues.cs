@@ -25,22 +25,22 @@ namespace Microsoft.AspNet.Mvc.Logging
         /// <summary>
         /// The list of actions that matched all their route constraints, if any.
         /// </summary>
-        public IList<ActionDescriptor> ActionsMatchingRouteConstraints { get; set; }
+        public IReadOnlyList<ActionDescriptor> ActionsMatchingRouteConstraints { get; set; }
 
         /// <summary>
         /// The list of actions that matched all their route and method constraints, if any.
         /// </summary>
-        public IList<ActionDescriptor> ActionsMatchingRouteAndMethodConstraints { get; set; }
+        public IReadOnlyList<ActionDescriptor> ActionsMatchingRouteAndMethodConstraints { get; set; }
 
         /// <summary>
         /// The list of actions that matched all their route, method, and dynamic constraints, if any.
         /// </summary>
-        public IList<ActionDescriptor> ActionsMatchingRouteAndMethodAndDynamicConstraints { get; set; }
+        public IReadOnlyList<ActionDescriptor> ActionsMatchingRouteAndMethodAndDynamicConstraints { get; set; }
 
         /// <summary>
         /// The actions that matched with at least one constraint.
         /// </summary>
-        public IList<ActionDescriptor> ActionsMatchingWithConstraints { get; set; }
+        public IReadOnlyList<ActionDescriptor> ActionsMatchingWithConstraints { get; set; }
 
         /// <summary>
         /// The selected action.

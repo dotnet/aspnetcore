@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.Logging;
 
@@ -16,14 +17,18 @@ namespace Microsoft.AspNet.Mvc
     public class DefaultActionSelector : IActionSelector
     {
         private readonly IActionDescriptorsCollectionProvider _actionDescriptorsCollectionProvider;
+        private readonly IActionSelectorDecisionTreeProvider _decisionTreeProvider;
         private readonly IActionBindingContextProvider _bindingProvider;
         private ILogger _logger;
 
-        public DefaultActionSelector(IActionDescriptorsCollectionProvider actionDescriptorsCollectionProvider,
-                                     IActionBindingContextProvider bindingProvider,
-                                     [NotNull] ILoggerFactory loggerFactory)
+        public DefaultActionSelector(
+            [NotNull] IActionDescriptorsCollectionProvider actionDescriptorsCollectionProvider,
+            [NotNull] IActionSelectorDecisionTreeProvider decisionTreeProvider, 
+            [NotNull] IActionBindingContextProvider bindingProvider,
+            [NotNull] ILoggerFactory loggerFactory)
         {
             _actionDescriptorsCollectionProvider = actionDescriptorsCollectionProvider;
+            _decisionTreeProvider = decisionTreeProvider;
             _bindingProvider = bindingProvider;
             _logger = loggerFactory.Create<DefaultActionSelector>();
         }
@@ -32,11 +37,8 @@ namespace Microsoft.AspNet.Mvc
         {
             using (_logger.BeginScope("DefaultActionSelector.SelectAsync"))
             {
-                var allDescriptors = GetActions();
-
-                var matchingRouteConstraints =
-                    allDescriptors.Where(ad =>
-                        MatchRouteConstraints(ad, context)).ToList();
+                var tree = _decisionTreeProvider.DecisionTree;
+                var matchingRouteConstraints = tree.Select(context.RouteData.Values);
 
                 var matchingRouteAndMethodConstraints =
                     matchingRouteConstraints.Where(ad =>
@@ -101,12 +103,6 @@ namespace Microsoft.AspNet.Mvc
                     return selectedAction;
                 }
             }
-        }
-
-        private bool MatchRouteConstraints(ActionDescriptor descriptor, RouteContext context)
-        {
-            return descriptor.RouteConstraints == null ||
-                    descriptor.RouteConstraints.All(c => c.Accept(context));
         }
 
         private bool MatchMethodConstraints(ActionDescriptor descriptor, RouteContext context)

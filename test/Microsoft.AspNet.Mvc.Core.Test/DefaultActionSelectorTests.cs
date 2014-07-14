@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.Framework.Logging;
@@ -215,12 +216,14 @@ namespace Microsoft.AspNet.Mvc
             actionProvider
                 .Setup(p => p.ActionDescriptors).Returns(new ActionDescriptorsCollection(actions, 0));
 
+            var decisionTreeProvider = new ActionSelectorDecisionTreeProvider(actionProvider.Object);
+
             var bindingProvider = new Mock<IActionBindingContextProvider>(MockBehavior.Strict);
             bindingProvider
                 .Setup(bp => bp.GetActionBindingContextAsync(It.IsAny<ActionContext>()))
                 .Returns(Task.FromResult<ActionBindingContext>(null));
 
-            return new DefaultActionSelector(actionProvider.Object, bindingProvider.Object, loggerFactory);
+            return new DefaultActionSelector(actionProvider.Object, decisionTreeProvider, bindingProvider.Object, loggerFactory);
         }
 
         private static VirtualPathContext CreateContext(object routeValues)

@@ -10,6 +10,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.NestedProviders;
@@ -195,12 +196,15 @@ namespace Microsoft.AspNet.Mvc
                                         descriptorProvider);
 
             var actionCollectionDescriptorProvider = new DefaultActionDescriptorsCollectionProvider(serviceContainer);
+            var decisionTreeProvider = new ActionSelectorDecisionTreeProvider(actionCollectionDescriptorProvider);
 
             var bindingProvider = new Mock<IActionBindingContextProvider>();
 
-            var defaultActionSelector = new DefaultActionSelector(actionCollectionDescriptorProvider,
-                                                                  bindingProvider.Object,
-                                                                  NullLoggerFactory.Instance);
+            var defaultActionSelector = new DefaultActionSelector(
+                actionCollectionDescriptorProvider, 
+                decisionTreeProvider,
+                bindingProvider.Object,
+                NullLoggerFactory.Instance);
 
             return await defaultActionSelector.SelectAsync(context);
         }

@@ -21,10 +21,5 @@ namespace Microsoft.AspNet.Mvc
         /// Requires that the key will be in the route values, but ignore the content.
         /// </summary>
         CatchAll,
-
-        /// <summary>
-        /// Always accept.
-        /// </summary>
-        AcceptAlways,
     }
 }

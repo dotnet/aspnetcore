@@ -36,6 +36,7 @@
     <Compile Include="Formatters\TextPlainFormatterTests.cs" />
     <Compile Include="DefaultViewComponentActivatorTests.cs" />
     <Compile Include="HttpMethodProviderAttributesTests.cs" />
+    <Compile Include="Internal\DecisionTree\DecisionTreeBuilderTest.cs" />
     <Compile Include="Logging\BeginScopeContext.cs" />
     <Compile Include="Logging\TestLoggerFactory.cs" />
     <Compile Include="Logging\WriteCoreContext.cs" />
