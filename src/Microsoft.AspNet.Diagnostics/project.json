@@ -1,11 +1,11 @@
-{
+﻿{
   "version": "1.0.0-*",
   "dependencies": {
     "Microsoft.AspNet.FeatureModel": "1.0.0-*",
     "Microsoft.AspNet.Http": "1.0.0-*",
     "Microsoft.AspNet.PipelineCore": "1.0.0-*"
   },
-  "configurations": {
+  "frameworks": {
     "net45": {},
     "k10": {
       "dependencies": {

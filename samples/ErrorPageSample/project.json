@@ -1,4 +1,4 @@
-{
+﻿{
   "dependencies": {
     "Helios" :  "1.0.0-*",
     "Microsoft.AspNet.Diagnostics": "",
@@ -8,7 +8,7 @@
     "Microsoft.AspNet.Server.WebListener": "1.0.0-*"
   },
   "commands": { "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001" },
-  "configurations": {
+  "frameworks": {
     "net45": {},
     "k10": {
       "dependencies": {
