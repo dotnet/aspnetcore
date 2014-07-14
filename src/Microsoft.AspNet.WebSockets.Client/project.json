@@ -3,7 +3,7 @@
     "dependencies": {
         "Microsoft.AspNet.WebSockets.Protocol": ""
     },
-    "configurations": {
+    "frameworks": {
         "net45": { }
     }
 }

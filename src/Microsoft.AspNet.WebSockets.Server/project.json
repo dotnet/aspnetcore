@@ -5,7 +5,7 @@
         "Microsoft.AspNet.HttpFeature": "1.0.0-*",
         "Microsoft.AspNet.WebSockets.Protocol": ""
     },
-    "configurations" : {
+    "frameworks" : {
         "net45" : { },
         "k10" : { 
             "dependencies": {
