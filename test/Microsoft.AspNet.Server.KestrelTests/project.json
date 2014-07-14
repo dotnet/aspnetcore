@@ -1,10 +1,10 @@
-{
+﻿{
     "version": "1.0.0-*",
     "dependencies": {
         "Xunit.KRunner": "1.0.0-*",
         "Microsoft.AspNet.Server.Kestrel": "1.0.0-*"
     },
-    "configurations": {
+    "frameworks": {
         "net45": {
             "compilationOptions": { "define": [ "TRACE" ] }
         },

@@ -1,9 +1,9 @@
-{
+﻿{
     "version": "1.0.0-*",
     "dependencies": {
         "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
     },
-    "configurations": {
+    "frameworks": {
         "net45": {
             "compilationOptions": {
                 "define": [ "TRACE", "NET45" ],
