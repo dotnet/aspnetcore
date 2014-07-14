@@ -3549,7 +3549,7 @@
     <Content Include="Gruntfile.js" />
     <Content Include="Config.json" />
     <Content Include="package.json" />
-    <Content Include="Project.json" />
+    <Content Include="project.json" />
     <Content Include="tslint.json" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />

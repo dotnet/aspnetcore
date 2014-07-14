@@ -36,7 +36,7 @@
     <Content Include="Images\placeholder.png" />
     <Content Include="Images\placeholder.svg" />
     <Content Include="LocalConfig.json" />
-    <Content Include="Project.json" />
+    <Content Include="project.json" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="Scripts\jquery-1.10.2.intellisense.js" />
