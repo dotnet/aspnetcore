@@ -1,4 +1,4 @@
-﻿{
+{
   "dependencies": {
     "Helios" :  "1.0.0-*",
     "Microsoft.AspNet.Diagnostics": "",
@@ -12,7 +12,7 @@
     "net45": { },
     "k10": {
       "dependencies": {
-        "System.Collections": "4.0.0.0",
+        "System.Collections": "4.0.10.0",
         "System.Console": "4.0.0.0",
         "System.Diagnostics.Debug": "4.0.10.0",
         "System.Diagnostics.Tools": "4.0.0.0",
