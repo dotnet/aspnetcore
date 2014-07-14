@@ -1,4 +1,4 @@
-{
+﻿{
   "compilationOptions": {
     "warningsAsErrors": true
   },
@@ -8,7 +8,7 @@
     "Microsoft.AspNet.Testing" : "1.0.0-*",
     "Xunit.KRunner": "1.0.0-*"
   },
-  "configurations": {
+  "frameworks": {
     "k10": {
       "dependencies": {
         "System.Collections": "4.0.0.0",
