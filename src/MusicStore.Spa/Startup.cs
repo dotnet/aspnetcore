@@ -43,8 +43,7 @@ namespace MusicStore.Spa
                     .AddSqlServer();
 
                 // Add Identity services to the service container
-                services.AddIdentity<ApplicationUser>()
-                    .AddEntityFramework<ApplicationUser, ApplicationDbContext>()
+                services.AddIdentitySqlServer<ApplicationDbContext, ApplicationUser>()
                     .AddHttpSignIn();
 
                 // Add application services to the service container
