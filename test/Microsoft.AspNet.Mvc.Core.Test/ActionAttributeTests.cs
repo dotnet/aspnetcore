@@ -20,9 +20,6 @@ namespace Microsoft.AspNet.Mvc.Test
 {
     public class ActionAttributeTests
     {
-        private DefaultActionDiscoveryConventions _actionDiscoveryConventions = new DefaultActionDiscoveryConventions();
-        private IEnumerable<Assembly> _controllerAssemblies = new[] { Assembly.GetExecutingAssembly() };
-
         [Theory]
         [InlineData("GET")]
         [InlineData("PUT")]
@@ -116,7 +113,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void NonActionAttribute_ActionNotReachable(string actionName)
         {
             // Arrange
-            var actionDescriptorProvider = GetActionDescriptorProvider(_actionDiscoveryConventions);
+            var actionDescriptorProvider = GetActionDescriptorProvider();
 
             // Act
             var result = actionDescriptorProvider.GetDescriptors()
@@ -185,13 +182,9 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Equal(actionName, result.Name);
         }
 
-        private async Task<ActionDescriptor> InvokeActionSelector(RouteContext context)
-        {
-            return await InvokeActionSelector(context, _actionDiscoveryConventions);
-        }
-
-        private async Task<ActionDescriptor> InvokeActionSelector(RouteContext context, 
-                                                                  DefaultActionDiscoveryConventions actionDiscoveryConventions)
+        private async Task<ActionDescriptor> InvokeActionSelector(
+            RouteContext context,
+            IActionDiscoveryConventions actionDiscoveryConventions = null)
         {
             var actionDescriptorProvider = GetActionDescriptorProvider(actionDiscoveryConventions);
             var descriptorProvider =
@@ -211,13 +204,22 @@ namespace Microsoft.AspNet.Mvc.Test
             return await defaultActionSelector.SelectAsync(context);
         }
 
-        private ReflectedActionDescriptorProvider GetActionDescriptorProvider(DefaultActionDiscoveryConventions actionDiscoveryConventions)
+        private ReflectedActionDescriptorProvider GetActionDescriptorProvider(
+            IActionDiscoveryConventions actionDiscoveryConventions  = null)
         {
-            var controllerAssemblyProvider = new Mock<IControllerAssemblyProvider>();
-            controllerAssemblyProvider.SetupGet(x => x.CandidateAssemblies).Returns(_controllerAssemblies);
+            var controllerAssemblyProvider = new StaticControllerAssemblyProvider();
+
+            if (actionDiscoveryConventions == null)
+            {
+                var controllerTypes = typeof(ActionAttributeTests)
+                    .GetNestedTypes(BindingFlags.NonPublic)
+                    .Select(t => t.GetTypeInfo());
+
+                actionDiscoveryConventions = new StaticActionDiscoveryConventions(controllerTypes.ToArray());
+            }
 
             return new ReflectedActionDescriptorProvider(
-                                        controllerAssemblyProvider.Object,
+                                        controllerAssemblyProvider,
                                         actionDiscoveryConventions,
                                         null,
                                         new MockMvcOptionsAccessor(),

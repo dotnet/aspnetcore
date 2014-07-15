@@ -35,6 +35,10 @@ namespace Microsoft.AspNet.Mvc
         {
             if (!typeInfo.IsClass ||
                 typeInfo.IsAbstract ||
+
+                // We only consider public top-level classes as controllers. IsPublic returns false for nested
+                // classes, regardless of visibility modifiers.
+                !typeInfo.IsPublic ||
                 typeInfo.ContainsGenericParameters)
             {
                 return false;
@@ -84,7 +88,7 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="method">The <see cref="MethodInfo"/>.</param>
         /// <returns>true if the method is a valid action. Otherwise, false.</returns>
-        protected virtual bool IsValidActionMethod(MethodInfo method)
+        public virtual bool IsValidActionMethod(MethodInfo method)
         {
             return
                 method.IsPublic &&

@@ -9,8 +9,8 @@ using System.ComponentModel.Design;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.NestedProviders;
 using Moq;
@@ -18,11 +18,8 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Test
 {
-    public class ActionSelectionConventionTests
+    public class DefaultActionDiscoveryConventionsActionSelectionTests
     {
-        private DefaultActionDiscoveryConventions _actionDiscoveryConventions = new DefaultActionDiscoveryConventions();
-        private IEnumerable<Assembly> _controllerAssemblies = new[] { Assembly.GetExecutingAssembly() };
-
         [Theory]
         [InlineData("GET")]
         [InlineData("POST")]
@@ -156,10 +153,16 @@ namespace Microsoft.AspNet.Mvc.Test
 
         private async Task<ActionDescriptor> InvokeActionSelector(RouteContext context)
         {
-            return await InvokeActionSelector(context, _actionDiscoveryConventions);
+            var controllerTypeInfos = typeof(DefaultActionDiscoveryConventionsActionSelectionTests)
+                .GetNestedTypes(BindingFlags.NonPublic)
+                .Select(ct => ct.GetTypeInfo())
+                .ToArray();
+
+            var conventions = new StaticActionDiscoveryConventions(controllerTypeInfos);
+            return await InvokeActionSelector(context, conventions);
         }
 
-        private async Task<ActionDescriptor> InvokeActionSelector(RouteContext context, 
+        private async Task<ActionDescriptor> InvokeActionSelector(RouteContext context,
                                                                   DefaultActionDiscoveryConventions actionDiscoveryConventions)
         {
             var actionDescriptorProvider = GetActionDescriptorProvider(actionDiscoveryConventions);
@@ -182,8 +185,9 @@ namespace Microsoft.AspNet.Mvc.Test
 
         private ReflectedActionDescriptorProvider GetActionDescriptorProvider(DefaultActionDiscoveryConventions actionDiscoveryConventions)
         {
+            var assemblies = new Assembly[] { typeof(DefaultActionDiscoveryConventionsActionSelectionTests).GetTypeInfo().Assembly, };
             var controllerAssemblyProvider = new Mock<IControllerAssemblyProvider>();
-            controllerAssemblyProvider.SetupGet(x => x.CandidateAssemblies).Returns(_controllerAssemblies);
+            controllerAssemblyProvider.SetupGet(x => x.CandidateAssemblies).Returns(assemblies);
             return new ReflectedActionDescriptorProvider(
                                         controllerAssemblyProvider.Object,
                                         actionDiscoveryConventions,
@@ -206,6 +210,15 @@ namespace Microsoft.AspNet.Mvc.Test
 
         private class CustomActionConvention : DefaultActionDiscoveryConventions
         {
+            public override bool IsController([NotNull]TypeInfo typeInfo)
+            {
+                return
+                    typeof(DefaultActionDiscoveryConventionsActionSelectionTests)
+                    .GetNestedTypes(BindingFlags.NonPublic)
+                    .Select(ct => ct.GetTypeInfo())
+                    .Contains(typeInfo);
+            }
+
             public override IEnumerable<string> GetSupportedHttpMethods(MethodInfo methodInfo)
             {
                 if (methodInfo.Name.Equals("PostSomething", StringComparison.OrdinalIgnoreCase))
@@ -216,8 +229,6 @@ namespace Microsoft.AspNet.Mvc.Test
                 return null;
             }
         }
-
-        #region Controller Classes
 
         private class MixedRpcAndRestController
         {
@@ -304,8 +315,6 @@ namespace Microsoft.AspNet.Mvc.Test
             public void Index(string s)
             { }
         }
-
-        #endregion Controller Classes
     }
 }
 

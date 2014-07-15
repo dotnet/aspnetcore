@@ -14,117 +14,17 @@ namespace Microsoft.AspNet.Mvc.Test
     public class ReflectedActionDescriptorProviderTests
     {
         [Fact]
-        public void GetDescriptors_GetsDescriptorsOnlyForValidActionsInBaseAndDerivedController()
-        {
-            // Arrange & Act
-            var actionNames = GetActionNamesFromDerivedController();
-
-            // Assert
-            // "NewMethod" is a public method declared with keyword "new".
-            Assert.Equal(new[] { "GetFromDerived", "NewMethod", "GetFromBase" }, actionNames);
-        }
-
-        [Fact]
-        public void GetDescriptors_Ignores_OverridenRedirect_FromControllerClass()
-        {
-            // Arrange & Act
-            var actionNames = GetDescriptors(typeof(BaseController).GetTypeInfo()).Select(a => a.Name);
-
-            // Assert
-            Assert.DoesNotContain("Redirect", actionNames);
-        }
-
-        [Fact]
-        public void GetDescriptors_Ignores_PrivateMethod_FromUserDefinedController()
-        {
-            // Arrange & Act
-            var actionNames = GetActionNamesFromDerivedController();
-
-            // Assert
-            Assert.DoesNotContain("PrivateMethod", actionNames);
-        }
-
-        [Fact]
-        public void GetDescriptors_Ignores_Constructor_FromUserDefinedController()
-        {
-            // Arrange & Act
-            var actionNames = GetActionNamesFromDerivedController();
-
-            // Assert
-            Assert.DoesNotContain("DerivedController", actionNames);
-        }
-
-        [Fact]
-        public void GetDescriptors_Ignores_OperatorOverloadingMethod_FromOperatorOverloadingController()
-        {
-            // Arrange & Act
-            var actionDescriptors = GetDescriptors(typeof(OperatorOverloadingController).GetTypeInfo());
-
-            // Assert
-            Assert.Empty(actionDescriptors);
-        }
-
-        [Fact]
-        public void GetDescriptors_Ignores_GenericMethod_FromUserDefinedController()
-        {
-            // Arrange & Act
-            var actionNames = GetActionNamesFromDerivedController();
-
-            // Assert
-            Assert.DoesNotContain("GenericMethod", actionNames);
-        }
-
-        [Fact]
-        public void GetDescriptors_Ignores_OverridenNonActionMethod_FromDerivedController()
-        {
-            // Arrange & Act
-            var actionNames = GetActionNamesFromDerivedController();
-
-            // Assert
-            Assert.DoesNotContain("OverridenNonActionMethod", actionNames);
-        }
-
-        [Fact]
-        public void GetDescriptors_Ignores_MethodsFromObjectClass_FromUserDefinedController()
+        public void GetDescriptors_GetsDescriptorsOnlyForValidActions()
         {
             // Arrange
-            var methodsFromObjectClass = typeof(object).GetMethods().Select(m => m.Name);
+            var provider = GetProvider(typeof(PersonController).GetTypeInfo());
 
             // Act
-            var actionNames = GetActionNamesFromDerivedController();
+            var descriptors = provider.GetDescriptors();
+            var actionNames = descriptors.Select(ad => ad.Name);
 
             // Assert
-            Assert.Empty(methodsFromObjectClass.Intersect(actionNames));
-        }
-
-        [Fact]
-        public void GetDescriptors_Ignores_StaticMethod_FromUserDefinedController()
-        {
-            // Arrange & Act
-            var actionNames = GetActionNamesFromDerivedController();
-
-            // Assert
-            Assert.DoesNotContain("StaticMethod", actionNames);
-        }
-
-        [Fact]
-        public void GetDescriptors_Ignores_ProtectedStaticMethod_FromUserDefinedController()
-        {
-            // Arrange & Act
-            var actionNames = GetActionNamesFromDerivedController();
-
-            // Assert
-            Assert.DoesNotContain("ProtectedStaticMethod", actionNames);
-        }
-
-        [Fact]
-        public void GetDescriptors_Ignores_PrivateStaticMethod_FromUserDefinedController()
-        {
-            // Arrange & Act
-            var actionNames = GetActionNamesFromDerivedController();
-
-            // Assert
-            Assert.DoesNotContain("PrivateStaticMethod", actionNames);
+            Assert.Equal(new[] { "GetPerson", "ListPeople", }, actionNames);
         }
 
         [Fact]
@@ -276,7 +176,7 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             // Arrange
             var filter = new MyFilterAttribute(1);
-            var provider = GetProvider(typeof(BaseController).GetTypeInfo(), new IFilter[]
+            var provider = GetProvider(typeof(PersonController).GetTypeInfo(), new IFilter[]
             {
                 filter,
             });
@@ -287,11 +187,6 @@ namespace Microsoft.AspNet.Mvc.Test
             // Assert
             var filters = model.Filters;
             Assert.Same(filter, Assert.Single(filters));
-        }
-
-        private IEnumerable<string> GetActionNamesFromDerivedController()
-        {
-            return GetDescriptors(typeof(DerivedController).GetTypeInfo()).Select(a => a.Name).ToArray();
         }
 
         private ReflectedActionDescriptorProvider GetProvider(
@@ -334,97 +229,31 @@ namespace Microsoft.AspNet.Mvc.Test
             return provider.GetDescriptors();
         }
 
-        private class DerivedController : BaseController
-        {
-            public void GetFromDerived() // Valid action method.
-            {
-            }
-
-            [HttpGet]
-            public override void OverridenNonActionMethod()
-            {
-            }
-
-            public new void NewMethod() // Valid action method.
-            {
-            }
-
-            public void GenericMethod<T>()
-            {
-            }
-
-            private void PrivateMethod()
-            {
-            }
-
-            public static void StaticMethod()
-            {
-            }
-
-            protected static void ProtectedStaticMethod()
-            {
-            }
-
-            private static void PrivateStaticMethod()
-            {
-            }
-        }
-
-        private class OperatorOverloadingController : Controller
-        {
-            public static OperatorOverloadingController operator +(
-                OperatorOverloadingController c1,
-                OperatorOverloadingController c2)
-            {
-                return new OperatorOverloadingController();
-            }
-        }
-
-        private class BaseController : Controller
-        {
-            public void GetFromBase() // Valid action method.
-            {
-            }
-
-            [NonAction]
-            public virtual void OverridenNonActionMethod()
-            {
-            }
-
-            [NonAction]
-            public virtual void NewMethod()
-            {
-            }
-
-            public override RedirectResult Redirect(string url)
-            {
-                return base.Redirect(url + "#RedirectOverride");
-            }
-        }
-
-        [MyFilter(2)]
-        private class FiltersController
-        {
-            [MyFilter(3)]
-            public void FilterAction()
-            {
-            }
-        }
-
-        private class MyFilterAttribute : Attribute, IFilter
-        {
-            public MyFilterAttribute(int value)
-            {
-                Value = value;
-            }
-
-            public int Value { get; private set; }
-        }
-
         private class HttpMethodController
         {
             [HttpPost]
             public void OnlyPost()
+            {
+            }
+        }
+
+        private class PersonController
+        {
+            public void GetPerson()
+            { }
+
+            public void ListPeople()
+            { }
+
+            [NonAction]
+            public void NotAnAction()
+            { }
+        }
+
+        public class MyRouteConstraintAttribute : RouteConstraintAttribute
+        {
+            public MyRouteConstraintAttribute(bool blockNonAttributedActions)
+                : base("key", "value", blockNonAttributedActions)
             {
             }
         }
@@ -445,10 +274,21 @@ namespace Microsoft.AspNet.Mvc.Test
             }
         }
 
-        private class MyRouteConstraintAttribute : RouteConstraintAttribute
+        private class MyFilterAttribute : Attribute, IFilter
         {
-            public MyRouteConstraintAttribute(bool blockNonAttributedActions)
-                : base("key", "value", blockNonAttributedActions)
+            public MyFilterAttribute(int value)
+            {
+                Value = value;
+            }
+
+            public int Value { get; private set; }
+        }
+
+        [MyFilter(2)]
+        private class FiltersController
+        {
+            [MyFilter(3)]
+            public void FilterAction()
             {
             }
         }

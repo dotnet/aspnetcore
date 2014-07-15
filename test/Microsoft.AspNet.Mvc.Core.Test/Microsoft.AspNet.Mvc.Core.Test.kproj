@@ -28,9 +28,10 @@
     <Compile Include="ActionResults\RedirectToActionResultTest.cs" />
     <Compile Include="ActionResults\RedirectToRouteResultTest.cs" />
     <Compile Include="ActionResults\RedirectResultTest.cs" />
-    <Compile Include="ActionSelectionConventionTests.cs" />
+    <Compile Include="DefaultActionDiscoveryConventionsActionSelectionTests.cs" />
     <Compile Include="AntiXsrf\AntiForgeryOptionsTests.cs" />
     <Compile Include="ExpiringFileInfoCacheTest.cs" />
+    <Compile Include="DefaultActionDiscoveryConventionsTests.cs" />
     <Compile Include="Extensions\ViewEngineDscriptorExtensionsTest.cs" />
     <Compile Include="ReflectedModelBuilder\ReflectedParameterModelTests.cs" />
     <Compile Include="ReflectedModelBuilder\ReflectedActionModelTests.cs" />
@@ -74,6 +75,7 @@
     <Compile Include="Rendering\DefaultViewEngineProviderTest.cs" />
     <Compile Include="Routing\AttributeRoutePrecedenceTests.cs" />
     <Compile Include="Routing\AttributeRouteTemplateTests.cs" />
+    <Compile Include="StaticControllerAssemblyProvider.cs" />
     <Compile Include="TestController.cs" />
     <Compile Include="TypeHelperTest.cs" />
     <Compile Include="StaticActionDiscoveryConventions.cs" />
