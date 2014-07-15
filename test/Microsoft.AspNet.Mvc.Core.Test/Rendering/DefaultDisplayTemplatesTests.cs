@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.Mvc.Core
 ";
             var model = new DefaultTemplatesUtilities.ObjectWithScaffoldColumn();
             var viewEngine = new Mock<ICompositeViewEngine>();
-            viewEngine.Setup(v => v.FindPartialView(It.IsAny<IDictionary<string, object>>(), It.IsAny<string>()))
+            viewEngine.Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
                       .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
             var htmlHelper = DefaultTemplatesUtilities.GetHtmlHelper(model, viewEngine.Object);
 
@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "Model string" };
             var viewEngine = new Mock<ICompositeViewEngine>();
             viewEngine
-                .Setup(v => v.FindPartialView(It.IsAny<IDictionary<string, object>>(), It.IsAny<string>()))
+                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
                 .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(model, viewEngine.Object);
             helper.ViewData["Property1"] = "ViewData string";
@@ -123,7 +123,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "Model string" };
             var viewEngine = new Mock<ICompositeViewEngine>();
             viewEngine
-                .Setup(v => v.FindPartialView(It.IsAny<IDictionary<string, object>>(), It.IsAny<string>()))
+                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
                 .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(model, viewEngine.Object);
             helper.ViewData["Property1"] = "ViewData string";
@@ -142,7 +142,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "Model string" };
             var viewEngine = new Mock<ICompositeViewEngine>();
             viewEngine
-                .Setup(v => v.FindPartialView(It.IsAny<IDictionary<string, object>>(), It.IsAny<string>()))
+                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
                 .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(model, viewEngine.Object);
 
@@ -162,7 +162,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = propertyValue, };
             var viewEngine = new Mock<ICompositeViewEngine>();
             viewEngine
-                .Setup(v => v.FindPartialView(It.IsAny<IDictionary<string, object>>(), It.IsAny<string>()))
+                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
                 .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(model, viewEngine.Object);
             helper.ViewData["Property1"] = "ViewData string";

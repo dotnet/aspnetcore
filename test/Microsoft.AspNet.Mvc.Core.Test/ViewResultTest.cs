@@ -35,8 +35,6 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var routeDictionary = new Dictionary<string, object>();
 
             var viewEngine = new Mock<ICompositeViewEngine>();
-            viewEngine.Setup(v => v.FindView(routeDictionary, It.IsAny<string>()))
-                      .Returns(ViewEngineResult.Found("MyView", view.Object));
 
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider.Setup(sp => sp.GetService(typeof(ICompositeViewEngine)))
@@ -52,12 +50,15 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                    .Returns(response.Object);
             context.SetupGet(c => c.RequestServices)
                 .Returns(serviceProvider.Object);
-            
+
             var actionContext = new ActionContext(context.Object,
-                                                  new RouteData() {  Values = routeDictionary },
+                                                  new RouteData() { Values = routeDictionary },
                                                   new ActionDescriptor());
-            
-            
+
+            viewEngine.Setup(v => v.FindView(actionContext, It.IsAny<string>()))
+                      .Returns(ViewEngineResult.Found("MyView", view.Object));
+
+
             var viewResult = new ViewResult();
 
             // Act
@@ -84,8 +85,6 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var routeDictionary = new Dictionary<string, object>();
 
             var goodViewEngine = new Mock<IViewEngine>();
-            goodViewEngine.Setup(v => v.FindView(routeDictionary, It.IsAny<string>()))
-                      .Returns(ViewEngineResult.Found("MyView", view.Object));
 
             var badViewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
 
@@ -107,6 +106,10 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var actionContext = new ActionContext(context.Object,
                                                   new RouteData() { Values = routeDictionary },
                                                   new ActionDescriptor());
+
+            goodViewEngine.Setup(v => v.FindView(actionContext, It.IsAny<string>()))
+                          .Returns(ViewEngineResult.Found("MyView", view.Object));
+
 
             var viewResult = new ViewResult()
             {
@@ -141,7 +144,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                  });
 
             var viewEngine = new Mock<ICompositeViewEngine>();
-            viewEngine.Setup(v => v.FindView(routeDictionary, It.IsAny<string>()))
+            viewEngine.Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>()))
                       .Returns(ViewEngineResult.Found("MyView", view.Object));
 
             var serviceProvider = new Mock<IServiceProvider>();
@@ -156,11 +159,11 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             context.SetupGet(c => c.Response)
                    .Returns(response.Object);
             context.SetupGet(c => c.RequestServices).Returns(serviceProvider.Object);
-            
+
             var actionContext = new ActionContext(context.Object,
                                                   new RouteData() { Values = routeDictionary },
                                                   new ActionDescriptor());
-            
+
             var viewResult = new ViewResult();
 
             // Act

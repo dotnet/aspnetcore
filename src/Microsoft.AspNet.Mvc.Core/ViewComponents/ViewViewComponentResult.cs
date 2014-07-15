@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Mvc
                     ViewName ?? "Default");
             }
 
-            var view = FindView(context.ViewContext.RouteData.Values, qualifiedViewName);
+            var view = FindView(context.ViewContext, qualifiedViewName);
 
             var childViewContext = new ViewContext(
                 context.ViewContext,
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        private IView FindView([NotNull] IDictionary<string, object> context, [NotNull] string viewName)
+        private IView FindView(ActionContext context, string viewName)
         {
             var result = _viewEngine.FindView(context, viewName);
             if (!result.Success)

@@ -53,12 +53,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         private class TestViewEngine : IViewEngine
         {
-            public ViewEngineResult FindPartialView(IDictionary<string, object> context, string partialViewName)
+            public ViewEngineResult FindPartialView(ActionContext context, string partialViewName)
             {
                 throw new NotImplementedException();
             }
 
-            public ViewEngineResult FindView(IDictionary<string, object> context, string viewName)
+            public ViewEngineResult FindView(ActionContext context, string viewName)
             {
                 throw new NotImplementedException();
             }

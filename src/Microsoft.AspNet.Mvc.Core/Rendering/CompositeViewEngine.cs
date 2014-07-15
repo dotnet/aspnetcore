@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -21,20 +20,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public IReadOnlyList<IViewEngine> ViewEngines { get; private set; }
 
         /// <inheritdoc />
-        public ViewEngineResult FindPartialView([NotNull] IDictionary<string, object> context,
+        public ViewEngineResult FindPartialView([NotNull] ActionContext context,
                                                 [NotNull] string partialViewName)
         {
             return FindView(context, partialViewName, partial: true);
         }
 
         /// <inheritdoc />
-        public ViewEngineResult FindView([NotNull] IDictionary<string, object> context,
+        public ViewEngineResult FindView([NotNull] ActionContext context,
                                          [NotNull] string viewName)
         {
             return FindView(context, viewName, partial: false);
         }
 
-        private ViewEngineResult FindView(IDictionary<string, object> context,
+        private ViewEngineResult FindView(ActionContext context,
                                           string viewName,
                                           bool partial)
         {
@@ -48,6 +47,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 {
                     return result;
                 }
+
                 searchedLocations = searchedLocations.Concat(result.SearchedLocations);
             }
 

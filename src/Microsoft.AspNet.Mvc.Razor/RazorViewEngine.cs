@@ -9,6 +9,9 @@ using Microsoft.AspNet.Mvc.Rendering;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
+    /// <summary>
+    /// Represents a view engine that is used to render a page that uses the Razor syntax.
+    /// </summary>
     public class RazorViewEngine : IViewEngine
     {
         private const string ViewExtension = ".cshtml";
@@ -27,15 +30,22 @@ namespace Microsoft.AspNet.Mvc.Razor
         };
 
         private readonly IRazorPageFactory _pageFactory;
-        private readonly IRazorPageActivator _viewActivator;
+        private readonly IRazorPageActivator _pageActivator;
         private readonly IViewStartProvider _viewStartProvider;
 
+        /// <summary>
+        /// Initializes a new instance of the RazorViewEngine class.
+        /// </summary>
+        /// <param name="pageFactory">The page factory used for creating <see cref="IRazorPage"/>.</param>
+        /// <param name="pageActivator">Activator for activated instances of <see cref="IRazorPage"/>.</param>
+        /// <param name="viewStartProvider">The provider used to provide instances of ViewStarts applicable to the 
+        /// page being rendered.</param>
         public RazorViewEngine(IRazorPageFactory pageFactory,
-                               IRazorPageActivator viewActivator,
+                               IRazorPageActivator pageActivator,
                                IViewStartProvider viewStartProvider)
         {
             _pageFactory = pageFactory;
-            _viewActivator = viewActivator;
+            _pageActivator = pageActivator;
             _viewStartProvider = viewStartProvider;
         }
 
@@ -44,21 +54,23 @@ namespace Microsoft.AspNet.Mvc.Razor
             get { return _viewLocationFormats; }
         }
 
-        public ViewEngineResult FindView([NotNull] IDictionary<string, object> context,
+        /// <inheritdoc />
+        public ViewEngineResult FindView([NotNull] ActionContext context,
                                          [NotNull] string viewName)
         {
             var viewEngineResult = CreateViewEngineResult(context, viewName, partial: false);
             return viewEngineResult;
         }
 
-        public ViewEngineResult FindPartialView([NotNull] IDictionary<string, object> context,
+        /// <inheritdoc />
+        public ViewEngineResult FindPartialView([NotNull] ActionContext context,
                                                 [NotNull] string partialViewName)
         {
             return CreateViewEngineResult(context, partialViewName, partial: true);
         }
 
-        private ViewEngineResult CreateViewEngineResult([NotNull] IDictionary<string, object> context,
-                                                        [NotNull] string viewName,
+        private ViewEngineResult CreateViewEngineResult(ActionContext context,
+                                                        string viewName,
                                                         bool partial)
         {
             var nameRepresentsPath = IsSpecificPath(viewName);
@@ -78,8 +90,9 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
             else
             {
-                var controllerName = context.GetValueOrDefault<string>("controller");
-                var areaName = context.GetValueOrDefault<string>("area");
+                var routeValues = context.RouteData.Values;
+                var controllerName = routeValues.GetValueOrDefault<string>("controller");
+                var areaName = routeValues.GetValueOrDefault<string>("area");
                 var potentialPaths = GetViewSearchPaths(viewName, controllerName, areaName);
 
                 foreach (var path in potentialPaths)
@@ -98,9 +111,9 @@ namespace Microsoft.AspNet.Mvc.Razor
         private ViewEngineResult CreateFoundResult(IRazorPage page, string viewName, bool partial)
         {
             var view = new RazorView(_pageFactory,
-                                     _viewActivator,
+                                     _pageActivator,
                                      _viewStartProvider,
-                                     page, 
+                                     page,
                                      executeViewHierarchy: !partial);
             return ViewEngineResult.Found(viewName, view);
         }

@@ -51,12 +51,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             public ITestService Service { get; private set; }
 
-            public ViewEngineResult FindPartialView([NotNull]IDictionary<string, object> context, [NotNull]string partialViewName)
+            public ViewEngineResult FindPartialView(ActionContext context, string partialViewName)
             {
                 throw new NotImplementedException();
             }
 
-            public ViewEngineResult FindView([NotNull]IDictionary<string, object> context, [NotNull]string viewName)
+            public ViewEngineResult FindView(ActionContext context, string viewName)
             {
                 throw new NotImplementedException();
             }

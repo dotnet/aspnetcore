@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Mvc
             var viewEngine = ViewEngine ?? context.HttpContext.RequestServices.GetService<ICompositeViewEngine>();
 
             var viewName = ViewName ?? context.ActionDescriptor.Name;
-            var view = FindView(viewEngine, context.RouteData.Values, viewName);
+            var view = FindView(viewEngine, context, viewName);
 
             using (view as IDisposable)
             {
@@ -52,10 +52,7 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        private static IView FindView(
-            [NotNull] IViewEngine viewEngine, 
-            [NotNull] IDictionary<string, object> context, 
-            [NotNull] string viewName)
+        private static IView FindView(IViewEngine viewEngine, ActionContext context, string viewName)
         {
             var result = viewEngine.FindView(context, viewName);
             if (!result.Success)
