@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Security.Cookies;
 
 namespace CookieSample
