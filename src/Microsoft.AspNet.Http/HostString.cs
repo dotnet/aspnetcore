@@ -136,9 +136,7 @@ namespace Microsoft.AspNet.Http
                 throw new ArgumentNullException("uri");
             }
             return new HostString(uri.GetComponents(
-#if !NET40
                 UriComponents.NormalizedHost | // Always convert punycode to Unicode.
-#endif
                 UriComponents.HostAndPort, UriFormat.Unescaped));
         }
 

@@ -17,9 +17,14 @@ namespace Microsoft.AspNet.PipelineCore
         private readonly FeatureReference<IHttpRequestFeature> _request = FeatureReference<IHttpRequestFeature>.Default;
         private string _cookiesHeader;
         private RequestCookiesCollection _cookiesCollection;
-        private static readonly string[] ZeroHeaders = new string[0];
+        private IReadableStringCollection _cookies;
 
-        public RequestCookiesFeature(IFeatureCollection features)
+        public RequestCookiesFeature([NotNull] IReadableStringCollection cookies)
+        {
+            _cookies = cookies;
+        }
+
+        public RequestCookiesFeature([NotNull] IFeatureCollection features)
         {
             _features = features;
         }
@@ -28,8 +33,13 @@ namespace Microsoft.AspNet.PipelineCore
         {
             get
             {
+                if (_features == null)
+                {
+                    return _cookies;
+                }
+
                 var headers = _request.Fetch(_features).Headers;
-                string cookiesHeader = ParsingHelpers.GetHeader(headers, Constants.Headers.Cookie) ?? "";
+                string cookiesHeader = ParsingHelpers.GetHeader(headers, Constants.Headers.Cookie) ?? string.Empty;
 
                 if (_cookiesCollection == null)
                 {

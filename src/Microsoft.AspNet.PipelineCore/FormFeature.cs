@@ -20,13 +20,23 @@ namespace Microsoft.AspNet.PipelineCore
         private Stream _bodyStream;
         private IReadableStringCollection _form;
 
-        public FormFeature(IFeatureCollection features)
+        public FormFeature([NotNull] IReadableStringCollection form)
+        {
+            _form = form;
+        }
+
+        public FormFeature([NotNull] IFeatureCollection features)
         {
             _features = features;
         }
 
         public async Task<IReadableStringCollection> GetFormAsync(CancellationToken cancellationToken)
         {
+            if (_features == null)
+            {
+                return _form;
+            }
+
             var body = _request.Fetch(_features).Body;
 
             if (_bodyStream == null || _bodyStream != body)
