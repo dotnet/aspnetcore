@@ -153,6 +153,27 @@ namespace Microsoft.AspNet.Security.Infrastructure
             }
         }
 
+        public virtual async Task AuthenticateAsync(IAuthenticateContext context)
+        {
+            if (context.AuthenticationTypes.Contains(BaseOptions.AuthenticationType, StringComparer.Ordinal))
+            {
+                AuthenticationTicket ticket = await AuthenticateAsync();
+                if (ticket != null && ticket.Identity != null)
+                {
+                    context.Authenticated(ticket.Identity, ticket.Properties.Dictionary, BaseOptions.Description.Dictionary);
+                }
+                else
+                {
+                    context.NotAuthenticated(BaseOptions.AuthenticationType, properties: null, description: BaseOptions.Description.Dictionary);
+                }
+            }
+
+            if (PriorHandler != null)
+            {
+                await PriorHandler.AuthenticateAsync(context);
+            }
+        }
+
         public AuthenticationTicket Authenticate()
         {
             return LazyInitializer.EnsureInitialized(
@@ -166,23 +187,6 @@ namespace Microsoft.AspNet.Security.Infrastructure
         }
 
         protected abstract AuthenticationTicket AuthenticateCore();
-
-        public virtual async Task AuthenticateAsync(IAuthenticateContext context)
-        {
-            if (context.AuthenticationTypes.Contains(BaseOptions.AuthenticationType, StringComparer.Ordinal))
-            {
-                AuthenticationTicket ticket = await AuthenticateAsync();
-                if (ticket != null && ticket.Identity != null)
-                {
-                    context.Authenticated(ticket.Identity, ticket.Properties.Dictionary, BaseOptions.Description.Dictionary);
-                }
-            }
-
-            if (PriorHandler != null)
-            {
-                await PriorHandler.AuthenticateAsync(context);
-            }
-        }
 
         /// <summary>
         /// Causes the authentication logic in AuthenticateCore to be performed for the current request 
