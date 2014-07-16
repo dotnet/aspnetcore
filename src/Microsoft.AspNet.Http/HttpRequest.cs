@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -95,7 +97,7 @@ namespace Microsoft.AspNet.Http
         /// Gets or sets the Content-Type header.
         /// </summary>
         /// <returns>The Content-Type header.</returns>
-        // (TODO header conventions?) public abstract string ContentType { get; set; }
+        public abstract string ContentType { get; set; }
 
         /// <summary>
         /// Gets or sets the Cache-Control header.
@@ -113,7 +115,13 @@ namespace Microsoft.AspNet.Http
         /// Gets or set the Accept header.
         /// </summary>
         /// <returns>The Accept header.</returns>
-        // (TODO header conventions?) public abstract string Accept { get; set; }
+        public abstract string Accept { get; set; }
+
+        /// <summary>
+        /// Gets or set the Accept-Charset header.
+        /// </summary>
+        /// <returns>The Accept-Charset header.</returns>
+        public abstract string AcceptCharset { get; set; }
 
         /// <summary>
         /// Gets or set the owin.RequestBody Stream.

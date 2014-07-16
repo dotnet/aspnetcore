@@ -15,6 +15,7 @@ namespace Microsoft.AspNet.Http.Infrastructure
             internal const string CacheControl = "Cache-Control";
             internal const string MediaType = "Media-Type";
             internal const string Accept = "Accept";
+            internal const string AcceptCharset = "Accept-Charset";
             internal const string Host = "Host";
             internal const string ETag = "ETag";
             internal const string Location = "Location";

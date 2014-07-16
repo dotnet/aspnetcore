@@ -149,5 +149,23 @@ namespace Microsoft.AspNet.PipelineCore
         {
             get { return RequestCookiesFeature.Cookies; }
         }
+
+        public override string ContentType
+        {
+            get { return Headers[Constants.Headers.ContentType]; }
+            set { Headers[Constants.Headers.ContentType] = value; }
+        }
+
+        public override string Accept
+        {
+            get { return Headers[Constants.Headers.Accept]; }
+            set { Headers[Constants.Headers.Accept] = value; }
+        }
+
+        public override string AcceptCharset
+        {
+            get { return Headers[Constants.Headers.AcceptCharset]; }
+            set { Headers[Constants.Headers.AcceptCharset] = value; }
+        }
     }
 }

@@ -50,6 +50,36 @@ namespace Microsoft.AspNet.PipelineCore.Tests
         }
 
         [Fact]
+        public void GetContentType_ReturnsNullIfHeaderDoesNotExist()
+        {
+            // Arrange
+            var request = GetRequestWithContentType(contentType: null);
+
+            // Act and Assert
+            Assert.Null(request.ContentType);
+        }
+
+        [Fact]
+        public void GetAcceptHeader_ReturnsNullIfHeaderDoesNotExist()
+        {
+            // Arrange
+            var request = GetRequestWithAcceptHeader(acceptHeader: null);
+
+            // Act and Assert
+            Assert.Null(request.Accept);
+        }
+
+        [Fact]
+        public void GetAcceptCharsetHeader_ReturnsNullIfHeaderDoesNotExist()
+        {
+            // Arrange
+            var request = GetRequestWithAcceptCharsetHeader(acceptCharset: null);
+
+            // Act and Assert
+            Assert.Null(request.AcceptCharset);
+        }
+
+        [Fact]
         public void Host_GetsHostFromHeaders()
         {
             // Arrange
@@ -115,13 +145,33 @@ namespace Microsoft.AspNet.PipelineCore.Tests
 
         private static HttpRequest GetRequestWithContentLength(string contentLength = null)
         {
+            return GetRequestWithHeader("Content-Length", contentLength);
+        }
+
+        private static HttpRequest GetRequestWithContentType(string contentType = null)
+        {
+            return GetRequestWithHeader("Content-Type", contentType);
+        }
+
+        private static HttpRequest GetRequestWithAcceptHeader(string acceptHeader = null)
+        {
+            return GetRequestWithHeader("Accept", acceptHeader);
+        }
+
+        private static HttpRequest GetRequestWithAcceptCharsetHeader(string acceptCharset = null)
+        {
+            return GetRequestWithHeader("Accept-Charset", acceptCharset);
+        }
+
+        private static HttpRequest GetRequestWithHeader(string headerName, string headerValue)
+        {
             var headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
-            if (contentLength != null)
+            if (headerValue != null)
             {
-                headers.Add("Content-Length", new[] { contentLength });
+                headers.Add(headerName, new[] { headerValue });
             }
 
- 		    return CreateRequest(headers);
+            return CreateRequest(headers);
         }
     }
 }
