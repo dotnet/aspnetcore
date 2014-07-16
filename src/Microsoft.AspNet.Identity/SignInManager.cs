@@ -104,10 +104,11 @@ namespace Microsoft.AspNet.Identity
             return true;
         }
 
-        //public async Task<bool> HasBeenVerified()
-        //{
-        //    return await GetVerifiedUserId() != null;
-        //}
+        public async Task<bool> IsTwoFactorClientRemembered(TUser user)
+        {
+            var userId = await UserManager.GetUserIdAsync(user);
+            return await AuthenticationManager.IsClientRememeberedAsync(userId);
+        }
 
         public virtual async Task RememberTwoFactorClient(TUser user)
         {
@@ -167,10 +168,10 @@ namespace Microsoft.AspNet.Identity
         {
             if (UserManager.SupportsUserTwoFactor && await UserManager.GetTwoFactorEnabledAsync(user))
             {
-                var userId = await UserManager.GetUserIdAsync(user);
-                if (!await AuthenticationManager.IsClientRememeberedAsync(userId))
+                if (!await IsTwoFactorClientRemembered(user))
                 {
                     // Store the userId for use after two factor check
+                    var userId = await UserManager.GetUserIdAsync(user);
                     await AuthenticationManager.StoreUserId(userId);
                     return SignInStatus.RequiresVerification;
                 }

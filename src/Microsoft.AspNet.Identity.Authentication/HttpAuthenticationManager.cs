@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Security;
 using Microsoft.Framework.DependencyInjection;
+using System;
 
 namespace Microsoft.AspNet.Identity.Authentication
 {
@@ -28,9 +29,17 @@ namespace Microsoft.AspNet.Identity.Authentication
 
         public async Task<bool> IsClientRememeberedAsync(string userId)
         {
-            var result =
-                await Context.AuthenticateAsync(TwoFactorRememberedAuthenticationType);
-            return (result != null && result.Identity != null && result.Identity.Name == userId);
+            try
+            {
+                var result =
+                    await Context.AuthenticateAsync(TwoFactorRememberedAuthenticationType);
+                return (result != null && result.Identity != null && result.Identity.Name == userId);
+            }
+            // REVIEW: Why does Owin throw this for authenticate?
+            catch (InvalidOperationException)
+            {
+                return false;
+            }
         }
 
         public void RememberClient(string userId)

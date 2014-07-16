@@ -23,6 +23,10 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Identity.E
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Identity.EntityFramework.InMemory.Test", "test\Microsoft.AspNet.Identity.EntityFramework.InMemory.Test\Microsoft.AspNet.Identity.EntityFramework.InMemory.Test.kproj", "{813B36FE-BBA5-4449-B157-6EBBA5ED02CA}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{58D94A0E-C2B7-43A7-8826-99ECBB1E0A50}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "IdentitySample.Mvc", "samples\IdentitySample.Mvc\IdentitySample.Mvc.kproj", "{E1BFA023-CFFD-49CE-8466-1C28DD2EC1F6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -113,6 +117,16 @@ Global
 		{813B36FE-BBA5-4449-B157-6EBBA5ED02CA}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{813B36FE-BBA5-4449-B157-6EBBA5ED02CA}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{813B36FE-BBA5-4449-B157-6EBBA5ED02CA}.Release|x86.ActiveCfg = Release|Any CPU
+		{E1BFA023-CFFD-49CE-8466-1C28DD2EC1F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1BFA023-CFFD-49CE-8466-1C28DD2EC1F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1BFA023-CFFD-49CE-8466-1C28DD2EC1F6}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{E1BFA023-CFFD-49CE-8466-1C28DD2EC1F6}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{E1BFA023-CFFD-49CE-8466-1C28DD2EC1F6}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E1BFA023-CFFD-49CE-8466-1C28DD2EC1F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1BFA023-CFFD-49CE-8466-1C28DD2EC1F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1BFA023-CFFD-49CE-8466-1C28DD2EC1F6}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E1BFA023-CFFD-49CE-8466-1C28DD2EC1F6}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{E1BFA023-CFFD-49CE-8466-1C28DD2EC1F6}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -126,5 +140,6 @@ Global
 		{65161409-C4C4-4D63-A73B-231FCFF4D503} = {52D59F18-62D2-4D17-8CF2-BE192445AF8E}
 		{B4C067C1-F934-493C-9DBC-19E8CA305613} = {52D59F18-62D2-4D17-8CF2-BE192445AF8E}
 		{813B36FE-BBA5-4449-B157-6EBBA5ED02CA} = {52D59F18-62D2-4D17-8CF2-BE192445AF8E}
+		{E1BFA023-CFFD-49CE-8466-1C28DD2EC1F6} = {58D94A0E-C2B7-43A7-8826-99ECBB1E0A50}
 	EndGlobalSection
 EndGlobal

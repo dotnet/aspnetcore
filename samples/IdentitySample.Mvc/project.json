@@ -1,0 +1,30 @@
+{
+    "authors": [
+        "Microsoft"
+    ],
+    "description": "Identity sample MVC application on K",
+    "version": "1.0.0-*",
+    "dependencies": {
+        "Microsoft.AspNet.Server.IIS": "1.0.0-*",
+        "Microsoft.AspNet.Mvc": "6.0.0-*",
+        "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
+        "Microsoft.AspNet.Diagnostics": "1.0.0-*",
+        "Microsoft.AspNet.Identity.EntityFramework": "3.0.0-*",
+        "Microsoft.AspNet.Identity.Authentication": "3.0.0-*",
+        "Microsoft.AspNet.Security.Cookies": "1.0.0-*",
+        "Microsoft.AspNet.StaticFiles": "1.0.0-*",
+        "EntityFramework.SqlServer": "7.0.0-*",
+        "Microsoft.Framework.ConfigurationModel.Json": "1.0.0-*",
+        "Microsoft.Framework.OptionsModel": "1.0.0-*"
+    },
+    "commands": {
+        "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5002",
+        "run": "run server.urls=http://localhost:5003"
+    },
+    "frameworks": {
+        "net451": {
+        },
+        "k10": {
+        }
+    }
+}
