@@ -16,7 +16,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             ActivateAttributeName = "Microsoft.AspNet.Mvc.ActivateAttribute";
             DefaultInjectedProperties = new List<InjectDescriptor>()
             {
-                new InjectDescriptor("Microsoft.AspNet.Mvc.Rendering.IHtmlHelper<TModel>", "Html")
+                new InjectDescriptor("Microsoft.AspNet.Mvc.Rendering.IHtmlHelper<TModel>", "Html"),
+                new InjectDescriptor("Microsoft.AspNet.Mvc.IViewComponentHelper", "Component"),
             };
         }
 

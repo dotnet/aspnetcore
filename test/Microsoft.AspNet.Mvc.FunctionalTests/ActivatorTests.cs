@@ -61,5 +61,52 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
             Assert.Equal(expected, body);
         }
+
+        [Fact]
+        public async Task ViewActivator_ActivatesDefaultInjectedProperties()
+        {
+            var server = TestServer.Create(_provider, _app);
+            var client = server.Handler;
+            var expected = "<label for=\"Hello\">Hello</label> world!";
+
+            // Act
+            var result = await client.GetAsync("http://localhost/View/ConsumeDefaultProperties");
+
+            // Assert
+            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
+            Assert.Equal(expected, body.Trim());
+        }
+
+        [Fact]
+        public async Task ViewActivator_ActivatesAndContextualizesInjectedServices()
+        {
+            var server = TestServer.Create(_provider, _app);
+            var client = server.Handler;
+            var expected = "4 test-value";
+
+            // Act
+            var result = await client.GetAsync("http://localhost/View/ConsumeInjectedService?test=test-value");
+
+            // Assert
+            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
+            Assert.Equal(expected, body.Trim());
+        }
+
+        [Fact]
+        public async Task ViewActivator_ActivatesServicesFromBaseType()
+        {
+            var server = TestServer.Create(_provider, _app);
+            var client = server.Handler;
+            var expected = 
+@"/content/scripts/test.js
+/View/ConsumeDefaultProperties";
+
+            // Act
+            var result = await client.GetAsync("http://localhost/View/ConsumeServicesFromBaseType");
+
+            // Assert
+            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
+            Assert.Equal(expected, body.Trim());
+        }
     }
 }

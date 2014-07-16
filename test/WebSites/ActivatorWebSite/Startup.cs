@@ -19,6 +19,7 @@ namespace ActivatorWebSite
                 // Add MVC services to the services container
                 services.AddMvc(configuration);
                 services.AddInstance(new MyService());
+                services.AddScoped<ViewService, ViewService>();
             });
 
             // Add MVC to the request pipeline

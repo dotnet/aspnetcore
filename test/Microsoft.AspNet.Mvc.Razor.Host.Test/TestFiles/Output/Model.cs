@@ -23,6 +23,8 @@
         #line hidden
         [Microsoft.AspNet.Mvc.ActivateAttribute]
         public Microsoft.AspNet.Mvc.Rendering.IHtmlHelper<System.Collections.IEnumerable> Html { get; private set; }
+        [Microsoft.AspNet.Mvc.ActivateAttribute]
+        public Microsoft.AspNet.Mvc.IViewComponentHelper Component { get; private set; }
 
         #line hidden
 

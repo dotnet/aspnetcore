@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -21,7 +20,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         private readonly HashSet<string> _renderedSections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private bool _renderedBody;
 
-        public IViewComponentHelper Component { get; private set; }
+        [Activate]
+        public IUrlHelper Url { get; set; }
 
         public HttpContext Context
         {
@@ -41,8 +41,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         public string Layout { get; set; }
 
         protected TextWriter Output { get; set; }
-
-        public IUrlHelper Url { get; private set; }
 
         public virtual IPrincipal User
         {
@@ -76,8 +74,6 @@ namespace Microsoft.AspNet.Mvc.Razor
             SectionWriters = new Dictionary<string, HelperResult>(StringComparer.OrdinalIgnoreCase);
             ViewContext = context;
 
-            InitHelpers();
-
             var contentBuilder = new StringBuilder(1024);
             using (var bodyWriter = new StringWriter(contentBuilder))
             {
@@ -109,22 +105,6 @@ namespace Microsoft.AspNet.Mvc.Razor
             else
             {
                 await context.Writer.WriteAsync(bodyContent);
-            }
-        }
-
-        private void InitHelpers()
-        {
-            Contract.Assert(ViewContext != null);
-            Contract.Assert(Context != null);
-
-            Url = Context.RequestServices.GetService<IUrlHelper>();
-
-            Component = Context.RequestServices.GetService<IViewComponentHelper>();
-
-            var contextable = Component as ICanHasViewContext;
-            if (contextable != null)
-            {
-                contextable.Contextualize(ViewContext);
             }
         }
 

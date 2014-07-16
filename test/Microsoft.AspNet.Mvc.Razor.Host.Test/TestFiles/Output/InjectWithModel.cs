@@ -37,6 +37,8 @@
 #line default
 #line hidden
         { get; private set; }
+        [Microsoft.AspNet.Mvc.ActivateAttribute]
+        public Microsoft.AspNet.Mvc.IViewComponentHelper Component { get; private set; }
 
         #line hidden
 

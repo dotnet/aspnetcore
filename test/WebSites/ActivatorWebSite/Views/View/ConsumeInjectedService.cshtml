@@ -1,0 +1,5 @@
+﻿@using ActivatorWebSite
+@inject MyService MyServiceInstance
+@inject ViewService ViewServiceInstance
+
+@MyServiceInstance.Random @ViewServiceInstance.GetValue()
