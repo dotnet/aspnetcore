@@ -24,6 +24,12 @@ namespace Microsoft.AspNet.Http
         /// </summary>
         new int Count { get; }
 
+        // This property is duplicated to resolve an ambiguity between IReadableStringCollection.Keys and IDictionary<string, string[]>.Keys
+        /// <summary>
+        /// Gets a collection containing the keys.
+        /// </summary>
+        new ICollection<string> Keys { get; }
+
         /// <summary>
         /// Get the associated values from the collection separated into individual values.
         /// Quoted values will not be split, and the quotes will be removed.

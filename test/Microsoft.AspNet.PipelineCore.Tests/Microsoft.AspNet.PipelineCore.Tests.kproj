@@ -23,6 +23,7 @@
   <ItemGroup>
     <Compile Include="BuilderTests.cs" />
     <Compile Include="FormFeatureTests.cs" />
+    <Compile Include="HeaderDictionaryTests.cs" />
     <Compile Include="QueryFeatureTests.cs" />
     <Compile Include="DefaultHttpContextTests.cs" />
     <Compile Include="DefaultHttpRequestTests.cs" />
