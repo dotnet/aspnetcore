@@ -29,6 +29,11 @@ namespace Microsoft.AspNet.Identity
             Logins = new List<IdentityUserLogin<TKey>>();
         }
 
+        public IdentityUser(string userName) : this()
+        {
+            UserName = userName;
+        }
+
         public virtual TKey Id { get; set; }
         public virtual string UserName { get; set; }
 

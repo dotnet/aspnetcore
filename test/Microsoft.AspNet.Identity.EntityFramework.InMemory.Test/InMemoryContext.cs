@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
                 .ForeignKeys(fk => fk.ForeignKey<TUser>(f => f.UserId))
                 .ToTable("AspNetUserClaims");
 
-            builder.Entity<IdentityRoleClaim>()
+            builder.Entity<IdentityRoleClaim<TKey>>()
                 .Key(c => c.Id)
                 .ForeignKeys(fk => fk.ForeignKey<TRole>(f => f.RoleId))
                 .ToTable("AspNetRoleClaims");

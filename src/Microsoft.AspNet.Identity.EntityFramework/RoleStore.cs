@@ -12,22 +12,22 @@ using Microsoft.Data.Entity;
 
 namespace Microsoft.AspNet.Identity.EntityFramework
 {
-    public class RoleStore<TRole> : RoleStore<TRole, string, DbContext> where TRole : IdentityRole
+    public class RoleStore<TRole> : RoleStore<TRole, DbContext, string> where TRole : IdentityRole
     {
         public RoleStore(DbContext context) : base(context) { }
     }
 
-    public class RoleStore<TRole, TContext> : RoleStore<TRole, string, TContext> 
+    public class RoleStore<TRole, TContext> : RoleStore<TRole, TContext, string> 
         where TRole : IdentityRole
         where TContext : DbContext
     {
         public RoleStore(TContext context) : base(context) { }
     }
 
-    public class RoleStore<TRole, TKey, TContext> : 
+    public class RoleStore<TRole, TContext, TKey> : 
         IQueryableRoleStore<TRole>,
         IRoleClaimStore<TRole>
-        where TRole : IdentityRole
+        where TRole : IdentityRole<TKey>
         where TKey : IEquatable<TKey>
         where TContext : DbContext
     {
@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             {
                 throw new ArgumentNullException("role");
             }
-            return Task.FromResult(role.Id);
+            return Task.FromResult(ConvertIdToString(role.Id));
         }
 
         public Task<string> GetRoleNameAsync(TRole role, CancellationToken cancellationToken = new CancellationToken())
@@ -133,9 +133,22 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             return Task.FromResult(0);
         }
 
-        public virtual TKey ConvertId(string userId)
+        public virtual TKey ConvertIdFromString(string id)
         {
-            return (TKey)Convert.ChangeType(userId, typeof(TKey));
+            if (id == null)
+            {
+                return default(TKey);
+            }
+            return (TKey)Convert.ChangeType(id, typeof(TKey));
+        }
+
+        public virtual string ConvertIdToString(TKey id)
+        {
+            if (id.Equals(default(TKey)))
+            {
+                return null;
+            }
+            return id.ToString();
         }
 
         /// <summary>
@@ -148,7 +161,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            var roleId = ConvertId(id);
+            var roleId = ConvertIdFromString(id);
             return GetRoleAggregate(u => u.Id.Equals(roleId), cancellationToken);
         }
 
@@ -188,7 +201,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             {
                 throw new ArgumentNullException("role");
             }
-            var result = RoleClaims.Where(rc => rc.RoleId == role.Id).Select(c => new Claim(c.ClaimType, c.ClaimValue)).ToList();
+            var result = RoleClaims.Where(rc => rc.RoleId.Equals(role.Id)).Select(c => new Claim(c.ClaimType, c.ClaimValue)).ToList();
             return Task.FromResult((IList<Claim>)result);
         }
 
@@ -203,7 +216,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             {
                 throw new ArgumentNullException("claim");
             }
-            RoleClaims.Add(new IdentityRoleClaim { RoleId = role.Id, ClaimType = claim.Type, ClaimValue = claim.Value });
+            RoleClaims.Add(new IdentityRoleClaim<TKey> { RoleId = role.Id, ClaimType = claim.Type, ClaimValue = claim.Value });
             return Task.FromResult(0);
         }
 
@@ -231,6 +244,6 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             get { return Context.Set<TRole>(); }
         }
 
-        private DbSet<IdentityRoleClaim> RoleClaims { get { return Context.Set<IdentityRoleClaim>(); } }
+        private DbSet<IdentityRoleClaim<TKey>> RoleClaims { get { return Context.Set<IdentityRoleClaim<TKey>>(); } }
     }
 }

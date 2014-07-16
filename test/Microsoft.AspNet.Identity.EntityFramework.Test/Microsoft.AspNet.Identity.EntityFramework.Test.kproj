@@ -21,7 +21,13 @@
     <Content Include="project.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CustomPocoTest.cs" />
+    <Compile Include="DefaultPocoTest.cs" />
+    <Compile Include="UserStoreGuidKeyTest.cs" />
+    <Compile Include="UserStoreIntKeyTest.cs" />
+    <Compile Include="UserStoreStringKeyTest.cs" />
     <Compile Include="UserStoreTest.cs" />
+    <Compile Include="UserStoreTestBase.cs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>

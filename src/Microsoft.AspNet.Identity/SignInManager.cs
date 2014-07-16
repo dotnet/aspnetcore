@@ -31,11 +31,7 @@ namespace Microsoft.AspNet.Identity
             UserManager = userManager;
             AuthenticationManager = authenticationManager;
             ClaimsFactory = claimsFactory;
-            AuthenticationType = DefaultAuthenticationTypes.ApplicationCookie;
         }
-
-        // TODO: this should go into some kind of Options/setup
-        public string AuthenticationType { get; set; }
 
         public UserManager<TUser> UserManager { get; private set; }
         public IAuthenticationManager AuthenticationManager { get; private set; }
@@ -44,7 +40,8 @@ namespace Microsoft.AspNet.Identity
         // Should this be a func?
         public virtual async Task<ClaimsIdentity> CreateUserIdentityAsync(TUser user)
         {
-            return await ClaimsFactory.CreateAsync(user, AuthenticationType);
+            // REVIEW: should sign in manager take options instead of using the user manager instance?
+            return await ClaimsFactory.CreateAsync(user, UserManager.Options.ClaimsIdentity);
         }
 
         public virtual async Task SignInAsync(TUser user, bool isPersistent)
@@ -56,7 +53,8 @@ namespace Microsoft.AspNet.Identity
         // TODO: Should this be async?
         public void SignOut()
         {
-            AuthenticationManager.SignOut(AuthenticationType);
+            // REVIEW: need a new home for this option config?
+            AuthenticationManager.SignOut(UserManager.Options.ClaimsIdentity.AuthenticationType);
         }
 
         public virtual async Task<SignInStatus> PasswordSignInAsync(string userName, string password, 

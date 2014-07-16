@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var services = new ServiceCollection();
             services.Add(OptionsServices.GetDefaultServices());
-            services.AddIdentity<TUser>(b => b.AddUserStore(storeFunc));
+            services.AddIdentity<TUser>().AddUserStore(storeFunc);
             services.SetupOptions<IdentityOptions>(options =>
             {
                 options.Password.RequireDigit = false;

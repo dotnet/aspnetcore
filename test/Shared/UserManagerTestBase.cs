@@ -410,14 +410,15 @@ namespace Microsoft.AspNet.Identity.Test
             }
 
             var claimsFactory = new ClaimsIdentityFactory<TUser, TRole>(manager, role);
-            var identity = await claimsFactory.CreateAsync(user, "test");
+            var identity = await claimsFactory.CreateAsync(user, new ClaimsIdentityOptions());
             var claims = identity.Claims.ToList();
             Assert.NotNull(claims);
+            Assert.Equal(DefaultAuthenticationTypes.ApplicationCookie, identity.AuthenticationType);
             Assert.True(
-                claims.Any(c => c.Type == manager.Options.ClaimType.UserName && c.Value == user.UserName));
-            Assert.True(claims.Any(c => c.Type == manager.Options.ClaimType.UserId && c.Value == user.Id));
-            Assert.True(claims.Any(c => c.Type == manager.Options.ClaimType.Role && c.Value == "Admin"));
-            Assert.True(claims.Any(c => c.Type == manager.Options.ClaimType.Role && c.Value == "Local"));
+                claims.Any(c => c.Type == manager.Options.ClaimsIdentity.UserNameClaimType && c.Value == user.UserName));
+            Assert.True(claims.Any(c => c.Type == manager.Options.ClaimsIdentity.UserIdClaimType && c.Value == user.Id));
+            Assert.True(claims.Any(c => c.Type == manager.Options.ClaimsIdentity.RoleClaimType && c.Value == "Admin"));
+            Assert.True(claims.Any(c => c.Type == manager.Options.ClaimsIdentity.RoleClaimType && c.Value == "Local"));
             foreach (var cl in userClaims)
             {
                 Assert.True(claims.Any(c => c.Type == cl.Type && c.Value == cl.Value));

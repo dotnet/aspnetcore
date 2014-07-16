@@ -40,10 +40,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             app.UseServices(services =>
             {
                 services.AddInstance(contextAccessor.Object);
-                services.AddIdentity<ApplicationUser, IdentityRole>(s =>
-                {
-                    s.AddInMemory();
-                }).AddHttpSignIn();
+                services.AddIdentity<ApplicationUser, IdentityRole>().AddInMemory().AddHttpSignIn();
             });
 
             // Act

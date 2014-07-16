@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Identity.Test
             manager.Options.Password.RequireDigit = false;
             manager.Options.Password.RequiredLength = 0;
             IdentityResultAssert.IsFailure(await valid.ValidateAsync(input, manager),
-                "Passwords must have at least one non letter or digit character.");
+                "Passwords must have at least one non letter and non digit character.");
         }
 
         [Theory]
@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.Identity.Test
         [InlineData("aB1@df", Errors.None)]
         public async Task UberMixedRequiredTests(string input, Errors errorMask)
         {
-            const string alphaError = "Passwords must have at least one non letter or digit character.";
+            const string alphaError = "Passwords must have at least one non letter and non digit character.";
             const string upperError = "Passwords must have at least one uppercase ('A'-'Z').";
             const string lowerError = "Passwords must have at least one lowercase ('a'-'z').";
             const string digitError = "Passwords must have at least one digit ('0'-'9').";

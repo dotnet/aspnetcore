@@ -13,17 +13,25 @@ using Microsoft.Data.Entity;
 
 namespace Microsoft.AspNet.Identity.EntityFramework
 {
-    public class UserStore : UserStore<User>
+    public class UserStore : UserStore<IdentityUser>
     {
         public UserStore(DbContext context) : base(context) { }
     }
 
-    public class UserStore<TUser> : UserStore<TUser, IdentityRole, DbContext> where TUser : User
+    public class UserStore<TUser> : UserStore<TUser, IdentityRole, DbContext> where TUser : IdentityUser, new()
     {
         public UserStore(DbContext context) : base(context) { }
     }
 
-    public class UserStore<TUser, TRole, TContext> :
+    public class UserStore<TUser, TRole, TContext> : UserStore<TUser, TRole, TContext, string>
+        where TUser : IdentityUser, new()
+        where TRole : IdentityRole, new()
+        where TContext : DbContext
+    {
+        public UserStore(TContext context) : base(context) { }
+    }
+
+    public class UserStore<TUser, TRole, TContext, TKey> :
         IUserLoginStore<TUser>,
         IUserRoleStore<TUser>,
         IUserClaimStore<TUser>,
@@ -34,9 +42,10 @@ namespace Microsoft.AspNet.Identity.EntityFramework
         IUserPhoneNumberStore<TUser>,
         IQueryableUserStore<TUser>,
         IUserTwoFactorStore<TUser>
-        where TUser : User
-        where TRole : IdentityRole
+        where TUser : IdentityUser<TKey>
+        where TRole : IdentityRole<TKey>
         where TContext : DbContext
+        where TKey : IEquatable<TKey>
     {
         private bool _disposed;
 
@@ -79,7 +88,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             {
                 throw new ArgumentNullException("user");
             }
-            return Task.FromResult(Convert.ToString(user.Id, CultureInfo.InvariantCulture));
+            return Task.FromResult(ConvertIdToString(user.Id));
         }
 
         public Task<string> GetUserNameAsync(TUser user, CancellationToken cancellationToken = new CancellationToken())
@@ -151,7 +160,26 @@ namespace Microsoft.AspNet.Identity.EntityFramework
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            return GetUserAggregate(u => u.Id.Equals(userId), cancellationToken);
+            var id = ConvertIdFromString(userId);
+            return GetUserAggregate(u => u.Id.Equals(id), cancellationToken);
+        }
+
+        public virtual TKey ConvertIdFromString(string id)
+        {
+            if (id == null)
+            {
+                return default(TKey);
+            }
+            return (TKey)Convert.ChangeType(id, typeof(TKey));
+        }
+
+        public virtual string ConvertIdToString(TKey id)
+        {
+            if (id.Equals(default(TKey)))
+            {
+                return null;
+            }
+            return id.ToString();
         }
 
         /// <summary>
@@ -244,7 +272,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.RoleNotFound, roleName));
             }
-            var ur = new IdentityUserRole { UserId = user.Id, RoleId = roleEntity.Id };
+            var ur = new IdentityUserRole<TKey> { UserId = user.Id, RoleId = roleEntity.Id };
             // TODO: rely on fixup?
             UserRoles.Add(ur);
             user.Roles.Add(ur);
@@ -274,7 +302,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             var roleEntity = Roles.SingleOrDefault(r => r.Name.ToUpper() == roleName.ToUpper());
             if (roleEntity != null)
             {
-                var userRole = UserRoles.FirstOrDefault(r => roleEntity.Id.Equals(r.RoleId) && r.UserId == user.Id);
+                var userRole = UserRoles.FirstOrDefault(r => roleEntity.Id.Equals(r.RoleId) && r.UserId.Equals(user.Id));
                 if (userRole != null)
                 {
                     UserRoles.Remove(userRole);
@@ -356,9 +384,9 @@ namespace Microsoft.AspNet.Identity.EntityFramework
         }
 
         private DbSet<TRole> Roles { get { return Context.Set<TRole>(); } }
-        private DbSet<IdentityUserClaim> UserClaims { get { return Context.Set<IdentityUserClaim>(); } }
-        private DbSet<IdentityUserRole> UserRoles { get { return Context.Set<IdentityUserRole>(); } }
-        private DbSet<IdentityUserLogin> UserLogins { get { return Context.Set<IdentityUserLogin>(); } }
+        private DbSet<IdentityUserClaim<TKey>> UserClaims { get { return Context.Set<IdentityUserClaim<TKey>>(); } }
+        private DbSet<IdentityUserRole<TKey>> UserRoles { get { return Context.Set<IdentityUserRole<TKey>>(); } }
+        private DbSet<IdentityUserLogin<TKey>> UserLogins { get { return Context.Set<IdentityUserLogin<TKey>>(); } }
 
         public Task<IList<Claim>> GetClaimsAsync(TUser user, CancellationToken cancellationToken = new CancellationToken())
         {
@@ -367,7 +395,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             {
                 throw new ArgumentNullException("user");
             }
-            var result = UserClaims.Where(uc => uc.UserId == user.Id).Select(c => new Claim(c.ClaimType, c.ClaimValue)).ToList();
+            var result = UserClaims.Where(uc => uc.UserId.Equals(user.Id)).Select(c => new Claim(c.ClaimType, c.ClaimValue)).ToList();
             return Task.FromResult((IList<Claim>)result);
         }
 
@@ -382,7 +410,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             {
                 throw new ArgumentNullException("claim");
             }
-            UserClaims.Add(new IdentityUserClaim { UserId = user.Id, ClaimType = claim.Type, ClaimValue = claim.Value });
+            UserClaims.Add(new IdentityUserClaim<TKey> { UserId = user.Id, ClaimType = claim.Type, ClaimValue = claim.Value });
             return Task.FromResult(0);
         }
 
@@ -417,7 +445,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             {
                 throw new ArgumentNullException("login");
             }
-            var l = new IdentityUserLogin
+            var l = new IdentityUserLogin<TKey>
             {
                 UserId = user.Id,
                 ProviderKey = login.ProviderKey,
@@ -445,7 +473,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             var key = login.ProviderKey;
             var userId = user.Id;
             // todo: ensure logins loaded
-            var entry = UserLogins.SingleOrDefault(l => l.UserId == userId && l.LoginProvider == provider && l.ProviderKey == key);
+            var entry = UserLogins.SingleOrDefault(l => l.UserId.Equals(userId) && l.LoginProvider == provider && l.ProviderKey == key);
             if (entry != null)
             {
                 UserLogins.Remove(entry);
@@ -591,9 +619,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
                 throw new ArgumentNullException("user");
             }
             return
-                Task.FromResult(user.LockoutEnd.HasValue
-                    ? new DateTimeOffset(DateTime.SpecifyKind(user.LockoutEnd.Value, DateTimeKind.Utc))
-                    : new DateTimeOffset());
+                Task.FromResult(user.LockoutEnd);
         }
 
         /// <summary>
@@ -611,7 +637,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             {
                 throw new ArgumentNullException("user");
             }
-            user.LockoutEnd = lockoutEnd == DateTimeOffset.MinValue ? (DateTime?)null : lockoutEnd.UtcDateTime;
+            user.LockoutEnd = lockoutEnd;
             return Task.FromResult(0);
         }
 

@@ -21,7 +21,7 @@
     <Content Include="project.json" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EntityIdentityBuilderExtensions.cs" />
+    <Compile Include="EntityInMemoryTestServiceCollectionExtensions.cs" />
     <Compile Include="InMemoryUser.cs" />
     <Compile Include="InMemoryContext.cs" />
     <Compile Include="InMemoryUserStore.cs" />

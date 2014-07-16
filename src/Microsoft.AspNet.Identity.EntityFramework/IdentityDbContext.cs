@@ -8,7 +8,7 @@ using Microsoft.Data.Entity.Metadata;
 namespace Microsoft.AspNet.Identity.EntityFramework
 {
     public class IdentityDbContext :
-        IdentityDbContext<User, IdentityRole>
+        IdentityDbContext<IdentityUser, IdentityRole, string>
     {
         public IdentityDbContext() { }
         public IdentityDbContext(IServiceProvider serviceProvider) : base(serviceProvider) { }
@@ -18,8 +18,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework
     }
 
     public class IdentityDbContext<TUser> :
-        IdentityDbContext<TUser, IdentityRole>
-        where TUser : User
+        IdentityDbContext<TUser, IdentityRole, string>
+        where TUser : IdentityUser
     {
         public IdentityDbContext() { }
         public IdentityDbContext(IServiceProvider serviceProvider) : base(serviceProvider) { }
@@ -28,16 +28,17 @@ namespace Microsoft.AspNet.Identity.EntityFramework
         public IdentityDbContext(IServiceProvider serviceProvider, DbContextOptions options) : base(serviceProvider, options) { }
     }
 
-    public class IdentityDbContext<TUser, TRole> : DbContext
-        where TUser : User
-        where TRole : IdentityRole
+    public class IdentityDbContext<TUser, TRole, TKey> : DbContext
+        where TUser : IdentityUser<TKey>
+        where TRole : IdentityRole<TKey>
+        where TKey : IEquatable<TKey>
     {
         public DbSet<TUser> Users { get; set; }
-        public DbSet<IdentityUserClaim> UserClaims { get; set; }
-        public DbSet<IdentityUserLogin> UserLogins { get; set; }
-        public DbSet<IdentityUserRole> UserRoles { get; set; }
+        public DbSet<IdentityUserClaim<TKey>> UserClaims { get; set; }
+        public DbSet<IdentityUserLogin<TKey>> UserLogins { get; set; }
+        public DbSet<IdentityUserRole<TKey>> UserRoles { get; set; }
         public DbSet<TRole> Roles { get; set; }
-        public DbSet<IdentityRoleClaim> RoleClaims { get; set; }
+        public DbSet<IdentityRoleClaim<TKey>> RoleClaims { get; set; }
 
         private readonly string _nameOrConnectionString;
 
@@ -70,15 +71,19 @@ namespace Microsoft.AspNet.Identity.EntityFramework
                 .Properties(ps => ps.Property(r => r.Name))
                 .ToTable("AspNetRoles");
 
-            builder.Entity<IdentityUserClaim>()
+            builder.Entity<IdentityUserClaim<TKey>>()
                 .Key(uc => uc.Id)
                 .ToTable("AspNetUserClaims");
 
+            builder.Entity<IdentityRoleClaim<TKey>>()
+                .Key(uc => uc.Id)
+                .ToTable("AspNetRoleClaims");
+
             var userType = builder.Model.GetEntityType(typeof(TUser));
             var roleType = builder.Model.GetEntityType(typeof(TRole));
-            var userClaimType = builder.Model.GetEntityType(typeof(IdentityUserClaim));
-            var roleClaimType = builder.Model.GetEntityType(typeof(IdentityRoleClaim));
-            var userRoleType = builder.Model.GetEntityType(typeof(IdentityUserRole));
+            var userClaimType = builder.Model.GetEntityType(typeof(IdentityUserClaim<TKey>));
+            var roleClaimType = builder.Model.GetEntityType(typeof(IdentityRoleClaim<TKey>));
+            var userRoleType = builder.Model.GetEntityType(typeof(IdentityUserRole<TKey>));
             var ucfk = userClaimType.AddForeignKey(userType.GetKey(), new[] { userClaimType.GetProperty("UserId") });
             userType.AddNavigation(new Navigation(ucfk, "Claims", false));
             //userClaimType.AddNavigation(new Navigation(ucfk, "User", true));
@@ -91,15 +96,16 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             var rcfk = roleClaimType.AddForeignKey(roleType.GetKey(), new[] { roleClaimType.GetProperty("RoleId") });
             roleType.AddNavigation(new Navigation(rcfk, "Claims", false));
 
-            builder.Entity<IdentityUserRole>()
+            builder.Entity<IdentityUserRole<TKey>>()
                 .Key(r => new { r.UserId, r.RoleId })
+                // Blocks delete currently without cascade
                 //.ForeignKeys(fk => fk.ForeignKey<TUser>(f => f.UserId))
                 //.ForeignKeys(fk => fk.ForeignKey<TRole>(f => f.RoleId));
                 .ToTable("AspNetUserRoles");
 
-            builder.Entity<IdentityUserLogin>()
+            builder.Entity<IdentityUserLogin<TKey>>()
                 .Key(l => new { l.LoginProvider, l.ProviderKey, l.UserId })
-                //.ForeignKeys(fk => fk.ForeignKey<TUser>(f => f.UserId));
+                //.ForeignKeys(fk => fk.ForeignKey<TUser>(f => f.UserId))
                 .ToTable("AspNetUserLogins");
         }
     }

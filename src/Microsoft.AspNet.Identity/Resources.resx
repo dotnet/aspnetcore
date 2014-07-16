@@ -170,7 +170,7 @@
     <comment>Error when passwords do not have a lowercase letter</comment>
   </data>
   <data name="PasswordRequireNonLetterOrDigit" xml:space="preserve">
-    <value>Passwords must have at least one non letter or digit character.</value>
+    <value>Passwords must have at least one non letter and non digit character.</value>
     <comment>Error when password does not have enough letter or digit characters</comment>
   </data>
   <data name="PasswordRequireUpper" xml:space="preserve">

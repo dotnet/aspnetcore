@@ -32,10 +32,10 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.True(options.User.AllowOnlyAlphanumericNames);
             Assert.False(options.User.RequireUniqueEmail);
 
-            Assert.Equal(ClaimTypes.Role, options.ClaimType.Role);
-            Assert.Equal(ClaimTypes.Name, options.ClaimType.UserName);
-            Assert.Equal(ClaimTypes.NameIdentifier, options.ClaimType.UserId);
-            Assert.Equal(ClaimTypeOptions.DefaultSecurityStampClaimType, options.ClaimType.SecurityStamp);
+            Assert.Equal(ClaimTypes.Role, options.ClaimsIdentity.RoleClaimType);
+            Assert.Equal(ClaimTypes.Name, options.ClaimsIdentity.UserNameClaimType);
+            Assert.Equal(ClaimTypes.NameIdentifier, options.ClaimsIdentity.UserIdClaimType);
+            Assert.Equal(ClaimsIdentityOptions.DefaultSecurityStampClaimType, options.ClaimsIdentity.SecurityStampClaimType);
         }
 
         [Fact]
@@ -45,13 +45,15 @@ namespace Microsoft.AspNet.Identity.Test
             const string usernameClaimType = "namez";
             const string useridClaimType = "idz";
             const string securityStampClaimType = "stampz";
+            const string authType = "auth";
 
             var dic = new Dictionary<string, string>
-            { 
-                {"identity:claimtype:role", roleClaimType},
-                {"identity:claimtype:username", usernameClaimType},
-                {"identity:claimtype:userid", useridClaimType},
-                {"identity:claimtype:securitystamp", securityStampClaimType},
+            {
+                {"identity:claimsidentity:authENTICATIONType", authType},
+                {"identity:claimsidentity:roleclaimtype", roleClaimType},
+                {"identity:claimsidentity:usernameclaimtype", usernameClaimType},
+                {"identity:claimsidentity:useridclaimtype", useridClaimType},
+                {"identity:claimsidentity:securitystampclaimtype", securityStampClaimType},
                 {"identity:user:requireUniqueEmail", "true"},
                 {"identity:password:RequiredLength", "10"},
                 {"identity:password:RequireNonLetterOrDigit", "false"},
@@ -62,17 +64,18 @@ namespace Microsoft.AspNet.Identity.Test
                 {"identity:lockout:MaxFailedAccessAttempts", "1000"}
             };
             var config = new Configuration { new MemoryConfigurationSource(dic) };
-            Assert.Equal(roleClaimType, config.Get("identity:claimtype:role"));
+            Assert.Equal(roleClaimType, config.Get("identity:claimsidentity:roleclaimtype"));
 
             var services = new ServiceCollection {OptionsServices.GetDefaultServices()};
             services.AddIdentity(config.GetSubKey("identity"));
             var accessor = services.BuildServiceProvider().GetService<IOptionsAccessor<IdentityOptions>>();
             Assert.NotNull(accessor);
             var options = accessor.Options;
-            Assert.Equal(roleClaimType, options.ClaimType.Role);
-            Assert.Equal(useridClaimType, options.ClaimType.UserId);
-            Assert.Equal(usernameClaimType, options.ClaimType.UserName);
-            Assert.Equal(securityStampClaimType, options.ClaimType.SecurityStamp);
+            Assert.Equal(authType, options.ClaimsIdentity.AuthenticationType);
+            Assert.Equal(roleClaimType, options.ClaimsIdentity.RoleClaimType);
+            Assert.Equal(useridClaimType, options.ClaimsIdentity.UserIdClaimType);
+            Assert.Equal(usernameClaimType, options.ClaimsIdentity.UserNameClaimType);
+            Assert.Equal(securityStampClaimType, options.ClaimsIdentity.SecurityStampClaimType);
             Assert.True(options.User.RequireUniqueEmail);
             Assert.True(options.User.AllowOnlyAlphanumericNames);
             Assert.True(options.User.AllowOnlyAlphanumericNames);
@@ -124,7 +127,7 @@ namespace Microsoft.AspNet.Identity.Test
             var app = new Builder.Builder(new ServiceCollection().BuildServiceProvider());
             app.UseServices(services =>
             {
-                services.AddIdentity<IdentityUser>(identityServices => identityServices.SetupOptions(options => options.User.RequireUniqueEmail = true));
+                services.AddIdentity<IdentityUser>().SetupOptions(options => options.User.RequireUniqueEmail = true);
             });
 
             var optionsGetter = app.ApplicationServices.GetService<IOptionsAccessor<IdentityOptions>>();

@@ -10,13 +10,13 @@ namespace Microsoft.AspNet.Identity
     {
         public IdentityOptions()
         {
-            ClaimType = new ClaimTypeOptions();
+            ClaimsIdentity = new ClaimsIdentityOptions();
             User = new UserOptions();
             Password = new PasswordOptions();
             Lockout = new LockoutOptions();
         }
 
-        public ClaimTypeOptions ClaimType { get; set; }
+        public ClaimsIdentityOptions ClaimsIdentity { get; set; }
 
         public UserOptions User { get; set; }
 

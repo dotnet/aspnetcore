@@ -43,26 +43,6 @@ namespace Microsoft.Framework.DependencyInjection
             return new IdentityBuilder<TUser, TRole>(services);
         }
 
-        public static IdentityBuilder<TUser, TRole> AddIdentity<TUser, TRole>(this ServiceCollection services, 
-            Action<IdentityBuilder<TUser, TRole>> actionBuilder)
-            where TUser : class
-            where TRole : class
-        {
-            var builder = services.AddIdentity<TUser, TRole>();
-            actionBuilder(builder);
-            return builder;
-        }
-
-        public static IdentityBuilder<TUser, TRole> AddIdentity<TUser, TRole>(this ServiceCollection services, 
-            IConfiguration identityConfig, Action<IdentityBuilder<TUser, TRole>> actionBuilder)
-            where TUser : class
-            where TRole : class
-        {
-            var builder = services.AddIdentity<TUser, TRole>(identityConfig);
-            actionBuilder(builder);
-            return builder;
-        }
-
         public static IdentityBuilder<TUser, IdentityRole> AddIdentity<TUser>(this ServiceCollection services)
             where TUser : class
         {
@@ -74,20 +54,6 @@ namespace Microsoft.Framework.DependencyInjection
             where TUser : class
         {
             return services.AddIdentity<TUser, IdentityRole>(identityConfig);
-        }
-
-        public static IdentityBuilder<TUser, IdentityRole> AddIdentity<TUser>(this ServiceCollection services, 
-            Action<IdentityBuilder<TUser, IdentityRole>> actionBuilder)
-            where TUser : class
-        {
-            return services.AddIdentity<TUser, IdentityRole>(actionBuilder);
-        }
-
-        public static IdentityBuilder<TUser, IdentityRole> AddIdentity<TUser>(this ServiceCollection services, 
-            IConfiguration identityConfig, Action<IdentityBuilder<TUser, IdentityRole>> actionBuilder)
-            where TUser : class
-        {
-            return services.AddIdentity<TUser, IdentityRole>(identityConfig, actionBuilder);
         }
     }
 }

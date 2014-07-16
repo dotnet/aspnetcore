@@ -23,8 +23,7 @@ namespace Microsoft.AspNet.Identity
         ///     Constructor
         /// </summary>
         /// <param name="roleName"></param>
-        public IdentityRole(string roleName)
-            : this()
+        public IdentityRole(string roleName) : this()
         {
             Name = roleName;
         }
@@ -43,6 +42,16 @@ namespace Microsoft.AspNet.Identity
         {
             Users = new List<IdentityUserRole<TKey>>();
             Claims = new List<IdentityRoleClaim<TKey>>();
+        }
+
+        /// <summary>
+        ///     Constructor
+        /// </summary>
+        /// <param name="roleName"></param>
+        public IdentityRole(string roleName)
+            : this()
+        {
+            Name = roleName;
         }
 
         /// <summary>

@@ -22,7 +22,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClaimsIdentityFactory.cs" />
-    <Compile Include="ClaimTypeOptions.cs" />
+    <Compile Include="ClaimsIdentityOptions.cs" />
     <Compile Include="Crypto.cs" />
     <Compile Include="DefaultAuthenticationTypes.cs" />
     <Compile Include="IAuthenticationManager.cs" />

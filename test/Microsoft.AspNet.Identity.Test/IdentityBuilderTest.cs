@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var services = new ServiceCollection();
             var validator = new UserValidator<IdentityUser>();
-            services.AddIdentity<IdentityUser>(b => b.AddUserValidator(() => validator));
+            services.AddIdentity<IdentityUser>().AddUserValidator(() => validator);
             Assert.Equal(validator, services.BuildServiceProvider().GetService<IUserValidator<IdentityUser>>());
         }
 
@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var services = new ServiceCollection();
             var validator = new PasswordValidator<IdentityUser>();
-            services.AddIdentity<IdentityUser>(b => b.AddPasswordValidator(() => validator));
+            services.AddIdentity<IdentityUser>().AddPasswordValidator(() => validator);
             Assert.Equal(validator, services.BuildServiceProvider().GetService<IPasswordValidator<IdentityUser>>());
         }
 
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Identity.Test
         public void EnsureDefaultServices()
         {
             var services = new ServiceCollection();
-            services.AddIdentity<IdentityUser>(identity => { });
+            services.AddIdentity<IdentityUser>();
 
             var provider = services.BuildServiceProvider();
             var userValidator = provider.GetService<IUserValidator<IdentityUser>>() as UserValidator<IdentityUser>;
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Identity.Test
         private static void CanOverride<TService>(TService instance)
         {
             var services = new ServiceCollection();
-            services.AddIdentity<IdentityUser>(b => b.AddInstance<TService>(() => instance));
+            services.AddIdentity<IdentityUser>().AddInstance(() => instance);
             Assert.Equal(instance, services.BuildServiceProvider().GetService<TService>());
         }
 

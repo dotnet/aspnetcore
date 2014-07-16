@@ -44,10 +44,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             // TODO: this needs to construct a new instance of InMemoryStore
             var store = new InMemoryUserStore(new InMemoryContext());
             services.Add(OptionsServices.GetDefaultServices());
-            services.AddIdentity<InMemoryUser, IdentityRole>(s =>
-            {
-                s.AddUserStore(() => store);
-            });
+            services.AddIdentity<InMemoryUser, IdentityRole>().AddUserStore(() => store);
 
             var provider = services.BuildServiceProvider();
             var manager = provider.GetService<UserManager<InMemoryUser>>();
@@ -585,14 +582,15 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             }
 
             var claimsFactory = new ClaimsIdentityFactory<InMemoryUser, IdentityRole>(manager, role);
-            var identity = await claimsFactory.CreateAsync(user, "test");
+            var identity = await claimsFactory.CreateAsync(user, new ClaimsIdentityOptions());
+            Assert.Equal(DefaultAuthenticationTypes.ApplicationCookie, identity.AuthenticationType);
             var claims = identity.Claims.ToList();
             Assert.NotNull(claims);
             Assert.True(
-                claims.Any(c => c.Type == manager.Options.ClaimType.UserName && c.Value == user.UserName));
-            Assert.True(claims.Any(c => c.Type == manager.Options.ClaimType.UserId && c.Value == user.Id.ToString()));
-            Assert.True(claims.Any(c => c.Type == manager.Options.ClaimType.Role && c.Value == "Admin"));
-            Assert.True(claims.Any(c => c.Type == manager.Options.ClaimType.Role && c.Value == "Local"));
+                claims.Any(c => c.Type == manager.Options.ClaimsIdentity.UserNameClaimType && c.Value == user.UserName));
+            Assert.True(claims.Any(c => c.Type == manager.Options.ClaimsIdentity.UserIdClaimType && c.Value == user.Id.ToString()));
+            Assert.True(claims.Any(c => c.Type == manager.Options.ClaimsIdentity.RoleClaimType && c.Value == "Admin"));
+            Assert.True(claims.Any(c => c.Type == manager.Options.ClaimsIdentity.RoleClaimType && c.Value == "Local"));
             foreach (var cl in userClaims)
             {
                 Assert.True(claims.Any(c => c.Type == cl.Type && c.Value == cl.Value));
