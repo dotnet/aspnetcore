@@ -1,0 +1,14 @@
+{
+  "version": "1.0.0-*",
+  "dependencies": {},
+  "configurations": {
+    "net45": {},
+    "k10": {
+      "dependencies": {
+        "System.Collections": "4.0.0.0",
+        "System.Runtime": "4.0.20.0",
+        "System.Runtime.Extensions": "4.0.10.0"
+      }
+    }
+  }
+}

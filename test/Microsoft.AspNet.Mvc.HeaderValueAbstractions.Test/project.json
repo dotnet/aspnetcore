@@ -1,0 +1,18 @@
+{
+  "dependencies": {
+    "Microsoft.AspNet.Http": "",
+    "Microsoft.AspNet.Mvc.HeaderValueAbstractions": "",
+    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Xunit.KRunner": "1.0.0-*"
+  },
+  "commands": {
+    "test": "Xunit.KRunner"
+  },
+  "configurations": {
+    "net45": { 
+      "dependencies": {
+        "System.Runtime": "4.0.20.0"
+      }
+    }
+  }
+}
