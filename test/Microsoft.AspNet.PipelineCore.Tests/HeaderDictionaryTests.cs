@@ -20,9 +20,9 @@ namespace Microsoft.AspNet.PipelineCore.Tests
                 });
 
             Assert.Equal(1, headers.Count);
-            Assert.Equal(new[] { "Headers1" }, headers.Keys);
-            Assert.True(headers.ContainsKey("headers1"));
-            Assert.False(headers.ContainsKey("headers2"));
+            Assert.Equal(new[] { "Header1" }, headers.Keys);
+            Assert.True(headers.ContainsKey("header1"));
+            Assert.False(headers.ContainsKey("header2"));
             Assert.Equal("Value1", headers["header1"]);
             Assert.Equal("Value1", headers.Get("header1"));
             Assert.Equal(new[] { "Value1" }, headers.GetValues("header1"));
