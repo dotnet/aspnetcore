@@ -4,14 +4,19 @@
 using System;
 using System.Diagnostics.Contracts;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Mvc
 {
     public class MvcRouteHandler : IRouter
     {
+        private ILogger _logger;
+
         public string GetVirtualPath([NotNull] VirtualPathContext context)
         {
             // The contract of this method is to check that the values coming in from the route are valid;
@@ -31,12 +36,27 @@ namespace Microsoft.AspNet.Mvc
             // TODO: Throw an error here that's descriptive enough so that
             // users understand they should call the per request scoped middleware
             // or set HttpContext.Services manually
-            var actionSelector = services.GetService<IActionSelector>();
-            var actionDescriptor = await actionSelector.SelectAsync(context);
-            if (actionDescriptor == null)
+
+            EnsureLogger(context.HttpContext);
+            using (_logger.BeginScope("MvcRouteHandler.RouteAsync"))
             {
-                return;
-            }
+                var actionSelector = services.GetService<IActionSelector>();
+                var actionDescriptor = await actionSelector.SelectAsync(context);
+
+                if (actionDescriptor == null)
+                {
+                    if (_logger.IsEnabled(TraceType.Information))
+                    {
+                        _logger.WriteValues(new MvcRouteHandlerRouteAsyncValues()
+                        {
+                            ActionSelected = false,
+                            ActionInvoked = false,
+                            Handled = context.IsHandled
+                        });
+                    }
+
+                    return;
+                }
 
             if (actionDescriptor.RouteValueDefaults != null)
             {
@@ -49,34 +69,64 @@ namespace Microsoft.AspNet.Mvc
                 }
             }
 
-            var actionContext = new ActionContext(context.HttpContext, context.RouteData, actionDescriptor);
+                var actionContext = new ActionContext(context.HttpContext, context.RouteData, actionDescriptor);
 
-            var contextAccessor = services.GetService<IContextAccessor<ActionContext>>();
-            using (contextAccessor.SetContextSource(() => actionContext, PreventExchange))
-            {
-                var invokerFactory = services.GetService<IActionInvokerFactory>();
-                var invoker = invokerFactory.CreateInvoker(actionContext);
-                if (invoker == null)
+                var contextAccessor = services.GetService<IContextAccessor<ActionContext>>();
+                using (contextAccessor.SetContextSource(() => actionContext, PreventExchange))
                 {
-                    var ex = new InvalidOperationException(
-                        Resources.FormatActionInvokerFactory_CouldNotCreateInvoker(actionDescriptor));
+                    var invokerFactory = services.GetService<IActionInvokerFactory>();
+                    var invoker = invokerFactory.CreateInvoker(actionContext);
+                    if (invoker == null)
+                    {
+                        var ex = new InvalidOperationException(
+                            Resources.FormatActionInvokerFactory_CouldNotCreateInvoker(
+                                actionDescriptor.DisplayName));
 
-                    // Add tracing/logging (what do we think of this pattern of 
-                    // tacking on extra data on the exception?)
-                    ex.Data.Add("AD", actionDescriptor);
+                        // Add tracing/logging (what do we think of this pattern of 
+                        // tacking on extra data on the exception?)
+                        ex.Data.Add("AD", actionDescriptor);
 
-                    throw ex;
+                        if (_logger.IsEnabled(TraceType.Information))
+                        {
+                            _logger.WriteValues(new MvcRouteHandlerRouteAsyncValues()
+                            {
+                                ActionSelected = true,
+                                ActionInvoked = false,
+                                Handled = context.IsHandled
+                            });
+                        }
+
+                        throw ex;
+                    }
+
+                    await invoker.InvokeActionAsync();
+                    context.IsHandled = true;
+
+                    if (_logger.IsEnabled(TraceType.Information))
+                    {
+                        _logger.WriteValues(new MvcRouteHandlerRouteAsyncValues()
+                        {
+                            ActionSelected = true,
+                            ActionInvoked = true,
+                            Handled = context.IsHandled
+                        });
+                    }
                 }
-
-                await invoker.InvokeActionAsync();
-
-                context.IsHandled = true;
             }
         }
 
         private ActionContext PreventExchange(ActionContext contex)
         {
             throw new InvalidOperationException(Resources.ActionContextAccessor_SetValueNotSupported);
+        }
+
+        private void EnsureLogger(HttpContext context)
+        {
+            if (_logger == null)
+            {
+                var factory = context.RequestServices.GetService<ILoggerFactory>();
+                _logger = factory.Create<MvcRouteHandler>();
+            }
         }
     }
 }

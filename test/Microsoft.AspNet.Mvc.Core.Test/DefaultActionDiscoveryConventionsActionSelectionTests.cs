@@ -16,7 +16,7 @@ using Microsoft.Framework.DependencyInjection.NestedProviders;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Test
+namespace Microsoft.AspNet.Mvc
 {
     public class DefaultActionDiscoveryConventionsActionSelectionTests
     {
@@ -178,7 +178,8 @@ namespace Microsoft.AspNet.Mvc.Test
             var bindingProvider = new Mock<IActionBindingContextProvider>();
 
             var defaultActionSelector = new DefaultActionSelector(actionCollectionDescriptorProvider,
-                                                                  bindingProvider.Object);
+                                                                  bindingProvider.Object,
+                                                                  NullLoggerFactory.Instance);
 
             return await defaultActionSelector.SelectAsync(context);
         }
@@ -202,7 +203,6 @@ namespace Microsoft.AspNet.Mvc.Test
             var headers = new Mock<IHeaderDictionary>();
             request.SetupGet(r => r.Headers).Returns(headers.Object);
             request.SetupGet(x => x.Method).Returns(httpMethod);
-
             var httpContext = new Mock<HttpContext>();
             httpContext.SetupGet(c => c.Request).Returns(request.Object);
             return httpContext.Object;

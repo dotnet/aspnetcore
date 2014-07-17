@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace Microsoft.AspNet.Mvc.Test
+namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
     /// An implementation of IControllerAssemblyProvider that provides just this assembly.

@@ -3,7 +3,7 @@
 
 using Microsoft.Framework.OptionsModel;
 
-namespace Microsoft.AspNet.Mvc.Test
+namespace Microsoft.AspNet.Mvc
 {
     public class MockMvcOptionsAccessor : IOptionsAccessor<MvcOptions>
     {

@@ -7,13 +7,110 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Mvc.Logging;
+using Microsoft.Framework.Logging;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Core.Test
+namespace Microsoft.AspNet.Mvc
 {
-    public class DefaultActionSelectorTest
+    public class DefaultActionSelectorTests
     {
+        [Fact]
+        public async void SelectAsync_NoMatchedActions_LogIsCorrect()
+        {
+            // Arrange
+            var sink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(sink);
+
+            var routeContext = CreateRouteContext("POST");
+
+            var actions = new ActionDescriptor[0];
+            var selector = CreateSelector(actions, loggerFactory);
+
+            // Act
+            var action = await selector.SelectAsync(routeContext);
+
+            // Assert
+            Assert.Equal(1, sink.Scopes.Count);
+            var scope = sink.Scopes[0];
+            Assert.Equal(typeof(DefaultActionSelector).FullName, scope.LoggerName);
+            Assert.Equal("DefaultActionSelector.SelectAsync", scope.Scope);
+
+            // There is a record for IsEnabled and one for WriteCore.
+            Assert.Equal(2, sink.Writes.Count);
+
+            var enabled = sink.Writes[0];
+            Assert.Equal(typeof(DefaultActionSelector).FullName, enabled.LoggerName);
+            Assert.Equal("DefaultActionSelector.SelectAsync", enabled.Scope);
+            Assert.Null(enabled.State);
+
+            var write = sink.Writes[1];
+            Assert.Equal(typeof(DefaultActionSelector).FullName, write.LoggerName);
+            Assert.Equal("DefaultActionSelector.SelectAsync", write.Scope);
+            var values = Assert.IsType<DefaultActionSelectorSelectAsyncValues>(write.State);
+            Assert.Equal("DefaultActionSelector.SelectAsync", values.Name);
+            Assert.Empty(values.ActionsMatchingRouteConstraints);
+            Assert.Empty(values.ActionsMatchingRouteAndMethodConstraints);
+            Assert.Empty(values.ActionsMatchingRouteAndMethodAndDynamicConstraints);
+            Assert.Empty(values.ActionsMatchingWithConstraints);
+            Assert.Null(values.SelectedAction);
+        }
+
+        [Fact]
+        public async void SelectAsync_MatchedActions_LogIsCorrect()
+        {
+            // Arrange
+            var sink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(sink);
+
+            var matched = new ActionDescriptor()
+            {
+                MethodConstraints = new List<HttpMethodConstraint>()
+                {
+                    new HttpMethodConstraint(new string[] { "POST" }),
+                },
+                Parameters = new List<ParameterDescriptor>(),
+            };
+
+            var notMatched = new ActionDescriptor()
+            {
+                Parameters = new List<ParameterDescriptor>(),
+            };
+
+            var actions = new ActionDescriptor[] { matched, notMatched };
+            var selector = CreateSelector(actions, loggerFactory);
+
+            var routeContext = CreateRouteContext("POST");
+
+            // Act
+            var action = await selector.SelectAsync(routeContext);
+
+            // Assert
+            Assert.Equal(1, sink.Scopes.Count);
+            var scope = sink.Scopes[0];
+            Assert.Equal(typeof(DefaultActionSelector).FullName, scope.LoggerName);
+            Assert.Equal("DefaultActionSelector.SelectAsync", scope.Scope);
+
+            // There is a record for IsEnabled and one for WriteCore.
+            Assert.Equal(2, sink.Writes.Count);
+
+            var enabled = sink.Writes[0];
+            Assert.Equal(typeof(DefaultActionSelector).FullName, enabled.LoggerName);
+            Assert.Equal("DefaultActionSelector.SelectAsync", enabled.Scope);
+            Assert.Null(enabled.State);
+
+            var write = sink.Writes[1];
+            Assert.Equal(typeof(DefaultActionSelector).FullName, write.LoggerName);
+            Assert.Equal("DefaultActionSelector.SelectAsync", write.Scope);
+            var values = Assert.IsType<DefaultActionSelectorSelectAsyncValues>(write.State);
+            Assert.Equal("DefaultActionSelector.SelectAsync", values.Name);
+            Assert.NotEmpty(values.ActionsMatchingRouteConstraints);
+            Assert.NotEmpty(values.ActionsMatchingRouteAndMethodConstraints);
+            Assert.NotEmpty(values.ActionsMatchingWithConstraints);
+            Assert.Equal(matched, values.SelectedAction);
+        }
+
         [Fact]
         public void HasValidAction_Match()
         {
@@ -22,7 +119,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             var selector = CreateSelector(actions);
             var context = CreateContext(new { });
-            context.ProvidedValues = new RouteValueDictionary(new { controller = "Home", action = "Index"});
+            context.ProvidedValues = new RouteValueDictionary(new { controller = "Home", action = "Index" });
 
             // Act
             var isValid = selector.HasValidAction(context);
@@ -109,8 +206,10 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 .Where(a => a.RouteConstraints.Any(c => c.RouteKey == "action" && c.Comparer.Equals(c.RouteValue, action)));
         }
 
-        private static DefaultActionSelector CreateSelector(IReadOnlyList<ActionDescriptor> actions)
+        private static DefaultActionSelector CreateSelector(IReadOnlyList<ActionDescriptor> actions, ILoggerFactory loggerFactory = null)
         {
+            loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
+
             var actionProvider = new Mock<IActionDescriptorsCollectionProvider>(MockBehavior.Strict);
 
             actionProvider
@@ -121,7 +220,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 .Setup(bp => bp.GetActionBindingContextAsync(It.IsAny<ActionContext>()))
                 .Returns(() => Task.FromResult<ActionBindingContext>(null));
 
-            return new DefaultActionSelector(actionProvider.Object, bindingProvider.Object);
+            return new DefaultActionSelector(actionProvider.Object, bindingProvider.Object, loggerFactory);
         }
 
         private static VirtualPathContext CreateContext(object routeValues)
@@ -145,7 +244,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             };
 
             routeData.Routers.Add(new Mock<IRouter>(MockBehavior.Strict).Object);
-            
+
             var httpContext = new Mock<HttpContext>(MockBehavior.Strict);
 
             var request = new Mock<HttpRequest>(MockBehavior.Strict);

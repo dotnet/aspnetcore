@@ -16,7 +16,7 @@ using Microsoft.Framework.DependencyInjection.NestedProviders;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Test
+namespace Microsoft.AspNet.Mvc
 {
     public class ActionAttributeTests
     {
@@ -199,7 +199,8 @@ namespace Microsoft.AspNet.Mvc.Test
             var bindingProvider = new Mock<IActionBindingContextProvider>();
 
             var defaultActionSelector = new DefaultActionSelector(actionCollectionDescriptorProvider,
-                                                                  bindingProvider.Object);
+                                                                  bindingProvider.Object,
+                                                                  NullLoggerFactory.Instance);
 
             return await defaultActionSelector.SelectAsync(context);
         }

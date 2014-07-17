@@ -9,6 +9,7 @@ using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Mvc.Core.Test
 {
@@ -445,8 +446,13 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             Assert.Equal("/app/named/home2/newaction/someid", url);
         }
 
-        private static HttpContext CreateHttpContext(string appRoot)
+        private static HttpContext CreateHttpContext(string appRoot, ILoggerFactory factory = null)
         {
+            if(factory == null)
+            {
+                factory = NullLoggerFactory.Instance;
+            }
+
             var appRootPath = new PathString(appRoot);
             var request = new Mock<HttpRequest>();
             request.SetupGet(r => r.PathBase)
@@ -454,6 +460,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             request.SetupGet(r => r.Host)
                    .Returns(new HostString("localhost"));
             var context = new Mock<HttpContext>();
+            context.Setup(m => m.RequestServices.GetService(typeof(ILoggerFactory)))
+                   .Returns(factory);
             context.SetupGet(c => c.Request)
                    .Returns(request.Object);
 

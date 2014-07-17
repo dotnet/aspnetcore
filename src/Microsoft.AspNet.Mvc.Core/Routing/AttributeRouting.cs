@@ -8,6 +8,7 @@ using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Template;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Mvc.Routing
 {
@@ -69,7 +70,11 @@ namespace Microsoft.AspNet.Mvc.Routing
                 });
             }
 
-            return new AttributeRoute(target, matchingEntries, generationEntries);
+            return new AttributeRoute(
+                target, 
+                matchingEntries, 
+                generationEntries, 
+                services.GetService<ILoggerFactory>());
         }
 
         private static IReadOnlyList<ActionDescriptor> GetActionDescriptors(IServiceProvider services)

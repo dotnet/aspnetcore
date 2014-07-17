@@ -3,12 +3,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Routing;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -16,60 +17,108 @@ namespace Microsoft.AspNet.Mvc
     {
         private readonly IActionDescriptorsCollectionProvider _actionDescriptorsCollectionProvider;
         private readonly IActionBindingContextProvider _bindingProvider;
+        private ILogger _logger;
 
         public DefaultActionSelector(IActionDescriptorsCollectionProvider actionDescriptorsCollectionProvider,
-                                     IActionBindingContextProvider bindingProvider)
+                                     IActionBindingContextProvider bindingProvider,
+                                     [NotNull] ILoggerFactory loggerFactory)
         {
             _actionDescriptorsCollectionProvider = actionDescriptorsCollectionProvider;
             _bindingProvider = bindingProvider;
+            _logger = loggerFactory.Create<DefaultActionSelector>();
         }
 
         public async Task<ActionDescriptor> SelectAsync([NotNull] RouteContext context)
         {
-            var allDescriptors = GetActions();
-
-            var matching = allDescriptors.Where(ad => Match(ad, context)).ToList();
-
-            var matchesWithConstraints = new List<ActionDescriptor>();
-            foreach (var match in matching)
+            using (_logger.BeginScope("DefaultActionSelector.SelectAsync"))
             {
-                if (match.DynamicConstraints != null && match.DynamicConstraints.Any() ||
-                    match.MethodConstraints != null && match.MethodConstraints.Any())
+                var allDescriptors = GetActions();
+
+                var matchingRouteConstraints =
+                    allDescriptors.Where(ad =>
+                        MatchRouteConstraints(ad, context)).ToList();
+
+                var matchingRouteAndMethodConstraints =
+                    matchingRouteConstraints.Where(ad =>
+                        MatchMethodConstraints(ad, context)).ToList();
+
+                var matchingRouteAndMethodAndDynamicConstraints =
+                    matchingRouteAndMethodConstraints.Where(ad =>
+                        MatchDynamicConstraints(ad, context)).ToList();
+
+                var matching = matchingRouteAndMethodAndDynamicConstraints;
+
+                var matchesWithConstraints = new List<ActionDescriptor>();
+                foreach (var match in matching)
                 {
-                    matchesWithConstraints.Add(match);
+                    if (match.DynamicConstraints != null && match.DynamicConstraints.Any() ||
+                        match.MethodConstraints != null && match.MethodConstraints.Any())
+                    {
+                        matchesWithConstraints.Add(match);
+                    }
                 }
-            }
 
-            // If any action that's applicable has constraints, this is considered better than 
-            // an action without.
-            if (matchesWithConstraints.Any())
-            {
-                matching = matchesWithConstraints;
-            }
+                // If any action that's applicable has constraints, this is considered better than 
+                // an action without.
+                if (matchesWithConstraints.Any())
+                {
+                    matching = matchesWithConstraints;
+                }
 
-            if (matching.Count == 0)
-            {
-                return null;
-            }
-            else
-            {
-                return await SelectBestCandidate(context, matching);
+                if (matching.Count == 0)
+                {
+                    if (_logger.IsEnabled(TraceType.Information))
+                    {
+                        _logger.WriteValues(new DefaultActionSelectorSelectAsyncValues()
+                        {
+                            ActionsMatchingRouteConstraints = matchingRouteConstraints,
+                            ActionsMatchingRouteAndMethodConstraints = matchingRouteAndMethodConstraints,
+                            ActionsMatchingRouteAndMethodAndDynamicConstraints = 
+                                matchingRouteAndMethodAndDynamicConstraints,
+                            ActionsMatchingWithConstraints = matchesWithConstraints
+                        });
+                    }
+
+                    return null;
+                }
+                else
+                {
+                    var selectedAction = await SelectBestCandidate(context, matching);
+
+                    if (_logger.IsEnabled(TraceType.Information))
+                    {
+                        _logger.WriteValues(new DefaultActionSelectorSelectAsyncValues()
+                        {
+                            ActionsMatchingRouteConstraints = matchingRouteConstraints,
+                            ActionsMatchingRouteAndMethodConstraints = matchingRouteAndMethodConstraints,
+                            ActionsMatchingRouteAndMethodAndDynamicConstraints = 
+                                matchingRouteAndMethodAndDynamicConstraints,
+                            ActionsMatchingWithConstraints = matchesWithConstraints,
+                            SelectedAction = selectedAction
+                        });
+                    }
+
+                    return selectedAction;
+                }
             }
         }
 
-        public bool Match(ActionDescriptor descriptor, RouteContext context)
+        private bool MatchRouteConstraints(ActionDescriptor descriptor, RouteContext context)
         {
-            if (descriptor == null)
-            {
-                throw new ArgumentNullException("descriptor");
-            }
+            return descriptor.RouteConstraints == null ||
+                    descriptor.RouteConstraints.All(c => c.Accept(context));
+        }
 
-            return (descriptor.RouteConstraints == null ||
-                        descriptor.RouteConstraints.All(c => c.Accept(context))) &&
-                   (descriptor.MethodConstraints == null ||
-                        descriptor.MethodConstraints.All(c => c.Accept(context))) &&
-                   (descriptor.DynamicConstraints == null ||
-                        descriptor.DynamicConstraints.All(c => c.Accept(context)));
+        private bool MatchMethodConstraints(ActionDescriptor descriptor, RouteContext context)
+        {
+            return descriptor.MethodConstraints == null ||
+                    descriptor.MethodConstraints.All(c => c.Accept(context));
+        }
+
+        private bool MatchDynamicConstraints(ActionDescriptor descriptor, RouteContext context)
+        {
+            return descriptor.DynamicConstraints == null ||
+                    descriptor.DynamicConstraints.All(c => c.Accept(context));
         }
 
         protected virtual async Task<ActionDescriptor> SelectBestCandidate(

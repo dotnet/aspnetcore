@@ -15,6 +15,7 @@ using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Infrastructure;
 using Xunit;
 using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
@@ -50,6 +51,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             services.AddInstance(
                 typeof(ITestConfigurationProvider),
                 configuration);
+
+            services.AddInstance(
+                typeof(ILoggerFactory),
+                NullLoggerFactory.Instance);
 
             return services.BuildServiceProvider(originalProvider);
         }

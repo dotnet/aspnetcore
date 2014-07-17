@@ -5,8 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Template;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Mvc.Routing
 {
@@ -18,6 +20,8 @@ namespace Microsoft.AspNet.Mvc.Routing
         private readonly IRouter _next;
         private readonly TemplateRoute[] _matchingRoutes;
         private readonly AttributeRouteLinkGenerationEntry[] _linkGenerationEntries;
+        private ILogger _logger;
+        private ILogger _constraintLogger;
 
         /// <summary>
         /// Creates a new <see cref="AttributeRoute"/>.
@@ -25,9 +29,10 @@ namespace Microsoft.AspNet.Mvc.Routing
         /// <param name="next">The next router. Invoked when a route entry matches.</param>
         /// <param name="entries">The set of route entries.</param>
         public AttributeRoute(
-            [NotNull] IRouter next, 
+            [NotNull] IRouter next,
             [NotNull] IEnumerable<AttributeRouteMatchingEntry> matchingEntries,
-            [NotNull] IEnumerable<AttributeRouteLinkGenerationEntry> linkGenerationEntries)
+            [NotNull] IEnumerable<AttributeRouteLinkGenerationEntry> linkGenerationEntries,
+            [NotNull] ILoggerFactory factory)
         {
             _next = next;
 
@@ -38,17 +43,33 @@ namespace Microsoft.AspNet.Mvc.Routing
             // FOR RIGHT NOW - this is just an array of entries. We'll follow up by implementing
             // a good data-structure here. See #741
             _linkGenerationEntries = linkGenerationEntries.OrderBy(e => e.Precedence).ToArray();
+
+            _logger = factory.Create<AttributeRoute>();
+            _constraintLogger = factory.Create(typeof(RouteConstraintMatcher).FullName);
         }
 
         /// <inheritdoc />
         public async Task RouteAsync([NotNull] RouteContext context)
         {
-            foreach (var route in _matchingRoutes)
+            using (_logger.BeginScope("AttributeRoute.RouteAsync"))
             {
-                await route.RouteAsync(context);
-                if (context.IsHandled)
+                foreach (var route in _matchingRoutes)
                 {
-                    return;
+                    await route.RouteAsync(context);
+
+                    if (context.IsHandled)
+                    {
+                        break;
+                    }
+                }
+
+                if (_logger.IsEnabled(TraceType.Information))
+                {
+                    _logger.WriteValues(new AttributeRouteRouteAsyncValues()
+                    {
+                        MatchingRoutes = _matchingRoutes,
+                        Handled = context.IsHandled
+                    });
                 }
             }
         }
@@ -130,7 +151,9 @@ namespace Microsoft.AspNet.Mvc.Routing
                 bindingResult.CombinedValues,
                 context.Context,
                 this,
-                RouteDirection.UrlGeneration);
+                RouteDirection.UrlGeneration,
+                _constraintLogger);
+
             if (!matched)
             {
                 // A constraint rejected this link.

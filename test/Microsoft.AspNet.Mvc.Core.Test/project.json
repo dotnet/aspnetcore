@@ -12,6 +12,7 @@
     "Microsoft.AspNet.Routing": "1.0.0-*",
     "Microsoft.AspNet.Testing": "1.0.0-*",
     "Microsoft.Framework.DependencyInjection": "1.0.0-*",
+    "Microsoft.Framework.Logging": "1.0.0-*",
     "Moq": "4.2.1312.1622",
     "Xunit.KRunner": "1.0.0-*"
   },
