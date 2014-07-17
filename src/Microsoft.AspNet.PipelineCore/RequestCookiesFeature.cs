@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Infrastructure;
-using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.PipelineCore.Collections;
 using Microsoft.AspNet.PipelineCore.Infrastructure;
@@ -18,6 +19,11 @@ namespace Microsoft.AspNet.PipelineCore
         private string _cookiesHeader;
         private RequestCookiesCollection _cookiesCollection;
         private IReadableStringCollection _cookies;
+
+        public RequestCookiesFeature([NotNull] IDictionary<string, string[]> cookies)
+            : this (new ReadableStringCollection(cookies))
+        {
+        }
 
         public RequestCookiesFeature([NotNull] IReadableStringCollection cookies)
         {

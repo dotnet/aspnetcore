@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -19,6 +20,11 @@ namespace Microsoft.AspNet.PipelineCore
         private readonly FeatureReference<IHttpRequestFeature> _request = FeatureReference<IHttpRequestFeature>.Default;
         private Stream _bodyStream;
         private IReadableStringCollection _form;
+
+        public FormFeature([NotNull] IDictionary<string, string[]> form)
+            : this (new ReadableStringCollection(form))
+        {
+        }
 
         public FormFeature([NotNull] IReadableStringCollection form)
         {

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.HttpFeature;
@@ -15,6 +16,11 @@ namespace Microsoft.AspNet.PipelineCore
         private FeatureReference<IHttpRequestFeature> _request = FeatureReference<IHttpRequestFeature>.Default;
         private string _queryString;
         private IReadableStringCollection _query;
+
+        public QueryFeature([NotNull] IDictionary<string, string[]> query)
+            : this (new ReadableStringCollection(query))
+        {
+        }
 
         public QueryFeature([NotNull] IReadableStringCollection query)
         {
