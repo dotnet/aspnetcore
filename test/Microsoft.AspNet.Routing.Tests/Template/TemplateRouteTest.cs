@@ -8,16 +8,157 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing.Constraints;
+using Microsoft.AspNet.Routing.Logging;
 using Microsoft.AspNet.Testing;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Logging;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Routing.Template.Tests
+namespace Microsoft.AspNet.Routing.Template
 {
-    public class TemplateRouteTests
+    public class TemplateRouteTest
     {
         private static IInlineConstraintResolver _inlineConstraintResolver = GetInlineConstraintResolver();
+
+        [Fact]
+        public async Task RouteAsync_MatchSuccess_LogsCorrectValues()
+        {
+            // Arrange
+            var sink = new TestSink(
+                TestSink.EnableWithTypeName<TemplateRoute>,
+                TestSink.EnableWithTypeName<TemplateRoute>);
+            var loggerFactory = new TestLoggerFactory(sink);
+
+            var template = "{controller}/{action}";
+
+            var route = CreateRoute(template);
+            var context = CreateRouteContext("/Home/Index", loggerFactory);
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.Equal(1, sink.Scopes.Count);
+            var scope = sink.Scopes[0];
+            Assert.Equal(typeof(TemplateRoute).FullName, scope.LoggerName);
+            Assert.Equal("TemplateRoute.RouteAsync", scope.Scope);
+
+            // There is a record for IsEnabled and one for WriteCore.
+            Assert.Equal(2, sink.Writes.Count);
+
+            var enabled = sink.Writes[0];
+            Assert.Equal(typeof(TemplateRoute).FullName, enabled.LoggerName);
+            Assert.Equal("TemplateRoute.RouteAsync", enabled.Scope);
+            Assert.Null(enabled.State);
+
+            var write = sink.Writes[1];
+            Assert.Equal(typeof(TemplateRoute).FullName, write.LoggerName);
+            Assert.Equal("TemplateRoute.RouteAsync", write.Scope);
+
+            // verify WriteCore state contents
+            var values = Assert.IsType<TemplateRouteRouteAsyncValues>(write.State);
+            Assert.Equal("TemplateRoute.RouteAsync", values.Name);
+            Assert.Equal("Home/Index", values.RequestPath);
+            Assert.Equal(template, values.Template);
+            Assert.NotNull(values.DefaultValues);
+            Assert.NotNull(values.ProducedValues);
+            Assert.Equal(true, values.MatchedTemplate);
+            Assert.Equal(true, values.MatchedConstraints);
+            Assert.Equal(true, values.Matched);
+            Assert.Equal(context.IsHandled, values.Handled);
+        }
+
+        [Fact]
+        public async Task RouteAsync_MatchFailOnValues_LogsCorrectValues()
+        {
+            // Arrange
+            var sink = new TestSink(
+                TestSink.EnableWithTypeName<TemplateRoute>,
+                TestSink.EnableWithTypeName<TemplateRoute>);
+            var loggerFactory = new TestLoggerFactory(sink);
+
+            var template = "{controller}/{action}";
+
+            var route = CreateRoute(template);
+            var context = CreateRouteContext("/Home/Index/Failure", loggerFactory);
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.Equal(1, sink.Scopes.Count);
+            var scope = sink.Scopes[0];
+            Assert.Equal(typeof(TemplateRoute).FullName, scope.LoggerName);
+            Assert.Equal("TemplateRoute.RouteAsync", scope.Scope);
+
+            // There is a record for IsEnabled and one for WriteCore.
+            Assert.Equal(2, sink.Writes.Count);
+
+            var enabled = sink.Writes[0];
+            Assert.Equal(typeof(TemplateRoute).FullName, enabled.LoggerName);
+            Assert.Equal("TemplateRoute.RouteAsync", enabled.Scope);
+            Assert.Null(enabled.State);
+
+            var write = sink.Writes[1];
+            Assert.Equal(typeof(TemplateRoute).FullName, write.LoggerName);
+            Assert.Equal("TemplateRoute.RouteAsync", write.Scope);
+            var values = Assert.IsType<TemplateRouteRouteAsyncValues>(write.State);
+            Assert.Equal("TemplateRoute.RouteAsync", values.Name);
+            Assert.Equal("Home/Index/Failure", values.RequestPath);
+            Assert.Equal(template, values.Template);
+            Assert.NotNull(values.DefaultValues);
+            Assert.Null(values.ProducedValues);
+            Assert.Equal(false, values.MatchedTemplate);
+            Assert.Equal(false, values.MatchedConstraints);
+            Assert.Equal(false, values.Matched);
+            Assert.Equal(context.IsHandled, values.Handled);
+        }
+
+        [Fact]
+        public async Task RouteAsync_MatchFailOnConstraints_LogsCorrectValues()
+        {
+            // Arrange
+            var sink = new TestSink(
+                TestSink.EnableWithTypeName<TemplateRoute>,
+                TestSink.EnableWithTypeName<TemplateRoute>);
+            var loggerFactory = new TestLoggerFactory(sink);
+
+            var template = "{controller}/{action}/{id:int}";
+
+            var route = CreateRoute(template);
+            var context = CreateRouteContext("/Home/Index/Failure", loggerFactory);
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.Equal(1, sink.Scopes.Count);
+            var scope = sink.Scopes[0];
+            Assert.Equal(typeof(TemplateRoute).FullName, scope.LoggerName);
+            Assert.Equal("TemplateRoute.RouteAsync", scope.Scope);
+
+            // There is a record for IsEnabled and one for WriteCore.
+            Assert.Equal(2, sink.Writes.Count);
+
+            var enabled = sink.Writes[0];
+            Assert.Equal(typeof(TemplateRoute).FullName, enabled.LoggerName);
+            Assert.Equal("TemplateRoute.RouteAsync", enabled.Scope);
+            Assert.Null(enabled.State);
+
+            var write = sink.Writes[1];
+            Assert.Equal(typeof(TemplateRoute).FullName, write.LoggerName);
+            Assert.Equal("TemplateRoute.RouteAsync", write.Scope);
+            var values = Assert.IsType<TemplateRouteRouteAsyncValues>(write.State);
+            Assert.Equal("TemplateRoute.RouteAsync", values.Name);
+            Assert.Equal("Home/Index/Failure", values.RequestPath);
+            Assert.Equal(template, values.Template);
+            Assert.NotNull(values.DefaultValues);
+            Assert.NotNull(values.ProducedValues);
+            Assert.Equal(true, values.MatchedTemplate);
+            Assert.Equal(false, values.MatchedConstraints);
+            Assert.Equal(false, values.Matched);
+            Assert.Equal(context.IsHandled, values.Handled);
+        }
 
         #region Route Matching
 
@@ -116,20 +257,26 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             Assert.Null(context.RouteData.Values["1controller"]);
         }
 
-        private static RouteContext CreateRouteContext(string requestPath)
+        private static RouteContext CreateRouteContext(string requestPath, ILoggerFactory factory = null)
         {
+            if (factory == null)
+            {
+                factory = NullLoggerFactory.Instance;
+            }
+
             var request = new Mock<HttpRequest>(MockBehavior.Strict);
             request.SetupGet(r => r.Path).Returns(new PathString(requestPath));
 
             var context = new Mock<HttpContext>(MockBehavior.Strict);
+            context.Setup(m => m.RequestServices.GetService(typeof(ILoggerFactory)))
+                .Returns(factory);
             context.SetupGet(c => c.Request).Returns(request.Object);
 
             return new RouteContext(context.Object);
         }
-
         #endregion
 
-#region Route Binding
+        #region Route Binding
 
         [Fact]
         public void GetVirtualPath_Success()
@@ -502,6 +649,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         private static VirtualPathContext CreateVirtualPathContext(IDictionary<string, object> values, IDictionary<string, object> ambientValues)
         {
             var context = new Mock<HttpContext>(MockBehavior.Strict);
+            context.Setup(m => m.RequestServices.GetService(typeof(ILoggerFactory)))
+                .Returns(NullLoggerFactory.Instance);
 
             return new VirtualPathContext(context.Object, ambientValues, values);
         }
@@ -712,5 +861,4 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
     }
 }
-
 #endif

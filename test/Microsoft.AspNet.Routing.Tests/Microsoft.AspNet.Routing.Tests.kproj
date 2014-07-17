@@ -20,7 +20,7 @@
     <Content Include="project.json" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ConstraintMatcherTests.cs" />
+    <Compile Include="ConstraintMatcherTest.cs" />
     <Compile Include="ConstraintsBuilderTests.cs" />
     <Compile Include="Constraints\ConstraintsTestHelper.cs" />
     <Compile Include="Constraints\BoolRouteConstraintTests.cs" />
@@ -42,15 +42,24 @@
     <Compile Include="Constraints\IntRouteConstraintsTests.cs" />
     <Compile Include="Constraints\RequiredRouteConstraintTests.cs" />
     <Compile Include="DefaultInlineConstraintResolverTest.cs" />
+    <Compile Include="Logging\BeginScopeContext.cs" />
+    <Compile Include="Logging\NullDisposable.cs" />
+    <Compile Include="Logging\NullLogger.cs" />
+    <Compile Include="Logging\NullLoggerFactory.cs" />
+    <Compile Include="Logging\TestLogger.cs" />
+    <Compile Include="Logging\TestLoggerFactory.cs" />
+    <Compile Include="Logging\TestSink.cs" />
+    <Compile Include="Logging\WriteCoreContext.cs" />
     <Compile Include="RouteCollectionTest.cs" />
     <Compile Include="InlineRouteParameterParserTests.cs" />
     <Compile Include="RouteOptionsTests.cs" />
+    <Compile Include="RouterMiddlewareTest.cs" />
     <Compile Include="RouteValueDictionaryTests.cs" />
     <Compile Include="TemplateParserDefaultValuesTests.cs" />
     <Compile Include="Template\TemplateBinderTests.cs" />
     <Compile Include="Template\TemplateMatcherTests.cs" />
     <Compile Include="Template\TemplateParserTests.cs" />
-    <Compile Include="Template\TemplateRouteTests.cs" />
+    <Compile Include="Template\TemplateRouteTest.cs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>

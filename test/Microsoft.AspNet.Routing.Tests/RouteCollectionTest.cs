@@ -2,19 +2,102 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #if NET45
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Routing.Logging;
+using Microsoft.Framework.Logging;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Routing.Tests
+namespace Microsoft.AspNet.Routing
 {
     public class RouteCollectionTest
     {
+        [Fact]
+        public async Task RouteAsync_LogsCorrectValuesWhenHandled()
+        {
+            // Arrange
+            var sink = new TestSink(
+                TestSink.EnableWithTypeName<RouteCollection>,
+                TestSink.EnableWithTypeName<RouteCollection>);
+            var loggerFactory = new TestLoggerFactory(sink);
+
+            var routes = new RouteCollection();
+            var route = CreateRoute(accept: true);
+            routes.Add(route.Object);
+
+            var context = CreateRouteContext("/Cool", loggerFactory);
+
+            // Act
+            await routes.RouteAsync(context);
+
+            // Assert
+            Assert.Equal(1, sink.Scopes.Count);
+            var scope = sink.Scopes[0];
+            Assert.Equal(typeof(RouteCollection).FullName, scope.LoggerName);
+            Assert.Equal("RouteCollection.RouteAsync", scope.Scope);
+
+            // There is a record for IsEnabled and one for WriteCore.
+            Assert.Equal(2, sink.Writes.Count);
+
+            var enabled = sink.Writes[0];
+            Assert.Equal(typeof(RouteCollection).FullName, enabled.LoggerName);
+            Assert.Equal("RouteCollection.RouteAsync", enabled.Scope);
+            Assert.Null(enabled.State);
+
+            var write = sink.Writes[1];
+            Assert.Equal(typeof(RouteCollection).FullName, write.LoggerName);
+            Assert.Equal("RouteCollection.RouteAsync", write.Scope);
+            var values = Assert.IsType<RouteCollectionRouteAsyncValues>(write.State);
+            Assert.Equal("RouteCollection.RouteAsync", values.Name);
+            Assert.NotNull(values.Routes);
+            Assert.Equal(true, values.Handled);
+        }
+
+        [Fact]
+        public async Task RouteAsync_LogsCorrectValuesWhenNotHandled()
+        {
+            // Arrange
+            var sink = new TestSink(
+                TestSink.EnableWithTypeName<RouteCollection>,
+                TestSink.EnableWithTypeName<RouteCollection>);
+            var loggerFactory = new TestLoggerFactory(sink);
+
+            var routes = new RouteCollection();
+            var route = CreateRoute(accept: false);
+            routes.Add(route.Object);
+
+            var context = CreateRouteContext("/Cool", loggerFactory);
+
+            // Act
+            await routes.RouteAsync(context);
+
+            // Assert
+            Assert.Equal(1, sink.Scopes.Count);
+            var scope = sink.Scopes[0];
+            Assert.Equal(typeof(RouteCollection).FullName, scope.LoggerName);
+            Assert.Equal("RouteCollection.RouteAsync", scope.Scope);
+
+            // There is a record for IsEnabled and one for WriteCore.
+            Assert.Equal(2, sink.Writes.Count);
+
+            var enabled = sink.Writes[0];
+            Assert.Equal(typeof(RouteCollection).FullName, enabled.LoggerName);
+            Assert.Equal("RouteCollection.RouteAsync", enabled.Scope);
+            Assert.Null(enabled.State);
+
+            var write = sink.Writes[1];
+            Assert.Equal(typeof(RouteCollection).FullName, write.LoggerName);
+            Assert.Equal("RouteCollection.RouteAsync", write.Scope);
+            var values = Assert.IsType<RouteCollectionRouteAsyncValues>(write.State);
+            Assert.Equal("RouteCollection.RouteAsync", values.Name);
+            Assert.NotNull(values.Routes);
+            Assert.Equal(false, values.Handled);
+        }
+
         [Fact]
         public async Task RouteAsync_FirstMatches()
         {
@@ -214,12 +297,19 @@ namespace Microsoft.AspNet.Routing.Tests
             return new VirtualPathContext(null, null, null, routeName);
         }
 
-        private static RouteContext CreateRouteContext(string requestPath)
+        private static RouteContext CreateRouteContext(string requestPath, ILoggerFactory factory = null)
         {
+            if (factory == null)
+            {
+                factory = NullLoggerFactory.Instance;
+            }
+
             var request = new Mock<HttpRequest>(MockBehavior.Strict);
             request.SetupGet(r => r.Path).Returns(new PathString(requestPath));
 
             var context = new Mock<HttpContext>(MockBehavior.Strict);
+            context.Setup(m => m.RequestServices.GetService(typeof(ILoggerFactory)))
+                .Returns(factory);
             context.SetupGet(c => c.Request).Returns(request.Object);
 
             return new RouteContext(context.Object);
@@ -244,5 +334,4 @@ namespace Microsoft.AspNet.Routing.Tests
         }
     }
 }
-
 #endif

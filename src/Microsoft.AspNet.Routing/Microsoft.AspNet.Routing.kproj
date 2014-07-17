@@ -47,10 +47,17 @@
     <Compile Include="INamedRouter.cs" />
     <Compile Include="InlineRouteParameterParser.cs" />
     <Compile Include="IRouteBuilder.cs" />
+    <Compile Include="Logging\LoggerExtensions.cs" />
+    <Compile Include="Logging\RouteConstraintMatcherMatchValues.cs" />
+    <Compile Include="Logging\StringBuilderHelpers.cs" />
     <Compile Include="RouteOptions.cs" />
     <Compile Include="IRouteCollection.cs" />
     <Compile Include="IRouteConstraint.cs" />
     <Compile Include="IRouter.cs" />
+    <Compile Include="Logging\RouteCollectionRouteAsyncValues.cs" />
+    <Compile Include="Logging\RouterMiddlewareInvokeValues.cs" />
+    <Compile Include="Logging\TemplateRouteRouteAsyncValues.cs" />
+    <Compile Include="Logging\LogFormatter.cs" />
     <Compile Include="NotNullAttribute.cs" />
     <Compile Include="Properties\Resources.Designer.cs" />
     <Compile Include="RouteBuilder.cs" />

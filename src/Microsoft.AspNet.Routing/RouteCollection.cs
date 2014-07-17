@@ -4,6 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Routing.Logging;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Routing
 {
@@ -11,8 +15,9 @@ namespace Microsoft.AspNet.Routing
     {
         private readonly List<IRouter> _routes = new List<IRouter>();
         private readonly List<IRouter> _unnamedRoutes = new List<IRouter>();
-        private readonly Dictionary<string, INamedRouter> _namedRoutes = 
+        private readonly Dictionary<string, INamedRouter> _namedRoutes =
                                     new Dictionary<string, INamedRouter>(StringComparer.OrdinalIgnoreCase);
+        private ILogger _logger;
 
         public IRouter this[int index]
         {
@@ -44,14 +49,27 @@ namespace Microsoft.AspNet.Routing
 
         public async virtual Task RouteAsync(RouteContext context)
         {
-            for (var i = 0; i < Count; i++)
+            EnsureLogger(context.HttpContext);
+            using (_logger.BeginScope("RouteCollection.RouteAsync"))
             {
-                var route = this[i];
-
-                await route.RouteAsync(context);
-                if (context.IsHandled)
+                for (var i = 0; i < Count; i++)
                 {
-                    return;
+                    var route = this[i];
+
+                    await route.RouteAsync(context);
+                    if (context.IsHandled)
+                    {
+                        break;
+                    }
+                }
+
+                if (_logger.IsEnabled(TraceType.Information))
+                {
+                    _logger.WriteValues(new RouteCollectionRouteAsyncValues()
+                    {
+                        Handled = context.IsHandled,
+                        Routes = _routes
+                    });
                 }
             }
         }
@@ -97,6 +115,15 @@ namespace Microsoft.AspNet.Routing
             }
 
             return null;
+        }
+
+        private void EnsureLogger(HttpContext context)
+        {
+            if (_logger == null)
+            {
+                var factory = context.RequestServices.GetService<ILoggerFactory>();
+                _logger = factory.Create<RouteCollection>();
+            }
         }
     }
 }

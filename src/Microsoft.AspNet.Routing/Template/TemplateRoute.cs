@@ -4,7 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Routing.Constraints;
+using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Routing.Logging;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Routing.Template
 {
@@ -17,6 +20,8 @@ namespace Microsoft.AspNet.Routing.Template
         private readonly string _routeTemplate;
         private readonly TemplateMatcher _matcher;
         private readonly TemplateBinder _binder;
+        private ILogger _logger;
+        private ILogger _constraintLogger;
 
         public TemplateRoute(IRouter target, string routeTemplate, IInlineConstraintResolver inlineConstraintResolver)
             : this(target, routeTemplate, null, null, inlineConstraintResolver)
@@ -73,30 +78,69 @@ namespace Microsoft.AspNet.Routing.Template
 
         public async virtual Task RouteAsync([NotNull] RouteContext context)
         {
-            var requestPath = context.HttpContext.Request.Path.Value;
-            if (!string.IsNullOrEmpty(requestPath) && requestPath[0] == '/')
+            EnsureLoggers(context.HttpContext);
+            using (_logger.BeginScope("TemplateRoute.RouteAsync"))
             {
-                requestPath = requestPath.Substring(1);
-            }
+                var requestPath = context.HttpContext.Request.Path.Value;
 
-            var values = _matcher.Match(requestPath, Defaults);
-            if (values == null)
-            {
-                // If we got back a null value set, that means the URI did not match
-                return;
-            }
-            else
-            {
-                // Not currently doing anything to clean this up if it's not a match. Consider hardening this.
-                context.RouteData.Values = values;
-
-                if (RouteConstraintMatcher.Match(Constraints,
-                                                 values,
-                                                 context.HttpContext,
-                                                 this,
-                                                 RouteDirection.IncomingRequest))
+                if (!string.IsNullOrEmpty(requestPath) && requestPath[0] == '/')
                 {
-                    await _target.RouteAsync(context);
+                    requestPath = requestPath.Substring(1);
+                }
+
+                var values = _matcher.Match(requestPath, Defaults);
+
+                if (values == null)
+                {
+                    if (_logger.IsEnabled(TraceType.Information))
+                    {
+                        _logger.WriteValues(CreateRouteAsyncValues(
+                            requestPath,
+                            values,
+                            matchedValues: false,
+                            matchedConstraints: false,
+                            handled: context.IsHandled));
+                    }
+
+                    // If we got back a null value set, that means the URI did not match
+                    return;
+                }
+                else
+                {
+                    // Not currently doing anything to clean this up if it's not a match. Consider hardening this.
+                    context.RouteData.Values = values;
+
+                    if (RouteConstraintMatcher.Match(Constraints,
+                                                     values,
+                                                     context.HttpContext,
+                                                     this,
+                                                     RouteDirection.IncomingRequest,
+                                                     _constraintLogger))
+                    {
+                        await _target.RouteAsync(context);
+
+                        if (_logger.IsEnabled(TraceType.Information))
+                        {
+                            _logger.WriteValues(CreateRouteAsyncValues(
+                                requestPath,
+                                values,
+                                matchedValues: true,
+                                matchedConstraints: true,
+                                handled: context.IsHandled));
+                        }
+                    }
+                    else
+                    {
+                        if (_logger.IsEnabled(TraceType.Information))
+                        {
+                            _logger.WriteValues(CreateRouteAsyncValues(
+                                requestPath,
+                                values,
+                                matchedValues: true,
+                                matchedConstraints: false,
+                                handled: context.IsHandled));
+                        }
+                    }
                 }
             }
         }
@@ -110,11 +154,13 @@ namespace Microsoft.AspNet.Routing.Template
                 return null;
             }
 
+            EnsureLoggers(context.Context);
             if (!RouteConstraintMatcher.Match(Constraints,
                                               values.CombinedValues,
                                               context.Context,
                                               this,
-                                              RouteDirection.UrlGeneration))
+                                              RouteDirection.UrlGeneration,
+                                              _constraintLogger))
             {
                 return null;
             }
@@ -207,6 +253,42 @@ namespace Microsoft.AspNet.Routing.Template
                     }
                 }
             }
+        }
+
+        private TemplateRouteRouteAsyncValues CreateRouteAsyncValues(
+            string requestPath,
+            IDictionary<string, object> producedValues,
+            bool matchedValues,
+            bool matchedConstraints,
+            bool handled)
+        {
+            var values = new TemplateRouteRouteAsyncValues();
+            values.Template = _routeTemplate;
+            values.RequestPath = requestPath;
+            values.DefaultValues = Defaults;
+            values.ProducedValues = producedValues;
+            values.Constraints = _constraints;
+            values.Target = _target;
+            values.MatchedTemplate = matchedValues;
+            values.MatchedConstraints = matchedConstraints;
+            values.Matched = matchedValues && matchedConstraints;
+            values.Handled = handled;
+            return values;
+        }
+
+        private void EnsureLoggers(HttpContext context)
+        {
+            if (_logger == null)
+            {
+                var factory = context.RequestServices.GetService<ILoggerFactory>();
+                _logger = factory.Create<TemplateRoute>();
+                _constraintLogger = factory.Create(typeof(RouteConstraintMatcher).FullName);
+            }
+        }
+
+        public override string ToString()
+        {
+            return _routeTemplate;
         }
     }
 }

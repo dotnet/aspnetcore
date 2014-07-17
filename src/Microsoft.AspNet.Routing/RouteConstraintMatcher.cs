@@ -3,6 +3,8 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Routing.Logging;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Routing
 {
@@ -12,7 +14,8 @@ namespace Microsoft.AspNet.Routing
                                  [NotNull] IDictionary<string, object> routeValues,
                                  [NotNull] HttpContext httpContext,
                                  [NotNull] IRouter route,
-                                 [NotNull] RouteDirection routeDirection)
+                                 [NotNull] RouteDirection routeDirection,
+                                 [NotNull] ILogger logger)
         {
             if (constraints == null)
             {
@@ -24,7 +27,29 @@ namespace Microsoft.AspNet.Routing
                 var constraint = kvp.Value;
                 if (!constraint.Match(httpContext, route, kvp.Key, routeValues, routeDirection))
                 {
+                    if (routeDirection.Equals(RouteDirection.IncomingRequest)
+                        && logger.IsEnabled(TraceType.Information))
+                    {
+                        logger.WriteValues(new RouteConstraintMatcherMatchValues()
+                        {
+                            ConstraintKey = kvp.Key,
+                            Constraint = kvp.Value,
+                            Matched = false
+                        });
+                    }
+
                     return false;
+                }
+
+                if (routeDirection.Equals(RouteDirection.IncomingRequest)
+                    && logger.IsEnabled(TraceType.Information))
+                {
+                    logger.WriteValues(new RouteConstraintMatcherMatchValues()
+                    {
+                        ConstraintKey = kvp.Key,
+                        Constraint = kvp.Value,
+                        Matched = true
+                    });
                 }
             }
 
