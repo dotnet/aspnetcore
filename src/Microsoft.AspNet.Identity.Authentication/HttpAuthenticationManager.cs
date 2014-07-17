@@ -29,17 +29,9 @@ namespace Microsoft.AspNet.Identity.Authentication
 
         public async Task<bool> IsClientRememeberedAsync(string userId)
         {
-            try
-            {
-                var result =
-                    await Context.AuthenticateAsync(TwoFactorRememberedAuthenticationType);
-                return (result != null && result.Identity != null && result.Identity.Name == userId);
-            }
-            // REVIEW: Why does Owin throw this for authenticate?
-            catch (InvalidOperationException)
-            {
-                return false;
-            }
+            var result =
+                await Context.AuthenticateAsync(TwoFactorRememberedAuthenticationType);
+            return (result != null && result.Identity != null && result.Identity.Name == userId);
         }
 
         public void RememberClient(string userId)
