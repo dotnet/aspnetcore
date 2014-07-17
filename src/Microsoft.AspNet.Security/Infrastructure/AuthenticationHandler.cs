@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Security.Infrastructure
     /// </summary>
     public abstract class AuthenticationHandler : IAuthenticationHandler
     {
-        private static readonly RNGCryptoServiceProvider CryptoRandom = new RNGCryptoServiceProvider();
+        private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
 
         private Task<AuthenticationTicket> _authenticate;
         private bool _authenticateInitialized;
