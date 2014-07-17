@@ -30,7 +30,20 @@ The easiest way to get the KVM on Windows is to run the following command:
 ```powershell
 @powershell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/master/kvminstall.ps1'))"
 ```
-or on OSX/Linux:
+or on OSX:
+Mono and KVM (K Version manager) required to develop & run next generation ASP.NET applications on OSX is available as a Homebrew formula. To install the necessary development tools: 
+
+ * Open a terminal on your MAC
+ * Install [Homebrew](http://brew.sh) by running the following command. If you already have Homebrew installed skip this step. 
+```ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"```
+ * Run command `brew tap aspnet/k` to tap the aspnet vnext related git repositories. 
+ * Run command `bre install kvm` to install KVM. This also automatically install the latest KRE package from https://www.myget.org/f/aspnetvnext/api/v2 feed.
+
+Now you are set for developing next general ASP.NET applications on OSX. A few things to note:
+ * If you would like to use a different KRE version for your development, you can install the desired version using KVM. See [KVM page](https://github.com/aspnet/Home/wiki/version-manager) for more information. 
+ * Run command `source kvm.sh` on your terminal if your terminal cannot understand kvm. 
+
+or on Linux:
 ```
 curl https://raw.githubusercontent.com/aspnet/Home/master/kvminstall.sh | sh && source ~/.kre/kvm/kvm.sh
 ```
