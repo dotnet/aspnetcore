@@ -1,12 +1,18 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Mvc
 {
     public class ActionDescriptor
     {
+        public ActionDescriptor()
+        {
+            RouteValueDefaults = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        }
+
         public virtual string Name { get; set; }
 
         public List<RouteDataActionConstraint> RouteConstraints { get; set; }
@@ -14,12 +20,12 @@ namespace Microsoft.AspNet.Mvc
         /// <summary>
         /// The set of route values that are added when this action is selected.
         /// </summary>
-        public Dictionary<string, object> RouteValues { get; set; }
+        public Dictionary<string, object> RouteValueDefaults { get; private set; }
 
         /// <summary>
-        /// The route template. May be null if the action has no attribute routes.
+        /// The attribute route template. May be null if the action has no attribute routes.
         /// </summary>
-        public string RouteTemplate { get; set; }
+        public string AttributeRouteTemplate { get; set; }
 
         public List<HttpMethodConstraint> MethodConstraints { get; set; }
 

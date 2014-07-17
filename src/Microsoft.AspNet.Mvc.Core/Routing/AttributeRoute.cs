@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.Routing
     {
         private readonly IRouter _next;
         private readonly TemplateRoute[] _matchingRoutes;
-        private readonly AttributeRouteGenerationEntry[] _generationEntries;
+        private readonly AttributeRouteLinkGenerationEntry[] _linkGenerationEntries;
 
         /// <summary>
         /// Creates a new <see cref="AttributeRoute"/>.
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.Routing
         public AttributeRoute(
             [NotNull] IRouter next, 
             [NotNull] IEnumerable<AttributeRouteMatchingEntry> matchingEntries,
-            [NotNull] IEnumerable<AttributeRouteGenerationEntry> generationEntries)
+            [NotNull] IEnumerable<AttributeRouteLinkGenerationEntry> linkGenerationEntries)
         {
             _next = next;
 
@@ -35,9 +35,9 @@ namespace Microsoft.AspNet.Mvc.Routing
             // a good data-structure here. See #740
             _matchingRoutes = matchingEntries.OrderBy(e => e.Precedence).Select(e => e.Route).ToArray();
 
-            // FOR RIGHT NOW - this is just an array of binders. We'll follow up by implementing
+            // FOR RIGHT NOW - this is just an array of entries. We'll follow up by implementing
             // a good data-structure here. See #741
-            _generationEntries = generationEntries.OrderBy(e => e.Precedence).ToArray();
+            _linkGenerationEntries = linkGenerationEntries.OrderBy(e => e.Precedence).ToArray();
         }
 
         /// <inheritdoc />
@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             // and controller.
             //
             // Building a proper data structure to optimize this is tracked by #741
-            foreach (var entry in _generationEntries)
+            foreach (var entry in _linkGenerationEntries)
             {
                 var isMatch = true;
                 foreach (var requiredLinkValue in entry.RequiredLinkValues)
@@ -73,23 +73,21 @@ namespace Microsoft.AspNet.Mvc.Routing
                     }
                 }
                 
-                if (!isMatch)
+                if (isMatch)
                 {
-                    continue;
-                }
-
-                var path = GenerateLink(context, entry);
-                if (path != null)
-                {
-                    context.IsBound = true;
-                    return path;
+                    var path = GenerateLink(context, entry);
+                    if (path != null)
+                    {
+                        context.IsBound = true;
+                        return path;
+                    }
                 }
             }
 
             return null;
         }
 
-        private string GenerateLink(VirtualPathContext context, AttributeRouteGenerationEntry entry)
+        private string GenerateLink(VirtualPathContext context, AttributeRouteLinkGenerationEntry entry)
         {
             // In attribute the context includes the values that are used to select this entry - typically
             // these will be the standard 'action', 'controller' and maybe 'area' tokens. However, we don't
@@ -135,7 +133,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                 RouteDirection.UrlGeneration);
             if (!matched)
             {
-                // A constrant rejected this link.
+                // A constraint rejected this link.
                 return null;
             }
 

@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Mvc.Routing
     /// Used to build an <see cref="AttributeRoute"/>. Represents an individual URL-generating route that will be
     /// aggregated into the <see cref="AttributeRoute"/>.
     /// </summary>
-    public class AttributeRouteGenerationEntry
+    public class AttributeRouteLinkGenerationEntry
     {
         /// <summary>
         /// The <see cref="TemplateBinder"/>.

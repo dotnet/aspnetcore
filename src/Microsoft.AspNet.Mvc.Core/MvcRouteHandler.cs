@@ -38,9 +38,9 @@ namespace Microsoft.AspNet.Mvc
                 return;
             }
 
-            if (actionDescriptor.RouteValues != null)
+            if (actionDescriptor.RouteValueDefaults != null)
             {
-                foreach (var kvp in actionDescriptor.RouteValues)
+                foreach (var kvp in actionDescriptor.RouteValueDefaults)
                 {
                     if (!context.RouteData.Values.ContainsKey(kvp.Key))
                     {

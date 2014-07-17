@@ -306,11 +306,11 @@ namespace Microsoft.AspNet.Mvc.Routing
                 new RouteValueDictionary(values));
         }
 
-        private static AttributeRouteGenerationEntry CreateGenerationEntry(string template, object requiredValues)
+        private static AttributeRouteLinkGenerationEntry CreateGenerationEntry(string template, object requiredValues)
         {
             var constraintResolver = CreateConstraintResolver();
 
-            var entry = new AttributeRouteGenerationEntry();
+            var entry = new AttributeRouteLinkGenerationEntry();
             entry.Template = TemplateParser.Parse(template, constraintResolver);
 
             var defaults = entry.Template.Parameters
@@ -342,22 +342,22 @@ namespace Microsoft.AspNet.Mvc.Routing
             return new DefaultInlineConstraintResolver(services, optionsMock.Object);
         }
 
-        private static AttributeRoute CreateAttributeRoute(AttributeRouteGenerationEntry entry)
+        private static AttributeRoute CreateAttributeRoute(AttributeRouteLinkGenerationEntry entry)
         {
             return CreateAttributeRoute(new StubRouter(), entry);
         }
 
-        private static AttributeRoute CreateAttributeRoute(IRouter next, AttributeRouteGenerationEntry entry)
+        private static AttributeRoute CreateAttributeRoute(IRouter next, AttributeRouteLinkGenerationEntry entry)
         {
             return CreateAttributeRoute(next, new[] { entry });
         }
 
-        private static AttributeRoute CreateAttributeRoute(params AttributeRouteGenerationEntry[] entries)
+        private static AttributeRoute CreateAttributeRoute(params AttributeRouteLinkGenerationEntry[] entries)
         {
             return CreateAttributeRoute(new StubRouter(), entries);
         }
 
-        private static AttributeRoute CreateAttributeRoute(IRouter next, params AttributeRouteGenerationEntry[] entries)
+        private static AttributeRoute CreateAttributeRoute(IRouter next, params AttributeRouteLinkGenerationEntry[] entries)
         {
             return new AttributeRoute(
                 next,

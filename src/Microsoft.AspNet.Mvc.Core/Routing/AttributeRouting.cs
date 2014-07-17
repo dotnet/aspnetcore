@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             // We're creating one AttributeRouteGenerationEntry per action. This allows us to match the intended
             // action by expected route values, and then use the TemplateBinder to generate the link.
-            var generationEntries = new List<AttributeRouteGenerationEntry>();
+            var generationEntries = new List<AttributeRouteLinkGenerationEntry>();
             foreach (var routeInfo in routeInfos)
             {
                 var defaults = routeInfo.ParsedTemplate.Parameters
@@ -42,13 +42,13 @@ namespace Microsoft.AspNet.Mvc.Routing
                     .Where(p => p.InlineConstraint != null)
                     .ToDictionary(p => p.Name, p => p.InlineConstraint, StringComparer.OrdinalIgnoreCase);
 
-                generationEntries.Add(new AttributeRouteGenerationEntry()
+                generationEntries.Add(new AttributeRouteLinkGenerationEntry()
                 {
                     Binder = new TemplateBinder(routeInfo.ParsedTemplate, defaults),
                     Defaults = defaults,
                     Constraints = constraints,
                     Precedence = routeInfo.Precedence,
-                    RequiredLinkValues = routeInfo.ActionDescriptor.RouteValues,
+                    RequiredLinkValues = routeInfo.ActionDescriptor.RouteValueDefaults,
                     RouteGroup = routeInfo.RouteGroup,
                     Template = routeInfo.ParsedTemplate,
                 });
@@ -108,7 +108,7 @@ namespace Microsoft.AspNet.Mvc.Routing
         {
             var routeInfos = new List<RouteInfo>();
 
-            foreach (var action in actions.Where(a => a.RouteTemplate != null))
+            foreach (var action in actions.Where(a => a.AttributeRouteTemplate != null))
             {
                 var constraint = action.RouteConstraints
                     .Where(c => c.RouteKey == AttributeRouting.RouteGroupKey)
@@ -121,14 +121,14 @@ namespace Microsoft.AspNet.Mvc.Routing
                     continue;
                 }
 
-                var parsedTemplate = TemplateParser.Parse(action.RouteTemplate, constraintResolver);
+                var parsedTemplate = TemplateParser.Parse(action.AttributeRouteTemplate, constraintResolver);
                 routeInfos.Add(new RouteInfo()
                 {
                     ActionDescriptor = action,
                     ParsedTemplate = parsedTemplate,
                     Precedence = AttributeRoutePrecedence.Compute(parsedTemplate),
                     RouteGroup = constraint.RouteValue,
-                    RouteTemplate = action.RouteTemplate,
+                    RouteTemplate = action.AttributeRouteTemplate,
                 });
             }
 
