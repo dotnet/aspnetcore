@@ -6,7 +6,7 @@ using Microsoft.AspNet.Mvc;
 namespace RoutingWebSite
 {
     // This controller contains actions mapped with a single controller-level route.
-    [Route("Blog/{action=ShowPosts}/{postId?}")]
+    [Route("Blog/[action]/{postId?}")]
     public class BlogController
     {
         private readonly TestResponseGenerator _generator;
@@ -18,7 +18,7 @@ namespace RoutingWebSite
 
         public IActionResult ShowPosts()
         {
-            return _generator.Generate("/Blog", "/Blog/ShowPosts");
+            return _generator.Generate("/Blog/ShowPosts");
         }
 
         public IActionResult Edit(int postId)

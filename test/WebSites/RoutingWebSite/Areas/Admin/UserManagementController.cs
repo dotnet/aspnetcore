@@ -6,7 +6,7 @@ using Microsoft.AspNet.Mvc;
 namespace RoutingWebSite.Admin
 {
     [Area("Admin")]
-    [Route("{area}/Users")]
+    [Route("[area]/Users")]
     public class UserManagementController : Controller
     {
         private readonly TestResponseGenerator _generator;

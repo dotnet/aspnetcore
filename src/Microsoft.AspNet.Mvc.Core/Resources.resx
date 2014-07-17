@@ -315,4 +315,34 @@
   <data name="OutputFormatterNoEncoding" xml:space="preserve">
     <value>No encoding found for output formatter '{0}'. There must be at least one supported encoding registered in order for the output formatter to write content.</value>
   </data>
+  <data name="AttributeRoute_AggregateErrorMessage" xml:space="preserve">
+    <value>The following errors occurred with attribute routing information:{0}{0}{1}</value>
+    <comment>{0} is the newline. {1} is the formatted list of errors using AttributeRoute_IndividualErrorMessage</comment>
+  </data>
+  <data name="AttributeRoute_CannotContainParameter" xml:space="preserve">
+    <value>The attribute route '{0}' cannot contain a parameter named '{{{1}}}'. Use '[{1}]' in the route template to insert the value '{2}'.</value>
+  </data>
+  <data name="AttributeRoute_IndividualErrorMessage" xml:space="preserve">
+    <value>For action: '{0}'{1}Error: {2}</value>
+    <comment>{1} is the newline.</comment>
+  </data>
+  <data name="AttributeRoute_TokenReplacement_EmptyTokenNotAllowed" xml:space="preserve">
+    <value>An empty replacement token ('[]') is not allowed.</value>
+  </data>
+  <data name="AttributeRoute_TokenReplacement_ImbalancedSquareBrackets" xml:space="preserve">
+    <value>Token delimiters ('[', ']') are imbalanced.</value>
+  </data>
+  <data name="AttributeRoute_TokenReplacement_InvalidSyntax" xml:space="preserve">
+    <value>The route template '{0}' has invalid syntax. {1}</value>
+    <comment>{1} is the specific error message.</comment>
+  </data>
+  <data name="AttributeRoute_TokenReplacement_ReplacementValueNotFound" xml:space="preserve">
+    <value>While processing template '{0}', a replacement value for the token '{1}' could not be found. Available tokens: '{2}'.</value>
+  </data>
+  <data name="AttributeRoute_TokenReplacement_UnclosedToken" xml:space="preserve">
+    <value>A replacement token is not closed.</value>
+  </data>
+  <data name="AttributeRoute_TokenReplacement_UnescapedBraceInToken" xml:space="preserve">
+    <value>An unescaped '[' token is not allowed inside of a replacement token. Use '[[' to escape.</value>
+  </data>
 </root>

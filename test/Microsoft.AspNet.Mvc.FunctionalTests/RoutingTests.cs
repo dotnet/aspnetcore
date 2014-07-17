@@ -358,7 +358,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task AttributeRoutedAction_LinkToAttribueRoutedController()
+        public async Task AttributeRoutedAction_LinkToAttributeRoutedController()
         {
             // Arrange
             var server = TestServer.Create(_services, _app);
@@ -378,7 +378,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("Employee", result.Controller);
             Assert.Equal("List", result.Action);
 
-            Assert.Equal("/Blog", result.Link);
+            Assert.Equal("/Blog/ShowPosts", result.Link);
         }
 
         [Fact]
