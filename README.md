@@ -37,7 +37,7 @@ Mono and KVM (K Version manager) required to develop & run next generation ASP.N
  * Install [Homebrew](http://brew.sh) by running the following command. If you already have Homebrew installed skip this step. 
 ```ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"```
  * Run command `brew tap aspnet/k` to tap the aspnet vnext related git repositories. 
- * Run command `bre install kvm` to install KVM. This also automatically install the latest KRE package from https://www.myget.org/f/aspnetvnext/api/v2 feed.
+ * Run command `brew install kvm` to install KVM. This also automatically install the latest KRE package from https://www.myget.org/f/aspnetvnext/api/v2 feed.
 
 Now you are set for developing next general ASP.NET applications on OSX. A few things to note:
  * If you would like to use a different KRE version for your development, you can install the desired version using KVM. See [KVM page](https://github.com/aspnet/Home/wiki/version-manager) for more information. 
