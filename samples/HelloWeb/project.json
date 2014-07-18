@@ -1,13 +1,13 @@
 {
   "version": "0.1-alpha-*",
   "dependencies": {
-    "Microsoft.AspNet.Diagnostics": "0.1-alpha-build-0682",
-    "Microsoft.AspNet.Hosting": "0.1-alpha-build-0572",
-    "Microsoft.AspNet.Server.WebListener": "0.1-alpha-build-0520",
-    "Microsoft.AspNet.StaticFiles": "0.1-alpha-build-0443"
+    "Microsoft.AspNet.Diagnostics": "1.0.0-*",
+    "Kestrel": "1.0.0-*",
+    "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
+    "Microsoft.AspNet.StaticFiles": "1.0.0-*"
   },
   "commands": {
-    "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001"
+    "web": "Microsoft.AspNet.Hosting --server Kestrel"
   },
   "configurations": {
     "net45": {},
