@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.Razor
     /// <summary>
     /// Represents properties and methods that are needed in order to render a view that uses Razor syntax.
     /// </summary>
-    public abstract class RazorPage
+    public abstract class RazorPage : IRazorPage
     {
         private readonly HashSet<string> _renderedSections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private bool _renderedBody;
@@ -42,6 +42,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
+        /// <inheritdoc />
         public ViewContext ViewContext { get; set; }
 
         public string Layout { get; set; }
@@ -86,10 +87,13 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         public string BodyContent { get; set; }
 
+        /// <inheritdoc />
         public Dictionary<string, HelperResult> PreviousSectionWriters { get; set; }
 
+        /// <inheritdoc />
         public Dictionary<string, HelperResult> SectionWriters { get; private set; }
 
+        /// <inheritdoc />
         public abstract Task ExecuteAsync();
 
         public virtual void Write(object value)
@@ -292,10 +296,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
-        /// <summary>
-        /// Verifies that RenderBody is called and that RenderSection is called for all sections for a page that is
-        /// part of view execution hierarchy.
-        /// </summary>
+        /// <inheritdoc />
         public void EnsureBodyAndSectionsWereRendered()
         {
             // If PreviousSectionWriters is set, ensure all defined sections were rendered.

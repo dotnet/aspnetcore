@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public void Activate([NotNull] RazorPage page, [NotNull] ViewContext context)
+        public void Activate([NotNull] IRazorPage page, [NotNull] ViewContext context)
         {
             var activationInfo = _activationInfo.GetOrAdd(page.GetType(),
                                                           CreateViewActivationInfo);

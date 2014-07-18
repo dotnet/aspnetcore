@@ -92,7 +92,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
-        private ViewEngineResult CreateFoundResult(RazorPage page, string viewName, bool partial)
+        private ViewEngineResult CreateFoundResult(IRazorPage page, string viewName, bool partial)
         {
             var view = new RazorView(_pageFactory,
                                      _viewActivator,

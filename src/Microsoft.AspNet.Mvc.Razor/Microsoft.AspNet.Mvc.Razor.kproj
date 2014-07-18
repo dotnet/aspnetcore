@@ -29,7 +29,8 @@
     <Compile Include="Compilation\ICompilationService.cs" />
     <Compile Include="Compilation\RoslynCompilationService.cs" />
     <Compile Include="Extensions\DictionaryExtensions.cs" />
-    <Compile Include="FileBasedRazorPageFactory.cs" />
+    <Compile Include="IRazorPage.cs" />
+    <Compile Include="VirtualPathRazorPageFactory.cs" />
     <Compile Include="HelperResult.cs" />
     <Compile Include="IRazorPageActivator.cs" />
     <Compile Include="IRazorPageFactory.cs" />

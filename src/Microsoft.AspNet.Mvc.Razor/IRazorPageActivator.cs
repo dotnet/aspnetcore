@@ -4,7 +4,7 @@
 namespace Microsoft.AspNet.Mvc.Razor
 {
     /// <summary>
-    /// Provides methods to activate properties on a <see cref="RazorPage"/> instance.
+    /// Provides methods to activate properties on a <see cref="IRazorPage"/> instance.
     /// </summary>
     public interface IRazorPageActivator
     {
@@ -13,6 +13,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         /// <param name="page">The page to activate.</param>
         /// <param name="context">The <see cref="ViewContext"/> for the executing view.</param>
-        void Activate(RazorPage page, ViewContext context);
+        void Activate(IRazorPage page, ViewContext context);
     }
 }

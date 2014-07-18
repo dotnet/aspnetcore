@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var expectedViewData = viewContext.ViewData;
             var expectedWriter = viewContext.Writer;
             activator.Setup(a => a.Activate(page, It.IsAny<ViewContext>()))
-                     .Callback((RazorPage p, ViewContext c) =>
+                     .Callback((IRazorPage p, ViewContext c) =>
                      {
                          Assert.NotSame(c, viewContext);
                          c.ViewData = viewData;

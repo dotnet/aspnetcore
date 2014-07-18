@@ -11,17 +11,17 @@ namespace Microsoft.AspNet.Mvc.Razor
     /// Represents a <see cref="IRazorPageFactory"/> that creates <see cref="RazorPage"/> instances
     /// from razor files in the file system.
     /// </summary>
-    public class FileBasedRazorPageFactory : IRazorPageFactory
+    public class VirtualPathRazorPageFactory : IRazorPageFactory
     {
         private readonly IRazorCompilationService _compilationService;
         private readonly ITypeActivator _activator;
         private readonly IServiceProvider _serviceProvider;
         private readonly IFileInfoCache _fileInfoCache;
 
-        public FileBasedRazorPageFactory(IRazorCompilationService compilationService,
-                                    ITypeActivator typeActivator,
-                                    IServiceProvider serviceProvider,
-                                    IFileInfoCache fileInfoCache)
+        public VirtualPathRazorPageFactory(IRazorCompilationService compilationService,
+                                           ITypeActivator typeActivator,
+                                           IServiceProvider serviceProvider,
+                                           IFileInfoCache fileInfoCache)
         {
             _compilationService = compilationService;
             _activator = typeActivator;
@@ -30,14 +30,14 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public RazorPage CreateInstance([NotNull] string viewPath)
+        public IRazorPage CreateInstance([NotNull] string viewPath)
         {
-            var fileInfo = _fileInfoCache.GetFileInfo(viewPath.TrimStart('~'));
+            var fileInfo = _fileInfoCache.GetFileInfo(viewPath);
 
             if (fileInfo != null)
             {
                 var result = _compilationService.Compile(fileInfo);
-                var page = (RazorPage)_activator.CreateInstance(_serviceProvider, result.CompiledType);
+                var page = (IRazorPage)_activator.CreateInstance(_serviceProvider, result.CompiledType);
                 return page;
             }
 
