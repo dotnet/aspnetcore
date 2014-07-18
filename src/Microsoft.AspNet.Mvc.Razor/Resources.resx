@@ -153,6 +153,9 @@
   <data name="ViewCannotBeActivated" xml:space="preserve">
     <value>View of type '{0}' cannot be activated by '{1}'.</value>
   </data>
+  <data name="ViewContextMustBeSet" xml:space="preserve">
+    <value>'{0} must be set to access '{1}'.</value>
+  </data>
   <data name="ViewMustEndInExtension" xml:space="preserve">
     <value>View '{0}' must have extension '{1}' when the view represents a full path.</value>
   </data>

@@ -5,317 +5,385 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Razor.Test
+namespace Microsoft.AspNet.Mvc.Razor
 {
     public class RazorViewTest
     {
         private const string LayoutPath = "~/Shared/_Layout.cshtml";
 
         [Fact]
-        public async Task DefineSection_ThrowsIfSectionIsAlreadyDefined()
+        public async Task RenderAsync_WithoutHierarchy_DoesNotCreateOutputBuffer()
         {
             // Arrange
-            var view = CreateView(v =>
+            TextWriter actual = null;
+            var page = new TestableRazorPage(v =>
             {
-                v.DefineSection("qux", new HelperResult(action: null));
-                v.DefineSection("qux", new HelperResult(action: null));
+                actual = v.Output;
+                v.Write("Hello world");
             });
-            var viewContext = CreateViewContext(layoutView: null);
+            var view = new RazorView(Mock.Of<IRazorPageFactory>(),
+                                     Mock.Of<IRazorPageActivator>(),
+                                     page,
+                                     executeViewHierarchy: false);
+            var viewContext = CreateViewContext(view);
+            var expected = viewContext.Writer;
 
             // Act
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                                () => view.RenderAsync(viewContext));
+            await view.RenderAsync(viewContext);
 
             // Assert
-            Assert.Equal("Section 'qux' is already defined.", ex.Message);
+            Assert.Same(expected, actual);
+            Assert.Equal("Hello world", expected.ToString());
         }
 
         [Fact]
-        public async Task RenderSection_RendersSectionFromPreviousPage()
+        public async Task RenderAsync_WithoutHierarchy_ActivatesViews_WithACopyOfViewContext()
         {
             // Arrange
-            var expected = new HelperResult(action: null);
-            HelperResult actual = null;
-            var view = CreateView(v =>
+            var viewData = new ViewDataDictionary(Mock.Of<IModelMetadataProvider>());
+            var page = new TestableRazorPage(v =>
             {
-                v.DefineSection("bar", expected);
+                // viewData is assigned to ViewContext by the activator
+                Assert.Same(viewData, v.ViewContext.ViewData);
+            });
+            var activator = new Mock<IRazorPageActivator>();
+            
+            var view = new RazorView(Mock.Of<IRazorPageFactory>(),
+                                     activator.Object,
+                                     page,
+                                     executeViewHierarchy: false);
+            var viewContext = CreateViewContext(view);
+            var expectedViewData = viewContext.ViewData;
+            var expectedWriter = viewContext.Writer;
+            activator.Setup(a => a.Activate(page, It.IsAny<ViewContext>()))
+                     .Callback((RazorPage p, ViewContext c) =>
+                     {
+                         Assert.NotSame(c, viewContext);
+                         c.ViewData = viewData;
+                     })
+                     .Verifiable();
+
+            // Act
+            await view.RenderAsync(viewContext);
+
+            // Assert
+            activator.Verify();
+            Assert.Same(expectedViewData, viewContext.ViewData);
+            Assert.Same(expectedWriter, viewContext.Writer);
+        }
+
+        [Fact]
+        public async Task RenderAsync_WithoutHierarchy_ActivatesViews()
+        {
+            // Arrange
+            var page = new TestableRazorPage(v => { });
+            var activator = new Mock<IRazorPageActivator>();
+            activator.Setup(a => a.Activate(page, It.IsAny<ViewContext>()))
+                     .Verifiable();
+            var view = new RazorView(Mock.Of<IRazorPageFactory>(),
+                                     activator.Object,
+                                     page,
+                                     executeViewHierarchy: false);
+            var viewContext = CreateViewContext(view);
+
+            // Act
+            await view.RenderAsync(viewContext);
+
+            // Assert
+            activator.Verify();
+        }
+
+        [Fact]
+        public async Task RenderAsync_WithoutHierarchy_DoesNotExecuteLayoutPages()
+        {
+            var page = new TestableRazorPage(v =>
+            {
                 v.Layout = LayoutPath;
             });
-            var layoutView = CreateView(v =>
+            var pageFactory = new Mock<IRazorPageFactory>();
+            var view = new RazorView(pageFactory.Object,
+                                     Mock.Of<IRazorPageActivator>(),
+                                     page,
+                                     executeViewHierarchy: false);
+            var viewContext = CreateViewContext(view);
+
+            // Act
+            await view.RenderAsync(viewContext);
+
+            // Assert
+            pageFactory.Verify(v => v.CreateInstance(It.IsAny<string>()), Times.Never());
+        }
+
+        [Fact]
+        public async Task RenderAsync_WithHierarchy_CreatesOutputBuffer()
+        {
+            // Arrange
+            TextWriter actual = null;
+            var page = new TestableRazorPage(v =>
             {
-                actual = v.RenderSection("bar");
+                actual = v.Output;
+            });
+            var view = new RazorView(Mock.Of<IRazorPageFactory>(),
+                                     Mock.Of<IRazorPageActivator>(),
+                                     page,
+                                     executeViewHierarchy: true);
+            var viewContext = CreateViewContext(view);
+            var original = viewContext.Writer;
+
+            // Act
+            await view.RenderAsync(viewContext);
+
+            // Assert
+            Assert.IsType<StringWriter>(actual);
+            Assert.NotSame(original, actual);
+        }
+
+        [Fact]
+        public async Task RenderAsync_WithHierarchy_CopiesBufferedContentToOutput()
+        {
+            // Arrange
+            var page = new TestableRazorPage(v =>
+            {
+                v.WriteLiteral("Hello world");
+            });
+            var view = new RazorView(Mock.Of<IRazorPageFactory>(),
+                                     Mock.Of<IRazorPageActivator>(),
+                                     page,
+                                     executeViewHierarchy: true);
+            var viewContext = CreateViewContext(view);
+            var original = viewContext.Writer;
+
+            // Act
+            await view.RenderAsync(viewContext);
+
+            // Assert
+            Assert.Equal("Hello world", original.ToString());
+        }
+
+        [Fact]
+        public async Task RenderAsync_WithHierarchy_ActivatesPages()
+        {
+            // Arrange
+            var page = new TestableRazorPage(v =>
+            {
+                v.WriteLiteral("Hello world");
+            });
+            var activator = new Mock<IRazorPageActivator>();
+            activator.Setup(a => a.Activate(page, It.IsAny<ViewContext>()))
+                     .Verifiable();
+            var view = new RazorView(Mock.Of<IRazorPageFactory>(),
+                                     activator.Object,
+                                     page,
+                                     executeViewHierarchy: true);
+            var viewContext = CreateViewContext(view);
+
+            // Act
+            await view.RenderAsync(viewContext);
+
+            // Assert
+            activator.Verify();
+        }
+
+        [Fact]
+        public async Task RenderAsync_WithHierarchy_ExecutesLayoutPages()
+        {
+            // Arrange
+            var expected =
+@"layout-content
+head-content
+body-content
+foot-content";
+
+            var page = new TestableRazorPage(v =>
+            {
+                v.WriteLiteral("body-content");
+                v.Layout = LayoutPath;
+                v.DefineSection("head", new HelperResult(writer =>
+                {
+                    writer.Write("head-content");
+                }));
+                v.DefineSection("foot", new HelperResult(writer =>
+                {
+                    writer.Write("foot-content");
+                }));
+            });
+            var layout = new TestableRazorPage(v =>
+            {
+                v.Write("layout-content" + Environment.NewLine);
+                v.Write(v.RenderSection("head"));
+                v.Write(Environment.NewLine);
+                v.RenderBodyPublic();
+                v.Write(Environment.NewLine);
+                v.Write(v.RenderSection("foot"));
+            });
+            var activator = new Mock<IRazorPageActivator>();
+            activator.Setup(a => a.Activate(page, It.IsAny<ViewContext>()))
+                     .Verifiable();
+            activator.Setup(a => a.Activate(layout, It.IsAny<ViewContext>()))
+                     .Verifiable();
+            var pageFactory = new Mock<IRazorPageFactory>();
+            pageFactory.Setup(p => p.CreateInstance(LayoutPath))
+                       .Returns(layout);
+
+            var view = new RazorView(pageFactory.Object,
+                                     activator.Object,
+                                     page,
+                                     executeViewHierarchy: true);
+            var viewContext = CreateViewContext(view);
+
+            // Act
+            await view.RenderAsync(viewContext);
+
+            // Assert
+            // Verify the activator was invoked for the primary page and layout page.
+            activator.Verify();
+            Assert.Equal(expected, viewContext.Writer.ToString());
+        }
+
+        [Fact]
+        public async Task RenderAsync_WithHierarchy_ThrowsIfSectionsWereDefinedButNotRendered()
+        {
+            // Arrange
+            var page = new TestableRazorPage(v =>
+            {
+                v.DefineSection("head", new HelperResult(writer => { }));
+                v.Layout = LayoutPath;
+                v.DefineSection("foot", new HelperResult(writer => { }));
+            });
+            var layout = new TestableRazorPage(v =>
+            {
                 v.RenderBodyPublic();
             });
-            var viewContext = CreateViewContext(layoutView);
+            var pageFactory = new Mock<IRazorPageFactory>();
+            pageFactory.Setup(p => p.CreateInstance(LayoutPath))
+                       .Returns(layout);
 
-            // Act
-            await view.RenderAsync(viewContext);
-
-            // Assert
-            Assert.Same(actual, expected);
-        }
-
-        [Fact]
-        public async Task RenderSection_ThrowsIfNoPreviousPage()
-        {
-            // Arrange
-            Exception ex = null;
-            var view = CreateView(v =>
-            {
-                ex = Assert.Throws<InvalidOperationException>(() => v.RenderSection("bar"));
-            });
-            var viewContext = CreateViewContext(layoutView: null);
-
-            // Act
-            await view.RenderAsync(viewContext);
-
-            // Assert
-            Assert.Equal("The method 'RenderSection' cannot be invoked by this view.",
-                         ex.Message);
-        }
-
-        [Fact]
-        public async Task RenderSection_ThrowsIfRequiredSectionIsNotFound()
-        {
-            // Arrange
-            var expected = new HelperResult(action: null);
-            var view = CreateView(v =>
-            {
-                v.DefineSection("baz", expected);
-                v.Layout = LayoutPath;
-            });
-            var layoutView = CreateView(v =>
-            {
-                v.RenderSection("bar");
-            });
-            var viewContext = CreateViewContext(layoutView);
-
-            // Act
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => view.RenderAsync(viewContext));
-
-            // Assert
-            Assert.Equal("Section 'bar' is not defined.", ex.Message);
-        }
-
-        [Fact]
-        public void IsSectionDefined_ThrowsIfNoPreviousExecutingPage()
-        {
-            // Arrange
-            var view = CreateView(v => { });
-            var viewContext = CreateViewContext(layoutView: null);
+            var view = new RazorView(pageFactory.Object,
+                                     Mock.Of<IRazorPageActivator>(),
+                                     page,
+                                     executeViewHierarchy: true);
+            var viewContext = CreateViewContext(view);
 
             // Act and Assert
-            ExceptionAssert.Throws<InvalidOperationException>(() => view.IsSectionDefined("foo"),
-                "The method 'IsSectionDefined' cannot be invoked by this view.");
-        }
-
-        [Fact]
-        public async Task IsSectionDefined_ReturnsFalseIfSectionNotDefined()
-        {
-            // Arrange
-            bool? actual = null;
-            var view = CreateView(v =>
-            {
-                v.DefineSection("baz", new HelperResult(writer => { }));
-                v.Layout = LayoutPath;
-            });
-            var layoutView = CreateView(v =>
-            {
-                actual = v.IsSectionDefined("foo");
-                v.RenderSection("baz");
-                v.RenderBodyPublic();
-            });
-
-            // Act
-            await view.RenderAsync(CreateViewContext(layoutView));
-
-            // Assert
-            Assert.Equal(false, actual);
-        }
-
-        [Fact]
-        public async Task IsSectionDefined_ReturnsTrueIfSectionDefined()
-        {
-            // Arrange
-            bool? actual = null;
-            var view = CreateView(v =>
-            {
-                v.DefineSection("baz", new HelperResult(writer => { }));
-                v.Layout = LayoutPath;
-            });
-            var layoutView = CreateView(v =>
-            {
-                actual = v.IsSectionDefined("baz");
-                v.RenderSection("baz");
-                v.RenderBodyPublic();
-            });
-
-            // Act
-            await view.RenderAsync(CreateViewContext(layoutView));
-
-            // Assert
-            Assert.Equal(true, actual);
-        }
-
-
-        [Fact]
-        public async Task RenderSection_ThrowsIfSectionIsRenderedMoreThanOnce()
-        {
-            // Arrange
-            var expected = new HelperResult(action: null);
-            var view = CreateView(v =>
-            {
-                v.DefineSection("header", expected);
-                v.Layout = LayoutPath;
-            });
-            var layoutView = CreateView(v =>
-            {
-                v.RenderSection("header");
-                v.RenderSection("header");
-            });
-            var viewContext = CreateViewContext(layoutView);
-
-            // Act
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => view.RenderAsync(viewContext));
-
-            // Assert
-            Assert.Equal("RenderSection has already been called for the section named 'header'.", ex.Message);
+            Assert.Equal("The following sections have been defined but have not been rendered: 'head, foot'.", ex.Message);
         }
 
         [Fact]
-        public async Task RenderAsync_ThrowsIfDefinedSectionIsNotRendered()
+        public async Task RenderAsync_WithHierarchy_ThrowsIfBodyWasNotRendered()
         {
             // Arrange
-            var expected = new HelperResult(action: null);
-            var view = CreateView(v =>
-            {
-                v.DefineSection("header", expected);
-                v.DefineSection("footer", expected);
-                v.DefineSection("sectionA", expected);
-                v.Layout = LayoutPath;
-            });
-            var layoutView = CreateView(v =>
-            {
-                v.RenderSection("sectionA");
-                v.RenderBodyPublic();
-            });
-            var viewContext = CreateViewContext(layoutView);
-
-            // Act
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => view.RenderAsync(viewContext));
-
-            // Assert
-            Assert.Equal("The following sections have been defined but have not been rendered: 'header, footer'.", ex.Message);
-        }
-
-        [Fact]
-        public async Task RenderAsync_ThrowsIfRenderBodyIsNotCalledFromPage()
-        {
-            // Arrange
-            var expected = new HelperResult(action: null);
-            var view = CreateView(v =>
+            var page = new TestableRazorPage(v =>
             {
                 v.Layout = LayoutPath;
             });
-            var layoutView = CreateView(v =>
+            var layout = new TestableRazorPage(v =>
             {
             });
-            var viewContext = CreateViewContext(layoutView);
+            var pageFactory = new Mock<IRazorPageFactory>();
+            pageFactory.Setup(p => p.CreateInstance(LayoutPath))
+                       .Returns(layout);
 
-            // Act
+            var view = new RazorView(pageFactory.Object,
+                                     Mock.Of<IRazorPageActivator>(),
+                                     page,
+                                     executeViewHierarchy: true);
+            var viewContext = CreateViewContext(view);
+
+            // Act and Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => view.RenderAsync(viewContext));
-
-            // Assert
             Assert.Equal("RenderBody must be called from a layout page.", ex.Message);
         }
 
         [Fact]
-        public async Task RenderAsync_RendersSectionsAndBody()
+        public async Task RenderAsync_WithHierarchy_ExecutesNestedLayoutPages()
         {
             // Arrange
-            var expected = @"Layout start
-Header section
-body content
-Footer section
-Layout end
-";
-            var view = CreateView(v =>
+            var expected =
+@"layout-2
+bar-content
+layout-1
+foo-content
+body-content";
+
+            var page = new TestableRazorPage(v =>
             {
-                v.Layout = LayoutPath;
-                v.WriteLiteral("body content" + Environment.NewLine);
-
-                v.DefineSection("footer", new HelperResult(writer =>
+                v.DefineSection("foo", new HelperResult(writer =>
                 {
-                    writer.WriteLine("Footer section");
+                    writer.WriteLine("foo-content");
                 }));
-
-                v.DefineSection("header", new HelperResult(writer =>
-                {
-                    writer.WriteLine("Header section");
-                }));
+                v.Layout = "~/Shared/Layout1.cshtml";
+                v.WriteLiteral("body-content");
             });
-            var layoutView = CreateView(v =>
+            var layout1 = new TestableRazorPage(v =>
             {
-                v.WriteLiteral("Layout start" + Environment.NewLine);
-                v.Write(v.RenderSection("header"));
-                v.Write(v.RenderBodyPublic());
-                v.Write(v.RenderSection("footer"));
-                v.WriteLiteral("Layout end" + Environment.NewLine);
-
+                v.Write("layout-1" + Environment.NewLine);
+                v.Write(v.RenderSection("foo"));
+                v.DefineSection("bar", new HelperResult(writer =>
+                {
+                    writer.WriteLine("bar-content");
+                }));
+                v.RenderBodyPublic();
+                v.Layout = "~/Shared/Layout2.cshtml";
             });
-            var viewContext = CreateViewContext(layoutView);
+            var layout2 = new TestableRazorPage(v =>
+            {
+                v.Write("layout-2" + Environment.NewLine);
+                v.Write(v.RenderSection("bar"));
+                v.RenderBodyPublic();
+            });
+            var pageFactory = new Mock<IRazorPageFactory>();
+            pageFactory.Setup(p => p.CreateInstance("~/Shared/Layout1.cshtml"))
+                       .Returns(layout1);
+            pageFactory.Setup(p => p.CreateInstance("~/Shared/Layout2.cshtml"))
+                       .Returns(layout2);
+
+            var view = new RazorView(pageFactory.Object,
+                                     Mock.Of<IRazorPageActivator>(),
+                                     page,
+                                     executeViewHierarchy: true);
+            var viewContext = CreateViewContext(view);
 
             // Act
             await view.RenderAsync(viewContext);
 
             // Assert
-            var actual = ((StringWriter)viewContext.Writer).ToString();
-            Assert.Equal(expected, actual);
+            Assert.Equal(expected, viewContext.Writer.ToString());
         }
 
-        private static TestableRazorView CreateView(Action<TestableRazorView> executeAction)
+        private static ViewContext CreateViewContext(RazorView view)
         {
-            var view = new Mock<TestableRazorView> { CallBase = true };
-            if (executeAction != null)
-            {
-                view.Setup(v => v.ExecuteAsync())
-                    .Callback(() => executeAction(view.Object))
-                    .Returns(Task.FromResult(0));
-            }
-
-            return view.Object;
-        }
-
-        private static ViewContext CreateViewContext(IView layoutView)
-        {
-            var viewFactory = new Mock<IVirtualPathViewFactory>();
-            viewFactory.Setup(v => v.CreateInstance(LayoutPath))
-                       .Returns(layoutView);
-            var serviceProvider = new Mock<IServiceProvider>();
-            serviceProvider.Setup(f => f.GetService(typeof(IVirtualPathViewFactory)))
-                            .Returns(viewFactory.Object);
-
             var httpContext = new Mock<HttpContext>();
-            httpContext.SetupGet(c => c.RequestServices).Returns(serviceProvider.Object);
-            
-            var actionContext = new ActionContext(httpContext.Object, null, null);
+            var actionContext = new ActionContext(httpContext.Object, routeData: null, actionDescriptor: null);
             return new ViewContext(
                 actionContext,
-                layoutView,
-                null,
+                view,
+                new ViewDataDictionary(Mock.Of<IModelMetadataProvider>()),
                 new StringWriter());
         }
 
-        public abstract class TestableRazorView : RazorView
+        private class TestableRazorPage : RazorPage
         {
-            public HtmlString RenderBodyPublic()
+            private readonly Action<TestableRazorPage> _executeAction;
+
+            public TestableRazorPage(Action<TestableRazorPage> executeAction)
             {
-                return base.RenderBody();
+                _executeAction = executeAction;
+            }
+
+            public void RenderBodyPublic()
+            {
+                Write(RenderBody());
+            }
+
+            public override Task ExecuteAsync()
+            {
+                _executeAction(this);
+                return Task.FromResult(0);
             }
         }
     }

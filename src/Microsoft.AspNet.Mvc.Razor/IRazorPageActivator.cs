@@ -1,0 +1,18 @@
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+namespace Microsoft.AspNet.Mvc.Razor
+{
+    /// <summary>
+    /// Provides methods to activate properties on a <see cref="RazorPage"/> instance.
+    /// </summary>
+    public interface IRazorPageActivator
+    {
+        /// <summary>
+        /// When implemented in a type, activates an instantiated page.
+        /// </summary>
+        /// <param name="page">The page to activate.</param>
+        /// <param name="context">The <see cref="ViewContext"/> for the executing view.</param>
+        void Activate(RazorPage page, ViewContext context);
+    }
+}

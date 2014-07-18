@@ -7,18 +7,24 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security.Principal;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
-    public abstract class RazorView : IView
+    /// <summary>
+    /// Represents properties and methods that are needed in order to render a view that uses Razor syntax.
+    /// </summary>
+    public abstract class RazorPage
     {
         private readonly HashSet<string> _renderedSections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private bool _renderedBody;
+
+        public RazorPage()
+        {
+            SectionWriters = new Dictionary<string, HelperResult>(StringComparer.OrdinalIgnoreCase);
+        }
 
         [Activate]
         public IUrlHelper Url { get; set; }
@@ -40,7 +46,22 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         public string Layout { get; set; }
 
-        protected TextWriter Output { get; set; }
+        /// <summary>
+        /// Gets the TextWriter that the page is writing output to.
+        /// </summary>
+        public virtual TextWriter Output
+        {
+            get
+            {
+                if (ViewContext == null)
+                {
+                    var message = Resources.FormatViewContextMustBeSet("ViewContext", "Output");
+                    throw new InvalidOperationException(message);
+                }
+
+                return ViewContext.Writer;
+            }
+        }
 
         public virtual IPrincipal User
         {
@@ -63,66 +84,11 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
-        private string BodyContent { get; set; }
+        public string BodyContent { get; set; }
 
-        private Dictionary<string, HelperResult> SectionWriters { get; set; }
+        public Dictionary<string, HelperResult> PreviousSectionWriters { get; set; }
 
-        private Dictionary<string, HelperResult> PreviousSectionWriters { get; set; }
-
-        public virtual async Task RenderAsync([NotNull] ViewContext context)
-        {
-            SectionWriters = new Dictionary<string, HelperResult>(StringComparer.OrdinalIgnoreCase);
-            ViewContext = context;
-
-            var contentBuilder = new StringBuilder(1024);
-            using (var bodyWriter = new StringWriter(contentBuilder))
-            {
-                Output = bodyWriter;
-
-                // The writer for the body is passed through the ViewContext, allowing things like HtmlHelpers
-                // and ViewComponents to reference it.
-                var oldWriter = context.Writer;
-
-                try
-                {
-                    context.Writer = bodyWriter;
-                    await ExecuteAsync();
-
-                    // Verify that RenderBody is called, or that RenderSection is called for all sections
-                    VerifyRenderedBodyOrSections();
-                }
-                finally
-                {
-                    context.Writer = oldWriter;
-                }
-            }
-
-            var bodyContent = contentBuilder.ToString();
-            if (!string.IsNullOrEmpty(Layout))
-            {
-                await RenderLayoutAsync(context, bodyContent);
-            }
-            else
-            {
-                await context.Writer.WriteAsync(bodyContent);
-            }
-        }
-
-        private async Task RenderLayoutAsync(ViewContext context, string bodyContent)
-        {
-            var virtualPathFactory = context.HttpContext.RequestServices.GetService<IVirtualPathViewFactory>();
-            var layoutView = (RazorView)virtualPathFactory.CreateInstance(Layout);
-
-            if (layoutView == null)
-            {
-                var message = Resources.FormatLayoutCannotBeLocated(Layout);
-                throw new InvalidOperationException(message);
-            }
-
-            layoutView.PreviousSectionWriters = SectionWriters;
-            layoutView.BodyContent = bodyContent;
-            await layoutView.RenderAsync(context);
-        }
+        public Dictionary<string, HelperResult> SectionWriters { get; private set; }
 
         public abstract Task ExecuteAsync();
 
@@ -326,30 +292,37 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
-        private void EnsureMethodCanBeInvoked(string methodName)
+        /// <summary>
+        /// Verifies that RenderBody is called and that RenderSection is called for all sections for a page that is
+        /// part of view execution hierarchy.
+        /// </summary>
+        public void EnsureBodyAndSectionsWereRendered()
         {
-            if (PreviousSectionWriters == null)
-            {
-                throw new InvalidOperationException(Resources.FormatView_MethodCannotBeCalled(methodName));
-            }
-        }
-
-        private void VerifyRenderedBodyOrSections()
-        {
-            if (BodyContent != null)
+            // If PreviousSectionWriters is set, ensure all defined sections were rendered.
+            if (PreviousSectionWriters != null)
             {
                 var sectionsNotRendered = PreviousSectionWriters.Keys.Except(_renderedSections,
                                                                              StringComparer.OrdinalIgnoreCase);
                 if (sectionsNotRendered.Any())
                 {
-                    var sectionNames = String.Join(", ", sectionsNotRendered);
+                    var sectionNames = string.Join(", ", sectionsNotRendered);
                     throw new InvalidOperationException(Resources.FormatSectionsNotRendered(sectionNames));
                 }
-                else if (!_renderedBody)
-                {
-                    // If a body was defined, then RenderBody should have been called.
-                    throw new InvalidOperationException(Resources.FormatRenderBodyNotCalled("RenderBody"));
-                }
+            }
+
+            // If BodyContent is set, ensure it was rendered.
+            if (BodyContent != null && !_renderedBody)
+            {
+                // If a body was defined, then RenderBody should have been called.
+                throw new InvalidOperationException(Resources.FormatRenderBodyNotCalled("RenderBody"));
+            }
+        }
+
+        private void EnsureMethodCanBeInvoked(string methodName)
+        {
+            if (PreviousSectionWriters == null)
+            {
+                throw new InvalidOperationException(Resources.FormatView_MethodCannotBeCalled(methodName));
             }
         }
     }

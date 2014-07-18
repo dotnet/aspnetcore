@@ -15,14 +15,14 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
-    public class RazorViewActivatorTest
+    public class RazorPageActivatorTest
     {
         [Fact]
         public void Activate_ActivatesAndContextualizesPropertiesOnViews()
         {
             // Arrange
-            var activator = new RazorViewActivator(Mock.Of<ITypeActivator>());
-            var instance = new TestView();
+            var activator = new RazorPageActivator(Mock.Of<ITypeActivator>());
+            var instance = new TestRazorPage();
 
             var myService = new MyService();
             var helper = Mock.Of<IHtmlHelper<object>>();
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var routeContext = new RouteContext(httpContext.Object);
             var actionContext = new ActionContext(routeContext, new ActionDescriptor());
             var viewContext = new ViewContext(actionContext,
-                                              instance,
+                                              Mock.Of<IView>(),
                                               new ViewDataDictionary(Mock.Of<IModelMetadataProvider>()),
                                               TextWriter.Null);
 
@@ -55,8 +55,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         public void Activate_ThrowsIfTheViewDoesNotDeriveFromRazorViewOfT()
         {
             // Arrange
-            var activator = new RazorViewActivator(Mock.Of<ITypeActivator>());
-            var instance = new DoesNotDeriveFromRazorViewOfT();
+            var activator = new RazorPageActivator(Mock.Of<ITypeActivator>());
+            var instance = new DoesNotDeriveFromRazorPageOfT();
 
             var myService = new MyService();
             var helper = Mock.Of<IHtmlHelper<object>>();
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var routeContext = new RouteContext(httpContext.Object);
             var actionContext = new ActionContext(routeContext, new ActionDescriptor());
             var viewContext = new ViewContext(actionContext,
-                                              instance,
+                                              Mock.Of<IView>(),
                                               new ViewDataDictionary(Mock.Of<IModelMetadataProvider>()),
                                               TextWriter.Null);
 
@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var message = string.Format(CultureInfo.InvariantCulture,
                                         "View of type '{0}' cannot be activated by '{1}'.",
                                         instance.GetType().FullName,
-                                        typeof(RazorViewActivator).FullName);
+                                        typeof(RazorPageActivator).FullName);
 
             Assert.Equal(message, ex.Message);
         }
@@ -86,8 +86,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var typeActivator = new TypeActivator();
-            var activator = new RazorViewActivator(typeActivator);
-            var instance = new TestView();
+            var activator = new RazorPageActivator(typeActivator);
+            var instance = new TestRazorPage();
 
             var myService = new MyService();
             var helper = Mock.Of<IHtmlHelper<object>>();
@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Model = new MyModel()
             };
             var viewContext = new ViewContext(actionContext,
-                                              instance,
+                                              Mock.Of<IView>(),
                                               viewData,
                                               TextWriter.Null);
 
@@ -122,8 +122,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var typeActivator = new TypeActivator();
-            var activator = new RazorViewActivator(typeActivator);
-            var instance = new TestView();
+            var activator = new RazorPageActivator(typeActivator);
+            var instance = new TestRazorPage();
             var myService = new MyService();
             var helper = Mock.Of<IHtmlHelper<object>>();
             var serviceProvider = new Mock<IServiceProvider>();
@@ -141,7 +141,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Model = new MyModel()
             };
             var viewContext = new ViewContext(actionContext,
-                                              instance,
+                                              Mock.Of<IView>(),
                                               viewData,
                                               TextWriter.Null);
 
@@ -157,8 +157,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var typeActivator = new TypeActivator();
-            var activator = new RazorViewActivator(typeActivator);
-            var instance = new DoesNotDeriveFromRazorViewOfTButHasModelProperty();
+            var activator = new RazorPageActivator(typeActivator);
+            var instance = new DoesNotDeriveFromRazorPageOfTButHasModelProperty();
             var myService = new MyService();
             var helper = Mock.Of<IHtmlHelper<object>>();
             var serviceProvider = new Mock<IServiceProvider>();
@@ -173,7 +173,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var actionContext = new ActionContext(routeContext, new ActionDescriptor());
             var viewData = new ViewDataDictionary(Mock.Of<IModelMetadataProvider>());
             var viewContext = new ViewContext(actionContext,
-                                              instance,
+                                              Mock.Of<IView>(),
                                               viewData,
                                               TextWriter.Null);
 
@@ -184,7 +184,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             Assert.IsType<ViewDataDictionary<string>>(viewContext.ViewData);
         }
 
-        private abstract class TestViewBase<TModel> : RazorView<TModel>
+        private abstract class TestPageBase<TModel> : RazorPage<TModel>
         {
             [Activate]
             public MyService MyService { get; set; }
@@ -192,7 +192,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             public MyService MyService2 { get; set; }
         }
 
-        private class TestView : TestViewBase<MyModel>
+        private class TestRazorPage : TestPageBase<MyModel>
         {
             [Activate]
             internal IHtmlHelper<object> Html { get; private set; }
@@ -203,11 +203,11 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
-        private abstract class DoesNotDeriveFromRazorViewOfTBase<TModel> : RazorView
+        private abstract class DoesNotDeriveFromRazorPageOfTBase<TModel> : RazorPage
         {
         }
 
-        private class DoesNotDeriveFromRazorViewOfT : DoesNotDeriveFromRazorViewOfTBase<MyModel>
+        private class DoesNotDeriveFromRazorPageOfT : DoesNotDeriveFromRazorPageOfTBase<MyModel>
         {
             public override Task ExecuteAsync()
             {
@@ -215,7 +215,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
-        private class DoesNotDeriveFromRazorViewOfTButHasModelProperty : DoesNotDeriveFromRazorViewOfTBase<MyModel>
+        private class DoesNotDeriveFromRazorPageOfTButHasModelProperty : DoesNotDeriveFromRazorPageOfTBase<MyModel>
         {
             public string Model { get; set; }
 

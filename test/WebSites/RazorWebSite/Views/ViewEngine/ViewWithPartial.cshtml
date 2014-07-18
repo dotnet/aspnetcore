@@ -1,0 +1,5 @@
+﻿@using RazorWebSite
+@model Person
+<partial>@await Html.PartialAsync("_Partial", Model.Address)
+</partial>
+@ViewBag.TestKey

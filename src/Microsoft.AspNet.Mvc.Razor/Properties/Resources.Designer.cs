@@ -203,6 +203,22 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
+        /// '{0} must be set to access '{1}'.
+        /// </summary>
+        internal static string ViewContextMustBeSet
+        {
+            get { return GetString("ViewContextMustBeSet"); }
+        }
+
+        /// <summary>
+        /// '{0} must be set to access '{1}'.
+        /// </summary>
+        internal static string FormatViewContextMustBeSet(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ViewContextMustBeSet"), p0, p1);
+        }
+
+        /// <summary>
         /// View '{0}' must have extension '{1}' when the view represents a full path.
         /// </summary>
         internal static string ViewMustEndInExtension

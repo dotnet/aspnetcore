@@ -10,30 +10,26 @@ using Microsoft.Framework.DependencyInjection;
 namespace Microsoft.AspNet.Mvc.Razor
 {
     /// <inheritdoc />
-    public class RazorViewActivator : IRazorViewActivator
+    public class RazorPageActivator : IRazorPageActivator
     {
-        // Name of the "public TModel Model" property on RazorView<TModel>
+        // Name of the "public TModel Model" property on RazorPage<TModel>
         private const string ModelPropertyName = "Model";
         private readonly ITypeActivator _typeActivator;
-        private readonly ConcurrentDictionary<Type, ViewActivationInfo> _activationInfo;
+        private readonly ConcurrentDictionary<Type, PageActivationInfo> _activationInfo;
 
         /// <summary>
-        /// Initializes a new instance of the RazorViewActivator class.
+        /// Initializes a new instance of the <see cref="RazorPageActivator"/> class.
         /// </summary>
-        public RazorViewActivator(ITypeActivator typeActivator)
+        public RazorPageActivator(ITypeActivator typeActivator)
         {
             _typeActivator = typeActivator;
-            _activationInfo = new ConcurrentDictionary<Type, ViewActivationInfo>();
+            _activationInfo = new ConcurrentDictionary<Type, PageActivationInfo>();
         }
 
-        /// <summary>
-        /// Activates the specified view by using the specified ViewContext.
-        /// </summary>
-        /// <param name="view">The view to activate.</param>
-        /// <param name="context">The ViewContext for the executing view.</param>
-        public void Activate([NotNull] RazorView view, [NotNull] ViewContext context)
+        /// <inheritdoc />
+        public void Activate([NotNull] RazorPage page, [NotNull] ViewContext context)
         {
-            var activationInfo = _activationInfo.GetOrAdd(view.GetType(),
+            var activationInfo = _activationInfo.GetOrAdd(page.GetType(),
                                                           CreateViewActivationInfo);
 
             context.ViewData = CreateViewDataDictionary(context, activationInfo);
@@ -41,11 +37,11 @@ namespace Microsoft.AspNet.Mvc.Razor
             for (var i = 0; i < activationInfo.PropertyActivators.Length; i++)
             {
                 var activateInfo = activationInfo.PropertyActivators[i];
-                activateInfo.Activate(view, context);
+                activateInfo.Activate(page, context);
             }
         }
 
-        private ViewDataDictionary CreateViewDataDictionary(ViewContext context, ViewActivationInfo activationInfo)
+        private ViewDataDictionary CreateViewDataDictionary(ViewContext context, PageActivationInfo activationInfo)
         {
             // Create a ViewDataDictionary<TModel> if the ViewContext.ViewData is not set or the type of 
             // ViewContext.ViewData is an incompatibile type.
@@ -66,10 +62,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             return context.ViewData;
         }
 
-        private ViewActivationInfo CreateViewActivationInfo(Type type)
+        private PageActivationInfo CreateViewActivationInfo(Type type)
         {
             // Look for a property named "Model". If it is non-null, we'll assume this is 
-            // the equivalent of TModel Model property on RazorView<TModel>
+            // the equivalent of TModel Model property on RazorPage<TModel>
             var modelProperty = type.GetRuntimeProperty(ModelPropertyName);
             if (modelProperty == null)
             {
@@ -80,7 +76,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var modelType = modelProperty.PropertyType;
             var viewDataType = typeof(ViewDataDictionary<>).MakeGenericType(modelType);
 
-            return new ViewActivationInfo
+            return new PageActivationInfo
             {
                 ViewDataDictionaryType = viewDataType,
                 PropertyActivators = PropertyActivator<ViewContext>.GetPropertiesToActivate(type,
@@ -115,7 +111,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             return new PropertyActivator<ViewContext>(property, valueAccessor);
         }
 
-        private class ViewActivationInfo
+        private class PageActivationInfo
         {
             public PropertyActivator<ViewContext>[] PropertyActivators { get; set; }
 

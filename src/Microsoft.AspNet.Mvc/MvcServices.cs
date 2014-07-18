@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Transient<IControllerAssemblyProvider, DefaultControllerAssemblyProvider>();
             yield return describe.Transient<IActionDiscoveryConventions, DefaultActionDiscoveryConventions>();
 
-            yield return describe.Instance<IMvcRazorHost>(new MvcRazorHost(typeof(RazorView).FullName));
+            yield return describe.Instance<IMvcRazorHost>(new MvcRazorHost(typeof(RazorPage).FullName));
 
             yield return describe.Transient<ICompilationService, RoslynCompilationService>();
 
@@ -44,9 +44,9 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Scoped<ICompositeViewEngine, CompositeViewEngine>();
             yield return describe.Singleton<IRazorCompilationService, RazorCompilationService>();
 
-            yield return describe.Singleton<IRazorViewActivator, RazorViewActivator>();
+            yield return describe.Singleton<IRazorPageActivator, RazorPageActivator>();
             // Virtual path view factory needs to stay scoped so views can get get scoped services.
-            yield return describe.Scoped<IVirtualPathViewFactory, VirtualPathViewFactory>();
+            yield return describe.Scoped<IRazorPageFactory, FileBasedRazorPageFactory>();
             yield return describe.Singleton<IFileInfoCache, ExpiringFileInfoCache>();
 
             yield return describe.Transient<INestedProvider<ActionDescriptorProviderContext>,

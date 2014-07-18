@@ -3,22 +3,25 @@
 
 using System;
 using Microsoft.AspNet.Mvc.Core;
-using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
-    public class VirtualPathViewFactory : IVirtualPathViewFactory
+    /// <summary>
+    /// Represents a <see cref="IRazorPageFactory"/> that creates <see cref="RazorPage"/> instances
+    /// from razor files in the file system.
+    /// </summary>
+    public class FileBasedRazorPageFactory : IRazorPageFactory
     {
         private readonly IRazorCompilationService _compilationService;
         private readonly ITypeActivator _activator;
         private readonly IServiceProvider _serviceProvider;
         private readonly IFileInfoCache _fileInfoCache;
 
-        public VirtualPathViewFactory(IRazorCompilationService compilationService,
-                                      ITypeActivator typeActivator,
-                                      IServiceProvider serviceProvider,
-                                      IFileInfoCache fileInfoCache)
+        public FileBasedRazorPageFactory(IRazorCompilationService compilationService,
+                                    ITypeActivator typeActivator,
+                                    IServiceProvider serviceProvider,
+                                    IFileInfoCache fileInfoCache)
         {
             _compilationService = compilationService;
             _activator = typeActivator;
@@ -26,14 +29,16 @@ namespace Microsoft.AspNet.Mvc.Razor
             _fileInfoCache = fileInfoCache;
         }
 
-        public IView CreateInstance([NotNull] string virtualPath)
+        /// <inheritdoc />
+        public RazorPage CreateInstance([NotNull] string viewPath)
         {
-            var fileInfo = _fileInfoCache.GetFileInfo(virtualPath);
+            var fileInfo = _fileInfoCache.GetFileInfo(viewPath.TrimStart('~'));
 
             if (fileInfo != null)
             {
                 var result = _compilationService.Compile(fileInfo);
-                return (IView)_activator.CreateInstance(_serviceProvider, result.CompiledType);
+                var page = (RazorPage)_activator.CreateInstance(_serviceProvider, result.CompiledType);
+                return page;
             }
 
             return null;

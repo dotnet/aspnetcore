@@ -26,11 +26,14 @@ namespace Microsoft.AspNet.Mvc.Razor
             "/Views/Shared/{0}" + ViewExtension,
         };
 
-        private readonly IVirtualPathViewFactory _virtualPathFactory;
+        private readonly IRazorPageFactory _pageFactory;
+        private readonly IRazorPageActivator _viewActivator;
 
-        public RazorViewEngine(IVirtualPathViewFactory virtualPathFactory)
+        public RazorViewEngine(IRazorPageFactory pageFactory,
+                               IRazorPageActivator viewActivator)
         {
-            _virtualPathFactory = virtualPathFactory;
+            _pageFactory = pageFactory;
+            _viewActivator = viewActivator;
         }
 
         public IEnumerable<string> ViewLocationFormats
@@ -41,18 +44,19 @@ namespace Microsoft.AspNet.Mvc.Razor
         public ViewEngineResult FindView([NotNull] IDictionary<string, object> context,
                                          [NotNull] string viewName)
         {
-            var viewEngineResult = CreateViewEngineResult(context, viewName);
+            var viewEngineResult = CreateViewEngineResult(context, viewName, partial: false);
             return viewEngineResult;
         }
 
         public ViewEngineResult FindPartialView([NotNull] IDictionary<string, object> context,
                                                 [NotNull] string partialViewName)
         {
-            return FindView(context, partialViewName);
+            return CreateViewEngineResult(context, partialViewName, partial: true);
         }
 
         private ViewEngineResult CreateViewEngineResult([NotNull] IDictionary<string, object> context,
-                                                        [NotNull] string viewName)
+                                                        [NotNull] string viewName,
+                                                        bool partial)
         {
             var nameRepresentsPath = IsSpecificPath(viewName);
 
@@ -64,8 +68,9 @@ namespace Microsoft.AspNet.Mvc.Razor
                         Resources.FormatViewMustEndInExtension(viewName, ViewExtension));
                 }
 
-                var view = _virtualPathFactory.CreateInstance(viewName);
-                return view != null ? ViewEngineResult.Found(viewName, view) :
+                var page = _pageFactory.CreateInstance(viewName);
+
+                return page != null ? CreateFoundResult(page, viewName, partial) :
                                       ViewEngineResult.NotFound(viewName, new[] { viewName });
             }
             else
@@ -76,15 +81,24 @@ namespace Microsoft.AspNet.Mvc.Razor
 
                 foreach (var path in potentialPaths)
                 {
-                    var view = _virtualPathFactory.CreateInstance(path);
-                    if (view != null)
+                    var page = _pageFactory.CreateInstance(path);
+                    if (page != null)
                     {
-                        return ViewEngineResult.Found(viewName, view);
+                        return CreateFoundResult(page, path, partial);
                     }
                 }
 
                 return ViewEngineResult.NotFound(viewName, potentialPaths);
             }
+        }
+
+        private ViewEngineResult CreateFoundResult(RazorPage page, string viewName, bool partial)
+        {
+            var view = new RazorView(_pageFactory,
+                                     _viewActivator,
+                                     page, 
+                                     executeViewHierarchy: !partial);
+            return ViewEngineResult.Found(viewName, view);
         }
 
         private static bool IsSpecificPath(string name)

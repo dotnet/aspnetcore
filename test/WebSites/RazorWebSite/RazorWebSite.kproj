@@ -6,9 +6,14 @@
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>3f6e355e-4869-41d9-943b-d54771221a7f</ProjectGuid>
+    <ProjectGuid>b07caf59-11ed-40e3-a5db-e1178f84fa78</ProjectGuid>
     <OutputType>Library</OutputType>
-    <ActiveTargetFramework>net45</ActiveTargetFramework>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(OutputType) == 'Console'">
+    <DebuggerFlavor>ConsoleDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(OutputType) == 'Web'">
+    <DebuggerFlavor>WebDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
   </PropertyGroup>
@@ -18,16 +23,21 @@
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="project.json" />
+    <Content Include="Project.json" />
+    <Content Include="Views\Shared\_Partial.cshtml" />
+    <Content Include="Views\ViewEngine\ViewWithNestedLayout.cshtml" />
+    <Content Include="Views\ViewEngine\ViewWithLayout.cshtml" />
+    <Content Include="Views\ViewEngine\ViewWithFullPath.cshtml" />
+    <Content Include="Views\ViewEngine\ViewWithPartial.cshtml" />
+    <Content Include="Views\ViewEngine\ViewWithoutLayout.cshtml" />
+    <Content Include="Views\Shared\_Layout.cshtml" />
+    <Content Include="Views\ViewEngine\_NestedLayout.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MvcRazorCodeParserTest.cs" />
-    <Compile Include="RazorCompilationServiceTest.cs" />
-    <Compile Include="RazorPageActivatorTest.cs" />
-    <Compile Include="RazorViewEngineTest.cs" />
-    <Compile Include="RazorPageTest.cs" />
-    <Compile Include="RazorViewTest.cs" />
-    <Compile Include="SpanFactory.cs" />
+    <Compile Include="Controllers\ViewEngineController.cs" />
+    <Compile Include="Models\Person.cs" />
+    <Compile Include="Models\Address.cs" />
+    <Compile Include="Startup.cs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>

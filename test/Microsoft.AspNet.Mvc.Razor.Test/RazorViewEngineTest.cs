@@ -162,10 +162,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
         private IViewEngine CreateSearchLocationViewEngineTester()
         {
-            var virtualPathFactory = new Mock<IVirtualPathViewFactory>();
-            virtualPathFactory.Setup(vpf => vpf.CreateInstance(It.IsAny<string>())).Returns<IView>(null);
+            var pageFactory = new Mock<IRazorPageFactory>();
+            pageFactory.Setup(vpf => vpf.CreateInstance(It.IsAny<string>()))
+                       .Returns<RazorPage>(null);
 
-            var viewEngine = new RazorViewEngine(virtualPathFactory.Object);
+            var pageActivator = Mock.Of<IRazorPageActivator>();
+
+            var viewEngine = new RazorViewEngine(pageFactory.Object, pageActivator);
 
             return viewEngine;
         }
