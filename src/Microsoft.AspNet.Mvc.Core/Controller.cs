@@ -416,6 +416,16 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
+        /// Creates an <see cref="HttpNotFoundResult"/> that produces a Not Found (404) response.
+        /// </summary>
+        /// <returns>The created <see cref="HttpNotFoundResult"/> for the response.</returns>
+        [NonAction]
+        public virtual HttpNotFoundResult HttpNotFound()
+        {
+            return new HttpNotFoundResult();
+        }
+
+        /// <summary>
         /// Called before the action method is invoked.
         /// </summary>
         /// <param name="context">The action executing context.</param>

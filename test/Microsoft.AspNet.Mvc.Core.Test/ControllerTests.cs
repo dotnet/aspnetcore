@@ -357,6 +357,20 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Equal(TypeHelper.ObjectToDictionary(routeValues), resultPermanent.RouteValues);
         }
 
+        [Fact]
+        public void HttpNotFound_SetsStatusCode()
+        {
+            // Arrange
+            var controller = new Controller();
+
+            // Act
+            var result = controller.HttpNotFound();
+
+            // Assert
+            Assert.IsType<HttpNotFoundResult>(result);
+            Assert.Equal(404, result.StatusCode);
+        }
+
         [Theory]
         [MemberData("PublicNormalMethodsFromController")]
         public void NonActionAttribute_IsOnEveryPublicNormalMethodFromController(MethodInfo method)

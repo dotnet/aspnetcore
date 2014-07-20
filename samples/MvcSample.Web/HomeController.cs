@@ -29,6 +29,11 @@ namespace MvcSample.Web
             return View();
         }
 
+        public ActionResult NotFound()
+        {
+            return HttpNotFound();
+        }
+
         /// <summary>
         /// Action that shows metadata when model is <c>null</c>.
         /// </summary>

@@ -23,6 +23,8 @@
   <ItemGroup>
     <Compile Include="ActionAttributeTests.cs" />
     <Compile Include="ActionExecutorTests.cs" />
+    <Compile Include="ActionResults\HttpNotFoundResultTests.cs" />
+    <Compile Include="ActionResults\HttpStatusCodeResultTests.cs" />
     <Compile Include="ActionResults\ObjectContentResultTests.cs" />
     <Compile Include="ActionResults\ChallengeResultTest.cs" />
     <Compile Include="ActionResults\RedirectToActionResultTest.cs" />
