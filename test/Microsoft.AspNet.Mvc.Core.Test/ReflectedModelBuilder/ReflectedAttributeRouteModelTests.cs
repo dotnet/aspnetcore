@@ -6,9 +6,9 @@ using System;
 using System.Collections.Generic;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Routing
+namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
 {
-    public class AttributeRouteTemplateTests
+    public class ReflectedAttributeRouteModelTests
     {
         [Theory]
         [InlineData(null, null, null)]
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.Routing
         public void Combine_EmptyTemplates(string left, string right, string expected)
         {
             // Arrange & Act
-            var combined = AttributeRouteTemplate.Combine(left, right);
+            var combined = ReflectedAttributeRouteModel.CombineTemplates(left, right);
 
             // Assert
             Assert.Equal(expected, combined);
@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Mvc.Routing
         public void Combine_OneTemplateHasValue(string left, string right, string expected)
         {
             // Arrange & Act
-            var combined = AttributeRouteTemplate.Combine(left, right);
+            var combined = ReflectedAttributeRouteModel.CombineTemplates(left, right);
 
             // Assert
             Assert.Equal(expected, combined);
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Mvc.Routing
         public void Combine_BothTemplatesHasValue(string left, string right, string expected)
         {
             // Arrange & Act
-            var combined = AttributeRouteTemplate.Combine(left, right);
+            var combined = ReflectedAttributeRouteModel.CombineTemplates(left, right);
 
             // Assert
             Assert.Equal(expected, combined);
@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.Mvc.Routing
         public void Combine_InvalidTemplates(string left, string right, string expected)
         {
             // Arrange & Act
-            var combined = AttributeRouteTemplate.Combine(left, right);
+            var combined = ReflectedAttributeRouteModel.CombineTemplates(left, right);
 
             // Assert
             Assert.Equal(expected, combined);
@@ -194,7 +194,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             }
 
             // Act
-            var result = AttributeRouteTemplate.ReplaceTokens(template, valuesDictionary);
+            var result = ReflectedAttributeRouteModel.ReplaceTokens(template, valuesDictionary);
 
             // Assert
             Assert.Equal(expected, result);
@@ -283,7 +283,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(
-                () => { AttributeRouteTemplate.ReplaceTokens(template, valuesDictionary); });
+                () => { ReflectedAttributeRouteModel.ReplaceTokens(template, valuesDictionary); });
 
             // Assert
             Assert.Equal(expected, ex.Message);
@@ -308,10 +308,74 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(
-                () => { AttributeRouteTemplate.ReplaceTokens(template, values); });
+                () => { ReflectedAttributeRouteModel.ReplaceTokens(template, values); });
 
             // Assert
             Assert.Equal(expected, ex.Message);
+        }
+
+        [Theory]
+        [MemberData("ValidReflectedAttributeRouteModelsTestData")]
+        public void Combine_ValidReflectedAttributeRouteModels(
+            ReflectedAttributeRouteModel left,
+            ReflectedAttributeRouteModel right,
+            ReflectedAttributeRouteModel expectedResult)
+        {
+            // Arrange & Act
+            var combined = ReflectedAttributeRouteModel.CombineReflectedAttributeRouteModel(left, right);
+
+            // Assert
+            Assert.NotNull(combined);
+            Assert.Equal(expectedResult.Template, combined.Template);
+        }
+
+        [Theory]
+        [MemberData("NullOrNullTemplateReflectedAttributeRouteModelTestData")]
+        public void Combine_NullOrNullTemplateReflectedAttributeRouteModels(
+            ReflectedAttributeRouteModel left,
+            ReflectedAttributeRouteModel right)
+        {
+            // Arrange & Act
+            var combined = ReflectedAttributeRouteModel.CombineReflectedAttributeRouteModel(left, right);
+
+            // Assert
+            Assert.Null(combined);
+        }
+
+        public static IEnumerable<object[]> NullOrNullTemplateReflectedAttributeRouteModelTestData
+        {
+            get
+            {
+                var data = new TheoryData<ReflectedAttributeRouteModel, ReflectedAttributeRouteModel>();
+                data.Add(null, null);
+                data.Add(null, Create(null));
+                data.Add(Create(null), null);
+                data.Add(Create(null), Create(null));
+
+                return data;
+            }
+        }
+
+        public static IEnumerable<object []> ValidReflectedAttributeRouteModelsTestData
+        {
+            get
+            {
+                var data = new TheoryData<ReflectedAttributeRouteModel, ReflectedAttributeRouteModel, ReflectedAttributeRouteModel>();
+                data.Add(null, Create("Index"), Create("Index"));
+                data.Add(Create("Home"), null, Create("Home"));
+                data.Add(Create("Home"), Create("Index"), Create("Home/Index"));
+                data.Add(Create("Blog"), Create("/Index"), Create("Index"));
+
+                return data;
+            }
+        }
+
+        private static ReflectedAttributeRouteModel Create(string template)
+        {
+            return new ReflectedAttributeRouteModel
+            {
+                Template = template
+            };
         }
     }
 }

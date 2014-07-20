@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                 "The following errors occurred with attribute routing information:" + Environment.NewLine +
                 Environment.NewLine +
                 "For action: 'DisallowedParameter'" + Environment.NewLine +
-                "Error: The attribute route '{foo}/{action}' cannot contain a parameter named '{foo}'. " + 
+                "Error: The attribute route '{foo}/{action}' cannot contain a parameter named '{foo}'. " +
                 "Use '[foo]' in the route template to insert the value 'bleh'.";
 
             var router = CreateRouter();
@@ -106,7 +106,9 @@ namespace Microsoft.AspNet.Mvc.Routing
             {
                 new RouteDataActionConstraint(AttributeRouting.RouteGroupKey, "group"),
             };
-            action.AttributeRouteTemplate = "{controller}/{action}";
+            action.AttributeRouteInfo = new AttributeRouteInfo();
+            action.AttributeRouteInfo.Template = "{controller}/{action}";
+
             action.RouteValueDefaults.Add("controller", "Home");
             action.RouteValueDefaults.Add("action", "Index");
 
@@ -136,7 +138,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                 {
                     new RouteDataActionConstraint(AttributeRouting.RouteGroupKey, "whatever"),
                 },
-                AttributeRouteTemplate = template,
+                AttributeRouteInfo = new AttributeRouteInfo { Template = template },
             };
         }
 

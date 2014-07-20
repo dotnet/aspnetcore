@@ -5,21 +5,62 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Mvc.Routing;
 
-namespace Microsoft.AspNet.Mvc.Routing
+namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
 {
-    /// <summary>
-    /// Functionality supporting route templates for attribute routes.
-    /// </summary>
-    public static class AttributeRouteTemplate
+    public class ReflectedAttributeRouteModel
     {
+        private static readonly ReflectedAttributeRouteModel _default = new ReflectedAttributeRouteModel();
+
+        public ReflectedAttributeRouteModel()
+        {
+        }
+
+        public ReflectedAttributeRouteModel([NotNull] IRouteTemplateProvider templateProvider)
+        {
+            Template = templateProvider.Template;
+        }
+
+        public string Template { get; set; }
+
+    /// <summary>
+        /// Combines two <see cref="ReflectedAttributeRouteModel"/> instances and returns
+        /// a new <see cref="ReflectedAttributeRouteModel"/> instance with the result.
+    /// </summary>
+        /// <param name="left">The left <see cref="ReflectedAttributeRouteModel"/>.</param>
+        /// <param name="right">The right <see cref="ReflectedAttributeRouteModel"/>.</param>
+        /// <returns>A new instance of <see cref="ReflectedAttributeRouteModel"/> that represents the
+        /// combination of the two <see cref="ReflectedAttributeRouteModel"/> instances or <c>null</c> if both
+        /// parameters are <c>null</c>.</returns>
+        public static ReflectedAttributeRouteModel CombineReflectedAttributeRouteModel(
+            ReflectedAttributeRouteModel left,
+            ReflectedAttributeRouteModel right)
+        {
+            left = left ?? _default;
+            right = right ?? _default;
+
+            var template = CombineTemplates(left.Template, right.Template);
+
+            // The action is not attribute routed.
+            if (template == null)
+            {
+                return null;
+            }
+
+            return new ReflectedAttributeRouteModel()
+    {
+                Template = template
+            };
+        }
+
         /// <summary>
         /// Combines attribute routing templates.
         /// </summary>
         /// <param name="left">The left template.</param>
         /// <param name="right">The right template.</param>
         /// <returns>A combined template.</returns>
-        public static string Combine(string left, string right)
+        public static string CombineTemplates(string left, string right)
         {
             var result = CombineCore(left, right);
             return CleanTemplate(result);

@@ -220,10 +220,10 @@ namespace Microsoft.AspNet.Mvc.Test
 
             // Assert
             var controller = Assert.Single(model.Controllers);
-            Assert.Equal("api/Token/[key]/[controller]", controller.RouteTemplate);
+            Assert.Equal("api/Token/[key]/[controller]", controller.AttributeRouteModel.Template);
 
             var action = Assert.Single(controller.Actions);
-            Assert.Equal("stub/[action]", action.RouteTemplate);
+            Assert.Equal("stub/[action]", action.AttributeRouteModel.Template);
         }
 
         [Fact]
@@ -237,7 +237,7 @@ namespace Microsoft.AspNet.Mvc.Test
 
             // Assert
             var action = Assert.Single(actions);
-            Assert.Equal("api/Token/value/TokenReplacement/stub/ThisIsAnAction", action.AttributeRouteTemplate);
+            Assert.Equal("api/Token/value/TokenReplacement/stub/ThisIsAnAction", action.AttributeRouteInfo.Template);
         }
 
         [Fact]
@@ -276,7 +276,7 @@ namespace Microsoft.AspNet.Mvc.Test
 
             // Assert
             var action = Assert.Single(actions);
-            Assert.Equal("stub/ThisIsAnAction", action.AttributeRouteTemplate);
+            Assert.Equal("stub/ThisIsAnAction", action.AttributeRouteInfo.Template);
         }
 
         // Token replacement happens before we 'group' routes. So two route templates
@@ -314,7 +314,7 @@ namespace Microsoft.AspNet.Mvc.Test
 
             // Assert
             var action = Assert.Single(actions);
-            Assert.Equal("stub/{controller}/{action}", action.AttributeRouteTemplate);
+            Assert.Equal("stub/{controller}/{action}", action.AttributeRouteInfo.Template);
         }
 
         private ReflectedActionDescriptorProvider GetProvider(

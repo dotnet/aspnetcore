@@ -146,6 +146,15 @@ namespace Microsoft.AspNet.Mvc
                         });
                     }
 
+                    var combinedRoute = ReflectedAttributeRouteModel.CombineReflectedAttributeRouteModel(
+                            controller.AttributeRouteModel,
+                            action.AttributeRouteModel);
+
+                    var attributeRouteInfo = combinedRoute == null ? null : new AttributeRouteInfo()
+                    {
+                        Template = combinedRoute.Template
+                    };
+
                     var actionDescriptor = new ReflectedActionDescriptor()
                     {
                         Name = action.ActionName,
@@ -153,6 +162,7 @@ namespace Microsoft.AspNet.Mvc
                         MethodInfo = action.ActionMethod,
                         Parameters = parameterDescriptors,
                         RouteConstraints = new List<RouteDataActionConstraint>(),
+                        AttributeRouteInfo = attributeRouteInfo
                     };
 
                     actionDescriptor.DisplayName = string.Format(
@@ -202,11 +212,8 @@ namespace Microsoft.AspNet.Mvc
                         }
                     }
 
-                    var templateText = AttributeRouteTemplate.Combine(
-                            controller.RouteTemplate,
-                            action.RouteTemplate);
-
-                    if (templateText != null)
+                    if (actionDescriptor.AttributeRouteInfo != null &&
+                        actionDescriptor.AttributeRouteInfo.Template != null)
                     {
                         // An attribute routed action will ignore conventional routed constraints. We still
                         // want to provide these values as ambient values.
@@ -217,9 +224,10 @@ namespace Microsoft.AspNet.Mvc
 
                         // Replaces tokens like [controller]/[action] in the route template with the actual values
                         // for this action.
+                        var templateText = actionDescriptor.AttributeRouteInfo.Template;
                         try
                         {
-                            templateText = AttributeRouteTemplate.ReplaceTokens(
+                            templateText = ReflectedAttributeRouteModel.ReplaceTokens(
                                 templateText,
                                 actionDescriptor.RouteValueDefaults);
                         }
@@ -233,7 +241,7 @@ namespace Microsoft.AspNet.Mvc
                             routeTemplateErrors.Add(message);
                         }
 
-                        actionDescriptor.AttributeRouteTemplate = templateText;
+                        actionDescriptor.AttributeRouteInfo.Template = templateText;
 
                         // An attribute routed action is matched by its 'route group' which identifies all equivalent
                         // actions.
@@ -261,40 +269,41 @@ namespace Microsoft.AspNet.Mvc
 
                     actions.Add(actionDescriptor);
                 }
-            }
 
-            foreach (var actionDescriptor in actions)
-            {
-                foreach (var key in removalConstraints)
+                foreach (var actionDescriptor in actions)
                 {
-                    if (actionDescriptor.AttributeRouteTemplate == null)
+                    foreach (var key in removalConstraints)
                     {
-                        // Any any attribute routes are in use, then non-attribute-routed ADs can't be selected
-                        // when a route group returned by the route.
-                        if (routeGroupsByTemplate.Any())
+                        if (actionDescriptor.AttributeRouteInfo == null ||
+                            actionDescriptor.AttributeRouteInfo.Template == null)
                         {
-                            actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
-                                AttributeRouting.RouteGroupKey,
-                                RouteKeyHandling.DenyKey));
-                        }
+                            // Any any attribute routes are in use, then non-attribute-routed ADs can't be selected
+                            // when a route group returned by the route.
+                            if (routeGroupsByTemplate.Any())
+                            {
+                                actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
+                                    AttributeRouting.RouteGroupKey,
+                                    RouteKeyHandling.DenyKey));
+                            }
 
-                        if (!HasConstraint(actionDescriptor.RouteConstraints, key))
-                        {
-                            actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
-                                key,
-                                RouteKeyHandling.DenyKey));
+                            if (!HasConstraint(actionDescriptor.RouteConstraints, key))
+                            {
+                                actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
+                                    key,
+                                    RouteKeyHandling.DenyKey));
+                            }
                         }
-                    }
-                    else
-                    {
-                        // We still want to add a 'null' for any constraint with DenyKey so that link generation
-                        // works properly.
-                        //
-                        // Consider an action like { area = "", controller = "Home", action = "Index" }. Even if
-                        // it's attribute routed, it needs to know that area must be null to generate a link.
-                        if (!actionDescriptor.RouteValueDefaults.ContainsKey(key))
+                        else
                         {
-                            actionDescriptor.RouteValueDefaults.Add(key, null);
+                            // We still want to add a 'null' for any constraint with DenyKey so that link generation
+                            // works properly.
+                            //
+                            // Consider an action like { area = "", controller = "Home", action = "Index" }. Even if
+                            // it's attribute routed, it needs to know that area must be null to generate a link.
+                            if (!actionDescriptor.RouteValueDefaults.ContainsKey(key))
+                            {
+                                actionDescriptor.RouteValueDefaults.Add(key, null);
+                            }
                         }
                     }
                 }

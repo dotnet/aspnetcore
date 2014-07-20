@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
             var routeTemplateAttribute = Attributes.OfType<IRouteTemplateProvider>().FirstOrDefault();
             if (routeTemplateAttribute != null)
             {
-                RouteTemplate = routeTemplateAttribute.Template;
+                AttributeRouteModel = new ReflectedAttributeRouteModel(routeTemplateAttribute);
             }
 
             ControllerName = controllerType.Name.EndsWith("Controller", StringComparison.Ordinal)
@@ -47,6 +47,6 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
 
         public List<RouteConstraintAttribute> RouteConstraints { get; private set; }
 
-        public string RouteTemplate { get; set; }
+        public ReflectedAttributeRouteModel AttributeRouteModel { get; set; }
     }
 }

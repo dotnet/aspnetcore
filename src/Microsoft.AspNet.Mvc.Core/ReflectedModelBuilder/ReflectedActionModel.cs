@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
             var routeTemplateAttribute = Attributes.OfType<IRouteTemplateProvider>().FirstOrDefault();
             if (routeTemplateAttribute != null)
             {
-                RouteTemplate = routeTemplateAttribute.Template;
+                AttributeRouteModel = new ReflectedAttributeRouteModel(routeTemplateAttribute);
             }
 
             HttpMethods = new List<string>();
@@ -44,6 +44,6 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
 
         public List<ReflectedParameterModel> Parameters { get; private set; }
 
-        public string RouteTemplate { get; set; }
+        public ReflectedAttributeRouteModel AttributeRouteModel { get; set; }
     }
 }

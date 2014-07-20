@@ -115,7 +115,9 @@ namespace Microsoft.AspNet.Mvc.Routing
             // of memory, so sharing is worthwhile.
             var templateCache = new Dictionary<string, RouteTemplate>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (var action in actions.Where(a => a.AttributeRouteTemplate != null))
+            var attributeRoutedActions = actions.Where(a => a.AttributeRouteInfo != null &&
+                a.AttributeRouteInfo.Template != null);
+            foreach (var action in attributeRoutedActions)
             {
                 var routeInfo = GetRouteInfo(constraintResolver, templateCache, action);
                 if (routeInfo.ErrorMessage == null)
@@ -169,17 +171,17 @@ namespace Microsoft.AspNet.Mvc.Routing
             {
                 ActionDescriptor = action,
                 RouteGroup = constraint.RouteValue,
-                RouteTemplate = action.AttributeRouteTemplate,
+                RouteTemplate = action.AttributeRouteInfo.Template,
             };
 
             try
             {
                 RouteTemplate parsedTemplate;
-                if (!templateCache.TryGetValue(action.AttributeRouteTemplate, out parsedTemplate))
+                if (!templateCache.TryGetValue(action.AttributeRouteInfo.Template, out parsedTemplate))
                 {
                     // Parsing with throw if the template is invalid.
-                    parsedTemplate = TemplateParser.Parse(action.AttributeRouteTemplate, constraintResolver);
-                    templateCache.Add(action.AttributeRouteTemplate, parsedTemplate);
+                    parsedTemplate = TemplateParser.Parse(action.AttributeRouteInfo.Template, constraintResolver);
+                    templateCache.Add(action.AttributeRouteInfo.Template, parsedTemplate);
                 }
 
                 routeInfo.ParsedTemplate = parsedTemplate;
