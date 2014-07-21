@@ -30,14 +30,15 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public IRazorPage CreateInstance([NotNull] string viewPath)
+        public IRazorPage CreateInstance([NotNull] string path)
         {
-            var fileInfo = _fileInfoCache.GetFileInfo(viewPath);
+            var fileInfo = _fileInfoCache.GetFileInfo(path);
 
             if (fileInfo != null)
             {
                 var result = _compilationService.Compile(fileInfo);
                 var page = (IRazorPage)_activator.CreateInstance(_serviceProvider, result.CompiledType);
+                page.Path = path;
                 return page;
             }
 

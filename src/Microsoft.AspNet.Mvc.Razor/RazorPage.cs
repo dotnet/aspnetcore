@@ -43,6 +43,9 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <inheritdoc />
+        public string Path { get; set; }
+
+        /// <inheritdoc />
         public ViewContext ViewContext { get; set; }
 
         public string Layout { get; set; }

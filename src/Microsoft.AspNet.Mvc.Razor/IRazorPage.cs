@@ -16,6 +16,11 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         ViewContext ViewContext { get; set; }
 
+        /// <summary>
+        /// Gets the path to the page.
+        /// </summary>
+        string Path { get; set; }
+
         string BodyContent { get; set; }
 
         /// <summary>

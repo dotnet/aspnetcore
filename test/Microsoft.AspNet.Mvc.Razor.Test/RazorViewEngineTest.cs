@@ -160,15 +160,35 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             }, result.SearchedLocations);
         }
 
+        [Fact]
+        public void FindView_ReturnsRazorView_IfLookupWasSuccessful()
+        {
+            // Arrange
+            var pageFactory = new Mock<IRazorPageFactory>();
+            pageFactory.Setup(p => p.CreateInstance(It.IsAny<string>()))
+                       .Returns(Mock.Of<IRazorPage>());
+            var viewEngine = new RazorViewEngine(pageFactory.Object,
+                                                 Mock.Of<IRazorPageActivator>(),
+                                                 Mock.Of<IViewStartProvider>());
+
+            // Act
+            var result = viewEngine.FindView(_controllerTestContext, "test-view");
+
+            // Assert
+            Assert.True(result.Success);
+            Assert.IsType<RazorView>(result.View);
+            Assert.Equal("/Views/bar/test-view.cshtml", result.ViewName);
+        }
+
         private IViewEngine CreateSearchLocationViewEngineTester()
         {
             var pageFactory = new Mock<IRazorPageFactory>();
             pageFactory.Setup(vpf => vpf.CreateInstance(It.IsAny<string>()))
                        .Returns<RazorPage>(null);
 
-            var pageActivator = Mock.Of<IRazorPageActivator>();
-
-            var viewEngine = new RazorViewEngine(pageFactory.Object, pageActivator);
+            var viewEngine = new RazorViewEngine(pageFactory.Object,
+                                                 Mock.Of<IRazorPageActivator>(),
+                                                 Mock.Of<IViewStartProvider>());
 
             return viewEngine;
         }

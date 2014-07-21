@@ -39,6 +39,7 @@
     <Content Include="Views\Shared\HelloWorldPartial.cshtml" />
     <Content Include="Views\Shared\MyView.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
+    <Content Include="Views\_ViewStart.cshtml" />
     <Content Include="web.config" />
     <Content Include="web.Debug.config" />
     <Content Include="web.Release.config" />

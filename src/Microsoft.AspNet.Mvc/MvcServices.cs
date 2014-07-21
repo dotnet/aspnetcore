@@ -43,6 +43,7 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Singleton<IViewEngineProvider, DefaultViewEngineProvider>();
             yield return describe.Scoped<ICompositeViewEngine, CompositeViewEngine>();
             yield return describe.Singleton<IRazorCompilationService, RazorCompilationService>();
+            yield return describe.Singleton<IViewStartProvider, ViewStartProvider>();
 
             yield return describe.Singleton<IRazorPageActivator, RazorPageActivator>();
             // Virtual path view factory needs to stay scoped so views can get get scoped services.

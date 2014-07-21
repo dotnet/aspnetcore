@@ -28,12 +28,15 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private readonly IRazorPageFactory _pageFactory;
         private readonly IRazorPageActivator _viewActivator;
+        private readonly IViewStartProvider _viewStartProvider;
 
         public RazorViewEngine(IRazorPageFactory pageFactory,
-                               IRazorPageActivator viewActivator)
+                               IRazorPageActivator viewActivator,
+                               IViewStartProvider viewStartProvider)
         {
             _pageFactory = pageFactory;
             _viewActivator = viewActivator;
+            _viewStartProvider = viewStartProvider;
         }
 
         public IEnumerable<string> ViewLocationFormats
@@ -96,6 +99,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             var view = new RazorView(_pageFactory,
                                      _viewActivator,
+                                     _viewStartProvider,
                                      page, 
                                      executeViewHierarchy: !partial);
             return ViewEngineResult.Found(viewName, view);

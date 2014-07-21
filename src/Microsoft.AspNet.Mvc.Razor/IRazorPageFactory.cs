@@ -11,8 +11,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <summary>
         /// Creates a <see cref="IRazorPage"/> for the specified path.
         /// </summary>
-        /// <param name="viewPath">The path to locate the RazorPage.</param>
+        /// <param name="path">The path to locate the page.</param>
         /// <returns>The IRazorPage instance if it exists, null otherwise.</returns>
-        IRazorPage CreateInstance(string viewPath);
+        IRazorPage CreateInstance(string path);
     }
 }
