@@ -3,10 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -14,20 +12,20 @@ namespace Microsoft.AspNet.Mvc
     {
         private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly ICompositeModelBinder _compositeModelBinder;
-        private readonly IEnumerable<IValueProviderFactory> _valueProviderFactories;
+        private readonly IValueProviderFactory _compositeValueProviderFactory;
         private readonly IInputFormatterProvider _inputFormatterProvider;
         private readonly IEnumerable<IModelValidatorProvider> _validatorProviders;
         private Tuple<ActionContext, ActionBindingContext> _bindingContext;
 
         public DefaultActionBindingContextProvider(IModelMetadataProvider modelMetadataProvider,
                                                    ICompositeModelBinder compositeModelBinder,
-                                                   IOptionsAccessor<MvcOptions> mvcOptionsAccessor,
+                                                   ICompositeValueProviderFactory compositeValueProviderFactory,
                                                    IInputFormatterProvider inputFormatterProvider,
                                                    IEnumerable<IModelValidatorProvider> validatorProviders)
         {
             _modelMetadataProvider = modelMetadataProvider;
             _compositeModelBinder = compositeModelBinder;
-            _valueProviderFactories = mvcOptionsAccessor.Options.ValueProviderFactories;
+            _compositeValueProviderFactory = compositeValueProviderFactory;
             _inputFormatterProvider = inputFormatterProvider;
             _validatorProviders = validatorProviders;
         }
@@ -46,14 +44,13 @@ namespace Microsoft.AspNet.Mvc
                                     actionContext.HttpContext,
                                     actionContext.RouteData.Values);
 
-            var valueProviders = _valueProviderFactories.Select(factory => factory.GetValueProvider(factoryContext))
-                                                        .Where(vp => vp != null);
+            var valueProvider = _compositeValueProviderFactory.GetValueProvider(factoryContext);
 
             var context = new ActionBindingContext(
                 actionContext,
                 _modelMetadataProvider,
                 _compositeModelBinder,
-                new CompositeValueProvider(valueProviders),
+                valueProvider,
                 _inputFormatterProvider,
                 _validatorProviders);
 

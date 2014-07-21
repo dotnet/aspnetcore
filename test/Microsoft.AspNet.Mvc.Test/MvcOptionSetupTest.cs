@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             Assert.Equal(1, mvcOptions.ViewEngines.Count);
-            Assert.Equal(typeof(RazorViewEngine), mvcOptions.ViewEngines[0].ViewEngineType);
+            Assert.Equal(typeof(RazorViewEngine), mvcOptions.ViewEngines[0].OptionType);
         }
 
         [Fact]
@@ -36,11 +36,11 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             Assert.Equal(5, mvcOptions.ModelBinders.Count);
-            Assert.Equal(typeof(TypeConverterModelBinder), mvcOptions.ModelBinders[0].ModelBinderType);
-            Assert.Equal(typeof(TypeMatchModelBinder), mvcOptions.ModelBinders[1].ModelBinderType);
-            Assert.Equal(typeof(GenericModelBinder), mvcOptions.ModelBinders[2].ModelBinderType);
-            Assert.Equal(typeof(MutableObjectModelBinder), mvcOptions.ModelBinders[3].ModelBinderType);
-            Assert.Equal(typeof(ComplexModelDtoModelBinder), mvcOptions.ModelBinders[4].ModelBinderType);
+            Assert.Equal(typeof(TypeConverterModelBinder), mvcOptions.ModelBinders[0].OptionType);
+            Assert.Equal(typeof(TypeMatchModelBinder), mvcOptions.ModelBinders[1].OptionType);
+            Assert.Equal(typeof(GenericModelBinder), mvcOptions.ModelBinders[2].OptionType);
+            Assert.Equal(typeof(MutableObjectModelBinder), mvcOptions.ModelBinders[3].OptionType);
+            Assert.Equal(typeof(ComplexModelDtoModelBinder), mvcOptions.ModelBinders[4].OptionType);
         }
 
         [Fact]
@@ -56,11 +56,11 @@ namespace Microsoft.AspNet.Mvc
             // Assert
             var valueProviders = mvcOptions.ValueProviderFactories;
             Assert.Equal(3, valueProviders.Count);
-            Assert.IsType<RouteValueValueProviderFactory>(valueProviders[0]);
-            Assert.IsType<QueryStringValueProviderFactory>(valueProviders[1]);
-            Assert.IsType<FormValueProviderFactory>(valueProviders[2]);
+            Assert.IsType<RouteValueValueProviderFactory>(valueProviders[0].Instance);
+            Assert.IsType<QueryStringValueProviderFactory>(valueProviders[1].Instance);
+            Assert.IsType<FormValueProviderFactory>(valueProviders[2].Instance);
         }
-        
+
         [Fact]
         public void Setup_SetsUpOutputFormatters()
         {
@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             Assert.Equal(1, mvcOptions.OutputFormatters.Count);
-            Assert.IsType<JsonOutputFormatter>(mvcOptions.OutputFormatters[0].OutputFormatter);
+            Assert.IsType<JsonOutputFormatter>(mvcOptions.OutputFormatters[0].Instance);
         }
     }
 }

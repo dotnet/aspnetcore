@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public async Task BindModel_SubBindingSucceeds()
         {
             // Arrange
-            var binderProviders = new Mock<IModelBindersProvider>();
+            var binderProviders = new Mock<IModelBinderProvider>();
             binderProviders.SetupGet(b => b.ModelBinders)
                            .Returns(new[] { CreateStringBinder(), CreateIntBinder() });
             var innerBinder = new CompositeModelBinder(binderProviders.Object);

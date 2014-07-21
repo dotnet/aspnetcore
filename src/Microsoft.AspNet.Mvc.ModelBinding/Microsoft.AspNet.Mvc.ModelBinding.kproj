@@ -35,10 +35,8 @@
     <Compile Include="Binders\GenericModelBinder.cs" />
     <Compile Include="Binders\ICompositeModelBinder.cs" />
     <Compile Include="Binders\IModelBinder.cs" />
-    <Compile Include="Binders\IModelBindersProvider.cs" />
+    <Compile Include="Binders\IModelBinderProvider.cs" />
     <Compile Include="Binders\KeyValuePairModelBinder.cs" />
-    <Compile Include="Binders\ModelBinderDescriptor.cs" />
-    <Compile Include="Binders\ModelBinderDescriptorExtensions.cs" />
     <Compile Include="Binders\MutableObjectModelBinder.cs" />
     <Compile Include="Binders\TypeConverterModelBinder.cs" />
     <Compile Include="Binders\TypeMatchModelBinder.cs" />
@@ -110,11 +108,14 @@
     <Compile Include="Validation\RequiredMemberModelValidator.cs" />
     <Compile Include="Validation\ValidatableObjectAdapter.cs" />
     <Compile Include="ValueProviders\CompositeValueProvider.cs" />
+    <Compile Include="ValueProviders\CompositeValueProviderFactory.cs" />
     <Compile Include="ValueProviders\DictionaryBasedValueProvider.cs" />
     <Compile Include="ValueProviders\ElementalValueProvider.cs" />
     <Compile Include="ValueProviders\FormValueProviderFactory.cs" />
+    <Compile Include="ValueProviders\ICompositeValueProviderFactory.cs" />
     <Compile Include="ValueProviders\IEnumerableValueProvider.cs" />
     <Compile Include="ValueProviders\IValueProviderFactory.cs" />
+    <Compile Include="ValueProviders\IValueProviderFactoryProvider.cs" />
     <Compile Include="ValueProviders\IValueProviders.cs" />
     <Compile Include="ValueProviders\QueryStringValueProviderFactory.cs" />
     <Compile Include="ValueProviders\ReadableStringCollectionValueProvider.cs" />

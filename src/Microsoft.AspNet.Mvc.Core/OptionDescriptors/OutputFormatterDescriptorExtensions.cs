@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNet.Mvc.OptionDescriptors;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -18,7 +19,7 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="outputFormatterType">Type representing an <see cref="OutputFormatter"/>.</param>
         /// <returns>OutputFormatterDescriptor representing the added instance.</returns>
         public static OutputFormatterDescriptor Add([NotNull] this IList<OutputFormatterDescriptor> descriptors,
-                                                [NotNull] Type outputFormatterType)
+                                                    [NotNull] Type outputFormatterType)
         {
             var descriptor = new OutputFormatterDescriptor(outputFormatterType);
             descriptors.Add(descriptor);
@@ -32,8 +33,8 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="outputFormatterType">Type representing an <see cref="OutputFormatter"/>.</param>
         /// <returns>OutputFormatterDescriptor representing the inserted instance.</returns>
         public static OutputFormatterDescriptor Insert([NotNull] this IList<OutputFormatterDescriptor> descriptors,
-                                                   int index,
-                                                   [NotNull] Type outputFormatterType)
+                                                       int index,
+                                                       [NotNull] Type outputFormatterType)
         {
             if (index < 0 || index > descriptors.Count)
             {
@@ -52,7 +53,7 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="outputFormatter">An <see cref="OutputFormatter"/> instance.</param>
         /// <returns>OutputFormatterDescriptor representing the added instance.</returns>
         public static OutputFormatterDescriptor Add([NotNull] this IList<OutputFormatterDescriptor> descriptors,
-                                                [NotNull] OutputFormatter outputFormatter)
+                                                    [NotNull] OutputFormatter outputFormatter)
         {
             var descriptor = new OutputFormatterDescriptor(outputFormatter);
             descriptors.Add(descriptor);
@@ -66,8 +67,8 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="outputFormatter">An <see cref="OutputFormatter"/> instance.</param>
         /// <returns>OutputFormatterDescriptor representing the added instance.</returns>
         public static OutputFormatterDescriptor Insert([NotNull] this IList<OutputFormatterDescriptor> descriptors,
-                                                   int index,
-                                                   [NotNull] OutputFormatter outputFormatter)
+                                                       int index,
+                                                       [NotNull] OutputFormatter outputFormatter)
         {
             if (index < 0 || index > descriptors.Count)
             {

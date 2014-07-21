@@ -16,14 +16,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     /// </remarks>
     public class CompositeModelBinder : ICompositeModelBinder
     {
-        private readonly IModelBindersProvider _modelBindersProvider;
+        private readonly IModelBinderProvider _modelBindersProvider;
         private IReadOnlyList<IModelBinder> _binders;
 
         /// <summary>
         /// Initializes a new instance of the CompositeModelBinder class.
         /// </summary>
         /// <param name="modelBindersProvider">Provides a collection of <see cref="IModelBinder"/> instances.</param>
-        public CompositeModelBinder(IModelBindersProvider modelBindersProvider)
+        public CompositeModelBinder(IModelBinderProvider modelBindersProvider)
         {
             _modelBindersProvider = modelBindersProvider;
         }

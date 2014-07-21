@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if NET45
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.OptionDescriptors;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNet.Mvc
 {
     public class ModelBinderDescriptorExtensionTest
     {
@@ -62,11 +63,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.Equal(4, collection.Count);
-            Assert.Equal(binder1, collection[0].ModelBinder);
-            Assert.Equal(binder2, collection[1].ModelBinder);
-            Assert.Equal(type2, collection[2].ModelBinderType);
-            Assert.Equal(type1, collection[3].ModelBinderType);
+            Assert.Equal(binder1, collection[0].Instance);
+            Assert.Equal(binder2, collection[1].Instance);
+            Assert.Equal(type2, collection[2].OptionType);
+            Assert.Equal(type1, collection[3].OptionType);
         }
     }
 }
-#endif

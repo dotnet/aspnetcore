@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.OptionDescriptors;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
     /// Extension methods for adding model binders to a collection.

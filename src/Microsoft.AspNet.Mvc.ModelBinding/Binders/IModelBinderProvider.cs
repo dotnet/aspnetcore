@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     /// <summary>
     /// Provides an activated collection of <see cref="IModelBinder"/> instances.
     /// </summary>
-    public interface IModelBindersProvider
+    public interface IModelBinderProvider
     {
         /// <summary>
         /// Gets a collection of activated ModelBinders instances.

@@ -29,8 +29,6 @@
     <Compile Include="Binders\CompositeModelBinderTest.cs" />
     <Compile Include="Binders\DictionaryModelBinderTest.cs" />
     <Compile Include="Binders\KeyValuePairModelBinderTest.cs" />
-    <Compile Include="Binders\ModelBinderDescriptorExtensionsTest.cs" />
-    <Compile Include="Binders\ModelBinderDescriptorTest.cs" />
     <Compile Include="Binders\ModelBindingContextTest.cs" />
     <Compile Include="Binders\MutableObjectModelBinderTest.cs" />
     <Compile Include="Binders\TypeConverterModelBinderTest.cs" />

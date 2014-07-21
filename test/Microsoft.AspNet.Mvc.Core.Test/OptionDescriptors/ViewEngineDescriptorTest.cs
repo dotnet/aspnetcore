@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
+using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Testing;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Rendering
+namespace Microsoft.AspNet.Mvc.OptionDescriptors
 {
     public class ViewEngineDescriptorTest
     {
@@ -33,8 +33,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var descriptor = new ViewEngineDescriptor(type);
 
             // Assert
-            Assert.Equal(type, descriptor.ViewEngineType);
-            Assert.Null(descriptor.ViewEngine);
+            Assert.Equal(type, descriptor.OptionType);
+            Assert.Null(descriptor.Instance);
         }
 
         [Fact]
@@ -47,8 +47,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var descriptor = new ViewEngineDescriptor(viewEngine);
 
             // Assert
-            Assert.Same(viewEngine, descriptor.ViewEngine);
-            Assert.Equal(viewEngine.GetType(), descriptor.ViewEngineType);
+            Assert.Same(viewEngine, descriptor.Instance);
+            Assert.Equal(viewEngine.GetType(), descriptor.OptionType);
         }
 
         private class TestViewEngine : IViewEngine

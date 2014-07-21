@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if NET45
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNet.Mvc.OptionDescriptors;
+using Microsoft.AspNet.Mvc.Rendering;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Rendering
+namespace Microsoft.AspNet.Mvc
 {
     public class ViewEngineDescriptorExtensionTest
     {
@@ -58,8 +59,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             // Assert
             Assert.Equal(2, collection.Count);
-            Assert.IsType<TestViewEngine>(collection[0].ViewEngine);
-            Assert.Same(viewEngine, collection[0].ViewEngine);
+            Assert.IsType<TestViewEngine>(collection[0].Instance);
+            Assert.Same(viewEngine, collection[0].Instance);
         }
 
         private class TestViewEngine : IViewEngine
@@ -76,4 +77,3 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
     }
 }
-#endif

@@ -38,8 +38,8 @@ namespace Microsoft.AspNet.Mvc
             options.ValueProviderFactories.Add(new FormValueProviderFactory());
 
             // Set up OutputFormatters
-            options.OutputFormatters.Add(new OutputFormatterDescriptor(
-                new JsonOutputFormatter(JsonOutputFormatter.CreateDefaultSettings(), indent: false)));
+            options.OutputFormatters.Add(
+                new JsonOutputFormatter(JsonOutputFormatter.CreateDefaultSettings(), indent: false));
         }
     }
 }

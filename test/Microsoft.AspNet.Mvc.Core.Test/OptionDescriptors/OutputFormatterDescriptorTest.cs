@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNet.Mvc.OptionDescriptors;
 using Microsoft.AspNet.Testing;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Core.Test
+namespace Microsoft.AspNet.Mvc.Core
 {
     public class OutputFormatterDescriptorTest
     {
@@ -18,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var type = typeof(string);
 
             // Act & Assert
-            ExceptionAssert.ThrowsArgument(() => new OutputFormatterDescriptor(type), "outputFormatterType", expected);
+            ExceptionAssert.ThrowsArgument(() => new OutputFormatterDescriptor(type), "type", expected);
         }
     }
 }

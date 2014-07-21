@@ -299,7 +299,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 new TypeConverterModelBinder(),
                 new MutableObjectModelBinder()
             };
-            var binderProviders = new Mock<IModelBindersProvider>();
+            var binderProviders = new Mock<IModelBinderProvider>();
             binderProviders.SetupGet(p => p.ModelBinders)
                            .Returns(binders);
             var binder = new CompositeModelBinder(binderProviders.Object);
@@ -308,7 +308,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
         private static CompositeModelBinder CreateCompositeBinder(IModelBinder mockIntBinder)
         {
-            var binderProvider = new Mock<IModelBindersProvider>();
+            var binderProvider = new Mock<IModelBinderProvider>();
             binderProvider.SetupGet(p => p.ModelBinders)
                           .Returns(new[] { mockIntBinder });
 
