@@ -2,9 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Rendering;
 
@@ -48,8 +45,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             if (_executeViewHierarchy)
             {
-                var bodyContent = await RenderPageAsync(_page, context, executeViewStart: true);
-                await RenderLayoutAsync(context, bodyContent);
+                var bodyWriter = await RenderPageAsync(_page, context, executeViewStart: true);
+                await RenderLayoutAsync(context, bodyWriter);
             }
             else
             {
@@ -57,17 +54,16 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
-        private async Task<string> RenderPageAsync(IRazorPage page, 
-                                                   ViewContext context,
-                                                   bool executeViewStart)
+        private async Task<RazorTextWriter> RenderPageAsync(IRazorPage page,
+                                                            ViewContext context,
+                                                            bool executeViewStart)
         {
-            var contentBuilder = new StringBuilder(1024);
-            using (var bodyWriter = new StringWriter(contentBuilder))
+            using (var bufferedWriter = new RazorTextWriter(context.Writer.Encoding))
             {
                 // The writer for the body is passed through the ViewContext, allowing things like HtmlHelpers
                 // and ViewComponents to reference it.
                 var oldWriter = context.Writer;
-                context.Writer = bodyWriter;
+                context.Writer = bufferedWriter;
                 try
                 {
                     if (executeViewStart)
@@ -75,15 +71,15 @@ namespace Microsoft.AspNet.Mvc.Razor
                         // Execute view starts using the same context + writer as the page to render.
                         await RenderViewStartAsync(context);
                     }
+
                     await RenderPageCoreAsync(page, context);
+                    return bufferedWriter;
                 }
                 finally
                 {
                     context.Writer = oldWriter;
                 }
             }
-
-            return contentBuilder.ToString();
         }
 
         private async Task RenderPageCoreAsync(IRazorPage page, ViewContext context)
@@ -107,7 +103,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         private async Task RenderLayoutAsync(ViewContext context,
-                                             string bodyContent)
+                                             RazorTextWriter bodyWriter)
         {
             // A layout page can specify another layout page. We'll need to continue
             // looking for layout pages until they're no longer specified.
@@ -122,9 +118,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                 }
 
                 layoutPage.PreviousSectionWriters = previousPage.SectionWriters;
-                layoutPage.BodyContent = bodyContent;
-
-                bodyContent = await RenderPageAsync(layoutPage, context, executeViewStart: false);
+                layoutPage.RenderBodyDelegate = bodyWriter.CopyTo;
+                bodyWriter = await RenderPageAsync(layoutPage, context, executeViewStart: false);
 
                 // Verify that RenderBody is called, or that RenderSection is called for all sections
                 layoutPage.EnsureBodyAndSectionsWereRendered();
@@ -132,7 +127,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 previousPage = layoutPage;
             }
 
-            await context.Writer.WriteAsync(bodyContent);
+            await bodyWriter.CopyToAsync(context.Writer);
         }
     }
 }

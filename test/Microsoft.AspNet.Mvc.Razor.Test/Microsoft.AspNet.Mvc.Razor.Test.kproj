@@ -21,9 +21,11 @@
     <Content Include="project.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BufferEntryCollectionTest.cs" />
     <Compile Include="MvcRazorCodeParserTest.cs" />
     <Compile Include="RazorCompilationServiceTest.cs" />
     <Compile Include="RazorPageActivatorTest.cs" />
+    <Compile Include="RazorTextWriterTest.cs" />
     <Compile Include="RazorViewEngineTest.cs" />
     <Compile Include="RazorPageTest.cs" />
     <Compile Include="RazorViewTest.cs" />

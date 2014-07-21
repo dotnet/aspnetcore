@@ -143,7 +143,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             await view.RenderAsync(viewContext);
 
             // Assert
-            Assert.IsType<StringWriter>(actual);
+            Assert.IsType<RazorTextWriter>(actual);
             Assert.NotSame(original, actual);
         }
 

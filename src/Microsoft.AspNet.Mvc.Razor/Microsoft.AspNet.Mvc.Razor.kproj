@@ -22,6 +22,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AttributeValue.cs" />
+    <Compile Include="BufferEntryCollection.cs" />
     <Compile Include="Compilation\CompilationFailedException.cs" />
     <Compile Include="Compilation\CompilationMessage.cs" />
     <Compile Include="Compilation\CompilationResult.cs" />
@@ -30,6 +31,8 @@
     <Compile Include="Compilation\RoslynCompilationService.cs" />
     <Compile Include="Extensions\DictionaryExtensions.cs" />
     <Compile Include="IRazorPage.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RazorTextWriter.cs" />
     <Compile Include="IViewStartProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewStartProvider.cs" />

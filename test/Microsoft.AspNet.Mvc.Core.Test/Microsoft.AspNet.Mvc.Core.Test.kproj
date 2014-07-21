@@ -104,6 +104,7 @@
     <Compile Include="Routing\AttributeRoutePrecedenceTests.cs" />
     <Compile Include="Routing\AttributeRouteTemplateTests.cs" />
     <Compile Include="Routing\AttributeRoutingTest.cs" />
+    <Compile Include="StaticActionDiscoveryConventions.cs" />
     <Compile Include="StaticControllerAssemblyProvider.cs" />
     <Compile Include="Routing\AttributeRouteTests.cs" />
     <Compile Include="TestController.cs" />
