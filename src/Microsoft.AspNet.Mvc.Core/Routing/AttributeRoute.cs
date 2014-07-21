@@ -171,7 +171,15 @@ namespace Microsoft.AspNet.Mvc.Routing
             object providedValue;
             if (!context.Values.TryGetValue(key, out providedValue))
             {
-                context.AmbientValues.TryGetValue(key, out providedValue);
+                // If the required value is an 'empty' route value, then ignore ambient values.
+                // This handles a case where we're generating a link to an action like:
+                // { area = "", controller = "Home", action = "Index" } 
+                //
+                // and the ambient values has a value for area.
+                if (value != null)
+                {
+                    context.AmbientValues.TryGetValue(key, out providedValue);
+                }
             }
 
             return TemplateBinder.RoutePartsEqual(providedValue, value);

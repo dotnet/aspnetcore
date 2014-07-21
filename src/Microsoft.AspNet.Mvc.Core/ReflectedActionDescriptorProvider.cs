@@ -272,6 +272,18 @@ namespace Microsoft.AspNet.Mvc
                                 RouteKeyHandling.DenyKey));
                         }
                     }
+                    else
+                    {
+                        // We still want to add a 'null' for any constraint with DenyKey so that link generation
+                        // works properly.
+                        //
+                        // Consider an action like { area = "", controller = "Home", action = "Index" }. Even if
+                        // it's attribute routed, it needs to know that area must be null to generate a link.
+                        if (!actionDescriptor.RouteValueDefaults.ContainsKey(key))
+                        {
+                            actionDescriptor.RouteValueDefaults.Add(key, null);
+                        }
+                    }
                 }
             }
 

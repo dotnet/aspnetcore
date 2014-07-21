@@ -296,6 +296,102 @@ namespace Microsoft.AspNet.Mvc.Routing
             Assert.Equal(2, callCount);
         }
 
+        [Fact]
+        public void AttributeRoute_GenerateLink_ToArea()
+        {
+            // Arrange
+            var entry1 = CreateGenerationEntry("Help/Store", new { area = "Help", action = "Edit", controller = "Store" });
+            entry1.Precedence = 1;
+
+            var entry2 = CreateGenerationEntry("Store", new { area = (string)null, action = "Edit", controller = "Store" });
+            entry2.Precedence = 2;
+
+            var next = new StubRouter();
+
+            var route = CreateAttributeRoute(next, entry1, entry2);
+
+            var context = CreateVirtualPathContext(new { area = "Help", action = "Edit", controller = "Store" });
+
+            // Act
+            var path = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal("Help/Store", path);
+        }
+
+        [Fact]
+        public void AttributeRoute_GenerateLink_ToArea_PredecedenceReversed()
+        {
+            // Arrange
+            var entry1 = CreateGenerationEntry("Help/Store", new { area = "Help", action = "Edit", controller = "Store" });
+            entry1.Precedence = 2;
+
+            var entry2 = CreateGenerationEntry("Store", new { area = (string)null, action = "Edit", controller = "Store" });
+            entry2.Precedence = 1;
+
+            var next = new StubRouter();
+
+            var route = CreateAttributeRoute(next, entry1, entry2);
+
+            var context = CreateVirtualPathContext(new { area = "Help", action = "Edit", controller = "Store" });
+
+            // Act
+            var path = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal("Help/Store", path);
+        }
+
+        [Fact]
+        public void AttributeRoute_GenerateLink_ToArea_WithAmbientValues()
+        {
+            // Arrange
+            var entry1 = CreateGenerationEntry("Help/Store", new { area = "Help", action = "Edit", controller = "Store" });
+            entry1.Precedence = 1;
+
+            var entry2 = CreateGenerationEntry("Store", new { area = (string)null, action = "Edit", controller = "Store" });
+            entry2.Precedence = 2;
+
+            var next = new StubRouter();
+
+            var route = CreateAttributeRoute(next, entry1, entry2);
+
+            var context = CreateVirtualPathContext(
+                values: new { action = "Edit", controller = "Store" },
+                ambientValues: new { area = "Help" });
+
+            // Act
+            var path = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal("Help/Store", path);
+        }
+
+        [Fact]
+        public void AttributeRoute_GenerateLink_OutOfArea_IgnoresAmbientValue()
+        {
+            // Arrange
+            var entry1 = CreateGenerationEntry("Help/Store", new { area = "Help", action = "Edit", controller = "Store" });
+            entry1.Precedence = 1;
+
+            var entry2 = CreateGenerationEntry("Store", new { area = (string)null, action = "Edit", controller = "Store" });
+            entry2.Precedence = 2;
+
+            var next = new StubRouter();
+
+            var route = CreateAttributeRoute(next, entry1, entry2);
+
+            var context = CreateVirtualPathContext(
+                values: new { action = "Edit", controller = "Store" },
+                ambientValues: new { area = "Blog" });
+
+            // Act
+            var path = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal("Store", path);
+        }
+
         private static VirtualPathContext CreateVirtualPathContext(object values, object ambientValues = null)
         {
             var httpContext = Mock.Of<HttpContext>();
