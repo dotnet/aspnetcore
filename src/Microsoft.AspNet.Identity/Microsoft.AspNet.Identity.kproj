@@ -21,6 +21,7 @@
     <Content Include="Resources.resx" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClaimsIdentityExtensions.cs" />
     <Compile Include="ClaimsIdentityFactory.cs" />
     <Compile Include="ClaimsIdentityOptions.cs" />
     <Compile Include="Crypto.cs" />

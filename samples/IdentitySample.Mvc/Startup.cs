@@ -2,12 +2,14 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.Authentication;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Security.Cookies;
 using Microsoft.Data.Entity;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using IdentitySample.Models;
+using System;
 
 namespace IdentitySamples
 {
@@ -65,6 +67,11 @@ namespace IdentitySamples
             {
                 AuthenticationType = DefaultAuthenticationTypes.ApplicationCookie,
                 LoginPath = new PathString("/Account/Login"),
+                Notifications = new CookieAuthenticationNotifications
+                {
+                    OnValidateIdentity = SecurityStampValidator.OnValidateIdentity<ApplicationUser>(
+                        validateInterval: TimeSpan.FromMinutes(0))
+                }
             });
 
             app.UseTwoFactorSignInCookies();

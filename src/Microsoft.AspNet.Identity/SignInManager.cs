@@ -3,6 +3,7 @@
 
 using System;
 using System.Security.Claims;
+using System.Security.Principal;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Identity
@@ -51,10 +52,32 @@ namespace Microsoft.AspNet.Identity
         }
 
         // TODO: Should this be async?
-        public void SignOut()
+        public virtual void SignOut()
         {
             // REVIEW: need a new home for this option config?
             AuthenticationManager.SignOut(UserManager.Options.ClaimsIdentity.AuthenticationType);
+        }
+
+        /// <summary>
+        /// Validates that the claims identity has a security stamp matching the users
+        /// Returns the user if it matches, null otherwise
+        /// </summary>
+        /// <param name="identity"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public virtual async Task<TUser> ValidateSecurityStamp(ClaimsIdentity identity, string userId)
+        {
+            var user = await UserManager.FindByIdAsync(userId);
+            if (user != null && UserManager.SupportsUserSecurityStamp)
+            {
+                var securityStamp =
+                    identity.FindFirstValue(UserManager.Options.ClaimsIdentity.SecurityStampClaimType);
+                if (securityStamp == await UserManager.GetSecurityStampAsync(user))
+                {
+                    return user;
+                }
+            }
+            return null;
         }
 
         public virtual async Task<SignInStatus> PasswordSignInAsync(string userName, string password, 

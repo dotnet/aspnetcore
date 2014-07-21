@@ -23,6 +23,7 @@
   <ItemGroup>
     <Compile Include="ClaimsIdentityFactoryTest.cs" />
     <Compile Include="IdentityBuilderTest.cs" />
+    <Compile Include="ClaimsIdentityExtensionsTest.cs" />
     <Compile Include="IdentityOptionsTest.cs" />
     <Compile Include="IdentityResultTest.cs" />
     <Compile Include="NoopRoleStore.cs" />
