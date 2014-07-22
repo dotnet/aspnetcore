@@ -6,6 +6,7 @@
         "ActivatorWebSite": "",
         "BasicWebSite": "",
         "CompositeViewEngine":  "",
+        "ConnegWebsite":  "",
         "FormatterWebSite":  "",
         "InlineConstraintsWebSite": "",
         "Microsoft.AspNet.TestHost": "1.0.0-*",

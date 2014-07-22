@@ -31,6 +31,8 @@
     <Compile Include="ActionResults\RedirectToActionResultTest.cs" />
     <Compile Include="ActionResults\RedirectToRouteResultTest.cs" />
     <Compile Include="AntiXsrf\AntiForgeryOptionsTests.cs" />
+    <Compile Include="Filters\ProducesAttributeTests.cs" />
+    <Compile Include="Formatters\OutputFormatterTests.cs" />
     <Compile Include="Formatters\TextPlainFormatterTests.cs" />
     <Compile Include="Logging\BeginScopeContext.cs" />
     <Compile Include="Logging\TestLoggerFactory.cs" />
@@ -40,6 +42,7 @@
     <Compile Include="Logging\NullLoggerFactory.cs" />
     <Compile Include="Logging\TestSink.cs" />
     <Compile Include="Logging\TestLogger.cs" />
+    <Compile Include="MediaTypeWithQualityHeaderValueTests.cs" />
     <Compile Include="MvcRouteHandlerTests.cs" />
     <Compile Include="OptionDescriptors\DefaultModelBindersProviderTest.cs" />
     <Compile Include="OptionDescriptors\DefaultValueProviderFactoryProviderTest.cs" />
@@ -48,12 +51,10 @@
     <Compile Include="OptionDescriptors\ModelBinderDescriptorTest.cs" />
     <Compile Include="OptionDescriptors\OutputFormatterDescriptorExtensionTest.cs" />
     <Compile Include="OptionDescriptors\OutputFormatterDescriptorTest.cs" />
+    <Compile Include="OptionDescriptors\ValueProviderFactoryDescriptorExtensionsTest.cs" />
     <Compile Include="OptionDescriptors\ValueProviderFactoryDescriptorTest.cs" />
     <Compile Include="OptionDescriptors\ViewEngineDescriptorTest.cs" />
-    <Compile Include="OptionDescriptors\ValueProviderFactoryDescriptorExtensionsTest.cs" />
     <Compile Include="OptionDescriptors\ViewEngineDscriptorExtensionsTest.cs" />
-    <Compile Include="Formatters\OutputFormatterTests.cs" />
-    <Compile Include="MediaTypeWithQualityHeaderValueTests.cs" />
     <Compile Include="ParameterBinding\ModelBindingHelperTest.cs" />
     <Compile Include="AntiXsrf\AntiForgeryTokenSerializerTest.cs" />
     <Compile Include="AntiXsrf\ITokenProvider.cs" />
@@ -92,8 +93,8 @@
     <Compile Include="Rendering\DefaultDisplayTemplatesTests.cs" />
     <Compile Include="Rendering\DefaultEditorTemplatesTests.cs" />
     <Compile Include="Rendering\DefaultTemplatesUtilities.cs" />
-    <Compile Include="Rendering\HtmlHelperDisplayNameExtensionsTest.cs" />
     <Compile Include="Rendering\HtmlAttributePropertyHelperTest.cs" />
+    <Compile Include="Rendering\HtmlHelperDisplayNameExtensionsTest.cs" />
     <Compile Include="Rendering\HtmlHelperDisplayTextTest.cs" />
     <Compile Include="Rendering\HtmlHelperLabelExtensionsTest.cs" />
     <Compile Include="Rendering\HtmlHelperNameExtensionsTest.cs" />
@@ -103,10 +104,10 @@
     <Compile Include="KnownRouteValueConstraintTests.cs" />
     <Compile Include="Routing\AttributeRoutePrecedenceTests.cs" />
     <Compile Include="Routing\AttributeRouteTemplateTests.cs" />
+    <Compile Include="Routing\AttributeRouteTests.cs" />
     <Compile Include="Routing\AttributeRoutingTest.cs" />
     <Compile Include="StaticActionDiscoveryConventions.cs" />
     <Compile Include="StaticControllerAssemblyProvider.cs" />
-    <Compile Include="Routing\AttributeRouteTests.cs" />
     <Compile Include="TestController.cs" />
     <Compile Include="TypeHelperTest.cs" />
     <Compile Include="UrlHelperTest.cs" />

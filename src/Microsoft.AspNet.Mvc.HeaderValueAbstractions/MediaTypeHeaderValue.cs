@@ -52,16 +52,28 @@ namespace Microsoft.AspNet.Mvc.HeaderValueAbstractions
 
         public static MediaTypeHeaderValue Parse(string input)
         {
+            MediaTypeHeaderValue headerValue = null;
+            if (!TryParse(input, out headerValue))
+            {
+                throw new ArgumentException(Resources.FormatInvalidContentType(input));
+            }
+
+            return headerValue;
+        }
+
+        public static bool TryParse(string input, out MediaTypeHeaderValue headerValue)
+        {
+            headerValue = null;
             if (string.IsNullOrEmpty(input))
             {
-                return null;
+                return false;
             }
 
             var inputArray = input.Split(new[] { ';' }, 2);
             var mediaTypeParts = inputArray[0].Split('/');
             if (mediaTypeParts.Length != 2)
             {
-                return null;
+                return false;
             }
 
             // TODO: throw if the media type and subtypes are invalid.
@@ -85,7 +97,7 @@ namespace Microsoft.AspNet.Mvc.HeaderValueAbstractions
                 parameters.TryGetValue("charset", out charset);
             }
 
-            var mediaTypeHeader = new MediaTypeHeaderValue()
+            headerValue = new MediaTypeHeaderValue()
             {
                 MediaType = mediaType,
                 MediaSubType = mediaSubType,
@@ -94,7 +106,7 @@ namespace Microsoft.AspNet.Mvc.HeaderValueAbstractions
                 Parameters = parameters ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
             };
 
-            return mediaTypeHeader;
+            return true;
         }
 
         protected static Dictionary<string, string> ParseParameters(string inputString)

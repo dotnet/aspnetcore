@@ -71,9 +71,11 @@ namespace Microsoft.AspNet.Mvc
 
                 if (selectedFormatter == null)
                 {
+                    var requestContentType = formatterContext.ActionContext.HttpContext.Request.ContentType;
+
                     // No formatter found based on accept headers, fall back on request contentType.
-                    var incomingContentType = 
-                        MediaTypeHeaderValue.Parse(formatterContext.ActionContext.HttpContext.Request.ContentType);
+                    MediaTypeHeaderValue incomingContentType = null;
+                    MediaTypeHeaderValue.TryParse(requestContentType, out incomingContentType);
 
                     // In case the incomingContentType is null (as can be the case with get requests), 
                     // we need to pick the first formatter which 

@@ -53,8 +53,9 @@ namespace Microsoft.AspNet.Mvc
             if (encoding == null)
             {
                 // Match based on request acceptHeader.
-                var requestContentType = MediaTypeHeaderValue.Parse(request.ContentType);
-                if (requestContentType != null && !string.IsNullOrEmpty(requestContentType.Charset))
+                MediaTypeHeaderValue requestContentType = null;
+                if (MediaTypeHeaderValue.TryParse(request.ContentType, out requestContentType) &&
+                    !string.IsNullOrEmpty(requestContentType.Charset))
                 {
                     var requestCharset = requestContentType.Charset;
                     encoding = SupportedEncodings.FirstOrDefault(

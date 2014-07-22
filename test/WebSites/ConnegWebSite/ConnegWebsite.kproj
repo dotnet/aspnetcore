@@ -6,8 +6,14 @@
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>98335b23-e4b9-4cad-9749-0ded32a659a1</ProjectGuid>
+    <ProjectGuid>c6e5affa-890a-448f-8de3-878b1d3c9fc7</ProjectGuid>
     <OutputType>Library</OutputType>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(OutputType) == 'Console'">
+    <DebuggerFlavor>ConsoleDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(OutputType) == 'Web'">
+    <DebuggerFlavor>WebDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
   </PropertyGroup>
@@ -17,20 +23,19 @@
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="FormattingUtilities.cs" />
-    <Compile Include="MediaTypeHeaderValue.cs" />
-    <Compile Include="MediaTypeHeaderValueRange.cs" />
-    <Compile Include="MediaTypeWithQualityHeaderValue.cs" />
-    <Compile Include="Properties\Resources.Designer.cs" />
-    <Compile Include="StringWithQualityHeaderValue.cs" />
+    <Content Include="Project.json" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="project.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-    </EmbeddedResource>
+    <Compile Include="Controllers\NormalController.cs" />
+    <Compile Include="Controllers\NoProducesContentOnClassController.cs" />
+    <Compile Include="Controllers\ProducesContentBaseController.cs" />
+    <Compile Include="Controllers\ProducesContentOnClassController.cs" />
+    <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\TextPlainController.cs" />
+    <Compile Include="Models\User.cs" />
+    <Compile Include="ContentType.cs" />
+    <Compile Include="PlainTextFormatter.cs" />
+    <Compile Include="Startup.cs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
