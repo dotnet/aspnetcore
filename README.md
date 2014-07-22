@@ -26,11 +26,15 @@ These are the current minimum requirements, they do not necesarilly represent ou
 
 The first thing we need to do is setup the tools required to build and run an application. We will start out by getting the [K Version Manager (KVM)](https://github.com/aspnet/Home/wiki/version-manager)
 
+### on Windows
+
 The easiest way to get the KVM on Windows is to run the following command:
 ```powershell
 @powershell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/master/kvminstall.ps1'))"
 ```
-or on OSX:
+
+### or on OSX:
+
 Mono and KVM (K Version manager) required to develop & run next generation ASP.NET applications on OSX is available as a Homebrew formula. To install the necessary development tools: 
 
  * Open a terminal on your MAC
@@ -43,7 +47,7 @@ Now you are set for developing next general ASP.NET applications on OSX. A few t
  * If you would like to use a different KRE version for your development, you can install the desired version using KVM. See [KVM page](https://github.com/aspnet/Home/wiki/version-manager) for more information. 
  * Run command `source kvm.sh` on your terminal if your terminal cannot understand kvm. 
 
-or on Linux:
+### or on Linux:
 ```
 curl https://raw.githubusercontent.com/aspnet/Home/master/kvminstall.sh | sh && source ~/.kre/kvm/kvm.sh
 ```
