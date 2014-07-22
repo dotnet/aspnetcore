@@ -91,7 +91,6 @@
     <Compile Include="Models\Artist.cs" />
     <Compile Include="Models\CartItem.cs" />
     <Compile Include="Models\Genre.cs" />
-    <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\MusicStoreContext.cs" />
     <Compile Include="Models\Order.cs" />
     <Compile Include="Models\OrderDetail.cs" />

@@ -28,14 +28,11 @@ namespace E2ETests
 
             var testStartTime = DateTime.Now;
             var musicStoreDbName = Guid.NewGuid().ToString().Replace("-", string.Empty);
-            var musicStoreIdentityDbName = Guid.NewGuid().ToString().Replace("-", string.Empty);
 
             Console.WriteLine("Pointing MusicStore DB to '{0}'", string.Format(Connection_string_Format, musicStoreDbName));
-            Console.WriteLine("Pointing MusicStoreIdentity DB to '{0}'", string.Format(Connection_string_Format, musicStoreIdentityDbName));
 
             //Override the connection strings using environment based configuration
             Environment.SetEnvironmentVariable("SQLAZURECONNSTR_DefaultConnection", string.Format(Connection_string_Format, musicStoreDbName));
-            Environment.SetEnvironmentVariable("SQLAZURECONNSTR_IdentityConnection", string.Format(Connection_string_Format, musicStoreIdentityDbName));
 
             ApplicationBaseUrl = applicationBaseUrl;
             Process hostProcess = null;
@@ -43,7 +40,7 @@ namespace E2ETests
 
             try
             {
-                hostProcess = DeploymentUtility.StartApplication(hostType, kreFlavor, musicStoreIdentityDbName);
+                hostProcess = DeploymentUtility.StartApplication(hostType, kreFlavor, musicStoreDbName);
                 httpClientHandler = new HttpClientHandler();
                 httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(applicationBaseUrl) };
 
@@ -147,7 +144,6 @@ namespace E2ETests
                 }
 
                 DbUtils.DropDatabase(musicStoreDbName);
-                DbUtils.DropDatabase(musicStoreIdentityDbName);
             }
         }
 

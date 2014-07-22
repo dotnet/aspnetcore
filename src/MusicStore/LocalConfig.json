@@ -4,9 +4,6 @@
     "Data": {
         "DefaultConnection": {
             "Connectionstring": "Server=(localdb)\\MSSQLLocalDB;Database=MusicStore;Trusted_Connection=True;MultipleActiveResultSets=true"
-        },
-        "IdentityConnection": {
-            "Connectionstring": "Server=(localdb)\\MSSQLLocalDB;Database=MusicStoreIdentity;Trusted_Connection=True;MultipleActiveResultSets=true"
         }
     }
 }

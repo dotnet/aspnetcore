@@ -25,29 +25,12 @@ namespace MusicStore.Models
                     if (await db.Database.EnsureCreatedAsync())
                     {
                         await InsertTestData(serviceProvider);
-                    }
-                }
-                else
-                {
-                    await InsertTestData(serviceProvider);
-                }
-            }
-        }
-
-        public static async Task InitializeIdentityDatabaseAsync(IServiceProvider serviceProvider)
-        {
-            using (var db = serviceProvider.GetService<ApplicationDbContext>())
-            {
-                var sqlServerDataStore = db.Configuration.DataStore as SqlServerDataStore;
-                if (sqlServerDataStore != null)
-                {
-                    if (await db.Database.EnsureCreatedAsync())
-                    {
                         await CreateAdminUser(serviceProvider);
                     }
                 }
                 else
                 {
+                    await InsertTestData(serviceProvider);
                     await CreateAdminUser(serviceProvider);
                 }
             }
@@ -88,7 +71,6 @@ namespace MusicStore.Models
             }
         }
 
-
         /// <summary>
         /// Creates a store manager user who can manage the inventory.
         /// </summary>
@@ -96,7 +78,7 @@ namespace MusicStore.Models
         /// <returns></returns>
         private static async Task CreateAdminUser(IServiceProvider serviceProvider)
         {
-            var options = serviceProvider.GetService<IOptionsAccessor<IdentityDbContextOptions>>().Options;
+            var options = serviceProvider.GetService<IOptionsAccessor<MusicStoreDbContextOptions>>().Options;
             //const string adminRole = "Administrator";
 
             var userManager = serviceProvider.GetService<UserManager<ApplicationUser>>();

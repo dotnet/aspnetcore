@@ -33,18 +33,15 @@ namespace MusicStore
                 services.AddScoped<MusicStoreContext>();
 
                 // Configure DbContext           
-                services.SetupOptions<IdentityDbContextOptions>(options =>
+                services.SetupOptions<MusicStoreDbContextOptions>(options =>
                         {
                             options.DefaultAdminUserName = configuration.Get("DefaultAdminUsername");
                             options.DefaultAdminPassword = configuration.Get("DefaultAdminPassword");
-                            options.UseSqlServer(configuration.Get("Data:IdentityConnection:ConnectionString"));
+                            options.UseSqlServer(configuration.Get("Data:DefaultConnection:ConnectionString"));
                         });
 
-                services.SetupOptions<MusicStoreDbContextOptions>(options =>
-                    options.UseSqlServer(configuration.Get("Data:DefaultConnection:ConnectionString")));
-
                 // Add Identity services to the services container
-                services.AddIdentitySqlServer<ApplicationDbContext, ApplicationUser>()
+                services.AddIdentitySqlServer<MusicStoreContext, ApplicationUser>()
                         .AddHttpSignIn();
 
                 // Add MVC services to the services container
@@ -81,7 +78,6 @@ namespace MusicStore
 
             //Populates the MusicStore sample data
             SampleData.InitializeMusicStoreDatabaseAsync(app.ApplicationServices).Wait();
-            SampleData.InitializeIdentityDatabaseAsync(app.ApplicationServices).Wait();
         }
     }
 }
