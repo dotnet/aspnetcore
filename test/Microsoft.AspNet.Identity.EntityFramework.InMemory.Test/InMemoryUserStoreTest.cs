@@ -583,7 +583,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
 
             var claimsFactory = new ClaimsIdentityFactory<InMemoryUser, IdentityRole>(manager, role);
             var identity = await claimsFactory.CreateAsync(user, new ClaimsIdentityOptions());
-            Assert.Equal(DefaultAuthenticationTypes.ApplicationCookie, identity.AuthenticationType);
+            Assert.Equal(ClaimsIdentityOptions.DefaultAuthenticationType, identity.AuthenticationType);
             var claims = identity.Claims.ToList();
             Assert.NotNull(claims);
             Assert.True(

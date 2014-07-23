@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Identity.Test
                 async () => await factory.CreateAsync(new TestUser(), null));
         }
 
- #if NET45
+#if NET45
         //TODO: Mock fails in K (this works fine in net45)
         [Theory]
         [InlineData(false, false, false)]
@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Identity.Test
             // Assert
             var manager = userManager.Object;
             Assert.NotNull(identity);
-            Assert.Equal(DefaultAuthenticationTypes.ApplicationCookie, identity.AuthenticationType);
+            Assert.Equal(ClaimsIdentityOptions.DefaultAuthenticationType, identity.AuthenticationType);
             var claims = identity.Claims.ToList();
             Assert.NotNull(claims);
             Assert.True(

@@ -41,7 +41,7 @@ namespace IdentitySamples
 
                 // Add Identity services to the services container
                 services.AddIdentitySqlServer<ApplicationDbContext, ApplicationUser>()
-                        .AddHttpSignIn()
+                        .AddAuthentication()
                         .SetupOptions(options =>
                         {
                             options.Password.RequireDigit = false;
@@ -65,7 +65,7 @@ namespace IdentitySamples
             // Add cookie-based authentication to the request pipeline
             app.UseCookieAuthentication(new CookieAuthenticationOptions
             {
-                AuthenticationType = DefaultAuthenticationTypes.ApplicationCookie,
+                AuthenticationType = ClaimsIdentityOptions.DefaultAuthenticationType,
                 LoginPath = new PathString("/Account/Login"),
                 Notifications = new CookieAuthenticationNotifications
                 {

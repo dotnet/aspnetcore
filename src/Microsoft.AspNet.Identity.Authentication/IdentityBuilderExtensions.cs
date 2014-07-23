@@ -8,7 +8,7 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public static class IdentityBuilderExtensions
     {
-        public static IdentityBuilder<TUser, TRole> AddHttpSignIn<TUser, TRole>(this IdentityBuilder<TUser, TRole> builder)
+        public static IdentityBuilder<TUser, TRole> AddAuthentication<TUser, TRole>(this IdentityBuilder<TUser, TRole> builder)
             where TUser : class
             where TRole : class
         {

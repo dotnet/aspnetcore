@@ -413,7 +413,7 @@ namespace Microsoft.AspNet.Identity.Test
             var identity = await claimsFactory.CreateAsync(user, new ClaimsIdentityOptions());
             var claims = identity.Claims.ToList();
             Assert.NotNull(claims);
-            Assert.Equal(DefaultAuthenticationTypes.ApplicationCookie, identity.AuthenticationType);
+            Assert.Equal(ClaimsIdentityOptions.DefaultAuthenticationType, identity.AuthenticationType);
             Assert.True(
                 claims.Any(c => c.Type == manager.Options.ClaimsIdentity.UserNameClaimType && c.Value == user.UserName));
             Assert.True(claims.Any(c => c.Type == manager.Options.ClaimsIdentity.UserIdClaimType && c.Value == user.Id));

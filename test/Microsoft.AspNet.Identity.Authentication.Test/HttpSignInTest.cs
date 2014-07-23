@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Identity.Authentication.Test
         //    IBuilder app = new Builder(new ServiceCollection().BuildServiceProvider());
         //    app.UseCookieAuthentication(new CookieAuthenticationOptions
         //    {
-        //        AuthenticationType = DefaultAuthenticationTypes.ApplicationCookie
+        //        AuthenticationType = ClaimsIdentityOptions.DefaultAuthenticationType
         //    });
 
         // TODO: how to functionally test context?
@@ -311,7 +311,7 @@ namespace Microsoft.AspNet.Identity.Authentication.Test
             var context = new Mock<HttpContext>();
             var response = new Mock<HttpResponse>();
             context.Setup(c => c.Response).Returns(response.Object).Verifiable();
-            response.Setup(r => r.SignIn(It.Is<ClaimsIdentity>(i => i.AuthenticationType == DefaultAuthenticationTypes.ApplicationCookie), It.Is<AuthenticationProperties>(v => v.IsPersistent == isPersistent))).Verifiable();
+            response.Setup(r => r.SignIn(It.Is<ClaimsIdentity>(i => i.AuthenticationType == ClaimsIdentityOptions.DefaultAuthenticationType), It.Is<AuthenticationProperties>(v => v.IsPersistent == isPersistent))).Verifiable();
             var id = new ClaimsIdentity(HttpAuthenticationManager.TwoFactorRememberedAuthenticationType);
             id.AddClaim(new Claim(ClaimTypes.Name, user.Id));
             var authResult = new AuthenticationResult(id, new AuthenticationProperties(), new AuthenticationDescription());
@@ -321,7 +321,7 @@ namespace Microsoft.AspNet.Identity.Authentication.Test
             var signInService = new HttpAuthenticationManager(contextAccessor.Object);
             var roleManager = MockHelpers.MockRoleManager<TestRole>();
             var claimsFactory = new Mock<ClaimsIdentityFactory<TestUser, TestRole>>(manager.Object, roleManager.Object);
-            claimsFactory.Setup(m => m.CreateAsync(user, manager.Object.Options.ClaimsIdentity, CancellationToken.None)).ReturnsAsync(new ClaimsIdentity(DefaultAuthenticationTypes.ApplicationCookie)).Verifiable();
+            claimsFactory.Setup(m => m.CreateAsync(user, manager.Object.Options.ClaimsIdentity, CancellationToken.None)).ReturnsAsync(new ClaimsIdentity(ClaimsIdentityOptions.DefaultAuthenticationType)).Verifiable();
             var helper = new SignInManager<TestUser>(manager.Object, signInService, claimsFactory.Object);
 
             // Act
