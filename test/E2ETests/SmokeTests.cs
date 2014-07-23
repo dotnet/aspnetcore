@@ -406,7 +406,7 @@ namespace E2ETests
             var responseContent = response.Content.ReadAsStringAsync().Result;
             Assert.Contains(albumName, responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("http://myapp/testurl", responseContent, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains("<a href=\"/StoreManager/Edit/463\">Edit</a>", responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(string.Format("<a href=\"/StoreManager/Edit/{0}\">Edit</a>", albumId), responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("<a href=\"/StoreManager\">Back to List</a>", responseContent, StringComparison.OrdinalIgnoreCase);
         }
 
