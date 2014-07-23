@@ -37,7 +37,6 @@ namespace Microsoft.AspNet.Owin
         private readonly WebSocket _webSocket;
         private readonly IDictionary<string, object> _environment;
         private readonly CancellationToken _cancellationToken;
-        private readonly WebSocket _context;
 
         internal WebSocketAdapter(WebSocket webSocket, CancellationToken ct)
         {
