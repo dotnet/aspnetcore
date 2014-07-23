@@ -44,7 +44,7 @@ namespace MusicStore.Spa
 
                 // Add Identity services to the service container
                 services.AddIdentitySqlServer<ApplicationDbContext, ApplicationUser>()
-                    .AddHttpSignIn();
+                    .AddAuthentication();
 
                 // Add application services to the service container
                 services.AddScoped<MusicStoreContext>();
@@ -60,7 +60,7 @@ namespace MusicStore.Spa
             // Add cookie auth
             app.UseCookieAuthentication(new CookieAuthenticationOptions
             {
-                AuthenticationType = DefaultAuthenticationTypes.ApplicationCookie,
+                AuthenticationType = ClaimsIdentityOptions.DefaultAuthenticationType,
                 LoginPath = new PathString("/Account/Login")
             });
 
