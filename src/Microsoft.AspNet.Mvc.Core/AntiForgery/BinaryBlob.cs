@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNet.Security.DataProtection;
 
@@ -17,6 +18,7 @@ namespace Microsoft.AspNet.Mvc
     [DebuggerDisplay("{DebuggerString}")]
     internal sealed class BinaryBlob : IEquatable<BinaryBlob>
     {
+        private static readonly RandomNumberGenerator _randomNumberGenerator = RandomNumberGenerator.Create();
         private readonly byte[] _data;
 
         // Generates a new token using a specified bit length.
@@ -93,7 +95,7 @@ namespace Microsoft.AspNet.Mvc
         private static byte[] GenerateNewToken(int bitLength)
         {
             var data = new byte[bitLength / 8];
-            CryptRand.FillBuffer(new ArraySegment<byte>(data));
+            _randomNumberGenerator.GetBytes(data);
             return data;
         }
 
