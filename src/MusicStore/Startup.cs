@@ -26,9 +26,20 @@ namespace MusicStore
 
             app.UseServices(services =>
             {
+                //If this type is present - we're on mono
+                var runningOnMono = Type.GetType("Mono.Runtime") != null;
+
                 // Add EF services to the services container
-                services.AddEntityFramework()
-                        .AddSqlServer();
+                if (runningOnMono)
+                {
+                    services.AddEntityFramework()
+                            .AddInMemoryStore();
+                }
+                else
+                {
+                    services.AddEntityFramework()
+                            .AddSqlServer();
+                }
 
                 services.AddScoped<MusicStoreContext>();
 
@@ -37,7 +48,14 @@ namespace MusicStore
                         {
                             options.DefaultAdminUserName = configuration.Get("DefaultAdminUsername");
                             options.DefaultAdminPassword = configuration.Get("DefaultAdminPassword");
-                            options.UseSqlServer(configuration.Get("Data:DefaultConnection:ConnectionString"));
+                            if (runningOnMono)
+                            {
+                                options.UseInMemoryStore();
+                            }
+                            else
+                            {
+                                options.UseSqlServer(configuration.Get("Data:DefaultConnection:ConnectionString"));
+                            }
                         });
 
                 // Add Identity services to the services container

@@ -15,6 +15,8 @@
         "Microsoft.AspNet.Security.Cookies": "1.0.0-*",
         "Microsoft.AspNet.StaticFiles": "1.0.0-*",
         "EntityFramework.SqlServer": "7.0.0-*",
+        /*For Mono*/
+        "EntityFramework.InMemory":  "7.0.0-*",
         "Microsoft.Framework.ConfigurationModel.Json": "1.0.0-*",
         "Microsoft.Framework.OptionsModel": "1.0.0-*"
     },
