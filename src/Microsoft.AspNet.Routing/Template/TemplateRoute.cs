@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Routing.Template
             _target = target;
             _routeTemplate = routeTemplate ?? string.Empty;
             Name = routeName;
-            _defaults = defaults ?? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            _defaults = defaults ?? new RouteValueDictionary();
             _constraints = RouteConstraintBuilder.BuildConstraints(constraints, _routeTemplate) ??
                                                             new Dictionary<string, IRouteConstraint>();
 
