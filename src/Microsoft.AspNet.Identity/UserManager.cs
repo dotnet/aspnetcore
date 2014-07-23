@@ -1291,8 +1291,7 @@ namespace Microsoft.AspNet.Identity
 
         // Two factor APIS
 
-#if NET45
-        internal async Task<SecurityToken> CreateSecurityToken(TUser user)
+        internal async Task<SecurityToken> CreateSecurityTokenAsync(TUser user)
         {
             return
                 new SecurityToken(Encoding.Unicode.GetBytes(await GetSecurityStampAsync(user)));
@@ -1308,10 +1307,9 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             return
-                Rfc6238AuthenticationService.GenerateCode(await CreateSecurityToken(user), phoneNumber)
+                Rfc6238AuthenticationService.GenerateCode(await CreateSecurityTokenAsync(user), phoneNumber)
                     .ToString(CultureInfo.InvariantCulture);
         }
-#endif
 
         /// <summary>
         ///     Verify a phone number code for a specific user and phone number
@@ -1323,14 +1321,12 @@ namespace Microsoft.AspNet.Identity
         public virtual async Task<bool> VerifyChangePhoneNumberTokenAsync(TUser user, string token, string phoneNumber)
         {
             ThrowIfDisposed();
-#if NET45
-            var securityToken = await CreateSecurityToken(user);
+            var securityToken = await CreateSecurityTokenAsync(user);
             int code;
             if (securityToken != null && Int32.TryParse(token, out code))
             {
                 return Rfc6238AuthenticationService.ValidateCode(securityToken, code, phoneNumber);
             }
-#endif
             return false;
         }
 

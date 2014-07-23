@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if NET45
-
 using System;
 using System.Diagnostics;
 using System.Net;
@@ -17,7 +15,7 @@ namespace Microsoft.AspNet.Identity
 
         public SecurityToken(byte[] data)
         {
-            _data = (byte[]) data.Clone();
+            _data = (byte[])data.Clone();
         }
 
         internal byte[] GetDataNoClone()
@@ -39,10 +37,10 @@ namespace Microsoft.AspNet.Identity
 
             // See https://tools.ietf.org/html/rfc4226
             // We can add an optional modifier
-            var timestepAsBytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder((long) timestepNumber));
+            var timestepAsBytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder((long)timestepNumber));
             var hash = hashAlgorithm.ComputeHash(ApplyModifier(timestepAsBytes, modifier));
 
-            // GenerateAsync DT string
+            // Generate DT string
             var offset = hash[hash.Length - 1] & 0xf;
             Debug.Assert(offset + 4 < hash.Length);
             var binaryCode = (hash[offset] & 0x7f) << 24
@@ -50,7 +48,7 @@ namespace Microsoft.AspNet.Identity
                              | (hash[offset + 2] & 0xff) << 8
                              | (hash[offset + 3] & 0xff);
 
-            return binaryCode%mod;
+            return binaryCode % mod;
         }
 
         private static byte[] ApplyModifier(byte[] input, string modifier)
@@ -71,7 +69,7 @@ namespace Microsoft.AspNet.Identity
         private static ulong GetCurrentTimeStepNumber()
         {
             var delta = DateTime.UtcNow - _unixEpoch;
-            return (ulong) (delta.Ticks/_timestep.Ticks);
+            return (ulong)(delta.Ticks / _timestep.Ticks);
         }
 
         public static int GenerateCode(SecurityToken securityToken, string modifier = null)
@@ -102,7 +100,7 @@ namespace Microsoft.AspNet.Identity
             {
                 for (var i = -2; i <= 2; i++)
                 {
-                    var computedTotp = ComputeTotp(hashAlgorithm, (ulong) ((long) currentTimeStep + i), modifier);
+                    var computedTotp = ComputeTotp(hashAlgorithm, (ulong)((long)currentTimeStep + i), modifier);
                     if (computedTotp == code)
                     {
                         return true;
@@ -115,4 +113,3 @@ namespace Microsoft.AspNet.Identity
         }
     }
 }
-#endif
