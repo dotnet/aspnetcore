@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.Internal.Routing;
 using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Template;
@@ -19,9 +20,9 @@ namespace Microsoft.AspNet.Mvc.Routing
     {
         private readonly IRouter _next;
         private readonly TemplateRoute[] _matchingRoutes;
-        private readonly AttributeRouteLinkGenerationEntry[] _linkGenerationEntries;
         private ILogger _logger;
         private ILogger _constraintLogger;
+        private readonly LinkGenerationDecisionTree _linkGenerationTree;
 
         /// <summary>
         /// Creates a new <see cref="AttributeRoute"/>.
@@ -29,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.Routing
         /// <param name="next">The next router. Invoked when a route entry matches.</param>
         /// <param name="entries">The set of route entries.</param>
         public AttributeRoute(
-            [NotNull] IRouter next, 
+            [NotNull] IRouter next,
             [NotNull] IEnumerable<AttributeRouteMatchingEntry> matchingEntries,
             [NotNull] IEnumerable<AttributeRouteLinkGenerationEntry> linkGenerationEntries,
             [NotNull] ILoggerFactory factory)
@@ -48,11 +49,8 @@ namespace Microsoft.AspNet.Mvc.Routing
                 .Select(e => e.Route)
                 .ToArray();
 
-            _linkGenerationEntries = linkGenerationEntries
-                .OrderBy(o => o.Order)
-                .ThenBy(e => e.Precedence)
-                .ThenBy(e => e.TemplateText, StringComparer.Ordinal)
-                .ToArray();
+            // The decision tree will take care of ordering for these entries.
+            _linkGenerationTree = new LinkGenerationDecisionTree(linkGenerationEntries.ToArray());
 
             _logger = factory.Create<AttributeRoute>();
             _constraintLogger = factory.Create(typeof(RouteConstraintMatcher).FullName);
@@ -87,31 +85,17 @@ namespace Microsoft.AspNet.Mvc.Routing
         /// <inheritdoc />
         public string GetVirtualPath([NotNull] VirtualPathContext context)
         {
-            // To generate a link, we iterate the collection of entries (in order of precedence) and execute
-            // each one that matches the 'required link values' - which will typically be a value for action
-            // and controller.
-            //
-            // Building a proper data structure to optimize this is tracked by #741
-            foreach (var entry in _linkGenerationEntries)
+            // The decision tree will give us back all entries that match the provided route data in the correct
+            // order. We just need to iterate them and use the first one that can generate a link.
+            var matches = _linkGenerationTree.GetMatches(context);
+
+            foreach (var entry in matches)
             {
-                var isMatch = true;
-                foreach (var requiredLinkValue in entry.RequiredLinkValues)
+                var path = GenerateLink(context, entry);
+                if (path != null)
                 {
-                    if (!ContextHasSameValue(context, requiredLinkValue.Key, requiredLinkValue.Value))
-                    {
-                        isMatch = false;
-                        break;
-                    }
-                }
-                
-                if (isMatch)
-                {
-                    var path = GenerateLink(context, entry);
-                    if (path != null)
-                    {
-                        context.IsBound = true;
-                        return path;
-                    }
+                    context.IsBound = true;
+                    return path;
                 }
             }
 
