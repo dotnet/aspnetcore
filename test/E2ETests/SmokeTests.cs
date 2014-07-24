@@ -22,9 +22,12 @@ namespace E2ETests
         [InlineData(ServerType.Helios, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5001/")]
         [InlineData(ServerType.WebListener, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5002/")]
         [InlineData(ServerType.Kestrel, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5004/")]
-        [InlineData(ServerType.Helios, KreFlavor.CoreClr, KreArchitecture.x64, "http://localhost:5001/")]
         [InlineData(ServerType.WebListener, KreFlavor.DesktopClr, KreArchitecture.x64, "http://localhost:5002/")]
-        [InlineData(ServerType.Kestrel, KreFlavor.CoreClr, KreArchitecture.x64, "http://localhost:5004/")]
+        // Uncomment Core CLR on x64 after following bugs are resolved
+        // https://github.com/aspnet/Identity/issues/157
+        // https://github.com/aspnet/Mvc/issues/846
+        //[InlineData(ServerType.Helios, KreFlavor.CoreClr, KreArchitecture.x64, "http://localhost:5001/")]
+        //[InlineData(ServerType.Kestrel, KreFlavor.CoreClr, KreArchitecture.x64, "http://localhost:5004/")]
         public void SmokeTestSuite(ServerType hostType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl)
         {
             Console.WriteLine("Variation Details : HostType = {0}, KreFlavor = {1}, Architecture = {2}, applicationBaseUrl = {3}", hostType, kreFlavor, architecture, applicationBaseUrl);
@@ -32,9 +35,9 @@ namespace E2ETests
             // Check if processor architecture is x64, else ship test
             if (architecture == KreArchitecture.x64 && !Environment.Is64BitOperatingSystem)
             {
-                    Console.WriteLine("Skipping x64 test since machine is of type x86");
-                    Assert.True(true);
-                    return;
+                Console.WriteLine("Skipping x64 test since machine is of type x86");
+                Assert.True(true);
+                return;
             }
 
             var testStartTime = DateTime.Now;
