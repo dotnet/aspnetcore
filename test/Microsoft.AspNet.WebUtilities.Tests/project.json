@@ -1,0 +1,17 @@
+﻿{
+  "dependencies": {
+    "Microsoft.AspNet.Http": "",
+    "Microsoft.AspNet.WebUtilities": "",
+    "Xunit.KRunner": "1.0.0-*"
+  },
+  "commands": {
+    "test": "Xunit.KRunner"
+  },
+  "frameworks": {
+    "net45": {
+      "dependencies": {
+        "System.Runtime":  ""
+      }
+    }
+  }
+}
