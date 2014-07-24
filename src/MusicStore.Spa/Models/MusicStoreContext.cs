@@ -34,7 +34,15 @@ namespace MusicStore.Models
 
             builder.Entity<Album>().Key(a => a.AlbumId);
             builder.Entity<Artist>().Key(a => a.ArtistId);
-            builder.Entity<Order>().Key(o => o.OrderId).Properties(p => p.Property(o => o.OrderId).ColumnName("[Order]"));
+
+            builder.Entity<Order>(
+                b =>
+                {
+                    b.Key(o => o.OrderId);
+                    b.Property(o => o.OrderId)
+                        .ColumnName("[Order]");
+                });
+
             builder.Entity<Genre>().Key(g => g.GenreId);
             builder.Entity<CartItem>().Key(ci => ci.CartItemId);
             builder.Entity<OrderDetail>().Key(od => od.OrderDetailId);
