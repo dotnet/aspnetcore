@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
         {
             builder.Entity<TUser>(b =>
             {
-                b.Key(u => u.Id)
+                b.Key(u => u.Id);
                 b.Property(u => u.UserName);
                 b.ToTable("AspNetUsers");
             });
