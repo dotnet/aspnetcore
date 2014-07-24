@@ -35,14 +35,14 @@ namespace Microsoft.AspNet.Mvc.Core
             var nameForModelResult = helper.NameForModel();
 
             // Assert
-            Assert.Empty(idResult.ToString());
-            Assert.Empty(idNullResult.ToString());
-            Assert.Empty(idForResult.ToString());
-            Assert.Empty(idForModelResult.ToString());
-            Assert.Empty(nameResult.ToString());
-            Assert.Empty(nameNullResult.ToString());
-            Assert.Empty(nameForResult.ToString());
-            Assert.Empty(nameForModelResult.ToString());
+            Assert.Empty(idResult);
+            Assert.Empty(idNullResult);
+            Assert.Empty(idForResult);
+            Assert.Empty(idForModelResult);
+            Assert.Empty(nameResult);
+            Assert.Empty(nameNullResult);
+            Assert.Empty(nameForResult);
+            Assert.Empty(nameForModelResult);
         }
 
         [Theory]
@@ -66,12 +66,12 @@ namespace Microsoft.AspNet.Mvc.Core
             var nameForModelResult = helper.NameForModel();
 
             // Assert
-            Assert.Equal(prefix, idResult.ToString());
-            Assert.Equal(prefix, idForResult.ToString());
-            Assert.Equal(prefix, idForModelResult.ToString());
-            Assert.Equal(prefix, nameResult.ToString());
-            Assert.Equal(prefix, nameForResult.ToString());
-            Assert.Equal(prefix, nameForModelResult.ToString());
+            Assert.Equal(prefix, idResult);
+            Assert.Equal(prefix, idForResult);
+            Assert.Equal(prefix, idForModelResult);
+            Assert.Equal(prefix, nameResult);
+            Assert.Equal(prefix, nameForResult);
+            Assert.Equal(prefix, nameForModelResult);
         }
 
         [Fact]
@@ -87,10 +87,10 @@ namespace Microsoft.AspNet.Mvc.Core
             var nameForResult = helper.NameFor(m => m.Property1);
 
             // Assert
-            Assert.Equal("Property1", idResult.ToString());
-            Assert.Equal("Property1", idForResult.ToString());
-            Assert.Equal("Property1", nameResult.ToString());
-            Assert.Equal("Property1", nameForResult.ToString());
+            Assert.Equal("Property1", idResult);
+            Assert.Equal("Property1", idForResult);
+            Assert.Equal("Property1", nameResult);
+            Assert.Equal("Property1", nameForResult);
         }
 
         [Theory]
@@ -112,10 +112,10 @@ namespace Microsoft.AspNet.Mvc.Core
             var nameForResult = helper.NameFor(m => m.Property1);
 
             // Assert
-            Assert.Equal("Property1", idResult.ToString());
-            Assert.Equal("Property1", idForResult.ToString());
-            Assert.Equal("Property1", nameResult.ToString());
-            Assert.Equal("Property1", nameForResult.ToString());
+            Assert.Equal("Property1", idResult);
+            Assert.Equal("Property1", idForResult);
+            Assert.Equal("Property1", nameResult);
+            Assert.Equal("Property1", nameForResult);
         }
 
         [Fact]
@@ -131,10 +131,10 @@ namespace Microsoft.AspNet.Mvc.Core
             var nameForResult = helper.NameFor(m => m.Inner.Id);
 
             // Assert
-            Assert.Equal("Inner.Id", idResult.ToString());
-            Assert.Equal("Inner.Id", idForResult.ToString());
-            Assert.Equal("Inner.Id", nameResult.ToString());
-            Assert.Equal("Inner.Id", nameForResult.ToString());
+            Assert.Equal("Inner.Id", idResult);
+            Assert.Equal("Inner.Id", idForResult);
+            Assert.Equal("Inner.Id", nameResult);
+            Assert.Equal("Inner.Id", nameForResult);
         }
 
         [Fact]
@@ -207,8 +207,8 @@ namespace Microsoft.AspNet.Mvc.Core
             var nameResult = helper.Name(expression);
 
             // Assert
-            Assert.Equal(expression, idResult.ToString());
-            Assert.Equal(expression, nameResult.ToString());
+            Assert.Equal(expression, idResult);
+            Assert.Equal(expression, nameResult);
         }
 
         [Fact]
@@ -222,8 +222,8 @@ namespace Microsoft.AspNet.Mvc.Core
             var nameResult = helper.NameFor(model => new { foo = "Bar" });
 
             // Assert
-            Assert.Empty(idResult.ToString());
-            Assert.Empty(nameResult.ToString());
+            Assert.Empty(idResult);
+            Assert.Empty(nameResult);
         }
 
         [Fact]
@@ -238,8 +238,8 @@ namespace Microsoft.AspNet.Mvc.Core
             var nameResult = helper.NameFor(model => unknownKey);
 
             // Assert
-            Assert.Equal("unknownKey", idResult.ToString());
-            Assert.Equal("unknownKey", nameResult.ToString());
+            Assert.Equal("unknownKey", idResult);
+            Assert.Equal("unknownKey", nameResult);
         }
 
         private sealed class InnerClass

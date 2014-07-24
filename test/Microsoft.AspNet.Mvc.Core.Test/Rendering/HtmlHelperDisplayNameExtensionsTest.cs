@@ -31,11 +31,11 @@ namespace Microsoft.AspNet.Mvc.Core
             var displayNameForModelResult = helper.DisplayNameForModel();
 
             // Assert
-            Assert.Empty(displayNameResult.ToString());
-            Assert.Empty(displayNameNullResult.ToString());
-            Assert.Empty(displayNameForResult.ToString());
-            Assert.Empty(displayNameForEnumerableModelResult.ToString());
-            Assert.Empty(displayNameForModelResult.ToString());
+            Assert.Empty(displayNameResult);
+            Assert.Empty(displayNameNullResult);
+            Assert.Empty(displayNameForResult);
+            Assert.Empty(displayNameForEnumerableModelResult);
+            Assert.Empty(displayNameForModelResult);
         }
 
         [Fact]
@@ -52,9 +52,9 @@ namespace Microsoft.AspNet.Mvc.Core
             var displayNameForEnumerableResult = enumerableHelper.DisplayNameFor(m => m.Property1);
 
             // Assert
-            Assert.Equal("Property1", displayNameResult.ToString());
-            Assert.Equal("Property1", displayNameForResult.ToString());
-            Assert.Equal("Property1", displayNameForEnumerableResult.ToString());
+            Assert.Equal("Property1", displayNameResult);
+            Assert.Equal("Property1", displayNameForResult);
+            Assert.Equal("Property1", displayNameForEnumerableResult);
         }
 
         [Fact]
@@ -71,9 +71,9 @@ namespace Microsoft.AspNet.Mvc.Core
             var displayNameForEnumerableResult = enumerableHelper.DisplayNameFor(m => m.Inner.Id);
 
             // Assert
-            Assert.Equal("Id", displayNameResult.ToString());
-            Assert.Equal("Id", displayNameForResult.ToString());
-            Assert.Equal("Id", displayNameForEnumerableResult.ToString());
+            Assert.Equal("Id", displayNameResult);
+            Assert.Equal("Id", displayNameForResult);
+            Assert.Equal("Id", displayNameForEnumerableResult);
         }
 
         [Theory]
@@ -102,10 +102,10 @@ namespace Microsoft.AspNet.Mvc.Core
             var displayNameForModelResult = helper.DisplayNameForModel();
 
             // Assert
-            Assert.Equal(propertyName, displayNameResult.ToString());
-            Assert.Equal(propertyName, displayNameForResult.ToString());
-            Assert.Equal(propertyName, displayNameForEnumerableResult.ToString());
-            Assert.Equal(propertyName, displayNameForModelResult.ToString());
+            Assert.Equal(propertyName, displayNameResult);
+            Assert.Equal(propertyName, displayNameForResult);
+            Assert.Equal(propertyName, displayNameForEnumerableResult);
+            Assert.Equal(propertyName, displayNameForModelResult);
         }
 
         [Theory]
@@ -136,8 +136,8 @@ namespace Microsoft.AspNet.Mvc.Core
             var displayNameForEnumerableResult = enumerableHelper.DisplayNameFor(m => m.Property1);
 
             // Assert
-            Assert.Equal(propertyName, displayNameForResult.ToString());
-            Assert.Equal(propertyName, displayNameForEnumerableResult.ToString());
+            Assert.Equal(propertyName, displayNameForResult);
+            Assert.Equal(propertyName, displayNameForEnumerableResult);
         }
 
         [Theory]
@@ -159,10 +159,10 @@ namespace Microsoft.AspNet.Mvc.Core
             var displayNameForModelResult = helper.DisplayNameForModel();
 
             // Assert
-            Assert.Equal(displayName, displayNameResult.ToString());
-            Assert.Equal(displayName, displayNameForResult.ToString());
-            Assert.Equal(displayName, displayNameForEnumerableResult.ToString());
-            Assert.Equal(displayName, displayNameForModelResult.ToString());
+            Assert.Equal(displayName, displayNameResult);
+            Assert.Equal(displayName, displayNameForResult);
+            Assert.Equal(displayName, displayNameForEnumerableResult);
+            Assert.Equal(displayName, displayNameForModelResult);
         }
 
         [Theory]
@@ -187,9 +187,9 @@ namespace Microsoft.AspNet.Mvc.Core
             var displayNameForEnumerableResult = enumerableHelper.DisplayNameFor(m => m.Property1);
 
             // Assert
-            Assert.Equal(displayName, displayNameResult.ToString());
-            Assert.Equal(displayName, displayNameForResult.ToString());
-            Assert.Equal(displayName, displayNameForEnumerableResult.ToString());
+            Assert.Equal(displayName, displayNameResult);
+            Assert.Equal(displayName, displayNameForResult);
+            Assert.Equal(displayName, displayNameForEnumerableResult);
         }
 
         [Theory]
@@ -210,7 +210,7 @@ namespace Microsoft.AspNet.Mvc.Core
 
             // Assert
             // DisplayName() falls back to expression name when DisplayName and PropertyName are null.
-            Assert.Equal(expectedResult, result.ToString());
+            Assert.Equal(expectedResult, result);
         }
 
         [Fact]
@@ -233,7 +233,7 @@ namespace Microsoft.AspNet.Mvc.Core
             metadataHelper.MetadataProvider.Verify();
 
             // DisplayNameFor() falls back to expression name when DisplayName and PropertyName are null.
-            Assert.Equal("Property1", result.ToString());
+            Assert.Equal("Property1", result);
         }
 
         [Fact]
@@ -276,7 +276,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var result = helper.DisplayNameFor(model => unknownKey);
 
             // Assert
-            Assert.Equal("unknownKey", result.ToString());
+            Assert.Equal("unknownKey", result);
         }
 
         [Fact]
@@ -291,7 +291,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var result = helper.DisplayNameFor(model => unknownKey);
 
             // Assert
-            Assert.Equal("unknownKey", result.ToString());
+            Assert.Equal("unknownKey", result);
         }
 
         private sealed class InnerClass
