@@ -24,6 +24,11 @@ namespace MusicStore
             configuration.AddJsonFile("LocalConfig.json");
             configuration.AddEnvironmentVariables(); //All environment variables in the process's context flow in as configuration values.
 
+	     /* Error page middleware displays a nice formatted HTML page for any unhandled exceptions in the request pipeline.
+             * Note: ErrorPageOptions.ShowAll to be used only at development time. Not recommended for production.
+             */
+            app.UseErrorPage(ErrorPageOptions.ShowAll);
+
             app.UseServices(services =>
             {
                 //If this type is present - we're on mono
@@ -65,11 +70,6 @@ namespace MusicStore
                 // Add MVC services to the services container
                 services.AddMvc();
             });
-
-            /* Error page middleware displays a nice formatted HTML page for any unhandled exceptions in the request pipeline.
-             * Note: ErrorPageOptions.ShowAll to be used only at development time. Not recommended for production.
-             */
-            app.UseErrorPage(ErrorPageOptions.ShowAll);
 
             // Add static files to the request pipeline
             app.UseStaticFiles();
