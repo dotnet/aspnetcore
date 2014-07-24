@@ -61,15 +61,19 @@ namespace Microsoft.AspNet.Identity.EntityFramework
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.Entity<TUser>()
-                .Key(u => u.Id)
-                .Properties(ps => ps.Property(u => u.UserName))
-                .ToTable("AspNetUsers");
+            builder.Entity<TUser>(b =>
+                {
+                    b.Key(u => u.Id);
+                    b.Property(u => u.UserName);
+                    b.ToTable("AspNetUsers");
+                });
 
-            builder.Entity<TRole>()
-                .Key(r => r.Id)
-                .Properties(ps => ps.Property(r => r.Name))
-                .ToTable("AspNetRoles");
+            builder.Entity<TRole>(b =>
+                {
+                    b.Key(r => r.Id);
+                    b.Property(r => r.Name);
+                    b.ToTable("AspNetRoles");
+                });
 
             builder.Entity<IdentityUserClaim<TKey>>()
                 .Key(uc => uc.Id)
