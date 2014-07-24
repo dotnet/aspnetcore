@@ -47,10 +47,12 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.Entity<TUser>()
-                .Key(u => u.Id)
-                .Properties(ps => ps.Property(u => u.UserName))
-                .ToTable("AspNetUsers");
+            builder.Entity<TUser>(b =>
+            {
+                b.Key(u => u.Id)
+                b.Property(u => u.UserName);
+                b.ToTable("AspNetUsers");
+            });
 
             builder.Entity<TRole>()
                 .Key(r => r.Id)
