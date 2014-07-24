@@ -29,6 +29,7 @@
     <Compile Include="DeploymentUtility.cs" />
     <Compile Include="DbUtils.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="KreArchitecture.cs" />
     <Compile Include="ServerType.cs" />
     <Compile Include="HtmlDOMHelper.cs" />
     <Compile Include="KreFlavor.cs" />

@@ -22,6 +22,10 @@ IF EXIST packages\KoreBuild goto run
 IF "%SKIP_KRE_INSTALL%"=="1" goto run
 CALL packages\KoreBuild\build\kvm upgrade -svr50 -x86
 CALL packages\KoreBuild\build\kvm install default -svrc50 -x86
+IF "%Processor_Architecture%" == "AMD64"(
+	CALL packages\KoreBuild\build\kvm install default -svr50 -x64
+	CALL packages\KoreBuild\build\kvm install default -svrc50 -x64
+)
 
 :run
 CALL packages\KoreBuild\build\kvm use default -svr50 -x86
