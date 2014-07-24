@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Infrastructure;
+using System.ComponentModel;
 
 namespace E2ETests
 {
@@ -110,7 +111,16 @@ namespace E2ETests
             var hostProcess = Process.Start(startInfo);
             //Sometimes reading MainModule returns null if called immediately after starting process.
             Thread.Sleep(1 * 1000);
-            Console.WriteLine("Started {0}. Process Id : {1}", hostProcess.MainModule.FileName, hostProcess.Id);
+
+            try
+            {
+                Console.WriteLine("Started {0}. Process Id : {1}", hostProcess.MainModule.FileName, hostProcess.Id);
+            }
+            catch (Win32Exception ex)
+            {
+                Console.WriteLine("Cannot access 64 bit modules from a 32 bit process");
+            }
+
             WaitTillDbCreated(identityDbName);
 
             return hostProcess;
