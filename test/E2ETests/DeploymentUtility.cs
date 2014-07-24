@@ -17,7 +17,7 @@ namespace E2ETests
             var iisExpressPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "IIS Express", "iisexpress.exe");
 
             // Get path to 64 bit of IIS Express
-            if(architecture == KreArchitecture.x64)
+            if (architecture == KreArchitecture.x64)
             {
                 iisExpressPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "IIS Express", "iisexpress.exe");
 
@@ -57,7 +57,7 @@ namespace E2ETests
         {
             string applicationPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, APP_RELATIVE_PATH));
             //Tweak the %PATH% to the point to the right KREFLAVOR
-            Environment.SetEnvironmentVariable("PATH", SwitchPathToKreFlavor(kreFlavor,kreArchitecture));
+            Environment.SetEnvironmentVariable("PATH", SwitchPathToKreFlavor(kreFlavor, kreArchitecture));
             var backupKreDefaultLibPath = Environment.GetEnvironmentVariable("KRE_DEFAULT_LIB");
             //To avoid the KRE_DEFAULT_LIB of the test process flowing into Helios, set it to empty
             Environment.SetEnvironmentVariable("KRE_DEFAULT_LIB", string.Empty);
@@ -116,7 +116,7 @@ namespace E2ETests
             return hostProcess;
         }
 
-        private static string SwitchPathToKreFlavor(KreFlavor kreFlavor,KreArchitecture kreArchitecture)
+        private static string SwitchPathToKreFlavor(KreFlavor kreFlavor, KreArchitecture kreArchitecture)
         {
             var pathValue = Environment.GetEnvironmentVariable("PATH");
             Console.WriteLine();
