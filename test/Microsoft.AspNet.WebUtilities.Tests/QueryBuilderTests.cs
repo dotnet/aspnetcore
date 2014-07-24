@@ -51,6 +51,14 @@ namespace Microsoft.AspNet.WebUtilities
         }
 
         [Fact]
+        public void AddIEnumerableValues_AddedInOrder()
+        {
+            var builder = new QueryBuilder();
+            builder.Add("key", new[] { "value1", "value2", "value3" });
+            Assert.Equal("?key=value1&key=value2&key=value3", builder.ToString());
+        }
+
+        [Fact]
         public void AddMultipleValuesViaConstructor_AddedInOrder()
         {
             var builder = new QueryBuilder(new[]
@@ -72,6 +80,19 @@ namespace Microsoft.AspNet.WebUtilities
                 { "key3", "value3" },
             };
             Assert.Equal("?key1=value1&key2=value2&key3=value3", builder.ToString());
+        }
+
+        [Fact]
+        public void CopyViaConstructor_AddedInOrder()
+        {
+            var builder = new QueryBuilder()
+            {
+                { "key1", "value1" },
+                { "key2", "value2" },
+                { "key3", "value3" },
+            };
+            var builder1 = new QueryBuilder(builder);
+            Assert.Equal("?key1=value1&key2=value2&key3=value3", builder1.ToString());
         }
     }
 }

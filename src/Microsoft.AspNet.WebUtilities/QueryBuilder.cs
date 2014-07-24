@@ -14,14 +14,22 @@ namespace Microsoft.AspNet.WebUtilities
     {
         private IList<KeyValuePair<string, string>> _params;
 
-	    public QueryBuilder()
-	    {
+        public QueryBuilder()
+        {
             _params = new List<KeyValuePair<string, string>>();
-	    }
+        }
 
         public QueryBuilder(IEnumerable<KeyValuePair<string, string>> parameters)
         {
             _params = new List<KeyValuePair<string, string>>(parameters);
+        }
+
+        public void Add(string key, IEnumerable<string> values)
+        {
+            foreach (var value in values)
+            {
+                _params.Add(new KeyValuePair<string, string>(key, value));
+            }
         }
 
         public void Add(string key, string value)
