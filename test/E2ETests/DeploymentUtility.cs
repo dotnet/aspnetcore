@@ -11,19 +11,23 @@ namespace E2ETests
 {
     internal class DeploymentUtility
     {
-        private static string GetIISExpressPath()
+        private static string GetIISExpressPath(KreArchitecture architecture)
         {
+            // Get path to program files
             var iisExpressPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "IIS Express", "iisexpress.exe");
 
-            //If X86 version does not exist
-            if (!File.Exists(iisExpressPath))
+            // Get path to 64 bit of IIS Express
+            if(architecture == KreArchitecture.x64)
             {
                 iisExpressPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "IIS Express", "iisexpress.exe");
 
-                if (!File.Exists(iisExpressPath))
-                {
-                    throw new Exception("Unable to find IISExpress on the machine");
-                }
+                // If process is 32 bit, the path points to x86. Replace path to point to x64
+                iisExpressPath = Environment.Is64BitProcess ? iisExpressPath : iisExpressPath.Replace(" (x86)", "");
+            }
+
+            if (!File.Exists(iisExpressPath))
+            {
+                throw new Exception("Unable to find IISExpress on the machine");
             }
 
             return iisExpressPath;
@@ -61,7 +65,7 @@ namespace E2ETests
 
             if (hostType == ServerType.Helios)
             {
-                hostProcess = StartHeliosHost(applicationPath);
+                hostProcess = StartHeliosHost(applicationPath, kreArchitecture);
             }
             else
             {
@@ -73,13 +77,13 @@ namespace E2ETests
             return hostProcess;
         }
 
-        private static Process StartHeliosHost(string applicationPath)
+        private static Process StartHeliosHost(string applicationPath, KreArchitecture kreArchitecture)
         {
             CopyAspNetLoader(applicationPath);
 
             var startInfo = new ProcessStartInfo
             {
-                FileName = GetIISExpressPath(),
+                FileName = GetIISExpressPath(kreArchitecture),
                 Arguments = string.Format("/port:5001 /path:{0}", applicationPath),
                 UseShellExecute = true,
                 CreateNoWindow = true
