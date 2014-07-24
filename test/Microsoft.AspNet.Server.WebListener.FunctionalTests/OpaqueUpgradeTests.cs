@@ -16,7 +16,6 @@
 // permissions and limitations under the License.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Net.Sockets;
@@ -24,8 +23,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
-using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.PipelineCore;
 using Xunit;
 
@@ -33,12 +32,11 @@ namespace Microsoft.AspNet.Server.WebListener
 {
     public class OpaqueUpgradeTests
     {
-        private const string Address = "http://localhost:8080/";
-
         [Fact]
         public async Task OpaqueUpgrade_SupportKeys_Present()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 try
@@ -53,7 +51,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return Task.FromResult(0);
             }))
             {
-                HttpResponseMessage response = await SendRequestAsync(Address);
+                HttpResponseMessage response = await SendRequestAsync(address);
                 Assert.Equal(200, (int)response.StatusCode);
                 Assert.False(response.Headers.TransferEncodingChunked.HasValue, "Chunked");
                 Assert.Equal(0, response.Content.Headers.ContentLength);
@@ -65,7 +63,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task OpaqueUpgrade_AfterHeadersSent_Throws()
         {
             bool? upgradeThrew = null;
-            using (Utilities.CreateHttpServer(async env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, async env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 await httpContext.Response.WriteAsync("Hello World");
@@ -82,7 +81,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 }
             }))
             {
-                HttpResponseMessage response = await SendRequestAsync(Address);
+                HttpResponseMessage response = await SendRequestAsync(address);
                 Assert.Equal(200, (int)response.StatusCode);
                 Assert.True(response.Headers.TransferEncodingChunked.Value, "Chunked");
                 Assert.True(upgradeThrew.Value);
@@ -94,7 +93,8 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             ManualResetEvent waitHandle = new ManualResetEvent(false);
             bool? upgraded = null;
-            using (Utilities.CreateHttpServer(async env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, async env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.Headers["Upgrade"] = "websocket"; // Win8.1 blocks anything but WebSockets
@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 waitHandle.Set();
             }))
             {
-                using (Stream stream = await SendOpaqueRequestAsync("GET", Address))
+                using (Stream stream = await SendOpaqueRequestAsync("GET", address))
                 {
                     Assert.True(waitHandle.WaitOne(TimeSpan.FromSeconds(1)), "Timed out");
                     Assert.True(upgraded.HasValue, "Upgraded not set");
@@ -140,7 +140,8 @@ namespace Microsoft.AspNet.Server.WebListener
         [InlineData("PUT", "Content-Length: 0")]
         public async Task OpaqueUpgrade_VariousMethodsUpgradeSendAndReceive_Success(string method, string extraHeader)
         {
-            using (Utilities.CreateHttpServer(async env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, async env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 try
@@ -162,7 +163,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 }
             }))
             {
-                using (Stream stream = await SendOpaqueRequestAsync(method, Address, extraHeader))
+                using (Stream stream = await SendOpaqueRequestAsync(method, address, extraHeader))
                 {
                     byte[] data = new byte[100];
                     stream.WriteAsync(data, 0, 49).Wait();
@@ -182,7 +183,8 @@ namespace Microsoft.AspNet.Server.WebListener
         [InlineData("CUSTOMVERB", "Transfer-Encoding: chunked")]
         public async Task OpaqueUpgrade_InvalidMethodUpgrade_Disconnected(string method, string extraHeader)
         {
-            using (Utilities.CreateHttpServer(async env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, async env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 try
@@ -197,7 +199,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 }
             }))
             {
-                await Assert.ThrowsAsync<InvalidOperationException>(async () => await SendOpaqueRequestAsync(method, Address, extraHeader));
+                await Assert.ThrowsAsync<InvalidOperationException>(async () => await SendOpaqueRequestAsync(method, address, extraHeader));
             }
         }
 

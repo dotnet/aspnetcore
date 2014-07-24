@@ -31,12 +31,11 @@ namespace Microsoft.AspNet.Server.WebListener
 {
     public class RequestBodyTests
     {
-        private const string Address = "http://localhost:8080/";
-
         [Fact]
         public async Task RequestBody_ReadSync_Success()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 byte[] input = new byte[100];
@@ -46,7 +45,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return Task.FromResult(0);
             }))
             {
-                string response = await SendRequestAsync(Address, "Hello World");
+                string response = await SendRequestAsync(address, "Hello World");
                 Assert.Equal("Hello World", response);
             }
         }
@@ -54,7 +53,8 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task RequestBody_ReadAync_Success()
         {
-            using (Utilities.CreateHttpServer(async env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, async env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 byte[] input = new byte[100];
@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 await httpContext.Response.Body.WriteAsync(input, 0, read);
             }))
             {
-                string response = await SendRequestAsync(Address, "Hello World");
+                string response = await SendRequestAsync(address, "Hello World");
                 Assert.Equal("Hello World", response);
             }
         }
@@ -71,7 +71,8 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task RequestBody_ReadBeginEnd_Success()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 byte[] input = new byte[100];
@@ -81,7 +82,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return Task.FromResult(0);
             }))
             {
-                string response = await SendRequestAsync(Address, "Hello World");
+                string response = await SendRequestAsync(address, "Hello World");
                 Assert.Equal("Hello World", response);
             }
         }
@@ -90,7 +91,8 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task RequestBody_InvalidBuffer_ArgumentException()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 byte[] input = new byte[100];
@@ -104,7 +106,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return Task.FromResult(0);
             }))
             {
-                string response = await SendRequestAsync(Address, "Hello World");
+                string response = await SendRequestAsync(address, "Hello World");
                 Assert.Equal(string.Empty, response);
             }
         }
@@ -113,7 +115,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task RequestBody_ReadSyncPartialBody_Success()
         {
             StaggardContent content = new StaggardContent();
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 byte[] input = new byte[10];
@@ -125,7 +128,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return Task.FromResult(0);
             }))
             {
-                string response = await SendRequestAsync(Address, content);
+                string response = await SendRequestAsync(address, content);
                 Assert.Equal(string.Empty, response);
             }
         }
@@ -134,7 +137,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task RequestBody_ReadAsyncPartialBody_Success()
         {
             StaggardContent content = new StaggardContent();
-            using (Utilities.CreateHttpServer(async env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, async env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 byte[] input = new byte[10];
@@ -145,7 +149,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 Assert.Equal(5, read);
             }))
             {
-                string response = await SendRequestAsync(Address, content);
+                string response = await SendRequestAsync(address, content);
                 Assert.Equal(string.Empty, response);
             }
         }
@@ -153,7 +157,8 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task RequestBody_PostWithImidateBody_Success()
         {
-            using (Utilities.CreateHttpServer(async env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, async env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 byte[] input = new byte[11];
@@ -165,7 +170,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 await httpContext.Response.Body.WriteAsync(input, 0, 10);
             }))
             {
-                string response = await SendSocketRequestAsync(Address);
+                string response = await SendSocketRequestAsync(address);
                 string[] lines = response.Split('\r', '\n');
                 Assert.Equal(13, lines.Length);
                 Assert.Equal("HTTP/1.1 200 OK", lines[0]);

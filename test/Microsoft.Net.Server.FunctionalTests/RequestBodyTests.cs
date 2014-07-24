@@ -14,14 +14,13 @@ namespace Microsoft.Net.Server
 {
     public class RequestBodyTests
     {
-        private const string Address = "http://localhost:8080/";
-
         [Fact]
         public async Task RequestBody_ReadSync_Success()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<string> responseTask = SendRequestAsync(Address, "Hello World");
+                Task<string> responseTask = SendRequestAsync(address, "Hello World");
 
                 var context = await server.GetContextAsync();
                 byte[] input = new byte[100];
@@ -37,9 +36,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task RequestBody_ReadAync_Success()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<string> responseTask = SendRequestAsync(Address, "Hello World");
+                Task<string> responseTask = SendRequestAsync(address, "Hello World");
 
                 var context = await server.GetContextAsync();
                 byte[] input = new byte[100];
@@ -55,9 +55,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task RequestBody_ReadBeginEnd_Success()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<string> responseTask = SendRequestAsync(Address, "Hello World");
+                Task<string> responseTask = SendRequestAsync(address, "Hello World");
 
                 var context = await server.GetContextAsync();
                 byte[] input = new byte[100];
@@ -74,9 +75,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task RequestBody_InvalidBuffer_ArgumentException()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<string> responseTask = SendRequestAsync(Address, "Hello World");
+                Task<string> responseTask = SendRequestAsync(address, "Hello World");
 
                 var context = await server.GetContextAsync();
                 byte[] input = new byte[100];
@@ -98,9 +100,10 @@ namespace Microsoft.Net.Server
         public async Task RequestBody_ReadSyncPartialBody_Success()
         {
             StaggardContent content = new StaggardContent();
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<string> responseTask = SendRequestAsync(Address, content);
+                Task<string> responseTask = SendRequestAsync(address, content);
 
                 var context = await server.GetContextAsync();
                 byte[] input = new byte[10];
@@ -120,9 +123,10 @@ namespace Microsoft.Net.Server
         public async Task RequestBody_ReadAsyncPartialBody_Success()
         {
             StaggardContent content = new StaggardContent();
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<string> responseTask = SendRequestAsync(Address, content);
+                Task<string> responseTask = SendRequestAsync(address, content);
 
                 var context = await server.GetContextAsync();
                 byte[] input = new byte[10];
@@ -141,9 +145,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task RequestBody_PostWithImidateBody_Success()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<string> responseTask = SendSocketRequestAsync(Address);
+                Task<string> responseTask = SendSocketRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 byte[] input = new byte[11];

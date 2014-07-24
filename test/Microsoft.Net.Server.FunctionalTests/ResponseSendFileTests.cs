@@ -13,7 +13,6 @@ namespace Microsoft.Net.Server
 {
     public class ResponseSendFileTests
     {
-        private const string Address = "http://localhost:8080/";
         private readonly string AbsoluteFilePath;
         private readonly string RelativeFilePath;
         private readonly long FileLength;
@@ -28,9 +27,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task ResponseSendFile_MissingFile_Throws()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 await Assert.ThrowsAsync<FileNotFoundException>(() => 
@@ -44,9 +44,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task ResponseSendFile_NoHeaders_DefaultsToChunked()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
@@ -64,9 +65,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task ResponseSendFile_RelativeFile_Success()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 await context.Response.SendFileAsync(RelativeFilePath, 0, null, CancellationToken.None);
@@ -84,9 +86,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task ResponseSendFile_Chunked_Chunked()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 context.Response.Headers["Transfer-EncodinG"] = "CHUNKED";
@@ -105,9 +108,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task ResponseSendFile_MultipleChunks_Chunked()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 context.Response.Headers["Transfer-EncodinG"] = "CHUNKED";
@@ -127,9 +131,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task ResponseSendFile_ChunkedHalfOfFile_Chunked()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, FileLength / 2, CancellationToken.None);
@@ -147,9 +152,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task ResponseSendFile_ChunkedOffsetOutOfRange_Throws()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
@@ -163,9 +169,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task ResponseSendFile_ChunkedCountOutOfRange_Throws()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
@@ -179,9 +186,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task ResponseSendFile_ChunkedCount0_Chunked()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, 0, CancellationToken.None);
@@ -199,9 +207,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task ResponseSendFile_ContentLength_PassedThrough()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 context.Response.Headers["Content-lenGth"] = FileLength.ToString();
@@ -220,9 +229,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task ResponseSendFile_ContentLengthSpecific_PassedThrough()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 context.Response.Headers["Content-lenGth"] = "10";
@@ -242,9 +252,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task ResponseSendFile_ContentLength0_PassedThrough()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 context.Response.Headers["Content-lenGth"] = "0";

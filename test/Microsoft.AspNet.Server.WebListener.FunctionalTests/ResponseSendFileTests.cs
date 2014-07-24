@@ -33,7 +33,6 @@ namespace Microsoft.AspNet.Server.WebListener
 {
     public class ResponseSendFileTests
     {
-        private const string Address = "http://localhost:8080/";
         private readonly string AbsoluteFilePath;
         private readonly string RelativeFilePath;
         private readonly long FileLength;
@@ -48,7 +47,8 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task ResponseSendFile_SupportKeys_Present()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 try
@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return Task.FromResult(0);
             }))
             {
-                HttpResponseMessage response = await SendRequestAsync(Address);
+                HttpResponseMessage response = await SendRequestAsync(address);
                 Assert.Equal(200, (int)response.StatusCode);
                 IEnumerable<string> ignored;
                 Assert.True(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
@@ -91,7 +91,8 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             ManualResetEvent waitHandle = new ManualResetEvent(false);
             bool? appThrew = null;
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.GetFeature<IHttpSendFileFeature>();
@@ -112,7 +113,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return Task.FromResult(0);
             }))
             {
-                HttpResponseMessage response = await SendRequestAsync(Address);
+                HttpResponseMessage response = await SendRequestAsync(address);
                 Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
                 Assert.True(waitHandle.WaitOne(100));
                 Assert.True(appThrew.HasValue, "appThrew.HasValue");
@@ -123,14 +124,15 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task ResponseSendFile_NoHeaders_DefaultsToChunked()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.GetFeature<IHttpSendFileFeature>();
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
             }))
             {
-                HttpResponseMessage response = await SendRequestAsync(Address);
+                HttpResponseMessage response = await SendRequestAsync(address);
                 Assert.Equal(200, (int)response.StatusCode);
                 IEnumerable<string> ignored;
                 Assert.False(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
@@ -142,14 +144,15 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task ResponseSendFile_RelativeFile_Success()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.GetFeature<IHttpSendFileFeature>();
                 return sendFile.SendFileAsync(RelativeFilePath, 0, null, CancellationToken.None);
             }))
             {
-                HttpResponseMessage response = await SendRequestAsync(Address);
+                HttpResponseMessage response = await SendRequestAsync(address);
                 Assert.Equal(200, (int)response.StatusCode);
                 IEnumerable<string> ignored;
                 Assert.False(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
@@ -161,7 +164,8 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task ResponseSendFile_Chunked_Chunked()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.GetFeature<IHttpSendFileFeature>();
@@ -169,7 +173,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
             }))
             {
-                HttpResponseMessage response = await SendRequestAsync(Address);
+                HttpResponseMessage response = await SendRequestAsync(address);
                 Assert.Equal(200, (int)response.StatusCode);
                 IEnumerable<string> contentLength;
                 Assert.False(response.Content.Headers.TryGetValues("content-length", out contentLength), "Content-Length");
@@ -181,7 +185,8 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task ResponseSendFile_MultipleChunks_Chunked()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.GetFeature<IHttpSendFileFeature>();
@@ -190,7 +195,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
             }))
             {
-                HttpResponseMessage response = await SendRequestAsync(Address);
+                HttpResponseMessage response = await SendRequestAsync(address);
                 Assert.Equal(200, (int)response.StatusCode);
                 IEnumerable<string> contentLength;
                 Assert.False(response.Content.Headers.TryGetValues("content-length", out contentLength), "Content-Length");
@@ -202,14 +207,15 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task ResponseSendFile_ChunkedHalfOfFile_Chunked()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.GetFeature<IHttpSendFileFeature>();
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, FileLength / 2, CancellationToken.None);
             }))
             {
-                HttpResponseMessage response = await SendRequestAsync(Address);
+                HttpResponseMessage response = await SendRequestAsync(address);
                 Assert.Equal(200, (int)response.StatusCode);
                 IEnumerable<string> contentLength;
                 Assert.False(response.Content.Headers.TryGetValues("content-length", out contentLength), "Content-Length");
@@ -221,14 +227,15 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task ResponseSendFile_ChunkedOffsetOutOfRange_Throws()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.GetFeature<IHttpSendFileFeature>();
                 return sendFile.SendFileAsync(AbsoluteFilePath, 1234567, null, CancellationToken.None);
             }))
             {
-                HttpResponseMessage response = await SendRequestAsync(Address);
+                HttpResponseMessage response = await SendRequestAsync(address);
                 Assert.Equal(500, (int)response.StatusCode);
             }
         }
@@ -236,14 +243,15 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task ResponseSendFile_ChunkedCountOutOfRange_Throws()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.GetFeature<IHttpSendFileFeature>();
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, 1234567, CancellationToken.None);
             }))
             {
-                HttpResponseMessage response = await SendRequestAsync(Address);
+                HttpResponseMessage response = await SendRequestAsync(address);
                 Assert.Equal(500, (int)response.StatusCode);
             }
         }
@@ -251,14 +259,15 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task ResponseSendFile_ChunkedCount0_Chunked()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.GetFeature<IHttpSendFileFeature>();
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, 0, CancellationToken.None);
             }))
             {
-                HttpResponseMessage response = await SendRequestAsync(Address);
+                HttpResponseMessage response = await SendRequestAsync(address);
                 Assert.Equal(200, (int)response.StatusCode);
                 IEnumerable<string> contentLength;
                 Assert.False(response.Content.Headers.TryGetValues("content-length", out contentLength), "Content-Length");
@@ -270,7 +279,8 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task ResponseSendFile_ContentLength_PassedThrough()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.GetFeature<IHttpSendFileFeature>();
@@ -278,7 +288,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
             }))
             {
-                HttpResponseMessage response = await SendRequestAsync(Address);
+                HttpResponseMessage response = await SendRequestAsync(address);
                 Assert.Equal(200, (int)response.StatusCode);
                 IEnumerable<string> contentLength;
                 Assert.True(response.Content.Headers.TryGetValues("content-length", out contentLength), "Content-Length");
@@ -291,7 +301,8 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task ResponseSendFile_ContentLengthSpecific_PassedThrough()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.GetFeature<IHttpSendFileFeature>();
@@ -299,7 +310,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, 10, CancellationToken.None);
             }))
             {
-                HttpResponseMessage response = await SendRequestAsync(Address);
+                HttpResponseMessage response = await SendRequestAsync(address);
                 Assert.Equal(200, (int)response.StatusCode);
                 IEnumerable<string> contentLength;
                 Assert.True(response.Content.Headers.TryGetValues("content-length", out contentLength), "Content-Length");
@@ -312,7 +323,8 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task ResponseSendFile_ContentLength0_PassedThrough()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.GetFeature<IHttpSendFileFeature>();
@@ -320,7 +332,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, 0, CancellationToken.None);
             }))
             {
-                HttpResponseMessage response = await SendRequestAsync(Address);
+                HttpResponseMessage response = await SendRequestAsync(address);
                 Assert.Equal(200, (int)response.StatusCode);
                 IEnumerable<string> contentLength;
                 Assert.True(response.Content.Headers.TryGetValues("content-length", out contentLength), "Content-Length");

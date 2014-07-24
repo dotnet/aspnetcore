@@ -6,31 +6,67 @@ namespace Microsoft.Net.Server
 {
     internal static class Utilities
     {
-        internal static WebListener CreateHttpServer()
+        private const int BasePort = 5001;
+        private const int MaxPort = 8000;
+        private static int NextPort = BasePort;
+        private static object PortLock = new object();
+
+        internal static WebListener CreateHttpAuthServer(AuthenticationTypes authType, out string baseAddress)
         {
-            return CreateServer("http", "localhost", "8080", string.Empty);
+            var listener = CreateHttpServer(out baseAddress);
+            listener.AuthenticationManager.AuthenticationTypes = authType;
+            return listener;
         }
+
+        internal static WebListener CreateHttpServer(out string baseAddress)
+        {
+            string root;
+            return CreateDynamicHttpServer(string.Empty, out root, out baseAddress);
+        }
+
+        internal static WebListener CreateHttpServerReturnRoot(string path, out string root)
+        {
+            string baseAddress;
+            return CreateDynamicHttpServer(path, out root, out baseAddress);
+        }
+
+        internal static WebListener CreateDynamicHttpServer(string basePath, out string root, out string baseAddress)
+        {
+            lock (PortLock)
+            {
+                while (NextPort < MaxPort)
+                {
+                    var port = NextPort++;
+                    var prefix = UrlPrefix.Create("http", "localhost", port, basePath);
+                    root = prefix.Scheme + "://" + prefix.Host + ":" + prefix.Port;
+                    baseAddress = prefix.ToString();
+                    var listener = new WebListener();
+                    listener.UrlPrefixes.Add(prefix);
+                    try
+                    {
+                        listener.Start();
+                        return listener;
+                    }
+                    catch (WebListenerException)
+                    {
+                        listener.Dispose();
+                    }
+                }
+                NextPort = BasePort;
+            }
+            throw new Exception("Failed to locate a free port.");
+        }
+
 
         internal static WebListener CreateHttpsServer()
         {
-            return CreateServer("https", "localhost", "9090", string.Empty);
+            return CreateServer("https", "localhost", 9090, string.Empty);
         }
 
-        internal static WebListener CreateAuthServer(AuthenticationTypes authType)
-        {
-            return CreateServer("http", "localhost", "8080", string.Empty, authType);
-        }
-
-        internal static WebListener CreateServer(string scheme, string host, string port, string path)
-        {
-            return CreateServer(scheme, host, port, path, AuthenticationTypes.AllowAnonymous);
-        }
-
-        internal static WebListener CreateServer(string scheme, string host, string port, string path, AuthenticationTypes authType)
+        internal static WebListener CreateServer(string scheme, string host, int port, string path)
         {
             WebListener listener = new WebListener();
             listener.UrlPrefixes.Add(UrlPrefix.Create(scheme, host, port, path));
-            listener.AuthenticationManager.AuthenticationTypes = authType;
             listener.Start();
             return listener;
         }

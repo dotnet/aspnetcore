@@ -30,19 +30,18 @@ namespace Microsoft.AspNet.Server.WebListener
 {
     public class ResponseBodyTests
     {
-        private const string Address = "http://localhost:8080/";
-
         [Fact]
         public async Task ResponseBody_WriteNoHeaders_DefaultsToChunked()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.Body.Write(new byte[10], 0, 10);
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {
-                HttpResponseMessage response = await SendRequestAsync(Address);
+                HttpResponseMessage response = await SendRequestAsync(address);
                 Assert.Equal(200, (int)response.StatusCode);
                 Assert.Equal(new Version(1, 1), response.Version);
                 IEnumerable<string> ignored;
@@ -55,7 +54,8 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task ResponseBody_WriteChunked_Chunked()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Request.Headers["transfeR-Encoding"] = " CHunked ";
@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return stream.WriteAsync(new byte[10], 0, 10);
             }))
             {
-                HttpResponseMessage response = await SendRequestAsync(Address);
+                HttpResponseMessage response = await SendRequestAsync(address);
                 Assert.Equal(200, (int)response.StatusCode);
                 Assert.Equal(new Version(1, 1), response.Version);
                 IEnumerable<string> ignored;
@@ -78,7 +78,8 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task ResponseBody_WriteContentLength_PassedThrough()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.Headers["Content-lenGth"] = " 30 ";
@@ -88,7 +89,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return stream.WriteAsync(new byte[10], 0, 10);
             }))
             {
-                HttpResponseMessage response = await SendRequestAsync(Address);
+                HttpResponseMessage response = await SendRequestAsync(address);
                 Assert.Equal(200, (int)response.StatusCode);
                 Assert.Equal(new Version(1, 1), response.Version);
                 IEnumerable<string> contentLength;
@@ -102,14 +103,15 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task ResponseBody_Http10WriteNoHeaders_DefaultsConnectionClose()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 env["owin.ResponseProtocol"] = "HTTP/1.0";
                 env.Get<Stream>("owin.ResponseBody").Write(new byte[10], 0, 10);
                 return env.Get<Stream>("owin.ResponseBody").WriteAsync(new byte[10], 0, 10);
             }))
             {
-                HttpResponseMessage response = await SendRequestAsync(Address);
+                HttpResponseMessage response = await SendRequestAsync(address);
                 Assert.Equal(200, (int)response.StatusCode);
                 Assert.Equal(new Version(1, 1), response.Version); // Http.Sys won't transmit 1.0
                 IEnumerable<string> ignored;
@@ -122,21 +124,23 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task ResponseBody_WriteContentLengthNoneWritten_Throws()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.Headers["Content-lenGth"] = " 20 ";
                 return Task.FromResult(0);
             }))
             {
-                await Assert.ThrowsAsync<HttpRequestException>(() => SendRequestAsync(Address));
+                await Assert.ThrowsAsync<HttpRequestException>(() => SendRequestAsync(address));
             }
         }
 
         [Fact]
         public void ResponseBody_WriteContentLengthNotEnoughWritten_Throws()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.Headers["Content-lenGth"] = " 20 ";
@@ -144,14 +148,15 @@ namespace Microsoft.AspNet.Server.WebListener
                 return Task.FromResult(0);
             }))
             {
-                Assert.Throws<AggregateException>(() => SendRequestAsync(Address).Result);
+                Assert.Throws<AggregateException>(() => SendRequestAsync(address).Result);
             }
         }
 
         [Fact]
         public void ResponseBody_WriteContentLengthTooMuchWritten_Throws()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.Headers["Content-lenGth"] = " 10 ";
@@ -160,7 +165,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return Task.FromResult(0);
             }))
             {
-                Assert.Throws<AggregateException>(() => SendRequestAsync(Address).Result);
+                Assert.Throws<AggregateException>(() => SendRequestAsync(address).Result);
             }
         }
 
@@ -169,7 +174,8 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             ManualResetEvent waitHandle = new ManualResetEvent(false);
             bool? appThrew = null;
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 try
                 {
@@ -188,7 +194,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }))
             {
                 // The full response is received.
-                HttpResponseMessage response = await SendRequestAsync(Address);
+                HttpResponseMessage response = await SendRequestAsync(address);
                 Assert.Equal(200, (int)response.StatusCode);
                 Assert.Equal(new Version(1, 1), response.Version);
                 IEnumerable<string> contentLength;

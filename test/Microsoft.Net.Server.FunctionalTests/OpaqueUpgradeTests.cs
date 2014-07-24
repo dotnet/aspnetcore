@@ -12,21 +12,20 @@ namespace Microsoft.Net.Server
 {
     public class OpaqueUpgradeTests
     {
-        private const string Address = "http://localhost:8080/";
-
         [Fact]
         public async Task OpaqueUpgrade_AfterHeadersSent_Throws()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> clientTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> clientTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 byte[] body = Encoding.UTF8.GetBytes("Hello World");
                 context.Response.Body.Write(body, 0, body.Length);
 
                 context.Response.Headers["Upgrade"] = "WebSocket"; // Win8.1 blocks anything but WebSocket
-                Assert.ThrowsAsync<InvalidOperationException>(async () => await context.UpgradeAsync());
+                await Assert.ThrowsAsync<InvalidOperationException>(async () => await context.UpgradeAsync());
                 context.Dispose();
                 HttpResponseMessage response = await clientTask;
                 Assert.Equal(200, (int)response.StatusCode);
@@ -38,9 +37,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task OpaqueUpgrade_GetUpgrade_Success()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<Stream> clientTask = SendOpaqueRequestAsync("GET", Address);
+                Task<Stream> clientTask = SendOpaqueRequestAsync("GET", address);
 
                 var context = await server.GetContextAsync();
                 Assert.True(context.IsUpgradableRequest);
@@ -80,9 +80,10 @@ namespace Microsoft.Net.Server
         [InlineData("PUT", "Content-Length: 0")]
         public async Task OpaqueUpgrade_VariousMethodsUpgradeSendAndReceive_Success(string method, string extraHeader)
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<Stream> clientTask = SendOpaqueRequestAsync(method, Address, extraHeader);
+                Task<Stream> clientTask = SendOpaqueRequestAsync(method, address, extraHeader);
 
                 var context = await server.GetContextAsync();
                 Assert.True(context.IsUpgradableRequest);
@@ -119,9 +120,10 @@ namespace Microsoft.Net.Server
         [InlineData("CUSTOMVERB", "Transfer-Encoding: chunked")]
         public async Task OpaqueUpgrade_InvalidMethodUpgrade_Disconnected(string method, string extraHeader)
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                var clientTask = SendOpaqueRequestAsync(method, Address, extraHeader);
+                var clientTask = SendOpaqueRequestAsync(method, address, extraHeader);
                 var context = await server.GetContextAsync();
                 Assert.False(context.IsUpgradableRequest);
                 context.Dispose();

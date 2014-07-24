@@ -10,8 +10,6 @@ namespace Microsoft.Net.Server
 {
     public class AuthenticationTests
     {
-        private const string Address = "http://localhost:8080/";
-
         [Theory]
         [InlineData(AuthenticationTypes.AllowAnonymous)]
         [InlineData(AuthenticationTypes.Kerberos)]
@@ -22,9 +20,10 @@ namespace Microsoft.Net.Server
         [InlineData(AuthenticationTypes.Kerberos | AuthenticationTypes.Negotiate | AuthenticationTypes.NTLM | /*AuthenticationTypes.Digest |*/ AuthenticationTypes.Basic)]
         public async Task AuthTypes_AllowAnonymous_NoChallenge(AuthenticationTypes authType)
         {
-            using (var server = Utilities.CreateAuthServer(authType | AuthenticationTypes.AllowAnonymous))
+            string address;
+            using (var server = Utilities.CreateHttpAuthServer(authType | AuthenticationTypes.AllowAnonymous, out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 Assert.NotNull(context.User);
@@ -53,9 +52,10 @@ namespace Microsoft.Net.Server
         [InlineData(AuthenticationTypes.Basic)]
         public async Task AuthType_RequireAuth_ChallengesAdded(AuthenticationTypes authType)
         {
-            using (var server = Utilities.CreateAuthServer(authType))
+            string address;
+            using (var server = Utilities.CreateHttpAuthServer(authType, out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var contextTask = server.GetContextAsync(); // Fails when the server shuts down, the challenge happens internally.
 
@@ -73,9 +73,10 @@ namespace Microsoft.Net.Server
         [InlineData(AuthenticationTypes.Basic)]
         public async Task AuthType_AllowAnonymousButSpecify401_ChallengesAdded(AuthenticationTypes authType)
         {
-            using (var server = Utilities.CreateAuthServer(authType | AuthenticationTypes.AllowAnonymous))
+            string address;
+            using (var server = Utilities.CreateHttpAuthServer(authType | AuthenticationTypes.AllowAnonymous, out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 Assert.NotNull(context.User);
@@ -93,15 +94,16 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task MultipleAuthTypes_AllowAnonymousButSpecify401_ChallengesAdded()
         {
+            string address;
             AuthenticationTypes authType =
                 AuthenticationTypes.Kerberos
                 | AuthenticationTypes.Negotiate
                 | AuthenticationTypes.NTLM
                 /* | AuthenticationTypes.Digest TODO: Not implemented */
                 | AuthenticationTypes.Basic;
-            using (var server = Utilities.CreateAuthServer(authType | AuthenticationTypes.AllowAnonymous))
+            using (var server = Utilities.CreateHttpAuthServer(authType | AuthenticationTypes.AllowAnonymous, out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 Assert.NotNull(context.User);
@@ -125,9 +127,10 @@ namespace Microsoft.Net.Server
         [InlineData(AuthenticationTypes.Kerberos | AuthenticationTypes.Negotiate | AuthenticationTypes.NTLM | /*AuthenticationType.Digest |*/ AuthenticationTypes.Basic)]
         public async Task AuthTypes_AllowAnonymousButSpecify401_Success(AuthenticationTypes authType)
         {
-            using (var server = Utilities.CreateAuthServer(authType | AuthenticationTypes.AllowAnonymous))
+            string address;
+            using (var server = Utilities.CreateHttpAuthServer(authType | AuthenticationTypes.AllowAnonymous, out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address, useDefaultCredentials: true);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address, useDefaultCredentials: true);
 
                 var context = await server.GetContextAsync();
                 Assert.NotNull(context.User);
@@ -156,9 +159,10 @@ namespace Microsoft.Net.Server
         [InlineData(AuthenticationTypes.Kerberos | AuthenticationTypes.Negotiate | AuthenticationTypes.NTLM | /*AuthenticationType.Digest |*/ AuthenticationTypes.Basic)]
         public async Task AuthTypes_RequireAuth_Success(AuthenticationTypes authType)
         {
-            using (var server = Utilities.CreateAuthServer(authType))
+            string address;
+            using (var server = Utilities.CreateHttpAuthServer(authType, out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address, useDefaultCredentials: true);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address, useDefaultCredentials: true);
 
                 var context = await server.GetContextAsync();
                 Assert.NotNull(context.User);

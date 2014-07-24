@@ -22,7 +22,6 @@
     <Compile Include="HttpsTests.cs" />
     <Compile Include="WebSocketTests.cs" />
     <Compile Include="OpaqueUpgradeTests.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RequestBodyTests.cs" />
     <Compile Include="RequestHeaderTests.cs" />
     <Compile Include="RequestTests.cs" />

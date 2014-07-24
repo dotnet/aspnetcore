@@ -10,14 +10,13 @@ namespace Microsoft.Net.Server
 {
     public class ResponseTests
     {
-        private const string Address = "http://localhost:8080/";
-
         [Fact]
         public async Task Response_ServerSendsDefaultResponse_ServerProvidesStatusCodeAndReasonPhrase()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 Assert.Equal(200, context.Response.StatusCode);
@@ -34,9 +33,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task Response_ServerSendsSpecificStatus_ServerProvidesReasonPhrase()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 context.Response.StatusCode = 201;
@@ -54,9 +54,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task Response_ServerSendsSpecificStatusAndReasonPhrase_PassedThrough()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 context.Response.StatusCode = 201;
@@ -75,9 +76,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task Response_ServerSendsCustomStatus_NoReasonPhrase()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 context.Response.StatusCode = 901;
@@ -93,9 +95,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task Response_100_Throws()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 Assert.Throws<ArgumentOutOfRangeException>(() => { context.Response.StatusCode = 100; });
@@ -108,9 +111,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task Response_0_Throws()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 Assert.Throws<ArgumentOutOfRangeException>(() => { context.Response.StatusCode = 0; });

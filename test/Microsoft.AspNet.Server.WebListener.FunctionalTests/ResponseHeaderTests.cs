@@ -29,17 +29,16 @@ namespace Microsoft.AspNet.Server.WebListener
 {
     public class ResponseHeaderTests
     {
-        private const string Address = "http://localhost:8080/";
-
         [Fact]
         public async Task ResponseHeaders_ServerSendsDefaultHeaders_Success()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 return Task.FromResult(0);
             }))
             {
-                HttpResponseMessage response = await SendRequestAsync(Address);
+                HttpResponseMessage response = await SendRequestAsync(address);
                 response.EnsureSuccessStatusCode();
                 Assert.Equal(2, response.Headers.Count());
                 Assert.False(response.Headers.TransferEncodingChunked.HasValue);
@@ -53,7 +52,8 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task ResponseHeaders_ServerSendsSingleValueKnownHeaders_Success()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var responseInfo = httpContext.GetFeature<IHttpResponseFeature>();
@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }))
             {
                 // HttpClient would merge the headers no matter what
-                WebRequest request = WebRequest.Create(Address);
+                WebRequest request = WebRequest.Create(address);
                 HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
                 Assert.Equal(4, response.Headers.Count);
                 Assert.Null(response.Headers["Transfer-Encoding"]);
@@ -77,7 +77,8 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task ResponseHeaders_ServerSendsMultiValueKnownHeaders_Success()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var responseInfo = httpContext.GetFeature<IHttpResponseFeature>();
@@ -87,7 +88,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }))
             {
                 // HttpClient would merge the headers no matter what
-                WebRequest request = WebRequest.Create(Address);
+                WebRequest request = WebRequest.Create(address);
                 HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
                 Assert.Equal(4, response.Headers.Count);
                 Assert.Null(response.Headers["Transfer-Encoding"]);
@@ -101,7 +102,8 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task ResponseHeaders_ServerSendsCustomHeaders_Success()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var responseInfo = httpContext.GetFeature<IHttpResponseFeature>();
@@ -111,7 +113,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }))
             {
                 // HttpClient would merge the headers no matter what
-                WebRequest request = WebRequest.Create(Address);
+                WebRequest request = WebRequest.Create(address);
                 HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
                 Assert.Equal(4, response.Headers.Count);
                 Assert.Null(response.Headers["Transfer-Encoding"]);
@@ -125,7 +127,8 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task ResponseHeaders_ServerSendsConnectionClose_Closed()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var responseInfo = httpContext.GetFeature<IHttpResponseFeature>();
@@ -134,7 +137,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return Task.FromResult(0);
             }))
             {
-                HttpResponseMessage response = await SendRequestAsync(Address);
+                HttpResponseMessage response = await SendRequestAsync(address);
                 response.EnsureSuccessStatusCode();
                 Assert.True(response.Headers.ConnectionClose.Value);
                 Assert.Equal(new string[] { "close" }, response.Headers.GetValues("Connection"));
@@ -144,13 +147,14 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task ResponseHeaders_SendsHttp10_Gets11Close()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 env["owin.ResponseProtocol"] = "HTTP/1.0";
                 return Task.FromResult(0);
             }))
             {
-                HttpResponseMessage response = await SendRequestAsync(Address);
+                HttpResponseMessage response = await SendRequestAsync(address);
                 response.EnsureSuccessStatusCode();
                 Assert.Equal(new Version(1, 1), response.Version);
                 Assert.True(response.Headers.ConnectionClose.Value);
@@ -161,13 +165,14 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task ResponseHeaders_SendsHttp10WithBody_Gets11Close()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 env["owin.ResponseProtocol"] = "HTTP/1.0";
                 return env.Get<Stream>("owin.ResponseBody").WriteAsync(new byte[10], 0, 10);
             }))
             {
-                HttpResponseMessage response = await SendRequestAsync(Address);
+                HttpResponseMessage response = await SendRequestAsync(address);
                 response.EnsureSuccessStatusCode();
                 Assert.Equal(new Version(1, 1), response.Version);
                 Assert.False(response.Headers.TransferEncodingChunked.HasValue);
@@ -181,14 +186,15 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task ResponseHeaders_HTTP10Request_Gets11Close()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 return Task.FromResult(0);
             }))
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Address);
+                    HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, address);
                     request.Version = new Version(1, 0);
                     HttpResponseMessage response = await client.SendAsync(request);
                     response.EnsureSuccessStatusCode();
@@ -202,7 +208,8 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task ResponseHeaders_HTTP10Request_RemovesChunkedHeader()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var responseInfo = httpContext.GetFeature<IHttpResponseFeature>();
@@ -213,7 +220,7 @@ namespace Microsoft.AspNet.Server.WebListener
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Address);
+                    HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, address);
                     request.Version = new Version(1, 0);
                     HttpResponseMessage response = await client.SendAsync(request);
                     response.EnsureSuccessStatusCode();
@@ -229,8 +236,8 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task Headers_FlushSendsHeaders_Success()
         {
-            using (Utilities.CreateHttpServer(
-                env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
                 {
                     var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                     var responseInfo = httpContext.GetFeature<IHttpResponseFeature>();
@@ -244,7 +251,7 @@ namespace Microsoft.AspNet.Server.WebListener
                     return Task.FromResult(0);
                 }))
             {
-                HttpResponseMessage response = await SendRequestAsync(Address);
+                HttpResponseMessage response = await SendRequestAsync(address);
                 response.EnsureSuccessStatusCode();
                 Assert.Equal(5, response.Headers.Count()); // Date, Server, Chunked
 
@@ -259,8 +266,8 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task Headers_FlushAsyncSendsHeaders_Success()
         {
-            using (Utilities.CreateHttpServer(
-                async env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, async env =>
                 {
                     var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                     var responseInfo = httpContext.GetFeature<IHttpResponseFeature>();
@@ -273,7 +280,7 @@ namespace Microsoft.AspNet.Server.WebListener
                     responseHeaders.Add("Custom3", new string[] { "value3a, value3b", "value3c" }); // Ignored
                 }))
             {
-                HttpResponseMessage response = await SendRequestAsync(Address);
+                HttpResponseMessage response = await SendRequestAsync(address);
                 response.EnsureSuccessStatusCode();
                 Assert.Equal(5, response.Headers.Count()); // Date, Server, Chunked
 

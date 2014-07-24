@@ -32,12 +32,11 @@ namespace Microsoft.AspNet.Server.WebListener
 
     public class RequestTests
     {
-        private const string Address = "http://localhost:8080";
-
         [Fact]
         public async Task Request_SimpleGet_Success()
         {
-            using (Utilities.CreateServer("http", "localhost", "8080", "/basepath", env =>
+            string root;
+            using (Utilities.CreateHttpServerReturnRoot("/basepath", out root, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 try
@@ -77,21 +76,22 @@ namespace Microsoft.AspNet.Server.WebListener
                 return Task.FromResult(0);
             }))
             {
-                string response = await SendRequestAsync(Address + "/basepath/SomePath?SomeQuery");
+                string response = await SendRequestAsync(root + "/basepath/SomePath?SomeQuery");
                 Assert.Equal(string.Empty, response);
             }
         }
 
         [Theory]
-        [InlineData("/", "http://localhost:8080/", "", "/")]
-        [InlineData("/basepath/", "http://localhost:8080/basepath", "/basepath", "")]
-        [InlineData("/basepath/", "http://localhost:8080/basepath/", "/basepath", "/")]
-        [InlineData("/basepath/", "http://localhost:8080/basepath/subpath", "/basepath", "/subpath")]
-        [InlineData("/base path/", "http://localhost:8080/base%20path/sub path", "/base path", "/sub path")]
-        [InlineData("/base葉path/", "http://localhost:8080/base%E8%91%89path/sub%E8%91%89path", "/base葉path", "/sub葉path")]
-        public async Task Request_PathSplitting(string pathBase, string requestUri, string expectedPathBase, string expectedPath)
+        [InlineData("/", "/", "", "/")]
+        [InlineData("/basepath/", "/basepath", "/basepath", "")]
+        [InlineData("/basepath/", "/basepath/", "/basepath", "/")]
+        [InlineData("/basepath/", "/basepath/subpath", "/basepath", "/subpath")]
+        [InlineData("/base path/", "/base%20path/sub path", "/base path", "/sub path")]
+        [InlineData("/base葉path/", "/base%E8%91%89path/sub%E8%91%89path", "/base葉path", "/sub葉path")]
+        public async Task Request_PathSplitting(string pathBase, string requestPath, string expectedPathBase, string expectedPath)
         {
-            using (Utilities.CreateServer("http", "localhost", "8080", pathBase, env =>
+            string root;
+            using (Utilities.CreateHttpServerReturnRoot(pathBase, out root, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 try
@@ -104,7 +104,6 @@ namespace Microsoft.AspNet.Server.WebListener
                     Assert.Equal(expectedPath, requestInfo.Path);
                     Assert.Equal(expectedPathBase, requestInfo.PathBase);
                     Assert.Equal(string.Empty, requestInfo.QueryString);
-                    Assert.Equal(8080, connectionInfo.LocalPort);
                 }
                 catch (Exception ex)
                 {
@@ -114,7 +113,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return Task.FromResult(0);
             }))
             {
-                string response = await SendRequestAsync(requestUri);
+                string response = await SendRequestAsync(root + requestPath);
                 Assert.Equal(string.Empty, response);
             }
         }
@@ -132,9 +131,10 @@ namespace Microsoft.AspNet.Server.WebListener
         [InlineData("/2/3", "/2/3", "")]
         [InlineData("/2/3/", "/2/3", "/")]
         [InlineData("/2/3/random", "/2/3", "/random")]
-        public async Task Request_MultiplePrefixes(string requestUri, string expectedPathBase, string expectedPath)
+        public async Task Request_MultiplePrefixes(string requestPath, string expectedPathBase, string expectedPath)
         {
-            using (CreateServer(env =>
+            string root;
+            using (CreateServer(out root, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var requestInfo = httpContext.GetFeature<IHttpRequestFeature>();
@@ -151,19 +151,23 @@ namespace Microsoft.AspNet.Server.WebListener
                 return Task.FromResult(0);
             }))
             {
-                string response = await SendRequestAsync(Address + requestUri);
+                string response = await SendRequestAsync(root + requestPath);
                 Assert.Equal(string.Empty, response);
             }
         }
 
-        private IDisposable CreateServer(AppFunc app)
+        private IDisposable CreateServer(out string root, AppFunc app)
         {
+            // TODO: We're just doing this to get a dynamic port. This can be removed later when we add support for hot-adding prefixes.
+            var server = Utilities.CreateHttpServerReturnRoot("/", out root, app);
+            server.Dispose();
+            var rootUri = new Uri(root);
             var factory = new ServerFactory(loggerFactory: null);
             var serverInfo = (ServerInformation)factory.Initialize(configuration: null);
 
             foreach (string path in new[] { "/", "/11", "/2/3", "/2", "/11/2" })
             {
-                serverInfo.Listener.UrlPrefixes.Add(UrlPrefix.Create("http", "localhost", "8080", path));
+                serverInfo.Listener.UrlPrefixes.Add(UrlPrefix.Create(rootUri.Scheme, rootUri.Host, rootUri.Port, path));
             }
 
             return factory.Start(serverInfo, app);

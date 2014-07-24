@@ -11,14 +11,13 @@ namespace Microsoft.Net.Server
 {
     public class RequestTests
     {
-        private const string Address = "http://localhost:8080";
-
         [Fact]
         public async Task Request_SimpleGet_Success()
         {
-            using (var server = Utilities.CreateServer("http", "localhost", "8080", "/basepath"))
+            string root;
+            using (var server = Utilities.CreateHttpServerReturnRoot("/basepath", out root))
             {
-                Task<string> responseTask = SendRequestAsync(Address + "/basepath/SomePath?SomeQuery");
+                Task<string> responseTask = SendRequestAsync(root + "/basepath/SomePath?SomeQuery");
 
                 var context = await server.GetContextAsync();
 
@@ -51,17 +50,18 @@ namespace Microsoft.Net.Server
         }
 
         [Theory]
-        [InlineData("/", "http://localhost:8080/", "", "/")]
-        [InlineData("/basepath/", "http://localhost:8080/basepath", "/basepath", "")]
-        [InlineData("/basepath/", "http://localhost:8080/basepath/", "/basepath", "/")]
-        [InlineData("/basepath/", "http://localhost:8080/basepath/subpath", "/basepath", "/subpath")]
-        [InlineData("/base path/", "http://localhost:8080/base%20path/sub path", "/base path", "/sub path")]
-        [InlineData("/base葉path/", "http://localhost:8080/base%E8%91%89path/sub%E8%91%89path", "/base葉path", "/sub葉path")]
-        public async Task Request_PathSplitting(string pathBase, string requestUri, string expectedPathBase, string expectedPath)
+        [InlineData("/", "/", "", "/")]
+        [InlineData("/basepath/", "/basepath", "/basepath", "")]
+        [InlineData("/basepath/", "/basepath/", "/basepath", "/")]
+        [InlineData("/basepath/", "/basepath/subpath", "/basepath", "/subpath")]
+        [InlineData("/base path/", "/base%20path/sub path", "/base path", "/sub path")]
+        [InlineData("/base葉path/", "/base%E8%91%89path/sub%E8%91%89path", "/base葉path", "/sub葉path")]
+        public async Task Request_PathSplitting(string pathBase, string requestPath, string expectedPathBase, string expectedPath)
         {
-            using (var server = Utilities.CreateServer("http", "localhost", "8080", pathBase))
+            string root;
+            using (var server = Utilities.CreateHttpServerReturnRoot(pathBase, out root))
             {
-                Task<string> responseTask = SendRequestAsync(requestUri);
+                Task<string> responseTask = SendRequestAsync(root + requestPath);
 
                 var context = await server.GetContextAsync();
 
@@ -73,7 +73,6 @@ namespace Microsoft.Net.Server
                 Assert.Equal(expectedPath, request.Path);
                 Assert.Equal(expectedPathBase, request.PathBase);
                 Assert.Equal(string.Empty, request.QueryString);
-                Assert.Equal(8080, request.LocalPort);
                 context.Dispose();
 
                 string response = await responseTask;
@@ -96,15 +95,21 @@ namespace Microsoft.Net.Server
         [InlineData("/2/3/random", "/2/3", "/random")]
         public async Task Request_MultiplePrefixes(string requestUri, string expectedPathBase, string expectedPath)
         {
-            using (var server = new WebListener())
+            // TODO: We're just doing this to get a dynamic port. This can be removed later when we add support for hot-adding prefixes.
+            string root;
+            var server = Utilities.CreateHttpServerReturnRoot("/", out root);
+            server.Dispose();
+            server = new WebListener();
+            using (server)
             {
+                var uriBuilder = new UriBuilder(root);
                 foreach (string path in new[] { "/", "/11", "/2/3", "/2", "/11/2" })
                 {
-                    server.UrlPrefixes.Add(UrlPrefix.Create("http", "localhost", "8080", path));
+                    server.UrlPrefixes.Add(UrlPrefix.Create(uriBuilder.Scheme, uriBuilder.Host, uriBuilder.Port, path));
                 }
                 server.Start();
 
-                Task<string> responseTask = SendRequestAsync(Address + requestUri);
+                Task<string> responseTask = SendRequestAsync(root + requestUri);
 
                 var context = await server.GetContextAsync();
                 var request = context.Request;

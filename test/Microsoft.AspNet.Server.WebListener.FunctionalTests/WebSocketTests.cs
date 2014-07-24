@@ -30,13 +30,11 @@ namespace Microsoft.AspNet.Server.WebListener
 {
     public class WebSocketTests
     {
-        private const string Address = "http://localhost:8080/";
-        private const string WsAddress = "ws://localhost:8080/";
-
         [Fact]
         public async Task WebSocketTests_SupportKeys_Present()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 try
@@ -51,7 +49,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return Task.FromResult(0);
             }))
             {
-                HttpResponseMessage response = await SendRequestAsync(Address);
+                HttpResponseMessage response = await SendRequestAsync(address);
                 Assert.Equal(200, (int)response.StatusCode);
                 Assert.False(response.Headers.TransferEncodingChunked.HasValue, "Chunked");
                 Assert.Equal(0, response.Content.Headers.ContentLength);
@@ -63,7 +61,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task WebSocketTests_AfterHeadersSent_Throws()
         {
             bool? upgradeThrew = null;
-            using (Utilities.CreateHttpServer(async env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, async env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 await httpContext.Response.WriteAsync("Hello World");
@@ -80,7 +79,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 }
             }))
             {
-                HttpResponseMessage response = await SendRequestAsync(Address);
+                HttpResponseMessage response = await SendRequestAsync(address);
                 Assert.Equal(200, (int)response.StatusCode);
                 Assert.True(response.Headers.TransferEncodingChunked.Value, "Chunked");
                 Assert.True(upgradeThrew.Value);
@@ -92,7 +91,8 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             ManualResetEvent waitHandle = new ManualResetEvent(false);
             bool? upgraded = null;
-            using (Utilities.CreateHttpServer(async env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, async env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var webSocketFeature = httpContext.GetFeature<IHttpWebSocketFeature>();
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 waitHandle.Set();
             }))
             {
-                using (WebSocket clientWebSocket = await SendWebSocketRequestAsync(WsAddress))
+                using (WebSocket clientWebSocket = await SendWebSocketRequestAsync(ConvertToWebSocketAddress(address)))
                 {
                     Assert.True(waitHandle.WaitOne(TimeSpan.FromSeconds(1)), "Timed out");
                     Assert.True(upgraded.HasValue, "Upgraded not set");
@@ -116,7 +116,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task WebSocketAccept_SendAndReceive_Success()
         {
             byte[] clientBuffer = new byte[] { 0x00, 0x01, 0xFF, 0x00, 0x00 };
-            using (Utilities.CreateHttpServer(async env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, async env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var webSocketFeature = httpContext.GetFeature<IHttpWebSocketFeature>();
@@ -132,7 +133,7 @@ namespace Microsoft.AspNet.Server.WebListener
 
             }))
             {
-                using (WebSocket clientWebSocket = await SendWebSocketRequestAsync(WsAddress))
+                using (WebSocket clientWebSocket = await SendWebSocketRequestAsync(ConvertToWebSocketAddress(address)))
                 {
                     await clientWebSocket.SendAsync(new ArraySegment<byte>(clientBuffer, 0, 3), WebSocketMessageType.Binary, true, CancellationToken.None);
 
@@ -141,6 +142,13 @@ namespace Microsoft.AspNet.Server.WebListener
                     Assert.Equal(clientBuffer, clientEchoBuffer);
                 }
             }
+        }
+
+        private string ConvertToWebSocketAddress(string address)
+        {
+            var builder = new UriBuilder(address);
+            builder.Scheme = "ws";
+            return builder.ToString();
         }
 
         private async Task<HttpResponseMessage> SendRequestAsync(string uri)

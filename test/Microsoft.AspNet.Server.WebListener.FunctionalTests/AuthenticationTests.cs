@@ -29,8 +29,6 @@ namespace Microsoft.AspNet.Server.WebListener
 {
     public class AuthenticationTests
     {
-        private const string Address = "http://localhost:8080/";
-
         [Theory]
         [InlineData(AuthenticationTypes.AllowAnonymous)]
         [InlineData(AuthenticationTypes.Kerberos)]
@@ -41,7 +39,8 @@ namespace Microsoft.AspNet.Server.WebListener
         [InlineData(AuthenticationTypes.Kerberos | AuthenticationTypes.Negotiate | AuthenticationTypes.NTLM | /*AuthenticationTypes.Digest |*/ AuthenticationTypes.Basic)]
         public async Task AuthTypes_AllowAnonymous_NoChallenge(AuthenticationTypes authType)
         {
-            using (Utilities.CreateAuthServer(authType | AuthenticationTypes.AllowAnonymous, env =>
+            string address;
+            using (Utilities.CreateHttpAuthServer(authType | AuthenticationTypes.AllowAnonymous, out address, env =>
             {
                 var context = new DefaultHttpContext((IFeatureCollection)env);
                 Assert.NotNull(context.User);
@@ -49,7 +48,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return Task.FromResult(0);
             }))
             {
-                var response = await SendRequestAsync(Address);
+                var response = await SendRequestAsync(address);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 Assert.Equal(0, response.Headers.WwwAuthenticate.Count);
             }
@@ -63,12 +62,13 @@ namespace Microsoft.AspNet.Server.WebListener
         [InlineData(AuthenticationTypes.Basic)]
         public async Task AuthType_RequireAuth_ChallengesAdded(AuthenticationTypes authType)
         {
-            using (Utilities.CreateAuthServer(authType, env =>
+            string address;
+            using (Utilities.CreateHttpAuthServer(authType, out address, env =>
             {
                 throw new NotImplementedException();
             }))
             {
-                var response = await SendRequestAsync(Address);
+                var response = await SendRequestAsync(address);
                 Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
                 Assert.Equal(authType.ToString(), response.Headers.WwwAuthenticate.ToString(), StringComparer.OrdinalIgnoreCase);
             }
@@ -82,7 +82,8 @@ namespace Microsoft.AspNet.Server.WebListener
         [InlineData(AuthenticationTypes.Basic)]
         public async Task AuthType_AllowAnonymousButSpecify401_ChallengesAdded(AuthenticationTypes authType)
         {
-            using (Utilities.CreateAuthServer(authType | AuthenticationTypes.AllowAnonymous, env =>
+            string address;
+            using (Utilities.CreateHttpAuthServer(authType | AuthenticationTypes.AllowAnonymous, out address, env =>
             {
                 var context = new DefaultHttpContext((IFeatureCollection)env);
                 Assert.NotNull(context.User);
@@ -91,7 +92,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return Task.FromResult(0);
             }))
             {
-                var response = await SendRequestAsync(Address);
+                var response = await SendRequestAsync(address);
                 Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
                 Assert.Equal(authType.ToString(), response.Headers.WwwAuthenticate.ToString(), StringComparer.OrdinalIgnoreCase);
             }
@@ -100,13 +101,15 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task MultipleAuthTypes_AllowAnonymousButSpecify401_ChallengesAdded()
         {
-            using (Utilities.CreateAuthServer(
+            string address;
+            using (Utilities.CreateHttpAuthServer(
                 AuthenticationTypes.Kerberos
                 | AuthenticationTypes.Negotiate
                 | AuthenticationTypes.NTLM
                 /* | AuthenticationTypes.Digest TODO: Not implemented */
                 | AuthenticationTypes.Basic
                 | AuthenticationTypes.AllowAnonymous,
+                out address,
                 env =>
             {
                 var context = new DefaultHttpContext((IFeatureCollection)env);
@@ -116,7 +119,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return Task.FromResult(0);
             }))
             {
-                var response = await SendRequestAsync(Address);
+                var response = await SendRequestAsync(address);
                 Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
                 Assert.Equal("Kerberos, Negotiate, NTLM, basic", response.Headers.WwwAuthenticate.ToString(), StringComparer.OrdinalIgnoreCase);
             }
@@ -131,8 +134,9 @@ namespace Microsoft.AspNet.Server.WebListener
         [InlineData(AuthenticationTypes.Kerberos | AuthenticationTypes.Negotiate | AuthenticationTypes.NTLM | /* AuthenticationTypes.Digest |*/ AuthenticationTypes.Basic)]
         public async Task AuthTypes_AllowAnonymousButSpecify401_Success(AuthenticationTypes authType)
         {
+            string address;
             int requestId = 0;
-            using (Utilities.CreateAuthServer(authType | AuthenticationTypes.AllowAnonymous, env =>
+            using (Utilities.CreateHttpAuthServer(authType | AuthenticationTypes.AllowAnonymous, out address, env =>
             {
                 var context = new DefaultHttpContext((IFeatureCollection)env);
                 Assert.NotNull(context.User);
@@ -153,7 +157,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return Task.FromResult(0);
             }))
             {
-                var response = await SendRequestAsync(Address, useDefaultCredentials: true);
+                var response = await SendRequestAsync(address, useDefaultCredentials: true);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             }
         }
@@ -167,7 +171,8 @@ namespace Microsoft.AspNet.Server.WebListener
         [InlineData(AuthenticationTypes.Kerberos | AuthenticationTypes.Negotiate | AuthenticationTypes.NTLM | /* AuthenticationTypes.Digest |*/ AuthenticationTypes.Basic)]
         public async Task AuthTypes_RequireAuth_Success(AuthenticationTypes authType)
         {
-            using (Utilities.CreateAuthServer(authType, env =>
+            string address;
+            using (Utilities.CreateHttpAuthServer(authType, out address, env =>
             {
                 var context = new DefaultHttpContext((IFeatureCollection)env);
                 Assert.NotNull(context.User);
@@ -175,7 +180,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return Task.FromResult(0);
             }))
             {
-                var response = await SendRequestAsync(Address, useDefaultCredentials: true);
+                var response = await SendRequestAsync(address, useDefaultCredentials: true);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             }
         }
@@ -190,7 +195,8 @@ namespace Microsoft.AspNet.Server.WebListener
         // [InlineData(AuthenticationTypes.Kerberos | AuthenticationTypes.Negotiate | AuthenticationTypes.NTLM | /*AuthenticationTypes.Digest |*/ AuthenticationTypes.Basic)]
         public async Task AuthTypes_GetSingleDescriptions(AuthenticationTypes authType)
         {
-            using (Utilities.CreateAuthServer(authType | AuthenticationTypes.AllowAnonymous, env =>
+            string address;
+            using (Utilities.CreateHttpAuthServer(authType | AuthenticationTypes.AllowAnonymous, out address, env =>
             {
                 var context = new DefaultHttpContext((IFeatureCollection)env);
                 var resultList = context.GetAuthenticationTypes();
@@ -209,7 +215,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return Task.FromResult(0);
             }))
             {
-                var response = await SendRequestAsync(Address);
+                var response = await SendRequestAsync(address);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 Assert.Equal(0, response.Headers.WwwAuthenticate.Count);
             }
@@ -218,13 +224,14 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task AuthTypes_GetMultipleDescriptions()
         {
+            string address;
             AuthenticationTypes authType =
                 AuthenticationTypes.Kerberos
                 | AuthenticationTypes.Negotiate
                 | AuthenticationTypes.NTLM
                 | /*AuthenticationTypes.Digest
                 |*/ AuthenticationTypes.Basic;
-            using (Utilities.CreateAuthServer(authType | AuthenticationTypes.AllowAnonymous, env =>
+            using (Utilities.CreateHttpAuthServer(authType | AuthenticationTypes.AllowAnonymous, out address, env =>
             {
                 var context = new DefaultHttpContext((IFeatureCollection)env);
                 var resultList = context.GetAuthenticationTypes();
@@ -232,7 +239,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return Task.FromResult(0);
             }))
             {
-                var response = await SendRequestAsync(Address);
+                var response = await SendRequestAsync(address);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 Assert.Equal(0, response.Headers.WwwAuthenticate.Count);
             }
@@ -247,8 +254,9 @@ namespace Microsoft.AspNet.Server.WebListener
         [InlineData(AuthenticationTypes.Kerberos | AuthenticationTypes.Negotiate | AuthenticationTypes.NTLM | /*AuthenticationTypes.Digest |*/ AuthenticationTypes.Basic)]
         public async Task AuthTypes_AuthenticateWithNoUser_NoResults(AuthenticationTypes authType)
         {
+            string address;
             var authTypeList = authType.ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            using (Utilities.CreateAuthServer(authType | AuthenticationTypes.AllowAnonymous, env =>
+            using (Utilities.CreateHttpAuthServer(authType | AuthenticationTypes.AllowAnonymous, out address, env =>
             {
                 var context = new DefaultHttpContext((IFeatureCollection)env);
                 Assert.NotNull(context.User);
@@ -258,7 +266,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return Task.FromResult(0);
             }))
             {
-                var response = await SendRequestAsync(Address);
+                var response = await SendRequestAsync(address);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 Assert.Equal(0, response.Headers.WwwAuthenticate.Count);
             }
@@ -273,8 +281,9 @@ namespace Microsoft.AspNet.Server.WebListener
         [InlineData(AuthenticationTypes.Kerberos | AuthenticationTypes.Negotiate | AuthenticationTypes.NTLM | /*AuthenticationTypes.Digest |*/ AuthenticationTypes.Basic)]
         public async Task AuthTypes_AuthenticateWithUser_OneResult(AuthenticationTypes authType)
         {
+            string address;
             var authTypeList = authType.ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            using (Utilities.CreateAuthServer(authType, env =>
+            using (Utilities.CreateHttpAuthServer(authType, out address, env =>
             {
                 var context = new DefaultHttpContext((IFeatureCollection)env);
                 Assert.NotNull(context.User);
@@ -284,7 +293,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return Task.FromResult(0);
             }))
             {
-                var response = await SendRequestAsync(Address, useDefaultCredentials: true);
+                var response = await SendRequestAsync(address, useDefaultCredentials: true);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             }
         }
@@ -298,8 +307,9 @@ namespace Microsoft.AspNet.Server.WebListener
         [InlineData(AuthenticationTypes.Kerberos | AuthenticationTypes.Negotiate | AuthenticationTypes.NTLM | /*AuthenticationTypes.Digest |*/ AuthenticationTypes.Basic)]
         public async Task AuthTypes_ChallengeWithoutAuthTypes_AllChallengesSent(AuthenticationTypes authType)
         {
+            string address;
             var authTypeList = authType.ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            using (Utilities.CreateAuthServer(authType | AuthenticationTypes.AllowAnonymous, env =>
+            using (Utilities.CreateHttpAuthServer(authType | AuthenticationTypes.AllowAnonymous, out address, env =>
             {
                 var context = new DefaultHttpContext((IFeatureCollection)env);
                 Assert.NotNull(context.User);
@@ -308,7 +318,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return Task.FromResult(0);
             }))
             {
-                var response = await SendRequestAsync(Address);
+                var response = await SendRequestAsync(address);
                 Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
                 Assert.Equal(authTypeList.Count(), response.Headers.WwwAuthenticate.Count);
             }
@@ -323,8 +333,9 @@ namespace Microsoft.AspNet.Server.WebListener
         [InlineData(AuthenticationTypes.Kerberos | AuthenticationTypes.Negotiate | AuthenticationTypes.NTLM | /*AuthenticationTypes.Digest |*/ AuthenticationTypes.Basic)]
         public async Task AuthTypes_ChallengeWithAllAuthTypes_AllChallengesSent(AuthenticationTypes authType)
         {
+            string address;
             var authTypeList = authType.ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            using (Utilities.CreateAuthServer(authType | AuthenticationTypes.AllowAnonymous, env =>
+            using (Utilities.CreateHttpAuthServer(authType | AuthenticationTypes.AllowAnonymous, out address, env =>
             {
                 var context = new DefaultHttpContext((IFeatureCollection)env);
                 Assert.NotNull(context.User);
@@ -333,7 +344,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return Task.FromResult(0);
             }))
             {
-                var response = await SendRequestAsync(Address);
+                var response = await SendRequestAsync(address);
                 Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
                 Assert.Equal(authTypeList.Count(), response.Headers.WwwAuthenticate.Count);
             }
@@ -347,8 +358,9 @@ namespace Microsoft.AspNet.Server.WebListener
         [InlineData(AuthenticationTypes.Basic)]
         public async Task AuthTypes_ChallengeOneAuthType_OneChallengeSent(AuthenticationTypes authType)
         {
+            string address;
             var authTypes = AuthenticationTypes.Kerberos | AuthenticationTypes.Negotiate | AuthenticationTypes.NTLM | /*AuthenticationTypes.Digest |*/ AuthenticationTypes.Basic;
-            using (Utilities.CreateAuthServer(authTypes | AuthenticationTypes.AllowAnonymous, env =>
+            using (Utilities.CreateHttpAuthServer(authTypes | AuthenticationTypes.AllowAnonymous, out address, env =>
             {
                 var context = new DefaultHttpContext((IFeatureCollection)env);
                 Assert.NotNull(context.User);
@@ -357,7 +369,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return Task.FromResult(0);
             }))
             {
-                var response = await SendRequestAsync(Address);
+                var response = await SendRequestAsync(address);
                 Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
                 Assert.Equal(1, response.Headers.WwwAuthenticate.Count);
                 Assert.Equal(authType.ToString(), response.Headers.WwwAuthenticate.First().Scheme);
@@ -372,10 +384,11 @@ namespace Microsoft.AspNet.Server.WebListener
         [InlineData(AuthenticationTypes.Basic)]
         public async Task AuthTypes_ChallengeDisabledAuthType_Error(AuthenticationTypes authType)
         {
+            string address;
             var authTypes = AuthenticationTypes.Kerberos | AuthenticationTypes.Negotiate | AuthenticationTypes.NTLM | /*AuthenticationTypes.Digest |*/ AuthenticationTypes.Basic;
             authTypes = authTypes & ~authType;
             var authTypeList = authType.ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            using (Utilities.CreateAuthServer(authTypes | AuthenticationTypes.AllowAnonymous, env =>
+            using (Utilities.CreateHttpAuthServer(authTypes | AuthenticationTypes.AllowAnonymous, out address, env =>
             {
                 var context = new DefaultHttpContext((IFeatureCollection)env);
                 Assert.NotNull(context.User);
@@ -384,7 +397,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return Task.FromResult(0);
             }))
             {
-                var response = await SendRequestAsync(Address);
+                var response = await SendRequestAsync(address);
                 Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
                 Assert.Equal(0, response.Headers.WwwAuthenticate.Count);
             }

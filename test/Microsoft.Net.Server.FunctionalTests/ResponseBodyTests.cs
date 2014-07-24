@@ -13,14 +13,13 @@ namespace Microsoft.Net.Server
 {
     public class ResponseBodyTests
     {
-        private const string Address = "http://localhost:8080/";
-
         [Fact]
         public async Task ResponseBody_WriteNoHeaders_DefaultsToChunked()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 context.Response.Body.Write(new byte[10], 0, 10);
@@ -40,9 +39,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task ResponseBody_WriteChunked_Chunked()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 context.Request.Headers["transfeR-Encoding"] = " CHunked ";
@@ -65,9 +65,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task ResponseBody_WriteContentLength_PassedThrough()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 context.Response.Headers["Content-lenGth"] = " 30 ";
@@ -127,9 +128,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task ResponseBody_WriteContentLengthNotEnoughWritten_Throws()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 context.Response.Headers["Content-lenGth"] = " 20 ";
@@ -143,9 +145,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task ResponseBody_WriteContentLengthTooMuchWritten_Throws()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 context.Response.Headers["Content-lenGth"] = " 10 ";
@@ -160,9 +163,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task ResponseBody_WriteContentLengthExtraWritten_Throws()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 context.Response.Headers["Content-lenGth"] = " 10 ";

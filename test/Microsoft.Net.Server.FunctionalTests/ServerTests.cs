@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -15,14 +14,13 @@ namespace Microsoft.Net.Server
 {
     public class ServerTests
     {
-        private const string Address = "http://localhost:8080/";
-
         [Fact]
         public async Task Server_200OK_Success()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<string> responseTask = SendRequestAsync(Address);
+                Task<string> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 context.Dispose();
@@ -35,9 +33,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task Server_SendHelloWorld_Success()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<string> responseTask = SendRequestAsync(Address);
+                Task<string> responseTask = SendRequestAsync(address);
                 
                 var context = await server.GetContextAsync();
                 context.Response.ContentLength = 11;
@@ -54,9 +53,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task Server_EchoHelloWorld_Success()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<string> responseTask = SendRequestAsync(Address, "Hello World");
+                Task<string> responseTask = SendRequestAsync(address, "Hello World");
 
                 var context = await server.GetContextAsync();
                 string input = new StreamReader(context.Request.Body).ReadToEnd();
@@ -78,11 +78,12 @@ namespace Microsoft.Net.Server
             TimeSpan interval = TimeSpan.FromSeconds(1);
             ManualResetEvent canceled = new ManualResetEvent(false);
 
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
                 // Note: System.Net.Sockets does not RST the connection by default, it just FINs.
                 // Http.Sys's disconnect notice requires a RST.
-                Task<Socket> responseTask = SendHungRequestAsync("GET", Address);
+                Task<Socket> responseTask = SendHungRequestAsync("GET", address);
 
                 var context = await server.GetContextAsync();
                 CancellationToken ct = context.DisconnectToken;
@@ -107,11 +108,12 @@ namespace Microsoft.Net.Server
             TimeSpan interval = TimeSpan.FromSeconds(1);
             ManualResetEvent canceled = new ManualResetEvent(false);
 
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
                 // Note: System.Net.Sockets does not RST the connection by default, it just FINs.
                 // Http.Sys's disconnect notice requires a RST.
-                Task<Socket> responseTask = SendHungRequestAsync("GET", Address);
+                Task<Socket> responseTask = SendHungRequestAsync("GET", address);
 
                 var context = await server.GetContextAsync();
                 CancellationToken ct = context.DisconnectToken;
@@ -132,10 +134,11 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task Server_SetQueueLimit_Success()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
                 server.SetRequestQueueLimit(1001);
-                Task<string> responseTask = SendRequestAsync(Address);
+                Task<string> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 context.Dispose();

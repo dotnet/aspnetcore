@@ -11,14 +11,13 @@ namespace Microsoft.Net.Server
 {
     public class ResponseHeaderTests
     {
-        private const string Address = "http://localhost:8080/";
-
         [Fact]
         public async Task ResponseHeaders_ServerSendsDefaultHeaders_Success()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 context.Dispose();
@@ -37,9 +36,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task ResponseHeaders_ServerSendsSingleValueKnownHeaders_Success()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                WebRequest request = WebRequest.Create(Address);
+                WebRequest request = WebRequest.Create(address);
                 Task<WebResponse> responseTask = request.GetResponseAsync();
 
                 var context = await server.GetContextAsync();
@@ -61,9 +61,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task ResponseHeaders_ServerSendsMultiValueKnownHeaders_Success()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                WebRequest request = WebRequest.Create(Address);
+                WebRequest request = WebRequest.Create(address);
                 Task<WebResponse> responseTask = request.GetResponseAsync();
 
                 var context = await server.GetContextAsync();
@@ -85,9 +86,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task ResponseHeaders_ServerSendsCustomHeaders_Success()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                WebRequest request = WebRequest.Create(Address);
+                WebRequest request = WebRequest.Create(address);
                 Task<WebResponse> responseTask = request.GetResponseAsync();
 
                 var context = await server.GetContextAsync();
@@ -109,9 +111,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task ResponseHeaders_ServerSendsConnectionClose_Closed()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 var responseHeaders = context.Response.Headers;
@@ -165,11 +168,12 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task ResponseHeaders_HTTP10Request_Gets11Close()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Address);
+                    HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, address);
                     request.Version = new Version(1, 0);
                     Task<HttpResponseMessage> responseTask = client.SendAsync(request);
 
@@ -188,11 +192,12 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task ResponseHeaders_HTTP10Request_RemovesChunkedHeader()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Address);
+                    HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, address);
                     request.Version = new Version(1, 0);
                     Task<HttpResponseMessage> responseTask = client.SendAsync(request);
 
@@ -216,9 +221,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task Headers_FlushSendsHeaders_Success()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 var responseHeaders = context.Response.Headers;
@@ -247,9 +253,10 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task Headers_FlushAsyncSendsHeaders_Success()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 var responseHeaders = context.Response.Headers;

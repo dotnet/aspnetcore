@@ -25,32 +25,68 @@ namespace Microsoft.AspNet.Server.WebListener
 
     internal static class Utilities
     {
-        internal static IDisposable CreateHttpServer(AppFunc app)
+        private const int BasePort = 5001;
+        private const int MaxPort = 8000;
+        private static int NextPort = BasePort;
+        private static object PortLock = new object();
+
+        internal static IDisposable CreateHttpServer(out string baseAddress, AppFunc app)
         {
-            return CreateServer("http", "localhost", "8080", string.Empty, app);
+            string root;
+            return CreateDynamicHttpServer(string.Empty, AuthenticationTypes.AllowAnonymous, out root, out baseAddress, app);
+        }
+
+        internal static IDisposable CreateHttpServerReturnRoot(string path, out string root, AppFunc app)
+        {
+            string baseAddress;
+            return CreateDynamicHttpServer(path, AuthenticationTypes.AllowAnonymous, out root, out baseAddress, app);
+        }
+
+        internal static IDisposable CreateHttpAuthServer(AuthenticationTypes authType, out string baseAddress, AppFunc app)
+        {
+            string root;
+            return CreateDynamicHttpServer(string.Empty, authType, out root, out baseAddress, app);
+        }
+
+        internal static IDisposable CreateDynamicHttpServer(string basePath, AuthenticationTypes authType, out string root, out string baseAddress, AppFunc app)
+        {
+            var factory = new ServerFactory(loggerFactory: null);
+            lock (PortLock)
+            {
+                while (NextPort < MaxPort)
+                {
+
+                    var port = NextPort++;
+                    var prefix = UrlPrefix.Create("http", "localhost", port, basePath);
+                    root = prefix.Scheme + "://" + prefix.Host + ":" + prefix.Port;
+                    baseAddress = prefix.ToString();
+
+                    var serverInfo = (ServerInformation)factory.Initialize(configuration: null);
+                    serverInfo.Listener.UrlPrefixes.Add(prefix);
+                    serverInfo.Listener.AuthenticationManager.AuthenticationTypes = authType;
+                    try
+                    {
+                        return factory.Start(serverInfo, app);
+                    }
+                    catch (WebListenerException)
+                    {
+                    }
+                }
+                NextPort = BasePort;
+            }
+            throw new Exception("Failed to locate a free port.");
         }
 
         internal static IDisposable CreateHttpsServer(AppFunc app)
         {
-            return CreateServer("https", "localhost", "9090", string.Empty, app);
+            return CreateServer("https", "localhost", 9090, string.Empty, app);
         }
 
-        internal static IDisposable CreateAuthServer(AuthenticationTypes authType, AppFunc app)
-        {
-            return CreateServer("http", "localhost", "8080", string.Empty, authType, app);
-        }
-
-        internal static IDisposable CreateServer(string scheme, string host, string port, string path, AppFunc app)
-        {
-            return CreateServer(scheme, host, port, path, AuthenticationTypes.AllowAnonymous, app);
-        }
-
-        internal static IDisposable CreateServer(string scheme, string host, string port, string path, AuthenticationTypes authType, AppFunc app)
+        internal static IDisposable CreateServer(string scheme, string host, int port, string path, AppFunc app)
         {
             var factory = new ServerFactory(loggerFactory: null);
             var serverInfo = (ServerInformation)factory.Initialize(configuration: null);
             serverInfo.Listener.UrlPrefixes.Add(UrlPrefix.Create(scheme, host, port, path));
-            serverInfo.Listener.AuthenticationManager.AuthenticationTypes = authType;
 
             return factory.Start(serverInfo, app);
         }

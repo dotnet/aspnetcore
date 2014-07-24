@@ -11,6 +11,7 @@ namespace Microsoft.Net.Server
 {
     public class HttpsTests
     {
+        // Note these tests can't use dynamic ports or run concurrently because the ssl cert must be pre-registered with a specific port.
         private const string Address = "https://localhost:9090/";
 
         [Fact(Skip = "TODO: Add trait filtering support so these SSL tests don't get run on teamcity or the command line."), Trait("scheme", "https")]

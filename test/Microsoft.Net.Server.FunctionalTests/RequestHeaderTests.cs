@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Sockets;
@@ -11,21 +12,20 @@ namespace Microsoft.Net.Server
 {
     public class RequestHeaderTests
     {
-        private const string Address = "http://localhost:8080/";
-
         [Fact]
         public async Task RequestHeaders_ClientSendsDefaultHeaders_Success()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<string> responseTask = SendRequestAsync(Address);
+                Task<string> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 var requestHeaders = context.Request.Headers;
                 // NOTE: The System.Net client only sends the Connection: keep-alive header on the first connection per service-point.
                 // Assert.Equal(2, requestHeaders.Count);
                 // Assert.Equal("Keep-Alive", requestHeaders.Get("Connection"));
-                Assert.Equal("localhost:8080", requestHeaders["Host"]);
+                Assert.Equal(new Uri(address).Authority, requestHeaders["Host"]);
                 string[] values;
                 Assert.False(requestHeaders.TryGetValue("Accept", out values));
                 Assert.False(requestHeaders.ContainsKey("Accept"));
@@ -40,16 +40,17 @@ namespace Microsoft.Net.Server
         [Fact]
         public async Task RequestHeaders_ClientSendsCustomHeaders_Success()
         {
-            using (var server = Utilities.CreateHttpServer())
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
                 string[] customValues = new string[] { "custom1, and custom2", "custom3" };
-                Task responseTask = SendRequestAsync("localhost", 8080, "Custom-Header", customValues);
+                Task responseTask = SendRequestAsync(address, "Custom-Header", customValues);
 
                 var context = await server.GetContextAsync();
                 var requestHeaders = context.Request.Headers;
                 Assert.Equal(4, requestHeaders.Count);
-                Assert.Equal("localhost:8080", requestHeaders["Host"]);
-                Assert.Equal(new[] { "localhost:8080" }, requestHeaders.GetValues("Host"));
+                Assert.Equal(new Uri(address).Authority, requestHeaders["Host"]);
+                Assert.Equal(new[] { new Uri(address).Authority }, requestHeaders.GetValues("Host"));
                 Assert.Equal("close", requestHeaders["Connection"]);
                 Assert.Equal(new[] { "close" }, requestHeaders.GetValues("Connection"));
                 // Apparently Http.Sys squashes request headers together.
@@ -71,15 +72,14 @@ namespace Microsoft.Net.Server
             }
         }
 
-        private async Task SendRequestAsync(string host, int port, string customHeader, string[] customValues)
+        private async Task SendRequestAsync(string address, string customHeader, string[] customValues)
         {
+            var uri = new Uri(address);
             StringBuilder builder = new StringBuilder();
             builder.AppendLine("GET / HTTP/1.1");
             builder.AppendLine("Connection: close");
             builder.Append("HOST: ");
-            builder.Append(host);
-            builder.Append(':');
-            builder.AppendLine(port.ToString());
+            builder.AppendLine(uri.Authority);
             foreach (string value in customValues)
             {
                 builder.Append(customHeader);
@@ -92,7 +92,7 @@ namespace Microsoft.Net.Server
             byte[] request = Encoding.ASCII.GetBytes(builder.ToString());
 
             Socket socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
-            socket.Connect(host, port);
+            socket.Connect(uri.Host, uri.Port);
 
             socket.Send(request);
 

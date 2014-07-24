@@ -48,6 +48,24 @@ namespace Microsoft.Net.Server
         /// <param name="path">Should start and end with a '/', though a missing trailing slash will be added. This value must be un-escaped.</param>
         public static UrlPrefix Create(string scheme, string host, string port, string path)
         {
+            int? portValue = null;
+            if (!string.IsNullOrWhiteSpace(port))
+            {
+                portValue = int.Parse(port, NumberStyles.None, CultureInfo.InvariantCulture);
+            }
+
+            return UrlPrefix.Create(scheme, host, portValue, path);
+        }
+
+        /// <summary>
+        /// http://msdn.microsoft.com/en-us/library/windows/desktop/aa364698(v=vs.85).aspx
+        /// </summary>
+        /// <param name="scheme">http or https. Will be normalized to lower case.</param>
+        /// <param name="host">+, *, IPv4, [IPv6], or a dns name. Http.Sys does not permit punycode (xn--), use Unicode instead.</param>
+        /// <param name="port">If empty, the default port for the given scheme will be used (80 or 443).</param>
+        /// <param name="path">Should start and end with a '/', though a missing trailing slash will be added. This value must be un-escaped.</param>
+        public static UrlPrefix Create(string scheme, string host, int? portValue, string path)
+        {
             bool isHttps;
             if (string.Equals(Constants.HttpScheme, scheme, StringComparison.OrdinalIgnoreCase))
             {
@@ -69,15 +87,15 @@ namespace Microsoft.Net.Server
                 throw new ArgumentNullException("host");
             }
 
-            int portValue;
-            if (string.IsNullOrWhiteSpace(port))
+            string port;
+            if (!portValue.HasValue)
             {
                 port = isHttps ? "443" : "80";
                 portValue = isHttps ? 443 : 80;
             }
             else
             {
-                portValue = int.Parse(port, NumberStyles.None, CultureInfo.InvariantCulture);
+                port = portValue.Value.ToString(CultureInfo.InvariantCulture);
             }
 
             // Http.Sys requires the path end with a slash.
@@ -90,14 +108,14 @@ namespace Microsoft.Net.Server
                 path += "/";
             }
 
-            return new UrlPrefix(isHttps, scheme, host, port, portValue, path);
+            return new UrlPrefix(isHttps, scheme, host, port, portValue.Value, path);
         }
 
         public static UrlPrefix Create(string prefix)
         {
             string scheme = null;
             string host = null;
-            string port = null;
+            int? port = null;
             string path = null;
             string whole = prefix ?? string.Empty;
 
@@ -123,11 +141,11 @@ namespace Microsoft.Net.Server
 
             scheme = whole.Substring(0, delimiterStart1);
             string portString = whole.Substring(delimiterEnd2, delimiterStart3 - delimiterEnd2);
-            int ignored;
-            if (int.TryParse(portString, NumberStyles.Integer, CultureInfo.InvariantCulture, out ignored))
+            int portValue;
+            if (int.TryParse(portString, NumberStyles.Integer, CultureInfo.InvariantCulture, out portValue))
             {
                 host = whole.Substring(delimiterEnd1, delimiterStart2 - delimiterEnd1);
-                port = portString;
+                port = portValue;
             }
             else
             {

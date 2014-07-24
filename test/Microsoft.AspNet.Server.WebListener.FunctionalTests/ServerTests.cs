@@ -34,17 +34,16 @@ namespace Microsoft.AspNet.Server.WebListener
 {
     public class ServerTests
     {
-        private const string Address = "http://localhost:8080/";
-
         [Fact]
         public async Task Server_200OK_Success()
         {
-            using (Utilities.CreateHttpServer(env => 
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
                 {
                     return Task.FromResult(0);
                 }))
             {
-                string response = await SendRequestAsync(Address);
+                string response = await SendRequestAsync(address);
                 Assert.Equal(string.Empty, response);
             }
         }
@@ -52,14 +51,15 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task Server_SendHelloWorld_Success()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
                 {
                     var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                     httpContext.Response.ContentLength = 11;
                     return httpContext.Response.WriteAsync("Hello World");
                 }))
             {
-                string response = await SendRequestAsync(Address);
+                string response = await SendRequestAsync(address);
                 Assert.Equal("Hello World", response);
             }
         }
@@ -67,7 +67,8 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task Server_EchoHelloWorld_Success()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
                 {
                     var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                     string input = new StreamReader(httpContext.Request.Body).ReadToEnd();
@@ -76,7 +77,7 @@ namespace Microsoft.AspNet.Server.WebListener
                     return httpContext.Response.WriteAsync("Hello World");
                 }))
             {
-                string response = await SendRequestAsync(Address, "Hello World");
+                string response = await SendRequestAsync(address, "Hello World");
                 Assert.Equal("Hello World", response);
             }
         }
@@ -86,7 +87,8 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             Task<string> responseTask;
             ManualResetEvent received = new ManualResetEvent(false);
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
                 {
                     received.Set();
                     var httpContext = new DefaultHttpContext((IFeatureCollection)env);
@@ -94,7 +96,7 @@ namespace Microsoft.AspNet.Server.WebListener
                     return httpContext.Response.WriteAsync("Hello World");
                 }))
             {
-                responseTask = SendRequestAsync(Address);
+                responseTask = SendRequestAsync(address);
                 Assert.True(received.WaitOne(10000));
             }
             string response = await responseTask;
@@ -104,16 +106,17 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public void Server_AppException_ClientReset()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 throw new InvalidOperationException();
             }))
             {
-                Task<string> requestTask = SendRequestAsync(Address);
+                Task<string> requestTask = SendRequestAsync(address);
                 Assert.Throws<AggregateException>(() => requestTask.Result);
 
                 // Do it again to make sure the server didn't crash
-                requestTask = SendRequestAsync(Address);
+                requestTask = SendRequestAsync(address);
                 Assert.Throws<AggregateException>(() => requestTask.Result);
             }
         }
@@ -125,7 +128,8 @@ namespace Microsoft.AspNet.Server.WebListener
             int requestCount = 0;
             TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
 
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 if (Interlocked.Increment(ref requestCount) == requestLimit)
                 {
@@ -142,7 +146,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 List<Task> requestTasks = new List<Task>();
                 for (int i = 0; i < requestLimit; i++)
                 {
-                    Task<string> requestTask = SendRequestAsync(Address);
+                    Task<string> requestTask = SendRequestAsync(address);
                     requestTasks.Add(requestTask);
                 }
 
@@ -162,7 +166,8 @@ namespace Microsoft.AspNet.Server.WebListener
             int requestCount = 0;
             TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
 
-            using (Utilities.CreateHttpServer(async env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, async env =>
             {
                 if (Interlocked.Increment(ref requestCount) == requestLimit)
                 {
@@ -177,7 +182,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 List<Task> requestTasks = new List<Task>();
                 for (int i = 0; i < requestLimit; i++)
                 {
-                    Task<string> requestTask = SendRequestAsync(Address);
+                    Task<string> requestTask = SendRequestAsync(address);
                     requestTasks.Add(requestTask);
                 }
                 Assert.True(Task.WaitAll(requestTasks.ToArray(), TimeSpan.FromSeconds(2)), "Timed out");
@@ -192,7 +197,8 @@ namespace Microsoft.AspNet.Server.WebListener
             ManualResetEvent aborted = new ManualResetEvent(false);
             ManualResetEvent canceled = new ManualResetEvent(false);
 
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 CancellationToken ct = httpContext.RequestAborted;
@@ -208,7 +214,7 @@ namespace Microsoft.AspNet.Server.WebListener
             {
                 // Note: System.Net.Sockets does not RST the connection by default, it just FINs.
                 // Http.Sys's disconnect notice requires a RST.
-                using (Socket socket = await SendHungRequestAsync("GET", Address))
+                using (Socket socket = await SendHungRequestAsync("GET", address))
                 {
                     Assert.True(received.WaitOne(interval), "Receive Timeout");
                     socket.Close(0); // Force a RST
@@ -226,7 +232,8 @@ namespace Microsoft.AspNet.Server.WebListener
             ManualResetEvent aborted = new ManualResetEvent(false);
             ManualResetEvent canceled = new ManualResetEvent(false);
 
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 CancellationToken ct = httpContext.RequestAborted;
@@ -240,7 +247,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return Task.FromResult(0);
             }))
             {
-                using (Socket socket = await SendHungRequestAsync("GET", Address))
+                using (Socket socket = await SendHungRequestAsync("GET", address))
                 {
                     Assert.True(received.WaitOne(interval), "Receive Timeout");
                     Assert.Throws<SocketException>(() => socket.Receive(new byte[10]));
@@ -251,15 +258,19 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task Server_SetQueueLimit_Success()
         {
-            var factory = new ServerFactory(loggerFactory: null);
+            // TODO: This is just to get a dynamic port
+            string address;
+            using (Utilities.CreateHttpServer(out address, env => Task.FromResult(0))) { }
+
+                var factory = new ServerFactory(loggerFactory: null);
             var serverInfo = (ServerInformation)factory.Initialize(configuration: null);
-            serverInfo.Listener.UrlPrefixes.Add(UrlPrefix.Create("http://localhost:8080"));
+            serverInfo.Listener.UrlPrefixes.Add(UrlPrefix.Create(address));
 
             serverInfo.Listener.SetRequestQueueLimit(1001);
 
             using (factory.Start(serverInfo, env => Task.FromResult(0)))
             {
-                string response = await SendRequestAsync(Address);
+                string response = await SendRequestAsync(address);
                 Assert.Equal(string.Empty, response);
             }
         }
