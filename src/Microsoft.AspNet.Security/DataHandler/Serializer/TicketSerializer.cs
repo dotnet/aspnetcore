@@ -13,6 +13,7 @@ namespace Microsoft.AspNet.Security.DataHandler.Serializer
 {
     public class TicketSerializer : IDataSerializer<AuthenticationTicket>
     {
+        private static readonly bool IsMono = Type.GetType("Mono.Runtime") != null;
         private const int FormatVersion = 2;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "Dispose is idempotent")]
@@ -20,7 +21,17 @@ namespace Microsoft.AspNet.Security.DataHandler.Serializer
         {
             using (var memory = new MemoryStream())
             {
-                using (var compression = new GZipStream(memory, CompressionLevel.Optimal))
+                GZipStream compression;
+                if (IsMono)
+                {
+                    // The other constructor is not currently supported on Mono.
+                    compression = new GZipStream(memory, CompressionMode.Compress);
+                }
+                else
+                {
+                    compression = new GZipStream(memory, CompressionLevel.Optimal);
+                }
+                using (compression)
                 {
                     using (var writer = new BinaryWriter(compression))
                     {
