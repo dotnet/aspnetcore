@@ -3,14 +3,19 @@
 
 using Microsoft.AspNet.Mvc;
 
-namespace FormatterWebSite.Controllers
+namespace FormatterWebSite
 {
-    public class HomeController : Controller
+    public class XmlSerializerController : Controller
     {
-        [HttpPost]
-        public IActionResult Index([FromBody]DummyClass dummyObject)
+        public override void OnActionExecuted(ActionExecutedContext context)
         {
-            return Content(dummyObject.SampleInt.ToString());
+            var result = context.Result as ObjectResult;
+            if (result != null)
+            {
+                result.Formatters.Add(new XmlSerializerOutputFormatter());
+            }
+
+            base.OnActionExecuted(context);
         }
 
         [HttpPost]
