@@ -27,7 +27,6 @@ namespace Microsoft.AspNet.Mvc
             Writer = writer;
 
             _formContext = _defaultFormContext;
-            UnobtrusiveJavaScriptEnabled = true;
             ClientValidationEnabled = true;
             ValidationSummaryMessageElement = "span";
             ValidationMessageElement = "span";
@@ -41,7 +40,6 @@ namespace Microsoft.AspNet.Mvc
             : base(viewContext)
         {
             _formContext = viewContext.FormContext;
-            UnobtrusiveJavaScriptEnabled = viewContext.UnobtrusiveJavaScriptEnabled;
             ClientValidationEnabled = viewContext.ClientValidationEnabled;
             ValidationSummaryMessageElement = viewContext.ValidationSummaryMessageElement;
             ValidationMessageElement = viewContext.ValidationMessageElement;
@@ -63,8 +61,6 @@ namespace Microsoft.AspNet.Mvc
                 _formContext = value ?? _defaultFormContext;
             }
         }
-
-        public bool UnobtrusiveJavaScriptEnabled { get; set; }
 
         public bool ClientValidationEnabled { get; set; }
 

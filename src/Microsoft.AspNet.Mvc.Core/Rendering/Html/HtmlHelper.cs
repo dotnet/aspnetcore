@@ -455,16 +455,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string tag)
         {
             var formContext = ViewContext.ClientValidationEnabled ? ViewContext.FormContext : null;
-
-            if (ViewData.ModelState.IsValid == true)
+            if (ViewData.ModelState.IsValid && (formContext == null || excludePropertyErrors))
             {
-                if (formContext == null ||
-                    ViewContext.UnobtrusiveJavaScriptEnabled &&
-                    excludePropertyErrors)
-                {
-                    // No client side validation/updates
-                    return HtmlString.Empty;
-                }
+                // No client side validation/updates
+                return HtmlString.Empty;
             }
 
             string wrappedMessage;
@@ -483,6 +477,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 wrappedMessage = null;
             }
 
+            // If excludePropertyErrors is true, describe any validation issue with the current model in a single item.
+            // Otherwise, list individual property errors.
             var htmlSummary = new StringBuilder();
             var modelStates = ValidationHelpers.GetModelStateList(ViewData, excludePropertyErrors);
 
@@ -514,7 +510,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var divBuilder = new TagBuilder("div");
             divBuilder.MergeAttributes(htmlAttributes);
 
-            if (ViewData.ModelState.IsValid == true)
+            if (ViewData.ModelState.IsValid)
             {
                 divBuilder.AddCssClass(HtmlHelper.ValidationSummaryValidCssClassName);
             }
@@ -525,23 +521,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             divBuilder.InnerHtml = wrappedMessage + unorderedList.ToString(TagRenderMode.Normal);
 
-            if (formContext != null)
+            if (formContext != null && !excludePropertyErrors)
             {
-                if (ViewContext.UnobtrusiveJavaScriptEnabled)
-                {
-                    if (!excludePropertyErrors)
-                    {
-                        // Only put errors in the validation summary if they're supposed to be included there
-                        divBuilder.MergeAttribute("data-valmsg-summary", "true");
-                    }
-                }
-                else
-                {
-                    // client validation summaries need an ID
-                    divBuilder.GenerateId("validationSummary", IdAttributeDotReplacement);
-                    formContext.ValidationSummaryId = divBuilder.Attributes["id"];
-                    formContext.ReplaceValidationSummary = !excludePropertyErrors;
-                }
+                // Inform the client where to replace the list of property errors after validation.
+                divBuilder.MergeAttribute("data-valmsg-summary", "true");
             }
 
             return divBuilder.ToHtmlString(TagRenderMode.Normal);
@@ -631,13 +614,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return GetValidationAttributes(name, metadata: null);
         }
 
-        // Only render attributes if unobtrusive client-side validation is enabled, and then only if we've
-        // never rendered validation for a field with this name in this form. Also, if there's no form context,
-        // then we can't render the attributes (we'd have no <form> to attach them to).
+        // Only render attributes if client-side validation is enabled, and then only if we've
+        // never rendered validation for a field with this name in this form.
         protected IDictionary<string, object> GetValidationAttributes(string name, ModelMetadata metadata)
         {
-            var formContext = ViewContext.GetFormContextForClientValidation();
-            if (!ViewContext.UnobtrusiveJavaScriptEnabled || formContext == null)
+            var formContext = ViewContext.ClientValidationEnabled ? ViewContext.FormContext : null;
+            if (formContext == null)
             {
                 return null;
             }
@@ -787,25 +769,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // method is an explicit parameter, so it takes precedence over the htmlAttributes.
             tagBuilder.MergeAttribute("method", HtmlHelper.GetFormMethodString(method), replaceExisting: true);
 
-            var traditionalJavascriptEnabled = ViewContext.ClientValidationEnabled &&
-                                               !ViewContext.UnobtrusiveJavaScriptEnabled;
-            if (traditionalJavascriptEnabled)
-            {
-                // TODO revive ViewContext.FormIdGenerator(), WebFx-199
-                // forms must have an ID for client validation
-                var formName = "form" + new Guid().ToString();
-                tagBuilder.GenerateId(formName, IdAttributeDotReplacement);
-            }
-
             ViewContext.Writer.Write(tagBuilder.ToString(TagRenderMode.StartTag));
-            var theForm = CreateForm();
 
-            if (traditionalJavascriptEnabled)
-            {
-                ViewContext.FormContext.FormId = tagBuilder.Attributes["id"];
-            }
-
-            return theForm;
+            return CreateForm();
         }
 
         protected virtual HtmlString GenerateHidden(
@@ -1279,8 +1245,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "expression");
             }
 
-            var formContext = ViewContext.GetFormContextForClientValidation();
-
+            var formContext = ViewContext.ClientValidationEnabled ? ViewContext.FormContext : null;
             if (!ViewData.ModelState.ContainsKey(modelName) && formContext == null)
             {
                 return null;
@@ -1327,18 +1292,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             if (formContext != null)
             {
+                builder.MergeAttribute("data-valmsg-for", modelName);
+
                 var replaceValidationMessageContents = string.IsNullOrEmpty(message);
-
-                if (ViewContext.UnobtrusiveJavaScriptEnabled)
-                {
-                    builder.MergeAttribute("data-valmsg-for", modelName);
-                    builder.MergeAttribute("data-valmsg-replace",
-                        replaceValidationMessageContents.ToString().ToLowerInvariant());
-                }
-
-                // TODO: (WebFX-217) Add support for Unobtrusive JS disabled -
-                // Modify the field metadata to add the validation message,
-                // Add the client validation id in the field metadata
+                builder.MergeAttribute("data-valmsg-replace",
+                    replaceValidationMessageContents.ToString().ToLowerInvariant());
             }
 
             return builder.ToHtmlString(TagRenderMode.Normal);

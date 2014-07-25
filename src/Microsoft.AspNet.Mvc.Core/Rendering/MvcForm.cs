@@ -35,8 +35,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
         protected virtual void GenerateEndForm()
         {
             _viewContext.Writer.Write("</form>");
-
-            // TODO revive viewContext.OutputClientValidation(), this requires GetJsonValidationMetadata(), GitHub #163
             _viewContext.FormContext = null;
         }
 
