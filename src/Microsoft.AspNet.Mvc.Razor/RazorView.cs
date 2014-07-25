@@ -88,12 +88,8 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private async Task RenderPageCoreAsync(IRazorPage page, ViewContext context)
         {
-            // Activating a page might mutate the ViewContext (for instance ViewContext.ViewData) is mutated by 
-            // RazorPageActivator. We'll instead pass in a copy of the ViewContext.
-            var pageViewContext = new ViewContext(context, context.View, context.ViewData, context.Writer);
-            page.ViewContext = pageViewContext;
-            _pageActivator.Activate(page, pageViewContext);
-
+            page.ViewContext = context;
+            _pageActivator.Activate(page, context);
             await page.ExecuteAsync();
         }
 

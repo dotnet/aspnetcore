@@ -85,5 +85,24 @@ test-value";
             var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
             Assert.Equal(expected, body.Trim());
         }
+
+        [Fact]
+        public async Task RazorView_PassesViewContextBetweenViewAndLayout()
+        {
+            var expected =
+@"<title>Page title</title>
+
+partial-content
+component-content";
+            var server = TestServer.Create(_provider, _app);
+            var client = server.Handler;
+
+            // Act
+            var result = await client.GetAsync("http://localhost/ViewEngine/ViewPassesViewDataToLayout");
+
+            // Assert
+            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
+            Assert.Equal(expected, body.Trim());
+        }
     }
 }

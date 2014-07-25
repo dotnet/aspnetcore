@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Fact]
-        public async Task RenderAsync_WithoutHierarchy_ActivatesViews_WithACopyOfViewContext()
+        public async Task RenderAsync_WithoutHierarchy_ActivatesViews_WithThePassedInViewContext()
         {
             // Arrange
             var viewData = new ViewDataDictionary(Mock.Of<IModelMetadataProvider>());
@@ -59,12 +59,11 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      page,
                                      executeViewHierarchy: false);
             var viewContext = CreateViewContext(view);
-            var expectedViewData = viewContext.ViewData;
             var expectedWriter = viewContext.Writer;
             activator.Setup(a => a.Activate(page, It.IsAny<ViewContext>()))
                      .Callback((IRazorPage p, ViewContext c) =>
                      {
-                         Assert.NotSame(c, viewContext);
+                         Assert.Same(c, viewContext);
                          c.ViewData = viewData;
                      })
                      .Verifiable();
@@ -74,7 +73,6 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             // Assert
             activator.Verify();
-            Assert.Same(expectedViewData, viewContext.ViewData);
             Assert.Same(expectedWriter, viewContext.Writer);
         }
 

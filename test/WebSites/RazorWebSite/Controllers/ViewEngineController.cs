@@ -36,5 +36,11 @@ namespace RazorWebSite.Controllers
             };
             return View(model);
         }
+
+        public ViewResult ViewPassesViewDataToLayout()
+        {
+            ViewData["Title"] = "Controller title";
+            return View("ViewWithTitle");
+        }
     }
 }

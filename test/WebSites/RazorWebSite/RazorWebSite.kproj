@@ -24,7 +24,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="Project.json" />
+    <Content Include="Views\Shared\Components\ComponentThatSetsTitle\Default.cshtml" />
+    <Content Include="Views\Shared\_LayoutWithTitle.cshtml" />
     <Content Include="Views\Shared\_Partial.cshtml" />
+    <Content Include="Views\Shared\_PartialThatSetsTitle.cshtml" />
+    <Content Include="Views\ViewEngine\ViewWithTitle.cshtml" />
     <Content Include="Views\ViewEngine\ViewWithNestedLayout.cshtml" />
     <Content Include="Views\ViewEngine\ViewWithLayout.cshtml" />
     <Content Include="Views\ViewEngine\ViewWithFullPath.cshtml" />
@@ -34,6 +38,7 @@
     <Content Include="Views\ViewEngine\_NestedLayout.cshtml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Components\ComponentThatSetsTitle.cs" />
     <Compile Include="Controllers\ViewEngineController.cs" />
     <Compile Include="Models\Person.cs" />
     <Compile Include="Models\Address.cs" />
