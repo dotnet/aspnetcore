@@ -155,7 +155,7 @@ namespace Microsoft.AspNet.Mvc.HeaderValueAbstractions
 
                 // So far we either have a full match or a subset match. Now check that all of 
                 // mediaType1's parameters are present and equal in mediatype2
-                if(!MatchParameters(Parameters, otherMediaType.Parameters))
+                if (!MatchParameters(Parameters, otherMediaType.Parameters))
                 {
                     return false;
                 }

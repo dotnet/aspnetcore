@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.HeaderValueAbstractions
             string qualityStringValue = null;
             if (mediaTypeHeaderValue.Parameters.TryGetValue("q", out qualityStringValue))
             {
-                if(!Double.TryParse(qualityStringValue, out quality))
+                if (!Double.TryParse(qualityStringValue, out quality))
                 {
                     return null;
                 }
