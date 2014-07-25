@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public void CanSpecifyPasswordHasherInstance()
         {
-            CanOverride<IPasswordHasher>(new PasswordHasher());
+            CanOverride<IPasswordHasher<IdentityUser>>(new PasswordHasher<IdentityUser>());
         }
 
         [Fact]
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Identity.Test
             var pwdValidator = provider.GetService<IPasswordValidator<IdentityUser>>() as PasswordValidator<IdentityUser>;
             Assert.NotNull(pwdValidator);
 
-            var hasher = provider.GetService<IPasswordHasher>() as PasswordHasher;
+            var hasher = provider.GetService<IPasswordHasher<IdentityUser>>() as PasswordHasher<IdentityUser>;
             Assert.NotNull(hasher);
         }
 

@@ -309,7 +309,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             var user = new IdentityUser("CanUpdatePasswordUsingHasher");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, "password"));
             Assert.True(await manager.CheckPasswordAsync(user, "password"));
-            user.PasswordHash = manager.PasswordHasher.HashPassword("New");
+            user.PasswordHash = manager.PasswordHasher.HashPassword(user, "New");
             IdentityResultAssert.IsSuccess(await manager.UpdateAsync(user));
             Assert.False(await manager.CheckPasswordAsync(user, "password"));
             Assert.True(await manager.CheckPasswordAsync(user, "New"));

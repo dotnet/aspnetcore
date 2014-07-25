@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Identity
 
         private TimeSpan _defaultLockout = TimeSpan.Zero;
         private bool _disposed;
-        private IPasswordHasher _passwordHasher;
+        private IPasswordHasher<TUser> _passwordHasher;
         private IdentityOptions _options;
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="passwordValidator"></param>
         /// <param name="claimsIdentityFactory"></param>
         public UserManager(IUserStore<TUser> store, IOptionsAccessor<IdentityOptions> optionsAccessor,
-            IPasswordHasher passwordHasher, IUserValidator<TUser> userValidator,
+            IPasswordHasher<TUser> passwordHasher, IUserValidator<TUser> userValidator,
             IPasswordValidator<TUser> passwordValidator)
         {
             if (store == null)
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Identity
         /// <summary>
         ///     Used to hash/verify passwords
         /// </summary>
-        public IPasswordHasher PasswordHasher
+        public IPasswordHasher<TUser> PasswordHasher
         {
             get
             {
@@ -618,7 +618,7 @@ namespace Microsoft.AspNet.Identity
                 }
             }
             await
-                passwordStore.SetPasswordHashAsync(user, PasswordHasher.HashPassword(newPassword), cancellationToken);
+                passwordStore.SetPasswordHashAsync(user, PasswordHasher.HashPassword(user, newPassword), cancellationToken);
             await UpdateSecurityStampInternal(user, cancellationToken);
             return IdentityResult.Success;
         }
@@ -635,7 +635,7 @@ namespace Microsoft.AspNet.Identity
             string password, CancellationToken cancellationToken = default(CancellationToken))
         {
             var hash = await store.GetPasswordHashAsync(user, cancellationToken);
-            return PasswordHasher.VerifyHashedPassword(hash, password) != PasswordVerificationResult.Failed;
+            return PasswordHasher.VerifyHashedPassword(user, hash, password) != PasswordVerificationResult.Failed;
         }
 
         // IUserSecurityStampStore methods
