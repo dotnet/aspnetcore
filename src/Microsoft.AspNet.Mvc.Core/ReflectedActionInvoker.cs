@@ -120,7 +120,10 @@ namespace Microsoft.AspNet.Mvc
                     Resources.FormatActionResult_ActionReturnValueCannotBeNull(actualReturnType));
             }
 
-            return new ObjectResult(actionReturnValue);
+            return new ObjectResult(actionReturnValue)
+                       {
+                           DeclaredType = actualReturnType
+                       };
         }
 
         private IFilter[] GetFilters()

@@ -127,6 +127,8 @@ namespace Microsoft.AspNet.Mvc
 
             // Override the content type value even if one already existed. 
             selectedMediaType.Charset = selectedEncoding.WebName;
+
+            context.SelectedContentType = context.SelectedContentType ?? selectedMediaType;
             var response = context.ActionContext.HttpContext.Response;
             response.ContentType = selectedMediaType.RawValue;
         }

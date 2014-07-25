@@ -32,6 +32,7 @@
     <Compile Include="ActionResults\RedirectResultTest.cs" />
     <Compile Include="DefaultActionDiscoveryConventionsActionSelectionTests.cs" />
     <Compile Include="AntiXsrf\AntiForgeryOptionsTests.cs" />
+    <Compile Include="Formatters\TextPlainFormatterTests.cs" />
     <Compile Include="OptionDescriptors\DefaultModelBindersProviderTest.cs" />
     <Compile Include="OptionDescriptors\DefaultValueProviderFactoryProviderTest.cs" />
     <Compile Include="OptionDescriptors\DefaultViewEngineProviderTest.cs" />
@@ -46,7 +47,7 @@
     <Compile Include="ExpiringFileInfoCacheTest.cs" />
     <Compile Include="DefaultActionDiscoveryConventionsTests.cs" />
     <Compile Include="Formatters\OutputFormatterTests.cs" />
-<Compile Include="MediaTypeWithQualityHeaderValueTests.cs" />
+    <Compile Include="MediaTypeWithQualityHeaderValueTests.cs" />
     <Compile Include="ParameterBinding\ModelBindingHelperTest.cs" />
     <Compile Include="ReflectedModelBuilder\ReflectedParameterModelTests.cs" />
     <Compile Include="ReflectedModelBuilder\ReflectedActionModelTests.cs" />

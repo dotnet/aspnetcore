@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Fact]
-        public void SetResponseContentHeaders_FormatterWithNoEncoding_Throws()
+        public void WriteResponseContentHeaders_FormatterWithNoEncoding_Throws()
         {
             // Arrange
             var testFormatter = new TestOutputFormatter();
@@ -96,11 +96,56 @@ namespace Microsoft.AspNet.Mvc.Test
                          " output formatter to write content.", ex.Message);
         }
 
+        [Fact]
+        public void WriteResponseContentHeaders_NoSelectedContentType_SetsOutputFormatterContext()
+        {
+            // Arrange
+            var testFormatter = new DoesNotSetContext();
+            var testContentType = MediaTypeHeaderValue.Parse("application/doesNotSetContext");
+            var formatterContext = new OutputFormatterContext();
+            var mockHttpContext = new Mock<HttpContext>();
+            mockHttpContext.SetupGet(o => o.Request.AcceptCharset)
+                           .Returns(string.Empty);
+            mockHttpContext.SetupProperty(o => o.Response.ContentType);
+            var actionContext = new ActionContext(mockHttpContext.Object, new RouteData(), new ActionDescriptor());
+            formatterContext.ActionContext = actionContext;
+
+            // Act
+            testFormatter.WriteResponseContentHeaders(formatterContext);
+
+            // Assert
+            Assert.Equal(Encodings.UTF16EncodingLittleEndian.WebName, formatterContext.SelectedEncoding.WebName);
+            Assert.Equal(Encodings.UTF16EncodingLittleEndian, formatterContext.SelectedEncoding);
+            Assert.Equal("application/doesNotSetContext;charset=" + Encodings.UTF16EncodingLittleEndian.WebName,
+                         formatterContext.SelectedContentType.RawValue);
+        }
+
         private class TestOutputFormatter : OutputFormatter
         {
             public TestOutputFormatter()
             {
                 SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/acceptCharset"));
+            }
+
+            public override Task WriteResponseBodyAsync(OutputFormatterContext context)
+            {
+                return Task.FromResult(true);
+            }
+        }
+
+        private class DoesNotSetContext : OutputFormatter
+        {
+            public DoesNotSetContext()
+            {
+                SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/doesNotSetContext"));
+                SupportedEncodings.Add(Encodings.UTF16EncodingLittleEndian);
+            }
+
+            public override bool CanWriteResult(OutputFormatterContext context, MediaTypeHeaderValue contentType)
+            {
+                // Do not set the selected media Type.
+                // The WriteResponseContentHeader should do it for you. 
+                return true;
             }
 
             public override Task WriteResponseBodyAsync(OutputFormatterContext context)

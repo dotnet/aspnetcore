@@ -30,6 +30,7 @@
     <Compile Include="ActionDescriptorProviderContext.cs" />
     <Compile Include="ActionDescriptorsCollection.cs" />
     <Compile Include="ActionResults\HttpNotFoundResult.cs" />
+    <Compile Include="Formatters\TextPlainFormatter.cs" />
     <Compile Include="OptionDescriptors\DefaultModelBinderProvider.cs" />
     <Compile Include="OptionDescriptors\DefaultValueProviderFactoryProvider.cs" />
     <Compile Include="OptionDescriptors\DefaultViewEngineProvider.cs" />
