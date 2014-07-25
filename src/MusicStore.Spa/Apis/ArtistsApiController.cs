@@ -6,7 +6,7 @@ using MusicStore.Models;
 
 namespace MusicStore.Apis
 {
-    public class ArtistsApiController : BaseController
+    public class ArtistsApiController : Controller
     {
         private readonly MusicStoreContext _storeContext;
 
