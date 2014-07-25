@@ -84,7 +84,6 @@
     <Compile Include="Validation\DataMemberModelValidatorProvider.cs" />
     <Compile Include="Validation\DataTypeAttributeAdapter.cs" />
     <Compile Include="Validation\ErrorModelValidator.cs" />
-    <Compile Include="Validation\FieldValidationMetadata.cs" />
     <Compile Include="Validation\IClientModelValidator.cs" />
     <Compile Include="Validation\IModelValidator.cs" />
     <Compile Include="Validation\IModelValidatorProvider.cs" />
