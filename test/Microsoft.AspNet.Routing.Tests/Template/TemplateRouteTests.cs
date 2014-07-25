@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
         // PathString in HttpAbstractions guarantees a leading slash - so no value in testing other cases.
         [Fact]
-        public async Task Match_Success_LeadingSlash()
+        public async void Match_Success_LeadingSlash()
         {
             // Arrange
             var route = CreateRoute("{controller}/{action}");
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
 
         [Fact]
-        public async Task Match_Success_RootUrl()
+        public async void Match_Success_RootUrl()
         {
             // Arrange
             var route = CreateRoute("");
@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
 
         [Fact]
-        public async Task Match_Success_Defaults()
+        public async void Match_Success_Defaults()
         {
             // Arrange
             var route = CreateRoute("{controller}/{action}", new { action = "Index" });
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
 
         [Fact]
-        public async Task Match_Fails()
+        public async void Match_Fails()
         {
             // Arrange
             var route = CreateRoute("{controller}/{action}");
@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
 
         [Fact]
-        public async Task Match_RejectedByHandler()
+        public async void Match_RejectedByHandler()
         {
             // Arrange
             var route = CreateRoute("{controller}", accept: false);
@@ -100,20 +100,6 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
             // Issue #16 tracks this.
             Assert.NotNull(context.RouteData.Values);
-        }
-
-        [Fact]
-        public async Task Match_RouteValuesDoesntThrowOnKeyNotFound()
-        {
-            // Arrange
-            var route = CreateRoute("{controller}/{action}");
-            var context = CreateRouteContext("/Home/Index");
-
-            // Act
-            await route.RouteAsync(context);
-
-            // Assert
-            Assert.Null(context.RouteData.Values["1controller"]);
         }
 
         private static RouteContext CreateRouteContext(string requestPath)

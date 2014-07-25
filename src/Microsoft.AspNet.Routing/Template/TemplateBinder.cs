@@ -147,7 +147,7 @@ namespace Microsoft.AspNet.Routing.Template
 
             // Add any ambient values that don't match parameters - they need to be visible to constraints
             // but they will ignored by link generation.
-            var combinedValues = new RouteValueDictionary(context.AcceptedValues);
+            var combinedValues = new Dictionary<string, object>(context.AcceptedValues, StringComparer.OrdinalIgnoreCase);
             if (ambientValues != null)
             {
                 foreach (var kvp in ambientValues)
@@ -292,6 +292,7 @@ namespace Microsoft.AspNet.Routing.Template
             return null;
         }
 
+
         /// <summary>
         /// Compares two objects for equality as parts of a case-insensitive path.
         /// </summary>
@@ -341,8 +342,8 @@ namespace Microsoft.AspNet.Routing.Template
         {
             private readonly IDictionary<string, object> _defaults;
 
-            private readonly RouteValueDictionary _acceptedValues;
-            private readonly RouteValueDictionary _filters;
+            private readonly Dictionary<string, object> _acceptedValues;
+            private readonly Dictionary<string, object> _filters;
 
             public TemplateBindingContext(IDictionary<string, object> defaults, IDictionary<string, object> values)
             {
@@ -353,20 +354,20 @@ namespace Microsoft.AspNet.Routing.Template
 
                 _defaults = defaults;
 
-                _acceptedValues = new RouteValueDictionary();
+                _acceptedValues = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
                 if (_defaults != null)
                 {
-                    _filters = new RouteValueDictionary(defaults);
+                    _filters = new Dictionary<string, object>(defaults, StringComparer.OrdinalIgnoreCase);
                 }
             }
 
-            public RouteValueDictionary AcceptedValues
+            public Dictionary<string, object> AcceptedValues
             {
                 get { return _acceptedValues; }
             }
 
-            public RouteValueDictionary Filters
+            public Dictionary<string, object> Filters
             {
                 get { return _filters; }
             }

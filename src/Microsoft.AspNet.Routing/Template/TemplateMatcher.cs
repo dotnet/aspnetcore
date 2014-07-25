@@ -32,10 +32,10 @@ namespace Microsoft.AspNet.Routing.Template
 
             if (defaults == null)
             {
-                defaults = new RouteValueDictionary();
+                defaults = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             }
 
-            var values = new RouteValueDictionary();
+            var values = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
             for (var i = 0; i < requestSegments.Length; i++)
             {
@@ -175,7 +175,7 @@ namespace Microsoft.AspNet.Routing.Template
         private bool MatchComplexSegment(TemplateSegment routeSegment,
                                          string requestSegment,
                                          IDictionary<string, object> defaults,
-                                         RouteValueDictionary values)
+                                         Dictionary<string, object> values)
         {
             Contract.Assert(routeSegment != null);
             Contract.Assert(routeSegment.Parts.Count > 1);
