@@ -7,15 +7,22 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
+using Microsoft.AspNet.FileSystems;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
+    /// <summary>
+    /// A type that uses Roslyn to compile C# content.
+    /// </summary>
     public class RoslynCompilationService : ICompilationService
     {
+        public static readonly string CompilationResultDiagnosticsKey = "Diagnostics";
         private static readonly ConcurrentDictionary<string, MetadataReference> _metadataFileCache =
             new ConcurrentDictionary<string, MetadataReference>(StringComparer.OrdinalIgnoreCase);
 
@@ -23,6 +30,12 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         private readonly IApplicationEnvironment _environment;
         private readonly IAssemblyLoaderEngine _loader;
 
+        /// <summary>
+        /// Initalizes a new instance of the <see cref="RoslynCompilationService"/> class.
+        /// </summary>
+        /// <param name="environment">The environment for the executing application.</param>
+        /// <param name="loaderEngine">The loader used to load compiled assemblies.</param>
+        /// <param name="libraryManager">The library manager that provides export and reference information.</param>
         public RoslynCompilationService(IApplicationEnvironment environment,
                                         IAssemblyLoaderEngine loaderEngine,
                                         ILibraryManager libraryManager)
@@ -32,9 +45,11 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             _libraryManager = libraryManager;
         }
 
-        public CompilationResult Compile(string content)
+        /// <inheritdoc />
+        public CompilationResult Compile(IFileInfo fileInfo, string compilationContent)
         {
-            var syntaxTrees = new[] { CSharpSyntaxTree.ParseText(content) };
+            var sourceText = SourceText.From(compilationContent, Encoding.UTF8);
+            var syntaxTrees = new[] { CSharpSyntaxTree.ParseText(sourceText, path: fileInfo.PhysicalPath) };
             var targetFramework = _environment.TargetFramework;
 
             var references = GetApplicationReferences();
@@ -70,7 +85,11 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                                              .Select(d => GetCompilationMessage(formatter, d))
                                              .ToList();
 
-                        return CompilationResult.Failed(content, messages);
+                        var additionalInfo = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            { CompilationResultDiagnosticsKey, result.Diagnostics }
+                        };
+                        return CompilationResult.Failed(fileInfo, compilationContent, messages, additionalInfo);
                     }
 
                     Assembly assembly;
@@ -89,7 +108,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                     var type = assembly.GetExportedTypes()
                                        .First();
 
-                    return CompilationResult.Successful(string.Empty, type);
+                    return CompilationResult.Successful(type);
                 }
             }
         }
@@ -135,7 +154,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             });
         }
 
-        private CompilationMessage GetCompilationMessage(DiagnosticFormatter formatter, Diagnostic diagnostic)
+        private static CompilationMessage GetCompilationMessage(DiagnosticFormatter formatter, Diagnostic diagnostic)
         {
             return new CompilationMessage(formatter.Format(diagnostic));
         }

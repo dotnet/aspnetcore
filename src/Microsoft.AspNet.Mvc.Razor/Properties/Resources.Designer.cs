@@ -27,6 +27,22 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
+        /// Compilation for '{0}' failed:
+        /// </summary>
+        internal static string CompilationFailed
+        {
+            get { return GetString("CompilationFailed"); }
+        }
+
+        /// <summary>
+        /// Compilation for '{0}' failed:
+        /// </summary>
+        internal static string FormatCompilationFailed(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("CompilationFailed"), p0);
+        }
+
+        /// <summary>
         /// The layout view '{0}' could not be located.
         /// </summary>
         internal static string LayoutCannotBeLocated

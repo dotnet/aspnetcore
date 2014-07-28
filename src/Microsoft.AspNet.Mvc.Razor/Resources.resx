@@ -120,6 +120,9 @@
   <data name="ArgumentCannotBeNullOrEmpty" xml:space="preserve">
     <value>The value cannot be null or empty.</value>
   </data>
+  <data name="CompilationFailed" xml:space="preserve">
+    <value>Compilation for '{0}' failed:</value>
+  </data>
   <data name="LayoutCannotBeLocated" xml:space="preserve">
     <value>The layout view '{0}' could not be located.</value>
   </data>

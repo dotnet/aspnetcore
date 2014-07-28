@@ -27,14 +27,14 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             host.Setup(h => h.GenerateCode(@"views\index\home.cshtml", It.IsAny<Stream>()))
                 .Returns(new GeneratorResults(new Block(new BlockBuilder { Type = BlockType.Comment }), new RazorError[0], new CodeBuilderResult("", new LineMapping[0])))
                 .Verifiable();
-            var compiler = new Mock<ICompilationService>();
-            compiler.Setup(c => c.Compile(It.IsAny<string>()))
-                    .Returns(CompilationResult.Successful("", typeof(RazorCompilationServiceTest)));
 
-            var razorService = new RazorCompilationService(env.Object, compiler.Object, host.Object);
             var fileInfo = new Mock<IFileInfo>();
             fileInfo.Setup(f => f.PhysicalPath).Returns(viewPath);
             fileInfo.Setup(f => f.CreateReadStream()).Returns(Stream.Null);
+            var compiler = new Mock<ICompilationService>();
+            compiler.Setup(c => c.Compile(fileInfo.Object, It.IsAny<string>()))
+                    .Returns(CompilationResult.Successful(typeof(RazorCompilationServiceTest)));
+            var razorService = new RazorCompilationService(env.Object, compiler.Object, host.Object);
 
             // Act
             razorService.CompileCore(fileInfo.Object);

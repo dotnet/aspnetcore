@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 return result;
             }
 
-            return CompilationResult.Successful(generatedCode: null, type: compiledType);
+            return CompilationResult.Successful(compiledType);
         }
     }
 }
