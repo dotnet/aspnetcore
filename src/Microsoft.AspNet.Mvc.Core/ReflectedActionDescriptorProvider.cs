@@ -154,6 +154,11 @@ namespace Microsoft.AspNet.Mvc
                         RouteConstraints = new List<RouteDataActionConstraint>(),
                     };
 
+                    actionDescriptor.DisplayName = string.Format(
+                        "{0}.{1}",
+                        action.ActionMethod.DeclaringType.FullName,
+                        action.ActionMethod.Name);
+
                     var httpMethods = action.HttpMethods;
                     if (httpMethods != null && httpMethods.Count > 0)
                     {
