@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Identity.Test
             public TestManager(IUserStore<TestUser> store, IOptionsAccessor<IdentityOptions> optionsAccessor,
                 IPasswordHasher<TestUser> passwordHasher, IUserValidator<TestUser> userValidator,
                 IPasswordValidator<TestUser> passwordValidator)
-                : base(store, optionsAccessor, passwordHasher, userValidator, passwordValidator) { }
+                : base(store, optionsAccessor, passwordHasher, userValidator, passwordValidator, null) { }
         }
 
         [Fact]
@@ -130,13 +130,31 @@ namespace Microsoft.AspNet.Identity.Test
         }
 
         [Fact]
-        public async Task FindByNameCallsStore()
+        public async Task FindByNameCallsStoreWithNormalizedName()
+        {
+            // Setup
+            var store = new Mock<IUserStore<TestUser>>();
+            var user = new TestUser {UserName="Foo"};
+            store.Setup(s => s.FindByNameAsync(user.UserName.ToUpperInvariant(), CancellationToken.None)).Returns(Task.FromResult(user)).Verifiable();
+            var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
+
+            // Act
+            var result = await userManager.FindByNameAsync(user.UserName);
+
+            // Assert
+            Assert.Equal(user, result);
+            store.VerifyAll();
+        }
+
+        [Fact]
+        public async Task CanFindByNameCallsStoreWithoutNormalizedName()
         {
             // Setup
             var store = new Mock<IUserStore<TestUser>>();
             var user = new TestUser {UserName="Foo"};
             store.Setup(s => s.FindByNameAsync(user.UserName, CancellationToken.None)).Returns(Task.FromResult(user)).Verifiable();
             var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
+            userManager.UserNameNormalizer = null;
 
             // Act
             var result = await userManager.FindByNameAsync(user.UserName);
@@ -333,14 +351,10 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.False(manager.SupportsUserSecurityStamp);
             await Assert.ThrowsAsync<NotSupportedException>(() => manager.UpdateSecurityStampAsync(null));
             await Assert.ThrowsAsync<NotSupportedException>(() => manager.GetSecurityStampAsync(null));
-#if NET45
-            await
-                Assert.ThrowsAsync<NotSupportedException>(
+            await Assert.ThrowsAsync<NotSupportedException>(
                     () => manager.VerifyChangePhoneNumberTokenAsync(null, "1", "111-111-1111"));
-            await
-                Assert.ThrowsAsync<NotSupportedException>(
+            await Assert.ThrowsAsync<NotSupportedException>(
                     () => manager.GenerateChangePhoneNumberTokenAsync(null, "111-111-1111"));
-#endif
         }
 
         [Fact]
@@ -428,13 +442,13 @@ namespace Microsoft.AspNet.Identity.Test
             var passwordValidator = new PasswordValidator<TestUser>();
 
             Assert.Throws<ArgumentNullException>("store",
-                () => new UserManager<TestUser>(null, null, null, null, null));
+                () => new UserManager<TestUser>(null, null, null, null, null, null));
             Assert.Throws<ArgumentNullException>("optionsAccessor",
-                () => new UserManager<TestUser>(store, null, null, null, null));
+                () => new UserManager<TestUser>(store, null, null, null, null, null));
             Assert.Throws<ArgumentNullException>("passwordHasher",
-                () => new UserManager<TestUser>(store, optionsAccessor, null, null, null));
+                () => new UserManager<TestUser>(store, optionsAccessor, null, null, null, null));
 
-            var manager = new UserManager<TestUser>(store, optionsAccessor, passwordHasher, userValidator, passwordValidator);
+            var manager = new UserManager<TestUser>(store, optionsAccessor, passwordHasher, userValidator, passwordValidator, null);
 
             Assert.Throws<ArgumentNullException>("value", () => manager.PasswordHasher = null);
             Assert.Throws<ArgumentNullException>("value", () => manager.Options = null);
@@ -836,6 +850,16 @@ namespace Microsoft.AspNet.Identity.Test
             {
                 return Task.FromResult<string>(null);
             }
+
+            public Task<string> GetNormalizedUserNameAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                return Task.FromResult<string>(null);
+            }
+
+            public Task SetNormalizedUserNameAsync(TestUser user, string userName, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                return Task.FromResult(0);
+            }
         }
 
         private class NoOpTokenProvider : IUserTokenProvider<TestUser>
@@ -1073,6 +1097,16 @@ namespace Microsoft.AspNet.Identity.Test
             }
 
             public Task<bool> IsInRoleAsync(TestUser user, string roleName, CancellationToken cancellationToken = new CancellationToken())
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<string> GetNormalizedUserNameAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SetNormalizedUserNameAsync(TestUser user, string userName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }

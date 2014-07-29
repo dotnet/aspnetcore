@@ -15,6 +15,7 @@
         "System.Diagnostics.Debug": "4.0.10.0",
         "System.Diagnostics.Tools": "4.0.0.0",
         "System.Globalization": "4.0.10.0",
+        "System.Globalization.Extensions": "4.0.0.0",
         "System.Linq": "4.0.0.0",
         "System.Linq.Expressions": "4.0.0.0",
         "System.Linq.Queryable": "4.0.0.0",

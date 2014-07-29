@@ -313,6 +313,17 @@ namespace Microsoft.AspNet.Identity.InMemory
             return Task.FromResult(user.TwoFactorEnabled);
         }
 
+        public Task<string> GetNormalizedUserNameAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return Task.FromResult(user.NormalizedUserName);
+        }
+
+        public Task SetNormalizedUserNameAsync(TUser user, string userName, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            user.NormalizedUserName = userName;
+            return Task.FromResult(0);
+        }
+
         private class LoginComparer : IEqualityComparer<UserLoginInfo>
         {
             public bool Equals(UserLoginInfo x, UserLoginInfo y)

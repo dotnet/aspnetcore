@@ -114,6 +114,29 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             return Task.FromResult(0);
         }
 
+        public Task<string> GetNormalizedUserNameAsync(TUser user, CancellationToken cancellationToken = new CancellationToken())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            return Task.FromResult(user.NormalizedUserName);
+        }
+
+        public Task SetNormalizedUserNameAsync(TUser user, string userName, CancellationToken cancellationToken = new CancellationToken())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            user.NormalizedUserName = userName;
+            return Task.FromResult(0);
+        }
+
         public async virtual Task CreateAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -183,16 +206,16 @@ namespace Microsoft.AspNet.Identity.EntityFramework
         }
 
         /// <summary>
-        ///     Find a user by name
+        ///     Find a user by normalized name
         /// </summary>
         /// <param name="userName"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task<TUser> FindByNameAsync(string userName, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<TUser> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            return GetUserAggregate(u => u.UserName.ToUpper() == userName.ToUpper(), cancellationToken);
+            return GetUserAggregate(u => u.NormalizedUserName == normalizedUserName, cancellationToken);
         }
 
         public IQueryable<TUser> Users

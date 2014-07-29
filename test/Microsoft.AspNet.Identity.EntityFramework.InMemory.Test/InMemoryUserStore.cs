@@ -117,6 +117,29 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             return Task.FromResult(0);
         }
 
+        public Task<string> GetNormalizedUserNameAsync(TUser user, CancellationToken cancellationToken = new CancellationToken())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            return Task.FromResult(user.NormalizedUserName);
+        }
+
+        public Task SetNormalizedUserNameAsync(TUser user, string userName, CancellationToken cancellationToken = new CancellationToken())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            user.NormalizedUserName = userName;
+            return Task.FromResult(0);
+        }
+
         public async virtual Task CreateAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();

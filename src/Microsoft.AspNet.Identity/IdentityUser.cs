@@ -36,6 +36,7 @@ namespace Microsoft.AspNet.Identity
 
         public virtual TKey Id { get; set; }
         public virtual string UserName { get; set; }
+        public virtual string NormalizedUserName { get; set; }
 
         /// <summary>
         ///     Email

@@ -33,7 +33,13 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var store = new Mock<IUserStore<TUser>>();
             var options = new OptionsAccessor<IdentityOptions>(null);
-            return new Mock<UserManager<TUser>>(store.Object, options, new PasswordHasher<TUser>(), new UserValidator<TUser>(), new PasswordValidator<TUser>());
+            return new Mock<UserManager<TUser>>(
+                store.Object,
+                options,
+                new PasswordHasher<TUser>(),
+                new UserValidator<TUser>(),
+                new PasswordValidator<TUser>(),
+                new UpperInvariantUserNameNormalizer());
         }
 
         public static Mock<RoleManager<TRole>> MockRoleManager<TRole>() where TRole : class
@@ -51,8 +57,10 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var options = new OptionsAccessor<IdentityOptions>(null);
             var validator = new Mock<UserValidator<TUser>>();
-            var userManager = new UserManager<TUser>(store, options, new PasswordHasher<TUser>(), validator.Object, new PasswordValidator<TUser>());
-            validator.Setup(v => v.ValidateAsync(userManager, It.IsAny<TUser>(), CancellationToken.None)).Returns(Task.FromResult(IdentityResult.Success)).Verifiable();
+            var userManager = new UserManager<TUser>(store, options, new PasswordHasher<TUser>(), 
+                validator.Object, new PasswordValidator<TUser>(), new UpperInvariantUserNameNormalizer());
+            validator.Setup(v => v.ValidateAsync(userManager, It.IsAny<TUser>(), CancellationToken.None))
+                .Returns(Task.FromResult(IdentityResult.Success)).Verifiable();
             return userManager;
         }
     }

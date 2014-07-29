@@ -26,6 +26,7 @@ namespace Microsoft.AspNet.Identity
             yield return describe.Transient<IUserValidator<TUser>, UserValidator<TUser>>();
             yield return describe.Transient<IPasswordValidator<TUser>, PasswordValidator<TUser>>();
             yield return describe.Transient<IPasswordHasher<TUser>, PasswordHasher<TUser>>();
+            yield return describe.Transient<IUserNameNormalizer, UpperInvariantUserNameNormalizer>();
 
             // TODO: rationalize email/sms/usertoken services
         }

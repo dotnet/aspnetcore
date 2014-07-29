@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="claimsIdentityFactory"></param>
         public UserManager(IUserStore<TUser> store, IOptionsAccessor<IdentityOptions> optionsAccessor,
             IPasswordHasher<TUser> passwordHasher, IUserValidator<TUser> userValidator,
-            IPasswordValidator<TUser> passwordValidator)
+            IPasswordValidator<TUser> passwordValidator, IUserNameNormalizer userNameNormalizer)
         {
             if (store == null)
             {
@@ -57,6 +57,7 @@ namespace Microsoft.AspNet.Identity
             PasswordHasher = passwordHasher;
             UserValidator = userValidator;
             PasswordValidator = passwordValidator;
+            UserNameNormalizer = userNameNormalizer;
             // TODO: Email/Sms/Token services
         }
 
@@ -95,6 +96,11 @@ namespace Microsoft.AspNet.Identity
         ///     Used to validate passwords before persisting changes
         /// </summary>
         public IPasswordValidator<TUser> PasswordValidator { get; set; }
+
+        /// <summary>
+        ///     Used to normalize user names for uniqueness
+        /// </summary>
+        public IUserNameNormalizer UserNameNormalizer { get; set; }
 
         /// <summary>
         ///     Used to send email
@@ -309,6 +315,7 @@ namespace Microsoft.AspNet.Identity
             {
                 await GetUserLockoutStore().SetLockoutEnabledAsync(user, true, cancellationToken);
             }
+            await UpdateNormalizedUserName(user, cancellationToken);
             await Store.CreateAsync(user, cancellationToken);
             return IdentityResult.Success;
         }
@@ -332,6 +339,7 @@ namespace Microsoft.AspNet.Identity
             {
                 return result;
             }
+            await UpdateNormalizedUserName(user, cancellationToken);
             await Store.UpdateAsync(user, cancellationToken);
             return IdentityResult.Success;
         }
@@ -381,6 +389,7 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("userName");
             }
+            userName = NormalizeUserName(userName);
             return Store.FindByNameAsync(userName, cancellationToken);
         }
 
@@ -424,6 +433,29 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
+        /// Normalize a user name for uniqueness comparisons
+        /// </summary>
+        /// <param name="userName"></param>
+        /// <returns></returns>
+        public virtual string NormalizeUserName(string userName)
+        {
+            return (UserNameNormalizer == null) ? userName : UserNameNormalizer.Normalize(userName);
+        }
+
+        /// <summary>
+        /// Update the user's normalized user name
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public virtual async Task UpdateNormalizedUserName(TUser user,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            string userName = await GetUserNameAsync(user, cancellationToken);
+            await Store.SetNormalizedUserNameAsync(user, NormalizeUserName(userName), cancellationToken);
+        }
+
+        /// <summary>
         /// Get the user's name
         /// </summary>
         /// <param name="user"></param>
@@ -456,6 +488,7 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("user");
             }
             await Store.SetUserNameAsync(user, userName, cancellationToken);
+            await UpdateNormalizedUserName(user, cancellationToken);
             return await UpdateAsync(user, cancellationToken);
         }
 
@@ -483,6 +516,7 @@ namespace Microsoft.AspNet.Identity
             CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
+            userName = NormalizeUserName(userName);
             var user = await FindByNameAsync(userName, cancellationToken);
             if (user == null)
             {

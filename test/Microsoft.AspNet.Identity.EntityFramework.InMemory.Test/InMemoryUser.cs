@@ -35,6 +35,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
 
         public virtual TKey Id { get; set; }
         public virtual string UserName { get; set; }
+        public virtual string NormalizedUserName { get; set; }
 
         /// <summary>
         ///     Email
