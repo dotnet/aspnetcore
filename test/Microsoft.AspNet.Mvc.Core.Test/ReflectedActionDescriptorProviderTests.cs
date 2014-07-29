@@ -189,6 +189,26 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Same(filter, Assert.Single(filters));
         }
 
+        [Fact]
+        public void GetDescriptor_SetsDisplayName()
+        {
+            // Arrange
+            var provider = GetProvider(typeof(PersonController).GetTypeInfo());
+
+            // Act
+            var descriptors = provider.GetDescriptors();
+            var displayNames = descriptors.Select(ad => ad.DisplayName);
+
+            // Assert
+            Assert.Equal(
+                new[]
+                {
+                    "Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+PersonController.GetPerson",
+                    "Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+PersonController.ListPeople",
+                },
+                displayNames);
+        }
+
         private ReflectedActionDescriptorProvider GetProvider(
             TypeInfo controllerTypeInfo, 
             IEnumerable<IFilter> filters = null)

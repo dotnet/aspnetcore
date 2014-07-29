@@ -34,5 +34,10 @@ namespace Microsoft.AspNet.Mvc
         public List<ParameterDescriptor> Parameters { get; set; }
 
         public List<FilterDescriptor> FilterDescriptors { get; set; }
+
+        /// <summary>
+        /// A friendly name for this action.
+        /// </summary>
+        public virtual string DisplayName { get; set; }
     }
 }
