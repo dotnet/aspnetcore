@@ -33,7 +33,8 @@ namespace Microsoft.AspNet.Mvc
             options.ModelBinders.Add(new ComplexModelDtoModelBinder());
 
             // Set up default output formatters.
-            options.OutputFormatters.Add(new JsonOutputFormatter(JsonOutputFormatter.CreateDefaultSettings(), false));
+            options.OutputFormatters.Add(new JsonOutputFormatter(JsonOutputFormatter.CreateDefaultSettings(),
+                                                                 indent: false));
 
             // Set up ValueProviders
             options.ValueProviderFactories.Add(new RouteValueValueProviderFactory());

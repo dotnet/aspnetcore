@@ -16,9 +16,9 @@ namespace Microsoft.AspNet.Mvc
     {
         public object Value { get; set; }
 
-        public List<IOutputFormatter> Formatters { get; set; }
+        public IList<IOutputFormatter> Formatters { get; set; }
 
-        public List<MediaTypeHeaderValue> ContentTypes { get; set; }
+        public IList<MediaTypeHeaderValue> ContentTypes { get; set; }
 
         public Type DeclaredType { get; set; }
 

@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc
             : base(optionsAccessor.Options.OutputFormatters, typeActivator, serviceProvider)
         {
         }
-    
+
         /// <inheritdoc />
         public IReadOnlyList<IOutputFormatter> OutputFormatters
         {
