@@ -21,7 +21,7 @@
     </p>
     <p>
         <em>Price:</em>
-        @Html.ValueFor(model => model.Price)
+        @Html.DisplayFor(model => model.Price)
     </p>
     <p class="button">
         @Html.ActionLink("Add to cart", "AddToCart", "ShoppingCart", new { id = Model.AlbumId })

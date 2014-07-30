@@ -42,7 +42,7 @@
     {
     <tr>
         <td>
-            @Html.ValueFor(modelItem => item.Genre.Name)
+            @Html.DisplayFor(modelItem => item.Genre.Name)
         </td>
         <td>
             @Truncate(item.Artist.Name, 25)
@@ -51,7 +51,7 @@
             @Truncate(item.Title, 25)
         </td>
         <td>
-            @Html.ValueFor(modelItem => item.Price)
+            @Html.DisplayFor(modelItem => item.Price)
         </td>
         <td>
             @Html.ActionLink("Edit", "Edit", new { id = item.AlbumId }) |
