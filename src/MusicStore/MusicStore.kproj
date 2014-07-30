@@ -61,6 +61,7 @@
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Shared\Components\CartSummary\Default.cshtml" />
     <Content Include="Views\Shared\Components\GenreMenu\Default.cshtml" />
+    <Content Include="Views\Shared\Components\_ViewStart.cshtml" />
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
@@ -73,6 +74,7 @@
     <Content Include="Views\Store\Browse.cshtml" />
     <Content Include="Views\Store\Details.cshtml" />
     <Content Include="Views\Store\Index.cshtml" />
+    <Content Include="Views\_ViewStart.cshtml" />
     <Content Include="web.config" />
     <Content Include="web.Debug.config" />
     <Content Include="web.Release.config" />

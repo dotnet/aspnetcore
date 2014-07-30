@@ -178,17 +178,23 @@ namespace E2ETests
         {
             Console.WriteLine("Home page content : {0}", responseContent);
             Assert.Equal<HttpStatusCode>(HttpStatusCode.OK, response.StatusCode);
-            Assert.Contains("ASP.NET MVC Music Store", responseContent, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains("<li><a href=\"/\">Home</a></li>", responseContent, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains("<a href=\"/Store\" class=\"dropdown-toggle\" data-toggle=\"dropdown\">Store <b class=\"caret\"></b></a>", responseContent, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains("<ul class=\"dropdown-menu\">", responseContent, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains("<li class=\"divider\"></li>", responseContent, StringComparison.OrdinalIgnoreCase);
+            ValidateLayoutPage(responseContent);
             Assert.Contains("<a href=\"/Store/Details/", responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("<title>Home Page – MVC Music Store</title>", responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("Register", responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("Login", responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("mvcmusicstore.codeplex.com", responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("/Images/home-showcase.png", responseContent, StringComparison.OrdinalIgnoreCase);
             Console.WriteLine("Application initialization successful.");
+        }
+
+        private void ValidateLayoutPage(string responseContent)
+        {
+            Assert.Contains("ASP.NET MVC Music Store", responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("<li><a href=\"/\">Home</a></li>", responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("<a href=\"/Store\" class=\"dropdown-toggle\" data-toggle=\"dropdown\">Store <b class=\"caret\"></b></a>", responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("<ul class=\"dropdown-menu\">", responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("<li class=\"divider\"></li>", responseContent, StringComparison.OrdinalIgnoreCase);
         }
 
         private void AccessStoreWithoutPermissions(string userName = null)
@@ -197,6 +203,8 @@ namespace E2ETests
             var response = httpClient.GetAsync("/StoreManager/").Result;
             ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
+            ValidateLayoutPage(responseContent);
+            Assert.Contains("<title>Log in – MVC Music Store</title>", responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("<h4>Use a local account to log in.</h4>", responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Equal<string>(ApplicationBaseUrl + "Account/Login?ReturnUrl=%2FStoreManager%2F", response.RequestMessage.RequestUri.AbsoluteUri);
             Console.WriteLine("Redirected to login page as expected.");
@@ -218,6 +226,7 @@ namespace E2ETests
             var response = httpClient.GetAsync("/Account/Register").Result;
             ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
+            ValidateLayoutPage(responseContent);
 
             var generatedUserName = Guid.NewGuid().ToString().Replace("-", string.Empty);
             Console.WriteLine("Creating a new user with name '{0}'", generatedUserName);
@@ -242,6 +251,7 @@ namespace E2ETests
             var response = httpClient.GetAsync("/Account/Register").Result;
             ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
+            ValidateLayoutPage(responseContent);
 
             var generatedUserName = Guid.NewGuid().ToString().Replace("-", string.Empty);
             Console.WriteLine("Creating a new user with name '{0}'", generatedUserName);
@@ -292,6 +302,7 @@ namespace E2ETests
             var response = httpClient.GetAsync(string.Empty).Result;
             ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
+            ValidateLayoutPage(responseContent);
             var formParameters = new List<KeyValuePair<string, string>>
                 {
                     new KeyValuePair<string, string>("__RequestVerificationToken", HtmlDOMHelper.RetrieveAntiForgeryToken(responseContent, "/Account/LogOff")),

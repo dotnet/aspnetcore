@@ -1,17 +1,15 @@
 ﻿@model IEnumerable<MusicStore.Models.Genre>
-    @{
-        //TODO: Until we have a way to specify the layout page at application level.
-        Layout = "/Views/Shared/_Layout.cshtml";
-        ViewBag.Title = "Store";
-    }
-    <h3>Browse Genres</h3>
+@{
+    ViewBag.Title = "Store";
+}
+<h3>Browse Genres</h3>
 
-    <p>
-        Select from @Model.Count() genres:
-    </p>
-    <ul class="list-group">
-        @foreach (var genre in Model)
-        {
-            <li class="list-group-item">@Html.ActionLink(genre.Name, "Browse", new { genre = genre.Name })</li>
-        }
-    </ul>
+<p>
+    Select from @Model.Count() genres:
+</p>
+<ul class="list-group">
+    @foreach (var genre in Model)
+    {
+        <li class="list-group-item">@Html.ActionLink(genre.Name, "Browse", new { genre = genre.Name })</li>
+    }
+</ul>
