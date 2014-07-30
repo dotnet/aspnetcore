@@ -30,7 +30,7 @@ namespace ConnegWebsite
 
         public object ReturnObject_StringValue()
         {
-            return "";
+            return "ReturnObject_StringValue";
         }
 
         public object ReturnObject_ObjectValue()

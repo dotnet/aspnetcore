@@ -32,6 +32,7 @@
     <Compile Include="ActionResults\HttpNotFoundResult.cs" />
     <Compile Include="Formatters\TextPlainFormatter.cs" />
     <Compile Include="HttpMethodAttribute.cs" />
+    <Compile Include="Formatters\NoContentFormatter.cs" />
     <Compile Include="Internal\DecisionTree\DecisionCriterionValue.cs" />
     <Compile Include="Internal\DecisionTree\DecisionCriterionValueEqualityComparer.cs" />
     <Compile Include="Logging\AttributeRouteRouteAsyncValues.cs" />

@@ -31,6 +31,7 @@
     <Compile Include="Controllers\ProducesContentBaseController.cs" />
     <Compile Include="Controllers\ProducesContentOnClassController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\NoContentController.cs" />
     <Compile Include="Controllers\TextPlainController.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="ContentType.cs" />

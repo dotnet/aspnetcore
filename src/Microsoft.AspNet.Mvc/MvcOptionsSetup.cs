@@ -34,6 +34,7 @@ namespace Microsoft.AspNet.Mvc
             options.ModelBinders.Add(new ComplexModelDtoModelBinder());
 
             // Set up default output formatters.
+            options.OutputFormatters.Add(new NoContentFormatter());
             options.OutputFormatters.Add(new TextPlainFormatter());
             options.OutputFormatters.Add(new JsonOutputFormatter(JsonOutputFormatter.CreateDefaultSettings(),
                                          indent: false));

@@ -30,8 +30,11 @@
     <Compile Include="ActionResults\RedirectResultTest.cs" />
     <Compile Include="ActionResults\RedirectToActionResultTest.cs" />
     <Compile Include="ActionResults\RedirectToRouteResultTest.cs" />
+    <Compile Include="ActionResults\RedirectResultTest.cs" />
+    <Compile Include="DefaultActionDiscoveryConventionsActionSelectionTests.cs" />
     <Compile Include="AntiXsrf\AntiForgeryOptionsTests.cs" />
     <Compile Include="Filters\ProducesAttributeTests.cs" />
+    <Compile Include="Formatters\NoContentFormatterTests.cs" />
     <Compile Include="Formatters\OutputFormatterTests.cs" />
     <Compile Include="Formatters\TextPlainFormatterTests.cs" />
     <Compile Include="DefaultViewComponentActivatorTests.cs" />
@@ -58,6 +61,7 @@
     <Compile Include="OptionDescriptors\ValueProviderFactoryDescriptorTest.cs" />
     <Compile Include="OptionDescriptors\ViewEngineDescriptorTest.cs" />
     <Compile Include="OptionDescriptors\ViewEngineDscriptorExtensionsTest.cs" />
+    <Compile Include="MediaTypeWithQualityHeaderValueTests.cs" />
     <Compile Include="ParameterBinding\ModelBindingHelperTest.cs" />
     <Compile Include="AntiXsrf\AntiForgeryTokenSerializerTest.cs" />
     <Compile Include="AntiXsrf\ITokenProvider.cs" />
