@@ -39,7 +39,7 @@ namespace ConnegWebsite
         {
             var response = context.ActionContext.HttpContext.Response;
             response.ContentType = ContentType + ";charset=utf-8";
-            await response.WriteAsync(context.Object as string);
+            await response.WriteAsync(context.Object.ToString());
         }
     }
 }

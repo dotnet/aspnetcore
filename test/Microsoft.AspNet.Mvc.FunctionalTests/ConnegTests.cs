@@ -189,5 +189,76 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
             Assert.Equal(expectedBody, body);
         }
+        [Fact]
+        public async Task ProducesContentAttribute_IsNotHonored_ForJsonResult()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.Handler;
+            var expectedContentType = "application/json;charset=utf-8";
+            var expectedBody = "{\"MethodName\":\"Produces_WithNonObjectResult\"}";
+
+            // Act
+            var result = await client.GetAsync("http://localhost/JsonResult/Produces_WithNonObjectResult");
+
+            // Assert
+            Assert.Equal(expectedContentType, result.HttpContext.Response.ContentType);
+            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
+            Assert.Equal(expectedBody, body);
+        }
+
+        [Fact]
+        public async Task JsonResult_UsesDefaultContentTypes_IfNoneAreAddedExplicitly()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.Handler;
+            var expectedContentType = "application/json;charset=utf-8";
+            var expectedBody = "{\"MethodName\":\"ReturnJsonResult\"}";
+
+            // Act
+            var result = await client.GetAsync("http://localhost/JsonResult/ReturnJsonResult");
+
+            // Assert
+            Assert.Equal(expectedContentType, result.HttpContext.Response.ContentType);
+            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
+            Assert.Equal(expectedBody, body);
+        }
+
+        [Fact]
+        public async Task JsonResult_UsesExplicitContentTypeAndFormatter_IfAdded()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.Handler;
+            var expectedContentType = "application/custom-json;charset=utf-8";
+            var expectedBody = "{ MethodName = ReturnJsonResult_WithCustomMediaType }";
+
+            // Act
+            var result = await client.GetAsync("http://localhost/JsonResult/ReturnJsonResult_WithCustomMediaType");
+
+            // Assert
+            Assert.Equal(expectedContentType, result.HttpContext.Response.ContentType);
+            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
+            Assert.Equal(expectedBody, body);
+        }
+
+        [Fact]
+        public async Task JsonResult_UsesDefaultJsonFormatter_IfNoMatchingFormatterIsFound()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.Handler;
+            var expectedContentType = "application/json;charset=utf-8";
+            var expectedBody = "{\"MethodName\":\"ReturnJsonResult_WithCustomMediaType_NoFormatter\"}";
+
+            // Act
+            var result = await client.GetAsync("http://localhost/JsonResult/ReturnJsonResult_WithCustomMediaType_NoFormatter");
+
+            // Assert
+            Assert.Equal(expectedContentType, result.HttpContext.Response.ContentType);
+            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
+            Assert.Equal(expectedBody, body);
+        }
     }
 }

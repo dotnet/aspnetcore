@@ -79,16 +79,7 @@ namespace Microsoft.AspNet.Mvc
             var selectedEncoding = context.SelectedEncoding;
             using (var writer = new StreamWriter(response.Body, selectedEncoding, 1024, leaveOpen: true))
             {
-                using (var jsonWriter = CreateJsonWriter(writer))
-                {
-                    var jsonSerializer = CreateJsonSerializer();
-                    jsonSerializer.Serialize(jsonWriter, context.Object);
-
-                    // We're explicitly calling flush here to simplify the debugging experience because the
-                    // underlying TextWriter might be long-lived. If this method ends up being called repeatedly
-                    // for a request, we should revisit.
-                    jsonWriter.Flush();
-                }
+                WriteObject(writer, context.Object);
             }
 
             return Task.FromResult(true);

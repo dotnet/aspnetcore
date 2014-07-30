@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc
         /// with default XmlWriterSettings
         /// </summary>
         public XmlDataContractSerializerOutputFormatter()
-            :this(GetDefaultXmlWriterSettings())
+            : this(GetDefaultXmlWriterSettings())
         {
         }
 
@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="writerSettings">The settings to be used by the <see cref="DataContractSerializer"/>.</param>
         public XmlDataContractSerializerOutputFormatter([NotNull] XmlWriterSettings writerSettings)
-            :base(writerSettings)
+            : base(writerSettings)
         {
         }
 

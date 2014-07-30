@@ -1295,7 +1295,20 @@ namespace Microsoft.AspNet.Mvc
 
             var httpContext = new Mock<HttpContext>(MockBehavior.Loose);
             var httpResponse = new Mock<HttpResponse>(MockBehavior.Loose);
+            var mockFormattersProvider = new Mock<IOutputFormattersProvider>();
+            mockFormattersProvider.SetupGet(o => o.OutputFormatters)
+                                  .Returns(
+                                        new List<IOutputFormatter>()
+                                        {
+                                            new JsonOutputFormatter(
+                                                    JsonOutputFormatter.CreateDefaultSettings(),
+                                                    indent: false)
+                                        });
+            httpContext.SetupGet(o => o.Request.Accept)
+                       .Returns("");
             httpContext.SetupGet(c => c.Response).Returns(httpResponse.Object);
+            httpContext.Setup(o => o.RequestServices.GetService(typeof(IOutputFormattersProvider)))
+                       .Returns(mockFormattersProvider.Object);
             httpResponse.SetupGet(r => r.Body).Returns(new MemoryStream());
 
             var actionContext = new ActionContext(

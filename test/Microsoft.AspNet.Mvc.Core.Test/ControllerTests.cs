@@ -517,7 +517,7 @@ namespace Microsoft.AspNet.Mvc.Test
 
             // Assert
             Assert.IsType<JsonResult>(actualJsonResult);
-            Assert.Same(data, actualJsonResult.Data);
+            Assert.Same(data, actualJsonResult.Value);
         }
 
         public static IEnumerable<object[]> RedirectTestData
