@@ -1,8 +1,6 @@
 # MusicStore application
-=========
 
 This project is part of ASP.NET vNext. You can find samples, documentation and getting started instructions for ASP.NET vNext at the [Home](https://github.com/aspnet/home) repo.
-
 
 ### Run the application on Helios:
 * Execute ```build.cmd``` to restore all the necessary packages, and run tests.
