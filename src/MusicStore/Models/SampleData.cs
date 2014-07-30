@@ -567,11 +567,8 @@ namespace MusicStore.Models
                 new Album { Title = "Zoso", Genre = genres["Rock"], Price = 8.99M, Artist = artists["Led Zeppelin"], AlbumArtUrl = imgUrl },
             };
 
-            // TODO [EF] Swap to store generated keys when available
-            int albumId = 1;
             foreach (var album in albums)
             {
-                album.AlbumId = albumId++;
                 album.ArtistId = album.Artist.ArtistId;
                 album.GenreId = album.Genre.GenreId;
             }
