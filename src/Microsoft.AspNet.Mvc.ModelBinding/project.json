@@ -46,7 +46,7 @@
         "System.Text.Encoding.Extensions": "4.0.10.0",
         "System.Threading": "4.0.0.0",
         "System.Threading.Tasks": "4.0.10.0",
-        "System.Xml.ReaderWriter": "4.0.0.0",
+        "System.Xml.ReaderWriter": "4.0.10.0",
         "System.Xml.XmlSerializer": "4.0.0.0"
       }
     }
