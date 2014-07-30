@@ -13,7 +13,7 @@ namespace E2ETests
             try
             {
                 Console.WriteLine("Trying to drop database '{0}'", databaseName);
-                using (var conn = new SqlConnection(@"Server=(localdb)\v11.0;Database=master;Trusted_Connection=True;"))
+                using (var conn = new SqlConnection(@"Server=(localdb)\MSSQLLocalDB;Database=master;Trusted_Connection=True;"))
                 {
                     conn.Open();
 

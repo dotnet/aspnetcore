@@ -9,7 +9,7 @@ namespace E2ETests
 {
     public class SmokeTests
     {
-        private const string Connection_string_Format = "Server=(localdb)\\v11.0;Database={0};Trusted_Connection=True;MultipleActiveResultSets=true";
+        private const string Connection_string_Format = "Server=(localdb)\\MSSQLLocalDB;Database={0};Trusted_Connection=True;MultipleActiveResultSets=true";
 
         private string ApplicationBaseUrl;
         private HttpClient httpClient;
@@ -32,7 +32,7 @@ namespace E2ETests
         {
             Console.WriteLine("Variation Details : HostType = {0}, KreFlavor = {1}, Architecture = {2}, applicationBaseUrl = {3}", hostType, kreFlavor, architecture, applicationBaseUrl);
 
-            // Check if processor architecture is x64, else ship test
+            // Check if processor architecture is x64, else skip test
             if (architecture == KreArchitecture.x64 && !Environment.Is64BitOperatingSystem)
             {
                 Console.WriteLine("Skipping x64 test since machine is of type x86");
