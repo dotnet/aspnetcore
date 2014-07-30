@@ -4,6 +4,7 @@
 #if NET45
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNet.Mvc.OptionDescriptors;
 using Moq;
 using Xunit;
 
@@ -63,10 +64,10 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             // Assert
             Assert.Equal(4, collection.Count);
-            Assert.Equal(formatter1, collection[0].OutputFormatter);
-            Assert.Equal(formatter2, collection[1].OutputFormatter);
-            Assert.Equal(type2, collection[2].OutputFormatterType);
-            Assert.Equal(type1, collection[3].OutputFormatterType);
+            Assert.Equal(formatter1, collection[0].Instance);
+            Assert.Equal(formatter2, collection[1].Instance);
+            Assert.Equal(type2, collection[2].OptionType);
+            Assert.Equal(type1, collection[3].OptionType);
         }
     }
 }

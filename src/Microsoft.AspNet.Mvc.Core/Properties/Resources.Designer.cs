@@ -1066,6 +1066,23 @@ namespace Microsoft.AspNet.Mvc.Core
             return string.Format(CultureInfo.CurrentCulture, GetString("OutputFormatterNoEncoding"), p0);
         }
 
+        /// <summary>
+        /// No supported media type registered for output formatter '{0}'. There must be at least one supported media type registered in order for the output formatter to write content.
+        /// </summary>
+        internal static string OutputFormatterNoMediaType
+        {
+            get { return GetString("OutputFormatterNoMediaType"); }
+        }
+
+        /// <summary>
+        /// No supported media type registered for output formatter '{0}'. There must be at least one supported media type registered in order for the output formatter to write content.
+        /// </summary>
+        internal static string FormatOutputFormatterNoMediaType(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("OutputFormatterNoMediaType"), p0);
+        }
+
+        /// <summary>
         /// The following errors occurred with attribute routing information:{0}{0}{1}
         /// </summary>
         internal static string AttributeRoute_AggregateErrorMessage

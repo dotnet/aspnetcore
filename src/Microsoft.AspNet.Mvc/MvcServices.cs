@@ -66,9 +66,11 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Transient<IInputFormatter, XmlDataContractSerializerInputFormatter>();
             yield return describe.Transient<IInputFormatterProvider, TempInputFormatterProvider>();
 
+            yield return describe.Transient<IModelBinderProvider, DefaultModelBindersProvider>();
+            yield return describe.Scoped<ICompositeModelBinder, CompositeModelBinder>();
+            yield return describe.Transient<IValueProviderFactoryProvider, DefaultValueProviderFactoryProvider>();
+            yield return describe.Scoped<ICompositeValueProviderFactory, CompositeValueProviderFactory>();
             yield return describe.Transient<IOutputFormattersProvider, DefaultOutputFormattersProvider>();
-            yield return describe.Transient<IModelBindersProvider, DefaultModelBindersProvider>();
-            yield return describe.Transient<ICompositeModelBinder, CompositeModelBinder>();
 
             yield return describe.Transient<INestedProvider<FilterProviderContext>, DefaultFilterProvider>();
 

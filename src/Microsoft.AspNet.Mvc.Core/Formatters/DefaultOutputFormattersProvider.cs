@@ -3,20 +3,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.OptionDescriptors;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc
 {
     /// <inheritdoc />
-    public class DefaultOutputFormattersProvider : IOutputFormattersProvider
+    public class DefaultOutputFormattersProvider : OptionDescriptorBasedProvider<IOutputFormatter>, IOutputFormattersProvider
     {
-        private readonly List<OutputFormatterDescriptor> _descriptors;
-        private readonly ITypeActivator _typeActivator;
-        private readonly IServiceProvider _serviceProvider;
-
         /// <summary>
         /// Initializes a new instance of the DefaultOutputFormattersProvider class.
         /// </summary>
@@ -24,34 +19,19 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="typeActivator">An <see cref="ITypeActivator"/> instance used to instantiate types.</param>
         /// <param name="serviceProvider">A <see cref="IServiceProvider"/> instance that retrieves services from the 
         /// service collection.</param>
-        public DefaultOutputFormattersProvider(IOptionsAccessor<MvcOptions> options,
+        public DefaultOutputFormattersProvider(IOptionsAccessor<MvcOptions> optionsAccessor,
                                            ITypeActivator typeActivator,
                                            IServiceProvider serviceProvider)
+            : base(optionsAccessor.Options.OutputFormatters, typeActivator, serviceProvider)
         {
-            _descriptors = options.Options.OutputFormatters;
-            _typeActivator = typeActivator;
-            _serviceProvider = serviceProvider;
         }
-
+    
         /// <inheritdoc />
         public IReadOnlyList<IOutputFormatter> OutputFormatters
         {
             get
             {
-                var outputFormatters = new List<IOutputFormatter>();
-                foreach (var descriptor in _descriptors)
-                {
-                    var formatter = descriptor.OutputFormatter;
-                    if (formatter == null)
-                    {
-                        formatter = (IOutputFormatter)_typeActivator.CreateInstance(_serviceProvider, 
-                                                                             descriptor.OutputFormatterType);
-                    }
-
-                    outputFormatters.Add(formatter);
-                }
-
-                return outputFormatters;
+                return Options;
             }
         }
     }

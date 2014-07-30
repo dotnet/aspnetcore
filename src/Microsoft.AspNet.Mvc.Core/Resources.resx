@@ -322,8 +322,7 @@
     <value>The following errors occurred with attribute routing information:{0}{0}{1}</value>
     <comment>{0} is the newline. {1} is the formatted list of errors using AttributeRoute_IndividualErrorMessage</comment>
   </data>
-  
-  <data>
+  <data name="AttributeRoute_CannotContainParameter" xml:space="preserve">
     <value>The attribute route '{0}' cannot contain a parameter named '{{{1}}}'. Use '[{1}]' in the route template to insert the value '{2}'.</value>
   </data>
   <data name="AttributeRoute_IndividualErrorMessage" xml:space="preserve">
