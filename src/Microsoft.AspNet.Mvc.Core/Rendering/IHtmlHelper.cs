@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
@@ -22,6 +23,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Gets or sets the character that replaces periods in the ID attribute of an element.
         /// </summary>
         string IdAttributeDotReplacement { get; set; }
+
+        /// <summary>
+        /// Gets the metadata provider. Intended for use in <see cref="IHtmlHelper"/> extension methods.
+        /// </summary>
+        IModelMetadataProvider MetadataProvider { get; }
 
         /// <summary>
         /// Gets the view bag.
@@ -244,6 +250,17 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="name">The name of the HTML element.</param>
         /// <returns>The ID of the HTML element.</returns>
         string GenerateIdFromName(string name);
+
+        /// <summary>
+        /// Returns information about about client validation rules for the given <paramref name="metadata"/> or
+        /// <paramref name="name"/>. Intended for use in <see cref="IHtmlHelper"/> extension methods.
+        /// </summary>
+        /// <param name="metadata">Metadata about the <see langref="object"/> of interest.</param>
+        /// <param name="name">Expression name, relative to the current model. Used to determine
+        /// <see cref="ModelMetadata"/> when <paramref name="metadata"/> is <see langref="null"/>; ignored
+        /// otherwise.</param>
+        /// <returns>An <see cref="IEnumerable{ModelClientValidationRule}"/> containing the relevant rules.</returns>
+        IEnumerable<ModelClientValidationRule> GetClientValidationRules(ModelMetadata metadata, string name);
 
         /// <summary>
         /// Render an input element of type "hidden".

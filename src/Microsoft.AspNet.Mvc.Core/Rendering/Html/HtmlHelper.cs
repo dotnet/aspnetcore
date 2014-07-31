@@ -100,7 +100,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
         }
 
-        protected IModelMetadataProvider MetadataProvider { get; private set; }
+        /// <inheritdoc />
+        public IModelMetadataProvider MetadataProvider { get; private set; }
 
         /// <inheritdoc />
         public HtmlString ActionLink(
@@ -328,10 +329,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public virtual HtmlString Name(string name)
+        public HtmlString Name(string name)
         {
-            var fullName = ViewData.TemplateInfo.GetFullHtmlFieldName(name);
-            return new HtmlString(Encode(fullName));
+            return GenerateName(name);
         }
 
         /// <inheritdoc />
@@ -449,85 +449,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public virtual HtmlString ValidationSummary(bool excludePropertyErrors,
+        public HtmlString ValidationSummary(bool excludePropertyErrors,
             string message,
             IDictionary<string, object> htmlAttributes,
             string tag)
         {
-            var formContext = ViewContext.ClientValidationEnabled ? ViewContext.FormContext : null;
-            if (ViewData.ModelState.IsValid && (formContext == null || excludePropertyErrors))
-            {
-                // No client side validation/updates
-                return HtmlString.Empty;
-            }
-
-            string wrappedMessage;
-            if (!string.IsNullOrEmpty(message))
-            {
-                if (string.IsNullOrEmpty(tag))
-                {
-                    tag = ViewContext.ValidationSummaryMessageElement;
-                }
-                var messageTag = new TagBuilder(tag);
-                messageTag.SetInnerText(message);
-                wrappedMessage = messageTag.ToString(TagRenderMode.Normal) + Environment.NewLine;
-            }
-            else
-            {
-                wrappedMessage = null;
-            }
-
-            // If excludePropertyErrors is true, describe any validation issue with the current model in a single item.
-            // Otherwise, list individual property errors.
-            var htmlSummary = new StringBuilder();
-            var modelStates = ValidationHelpers.GetModelStateList(ViewData, excludePropertyErrors);
-
-            foreach (var modelState in modelStates)
-            {
-                foreach (var modelError in modelState.Errors)
-                {
-                    var errorText = ValidationHelpers.GetUserErrorMessageOrDefault(modelError, modelState: null);
-
-                    if (!string.IsNullOrEmpty(errorText))
-                    {
-                        var listItem = new TagBuilder("li");
-                        listItem.SetInnerText(errorText);
-                        htmlSummary.AppendLine(listItem.ToString(TagRenderMode.Normal));
-                    }
-                }
-            }
-
-            if (htmlSummary.Length == 0)
-            {
-                htmlSummary.AppendLine(HiddenListItem);
-            }
-
-            var unorderedList = new TagBuilder("ul")
-            {
-                InnerHtml = htmlSummary.ToString()
-            };
-
-            var divBuilder = new TagBuilder("div");
-            divBuilder.MergeAttributes(htmlAttributes);
-
-            if (ViewData.ModelState.IsValid)
-            {
-                divBuilder.AddCssClass(HtmlHelper.ValidationSummaryValidCssClassName);
-            }
-            else
-            {
-                divBuilder.AddCssClass(HtmlHelper.ValidationSummaryCssClassName);
-            }
-
-            divBuilder.InnerHtml = wrappedMessage + unorderedList.ToString(TagRenderMode.Normal);
-
-            if (formContext != null && !excludePropertyErrors)
-            {
-                // Inform the client where to replace the list of property errors after validation.
-                divBuilder.MergeAttribute("data-valmsg-summary", "true");
-            }
-
-            return divBuilder.ToHtmlString(TagRenderMode.Normal);
+            return GenerateValidationSummary(excludePropertyErrors, message, htmlAttributes, tag);
         }
 
         /// <summary>
@@ -549,7 +476,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public virtual HtmlString TextArea(string name, string value, int rows, int columns, object htmlAttributes)
+        public HtmlString TextArea(string name, string value, int rows, int columns, object htmlAttributes)
         {
             var metadata = ExpressionMetadataProvider.FromStringExpression(name, ViewData, MetadataProvider);
             if (value != null)
@@ -609,14 +536,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return null;
         }
 
-        protected IDictionary<string, object> GetValidationAttributes(string name)
-        {
-            return GetValidationAttributes(name, metadata: null);
-        }
-
         // Only render attributes if client-side validation is enabled, and then only if we've
         // never rendered validation for a field with this name in this form.
-        protected IDictionary<string, object> GetValidationAttributes(string name, ModelMetadata metadata)
+        protected virtual IDictionary<string, object> GetValidationAttributes(ModelMetadata metadata, string name)
         {
             var formContext = ViewContext.ClientValidationEnabled ? ViewContext.FormContext : null;
             if (formContext == null)
@@ -631,7 +553,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
 
             formContext.RenderedField(fullName, true);
-            var clientRules = GetClientValidationRules(name, metadata);
+            var clientRules = GetClientValidationRules(metadata, name);
             return UnobtrusiveValidationAttributesGenerator.GetValidationAttributes(clientRules);
         }
 
@@ -875,6 +797,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 htmlAttributes: htmlAttributes);
         }
 
+        protected virtual HtmlString GenerateName(string name)
+        {
+            var fullName = ViewData.TemplateInfo.GetFullHtmlFieldName(name);
+            return new HtmlString(Encode(fullName));
+        }
+
         protected virtual HtmlString GeneratePassword(ModelMetadata metadata, string name, object value,
             object htmlAttributes)
         {
@@ -1043,7 +971,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 }
             }
 
-            tagBuilder.MergeAttributes(GetValidationAttributes(name, metadata));
+            tagBuilder.MergeAttributes(GetValidationAttributes(metadata, name));
 
             return tagBuilder.ToHtmlString(TagRenderMode.Normal);
         }
@@ -1094,7 +1022,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
 
             tagBuilder.MergeAttribute("name", fullName, true);
-            tagBuilder.MergeAttributes(GetValidationAttributes(name, metadata));
+            tagBuilder.MergeAttributes(GetValidationAttributes(metadata, name));
 
             // If there are any errors for a named field, we add this CSS attribute.
             if (modelState != null && modelState.Errors.Count > 0)
@@ -1212,7 +1140,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 tagBuilder.AddCssClass(ValidationInputCssClassName);
             }
 
-            tagBuilder.MergeAttributes(GetValidationAttributes(name, metadata));
+            tagBuilder.MergeAttributes(GetValidationAttributes(metadata, name));
 
             if (inputType == InputType.CheckBox)
             {
@@ -1302,6 +1230,88 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return builder.ToHtmlString(TagRenderMode.Normal);
         }
 
+        protected virtual HtmlString GenerateValidationSummary(
+            bool excludePropertyErrors,
+            string message,
+            IDictionary<string, object> htmlAttributes,
+            string tag)
+        {
+            var formContext = ViewContext.ClientValidationEnabled ? ViewContext.FormContext : null;
+            if (ViewData.ModelState.IsValid && (formContext == null || excludePropertyErrors))
+            {
+                // No client side validation/updates
+                return HtmlString.Empty;
+            }
+
+            string wrappedMessage;
+            if (!string.IsNullOrEmpty(message))
+            {
+                if (string.IsNullOrEmpty(tag))
+                {
+                    tag = ViewContext.ValidationSummaryMessageElement;
+                }
+                var messageTag = new TagBuilder(tag);
+                messageTag.SetInnerText(message);
+                wrappedMessage = messageTag.ToString(TagRenderMode.Normal) + Environment.NewLine;
+            }
+            else
+            {
+                wrappedMessage = null;
+            }
+
+            // If excludePropertyErrors is true, describe any validation issue with the current model in a single item.
+            // Otherwise, list individual property errors.
+            var htmlSummary = new StringBuilder();
+            var modelStates = ValidationHelpers.GetModelStateList(ViewData, excludePropertyErrors);
+
+            foreach (var modelState in modelStates)
+            {
+                foreach (var modelError in modelState.Errors)
+                {
+                    var errorText = ValidationHelpers.GetUserErrorMessageOrDefault(modelError, modelState: null);
+
+                    if (!string.IsNullOrEmpty(errorText))
+                    {
+                        var listItem = new TagBuilder("li");
+                        listItem.SetInnerText(errorText);
+                        htmlSummary.AppendLine(listItem.ToString(TagRenderMode.Normal));
+                    }
+                }
+            }
+
+            if (htmlSummary.Length == 0)
+            {
+                htmlSummary.AppendLine(HiddenListItem);
+            }
+
+            var unorderedList = new TagBuilder("ul")
+            {
+                InnerHtml = htmlSummary.ToString()
+            };
+
+            var divBuilder = new TagBuilder("div");
+            divBuilder.MergeAttributes(htmlAttributes);
+
+            if (ViewData.ModelState.IsValid)
+            {
+                divBuilder.AddCssClass(HtmlHelper.ValidationSummaryValidCssClassName);
+            }
+            else
+            {
+                divBuilder.AddCssClass(HtmlHelper.ValidationSummaryCssClassName);
+            }
+
+            divBuilder.InnerHtml = wrappedMessage + unorderedList.ToString(TagRenderMode.Normal);
+
+            if (formContext != null && !excludePropertyErrors)
+            {
+                // Inform the client where to replace the list of property errors after validation.
+                divBuilder.MergeAttribute("data-valmsg-summary", "true");
+            }
+
+            return divBuilder.ToHtmlString(TagRenderMode.Normal);
+        }
+
         protected virtual HtmlString GenerateValue(string name, object value, string format, bool useViewData)
         {
             var fullName = ViewData.TemplateInfo.GetFullHtmlFieldName(name);
@@ -1336,9 +1346,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return new HtmlString(Encode(resolvedValue));
         }
 
-        protected virtual IEnumerable<ModelClientValidationRule> GetClientValidationRules(
-            string name, 
-            ModelMetadata metadata)
+        /// <inheritdoc />
+        public IEnumerable<ModelClientValidationRule> GetClientValidationRules(
+            ModelMetadata metadata,
+            string name)
         {
             var actionBindingContext = _actionBindingContextProvider.GetActionBindingContextAsync(ViewContext).Result;
             metadata = metadata ??
