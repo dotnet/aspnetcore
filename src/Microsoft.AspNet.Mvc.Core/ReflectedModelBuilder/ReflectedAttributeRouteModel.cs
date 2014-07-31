@@ -20,14 +20,17 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
         public ReflectedAttributeRouteModel([NotNull] IRouteTemplateProvider templateProvider)
         {
             Template = templateProvider.Template;
+            Order = templateProvider.Order;
         }
 
         public string Template { get; set; }
 
-    /// <summary>
+        public int? Order { get; set; }
+
+        /// <summary>
         /// Combines two <see cref="ReflectedAttributeRouteModel"/> instances and returns
         /// a new <see cref="ReflectedAttributeRouteModel"/> instance with the result.
-    /// </summary>
+        /// </summary>
         /// <param name="left">The left <see cref="ReflectedAttributeRouteModel"/>.</param>
         /// <param name="right">The right <see cref="ReflectedAttributeRouteModel"/>.</param>
         /// <returns>A new instance of <see cref="ReflectedAttributeRouteModel"/> that represents the
@@ -37,30 +40,31 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
             ReflectedAttributeRouteModel left,
             ReflectedAttributeRouteModel right)
         {
-            left = left ?? _default;
             right = right ?? _default;
 
-            var template = CombineTemplates(left.Template, right.Template);
+            // If the right template is an override template (starts with / or ~/)
+            // we ignore the values from left.
+            if (left == null || IsOverridePattern(right.Template))
+            {
+                left = _default;
+            }
+
+            var combinedTemplate = CombineTemplates(left.Template, right.Template);
 
             // The action is not attribute routed.
-            if (template == null)
+            if (combinedTemplate == null)
             {
                 return null;
             }
 
             return new ReflectedAttributeRouteModel()
-    {
-                Template = template
+            {
+                Template = combinedTemplate,
+                Order = right.Order ?? left.Order
             };
         }
 
-        /// <summary>
-        /// Combines attribute routing templates.
-        /// </summary>
-        /// <param name="left">The left template.</param>
-        /// <param name="right">The right template.</param>
-        /// <returns>A combined template.</returns>
-        public static string CombineTemplates(string left, string right)
+        internal static string CombineTemplates(string left, string right)
         {
             var result = CombineCore(left, right);
             return CleanTemplate(result);
@@ -72,19 +76,11 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
             {
                 return null;
             }
-            else if (left == null)
-            {
-                return right;
-            }
             else if (right == null)
             {
                 return left;
             }
-
-            if (right.StartsWith("~/", StringComparison.OrdinalIgnoreCase) ||
-                right.StartsWith("/", StringComparison.OrdinalIgnoreCase) ||
-                left.Equals("~/", StringComparison.OrdinalIgnoreCase) ||
-                left.Equals("/", StringComparison.OrdinalIgnoreCase))
+            else if (IsEmptyLeftSegment(left) || IsOverridePattern(right))
             {
                 return right;
             }
@@ -96,6 +92,21 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
 
             // Both templates contain some text.
             return left + '/' + right;
+        }
+
+        private static bool IsOverridePattern(string template)
+        {
+            return template != null &&
+                (template.StartsWith("~/", StringComparison.OrdinalIgnoreCase) ||
+                template.StartsWith("/", StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static bool IsEmptyLeftSegment(string template)
+        {
+            return template == null ||
+                template.Equals(string.Empty, StringComparison.OrdinalIgnoreCase) ||
+                template.Equals("~/", StringComparison.OrdinalIgnoreCase) ||
+                template.Equals("/", StringComparison.OrdinalIgnoreCase);
         }
 
         private static string CleanTemplate(string result)

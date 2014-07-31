@@ -24,6 +24,10 @@ namespace RoutingWebSite
             get { return _supportedMethods; }
         }
 
+        /// <inheritdoc />
         public string Template { get; private set; }
+
+        /// <inheritdoc />
+        public int? Order { get; set; }
     }
 }

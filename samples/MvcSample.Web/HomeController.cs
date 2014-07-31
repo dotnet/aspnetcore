@@ -126,6 +126,37 @@ namespace MvcSample.Web
             return user;
         }
 
+        [HttpGet("/AttributeRouting/{other}", Order = 0)]
+        public string LowerPrecedence(string param)
+        {
+            return "Lower";
+        }
+
+        // Normally this route would be tried before the one above
+        // as it is more explicit (doesn't have a parameter), but
+        // due to the fact that it has a higher order, it will be
+        // tried after the route above.
+        [HttpGet("/AttributeRouting/HigherPrecedence", Order = 1)]
+        public string HigherOrder()
+        {
+            return "Higher";
+        }
+
+        // Both routes have the same template, which would make
+        // them ambiguous, but the order we defined in the routes
+        // disambiguates them.
+        [HttpGet("/AttributeRouting/SameTemplate", Order = 0)]
+        public string SameTemplateHigherOrderPrecedence()
+        {
+            return "HigherOrderPrecedence";
+        }
+
+        [HttpGet("/AttributeRouting/SameTemplate", Order = 1)]
+        public string SameTemplateLowerOrderPrecedence()
+        {
+            return "LowerOrderPrecedence";
+        }
+
         /// <summary>
         /// Action that exercises default view names.
         /// </summary>

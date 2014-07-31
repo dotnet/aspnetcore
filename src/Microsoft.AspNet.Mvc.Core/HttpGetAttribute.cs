@@ -3,15 +3,13 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Mvc.Routing;
 
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
     /// Identifies an action that only supports the HTTP GET method.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-    public class HttpGetAttribute : Attribute, IActionHttpMethodProvider, IRouteTemplateProvider
+    public class HttpGetAttribute : HttpMethodAttribute
     {
         private static readonly IEnumerable<string> _supportedMethods = new string[] { "GET" };
 
@@ -19,6 +17,7 @@ namespace Microsoft.AspNet.Mvc
         /// Creates a new <see cref="HttpGetAttribute"/>.
         /// </summary>
         public HttpGetAttribute()
+            : base(_supportedMethods)
         {
         }
 
@@ -27,17 +26,8 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="template">The route template. May not be null.</param>
         public HttpGetAttribute([NotNull] string template)
+            : base(_supportedMethods, template)
         {
-            Template = template;
         }
-
-        /// <inheritdoc />
-        public IEnumerable<string> HttpMethods
-        {
-            get { return _supportedMethods; }
-        }
-
-        /// <inheritdoc />
-        public string Template { get; private set; }
     }
 }

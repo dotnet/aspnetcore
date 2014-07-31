@@ -31,6 +31,7 @@
     <Compile Include="ActionDescriptorsCollection.cs" />
     <Compile Include="ActionResults\HttpNotFoundResult.cs" />
     <Compile Include="Formatters\TextPlainFormatter.cs" />
+    <Compile Include="HttpMethodAttribute.cs" />
     <Compile Include="Logging\AttributeRouteRouteAsyncValues.cs" />
     <Compile Include="Logging\LoggerExtensions.cs" />
     <Compile Include="Logging\MvcRouteHandlerRouteAsyncValues.cs" />
@@ -190,6 +191,7 @@
     <Compile Include="ReflectedModelBuilder\IReflectedApplicationModelConvention.cs" />
     <Compile Include="ReflectedModelBuilder\ReflectedActionModel.cs" />
     <Compile Include="ReflectedModelBuilder\ReflectedApplicationModel.cs" />
+    <Compile Include="ReflectedModelBuilder\ReflectedAttributeRouteModel.cs" />
     <Compile Include="ReflectedModelBuilder\ReflectedControllerModel.cs" />
     <Compile Include="ReflectedModelBuilder\ReflectedParameterModel.cs" />
     <Compile Include="Rendering\CompositeViewEngine.cs" />
@@ -247,10 +249,10 @@
     <Compile Include="RouteDataActionConstraint.cs" />
     <Compile Include="RouteKeyHandling.cs" />
     <Compile Include="Routing\AttributeRoute.cs" />
+    <Compile Include="Routing\AttributeRouteInfo.cs" />
     <Compile Include="Routing\AttributeRouteLinkGenerationEntry.cs" />
     <Compile Include="Routing\AttributeRouteMatchingEntry.cs" />
     <Compile Include="Routing\AttributeRoutePrecedence.cs" />
-    <Compile Include="Routing\AttributeRouteTemplate.cs" />
     <Compile Include="Routing\AttributeRouting.cs" />
     <Compile Include="Routing\IRouteTemplateProvider.cs" />
     <Compile Include="TemplateInfo.cs" />

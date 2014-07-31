@@ -13,6 +13,11 @@ namespace Microsoft.AspNet.Mvc.Routing
     public class AttributeRouteMatchingEntry
     {
         /// <summary>
+        /// The order of the template.
+        /// </summary>
+        public int Order { get; set; }
+
+        /// <summary>
         /// The precedence of the template.
         /// </summary>
         public decimal Precedence { get; set; }

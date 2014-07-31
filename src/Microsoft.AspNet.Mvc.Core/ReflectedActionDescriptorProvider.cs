@@ -17,7 +17,15 @@ namespace Microsoft.AspNet.Mvc
 {
     public class ReflectedActionDescriptorProvider : IActionDescriptorProvider
     {
+        /// <summary>
+        /// Represents the default order associated with this provider for dependency injection
+        /// purposes.
+        /// </summary>
         public static readonly int DefaultOrder = 0;
+
+        // This is the default order for attribute routes whose order calculated from
+        // the reflected model is null.
+        private const int DefaultAttributeRouteOrder = 0;
 
         private readonly IControllerAssemblyProvider _controllerAssemblyProvider;
         private readonly IActionDiscoveryConventions _conventions;
@@ -114,7 +122,7 @@ namespace Microsoft.AspNet.Mvc
         {
             var actions = new List<ReflectedActionDescriptor>();
 
-            var routeGroupsByTemplate = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var hasAttributeRoutes = false;
             var removalConstraints = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             var routeTemplateErrors = new List<string>();
@@ -152,7 +160,8 @@ namespace Microsoft.AspNet.Mvc
 
                     var attributeRouteInfo = combinedRoute == null ? null : new AttributeRouteInfo()
                     {
-                        Template = combinedRoute.Template
+                        Template = combinedRoute.Template,
+                        Order = combinedRoute.Order ?? DefaultAttributeRouteOrder
                     };
 
                     var actionDescriptor = new ReflectedActionDescriptor()
@@ -215,6 +224,7 @@ namespace Microsoft.AspNet.Mvc
                     if (actionDescriptor.AttributeRouteInfo != null &&
                         actionDescriptor.AttributeRouteInfo.Template != null)
                     {
+                        hasAttributeRoutes = true;
                         // An attribute routed action will ignore conventional routed constraints. We still
                         // want to provide these values as ambient values.
                         foreach (var constraint in actionDescriptor.RouteConstraints)
@@ -243,19 +253,14 @@ namespace Microsoft.AspNet.Mvc
 
                         actionDescriptor.AttributeRouteInfo.Template = templateText;
 
-                        // An attribute routed action is matched by its 'route group' which identifies all equivalent
-                        // actions.
-                        string routeGroup;
-                        if (!routeGroupsByTemplate.TryGetValue(templateText, out routeGroup))
-                        {
-                            routeGroup = GetRouteGroup(templateText);
-                            routeGroupsByTemplate.Add(templateText, routeGroup);
-                        }
+                        var routeGroupValue = GetRouteGroupValue(
+                            actionDescriptor.AttributeRouteInfo.Order,
+                            templateText);
 
                         var routeConstraints = new List<RouteDataActionConstraint>();
                         routeConstraints.Add(new RouteDataActionConstraint(
                             AttributeRouting.RouteGroupKey,
-                            routeGroup));
+                            routeGroupValue));
 
                         actionDescriptor.RouteConstraints = routeConstraints;
                     }
@@ -279,7 +284,7 @@ namespace Microsoft.AspNet.Mvc
                         {
                             // Any any attribute routes are in use, then non-attribute-routed ADs can't be selected
                             // when a route group returned by the route.
-                            if (routeGroupsByTemplate.Any())
+                            if (hasAttributeRoutes)
                             {
                                 actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
                                     AttributeRouting.RouteGroupKey,
@@ -320,10 +325,10 @@ namespace Microsoft.AspNet.Mvc
             return actions;
         }
 
-        // Returns a unique, stable key per-route-template (OrdinalIgnoreCase)
-        private static string GetRouteGroup(string template)
+        private static string GetRouteGroupValue(int order, string template)
         {
-            return ("__route__" + template).ToUpperInvariant();
+            var group = string.Format("{0}-{1}", order, template);
+            return ("__route__" + group).ToUpperInvariant();
         }
     }
 }

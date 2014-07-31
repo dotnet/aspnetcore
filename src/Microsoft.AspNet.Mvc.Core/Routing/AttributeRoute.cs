@@ -29,20 +29,30 @@ namespace Microsoft.AspNet.Mvc.Routing
         /// <param name="next">The next router. Invoked when a route entry matches.</param>
         /// <param name="entries">The set of route entries.</param>
         public AttributeRoute(
-            [NotNull] IRouter next,
+            [NotNull] IRouter next, 
             [NotNull] IEnumerable<AttributeRouteMatchingEntry> matchingEntries,
             [NotNull] IEnumerable<AttributeRouteLinkGenerationEntry> linkGenerationEntries,
             [NotNull] ILoggerFactory factory)
         {
             _next = next;
 
-            // FOR RIGHT NOW - this is just an array of regular template routes. We'll follow up by implementing
-            // a good data-structure here. See #740
-            _matchingRoutes = matchingEntries.OrderBy(e => e.Precedence).Select(e => e.Route).ToArray();
+            // Order all the entries by order, then precedence, and then finally by template in order to provide
+            // a stable routing and link generation order for templates with same order and precedence. 
+            // We use ordinal comparison for the templates because we only care about them being exactly equal and
+            // we don't want to make any equivalence between templates based on the culture of the machine.
 
-            // FOR RIGHT NOW - this is just an array of entries. We'll follow up by implementing
-            // a good data-structure here. See #741
-            _linkGenerationEntries = linkGenerationEntries.OrderBy(e => e.Precedence).ToArray();
+            _matchingRoutes = matchingEntries
+                .OrderBy(o => o.Order)
+                .ThenBy(e => e.Precedence)
+                .ThenBy(e => e.Route.RouteTemplate, StringComparer.Ordinal)
+                .Select(e => e.Route)
+                .ToArray();
+
+            _linkGenerationEntries = linkGenerationEntries
+                .OrderBy(o => o.Order)
+                .ThenBy(e => e.Precedence)
+                .ThenBy(e => e.TemplateText, StringComparer.Ordinal)
+                .ToArray();
 
             _logger = factory.Create<AttributeRoute>();
             _constraintLogger = factory.Create(typeof(RouteConstraintMatcher).FullName);
@@ -53,12 +63,12 @@ namespace Microsoft.AspNet.Mvc.Routing
         {
             using (_logger.BeginScope("AttributeRoute.RouteAsync"))
             {
-                foreach (var route in _matchingRoutes)
-                {
-                    await route.RouteAsync(context);
+            foreach (var route in _matchingRoutes)
+            {
+                await route.RouteAsync(context);
 
-                    if (context.IsHandled)
-                    {
+                if (context.IsHandled)
+                {
                         break;
                     }
                 }

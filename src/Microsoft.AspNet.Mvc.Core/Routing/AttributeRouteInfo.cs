@@ -12,5 +12,12 @@ namespace Microsoft.AspNet.Mvc.Routing
         /// The route template. May be null if the action has no attribute routes.
         /// </summary>
         public string Template { get; set; }
+
+        /// <summary>
+        /// Gets the order of the route associated with this <see cref="ActionDescriptor"/>. This property determines
+        /// the order in which routes get executed. Routes with a lower order value are tried first. In case a route 
+        /// doesn't specify a value, it gets a default order of 0.
+        /// </summary>
+        public int Order { get; set; }
     }
 }

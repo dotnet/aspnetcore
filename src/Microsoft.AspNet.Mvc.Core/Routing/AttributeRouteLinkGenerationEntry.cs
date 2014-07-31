@@ -29,6 +29,11 @@ namespace Microsoft.AspNet.Mvc.Routing
         public IDictionary<string, object> Defaults { get; set; }
 
         /// <summary>
+        /// The order of the template.
+        /// </summary>
+        public int Order { get; set; }
+
+        /// <summary>
         /// The precedence of the template.
         /// </summary>
         public decimal Precedence { get; set; }
@@ -47,5 +52,10 @@ namespace Microsoft.AspNet.Mvc.Routing
         /// The <see cref="Template"/>.
         /// </summary>
         public RouteTemplate Template { get; set; }
+
+        /// <summary>
+        /// The original <see cref="string"/> representing the route template.
+        /// </summary>
+        public string TemplateText { get; set; }
     }
 }

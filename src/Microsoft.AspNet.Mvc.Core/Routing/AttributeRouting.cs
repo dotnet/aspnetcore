@@ -41,10 +41,12 @@ namespace Microsoft.AspNet.Mvc.Routing
                     Binder = new TemplateBinder(routeInfo.ParsedTemplate, routeInfo.Defaults),
                     Defaults = routeInfo.Defaults,
                     Constraints = routeInfo.Constraints,
+                    Order = routeInfo.Order,
                     Precedence = routeInfo.Precedence,
                     RequiredLinkValues = routeInfo.ActionDescriptor.RouteValueDefaults,
                     RouteGroup = routeInfo.RouteGroup,
                     Template = routeInfo.ParsedTemplate,
+                    TemplateText = routeInfo.RouteTemplate
                 });
             }
 
@@ -57,6 +59,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             {
                 matchingEntries.Add(new AttributeRouteMatchingEntry()
                 {
+                    Order = routeInfo.Order,
                     Precedence = routeInfo.Precedence,
                     Route = new TemplateRoute(
                         target,
@@ -72,9 +75,9 @@ namespace Microsoft.AspNet.Mvc.Routing
             }
 
             return new AttributeRoute(
-                target, 
-                matchingEntries, 
-                generationEntries, 
+                target,
+                matchingEntries,
+                generationEntries,
                 services.GetService<ILoggerFactory>());
         }
 
@@ -133,11 +136,11 @@ namespace Microsoft.AspNet.Mvc.Routing
             if (errors.Count > 0)
             {
                 var allErrors = string.Join(
-                    Environment.NewLine + Environment.NewLine, 
+                    Environment.NewLine + Environment.NewLine,
                     errors.Select(
                         e => Resources.FormatAttributeRoute_IndividualErrorMessage(
-                            e.ActionDescriptor.DisplayName, 
-                            Environment.NewLine, 
+                            e.ActionDescriptor.DisplayName,
+                            Environment.NewLine,
                             e.ErrorMessage)));
 
                 var message = Resources.FormatAttributeRoute_AggregateErrorMessage(Environment.NewLine, allErrors);
@@ -208,6 +211,8 @@ namespace Microsoft.AspNet.Mvc.Routing
                 }
             }
 
+            routeInfo.Order = action.AttributeRouteInfo.Order;
+
             routeInfo.Precedence = AttributeRoutePrecedence.Compute(routeInfo.ParsedTemplate);
 
             routeInfo.Constraints = routeInfo.ParsedTemplate.Parameters
@@ -232,6 +237,8 @@ namespace Microsoft.AspNet.Mvc.Routing
             public string ErrorMessage { get; set; }
 
             public RouteTemplate ParsedTemplate { get; set; }
+
+            public int Order { get; set; }
 
             public decimal Precedence { get; set; }
 
