@@ -10,7 +10,8 @@ using Microsoft.Framework.OptionsModel;
 namespace Microsoft.AspNet.Mvc
 {
     /// <inheritdoc />
-    public class DefaultOutputFormattersProvider : OptionDescriptorBasedProvider<IOutputFormatter>, IOutputFormattersProvider
+    public class DefaultOutputFormattersProvider
+        : OptionDescriptorBasedProvider<IOutputFormatter>, IOutputFormattersProvider
     {
         /// <summary>
         /// Initializes a new instance of the DefaultOutputFormattersProvider class.
