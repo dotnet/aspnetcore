@@ -90,18 +90,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         public static HtmlString DisplayForModel([NotNull] this IHtmlHelper html)
         {
-            return html.DisplayForModel(templateName: null, htmlFieldName: null, additionalViewData: null);
+            return html.Display(expression: string.Empty, templateName: null, htmlFieldName: null,
+                additionalViewData: null);
         }
 
         public static HtmlString DisplayForModel([NotNull] this IHtmlHelper html, object additionalViewData)
         {
-            return html.DisplayForModel(templateName: null, htmlFieldName: null,
+            return html.Display(expression: string.Empty, templateName: null, htmlFieldName: null,
                 additionalViewData: additionalViewData);
         }
 
         public static HtmlString DisplayForModel([NotNull] this IHtmlHelper html, string templateName)
         {
-            return html.DisplayForModel(templateName, htmlFieldName: null, additionalViewData: null);
+            return html.Display(expression: string.Empty, templateName: templateName, htmlFieldName: null,
+                additionalViewData: null);
         }
 
         public static HtmlString DisplayForModel(
@@ -109,7 +111,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string templateName,
             object additionalViewData)
         {
-            return html.DisplayForModel(templateName, htmlFieldName: null, additionalViewData: additionalViewData);
+            return html.Display(expression: string.Empty, templateName: templateName, htmlFieldName: null,
+                additionalViewData: additionalViewData);
         }
 
         public static HtmlString DisplayForModel(
@@ -117,7 +120,18 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string templateName,
             string htmlFieldName)
         {
-            return html.DisplayForModel(templateName, htmlFieldName, additionalViewData: null);
+            return html.Display(expression: string.Empty, templateName: templateName, htmlFieldName: htmlFieldName,
+                additionalViewData: null);
+        }
+
+        public static HtmlString DisplayForModel(
+            [NotNull] this IHtmlHelper html,
+            string templateName,
+            string htmlFieldName,
+            object additionalViewData)
+        {
+            return html.Display(expression: string.Empty, templateName: templateName, htmlFieldName: htmlFieldName,
+                additionalViewData: additionalViewData);
         }
     }
 }
