@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         public IEnumerable<ModelClientValidationRule> GetClientValidators(string name, ModelMetadata metadata)
         {
-            return GetClientValidationRules(name, metadata);
+            return GetClientValidationRules(metadata, name);
         }
 
         public HtmlString GetFullHtmlFieldId(string expression)
