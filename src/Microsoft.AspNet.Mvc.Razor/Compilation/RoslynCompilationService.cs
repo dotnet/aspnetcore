@@ -98,7 +98,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         {
             var references = new List<MetadataReference>();
 
-            var export = _libraryManager.GetLibraryExport(_environment.ApplicationName);
+            var export = _libraryManager.GetAllExports(_environment.ApplicationName);
 
             foreach (var metadataReference in export.MetadataReferences)
             {
