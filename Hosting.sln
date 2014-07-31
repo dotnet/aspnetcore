@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.21730.1
+VisualStudioVersion = 14.0.21916.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E0497F39-AFFB-4819-A116-E39E361915AB}"
 EndProject
@@ -16,6 +16,11 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Hosting.Tests", "test\Microsoft.AspNet.Hosting.Tests\Microsoft.AspNet.Hosting.Tests.kproj", "{D4F18D58-52B1-435D-A012-10F2CDF158C4}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.RequestContainer", "src\Microsoft.AspNet.RequestContainer\Microsoft.AspNet.RequestContainer.kproj", "{374A5B0C-3E93-4A23-A4A0-EE2AB6DF7814}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A66E3673-3976-4152-B902-2D0EC1428EA2}"
+	ProjectSection(SolutionItems) = preProject
+		global.json = global.json
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

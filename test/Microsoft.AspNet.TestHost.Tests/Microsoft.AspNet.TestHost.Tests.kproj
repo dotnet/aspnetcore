@@ -21,8 +21,10 @@
     <Content Include="project.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClientHandlerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ResponseInformationTests.cs" />
+    <Compile Include="RequestBuilderTests.cs" />
+    <Compile Include="ResponseFeatureTests.cs" />
     <Compile Include="TestApplicationEnvironment.cs" />
     <Compile Include="TestClientTests.cs" />
     <Compile Include="TestServerTests.cs" />

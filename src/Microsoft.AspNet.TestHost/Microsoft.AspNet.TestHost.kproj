@@ -20,9 +20,12 @@
     <Content Include="project.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClientHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RequestInformation.cs" />
-    <Compile Include="ResponseInformation.cs" />
+    <Compile Include="RequestBuilder.cs" />
+    <Compile Include="RequestFeature.cs" />
+    <Compile Include="ResponseFeature.cs" />
+    <Compile Include="ResponseStream.cs" />
     <Compile Include="TestClient.cs" />
     <Compile Include="TestServer.cs" />
   </ItemGroup>

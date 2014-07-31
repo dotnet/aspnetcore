@@ -1,31 +1,17 @@
-// Copyright (c) Microsoft Open Technologies, Inc.
-// All Rights Reserved
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// THIS CODE IS PROVIDED *AS IS* BASIS, WITHOUT WARRANTIES OR
-// CONDITIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
-// WITHOUT LIMITATION ANY IMPLIED WARRANTIES OR CONDITIONS OF
-// TITLE, FITNESS FOR A PARTICULAR PURPOSE, MERCHANTABLITY OR
-// NON-INFRINGEMENT.
-// See the Apache 2 License for the specific language governing
-// permissions and limitations under the License.
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Hosting.Server;
-using Microsoft.AspNet.Hosting.Startup;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.Runtime;
+using Microsoft.Framework.Runtime.Infrastructure;
 
 namespace Microsoft.AspNet.TestHost
 {
@@ -35,6 +21,8 @@ namespace Microsoft.AspNet.TestHost
         private static readonly ServerInformation ServerInfo = new ServerInformation();
         private Func<object, Task> _appDelegate;
         private TestClient _handler;
+        private IDisposable _appInstance;
+        private bool _disposed = false;
 
         public TestServer(IConfiguration config, IServiceProvider serviceProvider, Action<IBuilder> appStartup)
         {
@@ -54,16 +42,26 @@ namespace Microsoft.AspNet.TestHost
             };
 
             var engine = serviceProvider.GetService<IHostingEngine>();
-            var disposable = engine.Start(hostContext);
+            _appInstance = engine.Start(hostContext);
         }
 
-        //public static TestServer Create<TStartup>(IServiceProvider provider)
-        //{
-        //    var startupLoader = new StartupLoader(provider, new NullStartupLoader());
-        //    var name = typeof(TStartup).AssemblyQualifiedName;
-        //    var diagnosticMessages = new List<string>();
-        //    return Create(provider, startupLoader.LoadStartup(name, "Test", diagnosticMessages));
-        //}
+        public TestClient Handler
+        {
+            get
+            {
+                if (_handler == null)
+                {
+                    _handler = new TestClient(Invoke);
+                }
+
+                return _handler;
+            }
+        }
+
+        public static TestServer Create(Action<IBuilder> app)
+        {
+            return Create(provider: CallContextServiceLocator.Locator.ServiceProvider, app: app);
+        }
 
         public static TestServer Create(IServiceProvider provider, Action<IBuilder> app)
         {
@@ -77,17 +75,24 @@ namespace Microsoft.AspNet.TestHost
             return new TestServer(config, serviceProvider, app);
         }
 
-        public TestClient Handler
+        public HttpMessageHandler CreateHandler()
         {
-            get
-            {
-                if (_handler == null)
-                {
-                    _handler = new TestClient(_appDelegate);
-                }
+            return new ClientHandler(Invoke);
+        }
 
-                return _handler;
-            }
+        public HttpClient CreateClient()
+        {
+            return new HttpClient(CreateHandler()) { BaseAddress = new Uri("http://localhost/") };
+        }
+
+        /// <summary>
+        /// Begins constructing a request message for submission.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns><see cref="RequestBuilder"/> to use in constructing additional request details.</returns>
+        public RequestBuilder CreateRequest(string path)
+        {
+            return new RequestBuilder(this, path);
         }
 
         public IServerInformation Initialize(IConfiguration configuration)
@@ -107,11 +112,19 @@ namespace Microsoft.AspNet.TestHost
             return this;
         }
 
+        public Task Invoke(object env)
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().FullName);
+            }
+            return _appDelegate(env);
+        }
+
         public void Dispose()
         {
-            // IServerFactory.Start needs to return an IDisposable. Typically this IDisposable instance is used to 
-            // clear any server resources when tearing down the host. In our case we don't have anything to clear
-            // so we just implement IDisposable and do nothing.
+            _disposed = true;
+            _appInstance.Dispose();
         }
 
         private class ServerInformation : IServerInformation
