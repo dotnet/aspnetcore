@@ -34,8 +34,8 @@ namespace Microsoft.AspNet.Mvc
 
             // Set up default output formatters.
             options.OutputFormatters.Add(new TextPlainFormatter());
-			options.OutputFormatters.Add(new JsonOutputFormatter(JsonOutputFormatter.CreateDefaultSettings(),
-                                                                 indent: false));
+            options.OutputFormatters.Add(new JsonOutputFormatter(JsonOutputFormatter.CreateDefaultSettings(),
+                                         indent: false));
 
             // Set up ValueProviders
             options.ValueProviderFactories.Add(new RouteValueValueProviderFactory());

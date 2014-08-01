@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc
         {
             // Ignore the passed in content type, if the object is string 
             // always return it as a text/plain format.
-            if(context.DeclaredType == typeof(string))
+            if (context.DeclaredType == typeof(string))
             {
                 return true;
             }
