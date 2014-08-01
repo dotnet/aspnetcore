@@ -79,6 +79,7 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Scoped<IUrlHelper, UrlHelper>();
 
             yield return describe.Transient<IViewComponentSelector, DefaultViewComponentSelector>();
+            yield return describe.Singleton<IViewComponentActivator, DefaultViewComponentActivator>();
             yield return describe.Transient<IViewComponentInvokerFactory, DefaultViewComponentInvokerFactory>();
             yield return describe.Transient<INestedProvider<ViewComponentInvokerProviderContext>,
                 DefaultViewComponentInvokerProvider>();

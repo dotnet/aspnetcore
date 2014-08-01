@@ -34,6 +34,7 @@
     <Compile Include="Filters\ProducesAttributeTests.cs" />
     <Compile Include="Formatters\OutputFormatterTests.cs" />
     <Compile Include="Formatters\TextPlainFormatterTests.cs" />
+    <Compile Include="DefaultViewComponentActivatorTests.cs" />
     <Compile Include="Logging\BeginScopeContext.cs" />
     <Compile Include="Logging\TestLoggerFactory.cs" />
     <Compile Include="Logging\WriteCoreContext.cs" />

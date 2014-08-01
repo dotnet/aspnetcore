@@ -15,15 +15,18 @@ namespace Microsoft.AspNet.Mvc
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly TypeInfo _componentType;
+        private readonly IViewComponentActivator _viewComponentActivator;
         private readonly object[] _args;
 
         public DefaultViewComponentInvoker(
             [NotNull] IServiceProvider serviceProvider,
+            [NotNull] IViewComponentActivator viewComponentActivator,
             [NotNull] TypeInfo componentType,
             object[] args)
         {
             _serviceProvider = serviceProvider;
             _componentType = componentType;
+            _viewComponentActivator = viewComponentActivator;
             _args = args ?? new object[0];
         }
 
@@ -73,16 +76,7 @@ namespace Microsoft.AspNet.Mvc
         {
             var activator = _serviceProvider.GetService<ITypeActivator>();
             var component = activator.CreateInstance(_serviceProvider, _componentType.AsType());
-
-            Injector.InjectProperty(component, "ViewContext", context);
-
-            // We're flowing the viewbag across, but the concept of model doesn't really apply here
-            var viewData = new ViewDataDictionary(context.ViewData);
-            viewData.Model = null;
-            Injector.InjectProperty(component, "ViewData", viewData);
-
-            Injector.CallInitializer(component, _serviceProvider);
-
+            _viewComponentActivator.Activate(component, context);
             return component;
         }
 
