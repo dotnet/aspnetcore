@@ -47,6 +47,7 @@
     <Compile Include="Formatters\JsonOutputFormatter.cs" />
     <Compile Include="Formatters\MediaTypeWithQualityHeaderValueComparer.cs" />
     <Compile Include="Formatters\OutputFormatter.cs" />
+    <Compile Include="FilterActionInvoker.cs" />
     <Compile Include="OptionDescriptors\DefaultModelBinderProvider.cs" />
     <Compile Include="OptionDescriptors\DefaultValueProviderFactoryProvider.cs" />
     <Compile Include="OptionDescriptors\DefaultViewEngineProvider.cs" />

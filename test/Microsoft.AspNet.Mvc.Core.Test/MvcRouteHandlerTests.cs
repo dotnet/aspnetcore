@@ -168,7 +168,7 @@ namespace Microsoft.AspNet.Mvc
             if (invokerFactory == null)
             {
                 var mockInvoker = new Mock<IActionInvoker>();
-                mockInvoker.Setup(i => i.InvokeActionAsync())
+                mockInvoker.Setup(i => i.InvokeAsync())
                     .Returns(Task.FromResult<object>(null));
 
                 var mockInvokerFactory = new Mock<IActionInvokerFactory>();

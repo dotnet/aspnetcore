@@ -34,10 +34,10 @@ namespace Microsoft.AspNet.Mvc
             {
                 context.Result = new ReflectedActionInvoker(
                                     context.ActionContext,
-                                    actionDescriptor,
-                                    _controllerFactory,
                                     _bindingProvider,
-                                    _filterProvider);
+                                    _filterProvider,
+                                    _controllerFactory,
+                                    actionDescriptor);
             }
 
             callNext();

@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Mvc
             var invoker = CreateInvoker(filter.Object, actionThrows: false);
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             filter.Verify(f => f.OnException(It.IsAny<ExceptionContext>()), Times.Never());
@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Mvc
             var invoker = CreateInvoker(filter.Object, actionThrows: false);
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             filter.Verify(
@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Mvc
             var invoker = CreateInvoker(filter.Object, actionThrows: true);
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             filter.Verify(f => f.OnException(It.IsAny<ExceptionContext>()), Times.Once());
@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.Mvc
             var invoker = CreateInvoker(filter.Object, actionThrows: true);
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             filter.Verify(
@@ -154,7 +154,7 @@ namespace Microsoft.AspNet.Mvc
             var invoker = CreateInvoker(new[] { filter1.Object, filter2.Object }, actionThrows: true);
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             filter2.Verify(
@@ -182,7 +182,7 @@ namespace Microsoft.AspNet.Mvc
             var invoker = CreateInvoker(new IFilter[] { filter1.Object, filter2.Object }, actionThrows: true);
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             filter2.Verify(
@@ -202,7 +202,7 @@ namespace Microsoft.AspNet.Mvc
             var invoker = CreateInvoker(filter.Object, actionThrows: true);
 
             // Act
-            await Assert.ThrowsAsync(_actionException.GetType(), async () => await invoker.InvokeActionAsync());
+            await Assert.ThrowsAsync(_actionException.GetType(), async () => await invoker.InvokeAsync());
 
             // Assert
             filter.Verify(f => f.OnException(It.IsAny<ExceptionContext>()), Times.Once());
@@ -229,7 +229,7 @@ namespace Microsoft.AspNet.Mvc
             var invoker = CreateInvoker(new IFilter[] { filter.Object, resultFilter.Object }, actionThrows: true);
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             filter.Verify(f => f.OnException(It.IsAny<ExceptionContext>()), Times.Once());
@@ -246,7 +246,7 @@ namespace Microsoft.AspNet.Mvc
             var invoker = CreateInvoker(filter.Object);
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             filter.Verify(f => f.OnAuthorization(It.IsAny<AuthorizationContext>()), Times.Once());
@@ -265,7 +265,7 @@ namespace Microsoft.AspNet.Mvc
             var invoker = CreateInvoker(filter.Object);
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             filter.Verify(
@@ -290,7 +290,7 @@ namespace Microsoft.AspNet.Mvc
             var invoker = CreateInvoker(new[] { filter1.Object, filter2.Object });
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             filter1.Verify(f => f.OnAuthorization(It.IsAny<AuthorizationContext>()), Times.Once());
@@ -317,7 +317,7 @@ namespace Microsoft.AspNet.Mvc
             var invoker = CreateInvoker(new IFilter[] { filter1.Object, filter2.Object });
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             filter1.Verify(
@@ -365,7 +365,7 @@ namespace Microsoft.AspNet.Mvc
             });
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             exceptionFilter.Verify(f => f.OnException(It.IsAny<ExceptionContext>()), Times.Once());
@@ -393,7 +393,7 @@ namespace Microsoft.AspNet.Mvc
             var invoker = CreateInvoker(new IFilter[] { authorizationFilter.Object, resultFilter.Object });
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             authorizationFilter.Verify(f => f.OnAuthorization(It.IsAny<AuthorizationContext>()), Times.Once());
@@ -416,7 +416,7 @@ namespace Microsoft.AspNet.Mvc
             var invoker = CreateInvoker(filter.Object);
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             filter.Verify(f => f.OnActionExecuting(It.IsAny<ActionExecutingContext>()), Times.Once());
@@ -444,7 +444,7 @@ namespace Microsoft.AspNet.Mvc
             var invoker = CreateInvoker(filter.Object);
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             filter.Verify(
@@ -490,7 +490,7 @@ namespace Microsoft.AspNet.Mvc
             });
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             actionFilter1.Verify(f => f.OnActionExecuting(It.IsAny<ActionExecutingContext>()), Times.Once());
@@ -546,7 +546,7 @@ namespace Microsoft.AspNet.Mvc
             });
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             actionFilter1.Verify(f => f.OnActionExecuting(It.IsAny<ActionExecutingContext>()), Times.Once());
@@ -601,7 +601,7 @@ namespace Microsoft.AspNet.Mvc
             });
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             actionFilter1.Verify(f => f.OnActionExecuting(It.IsAny<ActionExecutingContext>()), Times.Once());
@@ -641,7 +641,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Act & Assert
             await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await invoker.InvokeActionAsync(),
+                async () => await invoker.InvokeAsync(),
                 message);
         }
 
@@ -668,7 +668,7 @@ namespace Microsoft.AspNet.Mvc
             var invoker = CreateInvoker(filter.Object, actionThrows: true);
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             filter.Verify(f => f.OnActionExecuting(It.IsAny<ActionExecutingContext>()), Times.Once());
@@ -709,7 +709,7 @@ namespace Microsoft.AspNet.Mvc
             var invoker = CreateInvoker(new[] { filter1.Object, filter2.Object });
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             filter1.Verify(f => f.OnActionExecuting(It.IsAny<ActionExecutingContext>()), Times.Once());
@@ -751,7 +751,7 @@ namespace Microsoft.AspNet.Mvc
             var invoker = CreateInvoker(new IFilter[] { filter1.Object, filter2.Object });
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             filter1.Verify(
@@ -795,7 +795,7 @@ namespace Microsoft.AspNet.Mvc
             var invoker = CreateInvoker(new IFilter[] { actionFilter.Object, resultFilter.Object }, actionThrows: true);
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             actionFilter.Verify(f => f.OnActionExecuting(It.IsAny<ActionExecutingContext>()), Times.Once());
@@ -818,7 +818,7 @@ namespace Microsoft.AspNet.Mvc
             var invoker = CreateInvoker(filter.Object);
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             filter.Verify(f => f.OnResultExecuting(It.IsAny<ResultExecutingContext>()), Times.Once());
@@ -838,7 +838,7 @@ namespace Microsoft.AspNet.Mvc
             var invoker = CreateInvoker(filter.Object);
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             filter.Verify(
@@ -874,7 +874,7 @@ namespace Microsoft.AspNet.Mvc
             var invoker = CreateInvoker(new IFilter[] { filter1.Object, filter2.Object, filter3.Object });
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             filter1.Verify(f => f.OnResultExecuting(It.IsAny<ResultExecutingContext>()), Times.Once());
@@ -914,7 +914,7 @@ namespace Microsoft.AspNet.Mvc
             var invoker = CreateInvoker(new IFilter[] { filter1.Object, filter2.Object, filter3.Object });
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             filter1.Verify(f => f.OnResultExecuting(It.IsAny<ResultExecutingContext>()), Times.Once());
@@ -956,7 +956,7 @@ namespace Microsoft.AspNet.Mvc
             var invoker = CreateInvoker(new IFilter[] { filter1.Object, filter2.Object, filter3.Object });
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             filter1.Verify(f => f.OnResultExecuting(It.IsAny<ResultExecutingContext>()), Times.Once());
@@ -994,7 +994,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Act & Assert
             await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await invoker.InvokeActionAsync(),
+                async () => await invoker.InvokeAsync(),
                 message);
         }
 
@@ -1021,7 +1021,7 @@ namespace Microsoft.AspNet.Mvc
             var invoker = CreateInvoker(filter.Object);
 
             // Act
-            await Assert.ThrowsAsync(exception.GetType(), async () => await invoker.InvokeActionAsync());
+            await Assert.ThrowsAsync(exception.GetType(), async () => await invoker.InvokeAsync());
 
             // Assert
             result.Verify(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()), Times.Once());
@@ -1064,7 +1064,7 @@ namespace Microsoft.AspNet.Mvc
             var invoker = CreateInvoker(filter.Object);
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             Assert.Equal(exception, context.Exception);
@@ -1106,7 +1106,7 @@ namespace Microsoft.AspNet.Mvc
             var invoker = CreateInvoker(filter.Object);
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             Assert.Equal(exception, context.Exception);
@@ -1150,7 +1150,7 @@ namespace Microsoft.AspNet.Mvc
             var invoker = CreateInvoker(new IFilter[] { resultFilter1.Object, resultFilter2.Object, resultFilter3.Object });
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             Assert.Equal(exception, context.Exception);
@@ -1192,7 +1192,7 @@ namespace Microsoft.AspNet.Mvc
             var invoker = CreateInvoker(new IFilter[] { resultFilter1.Object, resultFilter2.Object, resultFilter3.Object });
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             Assert.Equal(exception, context.Exception);
@@ -1319,10 +1319,10 @@ namespace Microsoft.AspNet.Mvc
 
             var invoker = new ReflectedActionInvoker(
                 actionContext,
-                actionDescriptor,
-                controllerFactory.Object,
                 actionBindingContextProvider.Object,
-                filterProvider.Object);
+                filterProvider.Object,
+                controllerFactory.Object,
+                actionDescriptor);
 
             return invoker;
         }
@@ -1361,10 +1361,10 @@ namespace Microsoft.AspNet.Mvc
                                         .Returns(Task.FromResult(bindingContext));
 
             var invoker = new ReflectedActionInvoker(actionContext,
-                                                     actionDescriptor,
-                                                     Mock.Of<IControllerFactory>(),
                                                      actionBindingContextProvider.Object,
-                                                     Mock.Of<INestedProviderManager<FilterProviderContext>>());
+                                                     Mock.Of<INestedProviderManager<FilterProviderContext>>(),
+                                                     Mock.Of<IControllerFactory>(),
+                                                     actionDescriptor);
 
             var modelStateDictionary = new ModelStateDictionary();
 
@@ -1417,10 +1417,10 @@ namespace Microsoft.AspNet.Mvc
                                         .Returns(Task.FromResult(bindingContext));
 
             var invoker = new ReflectedActionInvoker(actionContext,
-                                                     actionDescriptor,
-                                                     Mock.Of<IControllerFactory>(),
                                                      actionBindingContextProvider.Object,
-                                                     Mock.Of<INestedProviderManager<FilterProviderContext>>());
+                                                     Mock.Of<INestedProviderManager<FilterProviderContext>>(),
+                                                     Mock.Of<IControllerFactory>(),
+                                                     actionDescriptor);
 
             var modelStateDictionary = new ModelStateDictionary();
 
@@ -1477,13 +1477,13 @@ namespace Microsoft.AspNet.Mvc
                              .Returns(new TestController());
 
             var invoker = new ReflectedActionInvoker(actionContext,
-                                                     actionDescriptor,
-                                                     controllerFactory.Object,
                                                      actionBindingContextProvider.Object,
-                                                     Mock.Of<INestedProviderManager<FilterProviderContext>>());
+                                                     Mock.Of<INestedProviderManager<FilterProviderContext>>(),
+                                                     controllerFactory.Object,
+                                                     actionDescriptor);
 
             // Act
-            await invoker.InvokeActionAsync();
+            await invoker.InvokeAsync();
 
             // Assert
             Assert.Equal(5, context.Object.Items["Result"]);

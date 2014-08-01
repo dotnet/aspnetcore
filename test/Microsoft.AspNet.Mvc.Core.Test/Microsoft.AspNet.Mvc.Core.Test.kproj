@@ -107,7 +107,6 @@
     <Compile Include="KnownRouteValueConstraintTests.cs" />
     <Compile Include="RouteTemplateProviderAttributesTests.cs" />
     <Compile Include="Routing\AttributeRoutePrecedenceTests.cs" />
-    <Compile Include="Routing\AttributeRouteTemplateTests.cs" />
     <Compile Include="Routing\AttributeRouteTests.cs" />
     <Compile Include="Routing\AttributeRoutingTest.cs" />
     <Compile Include="StaticActionDiscoveryConventions.cs" />
@@ -115,6 +114,7 @@
     <Compile Include="TestController.cs" />
     <Compile Include="TypeHelperTest.cs" />
     <Compile Include="UrlHelperTest.cs" />
+    <Compile Include="ViewComponents\ViewViewComponentResultTest.cs" />
     <Compile Include="ViewComponentTests.cs" />
     <Compile Include="ViewResultTest.cs" />
   </ItemGroup>

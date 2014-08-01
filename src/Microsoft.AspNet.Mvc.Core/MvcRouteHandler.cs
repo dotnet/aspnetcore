@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.Mvc
                         throw ex;
                     }
 
-                    await invoker.InvokeActionAsync();
+                    await invoker.InvokeAsync();
                     context.IsHandled = true;
 
                     if (_logger.IsEnabled(TraceType.Information))

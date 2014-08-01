@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -13,11 +13,8 @@ using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class ReflectedActionInvoker : IActionInvoker
+    public abstract class FilterActionInvoker : IActionInvoker
     {
-        private readonly ActionContext _actionContext;
-        private readonly ReflectedActionDescriptor _descriptor;
-        private readonly IControllerFactory _controllerFactory;
         private readonly IActionBindingContextProvider _bindingProvider;
         private readonly INestedProviderManager<FilterProviderContext> _filterProvider;
 
@@ -34,31 +31,22 @@ namespace Microsoft.AspNet.Mvc
         private ResultExecutingContext _resultExecutingContext;
         private ResultExecutedContext _resultExecutedContext;
 
-        public ReflectedActionInvoker([NotNull] ActionContext actionContext,
-                                      [NotNull] ReflectedActionDescriptor descriptor,
-                                      [NotNull] IControllerFactory controllerFactory,
-                                      [NotNull] IActionBindingContextProvider bindingContextProvider,
-                                      [NotNull] INestedProviderManager<FilterProviderContext> filterProvider)
+        public FilterActionInvoker(
+            [NotNull] ActionContext actionContext,
+            [NotNull] IActionBindingContextProvider bindingContextProvider,
+            [NotNull] INestedProviderManager<FilterProviderContext> filterProvider)
         {
-            _actionContext = actionContext;
-            _descriptor = descriptor;
-            _controllerFactory = controllerFactory;
+            ActionContext = actionContext;
             _bindingProvider = bindingContextProvider;
             _filterProvider = filterProvider;
-
-            if (descriptor.MethodInfo == null)
-            {
-                throw new ArgumentException(
-                    Resources.FormatPropertyOfTypeCannotBeNull("MethodInfo",
-                                                               typeof(ReflectedActionDescriptor)),
-                    "descriptor");
-            }
         }
 
-        public async Task InvokeActionAsync()
-        {
-            _actionContext.Controller = _controllerFactory.CreateController(_actionContext);
+        protected ActionContext ActionContext { get; private set; }
 
+        protected abstract Task<IActionResult> InvokeActionAsync(ActionExecutingContext actionExecutingContext);
+
+        public virtual async Task InvokeAsync()
+        {
             _filters = GetFilters();
             _cursor = new FilterCursor(_filters);
 
@@ -69,11 +57,11 @@ namespace Microsoft.AspNet.Mvc
             // result filters around it.
             if (_authorizationContext.Result != null)
             {
-                await _authorizationContext.Result.ExecuteResultAsync(_actionContext);
+                await _authorizationContext.Result.ExecuteResultAsync(ActionContext);
             }
             else if (_exceptionContext.Result != null)
             {
-                await _exceptionContext.Result.ExecuteResultAsync(_actionContext);
+                await _exceptionContext.Result.ExecuteResultAsync(ActionContext);
             }
             else if (_exceptionContext.Exception != null)
             {
@@ -96,41 +84,11 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        // Marking as internal for Unit Testing purposes.
-        internal static IActionResult CreateActionResult([NotNull] Type declaredReturnType, object actionReturnValue)
-        {
-            // optimize common path
-            var actionResult = actionReturnValue as IActionResult;
-            if (actionResult != null)
-            {
-                return actionResult;
-            }
-
-            if (declaredReturnType == typeof(void) ||
-                declaredReturnType == typeof(Task))
-            {
-                return new NoContentResult();
-            }
-
-            // Unwrap potential Task<T> types. 
-            var actualReturnType = TypeHelper.GetTaskInnerTypeOrNull(declaredReturnType) ?? declaredReturnType;
-            if (actionReturnValue == null && typeof(IActionResult).IsAssignableFrom(actualReturnType))
-            {
-                throw new InvalidOperationException(
-                    Resources.FormatActionResult_ActionReturnValueCannotBeNull(actualReturnType));
-            }
-
-            return new ObjectResult(actionReturnValue)
-                       {
-                           DeclaredType = actualReturnType
-                       };
-        }
-
         private IFilter[] GetFilters()
         {
             var filterProviderContext = new FilterProviderContext(
-                _actionContext,
-                _descriptor.FilterDescriptors.Select(fd => new FilterItem(fd)).ToList());
+                ActionContext,
+                ActionContext.ActionDescriptor.FilterDescriptors.Select(fd => new FilterItem(fd)).ToList());
 
             _filterProvider.Invoke(filterProviderContext);
 
@@ -183,7 +141,7 @@ namespace Microsoft.AspNet.Mvc
                 // 1) Call the filter (if we have an exception)
                 // 2) No-op (if we don't have an exception)
                 Contract.Assert(_exceptionContext == null);
-                _exceptionContext = new ExceptionContext(_actionContext, _filters);
+                _exceptionContext = new ExceptionContext(ActionContext, _filters);
 
                 try
                 {
@@ -218,7 +176,7 @@ namespace Microsoft.AspNet.Mvc
         {
             _cursor.SetStage(FilterStage.AuthorizationFilters);
 
-            _authorizationContext = new AuthorizationContext(_actionContext, _filters);
+            _authorizationContext = new AuthorizationContext(ActionContext, _filters);
             await InvokeAuthorizationFilter();
         }
 
@@ -260,16 +218,16 @@ namespace Microsoft.AspNet.Mvc
         {
             _cursor.SetStage(FilterStage.ActionFilters);
 
-            var arguments = await GetActionArguments(_actionContext.ModelState);
-            _actionExecutingContext = new ActionExecutingContext(_actionContext, _filters, arguments);
+            var arguments = await GetActionArguments(ActionContext.ModelState);
+            _actionExecutingContext = new ActionExecutingContext(ActionContext, _filters, arguments);
 
             await InvokeActionMethodFilter();
         }
 
         internal async Task<IDictionary<string, object>> GetActionArguments(ModelStateDictionary modelState)
         {
-            var actionBindingContext = await _bindingProvider.GetActionBindingContextAsync(_actionContext);
-            var parameters = _descriptor.Parameters;
+            var actionBindingContext = await _bindingProvider.GetActionBindingContextAsync(ActionContext);
+            var parameters = ActionContext.ActionDescriptor.Parameters;
             var metadataProvider = actionBindingContext.MetadataProvider;
             var parameterValues = new Dictionary<string, object>(parameters.Count, StringComparer.Ordinal);
 
@@ -380,7 +338,7 @@ namespace Microsoft.AspNet.Mvc
                     // All action filters have run, execute the action method.
                     _actionExecutedContext = new ActionExecutedContext(_actionExecutingContext, _filters)
                     {
-                        Result = await InvokeActionMethod()
+                        Result = await InvokeActionAsync(_actionExecutingContext),
                     };
                 }
             }
@@ -395,27 +353,11 @@ namespace Microsoft.AspNet.Mvc
             return _actionExecutedContext;
         }
 
-        private async Task<IActionResult> InvokeActionMethod()
-        {
-            _cursor.SetStage(FilterStage.ActionMethod);
-
-            var actionMethodInfo = _descriptor.MethodInfo;
-            var actionReturnValue = await ReflectedActionExecutor.ExecuteAsync(
-                actionMethodInfo,
-                _actionContext.Controller,
-                _actionExecutingContext.ActionArguments);
-
-            var actionResult = CreateActionResult(
-                actionMethodInfo.ReturnType,
-                actionReturnValue);
-            return actionResult;
-        }
-
         private async Task InvokeActionResultWithFilters(IActionResult result)
         {
             _cursor.SetStage(FilterStage.ResultFilters);
 
-            _resultExecutingContext = new ResultExecutingContext(_actionContext, _filters, result);
+            _resultExecutingContext = new ResultExecutingContext(ActionContext, _filters, result);
             await InvokeActionResultFilter();
 
             Contract.Assert(_resultExecutingContext != null);
