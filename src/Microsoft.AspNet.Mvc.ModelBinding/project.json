@@ -8,6 +8,7 @@
     "Microsoft.AspNet.Mvc.Common": "",
     "Microsoft.DataAnnotations": "1.0.0-*",
     "Microsoft.Framework.DependencyInjection": "1.0.0-*",
+    "Microsoft.AspNet.Mvc.HeaderValueAbstractions": "1.0.0-*", 
     "Newtonsoft.Json": "5.0.8"
   },
   "frameworks": {

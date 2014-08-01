@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -12,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <summary>
         /// Gets the mutable collection of media types supported by this <see cref="JsonInputFormatter"/> instance.
         /// </summary>
-        IList<string> SupportedMediaTypes { get; }
+        IList<MediaTypeHeaderValue> SupportedMediaTypes { get; }
 
         /// <summary>
         /// Gets the mutable collection of character encodings supported by this <see cref="JsonInputFormatter"/> 

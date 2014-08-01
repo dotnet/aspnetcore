@@ -4,12 +4,14 @@
 using System;
 using System.Globalization;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class FormValueProviderFactory : IValueProviderFactory
     {
-        private const string FormEncodedContentType = "application/x-www-form-urlencoded";
+        private static MediaTypeHeaderValue _formEncodedContentType = 
+                            MediaTypeHeaderValue.Parse("application/x-www-form-urlencoded");
 
         public IValueProvider GetValueProvider([NotNull] ValueProviderFactoryContext context)
         {
@@ -26,9 +28,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private bool IsSupportedContentType(HttpRequest request)
         {
-            var contentType = request.GetContentType();
-            return contentType != null &&
-                   string.Equals(contentType.ContentType, FormEncodedContentType, StringComparison.OrdinalIgnoreCase);
+            MediaTypeHeaderValue requestContentType = null;
+            return MediaTypeHeaderValue.TryParse(request.ContentType, out requestContentType) &&
+                    _formEncodedContentType.IsSubsetOf(requestContentType);
         }
 
         private static CultureInfo GetCultureInfo(HttpRequest request)

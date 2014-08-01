@@ -37,6 +37,23 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(sampleInputInt.ToString(), await response.ReadBodyAsStringAsync());
         }
 
+        [Fact]
+        public async Task JsonInputFormatter_IsSelectedForJsonRequest()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+            var sampleInputInt = 10;
+            var input = "{\"SampleInt\":10}";
+
+            // Act
+            var response = await client.PostAsync("http://localhost/Home/Index", input, "application/json");
+
+            //Assert
+            Assert.Equal(200, response.StatusCode);
+            Assert.Equal(sampleInputInt.ToString(), await response.ReadBodyAsStringAsync());
+        }
+
         // TODO: By default XmlSerializerInputFormatter is called because of the order in which
         // the formatters are registered. Add a test to call into DataContractSerializerInputFormatter.
     }

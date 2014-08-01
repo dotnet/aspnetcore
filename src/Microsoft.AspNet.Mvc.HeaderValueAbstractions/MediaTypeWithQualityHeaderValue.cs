@@ -12,8 +12,8 @@ namespace Microsoft.AspNet.Mvc.HeaderValueAbstractions
 
         public static new MediaTypeWithQualityHeaderValue Parse(string input)
         {
-            var mediaTypeHeaderValue = MediaTypeHeaderValue.Parse(input);
-            if (mediaTypeHeaderValue == null)
+            MediaTypeHeaderValue mediaTypeHeaderValue;
+            if (!MediaTypeHeaderValue.TryParse(input, out mediaTypeHeaderValue))
             {
                 return null;
             }

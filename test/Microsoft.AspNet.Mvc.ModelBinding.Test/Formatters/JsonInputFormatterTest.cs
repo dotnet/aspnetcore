@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var mediaType = formatter.SupportedMediaTypes[0];
 
             // Assert
-            Assert.Equal("application/json", mediaType);
+            Assert.Equal("application/json", mediaType.RawValue);
         }
 
         public static IEnumerable<object[]> JsonFormatterReadSimpleTypesData

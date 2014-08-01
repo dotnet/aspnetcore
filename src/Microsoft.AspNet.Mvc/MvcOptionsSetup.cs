@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.OptionDescriptors;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.Framework.OptionsModel;
 
@@ -42,6 +44,11 @@ namespace Microsoft.AspNet.Mvc
                 new XmlDataContractSerializerOutputFormatter(XmlOutputFormatter.GetDefaultXmlWriterSettings()));
             options.OutputFormatters.Add(
                 new XmlSerializerOutputFormatter(XmlOutputFormatter.GetDefaultXmlWriterSettings()));
+
+            // Set up default input formatters.
+            options.InputFormatters.Add(new JsonInputFormatter());
+            options.InputFormatters.Add(new XmlSerializerInputFormatter());
+            options.InputFormatters.Add(new XmlDataContractSerializerInputFormatter());
 
             // Set up ValueProviders
             options.ValueProviderFactories.Add(new RouteValueValueProviderFactory());

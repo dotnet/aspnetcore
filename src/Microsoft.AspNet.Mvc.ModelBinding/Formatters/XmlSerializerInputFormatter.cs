@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
+using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -18,8 +19,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     /// </summary>
     public class XmlSerializerInputFormatter : IInputFormatter
     {
-        private readonly IList<Encoding> _supportedEncodings;
-        private readonly IList<string> _supportedMediaTypes;
         private readonly XmlDictionaryReaderQuotas _readerQuotas = FormattingUtilities.GetDefaultXmlReaderQuotas();
 
         /// <summary>
@@ -27,34 +26,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </summary>
         public XmlSerializerInputFormatter()
         {
-            _supportedMediaTypes = new List<string>
-            {
-                "application/xml",
-                "text/xml"
-            };
-
-            _supportedEncodings = new List<Encoding>
-            {
-                Encodings.UTF8EncodingWithoutBOM,
-                Encodings.UTF16EncodingLittleEndian
-            };
+            SupportedEncodings = new List<Encoding>();
+            SupportedEncodings.Add(Encodings.UTF8EncodingWithoutBOM);
+            SupportedEncodings.Add(Encodings.UTF16EncodingLittleEndian);
+            SupportedMediaTypes = new List<MediaTypeHeaderValue>();
+            SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/xml"));
+            SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/xml"));
         }
 
-        /// <summary>
-        /// Returns the list of supported encodings.
-        /// </summary>
-        public IList<Encoding> SupportedEncodings
-        {
-            get { return _supportedEncodings; }
-        }
+        /// <inheritdoc />
+        public IList<MediaTypeHeaderValue> SupportedMediaTypes { get; private set; }
 
-        /// <summary>
-        /// Returns the list of supported Media Types.
-        /// </summary>
-        public IList<string> SupportedMediaTypes
-        {
-            get { return _supportedMediaTypes; }
-        }
+        /// <inheritdoc />
+        public IList<Encoding> SupportedEncodings { get; private set; }
 
         /// <summary>
         /// Indicates the acceptable input XML depth.
@@ -105,7 +89,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <summary>
         /// Called during deserialization to get the <see cref="XmlSerializer"/>.
         /// </summary>
-        /// <returns>The <see cref="XmlSerializer"/> used during serialization and deserialization.</returns>
+        /// <returns>The <see cref="XmlSerializer"/> used during deserialization.</returns>
         protected virtual XmlSerializer CreateXmlSerializer(Type type)
         {
             return new XmlSerializer(type);

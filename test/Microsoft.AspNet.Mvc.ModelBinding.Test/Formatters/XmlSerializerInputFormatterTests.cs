@@ -41,8 +41,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var formatter = new XmlSerializerInputFormatter();
 
             // Assert
-            Assert.True(formatter.SupportedMediaTypes.Contains("application/xml"));
-            Assert.True(formatter.SupportedMediaTypes.Contains("text/xml"));
+            Assert.True(formatter.SupportedMediaTypes
+                                 .Select(content => content.RawValue)
+                                 .Contains("application/xml"));
+            Assert.True(formatter.SupportedMediaTypes
+                                 .Select(content => content.RawValue)
+                                 .Contains("text/xml"));
         }
 
         [Fact]
