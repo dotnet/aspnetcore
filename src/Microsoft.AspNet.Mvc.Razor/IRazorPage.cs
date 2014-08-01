@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         Action<TextWriter> RenderBodyDelegate { get; set; }
 
         /// <summary>
-        /// Gets the path to the page.
+        /// Gets the application base relative path to the page.
         /// </summary>
         string Path { get; set; }
 

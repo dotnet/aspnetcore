@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Routing;
+using Microsoft.Framework.DependencyInjection;
 using Moq;
 using Xunit;
 
@@ -175,11 +176,20 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         {
             // Arrange
             var pageFactory = new Mock<IRazorPageFactory>();
+            var page = Mock.Of<IRazorPage>();
             pageFactory.Setup(p => p.CreateInstance(It.IsAny<string>()))
                        .Returns(Mock.Of<IRazorPage>());
+
+            var serviceProvider = new Mock<IServiceProvider>();
+            serviceProvider.Setup(p => p.GetService(typeof(IRazorPageFactory)))
+                           .Returns(pageFactory.Object);
+            serviceProvider.Setup(p => p.GetService(typeof(IRazorPageActivator)))
+                           .Returns(Mock.Of<IRazorPageActivator>());
+            serviceProvider.Setup(p => p.GetService(typeof(IViewStartProvider)))
+                           .Returns(Mock.Of<IViewStartProvider>());
             var viewEngine = new RazorViewEngine(pageFactory.Object,
-                                                 Mock.Of<IRazorPageActivator>(),
-                                                 Mock.Of<IViewStartProvider>());
+                                                 new TypeActivator(),
+                                                 serviceProvider.Object);
             var context = GetActionContext(_controllerTestContext);
 
             // Act
@@ -198,8 +208,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                        .Returns<RazorPage>(null);
 
             var viewEngine = new RazorViewEngine(pageFactory.Object,
-                                                 Mock.Of<IRazorPageActivator>(),
-                                                 Mock.Of<IViewStartProvider>());
+                                                 Mock.Of<ITypeActivator>(),
+                                                 Mock.Of<IServiceProvider>());
 
             return viewEngine;
         }

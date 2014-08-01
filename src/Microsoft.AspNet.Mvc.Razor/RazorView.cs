@@ -17,33 +17,34 @@ namespace Microsoft.AspNet.Mvc.Razor
         private readonly IRazorPageActivator _pageActivator;
         private readonly IViewStartProvider _viewStartProvider;
         private readonly IRazorPage _page;
-        private readonly bool _executeViewHierarchy;
 
         /// <summary>
         /// Initializes a new instance of RazorView
         /// </summary>
         /// <param name="page">The page to execute</param>
-        /// <param name="pageFactory">The view factory used to instantiate additional views.</param>
+        /// <param name="pageFactory">The view factory used to instantiate layout and _ViewStart pages.</param>
         /// <param name="pageActivator">The <see cref="IRazorPageActivator"/> used to activate pages.</param>
-        /// <param name="executeViewHierarchy">A value that indiciates whether the view hierarchy that involves 
-        /// view start and layout pages are executed as part of the executing the page.</param>
         public RazorView([NotNull] IRazorPageFactory pageFactory,
                          [NotNull] IRazorPageActivator pageActivator,
                          [NotNull] IViewStartProvider viewStartProvider,
-                         [NotNull] IRazorPage page,
-                         bool executeViewHierarchy)
+                         [NotNull] IRazorPage page)
         {
             _pageFactory = pageFactory;
             _pageActivator = pageActivator;
             _viewStartProvider = viewStartProvider;
             _page = page;
-            _executeViewHierarchy = executeViewHierarchy;
         }
+
+        /// <summary>
+        /// Gets or sets a value that determines if the view hierarchy is executed as part of
+        /// executing the <see cref="IRazorPage"/> instance. The view hierarchy involves _ViewStart 
+        /// and Layout pages.</param>
+        public bool ExecuteViewHierarchy { get; set; }
 
         /// <inheritdoc />
         public async Task RenderAsync([NotNull] ViewContext context)
         {
-            if (_executeViewHierarchy)
+            if (ExecuteViewHierarchy)
             {
                 var bodyWriter = await RenderPageAsync(_page, context, executeViewStart: true);
                 await RenderLayoutAsync(context, bodyWriter);

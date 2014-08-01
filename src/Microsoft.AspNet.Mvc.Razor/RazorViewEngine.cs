@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -30,8 +31,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         };
 
         private readonly IRazorPageFactory _pageFactory;
-        private readonly IRazorPageActivator _pageActivator;
-        private readonly IViewStartProvider _viewStartProvider;
+        private readonly ITypeActivator _typeActivator;
+        private readonly IServiceProvider _serviceProvider;
 
         /// <summary>
         /// Initializes a new instance of the RazorViewEngine class.
@@ -41,12 +42,12 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <param name="viewStartProvider">The provider used to provide instances of ViewStarts applicable to the 
         /// page being rendered.</param>
         public RazorViewEngine(IRazorPageFactory pageFactory,
-                               IRazorPageActivator pageActivator,
-                               IViewStartProvider viewStartProvider)
+                               ITypeActivator typeActivator,
+                               IServiceProvider serviceProvider)
         {
             _pageFactory = pageFactory;
-            _pageActivator = pageActivator;
-            _viewStartProvider = viewStartProvider;
+            _typeActivator = typeActivator;
+            _serviceProvider = serviceProvider;
         }
 
         public IEnumerable<string> ViewLocationFormats
@@ -110,11 +111,8 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private ViewEngineResult CreateFoundResult(IRazorPage page, string viewName, bool partial)
         {
-            var view = new RazorView(_pageFactory,
-                                     _pageActivator,
-                                     _viewStartProvider,
-                                     page,
-                                     executeViewHierarchy: !partial);
+            var view = _typeActivator.CreateInstance<RazorView>(_serviceProvider, page);
+            view.ExecuteViewHierarchy = !partial;
             return ViewEngineResult.Found(viewName, view);
         }
 
