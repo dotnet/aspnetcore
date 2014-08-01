@@ -26,7 +26,11 @@ These are the current minimum requirements, they do not necesarilly represent ou
 
 The first thing we need to do is setup the tools required to build and run an application. We will start out by getting the [K Version Manager (KVM)](https://github.com/aspnet/Home/wiki/version-manager)
 
-The easiest way to get the KVM on Windows is to run the following command:
+The easiest way to get the KVM on Windows is to set the powershell execution policy 
+```powershell
+ Set-ExecutionPolicy RemoteSigned
+```
+and the run the following command:
 ```powershell
 @powershell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/master/kvminstall.ps1'))"
 ```
