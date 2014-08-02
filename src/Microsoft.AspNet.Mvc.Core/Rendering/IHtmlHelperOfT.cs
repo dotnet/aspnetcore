@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
     /// <summary>
     /// An <see cref="IHtmlHelper"/> for Linq expressions.
     /// </summary>
-    /// <typeparam name="TModel">The <see cref="Type"/> of the model.</typeparam>
+    /// <typeparam name="TModel">The type of the model.</typeparam>
     public interface IHtmlHelper<TModel> : IHtmlHelper
     {
         /// <summary>
@@ -54,36 +54,35 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                       object additionalViewData);
 
         /// <summary>
-        /// Gets the display name for the model.
+        /// Returns the display name for the specified <paramref name="expression"/>.
         /// </summary>
-        /// <param name="expression">An expression that identifies the object that contains the display name.</param>
-        /// <typeparam name="TValue">The type of the value.</typeparam>
-        /// <returns>
-        /// The display name for the model.
-        /// </returns>
-        HtmlString DisplayNameFor<TValue>([NotNull] Expression<Func<TModel, TValue>> expression);
+        /// <param name="expression">The expression to be evaluated against the current model.</param>
+        /// <typeparam name="TValue">The type of the <param name="expression"> result.</typeparam>
+        /// <returns>A <see langref="string"/> containing the display name.</returns>
+        string DisplayNameFor<TValue>([NotNull] Expression<Func<TModel, TValue>> expression);
 
         /// <summary>
-        /// Gets the display name for the inner model if the current model represents a collection.
+        /// Returns the display name for the specified <paramref name="expression"/>
+        /// if the current model represents a collection.
         /// </summary>
-        /// <typeparam name="TInnerModel">The type of the inner model</typeparam>
-        /// <typeparam name="TValue">The type of the value.</typeparam>
-        /// <param name="expression">An expression that identifies the object that contains the display name.</param>
-        /// <returns>The display name for the inner model.</returns>
-        HtmlString DisplayNameForInnerType<TInnerModel, TValue>(
-            [NotNull] Expression<Func<TInnerModel, TValue>> expression);
+        /// <param name="expression">The expression to be evaluated against an item in the current model.</param>
+        /// <typeparam name="TModelItem">The type of items in the model collection.</typeparam>
+        /// <typeparam name="TValue">The type of the <param name="expression"> result.</typeparam>
+        /// <returns>A <see langref="string"/> containing the display name.</returns>
+        string DisplayNameForInnerType<TModelItem, TValue>(
+            [NotNull] Expression<Func<TModelItem, TValue>> expression);
 
         /// <summary>
-        /// Returns the HtmlString corresponding to the expression specified.
+        /// Returns the simple display text for the specified <paramref name="expression"/>.
         /// </summary>
-        /// <param name="expression">
-        /// The expression identifies the object for which the HtmlString should be returned.
-        /// </param>
+        /// <param name="expression">The expression to be evaluated against the current model.</param>
+        /// <typeparam name="TValue">The type of the <param name="expression"> result.</typeparam>
         /// <returns>
-        /// New <see cref="HtmlString"/> containing the display text. If the value is null,
-        /// then it returns the ModelMetadata.NullDisplayText.
+        /// A <see langref="string"/> containing the simple display text.
+        /// If the <param name="expression"> result is <see langref="null"/>, returns
+        /// <see cref="ModelMetadata.NullDisplayText"/>.
         /// </returns>
-        HtmlString DisplayTextFor<TValue>([NotNull] Expression<Func<TModel, TValue>> expression);
+        string DisplayTextFor<TValue>([NotNull] Expression<Func<TModel, TValue>> expression);
 
         /// <summary>
         /// Returns a single-selection HTML {select} element for the object that is represented
@@ -141,11 +140,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
             object htmlAttributes);
 
         /// <summary>
-        /// Gets the Id of the given expression.
+        /// Returns the HTML element Id for the specified <paramref name="expression"/>.
         /// </summary>
-        /// <param name="expression">The expression identifies the object for which the Id should be returned.</param>
-        /// <returns>New <see cref="HtmlString"/> containing the Id.</returns>
-        HtmlString IdFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression);
+        /// <param name="expression">The expression to be evaluated against the current model.</param>
+        /// <typeparam name="TProperty">The type of the <param name="expression"> result.</typeparam>
+        /// <returns>A <see langref="string"/> containing the element Id.</returns>
+        string IdFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression);
 
         /// <summary>
         /// Returns an HTML label element and the property name of the property that is represented by the specified
@@ -180,12 +180,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
             object htmlAttributes);
 
         /// <summary>
-        /// Gets the full HTML field name for the given <paramref name="expression"/>.
+        /// Returns the full HTML element name for the specified <paramref name="expression"/>.
         /// </summary>
-        /// <typeparam name="TProperty">The <see cref="Type"/> the <paramref name="expression"/> returns.</typeparam>
-        /// <param name="expression">An expression, relative to the current model.</param>
-        /// <returns>An <see cref="HtmlString"/> that represents HTML markup.</returns>
-        HtmlString NameFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression);
+        /// <param name="expression">The expression to be evaluated against the current model.</param>
+        /// <typeparam name="TProperty">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <returns>A <see langref="string"/> containing the element name.</returns>
+        string NameFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression);
 
         /// <summary>
         /// Render an input element of type "password".
@@ -262,11 +262,18 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string tag);
 
         /// <summary>
-        /// Returns the model value for the given expression <paramref name="expression"/>.
+        /// Returns the formatted value for the specified <paramref name="expression"/>.
         /// </summary>
-        /// <param name="expression">An expression, relative to the current model.</param>
-        /// <param name="format">The optional format string to apply to the value.</param>
-        /// <returns>An <see cref="HtmlString"/> that represents HTML markup.</returns>
-        HtmlString ValueFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression, string format);
+        /// <param name="expression">The expression to be evaluated against the current model.</param>
+        /// <param name="format">
+        /// The composite format <see langref="string"/> (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx).
+        /// </param>
+        /// <typeparam name="TProperty">The type of the <param name="expression"> result.</typeparam>
+        /// <returns>A <see langref="string"/> containing the formatted value.</returns>
+        /// <remarks>
+        /// Converts the <paramref name="expression"/> result to a <see langref="string"/> directly if
+        /// <paramref name="format"/> is <see langref="null"/> or empty.
+        /// </remarks>
+        string ValueFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression, string format);
     }
 }

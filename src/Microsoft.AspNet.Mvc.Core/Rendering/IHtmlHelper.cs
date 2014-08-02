@@ -146,23 +146,21 @@ namespace Microsoft.AspNet.Mvc.Rendering
             object additionalViewData);
 
         /// <summary>
-        /// Gets the display name.
+        /// Returns the display name for the specified expression <paramref name="expression"/>.
         /// </summary>
-        /// <param name="expression">An expression that identifies the object that contains the display name.</param>
-        /// <returns>
-        /// The display name.
-        /// </returns>
-        HtmlString DisplayName(string expression);
+        /// <param name="expression">Expression name, relative to the current model.</param>
+        /// <returns>A <see langref="string"/> containing the display name.</returns>
+        string DisplayName(string expression);
 
-        /// Returns the HtmlString corresponding to the property in the model specified by the name.
+        /// <summary>
+        /// Returns the simple display text for the specified expression <paramref name="name"/>.
         /// </summary>
-        /// <param name="name">
-        /// The string which identifies the object for which the HtmlString should be returned.</param>
+        /// <param name="name">Expression name, relative to the current model.</param>
         /// <returns>
-        /// New <see cref="HtmlString"/> containing the display text. If the value is null,
-        /// then it returns the ModelMetadata.NullDisplayText.
+        /// A <see langref="string"/> containing the simple display text.
+        /// If the expression result is <see langref="null"/>, returns <see cref="ModelMetadata.NullDisplayText"/>.
         /// </returns>
-        HtmlString DisplayText(string name);
+        string DisplayText(string name);
 
         /// <summary>
         /// Returns a single-selection HTML {select} element using the specified name of the form field,
@@ -263,11 +261,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
         HtmlString Hidden(string name, object value, object htmlAttributes);
 
         /// <summary>
-        /// Gets the Id of the given string.
+        /// Returns the HTML element Id for the specified expression <paramref name="name"/>.
         /// </summary>
-        /// <param name="name">The string which identifies the object for which the Id should be returned.</param>
-        /// <returns>New <see cref="HtmlString"/> containing the Id.</returns>
-        HtmlString Id(string name);
+        /// <param name="name">Expression name, relative to the current model.</param>
+        /// <returns>A <see langref="string"/> containing the element Id.</returns>
+        string Id(string name);
 
         /// <summary>
         /// Returns an HTML label element and the property name of the property that is represented by the specified
@@ -295,11 +293,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
         HtmlString ListBox(string name, IEnumerable<SelectListItem> selectList, object htmlAttributes);
 
         /// <summary>
-        /// Gets the full HTML field name for the given expression <paramref name="name"/>.
+        /// Returns the full HTML element name for the specified expression <paramref name="name"/>.
         /// </summary>
-        /// <param name="name">Name of an expression, relative to the current model.</param>
-        /// <returns>An <see cref="HtmlString"/> that represents HTML markup.</returns>
-        HtmlString Name(string name);
+        /// <param name="name">Expression name, relative to the current model.</param>
+        /// <returns>A <see langref="string"/> containing the element name.</returns>
+        string Name(string name);
 
         /// <summary>
         /// Returns a partial view in string format.
@@ -472,11 +470,17 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string tag);
 
         /// <summary>
-        /// Returns the model value for the given expression <paramref name="name"/>.
+        /// Returns the formatted value for the specified expression <paramref name="name"/>.
         /// </summary>
-        /// <param name="name">Name of an expression, relative to the current model.</param>
-        /// <param name="format">The optional format string to apply to the value.</param>
-        /// <returns>An <see cref="HtmlString"/> that represents HTML markup.</returns>
-        HtmlString Value([NotNull] string name, string format);
+        /// <param name="name">Expression name, relative to the current model.</param>
+        /// <param name="format">
+        /// The composite format <see langref="string"/> (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx).
+        /// </param>
+        /// <returns>A <see langref="string"/> containing the formatted value.</returns>
+        /// <remarks>
+        /// Converts the expression result to a <see langref="string"/> directly if
+        /// <paramref name="format"/> is <see langref="null"/> or empty.
+        /// </remarks>
+        string Value([NotNull] string name, string format);
     }
 }

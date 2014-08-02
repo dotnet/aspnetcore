@@ -8,32 +8,36 @@ using System.Linq.Expressions;
 namespace Microsoft.AspNet.Mvc.Rendering
 {
     /// <summary>
-    /// DisplayName-related extensions for <see cref="HtmlHelper"/> and <see cref="IHtmlHelper{T}"/>.
+    /// DisplayName-related extensions for <see cref="IHtmlHelper"/> and <see cref="IHtmlHelper{TModel}"/>.
     /// </summary>
     public static class HtmlHelperDisplayNameExtensions
     {
         /// <summary>
-        /// Gets the display name for the current model.
+        /// Returns the display name for the current model.
         /// </summary>
-        /// <returns>An <see cref="HtmlString"/> that represents HTML markup.</returns>
-        public static HtmlString DisplayNameForModel([NotNull] this IHtmlHelper htmlHelper)
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <returns>A <see langref="string"/> containing the display name.</returns>
+        public static string DisplayNameForModel([NotNull] this IHtmlHelper htmlHelper)
         {
             return htmlHelper.DisplayName(string.Empty);
         }
 
         /// <summary>
-        /// Gets the display name for the model.
+        /// Returns the display name for the specified <paramref name="expression"/>
+        /// if the current model represents a collection.
         /// </summary>
-        /// <param name="htmlHelper">The <see cref="IHtmlHelper{T}"/> instance that this method extends.</param>
-        /// <param name="expression">An expression that identifies the object that contains the display name.</param>
-        /// <returns>
-        /// The display name for the model.
-        /// </returns>
-        public static HtmlString DisplayNameFor<TInnerModel, TValue>(
-            [NotNull] this IHtmlHelper<IEnumerable<TInnerModel>> htmlHelper,
-            [NotNull] Expression<Func<TInnerModel, TValue>> expression)
+        /// <param name="htmlHelper">
+        /// The <see cref="IHtmlHelper{IEnumerable<TModelItem>}"/> instance this method extends.
+        /// </param>
+        /// <param name="expression">The expression to be evaluated against an item in the current model.</param>
+        /// <typeparam name="TModelItem">The <see cref="Type"/> of items in the model collection.</typeparam>
+        /// <typeparam name="TValue">The <see cref="Type"/> of the <param name="expression"> result.</typeparam>
+        /// <returns>A <see langref="string"/> containing the display name.</returns>
+        public static string DisplayNameFor<TModelItem, TValue>(
+            [NotNull] this IHtmlHelper<IEnumerable<TModelItem>> htmlHelper,
+            [NotNull] Expression<Func<TModelItem, TValue>> expression)
         {
-            return htmlHelper.DisplayNameForInnerType<TInnerModel, TValue>(expression);
+            return htmlHelper.DisplayNameForInnerType<TModelItem, TValue>(expression);
         }
     }
 }

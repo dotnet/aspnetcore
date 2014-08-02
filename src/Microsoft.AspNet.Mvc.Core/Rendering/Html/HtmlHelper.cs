@@ -248,17 +248,16 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString DisplayName(string expression)
+        public string DisplayName(string expression)
         {
             var metadata = ExpressionMetadataProvider.FromStringExpression(expression, ViewData, MetadataProvider);
             return GenerateDisplayName(metadata, expression);
         }
 
         /// <inheritdoc />
-        public HtmlString DisplayText(string name)
+        public string DisplayText(string name)
         {
             var metadata = ExpressionMetadataProvider.FromStringExpression(name, ViewData, MetadataProvider);
-
             return GenerateDisplayText(metadata);
         }
 
@@ -295,7 +294,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString Id(string name)
+        public string Id(string name)
         {
             return GenerateId(name);
         }
@@ -318,7 +317,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString Name(string name)
+        public string Name(string name)
         {
             return GenerateName(name);
         }
@@ -484,7 +483,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString Value([NotNull] string name, string format)
+        public string Value([NotNull] string name, string format)
         {
             return GenerateValue(name, value: null, format: format, useViewData: true);
         }
@@ -594,7 +593,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 htmlAttributes: htmlAttributeDictionary);
         }
 
-        protected virtual HtmlString GenerateDisplayName([NotNull] ModelMetadata metadata, string htmlFieldName)
+        protected virtual string GenerateDisplayName([NotNull] ModelMetadata metadata, string htmlFieldName)
         {
             // We don't call ModelMetadata.GetDisplayName here because
             // we want to fall back to the field name rather than the ModelType.
@@ -606,12 +605,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     string.IsNullOrEmpty(htmlFieldName) ? string.Empty : htmlFieldName.Split('.').Last();
             }
 
-            return new HtmlString(Encode(resolvedDisplayName));
+            return resolvedDisplayName;
         }
 
-        protected virtual HtmlString GenerateDisplayText(ModelMetadata metadata)
+        protected virtual string GenerateDisplayText(ModelMetadata metadata)
         {
-            return new HtmlString(metadata.SimpleDisplayText);
+            return metadata.SimpleDisplayText ?? string.Empty;
         }
 
         protected HtmlString GenerateDropDown(ModelMetadata metadata, string expression,
@@ -722,9 +721,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 htmlAttributes: htmlAttributeDictionary);
         }
 
-        protected virtual HtmlString GenerateId(string expression)
+        protected virtual string GenerateId(string expression)
         {
-            return new HtmlString(Encode(ViewData.TemplateInfo.GetFullHtmlFieldName(expression)));
+            return ViewData.TemplateInfo.GetFullHtmlFieldName(expression);
         }
 
         protected virtual HtmlString GenerateLabel([NotNull] ModelMetadata metadata,
@@ -786,10 +785,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 htmlAttributes: htmlAttributes);
         }
 
-        protected virtual HtmlString GenerateName(string name)
+        protected virtual string GenerateName(string name)
         {
             var fullName = ViewData.TemplateInfo.GetFullHtmlFieldName(name);
-            return new HtmlString(Encode(fullName));
+            return fullName;
         }
 
         protected virtual HtmlString GeneratePassword(ModelMetadata metadata, string name, object value,
@@ -1301,7 +1300,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return divBuilder.ToHtmlString(TagRenderMode.Normal);
         }
 
-        protected virtual HtmlString GenerateValue(string name, object value, string format, bool useViewData)
+        protected virtual string GenerateValue(string name, object value, string format, bool useViewData)
         {
             var fullName = ViewData.TemplateInfo.GetFullHtmlFieldName(name);
             var attemptedValue = (string)GetModelStateValue(fullName, typeof(string));
@@ -1332,7 +1331,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 resolvedValue = FormatValue(value, format);
             }
 
-            return new HtmlString(Encode(resolvedValue));
+            return resolvedValue;
         }
 
         /// <inheritdoc />

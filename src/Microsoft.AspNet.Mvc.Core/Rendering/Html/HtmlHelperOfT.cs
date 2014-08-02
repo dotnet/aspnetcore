@@ -88,19 +88,19 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString DisplayNameFor<TValue>([NotNull] Expression<Func<TModel, TValue>> expression)
+        public string DisplayNameFor<TValue>([NotNull] Expression<Func<TModel, TValue>> expression)
         {
             var metadata = GetModelMetadata(expression);
             return GenerateDisplayName(metadata, ExpressionHelper.GetExpressionText(expression));
         }
 
         /// <inheritdoc />
-        public HtmlString DisplayNameForInnerType<TInnerModel, TValue>(
-            [NotNull] Expression<Func<TInnerModel, TValue>> expression)
+        public string DisplayNameForInnerType<TModelItem, TValue>(
+            [NotNull] Expression<Func<TModelItem, TValue>> expression)
         {
-            var metadata = ExpressionMetadataProvider.FromLambdaExpression<TInnerModel, TValue>(
+            var metadata = ExpressionMetadataProvider.FromLambdaExpression<TModelItem, TValue>(
                 expression,
-                new ViewDataDictionary<TInnerModel>(MetadataProvider),
+                new ViewDataDictionary<TModelItem>(MetadataProvider),
                 MetadataProvider);
 
             var expressionText = ExpressionHelper.GetExpressionText(expression);
@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString DisplayTextFor<TValue>([NotNull] Expression<Func<TModel, TValue>> expression)
+        public string DisplayTextFor<TValue>([NotNull] Expression<Func<TModel, TValue>> expression)
         {
             return GenerateDisplayText(GetModelMetadata(expression));
         }
@@ -144,7 +144,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString IdFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression)
+        public string IdFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression)
         {
             return GenerateId(GetExpressionName(expression));
         }
@@ -172,7 +172,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString NameFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression)
+        public string NameFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression)
         {
             var expressionName = GetExpressionName(expression);
             return Name(expressionName);
@@ -242,7 +242,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString ValueFor<TProperty>(Expression<Func<TModel, TProperty>> expression, string format)
+        public string ValueFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression, string format)
         {
             var metadata = GetModelMetadata(expression);
             return GenerateValue(ExpressionHelper.GetExpressionText(expression), metadata.Model, format,

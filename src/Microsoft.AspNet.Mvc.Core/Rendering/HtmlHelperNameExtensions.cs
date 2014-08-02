@@ -4,26 +4,26 @@
 namespace Microsoft.AspNet.Mvc.Rendering
 {
     /// <summary>
-    /// Name-related extensions for <see cref="HtmlHelper"/> and <see cref="HtmlHelper{T}"/>.
+    /// Name-related extensions for <see cref="IHtmlHelper"/>.
     /// </summary>
     public static class HtmlHelperNameExtensions
     {
         /// <summary>
-        /// Gets the full HTML field name for the current model.
+        /// Returns the full HTML element name for the current model.
         /// </summary>
-        /// <param name="htmlHelper">The <see cref="HtmlHelper"/> instance that this method extends.</param>
-        /// <returns>An <see cref="HtmlString"/> that represents HTML markup.</returns>
-        public static HtmlString NameForModel([NotNull] this IHtmlHelper htmlHelper)
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <returns>A <see langref="string"/> containing the element name.</returns>
+        public static string NameForModel([NotNull] this IHtmlHelper htmlHelper)
         {
             return htmlHelper.Name(string.Empty);
         }
 
         /// <summary>
-        /// Gets the full HTML field id for the current model.
+        /// Returns the HTML element Id for the current model.
         /// </summary>
-        /// <param name="htmlHelper">The <see cref="HtmlHelper"/> instance that this method extends.</param>
-        /// <returns>An <see cref="HtmlString"/> that represents HTML markup.</returns>
-        public static HtmlString IdForModel([NotNull] this IHtmlHelper htmlHelper)
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <returns>A <see langref="string"/> containing the element Id.</returns>
+        public static string IdForModel([NotNull] this IHtmlHelper htmlHelper)
         {
             return htmlHelper.Id(string.Empty);
         }
