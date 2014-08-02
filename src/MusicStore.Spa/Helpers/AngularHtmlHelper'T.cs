@@ -26,10 +26,5 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             return GetClientValidationRules(metadata, name);
         }
-
-        public HtmlString GetFullHtmlFieldId(string expression)
-        {
-            return GenerateId(expression);
-        }
     }
 }

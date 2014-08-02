@@ -239,7 +239,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var displayFieldNameParts = displayFieldName.Split('.');
             displayFieldName = displayFieldNameParts[displayFieldNameParts.Length - 1];
             
-            tag.Attributes["id"] = helper.GetFullHtmlFieldId(propertyExpressionText).ToString();
+            tag.Attributes["id"] = html.Id(propertyExpressionText);
             tag.Attributes["name"] = valueFieldName;
             tag.Attributes["ng-model"] = valueFieldName;
 
