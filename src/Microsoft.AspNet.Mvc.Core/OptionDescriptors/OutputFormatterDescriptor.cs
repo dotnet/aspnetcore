@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
         /// <summary>
         /// Creates a new instance of <see cref="OutputFormatterDescriptor"/>.
         /// </summary>
-        /// <param name="type">A <see cref="IOutputFormatter/> type that the descriptor represents.
+        /// <param name="type">A <see cref="IOutputFormatter"/> type that the descriptor represents.
         /// </param>
         public OutputFormatterDescriptor([NotNull] Type type)
             : base(type)

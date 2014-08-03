@@ -57,8 +57,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Returns the display name for the specified <paramref name="expression"/>.
         /// </summary>
         /// <param name="expression">The expression to be evaluated against the current model.</param>
-        /// <typeparam name="TValue">The type of the <param name="expression"> result.</typeparam>
-        /// <returns>A <see langref="string"/> containing the display name.</returns>
+        /// <typeparam name="TValue">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <returns>A <see cref="String"/> containing the display name.</returns>
         string DisplayNameFor<TValue>([NotNull] Expression<Func<TModel, TValue>> expression);
 
         /// <summary>
@@ -67,8 +67,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </summary>
         /// <param name="expression">The expression to be evaluated against an item in the current model.</param>
         /// <typeparam name="TModelItem">The type of items in the model collection.</typeparam>
-        /// <typeparam name="TValue">The type of the <param name="expression"> result.</typeparam>
-        /// <returns>A <see langref="string"/> containing the display name.</returns>
+        /// <typeparam name="TValue">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <returns>A <see cref="String"/> containing the display name.</returns>
         string DisplayNameForInnerType<TModelItem, TValue>(
             [NotNull] Expression<Func<TModelItem, TValue>> expression);
 
@@ -76,27 +76,30 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Returns the simple display text for the specified <paramref name="expression"/>.
         /// </summary>
         /// <param name="expression">The expression to be evaluated against the current model.</param>
-        /// <typeparam name="TValue">The type of the <param name="expression"> result.</typeparam>
+        /// <typeparam name="TValue">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>
-        /// A <see langref="string"/> containing the simple display text.
-        /// If the <param name="expression"> result is <see langref="null"/>, returns
-        /// <see cref="ModelMetadata.NullDisplayText"/>.
+        /// A <see cref="String"/> containing the simple display text.
+        /// If the <paramref name="expression"/> result is <c>null</c>, returns
+        /// <see cref="ModelBinding.ModelMetadata.NullDisplayText"/>.
         /// </returns>
         string DisplayTextFor<TValue>([NotNull] Expression<Func<TModel, TValue>> expression);
 
         /// <summary>
-        /// Returns a single-selection HTML {select} element for the object that is represented
+        /// Returns a single-selection HTML &lt;select&gt; element for the object that is represented
         /// by the specified expression using the specified list items, option label, and HTML attributes.
         /// </summary>
         /// <typeparam name="TProperty">The type of the value.</typeparam>
         /// <param name="expression">An expression that identifies the value to display.</param>
-        /// <param name="selectList">A collection of <see href="SelectListItem"/> objects that are used to populate the
+        /// <param name="selectList">A collection of <see cref="SelectListItem"/> objects that are used to populate the
         /// drop-down list.</param>
         /// <param name="optionLabel">The text for a default empty item. This parameter can be null.</param>
-        /// <param name="htmlAttributes">An object that contains the HTML attributes to set for the {select} element.
-        /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <param name="htmlAttributes">
+        /// An object that contains the HTML attributes to set for the &lt;select&gt; element. Alternatively, an
+        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
         /// </param>
-        /// <returns>An HTML {select} element with an {option} subelement for each item in the list.</returns>
+        /// <returns>
+        /// An HTML &lt;select&gt; element with an &lt;option&gt; subelement for each item in the list.
+        /// </returns>
         HtmlString DropDownListFor<TProperty>(
             [NotNull] Expression<Func<TModel, TProperty>> expression,
             IEnumerable<SelectListItem> selectList,
@@ -143,8 +146,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Returns the HTML element Id for the specified <paramref name="expression"/>.
         /// </summary>
         /// <param name="expression">The expression to be evaluated against the current model.</param>
-        /// <typeparam name="TProperty">The type of the <param name="expression"> result.</typeparam>
-        /// <returns>A <see langref="string"/> containing the element Id.</returns>
+        /// <typeparam name="TProperty">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <returns>A <see cref="String"/> containing the element Id.</returns>
         string IdFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression);
 
         /// <summary>
@@ -162,18 +165,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                     object htmlAttributes);
 
         /// <summary>
-        /// Returns a multi-selection HTML {select} element for the object that is represented by the specified
+        /// Returns a multi-selection HTML &lt;select&gt; element for the object that is represented by the specified
         /// expression using the specified list items and HTML attributes.
         /// </summary>
         /// <typeparam name="TProperty">The type of the property.</typeparam>
         /// <param name="expression">An expression that identifies the object that contains the properties to
         /// display.</param>
-        /// <param name="selectList">A collection of <see href="SelectListItem"/> objects that are used to populate the
+        /// <param name="selectList">A collection of <see cref="SelectListItem"/> objects that are used to populate the
         /// drop-down list.</param>
         /// <param name="htmlAttributes">An object that contains the HTML attributes to set for the element.
         /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
         /// </param>
-        /// <returns>An HTML {select} element with an {option} subelement for each item in the list.</returns>
+        /// <returns>
+        /// An HTML &lt;select&gt; element with an &lt;option&gt; subelement for each item in the list.
+        /// </returns>
         HtmlString ListBoxFor<TProperty>(
             [NotNull] Expression<Func<TModel, TProperty>> expression,
             IEnumerable<SelectListItem> selectList,
@@ -184,7 +189,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </summary>
         /// <param name="expression">The expression to be evaluated against the current model.</param>
         /// <typeparam name="TProperty">The type of the <paramref name="expression"/> result.</typeparam>
-        /// <returns>A <see langref="string"/> containing the element name.</returns>
+        /// <returns>A <see cref="String"/> containing the element name.</returns>
         string NameFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression);
 
         /// <summary>
@@ -251,7 +256,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="message">The message to be displayed. This will always be visible but client-side
         /// validation may update the associated CSS class.</param>
         /// <param name="htmlAttributes"> An object that contains the HTML attributes to set for the element.
-        /// Alternatively, an /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
         /// </param>
         /// <param name="tag">The tag to wrap the <paramref name="message"/> in the generated HTML.
         /// Its default value is <see cref="ViewContext.ValidationMessageElement" />.</param>
@@ -266,13 +271,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </summary>
         /// <param name="expression">The expression to be evaluated against the current model.</param>
         /// <param name="format">
-        /// The composite format <see langref="string"/> (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx).
+        /// The composite format <see cref="String"/> (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx).
         /// </param>
-        /// <typeparam name="TProperty">The type of the <param name="expression"> result.</typeparam>
-        /// <returns>A <see langref="string"/> containing the formatted value.</returns>
+        /// <typeparam name="TProperty">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <returns>A <see cref="String"/> containing the formatted value.</returns>
         /// <remarks>
-        /// Converts the <paramref name="expression"/> result to a <see langref="string"/> directly if
-        /// <paramref name="format"/> is <see langref="null"/> or empty.
+        /// Converts the <paramref name="expression"/> result to a <see cref="String"/> directly if
+        /// <paramref name="format"/> is <c>null</c> or empty.
         /// </remarks>
         string ValueFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression, string format);
     }

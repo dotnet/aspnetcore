@@ -50,9 +50,9 @@ namespace Microsoft.AspNet.Mvc
         }
 
         public List<OutputFormatterDescriptor> OutputFormatters { get; private set; }
-        
+
         /// <summary>
-        /// Provides programmatic configuration for the default <see cref="IViewEngine" />.
+        /// Provides programmatic configuration for the default <see cref="Rendering.IViewEngine" />.
         /// </summary>
         public RazorViewEngineOptions ViewEngineOptions
         {
@@ -75,17 +75,20 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Get a list of the <see cref="ModelBinderDescriptor" /> used by the <see cref="CompositeModelBinder" />.
+        /// Get a list of the <see cref="ModelBinderDescriptor" /> used by the
+        /// <see cref="ModelBinding.CompositeModelBinder" />.
         /// </summary>
         public List<ModelBinderDescriptor> ModelBinders { get; private set; }
 
         /// <summary>
-        /// Gets a list of descriptors that represent <see cref="IViewEngine"/> used by this application.
+        /// Gets a list of descriptors that represent <see cref="Rendering.IViewEngine"/> used
+        /// by this application.
         /// </summary>
         public List<ViewEngineDescriptor> ViewEngines { get; private set; }
 
         /// <summary>
-        /// Gets a list of descriptors that represent <see cref="IValueProviderFactory"/> used by this application.
+        /// Gets a list of descriptors that represent
+        /// <see cref="ModelBinding.IValueProviderFactory"/> used by this application.
         /// </summary>
         public List<ValueProviderFactoryDescriptor> ValueProviderFactories { get; private set; }
 

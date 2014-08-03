@@ -140,7 +140,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         protected IModelMetadataProvider Provider { get; set; }
 
         /// <returns>
-        /// Gets TModel if ModelType is Nullable{TModel}, ModelType otherwise.
+        /// Gets <c>T</c> if <see cref="ModelType"/> is <see cref="Nullable{T}"/>;
+        /// <see cref="ModelType"/> otherwise.
         /// </returns>
         public Type RealModelType
         {

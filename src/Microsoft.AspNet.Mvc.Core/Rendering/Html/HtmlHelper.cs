@@ -18,7 +18,7 @@ using Microsoft.AspNet.Mvc.Rendering.Expressions;
 namespace Microsoft.AspNet.Mvc.Rendering
 {
     /// <summary>
-    /// Default implementation of non-generic portions of <see cref="IHtmlHelper{T}">.
+    /// Default implementation of non-generic portions of <see cref="IHtmlHelper{TModel}"/>.
     /// </summary>
     public class HtmlHelper : IHtmlHelper, ICanHasViewContext
     {
@@ -125,11 +125,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
         ///
         /// If the object is already an <see cref="IDictionary{string, object}"/> instance, then it is
         /// returned as-is.
-        /// </summary>
         /// <example>
         /// <c>new { property_name = "value" }</c> will translate to the entry <c>{ "property_name" , "value" }</c>
         /// in the resulting dictionary.
         /// </example>
+        /// </summary>
         /// <param name="obj">The object to be converted.</param>
         /// <returns>The created dictionary of property names and property values.</returns>
         public static IDictionary<string, object> ObjectToDictionary(object obj)
@@ -628,7 +628,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <summary>
-        /// Writes an opening <form> tag to the response. When the user submits the form,
+        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form,
         /// the request will be processed by an action method.
         /// </summary>
         /// <param name="actionName">The name of the action method.</param>
@@ -640,7 +640,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
         /// <param name="htmlAttributes">An <see cref="IDictionary{string, object}"/> instance containing HTML
         /// attributes to set for the element.</param>
-        /// <returns>An <see cref="MvcForm"/> instance which emits the closing {form} tag when disposed.</returns>
+        /// <returns>
+        /// An <see cref="MvcForm"/> instance which emits the &lt;/form&gt; end tag when disposed.
+        /// </returns>
         protected virtual MvcForm GenerateForm(string actionName, string controllerName, object routeValues,
                                                FormMethod method, IDictionary<string, object> htmlAttributes)
         {

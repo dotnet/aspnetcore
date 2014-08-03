@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.Rendering.Expressions;
 
 namespace Microsoft.AspNet.Mvc
@@ -43,7 +42,7 @@ namespace Microsoft.AspNet.Mvc
 
         /// <summary>
         /// <see cref="ViewDataDictionary"/> copy constructor for use when model type may change. This avoids
-        /// exceptions a derived class may throw when <see cref="SetModel()"/> is called.
+        /// exceptions a derived class may throw when <see cref="SetModel"/> is called.
         /// </summary>
         public ViewDataDictionary([NotNull] ViewDataDictionary source, object model)
             : this(source.MetadataProvider)

@@ -13,9 +13,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
     public interface IHtmlHelper
     {
         /// <summary>
-        /// Set this property to <see cref="Mvc.Html5DateRenderingMode.Rfc3339"/> to have templated helpers such as
-        /// <see cref="Editor"/> and <see cref="EditorFor"/> render date and time values as RFC 3339 compliant strings.
-        /// By default these helpers render dates and times using the current culture.
+        /// Set this property to <see cref="Html5DateRenderingMode.Rfc3339"/> to have templated helpers such as
+        /// <see cref="Editor"/> and <see cref="IHtmlHelper{TModel}.EditorFor"/> render date and time values as RFC
+        /// 3339 compliant strings. By default these helpers render dates and times using the current culture.
         /// </summary>
         Html5DateRenderingMode Html5DateRenderingMode { get; set; }
 
@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         HtmlString AntiForgeryToken();
 
         /// <summary>
-        /// Writes an opening <form> tag to the response. When the user submits the form,
+        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form,
         /// the request will be processed by an action method.
         /// </summary>
         /// <param name="actionName">The name of the action method.</param>
@@ -97,7 +97,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="htmlAttributes">An object that contains the HTML attributes to set for the element.
         /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
         /// </param>
-        /// <returns>An <see cref="MvcForm"/> instance which emits the closing {form} tag when disposed.</returns>
+        /// <returns>
+        /// An <see cref="MvcForm"/> instance which renders the &lt;/form&gt; end tag when disposed.
+        /// </returns>
         MvcForm BeginForm(
             string actionName,
             string controllerName,
@@ -149,7 +151,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Returns the display name for the specified expression <paramref name="expression"/>.
         /// </summary>
         /// <param name="expression">Expression name, relative to the current model.</param>
-        /// <returns>A <see langref="string"/> containing the display name.</returns>
+        /// <returns>A <see cref="System.String"/> containing the display name.</returns>
         string DisplayName(string expression);
 
         /// <summary>
@@ -157,23 +159,26 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </summary>
         /// <param name="name">Expression name, relative to the current model.</param>
         /// <returns>
-        /// A <see langref="string"/> containing the simple display text.
-        /// If the expression result is <see langref="null"/>, returns <see cref="ModelMetadata.NullDisplayText"/>.
+        /// A <see cref="System.String"/> containing the simple display text.
+        /// If the expression result is <c>null</c>, returns <see cref="ModelMetadata.NullDisplayText"/>.
         /// </returns>
         string DisplayText(string name);
 
         /// <summary>
-        /// Returns a single-selection HTML {select} element using the specified name of the form field,
+        /// Returns a single-selection HTML &lt;select&gt; element using the specified name of the form field,
         /// list items, option label, and HTML attributes.
         /// </summary>
         /// <param name="name">The name of the form field to return.</param>
-        /// <param name="selectList">A collection of <see href="SelectListItem"/> objects that are used to populate the
+        /// <param name="selectList">A collection of <see cref="SelectListItem"/> objects that are used to populate the
         /// drop-down list.</param>
         /// <param name="optionLabel">The text for a default empty item. This parameter can be null.</param>
-        /// <param name="htmlAttributes">An object that contains the HTML attributes to set for the {select} element.
-        /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <param name="htmlAttributes">
+        /// An object that contains the HTML attributes to set for the &lt;select&gt; element. Alternatively, an
+        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
         /// </param>
-        /// <returns>An HTML {select} element with an {option} subelement for each item in the list.</returns>
+        /// <returns>
+        /// An HTML &lt;select&gt; element with an &lt;option&gt; subelement for each item in the list.
+        /// </returns>
         HtmlString DropDownList(
             string name,
             IEnumerable<SelectListItem> selectList,
@@ -214,7 +219,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         string Encode(string value);
 
         /// <summary>
-        /// Renders the closing </form> tag to the response.
+        /// Renders the &lt;/form&gt; end tag to the response.
         /// </summary>
         void EndForm();
 
@@ -237,9 +242,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Returns information about about client validation rules for the given <paramref name="metadata"/> or
         /// <paramref name="name"/>. Intended for use in <see cref="IHtmlHelper"/> extension methods.
         /// </summary>
-        /// <param name="metadata">Metadata about the <see langref="object"/> of interest.</param>
+        /// <param name="metadata">Metadata about the <see cref="System.Object"/> of interest.</param>
         /// <param name="name">Expression name, relative to the current model. Used to determine
-        /// <see cref="ModelMetadata"/> when <paramref name="metadata"/> is <see langref="null"/>; ignored
+        /// <see cref="ModelMetadata"/> when <paramref name="metadata"/> is <c>null</c>; ignored
         /// otherwise.</param>
         /// <returns>An <see cref="IEnumerable{ModelClientValidationRule}"/> containing the relevant rules.</returns>
         IEnumerable<ModelClientValidationRule> GetClientValidationRules(ModelMetadata metadata, string name);
@@ -264,7 +269,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Returns the HTML element Id for the specified expression <paramref name="name"/>.
         /// </summary>
         /// <param name="name">Expression name, relative to the current model.</param>
-        /// <returns>A <see langref="string"/> containing the element Id.</returns>
+        /// <returns>A <see cref="System.String"/> containing the element Id.</returns>
         string Id(string name);
 
         /// <summary>
@@ -280,23 +285,25 @@ namespace Microsoft.AspNet.Mvc.Rendering
         HtmlString Label(string expression, string labelText, object htmlAttributes);
 
         /// <summary>
-        /// Returns a multi-selection HTML {select} element using the specified name of the form field,
+        /// Returns a multi-selection HTML &lt;select&gt; element using the specified name of the form field,
         /// list items, and HTML attributes.
         /// </summary>
         /// <param name="name">The name of the form field to return.</param>
-        /// <param name="selectList">A collection of <see href="SelectListItem"/> objects that are used to populate the
+        /// <param name="selectList">A collection of <see cref="SelectListItem"/> objects that are used to populate the
         /// drop-down list.</param>
         /// <param name="htmlAttributes">An object that contains the HTML attributes to set for the element.
         /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
         /// </param>
-        /// <returns>An HTML {select} element with an {option} subelement for each item in the list.</returns>
+        /// <returns>
+        /// An HTML &lt;select&gt; element with an &lt;option&gt; subelement for each item in the list.
+        /// </returns>
         HtmlString ListBox(string name, IEnumerable<SelectListItem> selectList, object htmlAttributes);
 
         /// <summary>
         /// Returns the full HTML element name for the specified expression <paramref name="name"/>.
         /// </summary>
         /// <param name="name">Expression name, relative to the current model.</param>
-        /// <returns>A <see langref="string"/> containing the element name.</returns>
+        /// <returns>A <see cref="System.String"/> containing the element name.</returns>
         string Name(string name);
 
         /// <summary>
@@ -476,12 +483,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </summary>
         /// <param name="name">Expression name, relative to the current model.</param>
         /// <param name="format">
-        /// The composite format <see langref="string"/> (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx).
+        /// The composite format <see cref="System.String"/>
+        /// (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx).
         /// </param>
-        /// <returns>A <see langref="string"/> containing the formatted value.</returns>
+        /// <returns>A <see cref="System.String"/> containing the formatted value.</returns>
         /// <remarks>
-        /// Converts the expression result to a <see langref="string"/> directly if
-        /// <paramref name="format"/> is <see langref="null"/> or empty.
+        /// Converts the expression result to a <see cref="System.String"/> directly if
+        /// <paramref name="format"/> is <c>null</c> or empty.
         /// </remarks>
         string Value([NotNull] string name, string format);
     }

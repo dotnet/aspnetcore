@@ -25,17 +25,15 @@ namespace Microsoft.AspNet.Mvc
             get { return _mediaTypeComparer; }
         }
 
-        /// <summary>
-        /// Compares two <see cref="MediaTypeWithQualityHeaderValue"/> based on their quality value 
-        /// (a.k.a their "q-value"). Values with identical q-values are considered equal (i.e the result is 0)
-        /// with the exception that sub-type wild-cards are considered less than specific media types and full
-        /// wild-cards are considered less than sub-type wild-cards. This allows to sort a sequence of 
-        /// <see cref="MediaTypeWithQualityHeaderValue"/> following their q-values in the order of specific 
-        /// media types, sub-type wildcards, and last any full wild-cards.
-        /// </summary>
-        /// <param name="mediaType1">The first <see cref="MediaTypeWithQualityHeaderValue"/> to compare.</param>
-        /// <param name="mediaType2">The second <see cref="MediaTypeWithQualityHeaderValue"/> to compare.</param>
-        /// <returns></returns>
+        /// <inheritdoc />
+        /// <remarks>
+        /// Performs comparisons based on the arguments' quality values
+        /// (aka their "q-value"). Values with identical q-values are considered equal (i.e. the result is 0)
+        /// with the exception that subtype wildcards are considered less than specific media types and full
+        /// wildcards are considered less than subtype wildcards. This allows callers to sort a sequence of
+        /// <see cref="MediaTypeWithQualityHeaderValue"/> following their q-values in the order of specific
+        /// media types, subtype wildcards, and last any full wildcards.
+        /// </remarks>
         public int Compare(MediaTypeWithQualityHeaderValue mediaType1, MediaTypeWithQualityHeaderValue mediaType2)
         {
             if (object.ReferenceEquals(mediaType1, mediaType2))

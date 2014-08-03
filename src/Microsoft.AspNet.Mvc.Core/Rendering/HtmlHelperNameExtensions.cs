@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Returns the full HTML element name for the current model.
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
-        /// <returns>A <see langref="string"/> containing the element name.</returns>
+        /// <returns>A <see cref="System.String"/> containing the element name.</returns>
         public static string NameForModel([NotNull] this IHtmlHelper htmlHelper)
         {
             return htmlHelper.Name(string.Empty);
@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Returns the HTML element Id for the current model.
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
-        /// <returns>A <see langref="string"/> containing the element Id.</returns>
+        /// <returns>A <see cref="System.String"/> containing the element Id.</returns>
         public static string IdForModel([NotNull] this IHtmlHelper htmlHelper)
         {
             return htmlHelper.Id(string.Empty);

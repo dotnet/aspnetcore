@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Mvc.Rendering;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -14,8 +13,8 @@ namespace Microsoft.AspNet.Mvc
         private Dictionary<string, object> _formData;
 
         /// <summary>
-        /// Property bag for any information you wish to associate with a {form/} in an <see cref="IHtmlHelper"/>
-        /// implementation or extension method.
+        /// Property bag for any information you wish to associate with a &lt;form/&gt; in an
+        /// <see cref="Rendering.IHtmlHelper"/> implementation or extension method.
         /// </summary>
         public IDictionary<string, object> FormData
         {

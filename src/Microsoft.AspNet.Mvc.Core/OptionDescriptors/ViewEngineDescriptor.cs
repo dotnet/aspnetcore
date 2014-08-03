@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
         /// <summary>
         /// Creates a new instance of <see cref="ViewEngineDescriptor"/>.
         /// </summary>
-        /// <param name="type">The <see cref="IViewEngine/> type that the descriptor represents.</param>
+        /// <param name="type">The <see cref="IViewEngine"/> type that the descriptor represents.</param>
         public ViewEngineDescriptor([NotNull] Type type)
             : base(type)
         {

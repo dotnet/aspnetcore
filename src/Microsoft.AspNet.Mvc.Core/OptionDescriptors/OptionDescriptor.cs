@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
         /// <summary>
         /// Creates a new instance of <see cref="OptionDescriptor{TOption}"/>.
         /// </summary>
-        /// <param name="type">A type that represents <typeparamref name="TOption"/>.
+        /// <param name="type">A type that represents <typeparamref name="TOption"/>.</param>
         public OptionDescriptor([NotNull] Type type)
         {
             var optionType = typeof(TOption);
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
         /// <summary>
         /// Creates a new instance of <see cref="OptionDescriptor{TOption}"/> with the specified instance.
         /// </summary>
-        /// <param name="option">An instance of <typeparamref cref="TOption"/> that the descriptor represents.</param>
+        /// <param name="option">An instance of <typeparamref name="TOption"/> that the descriptor represents.</param>
         public OptionDescriptor([NotNull] TOption option)
         {
             Instance = option;
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
         }
 
         /// <summary>
-        /// Gets the type of the <typeparamref cref="TOption"/> described by this 
+        /// Gets the type of the <typeparamref name="TOption"/> described by this
         /// <see cref="OptionDescriptor{TOption}"/>.
         /// </summary>
         public Type OptionType
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
         }
 
         /// <summary>
-        /// Gets the instance of <typeparamref cref="TOption"/> described by this 
+        /// Gets the instance of <typeparamref name="TOption"/> described by this
         /// <see cref="OptionDescriptor{TOption}"/>.
         /// </summary>
         public TOption Instance

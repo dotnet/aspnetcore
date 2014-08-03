@@ -8,7 +8,8 @@ using Xunit;
 namespace Microsoft.AspNet.Mvc.Core
 {
     /// <summary>
-    /// Test the <see cref="IHtmlHelper.DisplayText"/> and <see cref="IHtmlHelper{T}.DisplayTextFor{TValue}"/> methods.
+    /// Test the <see cref="Rendering.IHtmlHelper.DisplayText"/> and
+    /// <see cref="Rendering.IHtmlHelper{TModel}.DisplayTextFor{TValue}"/> methods.
     /// </summary>
     public class HtmlHelperDisplayTextTest
     {

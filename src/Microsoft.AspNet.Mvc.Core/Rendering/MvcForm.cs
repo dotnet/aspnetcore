@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <summary>
-        /// Renders the closing </form> tag to the response.
+        /// Renders the &lt;/form&gt; end tag to the response.
         /// </summary>
         public void EndForm()
         {

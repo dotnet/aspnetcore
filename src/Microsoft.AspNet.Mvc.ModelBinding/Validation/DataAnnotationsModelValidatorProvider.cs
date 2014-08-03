@@ -9,12 +9,12 @@ using System.Linq;
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     /// <summary>
-    /// An implementation of <see cref="ModelValidatorProvider"/> which providers validators
+    /// An implementation of <see cref="IModelValidatorProvider"/> which providers validators
     /// for attributes which derive from <see cref="ValidationAttribute"/>. It also provides
     /// a validator for types which implement <see cref="IValidatableObject"/>. To support
     /// client side validation, you can either register adapters through the static methods
     /// on this class, or by having your validation attributes implement
-    /// <see cref="IClientValidatable"/>. The logic to support IClientValidatable
+    /// <see cref="IClientModelValidator"/>. The logic to support <see cref="IClientModelValidator"/>
     /// is implemented in <see cref="DataAnnotationsModelValidator"/>.
     /// </summary>
     public class DataAnnotationsModelValidatorProvider : AssociatedValidatorProvider

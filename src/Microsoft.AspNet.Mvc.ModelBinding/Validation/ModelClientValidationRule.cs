@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         /// <summary>
         /// Identifier of the <see cref="ModelClientValidationRule"/>. If client-side validation is enabled, default
-        /// validation attribute generator uses this <see langref="string"/> as part of the generated "data-val"
+        /// validation attribute generator uses this <see cref="String"/> as part of the generated "data-val"
         /// attribute name. Must be unique in the set of enabled validation rules.
         /// </summary>
         public string ValidationType { get; private set; }

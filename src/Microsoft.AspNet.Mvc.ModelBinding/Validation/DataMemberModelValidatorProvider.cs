@@ -10,8 +10,8 @@ using System.Runtime.Serialization;
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     /// <summary>
-    /// This <see cref="ModelValidatorProvider"/> provides a required ModelValidator for members marked
-    /// as [DataMember(IsRequired=true)].
+    /// This <see cref="IModelValidatorProvider"/> provides a required ModelValidator for members marked
+    /// as <c>[DataMember(IsRequired=true)]</c>.
     /// </summary>
     public class DataMemberModelValidatorProvider : AssociatedValidatorProvider
     {

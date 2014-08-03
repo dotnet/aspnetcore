@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.Core
         /// Returns a cached <see cref="IFileInfo" /> for a given path.
         /// </summary>
         /// <param name="virtualPath">The virtual path.</param>
-        /// <returns></returns>
+        /// <returns>The cached <see cref="IFileInfo"/>.</returns>
         IFileInfo GetFileInfo(string virtualPath);
     }
 }

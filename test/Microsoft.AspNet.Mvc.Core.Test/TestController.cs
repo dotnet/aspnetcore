@@ -67,9 +67,9 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         }
 
         /// <summary>
-        /// Returns a Task<Task> instead of a Task. This should throw an InvalidOperationException.
+        /// Returns a <see cref="Task{TResult}"/> instead of a <see cref="Task"/>. This should throw an
+        /// <see cref="InvalidOperationException"/>.
         /// </summary>
-        /// <returns></returns>
         public Task UnwrappedTask(int i, string s)
         {
             return Task.Factory.StartNew(async () => await Task.Delay(50));

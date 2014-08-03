@@ -10,7 +10,7 @@ using Microsoft.Framework.Runtime;
 namespace Microsoft.AspNet.Mvc.Core
 {
     /// <summary>
-    /// A default implementation for the <see cref="IFileInfoCache" interface./>
+    /// A default implementation for the <see cref="IFileInfoCache"/> interface.
     /// </summary>
     public class ExpiringFileInfoCache : IFileInfoCache
     {

@@ -79,10 +79,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <remarks>
-        /// Example: GetGenericBinder(typeof(IList<>), typeof(List<>), typeof(ListBinder<>), ...) means that the 
-        /// ListBinder<T> type can update models that implement IList<T>, and if for some reason the existing model
-        /// instance is not updatable the binder will create a List<T> object and bind to that instead. This method
-        /// will return ListBinder<T> or null, depending on whether the type and updatability checks succeed.
+        /// Example: <c>GetGenericBinderType(typeof(IList&lt;T&gt;), typeof(List&lt;T&gt;),
+        /// typeof(ListBinder&lt;T&gt;), ...)</c> means that the <c>ListBinder&lt;T&gt;</c> type can update models that
+        /// implement <see cref="IList{T}"/>, and if for some reason the existing model instance is not updatable the
+        /// binder will create a <see cref="List{T}"/> object and bind to that instead. This method will return
+        /// <c>ListBinder&lt;T&gt;</c> or <c>null</c>, depending on whether the type and updatability checks succeed.
         /// </remarks>
         private static Type GetGenericBinderType(Type supportedInterfaceType,
                                                  Type newInstanceType,

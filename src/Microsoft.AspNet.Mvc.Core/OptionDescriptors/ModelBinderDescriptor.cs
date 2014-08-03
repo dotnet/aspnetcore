@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
         /// <summary>
         /// Creates a new instance of <see cref="ModelBinderDescriptor"/>.
         /// </summary>
-        /// <param name="type">A type that represents a <see cref="IModelBinder"/>.
+        /// <param name="type">A type that represents a <see cref="IModelBinder"/>.</param>
         public ModelBinderDescriptor([NotNull] Type type)
             : base(type)
         {
@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
         /// <summary>
         /// Creates a new instance of <see cref="ModelBinderDescriptor"/> with the specified instance.
         /// </summary>
-        /// <param name="option">An instance of <see cref="IModelBinder"/>.
+        /// <param name="option">An instance of <see cref="IModelBinder"/>.</param>
         public ModelBinderDescriptor([NotNull] IModelBinder binder)
             : base(binder)
         {
