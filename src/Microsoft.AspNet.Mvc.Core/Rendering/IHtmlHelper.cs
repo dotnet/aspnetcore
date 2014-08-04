@@ -414,8 +414,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </param>
         /// <param name="rows">Number of rows in the textarea.</param>
         /// <param name="columns">Number of columns in the textarea.</param>
-        /// <param name="htmlAttributes">
-        /// <see cref="IDictionary{string, object}"/> containing additional HTML attributes.
+        /// <param name="htmlAttributes">An object that contains the HTML attributes to set for the element.
+        /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
         /// </param>
         /// <returns>New <see cref="HtmlString"/> containing the rendered HTML.</returns>
         HtmlString TextArea(string name, string value, int rows, int columns, object htmlAttributes);
@@ -431,11 +431,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// If non-<c>null</c>, value to include in the element. Ignore if named value is found in submitted data.
         /// </param>
         /// <param name="format"></param>
-        /// <param name="htmlAttributes">
-        /// <see cref="IDictionary{string, object}"/> containing additional HTML attributes.
+        /// <param name="htmlAttributes">An object that contains the HTML attributes to set for the element.
+        /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
         /// </param>
         /// <returns>New <see cref="HtmlString"/> containing the rendered HTML.</returns>
-        HtmlString TextBox(string name, object value, string format, IDictionary<string, object> htmlAttributes);
+        HtmlString TextBox(string name, object value, string format, object htmlAttributes);
 
         /// <summary>
         /// Returns the validation message if an error exists in the <see cref="ModelStateDictionary"/> object.
@@ -458,7 +458,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="excludePropertyErrors">true to have the summary display model-level errors only, or false to
         /// have the summary display all errors.</param>
         /// <param name="message">The message to display with the validation summary.</param>
-        /// <param name="htmlAttributes">A dictionary that contains the HTML attributes for the element.</param>
+        /// <param name="htmlAttributes">An object that contains the HTML attributes to set for the element.
+        /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// </param>
         /// <param name="tag">The tag to wrap the <paramref name="message"/> in the generated HTML.
         /// Its default value is <see cref="ViewContext.ValidationMessageElement" />.</param>
         /// <returns>An <see cref="HtmlString"/> that contains an unordered list (ul element) of validation messages.
@@ -466,7 +468,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         HtmlString ValidationSummary(
             bool excludePropertyErrors,
             string message,
-            IDictionary<string, object> htmlAttributes,
+            object htmlAttributes,
             string tag);
 
         /// <summary>

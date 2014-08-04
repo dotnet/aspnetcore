@@ -144,17 +144,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string format,
             object htmlAttributes)
         {
-            return htmlHelper.TextBox(name, value, format,
-                HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes));
-        }
-
-        public static HtmlString TextBox(
-            [NotNull] this IHtmlHelper htmlHelper,
-            string name,
-            object value,
-            IDictionary<string, object> htmlAttributes)
-        {
-            return htmlHelper.TextBox(name, value, format: null, htmlAttributes: htmlAttributes);
+            return htmlHelper.TextBox(name, value, format, htmlAttributes);
         }
 
         public static HtmlString TextBoxFor<TModel, TProperty>([NotNull] this IHtmlHelper<TModel> htmlHelper,
@@ -178,14 +168,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public static HtmlString TextBoxFor<TModel, TProperty>([NotNull] this IHtmlHelper<TModel> htmlHelper,
             [NotNull] Expression<Func<TModel, TProperty>> expression, string format, object htmlAttributes)
         {
-            return htmlHelper.TextBoxFor(expression, format: format,
-                htmlAttributes: HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes));
-        }
-
-        public static HtmlString TextBoxFor<TModel, TProperty>([NotNull] this IHtmlHelper<TModel> htmlHelper,
-            [NotNull] Expression<Func<TModel, TProperty>> expression, IDictionary<string, object> htmlAttributes)
-        {
-            return htmlHelper.TextBoxFor(expression, format: null, htmlAttributes: htmlAttributes);
+            return htmlHelper.TextBoxFor(expression, format: format, htmlAttributes: htmlAttributes);
         }
 
         public static HtmlString TextArea([NotNull] this IHtmlHelper htmlHelper,

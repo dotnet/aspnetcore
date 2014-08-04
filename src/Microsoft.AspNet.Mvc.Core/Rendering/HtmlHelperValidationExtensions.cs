@@ -138,10 +138,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string message,
             object htmlAttributes)
         {
-            return htmlHelper.ValidationSummary(excludePropertyErrors: false,
-                message: message,
-                htmlAttributes: HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes),
-                tag: null);
+            return htmlHelper.ValidationSummary(
+                excludePropertyErrors: false, message: message, htmlAttributes: htmlAttributes, tag: null);
         }
 
         public static HtmlString ValidationSummary([NotNull] this IHtmlHelper htmlHelper,
@@ -149,10 +147,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             object htmlAttributes,
             string tag)
         {
-            return htmlHelper.ValidationSummary(excludePropertyErrors: false,
-                message: message,
-                htmlAttributes: HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes),
-                tag: tag);
+            return htmlHelper.ValidationSummary(
+                excludePropertyErrors: false, message: message, htmlAttributes: htmlAttributes, tag: tag);
         }
 
         public static HtmlString ValidationSummary([NotNull] this IHtmlHelper htmlHelper,
@@ -171,10 +167,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string message,
             object htmlAttributes)
         {
-            return htmlHelper.ValidationSummary(excludePropertyErrors,
-                message,
-                HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes),
-                tag: null);
+            return htmlHelper.ValidationSummary(excludePropertyErrors, message, htmlAttributes, tag: null);
         }
 
         public static HtmlString ValidationSummary([NotNull] this IHtmlHelper htmlHelper,
@@ -183,31 +176,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             object htmlAttributes,
             string tag)
         {
-            return htmlHelper.ValidationSummary(excludePropertyErrors,
-                message,
-                HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes),
-                tag);
-        }
-
-        public static HtmlString ValidationSummary([NotNull] this IHtmlHelper htmlHelper,
-            string message,
-            IDictionary<string, object> htmlAttributes)
-        {
-            return htmlHelper.ValidationSummary(excludePropertyErrors: false,
-                message: message,
-                htmlAttributes: htmlAttributes,
-                tag: null);
-        }
-
-        public static HtmlString ValidationSummary([NotNull] this IHtmlHelper htmlHelper,
-            string message,
-            IDictionary<string, object> htmlAttributes,
-            string tag)
-        {
-            return htmlHelper.ValidationSummary(excludePropertyErrors: false,
-                message: message,
-                htmlAttributes: htmlAttributes,
-                tag: tag);
+            return htmlHelper.ValidationSummary(excludePropertyErrors, message, htmlAttributes, tag);
         }
     }
 }

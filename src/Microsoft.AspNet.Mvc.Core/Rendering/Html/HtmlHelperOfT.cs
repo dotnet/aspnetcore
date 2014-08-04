@@ -206,7 +206,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         /// <inheritdoc />
         public HtmlString TextBoxFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression,
-            string format, IDictionary<string, object> htmlAttributes)
+            string format, object htmlAttributes)
         {
             var metadata = GetModelMetadata(expression);
             return GenerateTextBox(metadata, GetExpressionName(expression), metadata.Model, format, htmlAttributes);

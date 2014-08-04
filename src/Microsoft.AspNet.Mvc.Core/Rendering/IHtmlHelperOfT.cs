@@ -223,8 +223,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="expression">An expression, relative to the current model.</param>
         /// <param name="rows">Number of rows in the textarea.</param>
         /// <param name="columns">Number of columns in the textarea.</param>
-        /// <param name="htmlAttributes">
-        /// <see cref="IDictionary{string, object}"/> containing additional HTML attributes.
+        /// <param name="htmlAttributes">An object that contains the HTML attributes to set for the element.
+        /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
         /// </param>
         /// <returns>New <see cref="HtmlString"/> containing the rendered HTML.</returns>
         HtmlString TextAreaFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression,
@@ -237,12 +237,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// An expression that identifies the object that contains the properties to render.
         /// </param>
         /// <param name="format"></param>
-        /// <param name="htmlAttributes">
-        /// <see cref="IDictionary{string, object}"/> containing additional HTML attributes.
+        /// <param name="htmlAttributes">An object that contains the HTML attributes to set for the element.
+        /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
         /// </param>
         /// <returns>New <see cref="HtmlString"/> containing the rendered HTML.</returns>
         HtmlString TextBoxFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression, string format,
-            IDictionary<string, object> htmlAttributes);
+            object htmlAttributes);
 
         /// <summary>
         /// Returns the validation message for the specified expression

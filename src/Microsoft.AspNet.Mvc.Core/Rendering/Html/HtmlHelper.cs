@@ -115,7 +115,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             object htmlAttributes)
         {
             var url = _urlHelper.Action(actionName, controllerName, routeValues);
-            return GenerateLink(linkText, url, HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes));
+            return GenerateLink(linkText, url, GetHtmlAttributeDictionaryOrNull(htmlAttributes));
         }
 
         /// <summary>
@@ -186,13 +186,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public MvcForm BeginForm(string actionName, string controllerName, object routeValues, FormMethod method,
                                  object htmlAttributes)
         {
-            // Only need a dictionary if htmlAttributes is non-null. TagBuilder.MergeAttributes() is fine with null.
-            IDictionary<string, object> htmlAttributeDictionary = null;
-            if (htmlAttributes != null)
-            {
-                htmlAttributeDictionary = HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes);
-            }
-
+            var htmlAttributeDictionary = GetHtmlAttributeDictionaryOrNull(htmlAttributes);
             return GenerateForm(actionName, controllerName, routeValues, method, htmlAttributeDictionary);
         }
 
@@ -427,7 +421,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             object htmlAttributes)
         {
             var url = _urlHelper.RouteUrl(routeName, routeValues, protocol, hostName, fragment);
-            return GenerateLink(linkText, url, HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes));
+            return GenerateLink(linkText, url, GetHtmlAttributeDictionaryOrNull(htmlAttributes));
         }
 
         /// <inheritdoc />
@@ -437,12 +431,17 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString ValidationSummary(bool excludePropertyErrors,
+        public HtmlString ValidationSummary(
+            bool excludePropertyErrors,
             string message,
-            IDictionary<string, object> htmlAttributes,
+            object htmlAttributes,
             string tag)
         {
-            return GenerateValidationSummary(excludePropertyErrors, message, htmlAttributes, tag);
+            return GenerateValidationSummary(
+                excludePropertyErrors,
+                message,
+                GetHtmlAttributeDictionaryOrNull(htmlAttributes),
+                tag);
         }
 
         /// <summary>
@@ -476,7 +475,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString TextBox(string name, object value, string format, IDictionary<string, object> htmlAttributes)
+        public HtmlString TextBox(string name, object value, string format, object htmlAttributes)
         {
             return GenerateTextBox(metadata: null, name: name, value: value, format: format,
                 htmlAttributes: htmlAttributes);
@@ -563,17 +562,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 }
             }
 
-            // Only need a dictionary if htmlAttributes is non-null. TagBuilder.MergeAttributes() is fine with null.
-            IDictionary<string, object> htmlAttributeDictionary = null;
-            if (htmlAttributes != null)
-            {
-                htmlAttributeDictionary = htmlAttributes as IDictionary<string, object>;
-                if (htmlAttributeDictionary == null)
-                {
-                    htmlAttributeDictionary = AnonymousObjectToHtmlAttributes(htmlAttributes);
-                }
-            }
-
+            var htmlAttributeDictionary = GetHtmlAttributeDictionaryOrNull(htmlAttributes);
             var explicitValue = isChecked.HasValue;
             if (explicitValue && htmlAttributeDictionary != null)
             {
@@ -691,17 +680,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
             bool useViewData,
             object htmlAttributes)
         {
-            // Only need a dictionary if htmlAttributes is non-null. TagBuilder.MergeAttributes() is fine with null.
-            IDictionary<string, object> htmlAttributeDictionary = null;
-            if (htmlAttributes != null)
-            {
-                htmlAttributeDictionary = htmlAttributes as IDictionary<string, object>;
-                if (htmlAttributeDictionary == null)
-                {
-                    htmlAttributeDictionary = AnonymousObjectToHtmlAttributes(htmlAttributes);
-                }
-            }
-
             // Special-case opaque values and arbitrary binary data.
             var byteArrayValue = value as byte[];
             if (byteArrayValue != null)
@@ -709,6 +687,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 value = Convert.ToBase64String(byteArrayValue);
             }
 
+            var htmlAttributeDictionary = GetHtmlAttributeDictionaryOrNull(htmlAttributes);
             return GenerateInput(InputType.Hidden,
                 metadata,
                 name,
@@ -750,7 +729,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                         ViewData.TemplateInfo.GetFullHtmlFieldName(htmlFieldName),
                                         IdAttributeDotReplacement));
             tag.SetInnerText(resolvedLabelText);
-            tag.MergeAttributes(AnonymousObjectToHtmlAttributes(htmlAttributes), replaceExisting: true);
+            tag.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes), replaceExisting: true);
             return tag.ToHtmlString(TagRenderMode.Normal);
         }
 
@@ -794,17 +773,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         protected virtual HtmlString GeneratePassword(ModelMetadata metadata, string name, object value,
             object htmlAttributes)
         {
-            // Only need a dictionary if htmlAttributes is non-null. TagBuilder.MergeAttributes() is fine with null.
-            IDictionary<string, object> htmlAttributeDictionary = null;
-            if (htmlAttributes != null)
-            {
-                htmlAttributeDictionary = htmlAttributes as IDictionary<string, object>;
-                if (htmlAttributeDictionary == null)
-                {
-                    htmlAttributeDictionary = AnonymousObjectToHtmlAttributes(htmlAttributes);
-                }
-            }
-
+            var htmlAttributeDictionary = GetHtmlAttributeDictionaryOrNull(htmlAttributes);
             return GenerateInput(InputType.Password,
                 metadata,
                 name,
@@ -820,17 +789,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         protected virtual HtmlString GenerateRadioButton(ModelMetadata metadata, string name, object value,
             bool? isChecked, object htmlAttributes)
         {
-            // Only need a dictionary if htmlAttributes is non-null. TagBuilder.MergeAttributes() is fine with null.
-            IDictionary<string, object> htmlAttributeDictionary = null;
-            if (htmlAttributes != null)
-            {
-                htmlAttributeDictionary = htmlAttributes as IDictionary<string, object>;
-                if (htmlAttributeDictionary == null)
-                {
-                    htmlAttributeDictionary = AnonymousObjectToHtmlAttributes(htmlAttributes);
-                }
-            }
-
+            var htmlAttributeDictionary = GetHtmlAttributeDictionaryOrNull(htmlAttributes);
             if (metadata == null)
             {
                 // RadioButton() case. Do not override checked attribute if isChecked is implicit.
@@ -941,7 +900,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             {
                 InnerHtml = listItemBuilder.ToString()
             };
-            tagBuilder.MergeAttributes(AnonymousObjectToHtmlAttributes(htmlAttributes));
+            tagBuilder.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes));
             tagBuilder.MergeAttribute("name", fullName, true /* replaceExisting */);
             tagBuilder.GenerateId(fullName, IdAttributeDotReplacement);
             if (allowMultiple)
@@ -998,7 +957,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             var tagBuilder = new TagBuilder("textarea");
             tagBuilder.GenerateId(fullName, IdAttributeDotReplacement);
-            tagBuilder.MergeAttributes(AnonymousObjectToHtmlAttributes(htmlAttributes), true);
+            tagBuilder.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes), true);
             if (rows > 0)
             {
                 tagBuilder.MergeAttribute("rows", rows.ToString(CultureInfo.InvariantCulture), true);
@@ -1026,8 +985,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         protected virtual HtmlString GenerateTextBox(ModelMetadata metadata, string name, object value, string format,
-            IDictionary<string, object> htmlAttributes)
+            object htmlAttributes)
         {
+            var htmlAttributeDictionary = GetHtmlAttributeDictionaryOrNull(htmlAttributes);
             return GenerateInput(InputType.Text,
                 metadata,
                 name,
@@ -1037,7 +997,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 setId: true,
                 isExplicitValue: true,
                 format: format,
-                htmlAttributes: htmlAttributes);
+                htmlAttributes: htmlAttributeDictionary);
         }
 
         protected virtual HtmlString GenerateInput(InputType inputType, ModelMetadata metadata, string name,
@@ -1189,7 +1149,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 tag = ViewContext.ValidationMessageElement;
             }
             var builder = new TagBuilder(tag);
-            builder.MergeAttributes(AnonymousObjectToHtmlAttributes(htmlAttributes));
+            builder.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes));
 
             // Only the style of the span is changed according to the errors if message is null or empty.
             // Otherwise the content and style is handled by the client-side validation.
@@ -1347,6 +1307,22 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 .OfType<IClientModelValidator>()
                 .SelectMany(v => v.GetClientValidationRules(
                     new ClientModelValidationContext(metadata, MetadataProvider)));
+        }
+
+        // Only need a dictionary if htmlAttributes is non-null. TagBuilder.MergeAttributes() is fine with null.
+        private static IDictionary<string, object> GetHtmlAttributeDictionaryOrNull(object htmlAttributes)
+        {
+            IDictionary<string, object> htmlAttributeDictionary = null;
+            if (htmlAttributes != null)
+            {
+                htmlAttributeDictionary = htmlAttributes as IDictionary<string, object>;
+                if (htmlAttributeDictionary == null)
+                {
+                    htmlAttributeDictionary = AnonymousObjectToHtmlAttributes(htmlAttributes);
+                }
+            }
+
+            return htmlAttributeDictionary;
         }
 
         private static string GetInputTypeString(InputType inputType)
