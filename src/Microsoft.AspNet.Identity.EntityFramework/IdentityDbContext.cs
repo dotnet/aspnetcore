@@ -75,13 +75,17 @@ namespace Microsoft.AspNet.Identity.EntityFramework
                     b.ToTable("AspNetRoles");
                 });
 
-            builder.Entity<IdentityUserClaim<TKey>>()
-                .Key(uc => uc.Id)
-                .ToTable("AspNetUserClaims");
+            builder.Entity<IdentityUserClaim<TKey>>(b =>
+                {
+                    b.Key(uc => uc.Id);
+                    b.ToTable("AspNetUserClaims");
+                });
 
-            builder.Entity<IdentityRoleClaim<TKey>>()
-                .Key(uc => uc.Id)
-                .ToTable("AspNetRoleClaims");
+            builder.Entity<IdentityRoleClaim<TKey>>(b =>
+                {
+                    b.Key(uc => uc.Id);
+                    b.ToTable("AspNetRoleClaims");
+                });
 
             var userType = builder.Model.GetEntityType(typeof(TUser));
             var roleType = builder.Model.GetEntityType(typeof(TRole));
@@ -100,17 +104,21 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             var rcfk = roleClaimType.AddForeignKey(roleType.GetKey(), new[] { roleClaimType.GetProperty("RoleId") });
             roleType.AddNavigation(new Navigation(rcfk, "Claims", false));
 
-            builder.Entity<IdentityUserRole<TKey>>()
-                .Key(r => new { r.UserId, r.RoleId })
+            builder.Entity<IdentityUserRole<TKey>>(b =>
+                {
+                    b.Key(r => new { r.UserId, r.RoleId });
+                    b.ToTable("AspNetUserRoles");
+                });
                 // Blocks delete currently without cascade
                 //.ForeignKeys(fk => fk.ForeignKey<TUser>(f => f.UserId))
                 //.ForeignKeys(fk => fk.ForeignKey<TRole>(f => f.RoleId));
-                .ToTable("AspNetUserRoles");
 
-            builder.Entity<IdentityUserLogin<TKey>>()
-                .Key(l => new { l.LoginProvider, l.ProviderKey, l.UserId })
+            builder.Entity<IdentityUserLogin<TKey>>(b =>
+                {
+                    b.Key(l => new { l.LoginProvider, l.ProviderKey, l.UserId });
+                    b.ToTable("AspNetUserLogins");
+                });
                 //.ForeignKeys(fk => fk.ForeignKey<TUser>(f => f.UserId))
-                .ToTable("AspNetUserLogins");
         }
     }
 }

@@ -54,31 +54,40 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
                 b.ToTable("AspNetUsers");
             });
 
-            builder.Entity<TRole>()
-                .Key(r => r.Id)
-                .ToTable("AspNetRoles");
+            builder.Entity<TRole>(b =>
+            {
+                b.Key(r => r.Id);
+                b.ToTable("AspNetRoles");
+            });
 
-            builder.Entity<TUserRole>()
-                .Key(r => new { r.UserId, r.RoleId })
-                .ForeignKeys(fk => fk.ForeignKey<TUser>(f => f.UserId))
-                .ForeignKeys(fk => fk.ForeignKey<TRole>(f => f.RoleId))
-                .ToTable("AspNetUserRoles");
+            builder.Entity<TUserRole>(b =>
+            {
+                b.Key(r => new { r.UserId, r.RoleId });
+                b.ForeignKeys(fk => fk.ForeignKey<TUser>(f => f.UserId));
+                b.ForeignKeys(fk => fk.ForeignKey<TRole>(f => f.RoleId));
+                b.ToTable("AspNetUserRoles");
+            });
 
-            builder.Entity<TUserLogin>()
-                .Key(l => new { l.LoginProvider, l.ProviderKey, l.UserId })
-                .ForeignKeys(fk => fk.ForeignKey<TUser>(f => f.UserId))
-                .ToTable("AspNetUserLogins");
+            builder.Entity<TUserLogin>(b =>
+            {
+                b.Key(l => new { l.LoginProvider, l.ProviderKey, l.UserId });
+                b.ForeignKeys(fk => fk.ForeignKey<TUser>(f => f.UserId));
+                b.ToTable("AspNetUserLogins");
+            });
 
-            builder.Entity<TUserClaim>()
-                .Key(c => c.Id)
-                .ForeignKeys(fk => fk.ForeignKey<TUser>(f => f.UserId))
-                .ToTable("AspNetUserClaims");
+            builder.Entity<TUserClaim>(b =>
+            {
+                b.Key(c => c.Id);
+                b.ForeignKeys(fk => fk.ForeignKey<TUser>(f => f.UserId));
+                b.ToTable("AspNetUserClaims");
+            });
 
-            builder.Entity<IdentityRoleClaim<TKey>>()
-                .Key(c => c.Id)
-                .ForeignKeys(fk => fk.ForeignKey<TRole>(f => f.RoleId))
-                .ToTable("AspNetRoleClaims");
-
+            builder.Entity<IdentityRoleClaim<TKey>>(b =>
+            {
+                b.Key(c => c.Id);
+                b.ForeignKeys(fk => fk.ForeignKey<TRole>(f => f.RoleId));
+                b.ToTable("AspNetRoleClaims");
+            });
         }
     }
 }
