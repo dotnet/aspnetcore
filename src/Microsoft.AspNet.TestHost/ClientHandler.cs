@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.IO;
@@ -57,18 +56,18 @@ namespace Microsoft.AspNet.TestHost
             }
 
             var state = new RequestState(request, cancellationToken);
-            HttpContent requestContent = request.Content ?? new StreamContent(Stream.Null);
-            Stream body = await requestContent.ReadAsStreamAsync();
+            var requestContent = request.Content ?? new StreamContent(Stream.Null);
+            var body = await requestContent.ReadAsStreamAsync();
             if (body.CanSeek)
             {
                 // This body may have been consumed before, rewind it.
                 body.Seek(0, SeekOrigin.Begin);
             }
             state.HttpContext.Request.Body = body;
-            CancellationTokenRegistration registration = cancellationToken.Register(state.Abort);
+            var registration = cancellationToken.Register(state.Abort);
 
             // Async offload, don't let the test code block the caller.
-            Task offload = Task.Factory.StartNew(async () =>
+            var offload = Task.Factory.StartNew(async () =>
                 {
                     try
                     {
@@ -128,7 +127,7 @@ namespace Microsoft.AspNet.TestHost
                 {
                     serverRequest.Headers.AppendValues(header.Key, header.Value.ToArray());
                 }
-                HttpContent requestContent = request.Content;
+                var requestContent = request.Content;
                 if (requestContent != null)
                 {
                     foreach (var header in request.Content.Headers)
@@ -155,7 +154,7 @@ namespace Microsoft.AspNet.TestHost
             {
                 if (!_responseTcs.Task.IsCompleted)
                 {
-                    HttpResponseMessage response = GenerateResponse();
+                    var response = GenerateResponse();
                     // Dispatch, as TrySetResult will synchronously execute the waiters callback and block our Write.
                     Task.Factory.StartNew(() => _responseTcs.TrySetResult(response));
                 }
