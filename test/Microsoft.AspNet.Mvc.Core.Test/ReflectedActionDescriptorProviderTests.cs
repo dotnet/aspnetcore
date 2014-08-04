@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Mvc.Test
             // Assert
             Assert.Equal(3, descriptor.FilterDescriptors.Count);
 
-            var filter1 = descriptor.FilterDescriptors[2];
+            var filter1 = descriptor.FilterDescriptors[0];
             Assert.Same(globalFilter, filter1.Filter);
             Assert.Equal(FilterScope.Global, filter1.Scope);
 
@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Equal(2, Assert.IsType<MyFilterAttribute>(filter2.Filter).Value);
             Assert.Equal(FilterScope.Controller, filter2.Scope);
 
-            var filter3 = descriptor.FilterDescriptors[0];
+            var filter3 = descriptor.FilterDescriptors[2];
             Assert.Equal(3, Assert.IsType<MyFilterAttribute>(filter3.Filter).Value); ;
             Assert.Equal(FilterScope.Action, filter3.Scope);
         }
