@@ -28,6 +28,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             view.Setup(v => v.RenderAsync(It.IsAny<ViewContext>()))
                  .Callback((ViewContext v) =>
                  {
+                     view.ToString();
                      v.Writer.Write("abcd");
                  })
                  .Returns(Task.FromResult(0));
@@ -78,6 +79,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             view.Setup(v => v.RenderAsync(It.IsAny<ViewContext>()))
                  .Callback((ViewContext v) =>
                  {
+                     view.ToString();
                      v.Writer.Write("abcd");
                  })
                  .Returns(Task.FromResult(0));
@@ -139,6 +141,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             view.Setup(v => v.RenderAsync(It.IsAny<ViewContext>()))
                  .Callback((ViewContext v) =>
                  {
+                     view.ToString();
                      v.Writer.Write(longString);
                      throw new Exception();
                  });

@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var provider = new Mock<TestableAssociatedValidatorProvider> { CallBase = true };
             provider.Setup(p => p.AbstractGetValidators(metadata, It.IsAny<IEnumerable<Attribute>>()))
                     .Callback<ModelMetadata, IEnumerable<Attribute>>((m, attributes) => callbackAttributes = attributes)
-                    .Returns(() => null)
+                    .Returns((IEnumerable<IModelValidator>)null)
                     .Verifiable();
 
             // Act
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Mock<TestableAssociatedValidatorProvider> provider = new Mock<TestableAssociatedValidatorProvider> { CallBase = true };
             provider.Setup(p => p.AbstractGetValidators(metadata, It.IsAny<IEnumerable<Attribute>>()))
                     .Callback<ModelMetadata, IEnumerable<Attribute>>((m, attributes) => callbackAttributes = attributes)
-                    .Returns(() => null)
+                    .Returns((IEnumerable<IModelValidator>)null)
                     .Verifiable();
 
             // Act
@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Mock<TestableAssociatedValidatorProvider> provider = new Mock<TestableAssociatedValidatorProvider> { CallBase = true };
             provider.Setup(p => p.AbstractGetValidators(metadata, It.IsAny<IEnumerable<Attribute>>()))
                     .Callback<ModelMetadata, IEnumerable<Attribute>>((m, attributes) => callbackAttributes = attributes)
-                    .Returns(() => null)
+                    .Returns((IEnumerable<IModelValidator>)null)
                     .Verifiable();
 
             // Act

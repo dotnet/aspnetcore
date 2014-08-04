@@ -146,6 +146,7 @@ namespace Microsoft.AspNet.Mvc
                 .Setup(f => f.OnException(It.IsAny<ExceptionContext>()))
                 .Callback<ExceptionContext>(context =>
                 {
+                    filter2.ToString();
                     context.Exception = null;
                 })
                 .Verifiable();
@@ -172,6 +173,7 @@ namespace Microsoft.AspNet.Mvc
                 .Setup(f => f.OnExceptionAsync(It.IsAny<ExceptionContext>()))
                 .Callback<ExceptionContext>(context =>
                 {
+                    filter2.ToString();
                     context.Exception = null;
                 })
                 .Returns<ExceptionContext>((context) => Task.FromResult<object>(null))
@@ -860,7 +862,11 @@ namespace Microsoft.AspNet.Mvc
             var filter2 = new Mock<IResultFilter>(MockBehavior.Strict);
             filter2
                 .Setup(f => f.OnResultExecuting(It.IsAny<ResultExecutingContext>()))
-                .Callback<ResultExecutingContext>(c => c.Cancel = true)
+                .Callback<ResultExecutingContext>(c =>
+                {
+                    filter2.ToString();
+                    c.Cancel = true;
+                })
                 .Verifiable();
 
             var filter3 = new Mock<IResultFilter>(MockBehavior.Strict);

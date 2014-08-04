@@ -540,7 +540,11 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var target = new Mock<IRouter>(MockBehavior.Strict);
             target
                 .Setup(e => e.GetVirtualPath(It.IsAny<VirtualPathContext>()))
-                .Callback<VirtualPathContext>(c => c.IsBound = true)
+                .Callback<VirtualPathContext>(c =>
+                {
+                    rt.ToString();
+                    c.IsBound = true;
+                })
                 .Returns<VirtualPathContext>(rc => null);
             rt.DefaultHandler = target.Object;
             var serviceProviderMock = new Mock<IServiceProvider>();

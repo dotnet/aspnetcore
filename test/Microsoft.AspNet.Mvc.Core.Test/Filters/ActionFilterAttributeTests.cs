@@ -71,7 +71,11 @@ namespace Microsoft.AspNet.Mvc.Test
 
             mock.As<IActionFilter>()
                 .Setup(f => f.OnActionExecuting(It.IsAny<ActionExecutingContext>()))
-                .Callback<ActionExecutingContext>(c => c.Result = new NoOpResult());
+                .Callback<ActionExecutingContext>(c =>
+                {
+                    mock.ToString();
+                    c.Result = new NoOpResult();
+                });
 
             mock.As<IActionFilter>()
                 .Setup(f => f.OnActionExecuted(It.IsAny<ActionExecutedContext>()))
@@ -154,7 +158,11 @@ namespace Microsoft.AspNet.Mvc.Test
 
             mock.As<IResultFilter>()
                 .Setup(f => f.OnResultExecuting(It.IsAny<ResultExecutingContext>()))
-                .Callback<ResultExecutingContext>(c => c.Result = new NoOpResult());
+                .Callback<ResultExecutingContext>(c =>
+                {
+                    mock.ToString();
+                    c.Result = new NoOpResult();
+                });
 
             mock.As<IResultFilter>()
                 .Setup(f => f.OnResultExecuted(It.IsAny<ResultExecutedContext>()))
@@ -188,7 +196,11 @@ namespace Microsoft.AspNet.Mvc.Test
 
             mock.As<IResultFilter>()
                 .Setup(f => f.OnResultExecuting(It.IsAny<ResultExecutingContext>()))
-                .Callback<ResultExecutingContext>(c => c.Cancel = true);
+                .Callback<ResultExecutingContext>(c =>
+                {
+                    mock.ToString();
+                    c.Cancel = true;
+                });
 
             mock.As<IResultFilter>()
                 .Setup(f => f.OnResultExecuted(It.IsAny<ResultExecutedContext>()))

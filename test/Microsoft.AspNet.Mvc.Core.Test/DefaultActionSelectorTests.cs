@@ -218,7 +218,7 @@ namespace Microsoft.AspNet.Mvc
             var bindingProvider = new Mock<IActionBindingContextProvider>(MockBehavior.Strict);
             bindingProvider
                 .Setup(bp => bp.GetActionBindingContextAsync(It.IsAny<ActionContext>()))
-                .Returns(() => Task.FromResult<ActionBindingContext>(null));
+                .Returns(Task.FromResult<ActionBindingContext>(null));
 
             return new DefaultActionSelector(actionProvider.Object, bindingProvider.Object, loggerFactory);
         }

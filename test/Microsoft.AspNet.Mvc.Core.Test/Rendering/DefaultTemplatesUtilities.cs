@@ -145,6 +145,7 @@ namespace Microsoft.AspNet.Mvc.Core
                 .Setup(v => v.RenderAsync(It.IsAny<ViewContext>()))
                 .Callback(async (ViewContext v) =>
                 {
+                    view.ToString();
                     await v.Writer.WriteAsync(FormatOutput(v.ViewData.ModelMetadata));
                 })
                 .Returns(Task.FromResult(0));
