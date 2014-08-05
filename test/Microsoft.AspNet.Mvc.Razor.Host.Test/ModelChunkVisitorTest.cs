@@ -4,12 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Text;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Razor
@@ -106,7 +108,7 @@ Environment.NewLine +
         public void ModelVisitor_GeneratesCorrectLineMappings()
         {
             // Arrange
-            var host = new MvcRazorHost("RazorView")
+            var host = new MvcRazorHost("appRoot", Mock.Of<IFileSystem>())
             {
                 DesignTimeMode = true
             };
@@ -116,7 +118,7 @@ Environment.NewLine +
             var expectedCode = ReadResource("TestFiles/Output/Model.cs");
             var expectedLineMappings = new List<LineMapping>
             {
-                BuildLineMapping(7, 0, 7, 126, 6, 7, 30),
+                BuildLineMapping(7, 0, 7, 151, 6, 7, 30),
             };
 
             // Act
@@ -146,7 +148,7 @@ Environment.NewLine +
 
         private static CodeGeneratorContext CreateContext()
         {
-            return CodeGeneratorContext.Create(new MvcRazorHost("RazorView"),
+            return CodeGeneratorContext.Create(new MvcRazorHost("appRoot", Mock.Of<IFileSystem>()),
                                               "MyClass",
                                               "MyNamespace",
                                               string.Empty,

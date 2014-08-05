@@ -1,8 +1,8 @@
-﻿namespace Razor
+﻿namespace Asp
 {
     using System.Threading.Tasks;
 
-    public class __CompiledTemplate : RazorView<
+    public class __CompiledTemplate : Microsoft.AspNet.Mvc.Razor.RazorPage<
 #line 1 ""
        System.Collections.IEnumerable
 

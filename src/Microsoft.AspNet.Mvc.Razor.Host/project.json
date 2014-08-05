@@ -4,8 +4,10 @@
     "warningsAsErrors": true
   },
   "dependencies": {
+    "Microsoft.AspNet.FileSystems": "1.0.0-*",
     "Microsoft.AspNet.Mvc.Common": "",
-    "Microsoft.AspNet.Razor": "4.0.0-*"
+    "Microsoft.AspNet.Razor": "4.0.0-*",
+    "Microsoft.Framework.Runtime.Interfaces":  "1.0.0-*"
   },
   "frameworks": {
     "net45": {

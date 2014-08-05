@@ -1,8 +1,8 @@
-﻿namespace Razor
+﻿namespace Asp
 {
     using System.Threading.Tasks;
 
-    public class __CompiledTemplate : RazorView<
+    public class __CompiledTemplate : Microsoft.AspNet.Mvc.Razor.RazorPage<
 #line 1 ""
        MyModel
 
@@ -32,7 +32,7 @@
         [Microsoft.AspNet.Mvc.ActivateAttribute]
         public
 #line 3 ""
-        MyService<TModel> Html
+        MyService<MyModel> Html
 
 #line default
 #line hidden

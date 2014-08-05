@@ -99,11 +99,26 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <inheritdoc />
         public abstract Task ExecuteAsync();
 
+        /// <summary>
+        /// Writes the specified <paramref name="value"/> with HTML encoding to <see cref="Output"/>.
+        /// </summary>
+        /// <param name="value">The <see cref="object"/> to write.</param>
         public virtual void Write(object value)
         {
             WriteTo(Output, value);
         }
 
+        /// <summary>
+        /// Writes the specified <paramref name="value"/> with HTML encoding to <paramref name="writer"/>.
+        /// </summary>
+        /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
+        /// <param name="value">The <see cref="object"/> to write.</param>
+        /// <remarks>
+        /// <paramref name="value"/>s of type <see cref="HtmlString"/> are written without encoding and the
+        /// <see cref="HelperResult.WriteTo(TextWriter)"/> is invoked for <see cref="HelperResult"/> types.
+        /// For all other types, the encoded result of <see cref="object.ToString"/> is written to the
+        /// <paramref name="writer"/>.
+        /// </remarks>
         public virtual void WriteTo(TextWriter writer, object content)
         {
             if (content != null)
@@ -128,11 +143,20 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
-        public void WriteLiteral(object value)
+        /// <summary>
+        /// Writes the specified <paramref name="value"/> without HTML encoding to <see cref="Output"/>.
+        /// </summary>
+        /// <param name="value">The <see cref="object"/> to write.</param>
+        public virtual void WriteLiteral(object value)
         {
             WriteLiteralTo(Output, value);
         }
 
+        /// <summary>
+        /// Writes the specified <paramref name="value"/> without HTML encoding to the <paramref name="writer"/>.
+        /// </summary>
+        /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
+        /// <param name="value">The <see cref="object"/> to write.</param>
         public virtual void WriteLiteralTo(TextWriter writer, object text)
         {
             if (text != null)

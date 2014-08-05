@@ -2,12 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Diagnostics;
-using Microsoft.Framework.Runtime;
-using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Razor.Test
+namespace Microsoft.AspNet.Mvc.Razor
 {
     public class ViewStartProviderTest
     {
@@ -18,10 +15,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         {
             // Arrange
             var appPath = @"x:\test";
-            var provider = new ViewStartProvider(GetAppEnv(appPath), Mock.Of<IRazorPageFactory>());
 
             // Act
-            var result = provider.GetViewStartLocations(viewPath);
+            var result = ViewStartUtility.GetViewStartLocations(appPath, viewPath);
 
             // Assert
             Assert.Empty(result);
@@ -37,9 +33,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                     "/Views/Home/View.cshtml",
                     new[]
                     {
-                        @"x:\test\myapp\Views\Home\_ViewStart.cshtml",
-                        @"x:\test\myapp\Views\_ViewStart.cshtml",
-                        @"x:\test\myapp\_ViewStart.cshtml",
+                        @"x:\test\myapp\Views\Home\_viewstart.cshtml",
+                        @"x:\test\myapp\Views\_viewstart.cshtml",
+                        @"x:\test\myapp\_viewstart.cshtml",
                     }
                 };
 
@@ -49,9 +45,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                     "Views/Home/View.cshtml",
                     new[]
                     {
-                        @"x:\test\myapp\Views\Home\_ViewStart.cshtml",
-                        @"x:\test\myapp\Views\_ViewStart.cshtml",
-                        @"x:\test\myapp\_ViewStart.cshtml",
+                        @"x:\test\myapp\Views\Home\_viewstart.cshtml",
+                        @"x:\test\myapp\Views\_viewstart.cshtml",
+                        @"x:\test\myapp\_viewstart.cshtml",
                     }
                 };
 
@@ -61,9 +57,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                     "Views/Home/View.cshtml",
                     new[]
                     {
-                        @"x:\test\myapp\Views\Home\_ViewStart.cshtml",
-                        @"x:\test\myapp\Views\_ViewStart.cshtml",
-                        @"x:\test\myapp\_ViewStart.cshtml",
+                        @"x:\test\myapp\Views\Home\_viewstart.cshtml",
+                        @"x:\test\myapp\Views\_viewstart.cshtml",
+                        @"x:\test\myapp\_viewstart.cshtml",
                     }
                 };
             }
@@ -75,22 +71,11 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                                                                              string viewPath,
                                                                              IEnumerable<string> expected)
         {
-            // Arrange
-            var provider = new ViewStartProvider(GetAppEnv(appPath), Mock.Of<IRazorPageFactory>());
-
             // Act
-            var result = provider.GetViewStartLocations(viewPath);
+            var result = ViewStartUtility.GetViewStartLocations(appPath, viewPath);
 
             // Assert
             Assert.Equal(expected, result);
-        }
-
-        private static IApplicationEnvironment GetAppEnv(string appPath)
-        {
-            var appEnv = new Mock<IApplicationEnvironment>();
-            appEnv.Setup(p => p.ApplicationBasePath)
-                  .Returns(appPath);
-            return appEnv.Object;
         }
     }
 }

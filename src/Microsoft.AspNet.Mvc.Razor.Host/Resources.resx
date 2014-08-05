@@ -120,6 +120,9 @@
   <data name="ArgumentCannotBeNullOrEmpy" xml:space="preserve">
     <value>Argument cannot be null or empty.</value>
   </data>
+  <data name="ArgumentMustBeOfType" xml:space="preserve">
+    <value>Argument must be an instance of '{0}'.</value>
+  </data>
   <data name="MvcRazorCodeParser_CannotHaveModelAndInheritsKeyword" xml:space="preserve">
     <value>The 'inherits' keyword is not allowed when a '{0}' keyword is used.</value>
   </data>

@@ -4,7 +4,8 @@
   },
   "resources": "TestFiles\\**",
   "dependencies": {
-    "Microsoft.AspNet.Mvc.Razor.Host" : "",
+    "Microsoft.AspNet.Mvc.Razor.Host": "",
+    "Microsoft.AspNet.Testing": "1.0.0-*",
     "Xunit.KRunner": "1.0.0-*"
   },
   "commands": {

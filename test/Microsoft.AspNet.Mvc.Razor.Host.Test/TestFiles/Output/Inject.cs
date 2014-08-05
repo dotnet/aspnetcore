@@ -1,4 +1,4 @@
-﻿namespace Razor
+﻿namespace Asp
 {
 #line 1 ""
 using MyNamespace
@@ -8,7 +8,7 @@ using MyNamespace
     ;
     using System.Threading.Tasks;
 
-    public class __CompiledTemplate : RazorView<dynamic>
+    public class __CompiledTemplate : Microsoft.AspNet.Mvc.Razor.RazorPage<dynamic>
     {
         private static object @__o;
         private void @__RazorDesignTimeHelpers__()

@@ -3,12 +3,14 @@
 
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Text;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Razor
@@ -114,7 +116,7 @@ MyType2 @MyPropertyName2
         public void InjectVisitor_GeneratesCorrectLineMappings()
         {
             // Arrange
-            var host = new MvcRazorHost("RazorView")
+            var host = new MvcRazorHost("appRoot", Mock.Of<IFileSystem>())
             {
                 DesignTimeMode = true
             };
@@ -124,8 +126,8 @@ MyType2 @MyPropertyName2
             var expectedCode = ReadResource("TestFiles/Output/Inject.cs");
             var expectedLineMappings = new List<LineMapping>
             {
-                BuildLineMapping(1, 0, 1, 32, 3, 0, 17),
-                BuildLineMapping(28, 1, 8, 573, 26, 8, 20)
+                BuildLineMapping(1, 0, 1, 30, 3, 0, 17),
+                BuildLineMapping(28, 1, 8, 598, 26, 8, 20)
             };
 
             // Act
@@ -146,7 +148,7 @@ MyType2 @MyPropertyName2
         public void InjectVisitorWithModel_GeneratesCorrectLineMappings()
         {
             // Arrange
-            var host = new MvcRazorHost("RazorView")
+            var host = new MvcRazorHost("appRoot", Mock.Of<IFileSystem>())
             {
                 DesignTimeMode = true
             };
@@ -156,9 +158,9 @@ MyType2 @MyPropertyName2
             var expectedCode = ReadResource("TestFiles/Output/InjectWithModel.cs");
             var expectedLineMappings = new List<LineMapping>
             {
-                BuildLineMapping(7, 0, 7, 126, 6, 7, 7),
-                BuildLineMapping(24, 1, 8, 562, 26, 8, 20),
-                BuildLineMapping(54, 2, 8, 732, 34, 8, 22)
+                BuildLineMapping(7, 0, 7, 151, 6, 7, 7),
+                BuildLineMapping(24, 1, 8, 587, 26, 8, 20),
+                BuildLineMapping(54, 2, 8, 757, 34, 8, 23)
             };
 
             // Act
@@ -188,7 +190,7 @@ MyType2 @MyPropertyName2
 
         private static CodeGeneratorContext CreateContext()
         {
-            return CodeGeneratorContext.Create(new MvcRazorHost("RazorView"),
+            return CodeGeneratorContext.Create(new MvcRazorHost("appRoot", Mock.Of<IFileSystem>()),
                                               "MyClass",
                                               "MyNamespace",
                                               string.Empty,
@@ -203,11 +205,11 @@ MyType2 @MyPropertyName2
                                                     int generatedCharacterIndex,
                                                     int contentLength)
         {
-            var documentLocation = new SourceLocation(documentAbsoluteIndex, 
-                                                      documentLineIndex, 
+            var documentLocation = new SourceLocation(documentAbsoluteIndex,
+                                                      documentLineIndex,
                                                       documentCharacterIndex);
-            var generatedLocation = new SourceLocation(generatedAbsoluteIndex, 
-                                                       generatedLineIndex, 
+            var generatedLocation = new SourceLocation(generatedAbsoluteIndex,
+                                                       generatedLineIndex,
                                                        generatedCharacterIndex);
 
             return new LineMapping(
