@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Routing.Template
 
         private static readonly char[] Delimiters = new char[] { SeparatorChar };
 
-        public TemplateMatcher(Template template)
+        public TemplateMatcher(RouteTemplate template)
         {
             if (template == null)
             {
@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Routing.Template
             Template = template;
         }
 
-        public Template Template { get; private set; }
+        public RouteTemplate Template { get; private set; }
 
         public IDictionary<string, object> Match(string requestPath, IDictionary<string, object> defaults)
         {

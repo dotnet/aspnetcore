@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "cool";
 
-            var expected = new Template(new List<TemplateSegment>());
+            var expected = new RouteTemplate(new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateLiteral("cool"));
 
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var actual = TemplateParser.Parse(template, _inlineConstraintResolver);
 
             // Assert
-            Assert.Equal<Template>(expected, actual, new TemplateEqualityComparer());
+            Assert.Equal<RouteTemplate>(expected, actual, new TemplateEqualityComparer());
         }
 
         [Fact]
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "{p}";
 
-            var expected = new Template(new List<TemplateSegment>());
+            var expected = new RouteTemplate(new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p", false, false, defaultValue: null, inlineConstraint: null));
             expected.Parameters.Add(expected.Segments[0].Parts[0]);
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var actual = TemplateParser.Parse(template, _inlineConstraintResolver);
 
             // Assert
-            Assert.Equal<Template>(expected, actual, new TemplateEqualityComparer());
+            Assert.Equal<RouteTemplate>(expected, actual, new TemplateEqualityComparer());
         }
 
         [Fact]
@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "{p?}";
 
-            var expected = new Template(new List<TemplateSegment>());
+            var expected = new RouteTemplate(new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p", false, true, defaultValue: null, inlineConstraint: null));
             expected.Parameters.Add(expected.Segments[0].Parts[0]);
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var actual = TemplateParser.Parse(template, _inlineConstraintResolver);
 
             // Assert
-            Assert.Equal<Template>(expected, actual, new TemplateEqualityComparer());
+            Assert.Equal<RouteTemplate>(expected, actual, new TemplateEqualityComparer());
         }
 
         [Fact]
@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "cool/awesome/super";
 
-            var expected = new Template(new List<TemplateSegment>());
+            var expected = new RouteTemplate(new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateLiteral("cool"));
             expected.Segments.Add(new TemplateSegment());
@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var actual = TemplateParser.Parse(template, _inlineConstraintResolver);
 
             // Assert
-            Assert.Equal<Template>(expected, actual, new TemplateEqualityComparer());
+            Assert.Equal<RouteTemplate>(expected, actual, new TemplateEqualityComparer());
         }
 
         [Fact]
@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "{p1}/{p2}/{*p3}";
 
-            var expected = new Template(new List<TemplateSegment>());
+            var expected = new RouteTemplate(new List<TemplateSegment>());
 
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1",
@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var actual = TemplateParser.Parse(template, _inlineConstraintResolver);
 
             // Assert
-            Assert.Equal<Template>(expected, actual, new TemplateEqualityComparer());
+            Assert.Equal<RouteTemplate>(expected, actual, new TemplateEqualityComparer());
         }
 
         [Fact]
@@ -136,7 +136,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "cool-{p1}";
 
-            var expected = new Template(new List<TemplateSegment>());
+            var expected = new RouteTemplate(new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateLiteral("cool-"));
             expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1",
@@ -150,7 +150,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var actual = TemplateParser.Parse(template, _inlineConstraintResolver);
 
             // Assert
-            Assert.Equal<Template>(expected, actual, new TemplateEqualityComparer());
+            Assert.Equal<RouteTemplate>(expected, actual, new TemplateEqualityComparer());
         }
 
         [Fact]
@@ -159,7 +159,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "{p1}-cool";
 
-            var expected = new Template(new List<TemplateSegment>());
+            var expected = new RouteTemplate(new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1",
                                                                         false,
@@ -173,7 +173,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var actual = TemplateParser.Parse(template, _inlineConstraintResolver);
 
             // Assert
-            Assert.Equal<Template>(expected, actual, new TemplateEqualityComparer());
+            Assert.Equal<RouteTemplate>(expected, actual, new TemplateEqualityComparer());
         }
 
         [Fact]
@@ -182,7 +182,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "{p1}-cool-{p2}";
 
-            var expected = new Template(new List<TemplateSegment>());
+            var expected = new RouteTemplate(new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1",
                                                                         false,
@@ -202,7 +202,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var actual = TemplateParser.Parse(template, _inlineConstraintResolver);
 
             // Assert
-            Assert.Equal<Template>(expected, actual, new TemplateEqualityComparer());
+            Assert.Equal<RouteTemplate>(expected, actual, new TemplateEqualityComparer());
         }
 
         [Fact]
@@ -211,7 +211,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "cool-{p1}-awesome";
 
-            var expected = new Template(new List<TemplateSegment>());
+            var expected = new RouteTemplate(new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateLiteral("cool-"));
             expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1",
@@ -226,7 +226,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var actual = TemplateParser.Parse(template, _inlineConstraintResolver);
 
             // Assert
-            Assert.Equal<Template>(expected, actual, new TemplateEqualityComparer());
+            Assert.Equal<RouteTemplate>(expected, actual, new TemplateEqualityComparer());
         }
 
         [Fact]
@@ -454,9 +454,9 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             return new DefaultInlineConstraintResolver(serviceProvider, accessor);
         }
 
-        private class TemplateEqualityComparer : IEqualityComparer<Template>
+        private class TemplateEqualityComparer : IEqualityComparer<RouteTemplate>
         {
-            public bool Equals(Template x, Template y)
+            public bool Equals(RouteTemplate x, RouteTemplate y)
             {
                 if (x == null && y == null)
                 {
@@ -522,7 +522,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                 return true;
             }
 
-            public int GetHashCode(Template obj)
+            public int GetHashCode(RouteTemplate obj)
             {
                 throw new NotImplementedException();
             }

@@ -287,7 +287,7 @@ namespace Microsoft.AspNet.Routing.Tests
             return templatePart;
         }
 
-        private static Template.Template ParseRouteTemplate(string template)
+        private static RouteTemplate ParseRouteTemplate(string template)
         {
             var _constraintResolver = GetConstraintResolver();
             return TemplateParser.Parse(template, _constraintResolver);

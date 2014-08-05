@@ -71,7 +71,7 @@
     <Compile Include="RouterMiddleware.cs" />
     <Compile Include="RouteValueDictionary.cs" />
     <Compile Include="RoutingServices.cs" />
-    <Compile Include="Template\Template.cs" />
+    <Compile Include="Template\RouteTemplate.cs" />
     <Compile Include="Template\TemplateBinder.cs" />
     <Compile Include="Template\TemplateMatcher.cs" />
     <Compile Include="Template\TemplateParser.cs" />

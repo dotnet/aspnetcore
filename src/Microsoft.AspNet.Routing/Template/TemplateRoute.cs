@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Routing.Template
         private readonly IDictionary<string, object> _defaults;
         private readonly IDictionary<string, IRouteConstraint> _constraints;
         private readonly IRouter _target;
-        private readonly Template _parsedTemplate;
+        private readonly RouteTemplate _parsedTemplate;
         private readonly string _routeTemplate;
         private readonly TemplateMatcher _matcher;
         private readonly TemplateBinder _binder;

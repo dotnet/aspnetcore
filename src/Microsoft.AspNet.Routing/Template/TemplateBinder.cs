@@ -14,9 +14,9 @@ namespace Microsoft.AspNet.Routing.Template
     public class TemplateBinder
     {
         private readonly IDictionary<string, object> _defaults;
-        private readonly Template _template;
+        private readonly RouteTemplate _template;
 
-        public TemplateBinder(Template template, IDictionary<string, object> defaults)
+        public TemplateBinder(RouteTemplate template, IDictionary<string, object> defaults)
         {
             if (template == null)
             {
