@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </remarks>
         public static string ValueForModel([NotNull] this IHtmlHelper htmlHelper)
         {
-            return htmlHelper.Value(name: string.Empty, format: null);
+            return htmlHelper.Value(name: null, format: null);
         }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </remarks>
         public static string ValueForModel([NotNull] this IHtmlHelper htmlHelper, string format)
         {
-            return htmlHelper.Value(name: string.Empty, format: format);
+            return htmlHelper.Value(name: null, format: format);
         }
     }
 }

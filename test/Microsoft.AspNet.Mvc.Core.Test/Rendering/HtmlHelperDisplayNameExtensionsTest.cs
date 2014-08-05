@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.Core
                 DefaultTemplatesUtilities.GetHtmlHelper<IEnumerable<DefaultTemplatesUtilities.ObjectTemplateModel>>(null);
 
             // Act
-            var displayNameResult = helper.DisplayName("");
+            var displayNameResult = helper.DisplayName(expression: string.Empty);
             var displayNameNullResult = helper.DisplayName(expression: null);   // null is another alias for current model
             var displayNameForResult = helper.DisplayNameFor(m => m);
             var displayNameForEnumerableModelResult = enumerableHelper.DisplayNameFor(m => m);
@@ -96,7 +96,7 @@ namespace Microsoft.AspNet.Mvc.Core
             enumerableHelper.ViewData.ModelMetadata = metadata;
 
             // Act
-            var displayNameResult = helper.DisplayName("");
+            var displayNameResult = helper.DisplayName(expression: string.Empty);
             var displayNameForResult = helper.DisplayNameFor(m => m);
             var displayNameForEnumerableResult = enumerableHelper.DisplayNameFor(m => m);
             var displayNameForModelResult = helper.DisplayNameForModel();
@@ -153,7 +153,7 @@ namespace Microsoft.AspNet.Mvc.Core
             enumerableHelper.ViewData.ModelMetadata.DisplayName = displayName;
 
             // Act
-            var displayNameResult = helper.DisplayName("");
+            var displayNameResult = helper.DisplayName(expression: string.Empty);
             var displayNameForResult = helper.DisplayNameFor(m => m);
             var displayNameForEnumerableResult = enumerableHelper.DisplayNameFor(m => m);
             var displayNameForModelResult = helper.DisplayNameForModel();

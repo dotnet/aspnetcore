@@ -94,6 +94,7 @@ namespace Microsoft.AspNet.Mvc.Core
 
             // Act & Assert
             Assert.Equal(expectedModelValue, helper.Value(name: string.Empty));
+            Assert.Equal(expectedModelValue, helper.Value(name: null)); // null is another alias for current model
             Assert.Equal(expectedModelValue, helper.ValueFor(m => m));
             Assert.Equal(expectedModelValue, helper.ValueForModel());
         }

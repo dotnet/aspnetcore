@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var helper = DefaultTemplatesUtilities.GetHtmlHelper();
 
             // Act
-            var labelResult = helper.Label("");
+            var labelResult = helper.Label(expression: string.Empty);
             var labelNullResult = helper.Label(expression: null);   // null is another alias for current model
             var labelForResult = helper.LabelFor(m => m);
             var labelForModelResult = helper.LabelForModel();
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Mvc.Core
             helper.ViewData.ModelMetadata = metadata;
 
             // Act
-            var labelResult = helper.Label("");
+            var labelResult = helper.Label(expression: string.Empty);
             var labelNullResult = helper.Label(expression: null);   // null is another alias for current model
             var labelForResult = helper.LabelFor(m => m);
             var labelForModelResult = helper.LabelForModel();
@@ -108,7 +108,7 @@ namespace Microsoft.AspNet.Mvc.Core
             helper.ViewData.ModelMetadata = metadata;
 
             // Act
-            var labelResult = helper.Label("");
+            var labelResult = helper.Label(expression: string.Empty);
             var labelForResult = helper.LabelFor(m => m);
             var labelForModelResult = helper.LabelForModel();
 
@@ -152,7 +152,7 @@ namespace Microsoft.AspNet.Mvc.Core
             helper.ViewData.ModelMetadata.DisplayName = string.Empty;
 
             // Act
-            var labelResult = helper.Label("");
+            var labelResult = helper.Label(expression: string.Empty);
             var labelNullResult = helper.Label(expression: null);   // null is another alias for current model
             var labelForResult = helper.LabelFor(m => m);
             var labelForModelResult = helper.LabelForModel();
@@ -174,7 +174,7 @@ namespace Microsoft.AspNet.Mvc.Core
             helper.ViewData.ModelMetadata.DisplayName = displayName;
 
             // Act
-            var labelResult = helper.Label("");
+            var labelResult = helper.Label(expression: string.Empty);
             var labelForResult = helper.LabelFor(m => m);
             var labelForModelResult = helper.LabelForModel();
 
@@ -195,7 +195,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(metadataHelper.MetadataProvider.Object);
 
             // Act
-            var labelResult = helper.Label("");
+            var labelResult = helper.Label(expression: string.Empty);
             var labelNullResult = helper.Label(expression: null);   // null is another alias for current model
             var labelForResult = helper.LabelFor(m => m);
             var labelForModelResult = helper.LabelForModel();

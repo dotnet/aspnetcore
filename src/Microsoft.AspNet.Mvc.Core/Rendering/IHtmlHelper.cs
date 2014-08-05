@@ -236,7 +236,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </summary>
         /// <param name="name">The name of the HTML element.</param>
         /// <returns>The ID of the HTML element.</returns>
-        string GenerateIdFromName(string name);
+        string GenerateIdFromName([NotNull] string name);
 
         /// <summary>
         /// Returns information about about client validation rules for the given <paramref name="metadata"/> or
@@ -491,6 +491,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Converts the expression result to a <see cref="System.String"/> directly if
         /// <paramref name="format"/> is <c>null</c> or empty.
         /// </remarks>
-        string Value([NotNull] string name, string format);
+        string Value(string name, string format);
     }
 }

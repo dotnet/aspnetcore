@@ -47,12 +47,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         public static HtmlString LabelForModel([NotNull] this IHtmlHelper html, string labelText)
         {
-            return html.Label(expression: string.Empty, labelText: labelText, htmlAttributes: null);
+            return html.Label(expression: null, labelText: labelText, htmlAttributes: null);
         }
 
         public static HtmlString LabelForModel([NotNull] this IHtmlHelper html, object htmlAttributes)
         {
-            return html.Label(expression: string.Empty, labelText: null, htmlAttributes: htmlAttributes);
+            return html.Label(expression: null, labelText: null, htmlAttributes: htmlAttributes);
         }
 
         public static HtmlString LabelForModel(
@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string labelText,
             object htmlAttributes)
         {
-            return html.Label(expression: string.Empty, labelText: labelText, htmlAttributes: htmlAttributes);
+            return html.Label(expression: null, labelText: labelText, htmlAttributes: htmlAttributes);
         }
     }
 }

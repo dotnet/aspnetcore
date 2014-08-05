@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var helper = DefaultTemplatesUtilities.GetHtmlHelper<OverriddenToStringModel>(model: null);
 
             // Act
-            var result = helper.DisplayText("");
+            var result = helper.DisplayText(name: string.Empty);
 
             // Assert
             Assert.Empty(result);
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Mvc.Core
             helper.ViewData.ModelMetadata.NullDisplayText = "Null display Text";
 
             // Act
-            var result = helper.DisplayText("");
+            var result = helper.DisplayText(name: string.Empty);
 
             // Assert
             Assert.Equal("Null display Text", result);
@@ -75,10 +75,12 @@ namespace Microsoft.AspNet.Mvc.Core
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
 
             // Act
-            var result = helper.DisplayText("");
+            var result = helper.DisplayText(name: string.Empty);
+            var nullResult = helper.DisplayText(name: null);    // null is another alias for current model
 
             // Assert
             Assert.Equal("Model value", result);
+            Assert.Equal("Model value", nullResult);
         }
 
         [Fact]
@@ -118,7 +120,7 @@ namespace Microsoft.AspNet.Mvc.Core
             helper.ViewData.ModelMetadata.SimpleDisplayText = "Simple display text";
 
             // Act
-            var result = helper.DisplayText("");
+            var result = helper.DisplayText(name: string.Empty);
 
             // Assert
             Assert.Equal("Simple display text", result);

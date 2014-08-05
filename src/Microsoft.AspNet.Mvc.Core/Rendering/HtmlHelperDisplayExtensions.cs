@@ -90,19 +90,18 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         public static HtmlString DisplayForModel([NotNull] this IHtmlHelper html)
         {
-            return html.Display(expression: string.Empty, templateName: null, htmlFieldName: null,
-                additionalViewData: null);
+            return html.Display(expression: null, templateName: null, htmlFieldName: null, additionalViewData: null);
         }
 
         public static HtmlString DisplayForModel([NotNull] this IHtmlHelper html, object additionalViewData)
         {
-            return html.Display(expression: string.Empty, templateName: null, htmlFieldName: null,
+            return html.Display(expression: null, templateName: null, htmlFieldName: null,
                 additionalViewData: additionalViewData);
         }
 
         public static HtmlString DisplayForModel([NotNull] this IHtmlHelper html, string templateName)
         {
-            return html.Display(expression: string.Empty, templateName: templateName, htmlFieldName: null,
+            return html.Display(expression: null, templateName: templateName, htmlFieldName: null,
                 additionalViewData: null);
         }
 
@@ -111,7 +110,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string templateName,
             object additionalViewData)
         {
-            return html.Display(expression: string.Empty, templateName: templateName, htmlFieldName: null,
+            return html.Display(expression: null, templateName: templateName, htmlFieldName: null,
                 additionalViewData: additionalViewData);
         }
 
@@ -120,7 +119,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string templateName,
             string htmlFieldName)
         {
-            return html.Display(expression: string.Empty, templateName: templateName, htmlFieldName: htmlFieldName,
+            return html.Display(expression: null, templateName: templateName, htmlFieldName: htmlFieldName,
                 additionalViewData: null);
         }
 
@@ -130,7 +129,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string htmlFieldName,
             object additionalViewData)
         {
-            return html.Display(expression: string.Empty, templateName: templateName, htmlFieldName: htmlFieldName,
+            return html.Display(expression: null, templateName: templateName, htmlFieldName: htmlFieldName,
                 additionalViewData: additionalViewData);
         }
     }

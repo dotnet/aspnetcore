@@ -32,15 +32,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         private static string BooleanTemplateCheckbox(IHtmlHelper html, bool value)
         {
-            return html.CheckBox(string.Empty, value, CreateHtmlAttributes(html, "check-box")).ToString();
+            return html.CheckBox(
+                name: null,
+                isChecked: value,
+                htmlAttributes: CreateHtmlAttributes(html, "check-box"))
+                    .ToString();
         }
 
         private static string BooleanTemplateDropDownList(IHtmlHelper html, bool? value)
         {
             return html.DropDownList(
-                string.Empty,
-                DefaultDisplayTemplates.TriStateValues(value),
-                CreateHtmlAttributes(html, "list-box tri-state"))
+                name: null,
+                selectList: DefaultDisplayTemplates.TriStateValues(value),
+                optionLabel: null,
+                htmlAttributes: CreateHtmlAttributes(html, "list-box tri-state"))
                     .ToString();
         }
 
@@ -144,7 +149,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
 
             var htmlAttributesObject = viewData[HtmlAttributeKey];
-            var hiddenResult = html.Hidden(string.Empty, model, htmlAttributesObject);
+            var hiddenResult = html.Hidden(name: null, value: model, htmlAttributes: htmlAttributesObject);
             result += hiddenResult.ToString();
 
             return result;
@@ -262,9 +267,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         public static string PasswordTemplate(IHtmlHelper html)
         {
-            return html.Password(string.Empty,
-                html.ViewData.TemplateInfo.FormattedModelValue,
-                CreateHtmlAttributes(html, "text-box single-line password"))
+            return html.Password(
+                name: null,
+                value: html.ViewData.TemplateInfo.FormattedModelValue,
+                htmlAttributes: CreateHtmlAttributes(html, "text-box single-line password"))
                     .ToString();
         }
 
@@ -356,8 +362,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         private static string GenerateTextBox(IHtmlHelper html, string inputType, object value)
         {
             return html.TextBox(
-                name: string.Empty,
+                name: null,
                 value: value,
+                format: null,
                 htmlAttributes: CreateHtmlAttributes(html, className: "text-box single-line", inputType: inputType))
                     .ToString();
         }

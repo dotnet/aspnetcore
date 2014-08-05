@@ -25,11 +25,11 @@ namespace Microsoft.AspNet.Mvc.Core
             var helper = DefaultTemplatesUtilities.GetHtmlHelper();
 
             // Act
-            var idResult = helper.Id("");
+            var idResult = helper.Id(name: string.Empty);
             var idNullResult = helper.Id(name: null);   // null is another alias for current model
             var idForResult = helper.IdFor(m => m);
             var idForModelResult = helper.IdForModel();
-            var nameResult = helper.Name("");
+            var nameResult = helper.Name(name: string.Empty);
             var nameNullResult = helper.Name(name: null);
             var nameForResult = helper.NameFor(m => m);
             var nameForModelResult = helper.NameForModel();
@@ -58,10 +58,10 @@ namespace Microsoft.AspNet.Mvc.Core
             helper.ViewData.TemplateInfo.HtmlFieldPrefix = prefix;
 
             // Act
-            var idResult = helper.Id("");
+            var idResult = helper.Id(name: string.Empty);
             var idForResult = helper.IdFor(m => m);
             var idForModelResult = helper.IdForModel();
-            var nameResult = helper.Name("");
+            var nameResult = helper.Name(name: string.Empty);
             var nameForResult = helper.NameFor(m => m);
             var nameForModelResult = helper.NameForModel();
 
@@ -152,10 +152,10 @@ namespace Microsoft.AspNet.Mvc.Core
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(provider.Object);
 
             // Act (do not throw)
-            var idResult = helper.Id("");
+            var idResult = helper.Id(name: string.Empty);
             var idForResult = helper.IdFor(m => m);
             var idForModelResult = helper.IdForModel();
-            var nameResult = helper.Name("");
+            var nameResult = helper.Name(name: string.Empty);
             var nameForResult = helper.NameFor(m => m);
             var nameForModelResult = helper.NameForModel();
 

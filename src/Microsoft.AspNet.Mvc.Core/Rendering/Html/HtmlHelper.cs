@@ -18,7 +18,7 @@ using Microsoft.AspNet.Mvc.Rendering.Expressions;
 namespace Microsoft.AspNet.Mvc.Rendering
 {
     /// <summary>
-    /// Default implementation of non-generic portions of <see cref="IHtmlHelper{TModel}"/>.
+    /// Default implementation of <see cref="IHtmlHelper">.
     /// </summary>
     public class HtmlHelper : IHtmlHelper, ICanHasViewContext
     {
@@ -482,7 +482,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public string Value([NotNull] string name, string format)
+        public string Value(string name, string format)
         {
             return GenerateValue(name, value: null, format: format, useViewData: true);
         }
@@ -1275,7 +1275,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
             else if (useViewData)
             {
-                if (name.Length == 0)
+                if (string.IsNullOrEmpty(name))
                 {
                     // case 2(a): format the value from ModelMetadata for the current model
                     var metadata = ViewData.ModelMetadata;

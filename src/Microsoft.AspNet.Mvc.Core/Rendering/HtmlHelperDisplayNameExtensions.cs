@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A <see cref="String"/> containing the display name.</returns>
         public static string DisplayNameForModel([NotNull] this IHtmlHelper htmlHelper)
         {
-            return htmlHelper.DisplayName(string.Empty);
+            return htmlHelper.DisplayName(expression: null);
         }
 
         /// <summary>

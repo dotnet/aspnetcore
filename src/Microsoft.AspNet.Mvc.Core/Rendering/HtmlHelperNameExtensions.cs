@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A <see cref="System.String"/> containing the element name.</returns>
         public static string NameForModel([NotNull] this IHtmlHelper htmlHelper)
         {
-            return htmlHelper.Name(string.Empty);
+            return htmlHelper.Name(name: null);
         }
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A <see cref="System.String"/> containing the element Id.</returns>
         public static string IdForModel([NotNull] this IHtmlHelper htmlHelper)
         {
-            return htmlHelper.Id(string.Empty);
+            return htmlHelper.Id(name: null);
         }
     }
 }

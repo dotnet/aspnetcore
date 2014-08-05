@@ -8,100 +8,101 @@ namespace Microsoft.AspNet.Mvc.Rendering
 {
     public static class EditorExtensions
     {
-        public static HtmlString Editor(this IHtmlHelper html, string expression)
+        public static HtmlString Editor([NotNull] this IHtmlHelper html, string expression)
         {
             return html.Editor(expression, templateName: null, htmlFieldName: null, additionalViewData: null);
         }
 
-        public static HtmlString Editor(this IHtmlHelper html, string expression, object additionalViewData)
+        public static HtmlString Editor([NotNull] this IHtmlHelper html, string expression, object additionalViewData)
         {
             return html.Editor(expression, templateName: null, htmlFieldName: null,
                 additionalViewData: additionalViewData);
         }
 
-        public static HtmlString Editor(this IHtmlHelper html, string expression, string templateName)
+        public static HtmlString Editor([NotNull] this IHtmlHelper html, string expression, string templateName)
         {
             return html.Editor(expression, templateName, htmlFieldName: null, additionalViewData: null);
         }
 
-        public static HtmlString Editor(this IHtmlHelper html, string expression, string templateName,
+        public static HtmlString Editor([NotNull] this IHtmlHelper html, string expression, string templateName,
             object additionalViewData)
         {
             return html.Editor(expression, templateName, htmlFieldName: null, additionalViewData: additionalViewData);
         }
 
-        public static HtmlString Editor(this IHtmlHelper html, string expression, string templateName,
+        public static HtmlString Editor([NotNull] this IHtmlHelper html, string expression, string templateName,
             string htmlFieldName)
         {
             return html.Editor(expression, templateName, htmlFieldName, additionalViewData: null);
         }
 
-        public static HtmlString EditorFor<TModel, TValue>(this IHtmlHelper<TModel> html,
-            Expression<Func<TModel, TValue>> expression)
+        public static HtmlString EditorFor<TModel, TValue>([NotNull] this IHtmlHelper<TModel> html,
+            [NotNull] Expression<Func<TModel, TValue>> expression)
         {
             return html.EditorFor(expression, templateName: null, htmlFieldName: null, additionalViewData: null);
         }
 
-        public static HtmlString EditorFor<TModel, TValue>(this IHtmlHelper<TModel> html,
-            Expression<Func<TModel, TValue>> expression, object additionalViewData)
+        public static HtmlString EditorFor<TModel, TValue>([NotNull] this IHtmlHelper<TModel> html,
+            [NotNull] Expression<Func<TModel, TValue>> expression, object additionalViewData)
         {
             return html.EditorFor(expression, templateName: null, htmlFieldName: null,
                 additionalViewData: additionalViewData);
         }
 
-        public static HtmlString EditorFor<TModel, TValue>(this IHtmlHelper<TModel> html,
-            Expression<Func<TModel, TValue>> expression, string templateName)
+        public static HtmlString EditorFor<TModel, TValue>([NotNull] this IHtmlHelper<TModel> html,
+            [NotNull] Expression<Func<TModel, TValue>> expression, string templateName)
         {
             return html.EditorFor(expression, templateName, htmlFieldName: null, additionalViewData: null);
         }
 
-        public static HtmlString EditorFor<TModel, TValue>(this IHtmlHelper<TModel> html,
-            Expression<Func<TModel, TValue>> expression, string templateName, object additionalViewData)
+        public static HtmlString EditorFor<TModel, TValue>([NotNull] this IHtmlHelper<TModel> html,
+            [NotNull] Expression<Func<TModel, TValue>> expression, string templateName, object additionalViewData)
         {
             return html.EditorFor(expression, templateName, htmlFieldName: null,
                 additionalViewData: additionalViewData);
         }
 
-        public static HtmlString EditorFor<TModel, TValue>(this IHtmlHelper<TModel> html,
-            Expression<Func<TModel, TValue>> expression, string templateName, string htmlFieldName)
+        public static HtmlString EditorFor<TModel, TValue>([NotNull] this IHtmlHelper<TModel> html,
+            [NotNull] Expression<Func<TModel, TValue>> expression, string templateName, string htmlFieldName)
         {
             return html.EditorFor(expression, templateName, htmlFieldName, additionalViewData: null);
         }
 
-        public static HtmlString EditorForModel(this IHtmlHelper html)
+        public static HtmlString EditorForModel([NotNull] this IHtmlHelper html)
         {
-            return html.Editor(expression: string.Empty, templateName: null, htmlFieldName: null,
-                additionalViewData: null);
+            return html.Editor(expression: null, templateName: null, htmlFieldName: null, additionalViewData: null);
         }
 
-        public static HtmlString EditorForModel(this IHtmlHelper html, object additionalViewData)
+        public static HtmlString EditorForModel([NotNull] this IHtmlHelper html, object additionalViewData)
         {
-            return html.Editor(expression: string.Empty, templateName: null, htmlFieldName: null,
+            return html.Editor(expression: null, templateName: null, htmlFieldName: null,
                 additionalViewData: additionalViewData);
         }
 
-        public static HtmlString EditorForModel(this IHtmlHelper html, string templateName)
+        public static HtmlString EditorForModel([NotNull] this IHtmlHelper html, string templateName)
         {
-            return html.Editor(expression: string.Empty, templateName: templateName, htmlFieldName: null,
+            return html.Editor(expression: null, templateName: templateName, htmlFieldName: null,
                 additionalViewData: null);
         }
 
-        public static HtmlString EditorForModel(this IHtmlHelper html, string templateName, object additionalViewData)
-        {
-            return html.Editor(expression: string.Empty, templateName: templateName, htmlFieldName: null,
-                additionalViewData: additionalViewData);
-        }
-
-        public static HtmlString EditorForModel(this IHtmlHelper html, string templateName, string htmlFieldName)
-        {
-            return html.Editor(expression: string.Empty, templateName: templateName, htmlFieldName: htmlFieldName,
-                additionalViewData: null);
-        }
-
-        public static HtmlString EditorForModel(this IHtmlHelper html, string templateName, string htmlFieldName,
+        public static HtmlString EditorForModel([NotNull] this IHtmlHelper html, string templateName,
             object additionalViewData)
         {
-            return html.Editor(expression: string.Empty, templateName: templateName, htmlFieldName: htmlFieldName,
+            return html.Editor(expression: null, templateName: templateName, htmlFieldName: null,
+                additionalViewData: additionalViewData);
+        }
+
+        public static HtmlString EditorForModel([NotNull] this IHtmlHelper html, string templateName,
+            string htmlFieldName)
+        {
+            return html.Editor(expression: null, templateName: templateName, htmlFieldName: htmlFieldName,
+                additionalViewData: null);
+        }
+
+        public static HtmlString EditorForModel([NotNull] this IHtmlHelper html, string templateName,
+            string htmlFieldName, object additionalViewData)
+        {
+            return html.Editor(expression: null, templateName: templateName, htmlFieldName: htmlFieldName,
                 additionalViewData: additionalViewData);
         }
     }
