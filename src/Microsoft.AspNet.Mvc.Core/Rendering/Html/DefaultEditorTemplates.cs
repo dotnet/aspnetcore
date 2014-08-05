@@ -227,7 +227,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
                 // TODO: add ModelMetadata.HideSurroundingHtml and use here (skip this block)
                 {
-                    var label = html.Label(propertyMetadata.PropertyName).ToString();
+                    var label = html.Label(
+                        propertyMetadata.PropertyName,
+                        labelText: null,
+                        htmlAttributes: null)
+                            .ToString();
                     if (!string.IsNullOrEmpty(label))
                     {
                         divTag.AddCssClass("editor-label");
