@@ -14,34 +14,33 @@ default TARGET_DIR='${Path.Combine(BASE_DIR, "artifacts", "build")}'
 
 var useHttps='${UseHttps(BASE_DIR)}'
 var gitHubUriPrefix='${useHttps ? "https://github.com/aspnet/" : "git@github.com:aspnet/"}'
-var repos='${new Dictionary<string,string> {
-/*    {"KRuntime",              gitHubUriPrefix + "KRuntime.git"}, */ // Let's not build the sdk :)
-    {"Configuration",         gitHubUriPrefix + "Configuration.git"},
-    {"DataCommon",            gitHubUriPrefix + "DataCommon.git"},
-    {"DataCommon.SQLite",     gitHubUriPrefix + "DataCommon.SQLite.git"},
-    {"DataProtection",        gitHubUriPrefix + "DataProtection.git"},
-    {"DependencyInjection",   gitHubUriPrefix + "DependencyInjection.git"},
-    {"Options",               gitHubUriPrefix + "Options.git"},
-    {"Logging",               gitHubUriPrefix + "Logging.git"},
-    {"Testing",               gitHubUriPrefix + "Testing.git"},
-    {"Diagnostics",           gitHubUriPrefix + "Diagnostics.git"},
-    {"EntityFramework",       gitHubUriPrefix + "EntityFramework.git"},
-    {"FileSystem",            gitHubUriPrefix + "FileSystem.git"},
-    {"WebSocketAbstractions", gitHubUriPrefix + "WebSocketAbstractions.git"},
-    {"HttpAbstractions",      gitHubUriPrefix + "HttpAbstractions.git"},
-    {"Hosting",               gitHubUriPrefix + "Hosting.git"},
-    {"Helios",                gitHubUriPrefix + "Helios.git"},
-    {"Identity",              gitHubUriPrefix + "Identity.git"},
-    {"Razor",                 gitHubUriPrefix + "Razor.git"},
-    {"Routing",               gitHubUriPrefix + "Routing.git"},
-    {"Mvc",                   gitHubUriPrefix + "Mvc.git"},
-    {"Security",              gitHubUriPrefix + "Security.git"},
-    {"SignalR-Server",        gitHubUriPrefix + "SignalR-Server.git"},
-    {"StaticFiles",           gitHubUriPrefix + "StaticFiles.git"},
-    {"WebListener",           gitHubUriPrefix + "WebListener.git"},
-    {"KestrelHttpServer",     gitHubUriPrefix + "KestrelHttpServer.git"},
-    {"WebSockets",            gitHubUriPrefix + "WebSockets.git"},
-    {"Entropy",               gitHubUriPrefix + "Entropy.git"},
+var repos='${new[] {
+    "Configuration",
+    "DataCommon",
+    "DataCommon.SQLite",
+    "DataProtection",
+    "DependencyInjection",
+    "Diagnostics",
+    "EntityFramework",
+    "Entropy",
+    "FileSystem",
+    "Helios",
+    "Hosting",
+    "HttpAbstractions",
+    "Identity",
+    "KestrelHttpServer",
+    "Logging",
+    "Mvc",
+    "Options",
+    "Razor",
+    "Routing",
+    "Security",
+    "SignalR-Server",
+    "StaticFiles",
+    "Testing",
+    "WebListener",
+    "WebSocketAbstractions",
+    "WebSockets"
 }}'
 
 @{
@@ -73,31 +72,32 @@ var repos='${new Dictionary<string,string> {
     @{
         foreach(var repo in repos) 
         {
-            if(Directory.Exists(repo.Key)) 
+            var repoUrl = gitHubUriPrefix + repo + ".git";
+            if(Directory.Exists(repo))
             {
-                GitPull(repo.Value, "dev", repo.Key);
+                GitPull(repoUrl, "dev", repo);
             } 
             else
             {
-                if (IsHttpsUrl(repo.Value) && 
-                    !IsAccessible(repo.Key))
+                if (useHttps &&
+                    !IsAccessible(repo))
                 {
                     Log.Warn(string.Format("The repo at '{0}' is not accessible. If you do not have access to this repository, skip the git prompt" +
                                            " for credentials to skip cloning this repository. To avoid this prompt, re-clone the Universe repository over ssh.",
-                                           repo.Value));
+                                           repoUrl));
                 }
 
                 try
                 {
-                    GitClone(repo.Value, "dev");
+                    GitClone(repoUrl, "dev");
                 }
                 catch (Exception ex)
                 {
-                    Log.Warn(string.Format("Unable to clone repository at '{0}': {1}", repo.Value, ex.Message));
+                    Log.Warn(string.Format("Unable to clone repository at '{0}': {1}", repoUrl, ex.Message));
                     continue;
                 }
-                GitConfig("bugtraq.url", "http://github.com/aspnet/" + repo.Key + "/issues/%BUGID%", repo.Key);
-                GitConfig("bugtraq.logregex", @"#(\d+)", repo.Key);
+                GitConfig("bugtraq.url", "http://github.com/aspnet/" + repo + "/issues/%BUGID%", repo);
+                GitConfig("bugtraq.logregex", @"#(\d+)", repo);
             }
         }
     }
@@ -111,7 +111,7 @@ var repos='${new Dictionary<string,string> {
         {
             foreach (string fileName in templateFiles)
             {
-                var targetFile = Path.Combine(Directory.GetCurrentDirectory(), repo.Key, fileName);
+                var targetFile = Path.Combine(Directory.GetCurrentDirectory(), repo, fileName);
                 var sourceFile = Path.Combine(Directory.GetCurrentDirectory(), templatePath, fileName);
 
                 // Don't update the makefile
@@ -123,7 +123,7 @@ var repos='${new Dictionary<string,string> {
                 if(!File.Exists(sourceFile) || 
                    (File.ReadAllText(sourceFile) != File.ReadAllText(targetFile)))
                 {
-                    Log.Info("Updating " + fileName + " to " + repo.Key);
+                    Log.Info("Updating " + fileName + " to " + repo);
                     File.Copy(sourceFile, targetFile, true);
                 }
             }
@@ -134,9 +134,9 @@ var repos='${new Dictionary<string,string> {
     var templatePath = '${Path.Combine(BASE_DIR, "build-template")}'
     var fileName = 'NuGet.Config'
     for each='var repo in repos'
-        var targetFile = '${Path.Combine(Directory.GetCurrentDirectory(), repo.Key, fileName)}'
+        var targetFile = '${Path.Combine(Directory.GetCurrentDirectory(), repo, fileName)}'
         var sourceFile = '${Path.Combine(Directory.GetCurrentDirectory(), templatePath, fileName)}'
-        var gitFolder = '${repo.Key}'
+        var gitFolder = '${repo}'
 
         -// get latest dev and create new release
         git gitCommand='checkout dev'
@@ -164,33 +164,33 @@ var repos='${new Dictionary<string,string> {
         {
             try
             {
-                Log.Info(string.Format("Building {0}", repo.Key));
+                Log.Info(string.Format("Building {0}", repo));
                 if (IsMono)
                 {
-                    Exec("build.sh", "compile", repo.Key);
+                    Exec("build.sh", "compile", repo);
                 }
                 else
                 {
-                    Exec("build.cmd", "compile", repo.Key);
+                    Exec("build.cmd", "compile", repo);
                 }
-                Log.Info(string.Format("Build {0} succeeded", repo.Key));
+                Log.Info(string.Format("Build {0} succeeded", repo));
             }
             catch(Exception ex)
             {
-                Log.Warn(string.Format("Build {0} failed: {1}", repo.Key, ex.Message));
-                failed[repo.Key] = ex;
+                Log.Warn(string.Format("Build {0} failed: {1}", repo, ex.Message));
+                failed[repo] = ex;
             }
         }
         foreach(var repo in repos)
         {
             Exception ex;
-            if (failed.TryGetValue(repo.Key, out ex))
+            if (failed.TryGetValue(repo, out ex))
             {
-                Log.Warn(string.Format("Build {0} failed: {1}", repo.Key, ex.Message));
+                Log.Warn(string.Format("Build {0} failed: {1}", repo, ex.Message));
             }
             else
             {
-                Log.Info(string.Format("Build {0} succeeded", repo.Key));
+                Log.Info(string.Format("Build {0} succeeded", repo));
             }
         }
     }
@@ -201,11 +201,11 @@ var repos='${new Dictionary<string,string> {
         {
             if (IsMono)
             {
-                Exec("build.sh", "install", repo.Key);
+                Exec("build.sh", "install", repo);
             }
             else
             {
-                Exec("build.cmd", "install", repo.Key);
+                Exec("build.cmd", "install", repo);
             }
         }
     }
@@ -223,7 +223,7 @@ var repos='${new Dictionary<string,string> {
     @{
         foreach(var repo in repos) 
         {
-            GitStatus(repo.Key);
+            GitStatus(repo);
         }
     }
 
@@ -238,7 +238,7 @@ var repos='${new Dictionary<string,string> {
         }
         foreach(var repo in repos) 
         {
-            GitClean(repo.Key);
+            GitClean(repo);
         }
     }
 
