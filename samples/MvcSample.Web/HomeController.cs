@@ -34,6 +34,12 @@ namespace MvcSample.Web
             return HttpNotFound();
         }
 
+        public bool IsDefaultNameSpace()
+        {
+            var namespaceToken = ActionContext.RouteData.DataTokens["NameSpace"] as string;
+            return namespaceToken == "default";
+        }
+
         /// <summary>
         /// Action that shows metadata when model is <c>null</c>.
         /// </summary>

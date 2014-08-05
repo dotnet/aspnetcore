@@ -66,6 +66,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                             { RouteGroupKey, routeInfo.RouteGroup },
                         },
                         constraints: null,
+                        dataTokens: null,
                         inlineConstraintResolver: inlineConstraintResolver),
                 });
             }

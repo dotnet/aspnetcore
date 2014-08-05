@@ -73,7 +73,9 @@ namespace MvcSample.Web
                 routes.MapRoute(
                     "controllerActionRoute",
                     "{controller}/{action}",
-                    new { controller = "Home", action = "Index" });
+                    new { controller = "Home", action = "Index" },
+                    constraints: null,
+                    dataTokens: new { NameSpace = "default" });
 
                 routes.MapRoute(
                     "controllerRoute",
