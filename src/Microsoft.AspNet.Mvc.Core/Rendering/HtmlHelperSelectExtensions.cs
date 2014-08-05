@@ -7,7 +7,7 @@ using System.Linq.Expressions;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
-    public static class SelectExtensions
+    public static class HtmlHelperSelectExtensions
     {
         public static HtmlString DropDownList([NotNull] this IHtmlHelper htmlHelper, string name)
         {

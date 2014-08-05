@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
-    public static class EditorExtensions
+    public static class HtmlHelperEditorExtensions
     {
         public static HtmlString Editor([NotNull] this IHtmlHelper html, string expression)
         {
