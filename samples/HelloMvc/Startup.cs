@@ -2,7 +2,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 
-namespace KWebStartup
+namespace HelloMvc
 {
     public class Startup
     {

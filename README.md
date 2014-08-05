@@ -18,7 +18,7 @@ These are the current minimum requirements, they do not necesarilly represent ou
 * .NET 4.5.1 for hosting in IIS
 
 ### OSX/Linux
- * Mono >= 3.4.1 - Currently this means compiling Mono from source from https://github.com/mono/mono
+ * Mono >= 3.4.1 - Currently this means compiling Mono from source from https://github.com/mono/mono (Note: See instructions below to install the Homebrew formula that can install the required mono)
  * On Linux, you may need to run `mozroots --import --sync` after installing mono
  * bash or zsh and curl
 
@@ -31,6 +31,7 @@ The easiest way to get the KVM on Windows is to run the following command:
 @powershell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/master/kvminstall.ps1'))"
 ```
 or on OSX:
+
 Mono and KVM (K Version manager) required to develop & run next generation ASP.NET applications on OSX is available as a Homebrew formula. To install the necessary development tools: 
 
  * Open a terminal on your MAC
@@ -107,11 +108,11 @@ The [Entropy repo](https://github.com/aspnet/Entropy) contains samples of specif
 2. Change directory to Samples\HelloWeb
 3. Run ```kpm restore```
 4. You should see a bunch of output as all the dependencies of the app are downloaded from MyGet. The K commands all operate on the app that is in the current directory.
-5. Run ```K web```
+5. Run ```K web``` to run on WebListener. Or run ```K Kestrel``` to run on Mono. 
 6. You should see build output and a message to show the site is now started
-7. Navigate to "http://localhost:5001"
+7. Navigate to "http://localhost:5001" or "http://localhost:5004" in case of Mono
 8. You should see the welcome page
-9. Navigate to "http://localhost:5001/image.jpg"
+9. Navigate to "http://localhost:5001/image.jpg" or "http://localhost:5004/image.img" in case of Mono. 
 10. You should see an image served with the static file middleware
 
 If you can do all of the above then everything should be working. You can try out the WebFx sample now to see some more of the new stack. You should run ```kpm restore``` before using any sample for the first time.
@@ -122,7 +123,7 @@ If you can do all of the above then everything should be working. You can try ou
 By default when running the applications you are running against Desktop CLR (4.5), you can change that using the KVM command.
 
 1. Run ```kvm install 0.1-alpha-build-0446 -svrc50``` This command gets the latest Core CLR version of the k runtime and sets it as your default. The -svrc50 switch tells it to use Core CLR, you can use -svr50 to target desktop again.
-2. Run ```K web```
+2. Run ```K web``` to run on WebListener. Or run ```K Kestrel``` to run on Mono. 
 3. The first line of your output should say "Loaded Module: klr.core45.dll" instead of "Loaded Module: klr.net45.dll"
 4. The HelloWeb app should work the same as when running on Desktop CLR.
 
