@@ -44,15 +44,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return htmlHelper.ValidationMessage(expression, message, htmlAttributes, tag: null);
         }
 
-        public static HtmlString ValidationMessage([NotNull] this IHtmlHelper htmlHelper,
-            string expression,
-            string message,
-            object htmlAttributes,
-            string tag)
-        {
-            return htmlHelper.ValidationMessage(expression, message, htmlAttributes, tag);
-        }
-
         public static HtmlString ValidationMessageFor<TModel, TProperty>([NotNull] this IHtmlHelper<TModel> htmlHelper,
             [NotNull] Expression<Func<TModel, TProperty>> expression)
         {
@@ -80,15 +71,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string tag)
         {
             return htmlHelper.ValidationMessageFor(expression, message, htmlAttributes: null, tag: tag);
-        }
-
-        public static HtmlString ValidationMessageFor<TModel, TProperty>([NotNull] this IHtmlHelper<TModel> htmlHelper,
-            [NotNull] Expression<Func<TModel, TProperty>> expression,
-            string message,
-            object htmlAttributes,
-            string tag)
-        {
-            return htmlHelper.ValidationMessageFor(expression, message, htmlAttributes, tag);
         }
 
         public static HtmlString ValidationSummary([NotNull] this IHtmlHelper htmlHelper)
@@ -167,15 +149,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
             object htmlAttributes)
         {
             return htmlHelper.ValidationSummary(excludePropertyErrors, message, htmlAttributes, tag: null);
-        }
-
-        public static HtmlString ValidationSummary([NotNull] this IHtmlHelper htmlHelper,
-            bool excludePropertyErrors,
-            string message,
-            object htmlAttributes,
-            string tag)
-        {
-            return htmlHelper.ValidationSummary(excludePropertyErrors, message, htmlAttributes, tag);
         }
     }
 }

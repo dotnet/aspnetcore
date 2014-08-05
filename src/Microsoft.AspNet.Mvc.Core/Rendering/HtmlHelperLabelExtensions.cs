@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         public static HtmlString LabelForModel([NotNull] this IHtmlHelper html)
         {
-            return LabelForModel(html, labelText: null);
+            return html.Label(expression: null, labelText: null, htmlAttributes: null);
         }
 
         public static HtmlString LabelForModel([NotNull] this IHtmlHelper html, string labelText)

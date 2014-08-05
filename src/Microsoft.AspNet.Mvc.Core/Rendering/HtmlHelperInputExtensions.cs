@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         public static HtmlString TextBox([NotNull] this IHtmlHelper htmlHelper, string name)
         {
-            return TextBox(htmlHelper, name, value: null);
+            return htmlHelper.TextBox(name, value: null, format: null, htmlAttributes: null);
         }
 
         public static HtmlString TextBox(
@@ -115,7 +115,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string name,
             object value)
         {
-            return TextBox(htmlHelper, name, value, format: null);
+            return htmlHelper.TextBox(name, value, format: null, htmlAttributes: null);
         }
 
         public static HtmlString TextBox(
@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             object value,
             string format)
         {
-            return TextBox(htmlHelper, name, value, format, htmlAttributes: null);
+            return htmlHelper.TextBox(name, value, format, htmlAttributes: null);
         }
 
         public static HtmlString TextBox(
@@ -133,41 +133,25 @@ namespace Microsoft.AspNet.Mvc.Rendering
             object value,
             object htmlAttributes)
         {
-            return TextBox(htmlHelper, name, value, format: null, htmlAttributes: htmlAttributes);
-        }
-
-        public static HtmlString TextBox(
-            [NotNull] this IHtmlHelper htmlHelper,
-            string name,
-            object value,
-            string format,
-            object htmlAttributes)
-        {
-            return htmlHelper.TextBox(name, value, format, htmlAttributes);
+            return htmlHelper.TextBox(name, value, format: null, htmlAttributes: htmlAttributes);
         }
 
         public static HtmlString TextBoxFor<TModel, TProperty>([NotNull] this IHtmlHelper<TModel> htmlHelper,
             [NotNull] Expression<Func<TModel, TProperty>> expression)
         {
-            return TextBoxFor(htmlHelper, expression, format: null);
+            return htmlHelper.TextBoxFor(expression, format: null, htmlAttributes: null);
         }
 
         public static HtmlString TextBoxFor<TModel, TProperty>([NotNull] this IHtmlHelper<TModel> htmlHelper,
             [NotNull] Expression<Func<TModel, TProperty>> expression, string format)
         {
-            return TextBoxFor(htmlHelper, expression, format, htmlAttributes: null);
+            return htmlHelper.TextBoxFor(expression, format, htmlAttributes: null);
         }
 
         public static HtmlString TextBoxFor<TModel, TProperty>([NotNull] this IHtmlHelper<TModel> htmlHelper,
             [NotNull] Expression<Func<TModel, TProperty>> expression, object htmlAttributes)
         {
-            return TextBoxFor(htmlHelper, expression, format: null, htmlAttributes: htmlAttributes);
-        }
-
-        public static HtmlString TextBoxFor<TModel, TProperty>([NotNull] this IHtmlHelper<TModel> htmlHelper,
-            [NotNull] Expression<Func<TModel, TProperty>> expression, string format, object htmlAttributes)
-        {
-            return htmlHelper.TextBoxFor(expression, format: format, htmlAttributes: htmlAttributes);
+            return htmlHelper.TextBoxFor(expression, format: null, htmlAttributes: htmlAttributes);
         }
 
         public static HtmlString TextArea([NotNull] this IHtmlHelper htmlHelper,
@@ -194,12 +178,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return htmlHelper.TextArea(name, value, rows: 0, columns: 0, htmlAttributes: htmlAttributes);
         }
 
-        public static HtmlString TextArea([NotNull] this IHtmlHelper htmlHelper,
-            string name, string value, int rows, int columns, object htmlAttributes)
-        {
-            return htmlHelper.TextArea(name, value, rows, columns, htmlAttributes);
-        }
-
         public static HtmlString TextAreaFor<TModel, TProperty>([NotNull] this IHtmlHelper<TModel> htmlHelper,
             [NotNull] Expression<Func<TModel, TProperty>> expression)
         {
@@ -210,12 +188,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
             [NotNull] Expression<Func<TModel, TProperty>> expression, object htmlAttributes)
         {
             return htmlHelper.TextAreaFor(expression, rows: 0, columns: 0, htmlAttributes: htmlAttributes);
-        }
-
-        public static HtmlString TextAreaFor<TModel, TProperty>([NotNull] this IHtmlHelper<TModel> htmlHelper,
-            [NotNull] Expression<Func<TModel, TProperty>> expression, int rows, int columns, object htmlAttributes)
-        {
-            return htmlHelper.TextAreaFor(expression, rows, columns, htmlAttributes);
         }
     }
 }
