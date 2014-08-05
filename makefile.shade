@@ -15,33 +15,34 @@ default TARGET_DIR='${Path.Combine(BASE_DIR, "artifacts", "build")}'
 var useHttps='${UseHttps(BASE_DIR)}'
 var gitHubUriPrefix='${useHttps ? "https://github.com/aspnet/" : "git@github.com:aspnet/"}'
 var repos='${new[] {
+    // The repos list is topologically sorted based on build order
     "Configuration",
     "DataCommon",
     "DataCommon.SQLite",
     "DataProtection",
     "DependencyInjection",
+    "Options",
+    "Logging",
+    "Testing",
     "Diagnostics",
     "EntityFramework",
-    "Entropy",
     "FileSystem",
-    "Helios",
-    "Hosting",
+    "WebSocketAbstractions",
     "HttpAbstractions",
+    "Hosting",
+    "Helios",
     "Identity",
-    "KestrelHttpServer",
-    "Logging",
-    "Mvc",
-    "Options",
     "Razor",
     "Routing",
+    "Mvc",
     "Scaffolding",
     "Security",
     "SignalR-Server",
     "StaticFiles",
-    "Testing",
     "WebListener",
-    "WebSocketAbstractions",
-    "WebSockets"
+    "KestrelHttpServer",
+    "WebSockets",
+    "Entropy",
 }}'
 
 @{
