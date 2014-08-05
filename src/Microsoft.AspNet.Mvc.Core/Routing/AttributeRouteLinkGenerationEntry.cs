@@ -46,6 +46,6 @@ namespace Microsoft.AspNet.Mvc.Routing
         /// <summary>
         /// The <see cref="Template"/>.
         /// </summary>
-        public Template Template { get; set; }
+        public RouteTemplate Template { get; set; }
     }
 }

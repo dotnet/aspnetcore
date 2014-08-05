@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.Routing
     /// </summary>
     public static class AttributeRoutePrecedence
     {
-        public static decimal Compute(Template template)
+        public static decimal Compute(RouteTemplate template)
         {
             // Each precedence digit corresponds to one decimal place. For example, 3 segments with precedences 2, 1,
             // and 4 results in a combined precedence of 2.14 (decimal).

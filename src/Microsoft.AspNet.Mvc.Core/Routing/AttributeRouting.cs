@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             // 
             // For a relatively simple route template, the `Template` object will hold about 500 bytes
             // of memory, so sharing is worthwhile.
-            var templateCache = new Dictionary<string, Template>(StringComparer.OrdinalIgnoreCase);
+            var templateCache = new Dictionary<string, RouteTemplate>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var action in actions.Where(a => a.AttributeRouteTemplate != null))
             {
@@ -146,7 +146,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
         private static RouteInfo GetRouteInfo(
             IInlineConstraintResolver constraintResolver,
-            Dictionary<string, Template> templateCache,
+            Dictionary<string, RouteTemplate> templateCache,
             ActionDescriptor action)
         {
             var constraint = action.RouteConstraints
@@ -173,7 +173,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             try
             {
-                Template parsedTemplate;
+                RouteTemplate parsedTemplate;
                 if (!templateCache.TryGetValue(action.AttributeRouteTemplate, out parsedTemplate))
                 {
                     // Parsing with throw if the template is invalid.
@@ -228,7 +228,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             public string ErrorMessage { get; set; }
 
-            public Template ParsedTemplate { get; set; }
+            public RouteTemplate ParsedTemplate { get; set; }
 
             public decimal Precedence { get; set; }
 
