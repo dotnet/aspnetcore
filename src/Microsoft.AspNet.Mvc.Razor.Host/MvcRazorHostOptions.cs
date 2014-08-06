@@ -18,6 +18,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 new InjectDescriptor("Microsoft.AspNet.Mvc.Rendering.IHtmlHelper<TModel>", "Html"),
                 new InjectDescriptor("Microsoft.AspNet.Mvc.IViewComponentHelper", "Component"),
+                new InjectDescriptor("Microsoft.AspNet.Mvc.IUrlHelper", "Url"),
             };
         }
 

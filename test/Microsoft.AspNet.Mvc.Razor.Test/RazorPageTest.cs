@@ -155,7 +155,6 @@ namespace Microsoft.AspNet.Mvc.Razor
             Assert.Equal(true, actual);
         }
 
-
         [Fact]
         public async Task RenderSection_ThrowsIfSectionIsRenderedMoreThanOnce()
         {
@@ -263,6 +262,34 @@ Layout end
             // Assert
             var actual = ((StringWriter)page.Output).ToString();
             Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public async Task Href_ReadsUrlHelperFromServiceCollection()
+        {
+            // Arrange
+            var expected = "urlhelper-url";
+            var helper = new Mock<IUrlHelper>();
+            helper.Setup(h => h.Content("url"))
+                  .Returns(expected)
+                  .Verifiable();
+            var page = CreatePage(v =>
+            {
+                v.Write(v.Href("url"));
+            });
+            var services = new Mock<IServiceProvider>();
+            services.Setup(s => s.GetService(typeof(IUrlHelper)))
+                     .Returns(helper.Object);
+            Mock.Get(page.Context).Setup(c => c.RequestServices)
+                                  .Returns(services.Object);
+
+            // Act
+            await page.ExecuteAsync();
+
+            // Assert
+            var actual = ((StringWriter)page.Output).ToString();
+            Assert.Equal(expected, actual);
+            helper.Verify();
         }
 
         private static TestableRazorPage CreatePage(Action<TestableRazorPage> executeAction)

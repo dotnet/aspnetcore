@@ -10,6 +10,7 @@ using System.Security.Principal;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -18,6 +19,7 @@ namespace Microsoft.AspNet.Mvc.Razor
     /// </summary>
     public abstract class RazorPage : IRazorPage
     {
+        private IUrlHelper _urlHelper;
         private readonly HashSet<string> _renderedSections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private bool _renderedBody;
 
@@ -25,9 +27,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             SectionWriters = new Dictionary<string, HelperResult>(StringComparer.OrdinalIgnoreCase);
         }
-
-        [Activate]
-        public IUrlHelper Url { get; set; }
 
         public HttpContext Context
         {
@@ -231,7 +230,12 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         public virtual string Href([NotNull] string contentPath)
         {
-            return Url.Content(contentPath);
+            if (_urlHelper == null)
+            {
+                _urlHelper = Context.RequestServices.GetService<IUrlHelper>();
+            }
+
+            return _urlHelper.Content(contentPath);
         }
 
         private void WritePositionTaggedLiteral(TextWriter writer, string value, int position)
