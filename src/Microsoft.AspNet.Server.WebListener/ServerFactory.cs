@@ -43,7 +43,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.Logging;
-using Microsoft.Net.Server;
+using Microsoft.Net.Http.Server;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Server.WebListener
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposed by caller")]
         public IServerInformation Initialize(IConfiguration configuration)
         {
-            Microsoft.Net.Server.WebListener listener = new Microsoft.Net.Server.WebListener();
+            Microsoft.Net.Http.Server.WebListener listener = new Microsoft.Net.Http.Server.WebListener();
             ParseAddresses(configuration, listener);
             return new ServerInformation(new MessagePump(listener, _loggerFactory));
         }
@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.Server.WebListener
             return serverInfo.MessagePump;
         }
 
-        private void ParseAddresses(IConfiguration config, Microsoft.Net.Server.WebListener listener)
+        private void ParseAddresses(IConfiguration config, Microsoft.Net.Http.Server.WebListener listener)
         {
             // TODO: Key format?
             string urls;

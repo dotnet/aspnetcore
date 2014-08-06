@@ -28,7 +28,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.HttpFeature.Security;
-using Microsoft.Net.Server;
+using Microsoft.Net.Http.Server;
 using Microsoft.Net.WebSockets;
 
 namespace Microsoft.AspNet.Server.WebListener

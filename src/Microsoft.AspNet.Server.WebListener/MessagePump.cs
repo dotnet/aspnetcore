@@ -20,7 +20,7 @@ using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Framework.Logging;
-using Microsoft.Net.Server;
+using Microsoft.Net.Http.Server;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Server.WebListener
     {
         private static readonly int DefaultMaxAccepts = 5 * Environment.ProcessorCount;
 
-        private readonly Microsoft.Net.Server.WebListener _listener;
+        private readonly Microsoft.Net.Http.Server.WebListener _listener;
         private readonly ILogger _logger;
 
         private AppFunc _appFunc;
@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Server.WebListener
 
         // TODO: private IDictionary<string, object> _capabilities;
 
-        internal MessagePump(Microsoft.Net.Server.WebListener listener, ILoggerFactory loggerFactory)
+        internal MessagePump(Microsoft.Net.Http.Server.WebListener listener, ILoggerFactory loggerFactory)
         {
             Contract.Assert(listener != null);
             _listener = listener;
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Server.WebListener
             _shutdownSignal = new ManualResetEvent(false);
         }
 
-        internal Microsoft.Net.Server.WebListener Listener
+        internal Microsoft.Net.Http.Server.WebListener Listener
         {
             get { return _listener; }
         }

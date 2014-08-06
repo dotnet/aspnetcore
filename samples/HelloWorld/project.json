@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "Microsoft.Net.Server" : ""
+    "Microsoft.Net.Http.Server" : ""
   },
   "frameworks": {
     "net45": { },

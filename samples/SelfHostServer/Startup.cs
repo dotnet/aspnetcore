@@ -23,7 +23,7 @@ using Microsoft.AspNet;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Server.WebListener;
-using Microsoft.Net.Server;
+using Microsoft.Net.Http.Server;
 
 namespace SelfHostServer
 {

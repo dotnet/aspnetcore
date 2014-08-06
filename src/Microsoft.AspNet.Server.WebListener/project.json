@@ -6,7 +6,7 @@
     "Microsoft.AspNet.HttpFeature": "1.0.0-*",
     "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
     "Microsoft.Framework.Logging": "1.0.0-*",
-    "Microsoft.Net.Server" : "",
+    "Microsoft.Net.Http.Server" : "",
     "Microsoft.Net.WebSocketAbstractions": "1.0.0-*"
   },
   "compilationOptions": {

@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Server.WebListener
             get { return GetType().GetTypeInfo().Assembly.GetName().Name; }
         }
 
-        public Microsoft.Net.Server.WebListener Listener
+        public Microsoft.Net.Http.Server.WebListener Listener
         {
             get { return _messagePump.Listener; }
         }

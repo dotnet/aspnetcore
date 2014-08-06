@@ -17,7 +17,7 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.Net.Server;
+using Microsoft.Net.Http.Server;
 
 namespace Microsoft.AspNet.Server.WebListener
 {

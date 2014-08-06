@@ -20,7 +20,7 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Net.Server;
+using Microsoft.Net.Http.Server;
 
 namespace HelloWorld
 {
