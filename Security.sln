@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.21813.0
+VisualStudioVersion = 14.0.21916.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{4D2B6A51-2F9F-44F5-8131-EA5CAC053652}"
 EndProject
@@ -15,7 +15,13 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CookieSample", "samples\Coo
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{7BF11F3A-60B6-4796-B504-579C67FFBA34}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Security", "test\Microsoft.AspNet.Security.Test\Microsoft.AspNet.Security.kproj", "{8DA26CD1-1302-4CFD-9270-9FA1B7C6138B}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Security.Tests", "test\Microsoft.AspNet.Security.Test\Microsoft.AspNet.Security.Tests.kproj", "{8DA26CD1-1302-4CFD-9270-9FA1B7C6138B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C40A5A3B-ABA3-4819-9C44-D821E6DA1BA1}"
+	ProjectSection(SolutionItems) = preProject
+		global.json = global.json
+	EndProjectSection
+EndProject
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

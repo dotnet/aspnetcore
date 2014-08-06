@@ -5,6 +5,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Security;
 using Microsoft.AspNet.Security.Infrastructure;
 using Microsoft.Framework.Logging;
 
@@ -120,17 +121,28 @@ namespace Microsoft.AspNet.Security.Cookies
                         signin.Properties,
                         cookieOptions);
 
-                    DateTimeOffset issuedUtc = Options.SystemClock.UtcNow;
-                    DateTimeOffset expiresUtc = issuedUtc.Add(Options.ExpireTimeSpan);
+                    DateTimeOffset issuedUtc;
+                    if (signin.Properties.IssuedUtc.HasValue)
+                    {
+                        issuedUtc = signin.Properties.IssuedUtc.Value;
+                    }
+                    else
+                    {
+                        issuedUtc = Options.SystemClock.UtcNow;
+                        signin.Properties.IssuedUtc = issuedUtc;
+                    }
 
-                    context.Properties.IssuedUtc = issuedUtc;
-                    context.Properties.ExpiresUtc = expiresUtc;
+                    if (!signin.Properties.ExpiresUtc.HasValue)
+                    {
+                        signin.Properties.ExpiresUtc = issuedUtc.Add(Options.ExpireTimeSpan);
+                    }
 
                     Options.Notifications.ResponseSignIn(context);
 
                     if (context.Properties.IsPersistent)
                     {
-                        cookieOptions.Expires = expiresUtc.ToUniversalTime().DateTime;
+                        DateTimeOffset expiresUtc = context.Properties.ExpiresUtc ?? issuedUtc.Add(Options.ExpireTimeSpan);
+                        context.CookieOptions.Expires = expiresUtc.ToUniversalTime().DateTime;
                     }
 
                     var model = new AuthenticationTicket(context.Identity, context.Properties);
@@ -229,18 +241,27 @@ namespace Microsoft.AspNet.Security.Cookies
                 return;
             }
 
-            string currentUri = 
-                Request.PathBase + 
-                Request.Path + 
-                Request.QueryString;
-                
-            string loginUri = 
-                Request.Scheme + 
-                "://" + 
-                Request.Host + 
-                Request.PathBase + 
-                Options.LoginPath + 
-                new QueryString(Options.ReturnUrlParameter, currentUri);
+            string loginUri = string.Empty;
+            if (ChallengeContext != null)
+            {
+                loginUri = new AuthenticationProperties(ChallengeContext.Properties).RedirectUri;
+            }
+
+            if (string.IsNullOrWhiteSpace(loginUri))
+            {
+                string currentUri =
+                    Request.PathBase +
+                    Request.Path +
+                    Request.QueryString;
+
+                loginUri =
+                    Request.Scheme +
+                    "://" +
+                    Request.Host +
+                    Request.PathBase +
+                    Options.LoginPath +
+                    new QueryString(Options.ReturnUrlParameter, currentUri);
+            }
 
             var redirectContext = new CookieApplyRedirectContext(Context, Options, loginUri);
             Options.Notifications.ApplyRedirect(redirectContext);

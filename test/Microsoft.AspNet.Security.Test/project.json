@@ -4,6 +4,9 @@
   },
   "dependencies": {
     "Microsoft.AspNet.Security" : "",
+    "Microsoft.AspNet.Security.Cookies" : "",
+    "Microsoft.AspNet.TestHost": "1.0.0-*",
+    "System.Net.Http": "4.0.0.0",
     "Moq": "4.2.1312.1622",
     "Xunit.KRunner": "1.0.0-*"
   },
@@ -13,7 +16,10 @@
   "frameworks": {
     "net45": { 
       "dependencies": {
-          "System.Runtime": ""
+        "Shouldly": "1.1.1.1",
+        "System.Runtime": "",
+        "System.Xml":  "",
+        "System.Xml.Linq":  ""
       }
     }
   }
