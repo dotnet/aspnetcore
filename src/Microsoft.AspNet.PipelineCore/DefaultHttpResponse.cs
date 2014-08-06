@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.PipelineCore
             Headers.Set(Constants.Headers.Location, location);
         }
 
-        public override void Challenge(IEnumerable<string> authenticationTypes, AuthenticationProperties properties)
+        public override void Challenge(AuthenticationProperties properties, IEnumerable<string> authenticationTypes)
         {
             if (authenticationTypes == null)
             {
@@ -147,12 +147,13 @@ namespace Microsoft.AspNet.PipelineCore
             }
         }
 
-        public override void SignIn(IEnumerable<ClaimsIdentity> identities, AuthenticationProperties properties)
+        public override void SignIn(AuthenticationProperties properties, IEnumerable<ClaimsIdentity> identities)
         {
             if (identities == null)
             {
                 throw new ArgumentNullException();
             }
+
             var handler = HttpAuthenticationFeature.Handler;
 
             var signInContext = new SignInContext(identities, properties == null ? null : properties.Dictionary);

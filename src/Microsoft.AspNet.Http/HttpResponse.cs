@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Http
 
         public virtual void Challenge(AuthenticationProperties properties)
         {
-            Challenge(new string[0], properties);
+            Challenge(properties, new string[0]);
         }
 
         public virtual void Challenge(string authenticationType)
@@ -48,34 +48,54 @@ namespace Microsoft.AspNet.Http
             Challenge(new[] { authenticationType });
         }
 
-        public virtual void Challenge(string authenticationType, AuthenticationProperties properties)
+        public virtual void Challenge(AuthenticationProperties properties, string authenticationType)
         {
-            Challenge(new[] { authenticationType }, properties);
+            Challenge(properties, new[] { authenticationType });
+        }
+
+        public void Challenge(params string[] authenticationTypes)
+        {
+            Challenge((IEnumerable<string>)authenticationTypes);
         }
 
         public virtual void Challenge(IEnumerable<string> authenticationTypes)
         {
-            Challenge(authenticationTypes, properties: null);
+            Challenge(properties: null, authenticationTypes:  authenticationTypes);
         }
 
-        public abstract void Challenge(IEnumerable<string> authenticationTypes, AuthenticationProperties properties);
+        public void Challenge(AuthenticationProperties properties, params string[] authenticationTypes)
+        {
+            Challenge(properties, (IEnumerable<string>)authenticationTypes);
+        }
+
+        public abstract void Challenge(AuthenticationProperties properties, IEnumerable<string> authenticationTypes);
 
         public virtual void SignIn(ClaimsIdentity identity)
         {
-            SignIn(identity, properties: null);
+            SignIn(properties: null, identity: identity);
         }
 
-        public virtual void SignIn(ClaimsIdentity identity, AuthenticationProperties properties)
+        public virtual void SignIn(AuthenticationProperties properties, ClaimsIdentity identity)
         {
-            SignIn(new[] { identity }, properties);
+            SignIn(properties, new[] { identity });
+        }
+
+        public virtual void SignIn(params ClaimsIdentity[] identities)
+        {
+            SignIn(properties: null, identities: (IEnumerable<ClaimsIdentity>)identities);
         }
 
         public virtual void SignIn(IEnumerable<ClaimsIdentity> identities)
         {
-            SignIn(identities, properties: null);
+            SignIn(properties: null, identities: identities);
         }
 
-        public abstract void SignIn(IEnumerable<ClaimsIdentity> identities, AuthenticationProperties properties);
+        public void SignIn(AuthenticationProperties properties, params ClaimsIdentity[] identities)
+        {
+            SignIn(properties, (IEnumerable<ClaimsIdentity>)identities);
+        }
+
+        public abstract void SignIn(AuthenticationProperties properties, IEnumerable<ClaimsIdentity> identities);
 
         public virtual void SignOut()
         {
