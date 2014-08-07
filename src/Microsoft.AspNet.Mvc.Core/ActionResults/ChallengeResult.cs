@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Mvc
         public override void ExecuteResult([NotNull] ActionContext context)
         {
             var response = context.HttpContext.Response;
-            response.Challenge(AuthenticationTypes, Properties);
+            response.Challenge(Properties, AuthenticationTypes);
         }
     }
 }
