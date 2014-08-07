@@ -10,8 +10,8 @@
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>323d0c04-b518-4a8f-8a8e-3546ad153d34</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>a353b17e-a940-4ce8-8bf9-179e24a9041f</ProjectGuid>
+    <OutputType>Web</OutputType>
   </PropertyGroup>
   <PropertyGroup Condition="$(OutputType) == 'Console'">
     <DebuggerFlavor>ConsoleDebugger</DebuggerFlavor>
@@ -24,30 +24,21 @@
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DevelopmentServerPort>11178</DevelopmentServerPort>
+  </PropertyGroup>
   <ItemGroup>
-    <Content Include="compiler\resources\BasicWebSite.Home.Index.html" />
-    <Content Include="compiler\resources\BasicWebSite.Home.PlainView.html" />
-    <Content Include="project.json" />
+    <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Models\AccountViewModels.cs" />
+    <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BasicTests.cs" />
-    <Compile Include="ConnegTests.cs" />
-    <Compile Include="AntiForgeryTests.cs" />
-    <Compile Include="ViewEngineTests.cs" />
-    <Compile Include="ActivatorTests.cs" />
-    <Compile Include="ValueProviderTests.cs" />
-    <Compile Include="CompositeViewEngineTests.cs" />
-    <Compile Include="DependencyResolverTests.cs" />
-    <Compile Include="HttpResponseHelpers.cs" />
-    <Compile Include="InlineConstraintTests.cs" />
-    <Compile Include="InputFormatterTests.cs" />
-    <Compile Include="NullLoggerFactory.cs" />
-    <Compile Include="ResourceHelpers.cs" />
-    <Compile Include="RoutingTests.cs" />
-    <Compile Include="TestApplicationEnvironment.cs" />
-    <Compile Include="TestAssemblyProvider.cs" />
-    <Compile Include="TestConfigurationProvider.cs" />
-    <Compile Include="TestHelper.cs" />
+    <Content Include="project.json" />
+    <Content Include="Views\Account\Login.cshtml" />
+    <Content Include="Views\Home\MyView.cshtml" />
+    <Content Include="Views\Shared\_Layout.cshtml" />
+    <Content Include="Views\Shared\_LoginPartial.cshtml" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>

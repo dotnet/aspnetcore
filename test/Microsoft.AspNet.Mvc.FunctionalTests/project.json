@@ -9,6 +9,7 @@
         "ConnegWebsite":  "",
         "FormatterWebSite":  "",
         "InlineConstraintsWebSite": "",
+        "AntiForgeryWebSite": "",
         "Microsoft.AspNet.TestHost": "1.0.0-*",
         "Microsoft.AspNet.PipelineCore": "1.0.0-*",
         "Microsoft.AspNet.Mvc.TestConfiguration": "",

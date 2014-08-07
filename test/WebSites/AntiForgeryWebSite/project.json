@@ -1,0 +1,13 @@
+﻿{
+    "dependencies": {
+        "Microsoft.AspNet.Mvc": "",
+        "Microsoft.AspNet.Mvc.TestConfiguration": "",
+        "Microsoft.AspNet.Server.IIS": "1.0.0-*",
+        "Microsoft.AspNet.Mvc.Razor": "",       
+        "Microsoft.AspNet.Security.Cookies": "1.0.0-*"
+    },
+    "frameworks": {
+        "net45": { },
+        "k10": { }
+    }
+}
