@@ -99,8 +99,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return htmlHelper.RadioButton(name, value, isChecked, htmlAttributes: null);
         }
 
-        public static HtmlString RadioButtonFor<TModel, TProperty>([NotNull] this IHtmlHelper<TModel> htmlHelper,
-            [NotNull] Expression<Func<TModel, TProperty>> expression, object value)
+        public static HtmlString RadioButtonFor<TModel, TProperty>(
+            [NotNull] this IHtmlHelper<TModel> htmlHelper,
+            [NotNull] Expression<Func<TModel, TProperty>> expression,
+            [NotNull] object value)
         {
             return htmlHelper.RadioButtonFor(expression, value, htmlAttributes: null);
         }

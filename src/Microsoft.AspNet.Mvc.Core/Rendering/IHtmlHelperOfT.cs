@@ -212,14 +212,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// An expression that identifies the object that contains the properties to render.
         /// </param>
         /// <param name="value">
-        /// If non-<c>null</c>, value to compare with current expression value to determine whether radio button is
-        /// checked.
+        /// Value to compare with current expression value to determine whether radio button is checked.
         /// </param>
         /// <param name="htmlAttributes">An object that contains the HTML attributes to set for the element.
         /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
         /// </param>
         /// <returns>New <see cref="HtmlString"/> containing the rendered HTML.</returns>
-        HtmlString RadioButtonFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression, object value,
+        HtmlString RadioButtonFor<TProperty>(
+            [NotNull] Expression<Func<TModel, TProperty>> expression,
+            [NotNull] object value,
             object htmlAttributes);
 
         /// <summary>

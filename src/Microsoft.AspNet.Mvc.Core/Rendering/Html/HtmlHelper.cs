@@ -18,7 +18,7 @@ using Microsoft.AspNet.Mvc.Rendering.Expressions;
 namespace Microsoft.AspNet.Mvc.Rendering
 {
     /// <summary>
-    /// Default implementation of <see cref="IHtmlHelper">.
+    /// Default implementation of <see cref="IHtmlHelper"/>.
     /// </summary>
     public class HtmlHelper : IHtmlHelper, ICanHasViewContext
     {
@@ -814,11 +814,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
             {
                 // RadioButtonFor() case. That API does not support passing isChecked directly.
                 Contract.Assert(!isChecked.HasValue);
-                if (value == null)
-                {
-                    // Need a value to determine isChecked.
-                    throw new ArgumentNullException("value");
-                }
+
+                // Need a value to determine isChecked.
+                Contract.Assert(value != null);
 
                 var model = metadata.Model;
                 var valueString = Convert.ToString(value, CultureInfo.CurrentCulture);
@@ -981,7 +979,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             // The first newline is always trimmed when a TextArea is rendered, so we add an extra one
             // in case the value being rendered is something like "\r\nHello".
-            tagBuilder.InnerHtml = WebUtility.HtmlEncode(value);
+            tagBuilder.InnerHtml = Environment.NewLine + WebUtility.HtmlEncode(value);
 
             return tagBuilder.ToHtmlString(TagRenderMode.Normal);
         }

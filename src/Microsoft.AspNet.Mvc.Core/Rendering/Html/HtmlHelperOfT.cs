@@ -188,8 +188,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString RadioButtonFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression,
-            object value, object htmlAttributes)
+        public HtmlString RadioButtonFor<TProperty>(
+            [NotNull] Expression<Func<TModel, TProperty>> expression,
+            [NotNull] object value,
+            object htmlAttributes)
         {
             var metadata = GetModelMetadata(expression);
             return GenerateRadioButton(metadata, GetExpressionName(expression), value, isChecked: null,
