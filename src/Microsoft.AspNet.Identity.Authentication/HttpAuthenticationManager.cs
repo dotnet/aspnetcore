@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Identity.Authentication
 
         public void SignIn(ClaimsIdentity identity, bool isPersistent)
         {
-            Context.Response.SignIn(identity, new AuthenticationProperties { IsPersistent = isPersistent });
+            Context.Response.SignIn(new AuthenticationProperties() { IsPersistent = isPersistent }, identity);
         }
         public void SignOut(string authenticationType)
         {
