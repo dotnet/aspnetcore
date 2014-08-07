@@ -4,7 +4,7 @@
 using Microsoft.AspNet.Http;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.PipelineCore.Collections
+namespace Microsoft.AspNet.WebUtilities.Collections
 {
     /// <summary>
     /// Contains the parsed form values.
@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.PipelineCore.Collections
     public class FormCollection : ReadableStringCollection, IFormCollection
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Owin.FormCollection" /> class.
+        /// Initializes a new instance of the <see cref="T:Microsoft.AspNet.WebUtilities.FormCollection" /> class.
         /// </summary>
         /// <param name="store">The store for the form.</param>
         public FormCollection(IDictionary<string, string[]> store)

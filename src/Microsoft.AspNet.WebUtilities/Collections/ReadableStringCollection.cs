@@ -4,11 +4,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Microsoft.AspNet.Http.Infrastructure;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.PipelineCore.Infrastructure;
 
-namespace Microsoft.AspNet.PipelineCore.Collections
+namespace Microsoft.AspNet.WebUtilities.Collections
 {
     /// <summary>
     /// Accessors for query, forms, etc.

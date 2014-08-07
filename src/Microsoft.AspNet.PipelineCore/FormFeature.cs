@@ -9,8 +9,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.HttpFeature;
-using Microsoft.AspNet.PipelineCore.Collections;
 using Microsoft.AspNet.PipelineCore.Infrastructure;
+using Microsoft.AspNet.WebUtilities;
+using Microsoft.AspNet.WebUtilities.Collections;
 
 namespace Microsoft.AspNet.PipelineCore
 {
@@ -60,8 +61,8 @@ namespace Microsoft.AspNet.PipelineCore
                                                            detectEncodingFromByteOrderMarks: true,
                                                            bufferSize: 1024, leaveOpen: true))
                 {
-                    string formQuery = await streamReader.ReadToEndAsync();
-                    _form = new ReadableStringCollection(ParsingHelpers.GetQuery(formQuery));
+                    string form = await streamReader.ReadToEndAsync();
+                    _form = FormHelpers.ParseForm(form);
                 }
             }
             return _form;

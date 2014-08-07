@@ -818,18 +818,6 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
                     StringComparer.OrdinalIgnoreCase);
         }
 
-        internal static IFormCollection GetForm(string text)
-        {
-            IDictionary<string, string[]> form = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
-            var accumulator = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-            ParseDelimited(text, new[] { '&' }, AppendItemCallback, accumulator);
-            foreach (var kv in accumulator)
-            {
-                form.Add(kv.Key, kv.Value.ToArray());
-            }
-            return new FormCollection(form);
-        }
-
         internal static string GetJoinedValue(IDictionary<string, string[]> store, string key)
         {
             string[] values = GetUnmodifiedValues(store, key);

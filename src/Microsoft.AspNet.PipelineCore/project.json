@@ -4,7 +4,8 @@
   "dependencies": {
     "Microsoft.AspNet.FeatureModel": "",
     "Microsoft.AspNet.Http": "",
-    "Microsoft.AspNet.HttpFeature": ""
+    "Microsoft.AspNet.HttpFeature": "",
+    "Microsoft.AspNet.WebUtilities": ""
   },
   "frameworks": {
     "net45": {},

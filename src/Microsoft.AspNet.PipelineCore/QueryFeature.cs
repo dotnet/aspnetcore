@@ -5,8 +5,8 @@ using System.Collections.Generic;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.HttpFeature;
-using Microsoft.AspNet.PipelineCore.Collections;
 using Microsoft.AspNet.PipelineCore.Infrastructure;
+using Microsoft.AspNet.WebUtilities.Collections;
 
 namespace Microsoft.AspNet.PipelineCore
 {
