@@ -1,6 +1,6 @@
 ﻿{
   "dependencies": {
-    "Helios": "1.0.0-*",
+    "Microsoft.AspNet.Server.IIS": "1.0.0-*",
     "Microsoft.AspNet.Routing" : "",
     "Microsoft.AspNet.RequestContainer": "1.0.0-*",
     "Microsoft.Framework.OptionsModel": "1.0.0-*"
