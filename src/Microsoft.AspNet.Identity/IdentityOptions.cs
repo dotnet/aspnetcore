@@ -14,6 +14,7 @@ namespace Microsoft.AspNet.Identity
             User = new UserOptions();
             Password = new PasswordOptions();
             Lockout = new LockoutOptions();
+            SignIn = new SignInOptions();
         }
 
         public ClaimsIdentityOptions ClaimsIdentity { get; set; }
@@ -23,5 +24,8 @@ namespace Microsoft.AspNet.Identity
         public PasswordOptions Password { get; set; }
 
         public LockoutOptions Lockout { get; set; }
+
+        public SignInOptions SignIn { get; set; }
+
     }
 }

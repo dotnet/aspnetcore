@@ -68,9 +68,9 @@ namespace Microsoft.AspNet.Identity.Authentication
                 }
                 if (validate)
                 {
-                    var manager = context.HttpContext.ApplicationServices.GetService<SignInManager<TUser>>();
+                    var manager = context.HttpContext.RequestServices.GetService<SignInManager<TUser>>();
                     var userId = getUserIdCallback(context.Identity);
-                    var user = await manager.ValidateSecurityStamp(context.Identity, userId);
+                    var user = await manager.ValidateSecurityStampAsync(context.Identity, userId);
                     if (user != null)
                     {
                         bool isPersistent = false;

@@ -12,8 +12,7 @@ namespace Microsoft.Framework.DependencyInjection
             where TUser : class
             where TRole : class
         {
-            // todo: review should this be scoped?
-            builder.Services.AddTransient<IAuthenticationManager, HttpAuthenticationManager>();
+            builder.Services.AddScoped<IAuthenticationManager, HttpAuthenticationManager>();
             return builder;
         }
     }

@@ -77,6 +77,7 @@
     <Compile Include="SignInStatus.cs" />
     <Compile Include="UserLoginInfo.cs" />
     <Compile Include="UserManager.cs" />
+    <Compile Include="SignInOptions.cs" />
     <Compile Include="UserOptions.cs" />
     <Compile Include="UserValidator.cs" />
   </ItemGroup>

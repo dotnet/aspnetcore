@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Identity
@@ -14,7 +15,8 @@ namespace Microsoft.AspNet.Identity
         // remember browser for two factor
         void ForgetClient();
         void RememberClient(string userId);
-        Task<bool> IsClientRememeberedAsync(string userId);
+        Task<bool> IsClientRememeberedAsync(string userId, 
+            CancellationToken cancellationToken = default(CancellationToken));
 
         // half cookie
         Task StoreUserId(string userId);

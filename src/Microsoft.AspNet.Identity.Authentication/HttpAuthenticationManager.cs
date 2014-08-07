@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Security;
 using Microsoft.Framework.DependencyInjection;
-using System;
 
 namespace Microsoft.AspNet.Identity.Authentication
 {
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Identity.Authentication
             Context.Response.SignOut(TwoFactorRememberedAuthenticationType);
         }
 
-        public async Task<bool> IsClientRememeberedAsync(string userId)
+        public async Task<bool> IsClientRememeberedAsync(string userId, CancellationToken cancellationToken = default(CancellationToken))
         {
             var result =
                 await Context.AuthenticateAsync(TwoFactorRememberedAuthenticationType);

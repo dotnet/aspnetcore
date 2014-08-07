@@ -39,7 +39,7 @@ namespace IdentitySample
                 PhoneNumber = await UserManager.GetPhoneNumberAsync(user),
                 TwoFactor = await UserManager.GetTwoFactorEnabledAsync(user),
                 Logins = await UserManager.GetLoginsAsync(user),
-                BrowserRemembered = await SignInManager.IsTwoFactorClientRemembered(user)
+                BrowserRemembered = await SignInManager.IsTwoFactorClientRememberedAsync(user)
             };
             return View(model);
         }
