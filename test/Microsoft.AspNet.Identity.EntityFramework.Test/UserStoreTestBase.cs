@@ -502,6 +502,24 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             IdentityResultAssert.IsFailure(result, "A user with that external login already exists.");
         }
 
+        [Fact]
+        public async Task UserNameAsEmailTest()
+        {
+            var manager = CreateManager();
+            manager.Options.User.UseUserNameAsEmail = true;
+            manager.Options.User.AllowOnlyAlphanumericNames = false;
+            const string email = "email@test.com";
+            var user = new ApplicationUser { UserName = email };
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+            Assert.Equal(user, await manager.FindByEmailAsync(email));
+            Assert.Equal(email, await manager.GetEmailAsync(user));
+            const string newEmail = "modified@woot.com";
+            IdentityResultAssert.IsSuccess(await manager.SetEmailAsync(user, newEmail));
+            Assert.Equal(newEmail, user.UserName);
+            Assert.Equal(newEmail, user.Email);
+            Assert.False(user.EmailConfirmed);
+        }
+
         // Email tests
         [Fact]
         public async Task CanFindByEmail()
@@ -511,8 +529,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             var user = new ApplicationUser { Email = email };
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             var fetch = await manager.FindByEmailAsync(email);
-            //Assert.Equal(user, fetch);
-            Assert.Equal(user.Id, fetch.Id);
+            Assert.Equal(user, fetch);
         }
 
         [Fact]

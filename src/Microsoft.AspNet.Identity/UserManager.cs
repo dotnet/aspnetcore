@@ -487,10 +487,16 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            await Store.SetUserNameAsync(user, userName, cancellationToken);
-            await UpdateNormalizedUserName(user, cancellationToken);
+            await UpdateUserName(user, userName, cancellationToken);
             return await UpdateAsync(user, cancellationToken);
         }
+
+        private async Task UpdateUserName(TUser user, string userName, CancellationToken cancellationToken)
+        {
+            await Store.SetUserNameAsync(user, userName, cancellationToken);
+            await UpdateNormalizedUserName(user, cancellationToken);
+        }
+
 
         /// <summary>
         /// Get the user's id
@@ -1124,6 +1130,11 @@ namespace Microsoft.AspNet.Identity
             CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
+            if (Options.User.UseUserNameAsEmail)
+            {
+                return await GetUserNameAsync(user, cancellationToken);
+            }
+
             var store = GetEmailStore();
             if (user == null)
             {
@@ -1143,6 +1154,12 @@ namespace Microsoft.AspNet.Identity
             CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
+
+            if (Options.User.UseUserNameAsEmail)
+            {
+                await UpdateUserName(user, email, cancellationToken);
+            }
+
             var store = GetEmailStore();
             if (user == null)
             {
@@ -1164,6 +1181,11 @@ namespace Microsoft.AspNet.Identity
             CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
+            if (Options.User.UseUserNameAsEmail)
+            {
+                return FindByNameAsync(email, cancellationToken);
+            }
+
             var store = GetEmailStore();
             if (email == null)
             {
