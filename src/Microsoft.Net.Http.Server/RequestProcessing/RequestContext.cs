@@ -37,6 +37,8 @@ namespace Microsoft.Net.Http.Server
 {
     public sealed class RequestContext : IDisposable
     {
+        internal static Action<object> AbortDelegate = Abort;
+
         private WebListener _server;
         private Request _request;
         private Response _response;
@@ -401,6 +403,12 @@ namespace Microsoft.Net.Http.Server
             }
             ForceCancelRequest(RequestQueueHandle, _request.RequestId);
             _request.Dispose();
+        }
+
+        private static void Abort(object state)
+        {
+            var context = (RequestContext)state;
+            context.Abort();
         }
 
         // This is only called while processing incoming requests.  We don't have to worry about cancelling 

@@ -185,6 +185,94 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
+        [Fact]
+        public async Task ResponseBody_WriteAsyncWithActiveCancellationToken_Success()
+        {
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
+            {
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
+
+                var context = await server.GetContextAsync();
+                var cts = new CancellationTokenSource();
+                // First write sends headers
+                await context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
+                await context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
+                context.Dispose();
+
+                HttpResponseMessage response = await responseTask;
+                Assert.Equal(200, (int)response.StatusCode);
+                Assert.Equal(new byte[20], await response.Content.ReadAsByteArrayAsync());
+            }
+        }
+
+        [Fact]
+        public async Task ResponseBody_WriteAsyncWithTimerCancellationToken_Success()
+        {
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
+            {
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
+
+                var context = await server.GetContextAsync();
+                var cts = new CancellationTokenSource();
+                cts.CancelAfter(TimeSpan.FromSeconds(1));
+                // First write sends headers
+                await context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
+                await context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
+                context.Dispose();
+
+                HttpResponseMessage response = await responseTask;
+                Assert.Equal(200, (int)response.StatusCode);
+                Assert.Equal(new byte[20], await response.Content.ReadAsByteArrayAsync());
+            }
+        }
+
+        [Fact]
+        public async Task ResponseBody_FirstWriteAsyncWithCancelledCancellationToken_CancelsButDoesNotAbort()
+        {
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
+            {
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
+
+                var context = await server.GetContextAsync();
+                var cts = new CancellationTokenSource();
+                cts.Cancel();
+                // First write sends headers
+                var writeTask = context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
+                Assert.True(writeTask.IsCanceled);
+                context.Dispose();
+
+                HttpResponseMessage response = await responseTask;
+                Assert.Equal(200, (int)response.StatusCode);
+                Assert.Equal(new byte[0], await response.Content.ReadAsByteArrayAsync());
+            }
+        }
+
+        [Fact]
+        public async Task ResponseBody_SecondWriteAsyncWithCancelledCancellationToken_CancelsButDoesNotAbort()
+        {
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
+            {
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
+
+                var context = await server.GetContextAsync();
+                var cts = new CancellationTokenSource();
+                // First write sends headers
+                await context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
+                cts.Cancel();
+                var writeTask = context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
+                Assert.True(writeTask.IsCanceled);
+                context.Dispose();
+
+                HttpResponseMessage response = await responseTask;
+                Assert.Equal(200, (int)response.StatusCode);
+                Assert.Equal(new byte[10], await response.Content.ReadAsByteArrayAsync());
+            }
+        }
+
         private async Task<HttpResponseMessage> SendRequestAsync(string uri)
         {
             using (HttpClient client = new HttpClient())

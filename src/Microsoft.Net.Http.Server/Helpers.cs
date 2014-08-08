@@ -33,6 +33,13 @@ namespace Microsoft.Net.Http.Server
             return Task.FromResult<object>(null);
         }
 
+        internal static Task<T> CancelledTask<T>()
+        {
+            TaskCompletionSource<T> tcs = new TaskCompletionSource<T>();
+            tcs.TrySetCanceled();
+            return tcs.Task;
+        }
+
         internal static ConfiguredTaskAwaitable SupressContext(this Task task)
         {
             return task.ConfigureAwait(continueOnCapturedContext: false);

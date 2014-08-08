@@ -43,6 +43,7 @@ namespace Microsoft.Net.Http.Server
         private TaskCompletionSource<object> _tcs;
         private AsyncCallback _callback;
         private uint _bytesSent;
+        private CancellationTokenRegistration _cancellationRegistration;
 
         internal ResponseStreamAsyncResult(ResponseStream responseStream, object userState, AsyncCallback callback)
         {
@@ -50,12 +51,20 @@ namespace Microsoft.Net.Http.Server
             _tcs = new TaskCompletionSource<object>(userState);
             _callback = callback;
         }
-
         internal ResponseStreamAsyncResult(ResponseStream responseStream, object userState, AsyncCallback callback,
             byte[] buffer, int offset, int size, bool chunked, bool sentHeaders)
+            : this(responseStream, userState, callback, buffer, offset, size, chunked, sentHeaders,
+                  new CancellationTokenRegistration())
+        {
+        }
+
+        internal ResponseStreamAsyncResult(ResponseStream responseStream, object userState, AsyncCallback callback,
+            byte[] buffer, int offset, int size, bool chunked, bool sentHeaders,
+            CancellationTokenRegistration cancellationRegistration)
             : this(responseStream, userState, callback)
         {
             _sentHeaders = sentHeaders;
+            _cancellationRegistration = cancellationRegistration;
             Overlapped overlapped = new Overlapped();
             overlapped.AsyncResult = this;
 
@@ -121,10 +130,12 @@ namespace Microsoft.Net.Http.Server
         }
 
         internal ResponseStreamAsyncResult(ResponseStream responseStream, object userState, AsyncCallback callback,
-            string fileName, long offset, long? size, bool chunked, bool sentHeaders)
+            string fileName, long offset, long? size, bool chunked, bool sentHeaders,
+            CancellationTokenRegistration cancellationRegistration)
             : this(responseStream, userState, callback)
         {
             _sentHeaders = sentHeaders;
+            _cancellationRegistration = cancellationRegistration;
             Overlapped overlapped = new Overlapped();
             overlapped.AsyncResult = this;
 
@@ -449,6 +460,7 @@ namespace Microsoft.Net.Http.Server
             {
                 _fileStream.Dispose();
             }
+            _cancellationRegistration.Dispose();
         }
     }
 }

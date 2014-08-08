@@ -168,6 +168,156 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
+        [Fact]
+        public async Task RequestBody_ReadAsyncAlreadyCancelled_ReturnsCanceledTask()
+        {
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
+            {
+                Task<string> responseTask = SendRequestAsync(address, "Hello World");
+
+                var context = await server.GetContextAsync();
+
+                byte[] input = new byte[10];
+                var cts = new CancellationTokenSource();
+                cts.Cancel();
+
+                Task<int> task = context.Request.Body.ReadAsync(input, 0, input.Length, cts.Token);
+                Assert.True(task.IsCanceled);
+
+                context.Dispose();
+
+                string response = await responseTask;
+                Assert.Equal(string.Empty, response);
+            }
+        }
+
+        [Fact]
+        public async Task RequestBody_ReadAsyncPartialBodyWithCancellationToken_Success()
+        {
+            StaggardContent content = new StaggardContent();
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
+            {
+                Task<string> responseTask = SendRequestAsync(address, content);
+
+                var context = await server.GetContextAsync();
+                byte[] input = new byte[10];
+                var cts = new CancellationTokenSource();
+                int read = await context.Request.Body.ReadAsync(input, 0, input.Length, cts.Token);
+                Assert.Equal(5, read);
+                content.Block.Release();
+                read = await context.Request.Body.ReadAsync(input, 0, input.Length, cts.Token);
+                Assert.Equal(5, read);
+                context.Dispose();
+
+                string response = await responseTask;
+                Assert.Equal(string.Empty, response);
+            }
+        }
+
+        [Fact]
+        public async Task RequestBody_ReadAsyncPartialBodyWithTimeout_Success()
+        {
+            StaggardContent content = new StaggardContent();
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
+            {
+                Task<string> responseTask = SendRequestAsync(address, content);
+
+                var context = await server.GetContextAsync();
+                byte[] input = new byte[10];
+                var cts = new CancellationTokenSource();
+                cts.CancelAfter(TimeSpan.FromSeconds(5));
+                int read = await context.Request.Body.ReadAsync(input, 0, input.Length, cts.Token);
+                Assert.Equal(5, read);
+                content.Block.Release();
+                read = await context.Request.Body.ReadAsync(input, 0, input.Length, cts.Token);
+                Assert.Equal(5, read);
+                context.Dispose();
+
+                string response = await responseTask;
+                Assert.Equal(string.Empty, response);
+            }
+        }
+
+        [Fact]
+        public async Task RequestBody_ReadAsyncPartialBodyAndCancel_Canceled()
+        {
+            StaggardContent content = new StaggardContent();
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
+            {
+                Task<string> responseTask = SendRequestAsync(address, content);
+
+                var context = await server.GetContextAsync();
+                byte[] input = new byte[10];
+                var cts = new CancellationTokenSource();
+                int read = await context.Request.Body.ReadAsync(input, 0, input.Length, cts.Token);
+                Assert.Equal(5, read);
+                var readTask = context.Request.Body.ReadAsync(input, 0, input.Length, cts.Token);
+                Assert.False(readTask.IsCanceled);
+                cts.Cancel();
+                await Assert.ThrowsAsync<WebListenerException>(async () => await readTask);
+                content.Block.Release();
+                context.Dispose();
+
+                await Assert.ThrowsAsync<HttpRequestException>(async () => await responseTask);
+            }
+        }
+
+        [Fact]
+        public async Task RequestBody_ReadAsyncPartialBodyAndExpiredTimeout_Canceled()
+        {
+            StaggardContent content = new StaggardContent();
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
+            {
+                Task<string> responseTask = SendRequestAsync(address, content);
+
+                var context = await server.GetContextAsync();
+                byte[] input = new byte[10];
+                var cts = new CancellationTokenSource();
+                int read = await context.Request.Body.ReadAsync(input, 0, input.Length, cts.Token);
+                Assert.Equal(5, read);
+                cts.CancelAfter(TimeSpan.FromMilliseconds(100));
+                var readTask = context.Request.Body.ReadAsync(input, 0, input.Length, cts.Token);
+                Assert.False(readTask.IsCanceled);
+                await Assert.ThrowsAsync<WebListenerException>(async () => await readTask);
+                content.Block.Release();
+                context.Dispose();
+
+                await Assert.ThrowsAsync<HttpRequestException>(async () => await responseTask);
+            }
+        }
+
+        // Make sure that using our own disconnect token as a read cancellation token doesn't
+        // cause recursion problems when it fires and calls Abort.
+        [Fact]
+        public async Task RequestBody_ReadAsyncPartialBodyAndDisconnectedClient_Canceled()
+        {
+            StaggardContent content = new StaggardContent();
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
+            {
+                var client = new HttpClient();
+                var responseTask = client.PostAsync(address, content);
+
+                var context = await server.GetContextAsync();
+                byte[] input = new byte[10];
+                int read = await context.Request.Body.ReadAsync(input, 0, input.Length, context.DisconnectToken);
+                Assert.False(context.DisconnectToken.IsCancellationRequested);
+                // The client should timeout and disconnect, making this read fail.
+                var assertTask = Assert.ThrowsAsync<WebListenerException>(async () => await context.Request.Body.ReadAsync(input, 0, input.Length, context.DisconnectToken));
+                client.CancelPendingRequests();
+                await assertTask;
+                content.Block.Release();
+                context.Dispose();
+
+                await Assert.ThrowsAsync<TaskCanceledException>(async () => await responseTask);
+            }
+        }
+
         private Task<string> SendRequestAsync(string uri, string upload)
         {
             return SendRequestAsync(uri, new StringContent(upload));
@@ -177,6 +327,7 @@ namespace Microsoft.Net.Http.Server
         {
             using (HttpClient client = new HttpClient())
             {
+                client.Timeout = TimeSpan.FromSeconds(10);
                 HttpResponseMessage response = await client.PostAsync(uri, content);
                 response.EnsureSuccessStatusCode();
                 return await response.Content.ReadAsStringAsync();

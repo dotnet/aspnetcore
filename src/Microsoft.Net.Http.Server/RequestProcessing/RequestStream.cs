@@ -319,8 +319,10 @@ namespace Microsoft.Net.Http.Server
                 return Task.FromResult<int>(0);
             }
 
-            // TODO: Needs full cancellation integration
-            cancellationToken.ThrowIfCancellationRequested();
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return Helpers.CancelledTask<int>();
+            }
             // TODO: Verbose log parameters
 
             RequestStreamAsyncResult asyncResult = null;
@@ -349,7 +351,13 @@ namespace Microsoft.Net.Http.Server
                     size = MaxReadSize;
                 }
 
-                asyncResult = new RequestStreamAsyncResult(this, null, null, buffer, offset, dataRead);
+                CancellationTokenRegistration cancellationRegistration;
+                if (cancellationToken.CanBeCanceled)
+                {
+                    cancellationRegistration = cancellationToken.Register(RequestContext.AbortDelegate, _requestContext);
+                }
+
+                asyncResult = new RequestStreamAsyncResult(this, null, null, buffer, offset, dataRead, cancellationRegistration);
                 uint bytesReturned;
 
                 try
@@ -449,6 +457,7 @@ namespace Microsoft.Net.Http.Server
             private TaskCompletionSource<int> _tcs;
             private RequestStream _requestStream;
             private AsyncCallback _callback;
+            private CancellationTokenRegistration _cancellationRegistration;
 
             internal RequestStreamAsyncResult(RequestStream requestStream, object userState, AsyncCallback callback)
             {
@@ -464,6 +473,11 @@ namespace Microsoft.Net.Http.Server
             }
 
             internal RequestStreamAsyncResult(RequestStream requestStream, object userState, AsyncCallback callback, byte[] buffer, int offset, uint dataAlreadyRead)
+                : this(requestStream, userState, callback, buffer, offset, dataAlreadyRead, new CancellationTokenRegistration())
+            {
+            }
+
+            internal RequestStreamAsyncResult(RequestStream requestStream, object userState, AsyncCallback callback, byte[] buffer, int offset, uint dataAlreadyRead, CancellationTokenRegistration cancellationRegistration)
                 : this(requestStream, userState, callback)
             {
                 _dataAlreadyRead = dataAlreadyRead;
@@ -471,6 +485,7 @@ namespace Microsoft.Net.Http.Server
                 overlapped.AsyncResult = this;
                 _overlapped = new SafeNativeOverlapped(overlapped.Pack(IOCallback, buffer));
                 _pinnedBuffer = (Marshal.UnsafeAddrOfPinnedArrayElement(buffer, offset));
+                _cancellationRegistration = cancellationRegistration;
             }
 
             internal RequestStream RequestStream
@@ -583,6 +598,7 @@ namespace Microsoft.Net.Http.Server
                     {
                         _overlapped.Dispose();
                     }
+                    _cancellationRegistration.Dispose();
                 }
             }
 

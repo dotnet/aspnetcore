@@ -135,12 +135,20 @@ namespace Microsoft.Net.Http.Server
             UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS flags = ComputeLeftToWrite();
             // TODO: Verbose log
 
-            // TODO: Real cancellation
-            cancellationToken.ThrowIfCancellationRequested();
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return Helpers.CancelledTask<int>();
+            }
+
+            CancellationTokenRegistration cancellationRegistration;
+            if (cancellationToken.CanBeCanceled)
+            {
+                cancellationRegistration = cancellationToken.Register(RequestContext.AbortDelegate, _requestContext);
+            }
 
             // TODO: Don't add MoreData flag if content-length == 0?
             flags |= UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
-            ResponseStreamAsyncResult asyncResult = new ResponseStreamAsyncResult(this, null, null, null, 0, 0, _requestContext.Response.BoundaryType == BoundaryType.Chunked, false);
+            ResponseStreamAsyncResult asyncResult = new ResponseStreamAsyncResult(this, null, null, null, 0, 0, _requestContext.Response.BoundaryType == BoundaryType.Chunked, false, cancellationRegistration);
 
             try
             {
@@ -492,7 +500,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        public override unsafe Task WriteAsync(byte[] buffer, int offset, int size, CancellationToken cancel)
+        public override unsafe Task WriteAsync(byte[] buffer, int offset, int size, CancellationToken cancellationToken)
         {
             if (buffer == null)
             {
@@ -521,14 +529,22 @@ namespace Microsoft.Net.Http.Server
             }
             // TODO: Verbose log
 
-            // TODO: Real cancelation
-            cancel.ThrowIfCancellationRequested();
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return Helpers.CancelledTask<int>();
+            }
+
+            CancellationTokenRegistration cancellationRegistration;
+            if (cancellationToken.CanBeCanceled)
+            {
+                cancellationRegistration = cancellationToken.Register(RequestContext.AbortDelegate, _requestContext);
+            }
 
             uint statusCode;
             uint bytesSent = 0;
             flags |= _leftToWrite == size ? UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.NONE : UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
             bool sentHeaders = _requestContext.Response.SentHeaders;
-            ResponseStreamAsyncResult asyncResult = new ResponseStreamAsyncResult(this, null, null, buffer, offset, size, _requestContext.Response.BoundaryType == BoundaryType.Chunked, sentHeaders);
+            ResponseStreamAsyncResult asyncResult = new ResponseStreamAsyncResult(this, null, null, buffer, offset, size, _requestContext.Response.BoundaryType == BoundaryType.Chunked, sentHeaders, cancellationRegistration);
 
             // Update m_LeftToWrite now so we can queue up additional BeginWrite's without waiting for EndWrite.
             UpdateWritenCount((uint)((_requestContext.Response.BoundaryType == BoundaryType.Chunked) ? 0 : size));
@@ -597,7 +613,7 @@ namespace Microsoft.Net.Http.Server
             return asyncResult.Task;
         }
 
-        internal unsafe Task SendFileAsync(string fileName, long offset, long? size, CancellationToken cancel)
+        internal unsafe Task SendFileAsync(string fileName, long offset, long? size, CancellationToken cancellationToken)
         {
             // It's too expensive to validate the file attributes before opening the file. Open the file and then check the lengths.
             // This all happens inside of ResponseStreamAsyncResult.
@@ -610,9 +626,6 @@ namespace Microsoft.Net.Http.Server
                 throw new ObjectDisposedException(GetType().FullName);
             }
 
-            // TODO: Real cancellation
-            cancel.ThrowIfCancellationRequested();
-
             UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS flags = ComputeLeftToWrite();
             if (size == 0 && _leftToWrite != 0)
             {
@@ -624,12 +637,23 @@ namespace Microsoft.Net.Http.Server
             }
             // TODO: Verbose log
 
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return Helpers.CancelledTask<int>();
+            }
+
+            CancellationTokenRegistration cancellationRegistration;
+            if (cancellationToken.CanBeCanceled)
+            {
+                cancellationRegistration = cancellationToken.Register(RequestContext.AbortDelegate, _requestContext);
+            }
+
             uint statusCode;
             uint bytesSent = 0;
             flags |= _leftToWrite == size ? UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.NONE : UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
             bool sentHeaders = _requestContext.Response.SentHeaders;
             ResponseStreamAsyncResult asyncResult = new ResponseStreamAsyncResult(this, null, null, fileName, offset, size,
-                _requestContext.Response.BoundaryType == BoundaryType.Chunked, sentHeaders);
+                _requestContext.Response.BoundaryType == BoundaryType.Chunked, sentHeaders, cancellationRegistration);
 
             long bytesWritten;
             if (_requestContext.Response.BoundaryType == BoundaryType.Chunked)
