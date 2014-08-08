@@ -895,7 +895,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="claim"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> AddClaimAsync(TUser user, Claim claim,
+        public virtual Task<IdentityResult> AddClaimAsync(TUser user, Claim claim,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
@@ -908,7 +908,30 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            await claimStore.AddClaimAsync(user, claim, cancellationToken);
+            return AddClaimsAsync(user, new Claim[] { claim }, cancellationToken);
+        }
+
+        /// <summary>
+        ///     Add a user claim
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="claim"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public virtual async Task<IdentityResult> AddClaimsAsync(TUser user, IEnumerable<Claim> claims,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            ThrowIfDisposed();
+            var claimStore = GetClaimStore();
+            if (claims == null)
+            {
+                throw new ArgumentNullException("claims");
+            }
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            await claimStore.AddClaimsAsync(user, claims, cancellationToken);
             return await UpdateAsync(user, cancellationToken);
         }
 
@@ -919,7 +942,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="claim"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> RemoveClaimAsync(TUser user, Claim claim,
+        public virtual Task<IdentityResult> RemoveClaimAsync(TUser user, Claim claim,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
@@ -928,7 +951,35 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            await claimStore.RemoveClaimAsync(user, claim, cancellationToken);
+            if (claim == null)
+            {
+                throw new ArgumentNullException("claim");
+            }
+            return RemoveClaimsAsync(user, new Claim[] { claim }, cancellationToken);
+        }
+
+
+        /// <summary>
+        ///     Remove a user claim
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="claims"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public virtual async Task<IdentityResult> RemoveClaimsAsync(TUser user, IEnumerable<Claim> claims,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            ThrowIfDisposed();
+            var claimStore = GetClaimStore();
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            if (claims == null)
+            {
+                throw new ArgumentNullException("claims");
+            }
+            await claimStore.RemoveClaimsAsync(user, claims, cancellationToken);
             return await UpdateAsync(user, cancellationToken);
         }
 

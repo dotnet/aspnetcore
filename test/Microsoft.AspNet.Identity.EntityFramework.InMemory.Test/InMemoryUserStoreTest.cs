@@ -57,18 +57,18 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
         {
             var store = new InMemoryUserStore(new InMemoryContext());
             store.Dispose();
-            await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.AddClaimAsync(null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.AddClaimsAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.AddLoginAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.AddToRoleAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.GetClaimsAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.GetLoginsAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.GetRolesAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.IsInRoleAsync(null, null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.RemoveClaimAsync(null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.RemoveClaimsAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.RemoveLoginAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(
                 async () => await store.RemoveFromRoleAsync(null, null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.RemoveClaimAsync(null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.RemoveClaimsAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.FindByLoginAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.FindByIdAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.FindByNameAsync(null));
@@ -95,8 +95,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.CreateAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.UpdateAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.DeleteAsync(null));
-            await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.AddClaimAsync(null, null));
-            await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.RemoveClaimAsync(null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.AddClaimsAsync(null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.RemoveClaimsAsync(null, null));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.GetClaimsAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.GetLoginsAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.GetRolesAsync(null));
@@ -115,10 +115,10 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.GetSecurityStampAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await store.SetSecurityStampAsync(null, null));
-            await Assert.ThrowsAsync<ArgumentNullException>("claim",
-                async () => await store.AddClaimAsync(new InMemoryUser("fake"), null));
-            await Assert.ThrowsAsync<ArgumentNullException>("claim",
-                async () => await store.RemoveClaimAsync(new InMemoryUser("fake"), null));
+            await Assert.ThrowsAsync<ArgumentNullException>("claims",
+                async () => await store.AddClaimsAsync(new InMemoryUser("fake"), null));
+            await Assert.ThrowsAsync<ArgumentNullException>("claims",
+                async () => await store.RemoveClaimsAsync(new InMemoryUser("fake"), null));
             await Assert.ThrowsAsync<ArgumentNullException>("login",
                 async () => await store.AddLoginAsync(new InMemoryUser("fake"), null));
             await Assert.ThrowsAsync<ArgumentNullException>("login",

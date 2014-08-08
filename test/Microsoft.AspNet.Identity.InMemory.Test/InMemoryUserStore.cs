@@ -39,20 +39,26 @@ namespace Microsoft.AspNet.Identity.InMemory
             return Task.FromResult<IList<Claim>>(claims);
         }
 
-        public Task AddClaimAsync(TUser user, Claim claim, CancellationToken cancellationToken = default(CancellationToken))
+        public Task AddClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken))
         {
-            user.Claims.Add(new IdentityUserClaim<string> { ClaimType = claim.Type, ClaimValue = claim.Value, UserId = user.Id });
+            foreach (var claim in claims)
+            {
+                user.Claims.Add(new IdentityUserClaim<string> { ClaimType = claim.Type, ClaimValue = claim.Value, UserId = user.Id });
+            }
             return Task.FromResult(0);
         }
 
-        public Task RemoveClaimAsync(TUser user, Claim claim, CancellationToken cancellationToken = default(CancellationToken))
+        public Task RemoveClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var entity =
-                user.Claims.FirstOrDefault(
-                    uc => uc.UserId == user.Id && uc.ClaimType == claim.Type && uc.ClaimValue == claim.Value);
-            if (entity != null)
+            foreach (var claim in claims)
             {
-                user.Claims.Remove(entity);
+                var entity =
+                    user.Claims.FirstOrDefault(
+                        uc => uc.UserId == user.Id && uc.ClaimType == claim.Type && uc.ClaimValue == claim.Value);
+                if (entity != null)
+                {
+                    user.Claims.Remove(entity);
+                }
             }
             return Task.FromResult(0);
         }

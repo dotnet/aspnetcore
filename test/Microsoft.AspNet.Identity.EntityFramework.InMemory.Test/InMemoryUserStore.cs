@@ -358,13 +358,13 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
         }
 
         /// <summary>
-        ///     Add a claim to a user
+        ///     Add claims to a user
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="claim"></param>
+        /// <param name="claims"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task AddClaimAsync(TUser user, Claim claim, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task AddClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -372,22 +372,25 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             {
                 throw new ArgumentNullException("user");
             }
-            if (claim == null)
+            if (claims == null)
             {
-                throw new ArgumentNullException("claim");
+                throw new ArgumentNullException("claims");
             }
-            user.Claims.Add(new TUserClaim { UserId = user.Id, ClaimType = claim.Type, ClaimValue = claim.Value });
+            foreach (var claim in claims)
+            {
+                user.Claims.Add(new TUserClaim { UserId = user.Id, ClaimType = claim.Type, ClaimValue = claim.Value });
+            }
             return Task.FromResult(0);
         }
 
         /// <summary>
-        ///     Remove a claim from a user
+        ///     Remove claims from a user
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="claim"></param>
+        /// <param name="claims"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task RemoveClaimAsync(TUser user, Claim claim, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task RemoveClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -395,15 +398,18 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             {
                 throw new ArgumentNullException("user");
             }
-            if (claim == null)
+            if (claims == null)
             {
-                throw new ArgumentNullException("claim");
+                throw new ArgumentNullException("claims");
             }
-            var claims =
-                user.Claims.Where(uc => uc.ClaimValue == claim.Value && uc.ClaimType == claim.Type).ToList();
-            foreach (var c in claims)
+            foreach (var claim in claims)
             {
-                user.Claims.Remove(c);
+                var matchingClaims =
+                    user.Claims.Where(uc => uc.ClaimValue == claim.Value && uc.ClaimType == claim.Type).ToList();
+                foreach (var c in matchingClaims)
+                {
+                    user.Claims.Remove(c);
+                }
             }
             // TODO:these claims might not exist in the dbset
             //var query =

@@ -27,19 +27,19 @@ namespace Microsoft.AspNet.Identity
         ///     Add a new user claim
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="claim"></param>
+        /// <param name="claims"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task AddClaimAsync(TUser user, Claim claim, CancellationToken cancellationToken = default(CancellationToken));
+        Task AddClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Remove a user claim
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="claim"></param>
+        /// <param name="claims"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task RemoveClaimAsync(TUser user, Claim claim, 
+        Task RemoveClaimsAsync(TUser user, IEnumerable<Claim> claims, 
             CancellationToken cancellationToken = default(CancellationToken));
     }
 }

@@ -422,36 +422,41 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             return Task.FromResult((IList<Claim>)result);
         }
 
-        public Task AddClaimAsync(TUser user, Claim claim, CancellationToken cancellationToken = new CancellationToken())
+        public Task AddClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = new CancellationToken())
         {
             ThrowIfDisposed();
             if (user == null)
             {
                 throw new ArgumentNullException("user");
             }
-            if (claim == null)
+            if (claims == null)
             {
-                throw new ArgumentNullException("claim");
+                throw new ArgumentNullException("claims");
             }
-            UserClaims.Add(new IdentityUserClaim<TKey> { UserId = user.Id, ClaimType = claim.Type, ClaimValue = claim.Value });
+            foreach (var claim in claims)
+            {
+                UserClaims.Add(new IdentityUserClaim<TKey> { UserId = user.Id, ClaimType = claim.Type, ClaimValue = claim.Value });
+            }
             return Task.FromResult(0);
         }
 
-        public Task RemoveClaimAsync(TUser user, Claim claim, CancellationToken cancellationToken = new CancellationToken())
+        public Task RemoveClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = new CancellationToken())
         {
             ThrowIfDisposed();
             if (user == null)
             {
                 throw new ArgumentNullException("user");
             }
-            if (claim == null)
+            if (claims == null)
             {
-                throw new ArgumentNullException("claim");
+                throw new ArgumentNullException("claims");
             }
-            var claims = UserClaims.Where(uc => uc.ClaimValue == claim.Value && uc.ClaimType == claim.Type).ToList();
-            foreach (var c in claims)
-            {
-                UserClaims.Remove(c);
+            foreach (var claim in claims) {
+                var matchedClaims = UserClaims.Where(uc => uc.ClaimValue == claim.Value && uc.ClaimType == claim.Type).ToList();
+                foreach (var c in matchedClaims)
+                {
+                    UserClaims.Remove(c);
+                }
             }
             return Task.FromResult(0);
         }
