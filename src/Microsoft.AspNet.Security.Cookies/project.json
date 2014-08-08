@@ -6,7 +6,7 @@
     "Microsoft.AspNet.HttpFeature": "1.0.0-*",
     "Microsoft.AspNet.PipelineCore": "1.0.0-*",
     "Microsoft.AspNet.RequestContainer": "1.0.0-*",
-    "Microsoft.AspNet.Security": "",
+    "Microsoft.AspNet.Security": "1.0.0-*",
     "Microsoft.AspNet.Security.DataProtection": "1.0.0-*",
     "Microsoft.Framework.DependencyInjection": "1.0.0-*",
     "Microsoft.Framework.Logging": "1.0.0-*",

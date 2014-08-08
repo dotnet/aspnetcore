@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.21916.0
+VisualStudioVersion = 14.0.22013.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{4D2B6A51-2F9F-44F5-8131-EA5CAC053652}"
 EndProject
@@ -22,6 +22,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		global.json = global.json
 	EndProjectSection
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Security.Facebook", "src\Microsoft.AspNet.Security.Facebook\Microsoft.AspNet.Security.Facebook.kproj", "{3984651C-FD44-4394-8793-3D14EE348C04}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SocialSample", "samples\SocialSample\SocialSample.kproj", "{8C73D216-332D-41D8-BFD0-45BC4BC36552}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -73,6 +76,26 @@ Global
 		{8DA26CD1-1302-4CFD-9270-9FA1B7C6138B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{8DA26CD1-1302-4CFD-9270-9FA1B7C6138B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{8DA26CD1-1302-4CFD-9270-9FA1B7C6138B}.Release|x86.ActiveCfg = Release|Any CPU
+		{3984651C-FD44-4394-8793-3D14EE348C04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3984651C-FD44-4394-8793-3D14EE348C04}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3984651C-FD44-4394-8793-3D14EE348C04}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{3984651C-FD44-4394-8793-3D14EE348C04}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{3984651C-FD44-4394-8793-3D14EE348C04}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3984651C-FD44-4394-8793-3D14EE348C04}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3984651C-FD44-4394-8793-3D14EE348C04}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3984651C-FD44-4394-8793-3D14EE348C04}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{3984651C-FD44-4394-8793-3D14EE348C04}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{3984651C-FD44-4394-8793-3D14EE348C04}.Release|x86.ActiveCfg = Release|Any CPU
+		{8C73D216-332D-41D8-BFD0-45BC4BC36552}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C73D216-332D-41D8-BFD0-45BC4BC36552}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C73D216-332D-41D8-BFD0-45BC4BC36552}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{8C73D216-332D-41D8-BFD0-45BC4BC36552}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{8C73D216-332D-41D8-BFD0-45BC4BC36552}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8C73D216-332D-41D8-BFD0-45BC4BC36552}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C73D216-332D-41D8-BFD0-45BC4BC36552}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C73D216-332D-41D8-BFD0-45BC4BC36552}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{8C73D216-332D-41D8-BFD0-45BC4BC36552}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{8C73D216-332D-41D8-BFD0-45BC4BC36552}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -82,5 +105,7 @@ Global
 		{15F1211B-B695-4A1C-B730-1AC58FC91090} = {4D2B6A51-2F9F-44F5-8131-EA5CAC053652}
 		{558C2C2A-AED8-49DE-BB60-D5F8AE06C714} = {F8C0AA27-F3FB-4286-8E4C-47EF86B539FF}
 		{8DA26CD1-1302-4CFD-9270-9FA1B7C6138B} = {7BF11F3A-60B6-4796-B504-579C67FFBA34}
+		{3984651C-FD44-4394-8793-3D14EE348C04} = {4D2B6A51-2F9F-44F5-8131-EA5CAC053652}
+		{8C73D216-332D-41D8-BFD0-45BC4BC36552} = {F8C0AA27-F3FB-4286-8E4C-47EF86B539FF}
 	EndGlobalSection
 EndGlobal

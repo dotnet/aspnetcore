@@ -12,6 +12,6 @@ namespace Microsoft.AspNet.Security
         /// <summary>
         /// Used by middleware extension methods to coordinate the default value Options property SignInAsAuthenticationType
         /// </summary>
-        public const string DefaultSignInAsAuthenticationType = "Microsoft.AspNet.Security.Constants.DefaultSignInAsAuthenticationType";
+        internal const string DefaultSignInAsAuthenticationType = "Microsoft.AspNet.Security.DefaultSignInAsAuthenticationType";
     }
 }

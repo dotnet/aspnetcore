@@ -1,16 +1,15 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-/* TODO:
 using System;
-using Owin;
+using Microsoft.AspNet.Security;
 
-namespace Microsoft.AspNet.Security
+namespace Microsoft.AspNet.Builder
 {
     /// <summary>
     /// Provides extensions methods for app.Property values that are only needed by implementations of authentication middleware.
     /// </summary>
-    public static class AppBuilderSecurityExtensions
+    public static class BuilderSecurityExtensions
     {
         /// <summary>
         /// Returns the previously set AuthenticationType that external sign in middleware should use when the
@@ -18,7 +17,7 @@ namespace Microsoft.AspNet.Security
         /// </summary>
         /// <param name="app">App builder passed to the application startup code</param>
         /// <returns></returns>
-        public static string GetDefaultSignInAsAuthenticationType([NotNull] this IAppBuilder app)
+        public static string GetDefaultSignInAsAuthenticationType([NotNull] this IBuilder app)
         {
             object value;
             if (app.Properties.TryGetValue(Constants.DefaultSignInAsAuthenticationType, out value))
@@ -38,10 +37,9 @@ namespace Microsoft.AspNet.Security
         /// </summary>
         /// <param name="app">App builder passed to the application startup code</param>
         /// <param name="authenticationType">AuthenticationType that external middleware should sign in as.</param>
-        public static void SetDefaultSignInAsAuthenticationType([NotNull] this IAppBuilder app, [NotNull] string authenticationType)
+        public static void SetDefaultSignInAsAuthenticationType([NotNull] this IBuilder app, [NotNull] string authenticationType)
         {
             app.Properties[Constants.DefaultSignInAsAuthenticationType] = authenticationType;
         }
     }
 }
-*/
