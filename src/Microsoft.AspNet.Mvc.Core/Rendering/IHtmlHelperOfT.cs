@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </summary>
         /// <param name="expression">The expression to be evaluated against the current model.</param>
         /// <typeparam name="TValue">The type of the <paramref name="expression"/> result.</typeparam>
-        /// <returns>A <see cref="String"/> containing the display name.</returns>
+        /// <returns>A <see cref="string"/> containing the display name.</returns>
         string DisplayNameFor<TValue>([NotNull] Expression<Func<TModel, TValue>> expression);
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="expression">The expression to be evaluated against an item in the current model.</param>
         /// <typeparam name="TModelItem">The type of items in the model collection.</typeparam>
         /// <typeparam name="TValue">The type of the <paramref name="expression"/> result.</typeparam>
-        /// <returns>A <see cref="String"/> containing the display name.</returns>
+        /// <returns>A <see cref="string"/> containing the display name.</returns>
         string DisplayNameForInnerType<TModelItem, TValue>(
             [NotNull] Expression<Func<TModelItem, TValue>> expression);
 
@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="expression">The expression to be evaluated against the current model.</param>
         /// <typeparam name="TValue">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>
-        /// A <see cref="String"/> containing the simple display text.
+        /// A <see cref="string"/> containing the simple display text.
         /// If the <paramref name="expression"/> result is <c>null</c>, returns
         /// <see cref="ModelBinding.ModelMetadata.NullDisplayText"/>.
         /// </returns>
@@ -147,7 +147,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </summary>
         /// <param name="expression">The expression to be evaluated against the current model.</param>
         /// <typeparam name="TProperty">The type of the <paramref name="expression"/> result.</typeparam>
-        /// <returns>A <see cref="String"/> containing the element Id.</returns>
+        /// <returns>A <see cref="string"/> containing the element Id.</returns>
         string IdFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression);
 
         /// <summary>
@@ -189,7 +189,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </summary>
         /// <param name="expression">The expression to be evaluated against the current model.</param>
         /// <typeparam name="TProperty">The type of the <paramref name="expression"/> result.</typeparam>
-        /// <returns>A <see cref="String"/> containing the element name.</returns>
+        /// <returns>A <see cref="string"/> containing the element name.</returns>
         string NameFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression);
 
         /// <summary>
@@ -272,12 +272,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </summary>
         /// <param name="expression">The expression to be evaluated against the current model.</param>
         /// <param name="format">
-        /// The composite format <see cref="String"/> (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx).
+        /// The composite format <see cref="string"/> (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx).
         /// </param>
         /// <typeparam name="TProperty">The type of the <paramref name="expression"/> result.</typeparam>
-        /// <returns>A <see cref="String"/> containing the formatted value.</returns>
+        /// <returns>A <see cref="string"/> containing the formatted value.</returns>
         /// <remarks>
-        /// Converts the <paramref name="expression"/> result to a <see cref="String"/> directly if
+        /// Converts the <paramref name="expression"/> result to a <see cref="string"/> directly if
         /// <paramref name="format"/> is <c>null</c> or empty.
         /// </remarks>
         string ValueFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression, string format);

@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Returns the display name for the current model.
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
-        /// <returns>A <see cref="String"/> containing the display name.</returns>
+        /// <returns>A <see cref="string"/> containing the display name.</returns>
         public static string DisplayNameForModel([NotNull] this IHtmlHelper htmlHelper)
         {
             return htmlHelper.DisplayName(expression: null);
@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="expression">The expression to be evaluated against an item in the current model.</param>
         /// <typeparam name="TModelItem">The type of items in the model collection.</typeparam>
         /// <typeparam name="TValue">The type of the <paramref name="expression"/> result.</typeparam>
-        /// <returns>A <see cref="String"/> containing the display name.</returns>
+        /// <returns>A <see cref="string"/> containing the display name.</returns>
         public static string DisplayNameFor<TModelItem, TValue>(
             [NotNull] this IHtmlHelper<IEnumerable<TModelItem>> htmlHelper,
             [NotNull] Expression<Func<TModelItem, TValue>> expression)

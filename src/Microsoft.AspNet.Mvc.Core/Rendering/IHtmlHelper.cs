@@ -151,7 +151,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Returns the display name for the specified expression <paramref name="expression"/>.
         /// </summary>
         /// <param name="expression">Expression name, relative to the current model.</param>
-        /// <returns>A <see cref="System.String"/> containing the display name.</returns>
+        /// <returns>A <see cref="string"/> containing the display name.</returns>
         string DisplayName(string expression);
 
         /// <summary>
@@ -159,7 +159,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </summary>
         /// <param name="name">Expression name, relative to the current model.</param>
         /// <returns>
-        /// A <see cref="System.String"/> containing the simple display text.
+        /// A <see cref="string"/> containing the simple display text.
         /// If the expression result is <c>null</c>, returns <see cref="ModelMetadata.NullDisplayText"/>.
         /// </returns>
         string DisplayText(string name);
@@ -242,7 +242,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Returns information about about client validation rules for the given <paramref name="metadata"/> or
         /// <paramref name="name"/>. Intended for use in <see cref="IHtmlHelper"/> extension methods.
         /// </summary>
-        /// <param name="metadata">Metadata about the <see cref="System.Object"/> of interest.</param>
+        /// <param name="metadata">Metadata about the <see cref="object"/> of interest.</param>
         /// <param name="name">Expression name, relative to the current model. Used to determine
         /// <see cref="ModelMetadata"/> when <paramref name="metadata"/> is <c>null</c>; ignored
         /// otherwise.</param>
@@ -269,7 +269,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Returns the HTML element Id for the specified expression <paramref name="name"/>.
         /// </summary>
         /// <param name="name">Expression name, relative to the current model.</param>
-        /// <returns>A <see cref="System.String"/> containing the element Id.</returns>
+        /// <returns>A <see cref="string"/> containing the element Id.</returns>
         string Id(string name);
 
         /// <summary>
@@ -303,7 +303,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Returns the full HTML element name for the specified expression <paramref name="name"/>.
         /// </summary>
         /// <param name="name">Expression name, relative to the current model.</param>
-        /// <returns>A <see cref="System.String"/> containing the element name.</returns>
+        /// <returns>A <see cref="string"/> containing the element name.</returns>
         string Name(string name);
 
         /// <summary>
@@ -483,12 +483,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </summary>
         /// <param name="name">Expression name, relative to the current model.</param>
         /// <param name="format">
-        /// The composite format <see cref="System.String"/>
-        /// (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx).
+        /// The composite format <see cref="string"/> (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx).
         /// </param>
-        /// <returns>A <see cref="System.String"/> containing the formatted value.</returns>
+        /// <returns>A <see cref="string"/> containing the formatted value.</returns>
         /// <remarks>
-        /// Converts the expression result to a <see cref="System.String"/> directly if
+        /// Converts the expression result to a <see cref="string"/> directly if
         /// <paramref name="format"/> is <c>null</c> or empty.
         /// </remarks>
         string Value(string name, string format);
