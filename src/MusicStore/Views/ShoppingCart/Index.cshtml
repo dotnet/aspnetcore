@@ -1,6 +1,16 @@
 ﻿@model MusicStore.ViewModels.ShoppingCartViewModel
+@inject AntiForgery Xsrf
 @{
     ViewBag.Title = "Shopping Cart";
+}
+
+@functions
+{
+    public string GetAntiXsrfToken()
+    {
+        var tokens = Xsrf.GetTokens(Context, null);
+        return tokens.CookieToken + ":" + tokens.FormToken;
+    }
 }
 
 @section Scripts {
@@ -14,7 +24,7 @@
                 if (recordToDelete != '') {
 
                     // Perform the ajax post
-                    $.post(PostToUrl, { "id": recordToDelete },
+                    $.post(PostToUrl, { "id": recordToDelete, "RequestVerificationToken": '@GetAntiXsrfToken()' },
                         function (data) {
                             // Successful requests get here
                             // Update the page elements
@@ -58,24 +68,24 @@
     </tr>
     @foreach (var item in Model.CartItems)
     {
-        <tr id="row-@item.CartItemId">
-            <td>
-                @Html.ActionLink(item.Album.Title,
+    <tr id="row-@item.CartItemId">
+        <td>
+            @Html.ActionLink(item.Album.Title,
                     "Details", "Store", new { id = item.AlbumId }, null)
-            </td>
-            <td>
-                @item.Album.Price
-            </td>
-            <td id="item-count-@item.CartItemId">
-                @item.Count
-            </td>
-            <td>
-                <a href="#" class="RemoveLink" data-id="@item.CartItemId"
-                       data-url='@Url.Content("~/ShoppingCart/RemoveFromCart")'>
-                        Remove from cart
-                    </a>
-            </td>
-        </tr>
+        </td>
+        <td>
+            @item.Album.Price
+        </td>
+        <td id="item-count-@item.CartItemId">
+            @item.Count
+        </td>
+        <td>
+            <a href="#" class="RemoveLink" data-id="@item.CartItemId"
+               data-url='@Url.Content("~/ShoppingCart/RemoveFromCart")'>
+                Remove from cart
+            </a>
+        </td>
+    </tr>
     }
     <tr>
         <td>

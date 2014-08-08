@@ -2,6 +2,8 @@
 using MusicStore.Models;
 using MusicStore.ViewModels;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Framework.DependencyInjection;
 
 namespace MusicStore.Controllers
 {
@@ -19,7 +21,7 @@ namespace MusicStore.Controllers
 
         public IActionResult Index()
         {
-            var cart = ShoppingCart.GetCart(db, this.Context);
+            var cart = ShoppingCart.GetCart(db, Context);
 
             // Set up our ViewModel
             var viewModel = new ShoppingCartViewModel
@@ -42,7 +44,7 @@ namespace MusicStore.Controllers
                 .Single(album => album.AlbumId == id);
 
             // Add it to the shopping cart
-            var cart = ShoppingCart.GetCart(db, this.Context);
+            var cart = ShoppingCart.GetCart(db, Context);
 
             cart.AddToCart(addedAlbum);
 
@@ -54,12 +56,30 @@ namespace MusicStore.Controllers
 
         //
         // AJAX: /ShoppingCart/RemoveFromCart/5
-
         [HttpPost]
-        public IActionResult RemoveFromCart(int id)
+        public async Task<IActionResult> RemoveFromCart(int id)
         {
+            var formParameters = await Context.Request.GetFormAsync();
+            var requestVerification = formParameters["RequestVerificationToken"];
+            string cookieToken = null;
+            string formToken = null;
+
+            if (!string.IsNullOrWhiteSpace(requestVerification))
+            {
+                var tokens = requestVerification.Split(':');
+
+                if (tokens != null && tokens.Length == 2)
+                {
+                    cookieToken = tokens[0];
+                    formToken = tokens[1];
+                }
+            }
+
+            var antiForgery = Context.RequestServices.GetService<AntiForgery>();
+            antiForgery.Validate(Context, new AntiForgeryTokenSet(formToken, cookieToken));
+
             // Retrieve the current user's shopping cart
-            var cart = ShoppingCart.GetCart(db, this.Context);
+            var cart = ShoppingCart.GetCart(db, Context);
 
             // Get the name of the album to display confirmation
             // TODO [EF] Turn into one query once query of related data is enabled

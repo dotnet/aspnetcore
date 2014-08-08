@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNet.Http;
-using Microsoft.Data.Entity;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNet.Http;
 
 namespace MusicStore.Models
 {

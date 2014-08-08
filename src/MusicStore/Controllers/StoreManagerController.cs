@@ -61,6 +61,7 @@ namespace MusicStore.Controllers
 
         // POST: /StoreManager/Create
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Create(Album album)
         {
             if (ModelState.IsValid)
@@ -94,6 +95,7 @@ namespace MusicStore.Controllers
         //
         // POST: /StoreManager/Edit/5
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Edit(Album album)
         {
             if (ModelState.IsValid)
