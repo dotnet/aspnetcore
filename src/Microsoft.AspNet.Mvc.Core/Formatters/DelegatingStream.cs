@@ -6,7 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
     /// Stream that delegates to an inner stream.

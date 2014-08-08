@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public class FormValueProviderFactory : IValueProviderFactory
     {
         private static MediaTypeHeaderValue _formEncodedContentType = 
-                            MediaTypeHeaderValue.Parse("application/x-www-form-urlencoded");
+            MediaTypeHeaderValue.Parse("application/x-www-form-urlencoded");
 
         public IValueProvider GetValueProvider([NotNull] ValueProviderFactoryContext context)
         {
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             MediaTypeHeaderValue requestContentType = null;
             return MediaTypeHeaderValue.TryParse(request.ContentType, out requestContentType) &&
-                    _formEncodedContentType.IsSubsetOf(requestContentType);
+                _formEncodedContentType.IsSubsetOf(requestContentType);
         }
 
         private static CultureInfo GetCultureInfo(HttpRequest request)

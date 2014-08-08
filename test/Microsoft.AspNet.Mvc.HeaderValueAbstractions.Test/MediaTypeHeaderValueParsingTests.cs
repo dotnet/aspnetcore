@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.HeaderValueAbstractions
                     null,
                     MediaTypeHeaderValueRange.AllMediaRange,
                     new Dictionary<string, string>(),
-                    FormattingUtilities.Match,
+                    HttpHeaderUtilitites.Match,
                     "*/*"
                 };
 
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.HeaderValueAbstractions
                     "utf-8",
                     MediaTypeHeaderValueRange.SubtypeMediaRange,
                     new Dictionary<string, string>() { { "charset", "utf-8" }, { "foo", "bar" } },
-                    FormattingUtilities.Match,
+                    HttpHeaderUtilitites.Match,
                     "text/*;charset=utf-8;foo=bar",
                 };
 
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.HeaderValueAbstractions
                     "utf-8",
                     MediaTypeHeaderValueRange.None,
                     new Dictionary<string, string>() { { "charset", "utf-8" }, { "foo", "bar" }, { "q", "0.0" } },
-                    FormattingUtilities.NoMatch,
+                    HttpHeaderUtilitites.NoMatch,
                     "text/plain;charset=utf-8;foo=bar;q=0.0",
                 };
             }

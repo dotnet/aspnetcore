@@ -5,7 +5,7 @@
 using System.IO;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding.Test
+namespace Microsoft.AspNet.Mvc
 {
     public class DelegatingStreamTests
     {

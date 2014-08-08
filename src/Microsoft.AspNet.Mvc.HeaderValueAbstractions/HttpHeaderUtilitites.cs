@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNet.Mvc.HeaderValueAbstractions
 {
-    public static class FormattingUtilities
+    public static class HttpHeaderUtilitites
     {
         /// <summary>
         /// Quality factor to indicate a perfect match.

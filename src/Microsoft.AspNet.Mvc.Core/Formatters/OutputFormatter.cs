@@ -150,7 +150,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 var sortedAcceptCharsetHeaders = acceptCharsetHeaders
                                                     .Where(acceptCharset =>
-                                                                acceptCharset.Quality != FormattingUtilities.NoMatch)
+                                                                acceptCharset.Quality != HttpHeaderUtilitites.NoMatch)
                                                     .OrderByDescending(
                                                         m => m, StringWithQualityHeaderValueComparer.QualityComparer);
 

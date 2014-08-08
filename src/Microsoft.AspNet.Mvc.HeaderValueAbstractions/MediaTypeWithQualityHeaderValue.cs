@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.HeaderValueAbstractions
                 return null;
             }
 
-            var quality = FormattingUtilities.Match;
+            var quality = HttpHeaderUtilitites.Match;
             string qualityStringValue = null;
             if (mediaTypeHeaderValue.Parameters.TryGetValue("q", out qualityStringValue))
             {

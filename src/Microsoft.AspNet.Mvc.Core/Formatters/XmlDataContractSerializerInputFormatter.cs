@@ -4,27 +4,28 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
-using System.Xml.Serialization;
 using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
     /// This class handles deserialization of input XML data
-    /// to strongly-typed objects using <see cref="XmlSerializer"/>
+    /// to strongly-typed objects using <see cref="DataContractSerializer"/>.
     /// </summary>
-    public class XmlSerializerInputFormatter : IInputFormatter
+    public class XmlDataContractSerializerInputFormatter : IInputFormatter
     {
         private readonly XmlDictionaryReaderQuotas _readerQuotas = FormattingUtilities.GetDefaultXmlReaderQuotas();
 
         /// <summary>
-        /// Initializes a new instance of XmlSerializerInputFormatter.
+        /// Initializes a new instance of DataContractSerializerInputFormatter
         /// </summary>
-        public XmlSerializerInputFormatter()
+        public XmlDataContractSerializerInputFormatter()
         {
             SupportedEncodings = new List<Encoding>();
             SupportedEncodings.Add(Encodings.UTF8EncodingWithoutBOM);
@@ -58,21 +59,34 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             get { return _readerQuotas; }
         }
 
+        /// <inheritdoc />
+        public bool CanRead(InputFormatterContext context)
+        {
+            var contentType = context.ActionContext.HttpContext.Request.ContentType;
+            MediaTypeHeaderValue requestContentType;
+            if (!MediaTypeHeaderValue.TryParse(contentType, out requestContentType))
+            {
+                return false;
+            }
+
+            return SupportedMediaTypes
+                            .Any(supportedMediaType => supportedMediaType.IsSubsetOf(requestContentType));
+        }
+
         /// <summary>
         /// Reads the input XML.
         /// </summary>
         /// <param name="context">The input formatter context which contains the body to be read.</param>
         /// <returns>Task which reads the input.</returns>
-        public async Task ReadAsync(InputFormatterContext context)
+        public async Task<object> ReadAsync(InputFormatterContext context)
         {
-            var request = context.HttpContext.Request;
+            var request = context.ActionContext.HttpContext.Request;
             if (request.ContentLength == 0)
             {
-                context.Model = GetDefaultValueForType(context.Metadata.ModelType);
-                return;
+                return GetDefaultValueForType(context.ModelType);
             }
 
-            context.Model = await ReadInternal(context);
+            return await ReadInternal(context);
         }
 
         /// <summary>
@@ -87,12 +101,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Called during deserialization to get the <see cref="XmlSerializer"/>.
+        /// Called during deserialization to get the <see cref="XmlObjectSerializer"/>.
         /// </summary>
-        /// <returns>The <see cref="XmlSerializer"/> used during deserialization.</returns>
-        protected virtual XmlSerializer CreateXmlSerializer(Type type)
+        /// <returns>The <see cref="XmlObjectSerializer"/> used during deserialization.</returns>
+        protected virtual XmlObjectSerializer CreateDataContractSerializer(Type type)
         {
-            return new XmlSerializer(type);
+            return new DataContractSerializer(type);
         }
 
         private object GetDefaultValueForType(Type modelType)
@@ -107,13 +121,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private Task<object> ReadInternal(InputFormatterContext context)
         {
-            var type = context.Metadata.ModelType;
-            var request = context.HttpContext.Request;
+            var type = context.ModelType;
+            var request = context.ActionContext.HttpContext.Request;
 
             using (var xmlReader = CreateXmlReader(new DelegatingStream(request.Body)))
             {
-                var xmlSerializer = CreateXmlSerializer(type);
-                return Task.FromResult(xmlSerializer.Deserialize(xmlReader));
+                var xmlSerializer = CreateDataContractSerializer(type);
+                return Task.FromResult(xmlSerializer.ReadObject(xmlReader));
             }
         }
     }

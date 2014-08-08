@@ -18,5 +18,11 @@ namespace FormatterWebSite.Controllers
         {
             return new DummyClass { SampleInt = sampleInput };
         }
+
+        [HttpPost]
+        public bool CheckIfDummyIsNull([FromBody] DummyClass dummy)
+        {
+            return dummy != null;
+        }
     }
 }

@@ -85,8 +85,8 @@ namespace Microsoft.AspNet.Mvc
         private static int CompareBasedOnQualityFactor(MediaTypeWithQualityHeaderValue mediaType1,
                                                        MediaTypeWithQualityHeaderValue mediaType2)
         {
-            var mediaType1Quality = mediaType1.Quality ?? FormattingUtilities.Match;
-            var mediaType2Quality = mediaType2.Quality ?? FormattingUtilities.Match;
+            var mediaType1Quality = mediaType1.Quality ?? HttpHeaderUtilitites.Match;
+            var mediaType2Quality = mediaType2.Quality ?? HttpHeaderUtilitites.Match;
             var qualityDifference = mediaType1Quality - mediaType2Quality;
             if (qualityDifference < 0)
             {

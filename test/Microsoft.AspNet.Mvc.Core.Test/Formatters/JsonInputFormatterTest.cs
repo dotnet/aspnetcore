@@ -8,14 +8,43 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Moq;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNet.Mvc
 {
     public class JsonInputFormatterTest
-    {
+    {      
+
+        [Theory]
+        [InlineData("application/json", true)]
+        [InlineData("application/*", true)]
+        [InlineData("*/*", true)]
+        [InlineData("text/json", true)]
+        [InlineData("text/*", true)]
+        [InlineData("text/xml", false)]
+        [InlineData("application/xml", false)]
+        [InlineData("", false)]
+        [InlineData(null, false)]
+        [InlineData("invalid", false)]
+        public void CanRead_ReturnsTrueForAnySupportedContentType(string requestContentType, bool expectedCanRead)
+        {
+            // Arrange
+            var formatter = new JsonInputFormatter();
+            var contentBytes = Encoding.UTF8.GetBytes("content");
+
+            var actionContext = GetActionContext(contentBytes, contentType: requestContentType);
+            var formatterContext = new InputFormatterContext(actionContext, typeof(string));
+
+            // Act
+            var result = formatter.CanRead(formatterContext);
+
+            // Assert
+            Assert.Equal(expectedCanRead, result);
+        }
+
         [Fact]
         public void DefaultMediaType_ReturnsApplicationJson()
         {
@@ -48,16 +77,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var formatter = new JsonInputFormatter();
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
-            var httpContext = GetHttpContext(contentBytes);
-            var modelState = new ModelStateDictionary();
-            var metadata = new EmptyModelMetadataProvider().GetMetadataForType(null, type);
-            var context = new InputFormatterContext(httpContext, metadata, modelState);
+            var actionContext = GetActionContext(contentBytes);
+            var context = new InputFormatterContext(actionContext, type);
 
             // Act
-            await formatter.ReadAsync(context);
+            var model = await formatter.ReadAsync(context);
 
             // Assert
-            Assert.Equal(expected, context.Model);
+            Assert.Equal(expected, model);
         }
 
         [Fact]
@@ -68,18 +95,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var formatter = new JsonInputFormatter();
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
-            var httpContext = GetHttpContext(contentBytes);
-            var modelState = new ModelStateDictionary();
+            var actionContext = GetActionContext(contentBytes);
             var metadata = new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(User));
-            var context = new InputFormatterContext(httpContext, metadata, modelState);
+            var context = new InputFormatterContext(actionContext, metadata.ModelType);
 
             // Act
-            await formatter.ReadAsync(context);
+            var model = await formatter.ReadAsync(context);
 
             // Assert
-            var model = Assert.IsType<User>(context.Model);
-            Assert.Equal("Person Name", model.Name);
-            Assert.Equal(30, model.Age);
+            var userModel = Assert.IsType<User>(model);
+            Assert.Equal("Person Name", userModel.Name);
+            Assert.Equal(30, userModel.Age);
         }
 
         [Fact]
@@ -90,10 +116,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var formatter = new JsonInputFormatter();
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
-            var httpContext = GetHttpContext(contentBytes);
-            var modelState = new ModelStateDictionary();
+            var httpContext = GetActionContext(contentBytes);
             var metadata = new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(User));
-            var context = new InputFormatterContext(httpContext, metadata, modelState);
+            var context = new InputFormatterContext(httpContext, metadata.ModelType);
 
             // Act and Assert
             await Assert.ThrowsAsync<JsonReaderException>(() => formatter.ReadAsync(context));
@@ -107,17 +132,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var formatter = new JsonInputFormatter { CaptureDeserilizationErrors = true };
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
-            var httpContext = GetHttpContext(contentBytes);
-            var modelState = new ModelStateDictionary();
+            var actionContext = GetActionContext(contentBytes);
             var metadata = new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(User));
-            var context = new InputFormatterContext(httpContext, metadata, modelState);
+            var context = new InputFormatterContext(actionContext, metadata.ModelType);
 
             // Act
-            await formatter.ReadAsync(context);
+            var model = await formatter.ReadAsync(context);
 
             // Assert
-            Assert.Equal("Could not convert string to decimal: not-an-age. Path 'Age', line 1, position 39.", 
-                         modelState["Age"].Errors[0].Exception.Message);
+            Assert.Equal("Could not convert string to decimal: not-an-age. Path 'Age', line 1, position 39.",
+                         actionContext.ModelState["Age"].Errors[0].Exception.Message);
+        }
+
+        private static ActionContext GetActionContext(byte[] contentBytes,
+                                                 string contentType = "application/xml")
+        {
+            return new ActionContext(GetHttpContext(contentBytes, contentType),
+                                     new AspNet.Routing.RouteData(),
+                                     new ActionDescriptor());
         }
 
         private static HttpContext GetHttpContext(byte[] contentBytes, 
@@ -125,11 +157,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             var request = new Mock<HttpRequest>();
             var headers = new Mock<IHeaderDictionary>();
-            headers.SetupGet(h => h["Content-Type"]).Returns(contentType);
             request.SetupGet(r => r.Headers).Returns(headers.Object);
             request.SetupGet(f => f.Body).Returns(new MemoryStream(contentBytes));
+            request.SetupGet(f => f.ContentType).Returns(contentType);
 
             var httpContext = new Mock<HttpContext>();
+            httpContext.SetupGet(c => c.Request).Returns(request.Object);
             httpContext.SetupGet(c => c.Request).Returns(request.Object);
             return httpContext.Object;
         }

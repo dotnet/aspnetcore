@@ -129,9 +129,6 @@
   <data name="JQuerySyntaxMissingClosingBracket" xml:space="preserve">
     <value>The key is invalid JQuery syntax because it is missing a closing bracket.</value>
   </data>
-  <data name="MediaTypeFormatterNoEncoding" xml:space="preserve">
-    <value>No encoding found for input formatter '{0}'. There must be at least one supported encoding registered in order for the formatter to read content.</value>
-  </data>
   <data name="MissingDataMemberIsRequired" xml:space="preserve">
     <value>Property '{0}' on type '{1}' is invalid. Value-typed properties marked as [Required] must also be marked with [DataMember(IsRequired=true)] to be recognized as required. Consider attributing the declaring type with [DataContract] and the property with [DataMember(IsRequired=true)].</value>
   </data>

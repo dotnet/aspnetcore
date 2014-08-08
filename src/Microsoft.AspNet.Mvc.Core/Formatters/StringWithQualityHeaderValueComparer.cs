@@ -42,8 +42,8 @@ namespace Microsoft.AspNet.Mvc
         public int Compare([NotNull] StringWithQualityHeaderValue stringWithQuality1,
                            [NotNull] StringWithQualityHeaderValue stringWithQuality2)
         {
-            var quality1 = stringWithQuality1.Quality ?? FormattingUtilities.Match;
-            var quality2 = stringWithQuality2.Quality ?? FormattingUtilities.Match;
+            var quality1 = stringWithQuality1.Quality ?? HttpHeaderUtilitites.Match;
+            var quality2 = stringWithQuality2.Quality ?? HttpHeaderUtilitites.Match;
             var qualityDifference = quality1 - quality2;
             if (qualityDifference < 0)
             {

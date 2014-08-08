@@ -8,9 +8,9 @@ namespace Microsoft.AspNet.Mvc.HeaderValueAbstractions
     public class StringWithQualityHeaderValueParsingTests
     {
         [Theory]
-        [InlineData("*", FormattingUtilities.Match, "*")]
+        [InlineData("*", HttpHeaderUtilitites.Match, "*")]
         [InlineData("*", 0.7, "*;q=.7")]
-        [InlineData("iso-8859-5", FormattingUtilities.Match, "iso-8859-5")]
+        [InlineData("iso-8859-5", HttpHeaderUtilitites.Match, "iso-8859-5")]
         [InlineData("unicode-1-1", 0.8, "unicode-1-1;q=0.8")]
         [InlineData("unicode-1-1", 0.8, "unicode-1-1;q =0.8")]
         [InlineData("unicode-1-1", 0.8, "unicode-1-1;q = 0.8")]

@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Mvc
             var incomingAcceptHeader = HeaderParsingHelpers.GetAcceptHeaders(
                                                 formatterContext.ActionContext.HttpContext.Request.Accept);
             var sortedAcceptHeaders = SortMediaTypeWithQualityHeaderValues(incomingAcceptHeader)
-                                        .Where(header => header.Quality != FormattingUtilities.NoMatch)
+                                        .Where(header => header.Quality != HttpHeaderUtilitites.NoMatch)
                                         .ToArray();
 
             IOutputFormatter selectedFormatter = null;

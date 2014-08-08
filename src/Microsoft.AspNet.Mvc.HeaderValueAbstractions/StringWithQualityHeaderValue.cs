@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.HeaderValueAbstractions
             var value = inputArray[0].Trim();
 
             // Unspecified q factor value is equal to a match.
-            var quality = FormattingUtilities.Match;
+            var quality = HttpHeaderUtilitites.Match;
             if (inputArray.Length > 1)
             {
                 var parameter = inputArray[1].Trim();

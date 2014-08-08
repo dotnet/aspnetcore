@@ -315,6 +315,9 @@
   <data name="OutputFormatterNoEncoding" xml:space="preserve">
     <value>No encoding found for output formatter '{0}'. There must be at least one supported encoding registered in order for the output formatter to write content.</value>
   </data>
+  <data name="InputFormatterNoEncoding" xml:space="preserve">
+    <value>No encoding found for input formatter '{0}'. There must be at least one supported encoding registered in order for the formatter to read content.</value>
+  </data>
   <data name="OutputFormatterNoMediaType" xml:space="preserve">
     <value>No supported media type registered for output formatter '{0}'. There must be at least one supported media type registered in order for the output formatter to write content.</value>
   </data>

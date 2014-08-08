@@ -1067,6 +1067,22 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
+        /// No encoding found for input formatter '{0}'. There must be at least one supported encoding registered in order for the formatter to read content.
+        /// </summary>
+        internal static string InputFormatterNoEncoding
+        {
+            get { return GetString("InputFormatterNoEncoding"); }
+        }
+
+        /// <summary>
+        /// No encoding found for input formatter '{0}'. There must be at least one supported encoding registered in order for the formatter to read content.
+        /// </summary>
+        internal static string FormatInputFormatterNoEncoding(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("InputFormatterNoEncoding"), p0);
+        }
+
+        /// <summary>
         /// No supported media type registered for output formatter '{0}'. There must be at least one supported media type registered in order for the output formatter to write content.
         /// </summary>
         internal static string OutputFormatterNoMediaType

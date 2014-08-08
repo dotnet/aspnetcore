@@ -5,9 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
+using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
     /// Contains methods which are used by input formatters.

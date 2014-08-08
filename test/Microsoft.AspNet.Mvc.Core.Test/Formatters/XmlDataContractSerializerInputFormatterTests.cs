@@ -5,40 +5,77 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNet.Mvc
 {
-    public class XmlSerializerInputFormatterTests
+    public class DataContractSerializerInputFormatterTests
     {
+        [DataContract(Name = "DummyClass", Namespace = "")]
         public class DummyClass
         {
+            [DataMember]
             public int SampleInt { get; set; }
         }
 
+        [DataContract(Name = "TestLevelOne", Namespace = "")]
         public class TestLevelOne
         {
+            [DataMember]
             public int SampleInt { get; set; }
+            [DataMember]
             public string sampleString;
             public DateTime SampleDate { get; set; }
         }
 
+        [DataContract(Name = "TestLevelTwo", Namespace = "")]
         public class TestLevelTwo
         {
+            [DataMember]
             public string SampleString { get; set; }
+            [DataMember]
             public TestLevelOne TestOne { get; set; }
         }
 
+        [Theory]
+        [InlineData("application/xml", true)]
+        [InlineData("application/*", true)]
+        [InlineData("*/*", true)]
+        [InlineData("text/xml", true)]
+        [InlineData("text/*", true)]
+        [InlineData("text/json", false)]
+        [InlineData("application/json", false)]
+        [InlineData("", false)]
+        [InlineData(null, false)]
+        [InlineData("invalid", false)]
+        public void CanRead_ReturnsTrueForAnySupportedContentType(string requestContentType, bool expectedCanRead)
+        {
+            // Arrange
+            var formatter = new XmlDataContractSerializerInputFormatter();
+            var contentBytes = Encoding.UTF8.GetBytes("content");
+
+            var actionContext = GetActionContext(contentBytes, contentType: requestContentType);
+            var formatterContext = new InputFormatterContext(actionContext, typeof(string));
+
+            // Act
+            var result = formatter.CanRead(formatterContext);
+
+            // Assert
+            Assert.Equal(expectedCanRead, result);
+        }
+
         [Fact]
-        public void XmlSerializerFormatterHasProperSuppportedMediaTypes()
+        public void XmlDataContractSerializerFormatterHasProperSuppportedMediaTypes()
         {
             // Arrange & Act
-            var formatter = new XmlSerializerInputFormatter();
+            var formatter = new XmlDataContractSerializerInputFormatter();
 
             // Assert
             Assert.True(formatter.SupportedMediaTypes
@@ -50,10 +87,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Fact]
-        public void XmlSerializerFormatterHasProperSuppportedEncodings()
+        public void XmlDataContractSerializerFormatterHasProperSuppportedEncodings()
         {
             // Arrange & Act
-            var formatter = new XmlSerializerInputFormatter();
+            var formatter = new XmlDataContractSerializerInputFormatter();
 
             // Assert
             Assert.True(formatter.SupportedEncodings.Any(i => i.WebName == "utf-8"));
@@ -61,135 +98,125 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Fact]
-        public async Task XmlSerializerFormatterReadsSimpleTypes()
+        public async Task XmlDataContractSerializerFormatterReadsSimpleTypes()
         {
             // Arrange
             var expectedInt = 10;
             var expectedString = "TestString";
-            var expectedDateTime = XmlConvert.ToString(DateTime.UtcNow, XmlDateTimeSerializationMode.Utc);
 
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                                 "<TestLevelOne><SampleInt>" + expectedInt + "</SampleInt>" +
-                                "<sampleString>" + expectedString + "</sampleString>" +
-                                "<SampleDate>" + expectedDateTime + "</SampleDate></TestLevelOne>";
+                                "<sampleString>" + expectedString + "</sampleString></TestLevelOne>";
 
-            var formatter = new XmlSerializerInputFormatter();
+            var formatter = new XmlDataContractSerializerInputFormatter();
             var contentBytes = Encoding.UTF8.GetBytes(input);
             var context = GetInputFormatterContext(contentBytes, typeof(TestLevelOne));
 
             // Act
-            await formatter.ReadAsync(context);
+            var model = await formatter.ReadAsync(context);
 
             // Assert
-            Assert.NotNull(context.Model);
-            Assert.IsType<TestLevelOne>(context.Model);
+            Assert.NotNull(model);
+            Assert.IsType<TestLevelOne>(model);
 
-            var model = context.Model as TestLevelOne;
-            Assert.Equal(expectedInt, model.SampleInt);
-            Assert.Equal(expectedString, model.sampleString);
-            Assert.Equal(XmlConvert.ToDateTime(expectedDateTime, XmlDateTimeSerializationMode.Utc), model.SampleDate);
+            var levelOneModel = model as TestLevelOne;
+            Assert.Equal(expectedInt, levelOneModel.SampleInt);
+            Assert.Equal(expectedString, levelOneModel.sampleString);
         }
 
         [Fact]
-        public async Task XmlSerializerFormatterReadsComplexTypes()
+        public async Task XmlDataContractSerializerFormatterReadsComplexTypes()
         {
             // Arrange
             var expectedInt = 10;
             var expectedString = "TestString";
-            var expectedDateTime = XmlConvert.ToString(DateTime.UtcNow, XmlDateTimeSerializationMode.Utc);
             var expectedLevelTwoString = "102";
 
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                         "<TestLevelTwo><SampleString>" + expectedLevelTwoString + "</SampleString>" +
                         "<TestOne><SampleInt>" + expectedInt + "</SampleInt>" +
-                        "<sampleString>" + expectedString + "</sampleString>" +
-                        "<SampleDate>" + expectedDateTime + "</SampleDate></TestOne></TestLevelTwo>";
+                        "<sampleString>" + expectedString + "</sampleString></TestOne></TestLevelTwo>";
 
-            var formatter = new XmlSerializerInputFormatter();
+            var formatter = new XmlDataContractSerializerInputFormatter();
             var contentBytes = Encoding.UTF8.GetBytes(input);
             var context = GetInputFormatterContext(contentBytes, typeof(TestLevelTwo));
 
             // Act
-            await formatter.ReadAsync(context);
+            var model = await formatter.ReadAsync(context);
 
             // Assert
-            Assert.NotNull(context.Model);
-            Assert.IsType<TestLevelTwo>(context.Model);
+            Assert.NotNull(model);
+            Assert.IsType<TestLevelTwo>(model);
 
-            var model = context.Model as TestLevelTwo;
-            Assert.Equal(expectedLevelTwoString, model.SampleString);
-            Assert.Equal(expectedInt, model.TestOne.SampleInt);
-            Assert.Equal(expectedString, model.TestOne.sampleString);
-            Assert.Equal(XmlConvert.ToDateTime(expectedDateTime, XmlDateTimeSerializationMode.Utc), model.TestOne.SampleDate);
+            var levelTwoModel = model as TestLevelTwo;
+            Assert.Equal(expectedLevelTwoString, levelTwoModel.SampleString);
+            Assert.Equal(expectedInt, levelTwoModel.TestOne.SampleInt);
+            Assert.Equal(expectedString, levelTwoModel.TestOne.sampleString);
         }
 
         [Fact]
-        public async Task XmlSerializerFormatterReadsWhenMaxDepthIsModified()
+        public async Task XmlDataContractSerializerFormatterReadsWhenMaxDepthIsModified()
         {
             // Arrange
             var expectedInt = 10;
 
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                 "<DummyClass><SampleInt>" + expectedInt + "</SampleInt></DummyClass>";
-            var formatter = new XmlSerializerInputFormatter();
+            var formatter = new XmlDataContractSerializerInputFormatter();
             formatter.MaxDepth = 10;
             var contentBytes = Encoding.UTF8.GetBytes(input);
             var context = GetInputFormatterContext(contentBytes, typeof(DummyClass));
 
 
             // Act
-            await formatter.ReadAsync(context);
+            var model = await formatter.ReadAsync(context);
 
             // Assert
-            Assert.NotNull(context.Model);
-            Assert.IsType<DummyClass>(context.Model);
-            var model = context.Model as DummyClass;
-            Assert.Equal(expectedInt, model.SampleInt);
+            Assert.NotNull(model);
+            Assert.IsType<DummyClass>(model);
+            var dummyModel = model as DummyClass;
+            Assert.Equal(expectedInt, dummyModel.SampleInt);
         }
 
         [Fact]
-        public async Task XmlSerializerFormatterThrowsOnExceededMaxDepth()
+        public async Task XmlDataContractSerializerFormatterThrowsOnExceededMaxDepth()
         {
             // Arrange
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                         "<TestLevelTwo><SampleString>test</SampleString>" +
                         "<TestOne><SampleInt>10</SampleInt>" +
-                        "<sampleString>test</sampleString>" +
-                        "<SampleDate>" + XmlConvert.ToString(DateTime.UtcNow, XmlDateTimeSerializationMode.Utc)
-                        + "</SampleDate></TestOne></TestLevelTwo>";
-            var formatter = new XmlSerializerInputFormatter();
+                        "<sampleString>test</sampleString></TestOne></TestLevelTwo>";
+            var formatter = new XmlDataContractSerializerInputFormatter();
             formatter.MaxDepth = 1;
             var contentBytes = Encoding.UTF8.GetBytes(input);
             var context = GetInputFormatterContext(contentBytes, typeof(TestLevelTwo));
 
             // Act & Assert
-            await Assert.ThrowsAsync(typeof(InvalidOperationException), async () => await formatter.ReadAsync(context));
+            await Assert.ThrowsAsync(typeof(SerializationException), async () => await formatter.ReadAsync(context));
         }
 
         [Fact]
-        public async Task XmlSerializerFormatterThrowsWhenReaderQuotasAreChanged()
+        public async Task XmlDataContractSerializerFormatterThrowsWhenReaderQuotasAreChanged()
         {
             // Arrange
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                         "<TestLevelTwo><SampleString>test</SampleString>" +
                         "<TestOne><SampleInt>10</SampleInt>" +
-                        "<sampleString>test</sampleString>" +
-                        "<SampleDate>" + XmlConvert.ToString(DateTime.UtcNow, XmlDateTimeSerializationMode.Utc)
-                        + "</SampleDate></TestOne></TestLevelTwo>";
-            var formatter = new XmlSerializerInputFormatter();
-            formatter.XmlDictionaryReaderQuotas.MaxStringContentLength = 10;
+                        "<sampleString>test</sampleString></TestOne></TestLevelTwo>";
+            var formatter = new XmlDataContractSerializerInputFormatter();
+            formatter.XmlDictionaryReaderQuotas.MaxStringContentLength = 2;
             var contentBytes = Encoding.UTF8.GetBytes(input);
             var context = GetInputFormatterContext(contentBytes, typeof(TestLevelTwo));
 
             // Act & Assert
-            await Assert.ThrowsAsync(typeof(InvalidOperationException), async () => await formatter.ReadAsync(context));
+            await Assert.ThrowsAsync(typeof(SerializationException), async () => await formatter.ReadAsync(context));
         }
 
         [Fact]
-        public void XmlSerializerSerializerThrowsWhenMaxDepthIsBelowOne()
+        public void XmlDataContractSerializerFormatterThrowsWhenMaxDepthIsBelowOne()
         {
             // Arrange
-            var formatter = new XmlSerializerInputFormatter();
+            var formatter = new XmlDataContractSerializerInputFormatter();
 
             // Act & Assert
             Assert.Throws(typeof(ArgumentException), () => formatter.MaxDepth = 0);
@@ -201,20 +228,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Arrange
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                 "<DummyClass><SampleInt>10</SampleInt></DummyClass>";
-            var formatter = new XmlSerializerInputFormatter();
+            var formatter = new XmlDataContractSerializerInputFormatter();
             var contentBytes = Encoding.UTF8.GetBytes(input);
             var context = GetInputFormatterContext(contentBytes, typeof(DummyClass));
 
             // Act
-            await formatter.ReadAsync(context);
+            var model = await formatter.ReadAsync(context);
 
             // Assert
-            Assert.NotNull(context.Model);
-            Assert.True(context.HttpContext.Request.Body.CanRead);
+            Assert.NotNull(model);
+            Assert.True(context.ActionContext.HttpContext.Request.Body.CanRead);
         }
 
         [Fact]
-        public async Task XmlSerializerFormatterThrowsOnInvalidCharacters()
+        public async Task XmlDataContractSerializerFormatterThrowsOnInvalidCharacters()
         {
             // Arrange
             var inpStart = Encodings.UTF16EncodingLittleEndian.GetBytes("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
@@ -227,7 +254,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Buffer.BlockCopy(inp, 0, contentBytes, inpStart.Length, inp.Length);
             Buffer.BlockCopy(inpEnd, 0, contentBytes, inpStart.Length + inp.Length, inpEnd.Length);
 
-            var formatter = new XmlSerializerInputFormatter();
+            var formatter = new XmlDataContractSerializerInputFormatter();
             var context = GetInputFormatterContext(contentBytes, typeof(TestLevelTwo));
 
             // Act
@@ -235,7 +262,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Fact]
-        public async Task XmlSerializerFormatterIgnoresBOMCharacters()
+        public async Task XmlDataContractSerializerFormatterIgnoresBOMCharacters()
         {
             // Arrange
             var sampleString = "Test";
@@ -251,68 +278,72 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Buffer.BlockCopy(bom, 0, contentBytes, inputStart.Length, bom.Length);
             Buffer.BlockCopy(inputEnd, 0, contentBytes, inputStart.Length + bom.Length, inputEnd.Length);
 
-            var formatter = new XmlSerializerInputFormatter();
+            var formatter = new XmlDataContractSerializerInputFormatter();
             var context = GetInputFormatterContext(contentBytes, typeof(TestLevelTwo));
 
             // Act
-            await formatter.ReadAsync(context);
+            var model = await formatter.ReadAsync(context);
 
             // Assert
-            Assert.NotNull(context.Model);
-            var model = context.Model as TestLevelTwo;
+            Assert.NotNull(model);
+            var levelTwoModel = model as TestLevelTwo;
             Buffer.BlockCopy(sampleStringBytes, 0, expectedBytes, 0, sampleStringBytes.Length);
             Buffer.BlockCopy(bom, 0, expectedBytes, sampleStringBytes.Length, bom.Length);
-            Assert.Equal(expectedBytes, Encoding.UTF8.GetBytes(model.SampleString));
+            Assert.Equal(expectedBytes, Encoding.UTF8.GetBytes(levelTwoModel.SampleString));
         }
 
         [Fact]
-        public async Task XmlSerializerFormatterAcceptsUTF16Characters()
+        public async Task XmlDataContractSerializerAcceptsUTF16Characters()
         {
             // Arrange
             var expectedInt = 10;
             var expectedString = "TestString";
-            var expectedDateTime = XmlConvert.ToString(DateTime.UtcNow, XmlDateTimeSerializationMode.Utc);
 
             var input = "<?xml version=\"1.0\" encoding=\"UTF-16\"?>" +
                                 "<TestLevelOne><SampleInt>" + expectedInt + "</SampleInt>" +
-                                "<sampleString>" + expectedString + "</sampleString>" +
-                                "<SampleDate>" + expectedDateTime + "</SampleDate></TestLevelOne>";
+                                "<sampleString>" + expectedString + "</sampleString></TestLevelOne>";
 
-            var formatter = new XmlSerializerInputFormatter();
+            var formatter = new XmlDataContractSerializerInputFormatter();
             var contentBytes = Encodings.UTF16EncodingLittleEndian.GetBytes(input);
             var context = GetInputFormatterContext(contentBytes, typeof(TestLevelOne));
 
             // Act
-            await formatter.ReadAsync(context);
+            var model = await formatter.ReadAsync(context);
 
             // Assert
-            Assert.NotNull(context.Model);
-            Assert.IsType<TestLevelOne>(context.Model);
+            Assert.NotNull(model);
+            Assert.IsType<TestLevelOne>(model);
 
-            var model = context.Model as TestLevelOne;
-            Assert.Equal(expectedInt, model.SampleInt);
-            Assert.Equal(expectedString, model.sampleString);
-            Assert.Equal(XmlConvert.ToDateTime(expectedDateTime, XmlDateTimeSerializationMode.Utc), model.SampleDate);
+            var levelOneModel = model as TestLevelOne;
+            Assert.Equal(expectedInt, levelOneModel.SampleInt);
+            Assert.Equal(expectedString, levelOneModel.sampleString);
         }
 
         private InputFormatterContext GetInputFormatterContext(byte[] contentBytes, Type modelType)
         {
-            var httpContext = GetHttpContext(contentBytes);
-            var modelState = new ModelStateDictionary();
+            var actionContext = GetActionContext(contentBytes);
             var metadata = new EmptyModelMetadataProvider().GetMetadataForType(null, modelType);
-            return new InputFormatterContext(httpContext, metadata, modelState);
+            return new InputFormatterContext(actionContext, metadata.ModelType);
         }
 
+        private static ActionContext GetActionContext(byte[] contentBytes,
+                                                      string contentType = "application/xml")
+        {
+            return new ActionContext(GetHttpContext(contentBytes, contentType),
+                                     new AspNet.Routing.RouteData(),
+                                     new ActionDescriptor());
+        }
         private static HttpContext GetHttpContext(byte[] contentBytes,
-                                                        string contentType = "application/xml")
+                                                  string contentType = "application/xml")
         {
             var request = new Mock<HttpRequest>();
             var headers = new Mock<IHeaderDictionary>();
-            headers.SetupGet(h => h["Content-Type"]).Returns(contentType);
             request.SetupGet(r => r.Headers).Returns(headers.Object);
             request.SetupGet(f => f.Body).Returns(new MemoryStream(contentBytes));
+            request.SetupGet(f => f.ContentType).Returns(contentType);
 
             var httpContext = new Mock<HttpContext>();
+            httpContext.SetupGet(c => c.Request).Returns(request.Object);
             httpContext.SetupGet(c => c.Request).Returns(request.Object);
             return httpContext.Object;
         }
