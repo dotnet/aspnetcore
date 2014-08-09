@@ -3,8 +3,23 @@
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
+    /// <summary>
+    /// DisplayName-related extensions for <see cref="IHtmlHelper"/>.
+    /// </summary>
     public static class HtmlHelperFormExtensions
     {
+        /// <summary>
+        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form,
+        /// the request will be processed by same action. That is the rendered URL will match the current
+        /// request.
+        /// </summary>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <returns>
+        /// An <see cref="MvcForm"/> instance which renders the &lt;/form&gt; end tag when disposed.
+        /// </returns>
+        /// <remarks>
+        /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
+        /// </remarks>
         public static MvcForm BeginForm([NotNull] this IHtmlHelper htmlHelper)
         {
             // Generates <form action="{current url}" method="post">.
@@ -12,12 +27,41 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                         method: FormMethod.Post, htmlAttributes: null);
         }
 
+        /// <summary>
+        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form,
+        /// the request will be processed by an action method.
+        /// </summary>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
+        /// <returns>
+        /// An <see cref="MvcForm"/> instance which renders the &lt;/form&gt; end tag when disposed.
+        /// </returns>
+        /// <remarks>
+        /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
+        /// </remarks>
         public static MvcForm BeginForm([NotNull] this IHtmlHelper htmlHelper, FormMethod method)
         {
             return htmlHelper.BeginForm(actionName: null, controllerName: null, routeValues: null,
                                         method: method, htmlAttributes: null);
         }
 
+        /// <summary>
+        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form,
+        /// the request will be processed by an action method.
+        /// </summary>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
+        /// <param name="htmlAttributes">
+        /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
+        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the HTML
+        /// attributes.
+        /// </param>
+        /// <returns>
+        /// An <see cref="MvcForm"/> instance which renders the &lt;/form&gt; end tag when disposed.
+        /// </returns>
+        /// <remarks>
+        /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
+        /// </remarks>
         public static MvcForm BeginForm(
             [NotNull] this IHtmlHelper htmlHelper,
             FormMethod method,
@@ -27,12 +71,43 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                         method: method, htmlAttributes: htmlAttributes);
         }
 
+        /// <summary>
+        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form,
+        /// the request will be processed by an action method.
+        /// </summary>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="routeValues">
+        /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
+        /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
+        /// created using <see cref="object"/> initializer syntax. Alternatively, an
+        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the route
+        /// parameters.
+        /// </param>
+        /// <returns>
+        /// An <see cref="MvcForm"/> instance which renders the &lt;/form&gt; end tag when disposed.
+        /// </returns>
+        /// <remarks>
+        /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
+        /// </remarks>
         public static MvcForm BeginForm([NotNull] this IHtmlHelper htmlHelper, object routeValues)
         {
             return htmlHelper.BeginForm(actionName: null, controllerName: null, routeValues: routeValues,
                                         method: FormMethod.Post, htmlAttributes: null);
         }
 
+        /// <summary>
+        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form,
+        /// the request will be processed by an action method.
+        /// </summary>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="actionName">The name of the action method.</param>
+        /// <param name="controllerName">The name of the controller.</param>
+        /// <returns>
+        /// An <see cref="MvcForm"/> instance which renders the &lt;/form&gt; end tag when disposed.
+        /// </returns>
+        /// <remarks>
+        /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
+        /// </remarks>
         public static MvcForm BeginForm(
             [NotNull] this IHtmlHelper htmlHelper,
             string actionName,
@@ -42,6 +117,26 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                         method: FormMethod.Post, htmlAttributes: null);
         }
 
+        /// <summary>
+        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form,
+        /// the request will be processed by an action method.
+        /// </summary>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="actionName">The name of the action method.</param>
+        /// <param name="controllerName">The name of the controller.</param>
+        /// <param name="routeValues">
+        /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
+        /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
+        /// created using <see cref="object"/> initializer syntax. Alternatively, an
+        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the route
+        /// parameters.
+        /// </param>
+        /// <returns>
+        /// An <see cref="MvcForm"/> instance which renders the &lt;/form&gt; end tag when disposed.
+        /// </returns>
+        /// <remarks>
+        /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
+        /// </remarks>
         public static MvcForm BeginForm(
             [NotNull] this IHtmlHelper htmlHelper,
             string actionName,
@@ -52,6 +147,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                         FormMethod.Post, htmlAttributes: null);
         }
 
+        /// <summary>
+        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form,
+        /// the request will be processed by an action method.
+        /// </summary>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="actionName">The name of the action method.</param>
+        /// <param name="controllerName">The name of the controller.</param>
+        /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
+        /// <returns>
+        /// An <see cref="MvcForm"/> instance which renders the &lt;/form&gt; end tag when disposed.
+        /// </returns>
+        /// <remarks>
+        /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
+        /// </remarks>
         public static MvcForm BeginForm(
             [NotNull] this IHtmlHelper htmlHelper,
             string actionName,
@@ -62,6 +171,27 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                         method: method, htmlAttributes: null);
         }
 
+        /// <summary>
+        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form,
+        /// the request will be processed by an action method.
+        /// </summary>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="actionName">The name of the action method.</param>
+        /// <param name="controllerName">The name of the controller.</param>
+        /// <param name="routeValues">
+        /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
+        /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
+        /// created using <see cref="object"/> initializer syntax. Alternatively, an
+        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the route
+        /// parameters.
+        /// </param>
+        /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
+        /// <returns>
+        /// An <see cref="MvcForm"/> instance which renders the &lt;/form&gt; end tag when disposed.
+        /// </returns>
+        /// <remarks>
+        /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
+        /// </remarks>
         public static MvcForm BeginForm(
             [NotNull] this IHtmlHelper htmlHelper,
             string actionName,
@@ -73,6 +203,25 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                         method, htmlAttributes: null);
         }
 
+        /// <summary>
+        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form,
+        /// the request will be processed by an action method.
+        /// </summary>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="actionName">The name of the action method.</param>
+        /// <param name="controllerName">The name of the controller.</param>
+        /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
+        /// <param name="htmlAttributes">
+        /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
+        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the HTML
+        /// attributes.
+        /// </param>
+        /// <returns>
+        /// An <see cref="MvcForm"/> instance which renders the &lt;/form&gt; end tag when disposed.
+        /// </returns>
+        /// <remarks>
+        /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
+        /// </remarks>
         public static MvcForm BeginForm(
             [NotNull] this IHtmlHelper htmlHelper,
             string actionName,

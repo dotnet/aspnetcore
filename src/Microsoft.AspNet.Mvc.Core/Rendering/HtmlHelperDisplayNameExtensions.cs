@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="htmlHelper">
         /// The <see cref="IHtmlHelper{IEnumerable{TModelItem}}"/> instance this method extends.
         /// </param>
-        /// <param name="expression">The expression to be evaluated against an item in the current model.</param>
+        /// <param name="expression">An expression to be evaluated against an item in the current model.</param>
         /// <typeparam name="TModelItem">The type of items in the model collection.</typeparam>
         /// <typeparam name="TValue">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A <see cref="string"/> containing the display name.</returns>

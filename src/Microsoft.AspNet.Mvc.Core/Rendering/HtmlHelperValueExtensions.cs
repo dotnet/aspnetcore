@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="name">Expression name, relative to the current model.</param>
         /// <returns>A <see cref="string"/> containing the formatted value.</returns>
         /// <remarks>
-        /// Converts the expression <paramref name="name"/> result to a <see cref="string"/> directly.
+        /// Converts the expression result to a <see cref="string"/> directly.
         /// </remarks>
         public static string Value([NotNull] this IHtmlHelper htmlHelper, string name)
         {
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Returns the formatted value for the specified <paramref name="expression"/>.
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper{TModel}"/> instance this method extends.</param>
-        /// <param name="expression">The expression to be evaluated against the current model.</param>
+        /// <param name="expression">An expression to be evaluated against the current model.</param>
         /// <typeparam name="TModel">The type of the model.</typeparam>
         /// <typeparam name="TProperty">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A <see cref="string"/> containing the formatted value.</returns>

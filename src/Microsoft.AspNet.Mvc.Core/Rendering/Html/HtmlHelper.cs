@@ -126,7 +126,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// If the object is already an <see cref="IDictionary{string, object}"/> instance, then it is
         /// returned as-is.
         /// <example>
-        /// <c>new { property_name = "value" }</c> will translate to the entry <c>{ "property_name" , "value" }</c>
+        /// <c>new { data_name="value" }</c> will translate to the entry <c>{ "data_name", "value" }</c>
         /// in the resulting dictionary.
         /// </example>
         /// </summary>
@@ -144,7 +144,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// If the object is already an <see cref="IDictionary{string, object}"/> instance, then it is
         /// returned as-is.
         /// <example>
-        /// new { data_name="value" } will translate to the entry { "data-name" , "value" }
+        /// <c>new { data_name="value" }</c> will translate to the entry <c>{ "data-name", "value" }</c>
         /// in the resulting dictionary.
         /// </example>
         /// </summary>
@@ -633,16 +633,21 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </summary>
         /// <param name="actionName">The name of the action method.</param>
         /// <param name="controllerName">The name of the controller.</param>
-        /// <param name="routeValues">An object that contains the parameters for a route. The parameters are retrieved
-        /// through reflection by examining the properties of the object. This object is typically created using object
-        /// initializer syntax. Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the
-        /// route parameters.</param>
+        /// <param name="routeValues">
+        /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
+        /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
+        /// created using <see cref="object"/> initializer syntax. Alternatively, an
+        /// <see cref="IDictionary{string, object}"/> instance containing the route parameters.
+        /// </param>
         /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
         /// <param name="htmlAttributes">An <see cref="IDictionary{string, object}"/> instance containing HTML
         /// attributes to set for the element.</param>
         /// <returns>
         /// An <see cref="MvcForm"/> instance which emits the &lt;/form&gt; end tag when disposed.
         /// </returns>
+        /// <remarks>
+        /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
+        /// </remarks>
         protected virtual MvcForm GenerateForm(string actionName, string controllerName, object routeValues,
                                                FormMethod method, IDictionary<string, object> htmlAttributes)
         {

@@ -6,42 +6,198 @@ using System.Linq.Expressions;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
+    /// <summary>
+    /// Editor-related extensions for <see cref="IHtmlHelper"/> and <see cref="IHtmlHelper{TModel}"/>.
+    /// </summary>
     public static class HtmlHelperEditorExtensions
     {
+        /// <summary>
+        /// Returns HTML markup for the <paramref name="expression"/>, using an editor template. The template is found
+        /// using the <paramref name="expression"/>'s <see cref="ModelBinding.ModelMetadata"/>.
+        /// </summary>
+        /// <param name="html">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="expression">
+        /// Expression name, relative to the current model. May identify a single property or an
+        /// <see cref="object"/> that contains the properties to edit.
+        /// </param>
+        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <remarks>
+        /// <para>
+        /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
+        /// elements for each property in the <see cref="expression"/>'s value.
+        /// </para>
+        /// <para>
+        /// Example <paramref name="expression"/>s include <c>string.Empty</c> which identifies the current model and
+        /// <c>"prop"</c> which identifies the current model's "prop" property.
+        /// </para>
+        /// </remarks>
         public static HtmlString Editor([NotNull] this IHtmlHelper html, string expression)
         {
             return html.Editor(expression, templateName: null, htmlFieldName: null, additionalViewData: null);
         }
 
+        /// <summary>
+        /// Returns HTML markup for the <paramref name="expression"/>, using an editor template and specified
+        /// additional view data. The template is found using the <paramref name="expression"/>'s
+        /// <see cref="ModelBinding.ModelMetadata"/>.
+        /// </summary>
+        /// <param name="html">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="expression">
+        /// Expression name, relative to the current model. May identify a single property or an
+        /// <see cref="object"/> that contains the properties to edit.
+        /// </param>
+        /// <param name="additionalViewData">
+        /// An anonymous <see cref="object"/> or <see cref="System.Collections.Generic.IDictionary{string, object}"/>
+        /// that can contain additional view data that will be merged into the <see cref="ViewDataDictionary{TModel}"/>
+        /// instance created for the template.
+        /// </param>
+        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <remarks>
+        /// <para>
+        /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
+        /// elements for each property in the <see cref="expression"/>'s value.
+        /// </para>
+        /// <para>
+        /// Example <paramref name="expression"/>s include <c>string.Empty</c> which identifies the current model and
+        /// <c>"prop"</c> which identifies the current model's "prop" property.
+        /// </para>
+        /// </remarks>
         public static HtmlString Editor([NotNull] this IHtmlHelper html, string expression, object additionalViewData)
         {
             return html.Editor(expression, templateName: null, htmlFieldName: null,
                 additionalViewData: additionalViewData);
         }
 
+        /// <summary>
+        /// Returns HTML markup for the <paramref name="expression"/>, using an editor template. The template is found
+        /// using the <paramref name="templateName"/> or the <paramref name="expression"/>'s
+        /// <see cref="ModelBinding.ModelMetadata"/>.
+        /// </summary>
+        /// <param name="html">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="expression">
+        /// Expression name, relative to the current model. May identify a single property or an
+        /// <see cref="object"/> that contains the properties to edit.
+        /// </param>
+        /// <param name="templateName">The name of the template used to create the HTML markup.</param>
+        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <remarks>
+        /// <para>
+        /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
+        /// elements for each property in the <see cref="expression"/>'s value.
+        /// </para>
+        /// <para>
+        /// Example <paramref name="expression"/>s include <c>string.Empty</c> which identifies the current model and
+        /// <c>"prop"</c> which identifies the current model's "prop" property.
+        /// </para>
+        /// </remarks>
         public static HtmlString Editor([NotNull] this IHtmlHelper html, string expression, string templateName)
         {
             return html.Editor(expression, templateName, htmlFieldName: null, additionalViewData: null);
         }
 
+        /// <summary>
+        /// Returns HTML markup for the <paramref name="expression"/>, using an editor template and specified
+        /// additional view data. The template is found using the <paramref name="templateName"/> or the
+        /// <paramref name="expression"/>'s <see cref="ModelBinding.ModelMetadata"/>.
+        /// </summary>
+        /// <param name="html">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="expression">
+        /// Expression name, relative to the current model. May identify a single property or an
+        /// <see cref="object"/> that contains the properties to edit.
+        /// </param>
+        /// <param name="templateName">The name of the template used to create the HTML markup.</param>
+        /// <param name="additionalViewData">
+        /// An anonymous <see cref="object"/> or <see cref="System.Collections.Generic.IDictionary{string, object}"/>
+        /// that can contain additional view data that will be merged into the <see cref="ViewDataDictionary{TModel}"/>
+        /// instance created for the template.
+        /// </param>
+        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <remarks>
+        /// <para>
+        /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
+        /// elements for each property in the <see cref="expression"/>'s value.
+        /// </para>
+        /// <para>
+        /// Example <paramref name="expression"/>s include <c>string.Empty</c> which identifies the current model and
+        /// <c>"prop"</c> which identifies the current model's "prop" property.
+        /// </para>
+        /// </remarks>
         public static HtmlString Editor([NotNull] this IHtmlHelper html, string expression, string templateName,
             object additionalViewData)
         {
             return html.Editor(expression, templateName, htmlFieldName: null, additionalViewData: additionalViewData);
         }
 
+        /// <summary>
+        /// Returns HTML markup for the <paramref name="expression"/>, using an editor template and specified HTML
+        /// field name. The template is found using the <paramref name="templateName"/> or the
+        /// <paramref name="expression"/>'s <see cref="ModelBinding.ModelMetadata"/>.
+        /// </summary>
+        /// <param name="html">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="expression">
+        /// Expression name, relative to the current model. May identify a single property or an
+        /// <see cref="object"/> that contains the properties to edit.
+        /// </param>
+        /// <param name="templateName">The name of the template used to create the HTML markup.</param>
+        /// <param name="htmlFieldName">
+        /// A <see cref="string"/> used to disambiguate the names of HTML elements that are created for
+        /// properties that have the same name.
+        /// </param>
+        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <remarks>
+        /// <para>
+        /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
+        /// elements for each property in the <see cref="expression"/>'s value.
+        /// </para>
+        /// <para>
+        /// Example <paramref name="expression"/>s include <c>string.Empty</c> which identifies the current model and
+        /// <c>"prop"</c> which identifies the current model's "prop" property.
+        /// </para>
+        /// </remarks>
         public static HtmlString Editor([NotNull] this IHtmlHelper html, string expression, string templateName,
             string htmlFieldName)
         {
             return html.Editor(expression, templateName, htmlFieldName, additionalViewData: null);
         }
 
+        /// <summary>
+        /// Returns HTML markup for the <paramref name="expression"/>, using an editor template. The template is found
+        /// using the <paramref name="expression"/>'s <see cref="ModelBinding.ModelMetadata"/>.
+        /// </summary>
+        /// <param name="html">The <see cref="IHtmlHelper{TModel}"/> instance this method extends.</param>
+        /// <param name="expression">An expression to be evaluated against the current model.</param>
+        /// <typeparam name="TModel">The type of the model.</typeparam>
+        /// <typeparam name="TValue">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <remarks>
+        /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
+        /// elements for each property in the <see cref="expression"/> result.
+        /// </remarks>
         public static HtmlString EditorFor<TModel, TValue>([NotNull] this IHtmlHelper<TModel> html,
             [NotNull] Expression<Func<TModel, TValue>> expression)
         {
             return html.EditorFor(expression, templateName: null, htmlFieldName: null, additionalViewData: null);
         }
 
+        /// <summary>
+        /// Returns HTML markup for the <paramref name="expression"/>, using an editor template and specified
+        /// additional view data. The template is found using the <paramref name="expression"/>'s
+        /// <see cref="ModelBinding.ModelMetadata"/>.
+        /// </summary>
+        /// <param name="html">The <see cref="IHtmlHelper{TModel}"/> instance this method extends.</param>
+        /// <param name="expression">An expression to be evaluated against the current model.</param>
+        /// <param name="additionalViewData">
+        /// An anonymous <see cref="object"/> or <see cref="System.Collections.Generic.IDictionary{string, object}"/>
+        /// that can contain additional view data that will be merged into the <see cref="ViewDataDictionary{TModel}"/>
+        /// instance created for the template.
+        /// </param>
+        /// <typeparam name="TModel">The type of the model.</typeparam>
+        /// <typeparam name="TValue">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <remarks>
+        /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
+        /// elements for each property in the <see cref="expression"/> result.
+        /// </remarks>
         public static HtmlString EditorFor<TModel, TValue>([NotNull] this IHtmlHelper<TModel> html,
             [NotNull] Expression<Func<TModel, TValue>> expression, object additionalViewData)
         {
@@ -49,12 +205,47 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 additionalViewData: additionalViewData);
         }
 
+        /// <summary>
+        /// Returns HTML markup for the <paramref name="expression"/>, using an editor template. The template is found
+        /// using the <paramref name="templateName"/> or the <paramref name="expression"/>'s
+        /// <see cref="ModelBinding.ModelMetadata"/>.
+        /// </summary>
+        /// <param name="html">The <see cref="IHtmlHelper{TModel}"/> instance this method extends.</param>
+        /// <param name="expression">An expression to be evaluated against the current model.</param>
+        /// <param name="templateName">The name of the template that is used to create the HTML markup.</param>
+        /// <typeparam name="TModel">The type of the model.</typeparam>
+        /// <typeparam name="TValue">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <remarks>
+        /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
+        /// elements for each property in the <see cref="expression"/> result.
+        /// </remarks>
         public static HtmlString EditorFor<TModel, TValue>([NotNull] this IHtmlHelper<TModel> html,
             [NotNull] Expression<Func<TModel, TValue>> expression, string templateName)
         {
             return html.EditorFor(expression, templateName, htmlFieldName: null, additionalViewData: null);
         }
 
+        /// <summary>
+        /// Returns HTML markup for the <paramref name="expression"/>, using an editor template and specified
+        /// additional view data. The template is found using the <paramref name="templateName"/> or the
+        /// <paramref name="expression"/>'s <see cref="ModelBinding.ModelMetadata"/>.
+        /// </summary>
+        /// <param name="html">The <see cref="IHtmlHelper{TModel}"/> instance this method extends.</param>
+        /// <param name="expression">An expression to be evaluated against the current model.</param>
+        /// <param name="templateName">The name of the template that is used to create the HTML markup.</param>
+        /// <param name="additionalViewData">
+        /// An anonymous <see cref="object"/> or <see cref="System.Collections.Generic.IDictionary{string, object}"/>
+        /// that can contain additional view data that will be merged into the <see cref="ViewDataDictionary{TModel}"/>
+        /// instance created for the template.
+        /// </param>
+        /// <typeparam name="TModel">The type of the model.</typeparam>
+        /// <typeparam name="TValue">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <remarks>
+        /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
+        /// elements for each property in the <see cref="expression"/> result.
+        /// </remarks>
         public static HtmlString EditorFor<TModel, TValue>([NotNull] this IHtmlHelper<TModel> html,
             [NotNull] Expression<Func<TModel, TValue>> expression, string templateName, object additionalViewData)
         {
@@ -62,29 +253,101 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 additionalViewData: additionalViewData);
         }
 
+        /// <summary>
+        /// Returns HTML markup for the <paramref name="expression"/>, using an editor template and specified HTML
+        /// field name. The template is found using the <paramref name="templateName"/> or the
+        /// <paramref name="expression"/>'s <see cref="ModelBinding.ModelMetadata"/>.
+        /// </summary>
+        /// <param name="html">The <see cref="IHtmlHelper{TModel}"/> instance this method extends.</param>
+        /// <param name="expression">An expression to be evaluated against the current model.</param>
+        /// <param name="templateName">The name of the template that is used to create the HTML markup.</param>
+        /// <param name="htmlFieldName">
+        /// A <see cref="string"/> used to disambiguate the names of HTML elements that are created for properties
+        /// that have the same name.
+        /// </param>
+        /// <typeparam name="TModel">The type of the model.</typeparam>
+        /// <typeparam name="TValue">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <remarks>
+        /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
+        /// elements for each property in the <see cref="expression"/> result.
+        /// </remarks>
         public static HtmlString EditorFor<TModel, TValue>([NotNull] this IHtmlHelper<TModel> html,
             [NotNull] Expression<Func<TModel, TValue>> expression, string templateName, string htmlFieldName)
         {
             return html.EditorFor(expression, templateName, htmlFieldName, additionalViewData: null);
         }
 
+        /// <summary>
+        /// Returns HTML markup for the current model, using an editor template. The template is found using the
+        /// model's <see cref="ModelBinding.ModelMetadata"/>.
+        /// </summary>
+        /// <param name="html">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <remarks>
+        /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
+        /// elements for each property in the <see cref="expression"/> result.
+        /// </remarks>
         public static HtmlString EditorForModel([NotNull] this IHtmlHelper html)
         {
             return html.Editor(expression: null, templateName: null, htmlFieldName: null, additionalViewData: null);
         }
 
+        /// <summary>
+        /// Returns HTML markup for the current model, using an editor template and specified additional view data. The
+        /// template is found using the model's <see cref="ModelBinding.ModelMetadata"/>.
+        /// </summary>
+        /// <param name="html">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="additionalViewData">
+        /// An anonymous <see cref="object"/> or <see cref="System.Collections.Generic.IDictionary{string, object}"/>
+        /// that can contain additional view data that will be merged into the <see cref="ViewDataDictionary{TModel}"/>
+        /// instance created for the template.
+        /// </param>
+        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <remarks>
+        /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
+        /// elements for each property in the current model.
+        /// </remarks>
         public static HtmlString EditorForModel([NotNull] this IHtmlHelper html, object additionalViewData)
         {
             return html.Editor(expression: null, templateName: null, htmlFieldName: null,
                 additionalViewData: additionalViewData);
         }
 
+        /// <summary>
+        /// Returns HTML markup for the current model, using an editor template. The template is found using the
+        /// <paramref name="templateName"/> or the model's <see cref="ModelBinding.ModelMetadata"/>.
+        /// </summary>
+        /// <param name="html">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="templateName">The name of the template used to create the HTML markup.</param>
+        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <remarks>
+        /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
+        /// elements for each property in the current model.
+        /// </remarks>
         public static HtmlString EditorForModel([NotNull] this IHtmlHelper html, string templateName)
         {
             return html.Editor(expression: null, templateName: templateName, htmlFieldName: null,
                 additionalViewData: null);
         }
 
+        /// <summary>
+        /// Returns HTML markup for the current model, using an editor template and specified additional view data. The
+        /// template is found using the <paramref name="templateName"/> or the model's
+        /// <see cref="ModelBinding.ModelMetadata"/>.
+        /// </summary>
+        /// <param name="html">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="templateName">The name of the template used to create the HTML markup.</param>
+        /// <param name="additionalViewData">
+        /// An anonymous <see cref="object"/> or <see cref="System.Collections.Generic.IDictionary{string, object}"/>
+        /// that can contain additional view data that will be merged into the <see cref="ViewDataDictionary{TModel}"/>
+        /// instance created for the template.
+        /// </param>
+        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <remarks>
+        /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
+        /// elements for each property in the current model.
+        /// </remarks>
         public static HtmlString EditorForModel([NotNull] this IHtmlHelper html, string templateName,
             object additionalViewData)
         {
@@ -92,6 +355,22 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 additionalViewData: additionalViewData);
         }
 
+        /// <summary>
+        /// Returns HTML markup for the current model, using an editor template and specified HTML field name. The
+        /// template is found using the <paramref name="templateName"/> or the model's
+        /// <see cref="ModelBinding.ModelMetadata"/>.
+        /// </summary>
+        /// <param name="html">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="templateName">The name of the template used to create the HTML markup.</param>
+        /// <param name="htmlFieldName">
+        /// A <see cref="string"/> used to disambiguate the names of HTML elements that are created for
+        /// properties that have the same name.
+        /// </param>
+        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <remarks>
+        /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
+        /// elements for each property in the current model.
+        /// </remarks>
         public static HtmlString EditorForModel([NotNull] this IHtmlHelper html, string templateName,
             string htmlFieldName)
         {
@@ -99,6 +378,27 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 additionalViewData: null);
         }
 
+        /// <summary>
+        /// Returns HTML markup for the current model, using an editor template, specified HTML field name, and
+        /// additional view data. The template is found using the <paramref name="templateName"/> or the model's
+        /// <see cref="ModelBinding.ModelMetadata"/>.
+        /// </summary>
+        /// <param name="html">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="templateName">The name of the template used to create the HTML markup.</param>
+        /// <param name="htmlFieldName">
+        /// A <see cref="string"/> used to disambiguate the names of HTML elements that are created for
+        /// properties that have the same name.
+        /// </param>
+        /// <param name="additionalViewData">
+        /// An anonymous <see cref="object"/> or <see cref="System.Collections.Generic.IDictionary{string, object}"/>
+        /// that can contain additional view data that will be merged into the <see cref="ViewDataDictionary{TModel}"/>
+        /// instance created for the template.
+        /// </param>
+        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <remarks>
+        /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
+        /// elements for each property in the current model.
+        /// </remarks>
         public static HtmlString EditorForModel([NotNull] this IHtmlHelper html, string templateName,
             string htmlFieldName, object additionalViewData)
         {
