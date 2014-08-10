@@ -5,3 +5,6 @@ var AUTHORS='Microsoft Open Technologies, Inc.'
 
 use-standard-lifecycle
 k-standard-goals
+
+#xml-docs-test target='test'
+  k-xml-docs-test
