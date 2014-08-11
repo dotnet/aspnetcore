@@ -69,6 +69,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         public virtual string EditFormatString { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the "HiddenInput" display template should return
+        /// <c>string.Empty</c> (not the expression value) and whether the "HiddenInput" editor template should not
+        /// also return the expression value (together with the hidden &lt;input&gt; element).
+        /// </summary>
+        /// <remarks>
+        /// If <c>true</c>, also causes the default <see cref="object"/> display and editor templates to return HTML
+        /// lacking the usual per-property &lt;div&gt; wrapper around the associated property. Thus the default
+        /// <see cref="object"/> display template effectively skips the property and the default <see cref="object"/>
+        /// editor template returns only the hidden &lt;input&gt; element for the property.
+        /// </remarks>
+        public virtual bool HideSurroundingHtml { get; set; }
+
         public virtual bool IsComplexType
         {
             get { return !ValueProviderResult.CanConvertFromString(ModelType); }

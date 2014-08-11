@@ -16,6 +16,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             DisplayFormat = attributes.OfType<DisplayFormatAttribute>().FirstOrDefault();
             DisplayColumn = attributes.OfType<DisplayColumnAttribute>().FirstOrDefault();
             Editable = attributes.OfType<EditableAttribute>().FirstOrDefault();
+            HiddenInput = attributes.OfType<HiddenInputAttribute>().FirstOrDefault();
             Required = attributes.OfType<RequiredAttribute>().FirstOrDefault();
             ScaffoldColumn = attributes.OfType<ScaffoldColumnAttribute>().FirstOrDefault();
         }
@@ -27,6 +28,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public DisplayColumnAttribute DisplayColumn { get; protected set; }
 
         public EditableAttribute Editable { get; protected set; }
+
+        /// <summary>
+        /// Gets (or sets in subclasses) <see cref="HiddenInputAttribute"/> found in collection passed to the
+        /// <see cref="CachedDataAnnotationsMetadataAttributes(IEnumerable{Attribute})"/> constructor, if any.
+        /// </summary>
+        public HiddenInputAttribute HiddenInput { get; protected set; }
 
         public RequiredAttribute Required { get; protected set; }
 

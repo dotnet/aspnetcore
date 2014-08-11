@@ -135,11 +135,17 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public static string HiddenInputTemplate(IHtmlHelper html)
         {
             var viewData = html.ViewData;
-
-            // TODO: add ModelMetadata.HideSurroundingHtml and use here (set result to string.Empty)
-            var result = DefaultDisplayTemplates.StringTemplate(html);
-
             var model = viewData.Model;
+
+            string result;
+            if (viewData.ModelMetadata.HideSurroundingHtml)
+            {
+                result = string.Empty;
+            }
+            else
+            {
+                result = DefaultDisplayTemplates.StringTemplate(html);
+            }
 
             // Special-case opaque values and arbitrary binary data.
             var modelAsByteArray = model as byte[];
@@ -225,7 +231,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             {
                 var divTag = new TagBuilder("div");
 
-                // TODO: add ModelMetadata.HideSurroundingHtml and use here (skip this block)
+                if (!propertyMetadata.HideSurroundingHtml)
                 {
                     var label = html.Label(
                         propertyMetadata.PropertyName,
@@ -258,8 +264,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
                 builder.Append(templateBuilder.Build());
 
-                // TODO: add ModelMetadata.HideSurroundingHtml and use here (skip this block)
                 // TODO: Add IHtmlHelper.ValidationMessage() and call just prior to closing the <div/> tag
+                if (!propertyMetadata.HideSurroundingHtml)
                 {
                     builder.Append(" ");
                     builder.AppendLine(divTag.ToString(TagRenderMode.EndTag));

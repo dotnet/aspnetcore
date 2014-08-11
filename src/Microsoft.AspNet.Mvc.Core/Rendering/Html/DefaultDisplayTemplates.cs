@@ -186,7 +186,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         public static string HiddenInputTemplate(IHtmlHelper html)
         {
-            // TODO: add ModelMetadata.HideSurroundingHtml and use here (return string.Empty)
+            if (html.ViewData.ModelMetadata.HideSurroundingHtml)
+            {
+                return string.Empty;
+            }
+
             return StringTemplate(html);
         }
 
@@ -219,7 +223,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             {
                 var divTag = new TagBuilder("div");
 
-                // TODO: add ModelMetadata.HideSurroundingHtml and use here (skip this block)
+                if (!propertyMetadata.HideSurroundingHtml)
                 {
                     var label = propertyMetadata.GetDisplayName();
                     if (!string.IsNullOrEmpty(label))
@@ -248,7 +252,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
                 builder.Append(templateBuilder.Build());
 
-                // TODO: add ModelMetadata.HideSurroundingHtml and use here (skip this block)
+                if (!propertyMetadata.HideSurroundingHtml)
                 {
                     builder.AppendLine(divTag.ToString(TagRenderMode.EndTag));
                 }

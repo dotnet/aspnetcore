@@ -19,6 +19,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private string _nullDisplayText;
         private string _description;
         private string _displayName;
+        private bool _hideSurroundingHtml;
         private bool _isReadOnly;
         private bool _isComplexType;
         private bool _isRequired;
@@ -29,6 +30,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private bool _nullDisplayTextComputed;
         private bool _descriptionComputed;
         private bool _displayNameComputed;
+        private bool _hideSurroundingHtmlComputed;
         private bool _isReadOnlyComputed;
         private bool _isComplexTypeComputed;
         private bool _isRequiredComputed;
@@ -131,6 +133,27 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 _displayName = value;
                 _displayNameComputed = true;
+            }
+        }
+
+        /// <inheritdoc />
+        public sealed override bool HideSurroundingHtml
+        {
+            get
+            {
+                if (!_hideSurroundingHtmlComputed)
+                {
+                    _hideSurroundingHtml = ComputeHideSurroundingHtml();
+                    _hideSurroundingHtmlComputed = true;
+                }
+
+                return _hideSurroundingHtml;
+            }
+
+            set
+            {
+                _hideSurroundingHtml = value;
+                _hideSurroundingHtmlComputed = true;
             }
         }
 
@@ -239,6 +262,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         protected virtual string ComputeDisplayName()
         {
             return base.DisplayName;
+        }
+
+        /// <summary>
+        /// Calculate the <see cref="HideSurroundingHtml"/> value.
+        /// </summary>
+        /// <returns>Calculated <see cref="HideSurroundingHtml"/> value.</returns>
+        protected virtual bool ComputeHideSurroundingHtml()
+        {
+            return base.HideSurroundingHtml;
         }
 
         protected virtual bool ComputeIsReadOnly()

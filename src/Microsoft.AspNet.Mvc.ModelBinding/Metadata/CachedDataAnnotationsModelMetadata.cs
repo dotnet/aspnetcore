@@ -67,6 +67,23 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return base.ComputeDisplayName();
         }
 
+        /// <summary>
+        /// Calculate <see cref="ModelMetadata.HideSurroundingHtml"/> based on presence of an
+        /// <see cref="HiddenInputAttribute"/> and its <see cref="HiddenInputAttribute.DisplayValue"/> value.
+        /// </summary>
+        /// <returns>Calculated <see cref="ModelMetadata.HideSurroundingHtml"/> value. <c>true</c> if an
+        /// <see cref="HiddenInputAttribute"/> exists and its <see cref="HiddenInputAttribute.DisplayValue"/> value is
+        /// <c>false</c>; <c>false</c> otherwise.</returns>
+        protected override bool ComputeHideSurroundingHtml()
+        {
+            if (PrototypeCache.HiddenInput != null)
+            {
+                return !PrototypeCache.HiddenInput.DisplayValue;
+            }
+
+            return base.ComputeHideSurroundingHtml();
+        }
+
         protected override bool ComputeIsReadOnly()
         {
             if (PrototypeCache.Editable != null)
