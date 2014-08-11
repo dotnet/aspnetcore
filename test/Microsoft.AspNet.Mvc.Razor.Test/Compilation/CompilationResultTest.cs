@@ -32,10 +32,6 @@ world";
                 new CompilationMessage("hello"),
                 new CompilationMessage("world")
             };
-            var additionalInfo = new Dictionary<string, object>
-            {
-                { "key", "value" }
-            };
             var result = CompilationResult.Failed(fileInfo.Object,
                                                  "<h1>hello world</h1>",
                                                  messages);
@@ -43,7 +39,6 @@ world";
             // Act and Assert
             var ex = Assert.Throws<CompilationFailedException>(() => result.CompiledType);
             Assert.Equal(expected, ex.Message);
-            Assert.Equal("value", ex.Data["key"]);
             Assert.Equal(originalContent, ex.FileContent);
         }
     }
