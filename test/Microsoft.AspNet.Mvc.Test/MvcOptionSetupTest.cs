@@ -35,12 +35,13 @@ namespace Microsoft.AspNet.Mvc
             setup.Setup(mvcOptions);
 
             // Assert
-            Assert.Equal(5, mvcOptions.ModelBinders.Count);
+            Assert.Equal(6, mvcOptions.ModelBinders.Count);
             Assert.Equal(typeof(TypeConverterModelBinder), mvcOptions.ModelBinders[0].OptionType);
             Assert.Equal(typeof(TypeMatchModelBinder), mvcOptions.ModelBinders[1].OptionType);
-            Assert.Equal(typeof(GenericModelBinder), mvcOptions.ModelBinders[2].OptionType);
-            Assert.Equal(typeof(MutableObjectModelBinder), mvcOptions.ModelBinders[3].OptionType);
-            Assert.Equal(typeof(ComplexModelDtoModelBinder), mvcOptions.ModelBinders[4].OptionType);
+            Assert.Equal(typeof(ByteArrayModelBinder), mvcOptions.ModelBinders[2].OptionType);
+            Assert.Equal(typeof(GenericModelBinder), mvcOptions.ModelBinders[3].OptionType);
+            Assert.Equal(typeof(MutableObjectModelBinder), mvcOptions.ModelBinders[4].OptionType);
+            Assert.Equal(typeof(ComplexModelDtoModelBinder), mvcOptions.ModelBinders[5].OptionType);
         }
 
         [Fact]

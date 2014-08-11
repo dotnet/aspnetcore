@@ -19,6 +19,7 @@
         "Microsoft.Framework.Logging": "1.0.0-*",
         "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*",
         "Microsoft.AspNet.PipelineCore": "1.0.0-*",
+        "ModelBindingWebSite": "",
         "RoutingWebSite": "",
         "RazorWebSite": "",
         "ValueProvidersSite":  "",

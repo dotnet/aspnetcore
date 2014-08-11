@@ -26,6 +26,7 @@
     <Compile Include="Binders\BindingBehaviorAttribute.cs" />
     <Compile Include="Binders\BindNeverAttribute.cs" />
     <Compile Include="Binders\BindRequiredAttribute.cs" />
+    <Compile Include="Binders\ByteArrayModelBinder.cs" />
     <Compile Include="Binders\CollectionModelBinder.cs" />
     <Compile Include="Binders\ComplexModelDto.cs" />
     <Compile Include="Binders\ComplexModelDtoModelBinder.cs" />

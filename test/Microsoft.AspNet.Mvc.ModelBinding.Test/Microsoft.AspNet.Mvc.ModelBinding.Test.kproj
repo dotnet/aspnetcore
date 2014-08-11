@@ -23,6 +23,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Binders\ArrayModelBinderTest.cs" />
+    <Compile Include="Binders\ByteArrayModelBinderTests.cs" />
     <Compile Include="Binders\CollectionModelBinderTest.cs" />
     <Compile Include="Binders\ComplexModelDtoResultTest.cs" />
     <Compile Include="Binders\ComplexModelDtoTest.cs" />

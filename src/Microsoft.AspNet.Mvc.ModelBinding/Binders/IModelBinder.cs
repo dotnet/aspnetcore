@@ -10,6 +10,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     /// </summary>
     public interface IModelBinder
     {
+        /// <summary>
+        /// Async function to bind to a particular model.
+        /// </summary>
+        /// <param name="bindingContext">The binding context which has the object to be bound.</param>
+        /// <returns>A Task with a bool implying the success or failure of the operation.</returns>
         Task<bool> BindModelAsync(ModelBindingContext bindingContext);
     }
 }

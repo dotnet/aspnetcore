@@ -28,6 +28,7 @@ namespace Microsoft.AspNet.Mvc
             // Set up ModelBinding
             options.ModelBinders.Add(new TypeConverterModelBinder());
             options.ModelBinders.Add(new TypeMatchModelBinder());
+            options.ModelBinders.Add(new ByteArrayModelBinder());
             options.ModelBinders.Add(typeof(GenericModelBinder));
             options.ModelBinders.Add(new MutableObjectModelBinder());
             options.ModelBinders.Add(new ComplexModelDtoModelBinder());

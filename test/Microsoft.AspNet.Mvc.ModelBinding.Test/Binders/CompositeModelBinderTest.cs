@@ -200,6 +200,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 { "friends[0].friends[0].firstname", "nested friend"},
                 { "friends[1].firstName", "some other"},
                 { "friends[1].lastName", "name"},
+                { "resume", "4+mFeTp3tPF=" }
             };
             var bindingContext = CreateBindingContext(binder, valueProvider, typeof(Person));
 
@@ -218,6 +219,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Equal("nested friend", nestedFriend.FirstName);
             Assert.Equal("some other", model.Friends[1].FirstName);
             Assert.Equal("name", model.Friends[1].LastName);
+            Assert.Equal(new byte[] { 227, 233, 133, 121, 58, 119, 180, 241 }, model.Resume);
         }
 
         [Fact]
@@ -294,6 +296,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binders = new IModelBinder[] 
             { 
                 new TypeMatchModelBinder(),
+                new ByteArrayModelBinder(),
                 new GenericModelBinder(serviceProvider, typeActivator.Object),
                 new ComplexModelDtoModelBinder(),
                 new TypeConverterModelBinder(),
@@ -331,6 +334,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             public int Age { get; set; }
 
             public List<Person> Friends { get; set; }
+
+            public byte[] Resume { get; set; }
         }
 
         private class User : IValidatableObject
