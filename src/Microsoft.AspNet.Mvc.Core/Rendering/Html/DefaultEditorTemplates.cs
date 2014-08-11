@@ -264,10 +264,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
                 builder.Append(templateBuilder.Build());
 
-                // TODO: Add IHtmlHelper.ValidationMessage() and call just prior to closing the <div/> tag
                 if (!propertyMetadata.HideSurroundingHtml)
                 {
                     builder.Append(" ");
+                    builder.Append(html.ValidationMessage(
+                        propertyMetadata.PropertyName,
+                        message: null,
+                        htmlAttributes: null,
+                        tag: null));
+
                     builder.AppendLine(divTag.ToString(TagRenderMode.EndTag));
                 }
             }

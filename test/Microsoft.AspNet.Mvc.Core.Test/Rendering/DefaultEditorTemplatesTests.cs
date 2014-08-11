@@ -19,10 +19,14 @@ namespace Microsoft.AspNet.Mvc.Core
             var expected =
                 "<div class=\"editor-label\"><label for=\"Property1\">Property1</label></div>" + Environment.NewLine
               + "<div class=\"editor-field\">Model = p1, ModelType = System.String, PropertyName = Property1," +
-                    " SimpleDisplayText = p1 </div>" + Environment.NewLine
+                    " SimpleDisplayText = p1 " +
+                    "<span class=\"field-validation-valid\" data-valmsg-for=\"Property1\" data-valmsg-replace=\"true\">" +
+                    "</span></div>" + Environment.NewLine
               + "<div class=\"editor-label\"><label for=\"Property2\">Property2</label></div>" + Environment.NewLine
               + "<div class=\"editor-field\">Model = (null), ModelType = System.String, PropertyName = Property2," +
-                    " SimpleDisplayText = (null) </div>" + Environment.NewLine;
+                    " SimpleDisplayText = (null) " +
+                    "<span class=\"field-validation-valid\" data-valmsg-for=\"Property2\" data-valmsg-replace=\"true\">" +
+                    "</span></div>" + Environment.NewLine;
 
             // Arrange
             var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "p1", Property2 = null };
@@ -85,11 +89,13 @@ namespace Microsoft.AspNet.Mvc.Core
             var expected =
 @"<div class=""editor-label""><label for=""Property1"">Property1</label></div>" +
 Environment.NewLine +
-@"<div class=""editor-field""><input class=""text-box single-line"" id=""Property1"" name=""Property1"" type=""text"" value="""" /> </div>" +
+@"<div class=""editor-field""><input class=""text-box single-line"" id=""Property1"" name=""Property1"" type=""text"" value="""" /> " +
+@"<span class=""field-validation-valid"" data-valmsg-for=""Property1"" data-valmsg-replace=""true""></span></div>" +
 Environment.NewLine +
 @"<div class=""editor-label""><label for=""Property3"">Property3</label></div>" +
 Environment.NewLine +
-@"<div class=""editor-field""><input class=""text-box single-line"" id=""Property3"" name=""Property3"" type=""text"" value="""" /> </div>" +
+@"<div class=""editor-field""><input class=""text-box single-line"" id=""Property3"" name=""Property3"" type=""text"" value="""" /> " +
+@"<span class=""field-validation-valid"" data-valmsg-for=""Property3"" data-valmsg-replace=""true""></span></div>" +
 Environment.NewLine;
 
             var model = new DefaultTemplatesUtilities.ObjectWithScaffoldColumn();
