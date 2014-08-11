@@ -22,7 +22,6 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
     /// </summary>
     public class RoslynCompilationService : ICompilationService
     {
-        public static readonly string CompilationResultDiagnosticsKey = "Diagnostics";
         private static readonly ConcurrentDictionary<string, MetadataReference> _metadataFileCache =
             new ConcurrentDictionary<string, MetadataReference>(StringComparer.OrdinalIgnoreCase);
 
@@ -85,11 +84,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                                              .Select(d => GetCompilationMessage(formatter, d))
                                              .ToList();
 
-                        var additionalInfo = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
-                        {
-                            { CompilationResultDiagnosticsKey, result.Diagnostics }
-                        };
-                        return CompilationResult.Failed(fileInfo, compilationContent, messages, additionalInfo);
+                        return CompilationResult.Failed(fileInfo, compilationContent, messages);
                     }
 
                     Assembly assembly;

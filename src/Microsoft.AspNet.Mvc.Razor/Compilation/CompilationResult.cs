@@ -40,18 +40,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         public IEnumerable<CompilationMessage> Messages { get; private set; }
 
         /// <summary>
-        /// Gets additional information from compilation.
-        /// </summary>
-        /// <remarks>
-        /// In the event of a compilation failure, values from this dictionary are copied to the
-        /// <see cref="Exception.Data"/> property of the <see cref="Exception"/> thrown.
-        /// </remarks>
-        public IDictionary<string, object> AdditionalInfo
-        {
-            get; private set;
-        }
-
-        /// <summary>
         /// Gets the generated C# content that was compiled.
         /// </summary>
         public string CompiledContent { get; private set; }
@@ -81,19 +69,16 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <param name="fileInfo">The <see cref="IFileInfo"/> for the Razor file that was compiled.</param>
         /// <param name="compilationContent">The generated C# content to be compiled.</param>
         /// <param name="messages">The sequence of failure messages encountered during compilation.</param>
-        /// <param name="additionalInfo">Additional info about the compilation.</param>
         /// <returns>A CompilationResult instance representing a failure.</returns>
         public static CompilationResult Failed([NotNull] IFileInfo file,
                                                [NotNull] string compilationContent,
-                                               [NotNull] IEnumerable<CompilationMessage> messages,
-                                               IDictionary<string, object> additionalInfo)
+                                               [NotNull] IEnumerable<CompilationMessage> messages)
         {
             return new CompilationResult
             {
                 File = file,
                 CompiledContent = compilationContent,
                 Messages = messages,
-                AdditionalInfo = additionalInfo
             };
         }
 
@@ -113,16 +98,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         private CompilationFailedException CreateCompilationFailedException()
         {
             var fileContent = ReadContent(File);
-            var exception = new CompilationFailedException(FilePath, fileContent, CompiledContent, Messages);
-            if (AdditionalInfo != null)
-            {
-                foreach (var item in AdditionalInfo)
-                {
-                    exception.Data.Add(item.Key, item.Value);
-                }
-            }
-
-            return exception;
+            return new CompilationFailedException(FilePath, fileContent, CompiledContent, Messages);
         }
 
         private static string ReadContent(IFileInfo file)

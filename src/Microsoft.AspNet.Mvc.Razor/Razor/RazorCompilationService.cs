@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             if (!results.Success)
             {
                 var messages = results.ParserErrors.Select(e => new CompilationMessage(e.Message));
-                return CompilationResult.Failed(file, results.GeneratedCode, messages, additionalInfo: null);
+                return CompilationResult.Failed(file, results.GeneratedCode, messages);
             }
 
             return _baseCompilationService.Compile(file, results.GeneratedCode);

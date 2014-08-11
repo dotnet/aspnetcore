@@ -38,8 +38,7 @@ world";
             };
             var result = CompilationResult.Failed(fileInfo.Object,
                                                  "<h1>hello world</h1>",
-                                                 messages,
-                                                 additionalInfo);
+                                                 messages);
 
             // Act and Assert
             var ex = Assert.Throws<CompilationFailedException>(() => result.CompiledType);
