@@ -24,12 +24,12 @@ namespace Microsoft.AspNet.Mvc
         }
 
         public ViewDataDictionary([NotNull] IModelMetadataProvider metadataProvider,
-            [NotNull] ModelStateDictionary modelState)
+                                  [NotNull] ModelStateDictionary modelState)
+            : this(metadataProvider,
+                   modelState: modelState,
+                   data: new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase),
+                   templateInfo: new TemplateInfo())
         {
-            ModelState = modelState;
-            TemplateInfo = new TemplateInfo();
-            _data = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-            _metadataProvider = metadataProvider;
         }
 
         /// <summary>
@@ -45,22 +45,24 @@ namespace Microsoft.AspNet.Mvc
         /// exceptions a derived class may throw when <see cref="SetModel"/> is called.
         /// </summary>
         public ViewDataDictionary([NotNull] ViewDataDictionary source, object model)
-            : this(source.MetadataProvider)
+            : this(source.MetadataProvider,
+                   new ModelStateDictionary(source.ModelState),
+                   new CopyOnWriteDictionary<string, object>(source, StringComparer.OrdinalIgnoreCase),
+                   new TemplateInfo(source.TemplateInfo))
         {
             _modelMetadata = source.ModelMetadata;
-             TemplateInfo = new TemplateInfo(source.TemplateInfo);
-
-            foreach (var entry in source.ModelState)
-            {
-                ModelState.Add(entry.Key, entry.Value);
-            }
-
-            foreach (var entry in source)
-            {
-                _data.Add(entry.Key, entry.Value);
-            }
-
             SetModel(model);
+        }
+
+        private ViewDataDictionary(IModelMetadataProvider metadataProvider,
+                                   ModelStateDictionary modelState,
+                                   IDictionary<string, object> data,
+                                   TemplateInfo templateInfo)
+        {
+            _metadataProvider = metadataProvider;
+            ModelState = modelState;
+            _data = data;
+            TemplateInfo = templateInfo;
         }
 
         public object Model
@@ -129,6 +131,12 @@ namespace Microsoft.AspNet.Mvc
             get { return _data.Values; }
         }
         #endregion
+
+        // for unit testing
+        internal IDictionary<string, object> Data
+        {
+            get { return _data; }
+        }
 
         public object Eval(string expression)
         {
