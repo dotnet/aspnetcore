@@ -39,11 +39,10 @@ namespace Microsoft.AspNet.Mvc
 
             yield return describe.Instance<IMvcRazorHost>(new MvcRazorHost(typeof(RazorPage).FullName));
 
-            yield return describe.Transient<ICompilationService, RoslynCompilationService>();
-
+            yield return describe.Singleton<ICompilationService, RoslynCompilationService>();
+            yield return describe.Singleton<IRazorCompilationService, RazorCompilationService>();
             yield return describe.Singleton<IViewEngineProvider, DefaultViewEngineProvider>();
             yield return describe.Scoped<ICompositeViewEngine, CompositeViewEngine>();
-            yield return describe.Singleton<IRazorCompilationService, RazorCompilationService>();
             yield return describe.Singleton<IViewStartProvider, ViewStartProvider>();
 
             yield return describe.Singleton<IRazorPageActivator, RazorPageActivator>();

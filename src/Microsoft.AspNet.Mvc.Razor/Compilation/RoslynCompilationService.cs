@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
     /// </summary>
     public class RoslynCompilationService : ICompilationService
     {
-        private static readonly ConcurrentDictionary<string, MetadataReference> _metadataFileCache =
+        private readonly ConcurrentDictionary<string, MetadataReference> _metadataFileCache =
             new ConcurrentDictionary<string, MetadataReference>(StringComparer.OrdinalIgnoreCase);
 
         private readonly ILibraryManager _libraryManager;
@@ -154,7 +154,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             return new CompilationMessage(formatter.Format(diagnostic));
         }
 
-        private bool IsError(Diagnostic diagnostic)
+        private static bool IsError(Diagnostic diagnostic)
         {
             return diagnostic.IsWarningAsError || diagnostic.Severity == DiagnosticSeverity.Error;
         }
