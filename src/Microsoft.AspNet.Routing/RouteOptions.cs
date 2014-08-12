@@ -56,6 +56,7 @@ namespace Microsoft.AspNet.Routing
 
                 // Regex-based constraints
                 { "alpha", typeof(AlphaRouteConstraint) },
+                { "regex", typeof(RegexInlineRouteConstraint) },
             };
         }
     }

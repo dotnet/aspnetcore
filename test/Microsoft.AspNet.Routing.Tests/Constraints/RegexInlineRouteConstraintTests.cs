@@ -4,7 +4,6 @@
 #if NET45
 
 using System.Globalization;
-using System.Text.RegularExpressions;
 using System.Threading;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing.Constraints;
@@ -13,7 +12,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Routing.Tests
 {
-    public class RegexConstraintTests
+    public class RegexInlineRouteConstraintTests
     {
         [Theory]
         [InlineData("abc", "abc", true)]    // simple match
@@ -22,12 +21,12 @@ namespace Microsoft.AspNet.Routing.Tests
         [InlineData("Abcd", "abc", true)]   // Extra char
         [InlineData("^Abcd", "abc", true)]  // Extra special char
         [InlineData("Abc", " abc", false)]  // Missing char
-        public void RegexConstraintBuildRegexVerbatimFromInput(string routeValue,
+        public void RegexInlineConstraintBuildRegexVerbatimFromInput(string routeValue,
                                                                string constraintValue,
                                                                bool shouldMatch)
         {
             // Arrange
-            var constraint = new RegexRouteConstraint(constraintValue);
+            var constraint = new RegexInlineRouteConstraint(constraintValue);
             var values = new RouteValueDictionary(new {controller = routeValue});
 
             // Assert
@@ -35,32 +34,10 @@ namespace Microsoft.AspNet.Routing.Tests
         }
 
         [Fact]
-        public void RegexConstraint_TakesRegexAsInput_SimpleMatch()
+        public void RegexInlineConstraint_FailsIfKeyIsNotFoundInRouteValues()
         {
             // Arrange
-            var constraint = new RegexRouteConstraint(new Regex("^abc$"));
-            var values = new RouteValueDictionary(new { controller = "abc"});
-
-            // Assert
-            Assert.True(EasyMatch(constraint, "controller", values));
-        }
-
-        [Fact]
-        public void RegexConstraintConstructedWithRegex_SimpleFailedMatch()
-        {
-            // Arrange
-            var constraint = new RegexRouteConstraint(new Regex("^abc$"));
-            var values = new RouteValueDictionary(new { controller = "Abc" });
-
-            // Assert
-            Assert.False(EasyMatch(constraint, "controller", values));
-        }
-
-        [Fact]
-        public void RegexConstraintFailsIfKeyIsNotFoundInRouteValues()
-        {
-            // Arrange
-            var constraint = new RegexRouteConstraint(new Regex("^abc$"));
+            var constraint = new RegexInlineRouteConstraint("^abc$");
             var values = new RouteValueDictionary(new { action = "abc" });
 
             // Assert
@@ -68,10 +45,10 @@ namespace Microsoft.AspNet.Routing.Tests
         }
 
         [Fact]
-        public void RegexConstraintIsCultureInsensitiveWhenConstructredWithString()
+        public void RegexInlineConstraint_IsCultureInsensitive()
         {
             // Arrange
-            var constraint = new RegexRouteConstraint("^([a-z]+)$");
+            var constraint = new RegexInlineRouteConstraint("^([a-z]+)$");
             var values = new RouteValueDictionary(new { controller = "\u0130" }); // Turkish upper-case dotted I
 
             var currentThread = Thread.CurrentThread;

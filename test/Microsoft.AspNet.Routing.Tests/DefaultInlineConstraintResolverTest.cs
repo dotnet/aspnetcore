@@ -42,6 +42,7 @@ namespace Microsoft.AspNet.Routing.Tests
                          " with the following number of parameters: 1.",
                          ex.Message);
         }
+
         [Fact]
         public void ResolveConstraint_AlphaConstraint()
         {
@@ -50,6 +51,16 @@ namespace Microsoft.AspNet.Routing.Tests
 
             // Assert
             Assert.IsType<AlphaRouteConstraint>(constraint);
+        }
+
+        [Fact]
+        public void ResolveConstraint_RegexInlineConstraint_WithAComma_PassesAsASingleArgument()
+        {
+            // Arrange & Act
+            var constraint = _constraintResolver.ResolveConstraint("regex(ab,1)");
+
+            // Assert
+            Assert.IsType<RegexInlineRouteConstraint>(constraint);
         }
 
         [Fact]
