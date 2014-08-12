@@ -41,7 +41,7 @@ namespace MusicStore.Controllers
             
             if (album == null)
             {
-                return new HttpStatusCodeResult(404);
+                return HttpNotFound();
             }
 
             // TODO [EF] We don't query related data as yet. We have to populate this until we do automatically.
@@ -84,7 +84,7 @@ namespace MusicStore.Controllers
 
             if (album == null)
             {
-                return new HttpStatusCodeResult(404);
+                return HttpNotFound();
             }
 
             ViewBag.GenreId = new SelectList(db.Genres, "GenreId", "Name", album.GenreId);
@@ -117,7 +117,7 @@ namespace MusicStore.Controllers
             Album album = db.Albums.Single(a => a.AlbumId == id);
             if (album == null)
             {
-                return new HttpStatusCodeResult(404);
+                return HttpNotFound();
             }
             return View(album);
         }
@@ -143,7 +143,7 @@ namespace MusicStore.Controllers
 
             if (album == null)
             {
-                return new HttpStatusCodeResult(404);
+                return HttpNotFound();
             }
 
             return new ContentResult { Content = album.AlbumId.ToString(), ContentType = "text/plain" };
