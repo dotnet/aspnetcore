@@ -38,7 +38,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <summary>
         /// Gets or sets a value that determines if the view hierarchy is executed as part of
         /// executing the <see cref="IRazorPage"/> instance. The view hierarchy involves _ViewStart 
-        /// and Layout pages.</param>
+        /// and Layout pages.
+        /// </summary>
         public bool ExecuteViewHierarchy { get; set; }
 
         /// <inheritdoc />
