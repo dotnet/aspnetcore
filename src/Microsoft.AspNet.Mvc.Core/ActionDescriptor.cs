@@ -23,9 +23,10 @@ namespace Microsoft.AspNet.Mvc
 
         public Dictionary<string, object> RouteValueDefaults { get; private set; }
 
-        public List<HttpMethodConstraint> MethodConstraints { get; set; }
-
-        public List<IActionConstraint> DynamicConstraints { get; set; }
+        /// <summary>
+        /// The set of constraints for this action. Must all be satisfied for the action to be selected.
+        /// </summary>
+        public List<IActionConstraintMetadata> ActionConstraints { get; set; }
 
         public List<ParameterDescriptor> Parameters { get; set; }
 

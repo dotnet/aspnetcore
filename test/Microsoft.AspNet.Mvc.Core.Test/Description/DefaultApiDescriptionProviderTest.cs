@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Mvc.Description
         {
             // Arrange
             var action = CreateActionDescriptor();
-            action.MethodConstraints = new List<HttpMethodConstraint>()
+            action.ActionConstraints = new List<IActionConstraintMetadata>()
             {
                 new HttpMethodConstraint(new string[] { "PUT", "POST" }),
                 new HttpMethodConstraint(new string[] { "GET" }),

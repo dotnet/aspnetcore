@@ -15,35 +15,14 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
         {
             ActionMethod = actionMethod;
 
-            // CoreCLR returns IEnumerable<Attribute> from GetCustomAttributes - the OfType<object>
-            // is needed to so that the result of ToList() is List<object>
-            Attributes = actionMethod.GetCustomAttributes(inherit: true).OfType<object>().ToList();
-
-            Filters = Attributes
-                .OfType<IFilter>()
-                .ToList();
-
-            var routeTemplateAttribute = Attributes.OfType<IRouteTemplateProvider>().FirstOrDefault();
-            if (routeTemplateAttribute != null)
-            {
-                AttributeRouteModel = new ReflectedAttributeRouteModel(routeTemplateAttribute);
-            }
-
-            var apiExplorerNameAttribute = Attributes.OfType<IApiDescriptionGroupNameProvider>().FirstOrDefault();
-            if (apiExplorerNameAttribute != null)
-            {
-                ApiExplorerGroupName = apiExplorerNameAttribute.GroupName;
-            }
-
-            var apiExplorerVisibilityAttribute = Attributes.OfType<IApiDescriptionVisibilityProvider>().FirstOrDefault();
-            if (apiExplorerVisibilityAttribute != null)
-            {
-                ApiExplorerIsVisible = !apiExplorerVisibilityAttribute.IgnoreApi;
-            }
-
+            Attributes = new List<object>();
+            ActionConstraints = new List<IActionConstraintMetadata>();
+            Filters = new List<IFilter>();
             HttpMethods = new List<string>();
             Parameters = new List<ReflectedParameterModel>();
         }
+
+        public List<IActionConstraintMetadata> ActionConstraints { get; private set; }
 
         public MethodInfo ActionMethod { get; private set; }
 

@@ -28,17 +28,13 @@ namespace Microsoft.AspNet.Mvc.Logging
         public IReadOnlyList<ActionDescriptor> ActionsMatchingRouteConstraints { get; set; }
 
         /// <summary>
-        /// The list of actions that matched all their route and method constraints, if any.
+        /// The list of actions that matched all their route constraints, and action constraints, if any.
         /// </summary>
-        public IReadOnlyList<ActionDescriptor> ActionsMatchingRouteAndMethodConstraints { get; set; }
+        public IReadOnlyList<ActionDescriptor> ActionsMatchingActionConstraints { get; set; }
 
         /// <summary>
-        /// The list of actions that matched all their route, method, and dynamic constraints, if any.
-        /// </summary>
-        public IReadOnlyList<ActionDescriptor> ActionsMatchingRouteAndMethodAndDynamicConstraints { get; set; }
-
-        /// <summary>
-        /// The list of actions that are the best matches. These match all constraints.
+        /// The list of actions that are the best matches. These match all constraints and any additional criteria
+        /// for disambiguation.
         /// </summary>
         public IReadOnlyList<ActionDescriptor> FinalMatches { get; set; }
 
@@ -59,13 +55,10 @@ namespace Microsoft.AspNet.Mvc.Logging
                 builder.Append("\tActions matching route constraints: ");
                 StringBuilderHelpers.Append(builder, ActionsMatchingRouteConstraints, Formatter);
                 builder.AppendLine();
-                builder.Append("\tActions matching route and method constraints: ");
-                StringBuilderHelpers.Append(builder, ActionsMatchingRouteAndMethodConstraints, Formatter);
+                builder.Append("\tActions matching action constraints: ");
+                StringBuilderHelpers.Append(builder, ActionsMatchingActionConstraints, Formatter);
                 builder.AppendLine();
-                builder.Append("\tActions matching route, method, and dynamic constraints: ");
-                StringBuilderHelpers.Append(builder, ActionsMatchingRouteAndMethodAndDynamicConstraints, Formatter);
-                builder.AppendLine();
-                builder.Append("\tBest Matches: ");
+                builder.Append("\tFinal Matches: ");
                 StringBuilderHelpers.Append(builder, FinalMatches, Formatter);
                 builder.AppendLine();
                 builder.Append("\tSelected action: ");

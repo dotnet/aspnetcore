@@ -178,9 +178,16 @@ namespace Microsoft.AspNet.Mvc
             var actionCollectionDescriptorProvider = new DefaultActionDescriptorsCollectionProvider(serviceContainer);
             var decisionTreeProvider = new ActionSelectorDecisionTreeProvider(actionCollectionDescriptorProvider);
 
+            var actionConstraintProvider = new NestedProviderManager<ActionConstraintProviderContext>(
+                new INestedProvider<ActionConstraintProviderContext>[]
+            {
+                new DefaultActionConstraintProvider(serviceContainer),
+            });
+
             var defaultActionSelector = new DefaultActionSelector(
                 actionCollectionDescriptorProvider, 
                 decisionTreeProvider,
+                actionConstraintProvider,
                 NullLoggerFactory.Instance);
 
             return await defaultActionSelector.SelectAsync(context);

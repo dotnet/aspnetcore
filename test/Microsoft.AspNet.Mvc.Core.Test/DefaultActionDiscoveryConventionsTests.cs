@@ -166,6 +166,7 @@ namespace Microsoft.AspNet.Mvc
             Assert.True(action.RequireActionNameMatch);
             Assert.Null(action.HttpMethods);
             Assert.Null(action.AttributeRoute);
+            Assert.Empty(action.Attributes);
         }
 
         [Fact]
@@ -185,6 +186,7 @@ namespace Microsoft.AspNet.Mvc
             Assert.True(action.RequireActionNameMatch);
             Assert.Equal(new[] { "PUT", "PATCH" }, action.HttpMethods);
             Assert.Null(action.AttributeRoute);
+            Assert.IsType<CustomHttpMethodsAttribute>(Assert.Single(action.Attributes));
         }
 
         [Fact]
@@ -206,6 +208,8 @@ namespace Microsoft.AspNet.Mvc
             var httpMethod = Assert.Single(action.HttpMethods);
             Assert.Equal("DELETE", httpMethod);
             Assert.Null(action.AttributeRoute);
+
+            Assert.IsType<HttpDeleteAttribute>(Assert.Single(action.Attributes));
         }
 
         [Fact]
@@ -225,6 +229,10 @@ namespace Microsoft.AspNet.Mvc
             Assert.True(action.RequireActionNameMatch);
             Assert.Equal(new[] { "GET", "POST" }, action.HttpMethods.OrderBy(m => m, StringComparer.Ordinal));
             Assert.Null(action.AttributeRoute);
+
+            Assert.Equal(2, action.Attributes.Length);
+            Assert.Single(action.Attributes, a => a is HttpGetAttribute);
+            Assert.Single(action.Attributes, a => a is HttpPostAttribute);
         }
 
         [Fact]
@@ -244,6 +252,11 @@ namespace Microsoft.AspNet.Mvc
             Assert.True(action.RequireActionNameMatch);
             Assert.Equal(new[] { "GET", "POST", "PUT" }, action.HttpMethods.OrderBy(m => m, StringComparer.Ordinal));
             Assert.Null(action.AttributeRoute);
+
+            Assert.Equal(3, action.Attributes.Length);
+            Assert.Single(action.Attributes, a => a is HttpPutAttribute);
+            Assert.Single(action.Attributes, a => a is HttpGetAttribute);
+            Assert.Single(action.Attributes, a => a is AcceptVerbsAttribute);
         }
 
         [Fact]
@@ -268,6 +281,8 @@ namespace Microsoft.AspNet.Mvc
 
             Assert.NotNull(action.AttributeRoute);
             Assert.Equal("Change", action.AttributeRoute.Template);
+
+            Assert.IsType<HttpPostAttribute>(Assert.Single(action.Attributes));
         }
 
         [Fact]
@@ -291,6 +306,8 @@ namespace Microsoft.AspNet.Mvc
 
             Assert.NotNull(action.AttributeRoute);
             Assert.Equal("Update", action.AttributeRoute.Template);
+
+            Assert.IsType<RouteAttribute>(Assert.Single(action.Attributes));
         }
 
         [Fact]
@@ -314,6 +331,8 @@ namespace Microsoft.AspNet.Mvc
 
             Assert.NotNull(action.AttributeRoute);
             Assert.Equal("ListAll", action.AttributeRoute.Template);
+
+            Assert.IsType<AcceptVerbsAttribute>(Assert.Single(action.Attributes));
         }
 
         [Fact]
@@ -341,10 +360,12 @@ namespace Microsoft.AspNet.Mvc
             var list = Assert.Single(actionInfos, ai => ai.AttributeRoute.Template.Equals("List"));
             var listMethod = Assert.Single(list.HttpMethods);
             Assert.Equal("POST", listMethod);
+            Assert.IsType<HttpPostAttribute>(Assert.Single(list.Attributes));
 
             var all = Assert.Single(actionInfos, ai => ai.AttributeRoute.Template.Equals("All"));
             var allMethod = Assert.Single(all.HttpMethods);
             Assert.Equal("GET", allMethod);
+            Assert.IsType<HttpGetAttribute>(Assert.Single(all.Attributes));
         }
 
         [Fact]
@@ -367,6 +388,8 @@ namespace Microsoft.AspNet.Mvc
             Assert.Null(action.HttpMethods);
 
             Assert.Null(action.AttributeRoute);
+
+            Assert.Empty(action.Attributes);
         }
 
         [Theory]
@@ -390,6 +413,8 @@ namespace Microsoft.AspNet.Mvc
             Assert.Null(action.HttpMethods);
 
             Assert.Null(action.AttributeRoute);
+
+            Assert.Empty(action.Attributes);
         }
 
         [Theory]
@@ -416,6 +441,8 @@ namespace Microsoft.AspNet.Mvc
                 Assert.Equal("GET", httpMethod);
 
                 Assert.NotNull(action.AttributeRoute);
+
+                Assert.IsType<HttpGetAttribute>(Assert.Single(action.Attributes));
             }
 
             Assert.Single(actionInfos, ai => ai.AttributeRoute.Template.Equals("List"));
@@ -745,22 +772,22 @@ namespace Microsoft.AspNet.Mvc.DefaultActionDiscoveryConventionsControllers
         [HttpPut]
         [AcceptVerbs("GET", "POST")]
         public void List() { }
+    }
 
-        // Keep it private and nested to avoid polluting the namespace.
-        private class CustomHttpMethodsAttribute : Attribute, IActionHttpMethodProvider
+    public class CustomHttpMethodsAttribute : Attribute, IActionHttpMethodProvider
+    {
+        private readonly string[] _methods;
+
+        public CustomHttpMethodsAttribute(params string[] methods)
         {
-            private readonly string[] _methods;
+            _methods = methods;
+        }
 
-            public CustomHttpMethodsAttribute(params string[] methods)
+        public IEnumerable<string> HttpMethods
+        {
+            get
             {
-                _methods = methods;
-            }
-            public IEnumerable<string> HttpMethods
-            {
-                get
-                {
-                    return _methods;
-                }
+                return _methods;
             }
         }
     }

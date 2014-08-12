@@ -3,12 +3,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Mvc.Logging;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.NestedProviders;
 using Microsoft.Framework.Logging;
 using Moq;
 using Xunit;
@@ -52,8 +55,7 @@ namespace Microsoft.AspNet.Mvc
             var values = Assert.IsType<DefaultActionSelectorSelectAsyncValues>(write.State);
             Assert.Equal("DefaultActionSelector.SelectAsync", values.Name);
             Assert.Empty(values.ActionsMatchingRouteConstraints);
-            Assert.Empty(values.ActionsMatchingRouteAndMethodConstraints);
-            Assert.Empty(values.ActionsMatchingRouteAndMethodAndDynamicConstraints);
+            Assert.Empty(values.ActionsMatchingActionConstraints);
             Assert.Empty(values.FinalMatches);
             Assert.Null(values.SelectedAction);
         }
@@ -67,7 +69,7 @@ namespace Microsoft.AspNet.Mvc
 
             var matched = new ActionDescriptor()
             {
-                MethodConstraints = new List<HttpMethodConstraint>()
+                ActionConstraints = new List<IActionConstraintMetadata>()
                 {
                     new HttpMethodConstraint(new string[] { "POST" }),
                 },
@@ -107,7 +109,7 @@ namespace Microsoft.AspNet.Mvc
             var values = Assert.IsType<DefaultActionSelectorSelectAsyncValues>(write.State);
             Assert.Equal("DefaultActionSelector.SelectAsync", values.Name);
             Assert.Equal<ActionDescriptor>(actions, values.ActionsMatchingRouteConstraints);
-            Assert.Equal<ActionDescriptor>(actions, values.ActionsMatchingRouteAndMethodConstraints);
+            Assert.Equal<ActionDescriptor>(new[] { matched }, values.ActionsMatchingActionConstraints);
             Assert.Equal(matched, Assert.Single(values.FinalMatches));
             Assert.Equal(matched, values.SelectedAction);
         }
@@ -155,7 +157,7 @@ namespace Microsoft.AspNet.Mvc
             var values = Assert.IsType<DefaultActionSelectorSelectAsyncValues>(write.State);
             Assert.Equal("DefaultActionSelector.SelectAsync", values.Name);
             Assert.Equal<ActionDescriptor>(actions, values.ActionsMatchingRouteConstraints);
-            Assert.Equal<ActionDescriptor>(actions, values.ActionsMatchingRouteAndMethodConstraints);
+            Assert.Equal<ActionDescriptor>(actions, values.ActionsMatchingActionConstraints);
             Assert.Equal<ActionDescriptor>(actions, values.FinalMatches);
             Assert.Null(values.SelectedAction);
         }
@@ -200,7 +202,7 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var actionWithConstraints = new ActionDescriptor()
             {
-                MethodConstraints = new List<HttpMethodConstraint>()
+                ActionConstraints = new List<IActionConstraintMetadata>()
                 {
                     new HttpMethodConstraint(new string[] { "POST" }),
                 },
@@ -222,6 +224,268 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             Assert.Same(action, actionWithConstraints);
+        }
+
+        [Fact]
+        public async Task SelectAsync_ConstraintsRejectAll()
+        {
+            // Arrange
+            var action1 = new ActionDescriptor()
+            {
+                ActionConstraints = new List<IActionConstraintMetadata>()
+                {
+                    new BooleanConstraint() { Pass = false, },
+                },
+            };
+
+            var action2 = new ActionDescriptor()
+            {
+                ActionConstraints = new List<IActionConstraintMetadata>()
+                {
+                    new BooleanConstraint() { Pass = false, },
+                },
+            };
+
+            var actions = new ActionDescriptor[] { action1, action2 };
+
+            var selector = CreateSelector(actions);
+            var context = CreateRouteContext("POST");
+
+            // Act
+            var action = await selector.SelectAsync(context);
+
+            // Assert
+            Assert.Null(action);
+        }
+
+        [Fact]
+        public async Task SelectAsync_ConstraintsRejectAll_DifferentStages()
+        {
+            // Arrange
+            var action1 = new ActionDescriptor()
+            {
+                ActionConstraints = new List<IActionConstraintMetadata>()
+                {
+                    new BooleanConstraint() { Pass = false, Order = 0 },
+                    new BooleanConstraint() { Pass = true, Order = 1 },
+                },
+            };
+
+            var action2 = new ActionDescriptor()
+            {
+                ActionConstraints = new List<IActionConstraintMetadata>()
+                {
+                    new BooleanConstraint() { Pass = true, Order = 0 },
+                    new BooleanConstraint() { Pass = false, Order = 1 },
+                },
+            };
+
+            var actions = new ActionDescriptor[] { action1, action2 };
+
+            var selector = CreateSelector(actions);
+            var context = CreateRouteContext("POST");
+
+            // Act
+            var action = await selector.SelectAsync(context);
+
+            // Assert
+            Assert.Null(action);
+        }
+
+        [Fact]
+        public async Task SelectAsync_ActionConstraintFactory()
+        {
+            // Arrange
+            var actionWithConstraints = new ActionDescriptor()
+            {
+                ActionConstraints = new List<IActionConstraintMetadata>()
+                {
+                    new ConstraintFactory()
+                    {
+                        Constraint = new BooleanConstraint() { Pass = true },
+                    },
+                }
+            };
+
+            var actionWithoutConstraints = new ActionDescriptor()
+            {
+                Parameters = new List<ParameterDescriptor>(),
+            };
+
+            var actions = new ActionDescriptor[] { actionWithConstraints, actionWithoutConstraints };
+
+            var selector = CreateSelector(actions);
+            var context = CreateRouteContext("POST");
+
+            // Act
+            var action = await selector.SelectAsync(context);
+
+            // Assert
+            Assert.Same(action, actionWithConstraints);
+        }
+
+        [Fact]
+        public async Task SelectAsync_ActionConstraintFactory_ReturnsNull()
+        {
+            // Arrange
+            var nullConstraint = new ActionDescriptor()
+            {
+                ActionConstraints = new List<IActionConstraintMetadata>()
+                {
+                    new ConstraintFactory()
+                    {
+                    },
+                }
+            };
+
+            var actions = new ActionDescriptor[] { nullConstraint };
+
+            var selector = CreateSelector(actions);
+            var context = CreateRouteContext("POST");
+
+            // Act
+            var action = await selector.SelectAsync(context);
+
+            // Assert
+            Assert.Same(action, nullConstraint);
+        }
+
+        // There's a custom constraint provider registered that only understands BooleanConstraintMarker
+        [Fact]
+        public async Task SelectAsync_CustomProvider()
+        {
+            // Arrange
+            var actionWithConstraints = new ActionDescriptor()
+            {
+                ActionConstraints = new List<IActionConstraintMetadata>()
+                {
+                    new BooleanConstraintMarker() { Pass = true },
+                }
+            };
+
+            var actionWithoutConstraints = new ActionDescriptor()
+            {
+                Parameters = new List<ParameterDescriptor>(),
+            };
+
+            var actions = new ActionDescriptor[] { actionWithConstraints, actionWithoutConstraints, };
+
+            var selector = CreateSelector(actions);
+            var context = CreateRouteContext("POST");
+
+            // Act
+            var action = await selector.SelectAsync(context);
+
+            // Assert
+            Assert.Same(action, actionWithConstraints);
+        }
+
+        // Due to ordering of stages, the first action will be better.
+        [Fact]
+        public async Task SelectAsync_ConstraintsInOrder()
+        {
+            // Arrange
+            var best = new ActionDescriptor()
+            {
+                ActionConstraints = new List<IActionConstraintMetadata>()
+                {
+                    new BooleanConstraint() { Pass = true, Order = 0, },
+                },
+            };
+
+            var worst = new ActionDescriptor()
+            {
+                ActionConstraints = new List<IActionConstraintMetadata>()
+                {
+                    new BooleanConstraint() { Pass = true, Order = 1, },
+                },
+            };
+
+            var actions = new ActionDescriptor[] { best, worst };
+
+            var selector = CreateSelector(actions);
+            var context = CreateRouteContext("POST");
+
+            // Act
+            var action = await selector.SelectAsync(context);
+
+            // Assert
+            Assert.Same(action, best);
+        }
+
+        // Due to ordering of stages, the first action will be better.
+        [Fact]
+        public async Task SelectAsync_ConstraintsInOrder_MultipleStages()
+        {
+            // Arrange
+            var best = new ActionDescriptor()
+            {
+                ActionConstraints = new List<IActionConstraintMetadata>()
+                {
+                    new BooleanConstraint() { Pass = true, Order = 0, },
+                    new BooleanConstraint() { Pass = true, Order = 1, },
+                    new BooleanConstraint() { Pass = true, Order = 2, },
+                },
+            };
+
+            var worst = new ActionDescriptor()
+            {
+                ActionConstraints = new List<IActionConstraintMetadata>()
+                {
+                    new BooleanConstraint() { Pass = true, Order = 0, },
+                    new BooleanConstraint() { Pass = true, Order = 1, },
+                    new BooleanConstraint() { Pass = true, Order = 3, },
+                },
+            };
+
+            var actions = new ActionDescriptor[] { best, worst };
+
+            var selector = CreateSelector(actions);
+            var context = CreateRouteContext("POST");
+
+            // Act
+            var action = await selector.SelectAsync(context);
+
+            // Assert
+            Assert.Same(action, best);
+        }
+
+        [Fact]
+        public async Task SelectAsync_Fallback_ToActionWithoutConstraints()
+        {
+            // Arrange
+            var nomatch1 = new ActionDescriptor()
+            {
+                ActionConstraints = new List<IActionConstraintMetadata>()
+                {
+                    new BooleanConstraint() { Pass = true, Order = 0, },
+                    new BooleanConstraint() { Pass = true, Order = 1, },
+                    new BooleanConstraint() { Pass = false, Order = 2, },
+                },
+            };
+
+            var nomatch2 = new ActionDescriptor()
+            {
+                ActionConstraints = new List<IActionConstraintMetadata>()
+                {
+                    new BooleanConstraint() { Pass = true, Order = 0, },
+                    new BooleanConstraint() { Pass = true, Order = 1, },
+                    new BooleanConstraint() { Pass = false, Order = 3, },
+                },
+            };
+
+            var best = new ActionDescriptor();
+
+            var actions = new ActionDescriptor[] { best, nomatch1, nomatch2 };
+
+            var selector = CreateSelector(actions);
+            var context = CreateRouteContext("POST");
+
+            // Act
+            var action = await selector.SelectAsync(context);
+
+            // Assert
+            Assert.Same(action, best);
         }
 
         [Fact]
@@ -389,7 +653,18 @@ namespace Microsoft.AspNet.Mvc
 
             var decisionTreeProvider = new ActionSelectorDecisionTreeProvider(actionProvider.Object);
 
-            return new DefaultActionSelector(actionProvider.Object, decisionTreeProvider, loggerFactory);
+            var actionConstraintProvider = new NestedProviderManager<ActionConstraintProviderContext>(
+                new INestedProvider<ActionConstraintProviderContext>[]
+            {
+                new DefaultActionConstraintProvider(new ServiceContainer()),
+                new BooleanConstraintProvider(),
+            });
+
+            return new DefaultActionSelector(
+                actionProvider.Object, 
+                decisionTreeProvider, 
+                actionConstraintProvider, 
+                loggerFactory);
         }
 
         private static VirtualPathContext CreateContext(object routeValues)
@@ -453,6 +728,53 @@ namespace Microsoft.AspNet.Mvc
                 new RouteDataActionConstraint("action", action));
 
             return actionDescriptor;
+        }
+
+        private class BooleanConstraint : IActionConstraint
+        {
+            public bool Pass { get; set; }
+
+            public int Order { get; set; }
+
+            public bool Accept([NotNull]ActionConstraintContext context)
+            {
+                return Pass;
+            }
+        }
+
+        private class ConstraintFactory : IActionConstraintFactory
+        {
+            public IActionConstraint Constraint { get; set; }
+
+            public IActionConstraint CreateInstance(IServiceProvider services)
+            {
+                return Constraint;
+            }
+        }
+
+        private class BooleanConstraintMarker : IActionConstraintMetadata
+        {
+            public bool Pass { get; set; }
+        }
+
+        private class BooleanConstraintProvider : INestedProvider<ActionConstraintProviderContext>
+        {
+            public int Order { get; set; }
+
+            public void Invoke(ActionConstraintProviderContext context, Action callNext)
+            {
+                foreach (var item in context.Results)
+                {
+                    var marker = item.Metadata as BooleanConstraintMarker;
+                    if (marker != null)
+                    {
+                        Assert.Null(item.Constraint);
+                        item.Constraint = new BooleanConstraint() { Pass = marker.Pass };
+                    }
+                }
+
+                callNext();
+            }
         }
     }
 }

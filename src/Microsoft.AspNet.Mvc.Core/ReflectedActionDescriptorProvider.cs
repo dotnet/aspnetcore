@@ -72,11 +72,7 @@ namespace Microsoft.AspNet.Mvc
 
             foreach (var controllerType in controllerTypes)
             {
-                var controllerModel = new ReflectedControllerModel(controllerType)
-                {
-                    Application = applicationModel,
-                };
-
+                var controllerModel = CreateControllerModel(applicationModel, controllerType);
                 applicationModel.Controllers.Add(controllerModel);
 
                 foreach (var methodInfo in controllerType.AsType().GetMethods())
@@ -89,35 +85,122 @@ namespace Microsoft.AspNet.Mvc
 
                     foreach (var actionInfo in actionInfos)
                     {
-                        var actionModel = new ReflectedActionModel(methodInfo)
-                        {
-                            ActionName = actionInfo.ActionName,
-                            Controller = controllerModel,
-                            IsActionNameMatchRequired = actionInfo.RequireActionNameMatch,
-                        };
-
-                        actionModel.HttpMethods.AddRange(actionInfo.HttpMethods ?? Enumerable.Empty<string>());
-
-                        if (actionInfo.AttributeRoute != null)
-                        {
-                            actionModel.AttributeRouteModel = new ReflectedAttributeRouteModel(
-                                actionInfo.AttributeRoute);
-                        }
-
-                        foreach (var parameter in methodInfo.GetParameters())
-                        {
-                            actionModel.Parameters.Add(new ReflectedParameterModel(parameter)
-                            {
-                                Action = actionModel,
-                            });
-                        }
-
+                        var actionModel = CreateActionModel(controllerModel, methodInfo, actionInfo);
                         controllerModel.Actions.Add(actionModel);
+
+                        foreach (var parameterInfo in methodInfo.GetParameters())
+                        {
+                            var parameterModel = CreateParameterModel(actionModel, parameterInfo);
+                            actionModel.Parameters.Add(parameterModel);
+                        }
                     }
                 }
             }
 
             return applicationModel;
+        }
+
+        private ReflectedControllerModel CreateControllerModel(
+            ReflectedApplicationModel applicationModel,
+            TypeInfo controllerType)
+        {
+            var controllerModel = new ReflectedControllerModel(controllerType)
+            {
+                Application = applicationModel,
+            };
+
+            controllerModel.ControllerName =
+                controllerType.Name.EndsWith("Controller", StringComparison.Ordinal) ?
+                    controllerType.Name.Substring(0, controllerType.Name.Length - "Controller".Length) :
+                    controllerType.Name;
+
+            // CoreCLR returns IEnumerable<Attribute> from GetCustomAttributes - the OfType<object>
+            // is needed to so that the result of ToList() is List<object>
+            var attributes = controllerType.GetCustomAttributes(inherit: true).ToList();
+            controllerModel.Attributes.AddRange(attributes);
+
+            controllerModel.ActionConstraints.AddRange(attributes.OfType<IActionConstraintMetadata>());
+            controllerModel.Filters.AddRange(attributes.OfType<IFilter>());
+            controllerModel.RouteConstraints.AddRange(attributes.OfType<RouteConstraintAttribute>());
+
+            controllerModel.AttributeRoutes.AddRange(
+                attributes.OfType<IRouteTemplateProvider>().Select(rtp => new ReflectedAttributeRouteModel(rtp)));
+
+            var apiVisibility = attributes.OfType<IApiDescriptionVisibilityProvider>().FirstOrDefault();
+            if (apiVisibility != null)
+            {
+                controllerModel.ApiExplorerIsVisible = !apiVisibility.IgnoreApi;
+            }
+
+            var apiGroupName = attributes.OfType<IApiDescriptionGroupNameProvider>().FirstOrDefault();
+            if (apiGroupName != null)
+            {
+                controllerModel.ApiExplorerGroupName = apiGroupName.GroupName;
+            }
+
+            return controllerModel;
+        }
+
+        private ReflectedActionModel CreateActionModel(
+            ReflectedControllerModel controllerModel,
+            MethodInfo methodInfo,
+            ActionInfo actionInfo)
+        {
+            var actionModel = new ReflectedActionModel(methodInfo)
+            {
+                ActionName = actionInfo.ActionName,
+                Controller = controllerModel,
+                IsActionNameMatchRequired = actionInfo.RequireActionNameMatch,
+            };
+
+            var attributes = actionInfo.Attributes;
+
+            actionModel.Attributes.AddRange(attributes);
+
+            actionModel.ActionConstraints.AddRange(attributes.OfType<IActionConstraintMetadata>());
+            actionModel.Filters.AddRange(attributes.OfType<IFilter>());
+
+            var apiVisibility = attributes.OfType<IApiDescriptionVisibilityProvider>().FirstOrDefault();
+            if (apiVisibility != null)
+            {
+                actionModel.ApiExplorerIsVisible = !apiVisibility.IgnoreApi;
+            }
+
+            var apiGroupName = attributes.OfType<IApiDescriptionGroupNameProvider>().FirstOrDefault();
+            if (apiGroupName != null)
+            {
+                actionModel.ApiExplorerGroupName = apiGroupName.GroupName;
+            }
+
+            actionModel.HttpMethods.AddRange(actionInfo.HttpMethods ?? Enumerable.Empty<string>());
+
+            if (actionInfo.AttributeRoute != null)
+            {
+                actionModel.AttributeRouteModel = new ReflectedAttributeRouteModel(
+                    actionInfo.AttributeRoute);
+            }
+
+            return actionModel;
+        }
+
+        private ReflectedParameterModel CreateParameterModel(
+            ReflectedActionModel actionModel,
+            ParameterInfo parameterInfo)
+        {
+            var parameterModel = new ReflectedParameterModel(parameterInfo)
+            {
+                Action = actionModel,
+            };
+
+            // CoreCLR returns IEnumerable<Attribute> from GetCustomAttributes - the OfType<object>
+            // is needed to so that the result of ToList() is List<object>
+            var attributes = parameterInfo.GetCustomAttributes(inherit: true).OfType<object>().ToList();
+            parameterModel.Attributes.AddRange(attributes);
+
+            parameterModel.ParameterName = parameterInfo.Name;
+            parameterModel.IsOptional = parameterInfo.HasDefaultValue;
+
+            return parameterModel;
         }
 
         public void ApplyConventions(ReflectedApplicationModel model)
@@ -176,7 +259,7 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        public List<ReflectedActionDescriptor> Build(ReflectedApplicationModel model)
+        public List<ReflectedActionDescriptor> Build(ReflectedApplicationModel application)
         {
             var actions = new List<ReflectedActionDescriptor>();
 
@@ -188,7 +271,7 @@ namespace Microsoft.AspNet.Mvc
             var routeTemplateErrors = new List<string>();
             var attributeRoutingConfigurationErrors = new Dictionary<MethodInfo, string>();
 
-            foreach (var controller in model.Controllers)
+            foreach (var controller in application.Controllers)
             {
                 var controllerDescriptor = new ControllerDescriptor()
                 {
@@ -203,13 +286,14 @@ namespace Microsoft.AspNet.Mvc
                     // instance.
                     // Actions with multiple [Http*] attributes or other (IRouteTemplateProvider implementations
                     // have already been identified as different actions during action discovery.
-                    var actionDescriptors = CreateActionDescriptors(action, controller, controllerDescriptor);
+                    var actionDescriptors = CreateActionDescriptors(application, controller, action);
 
                     foreach (var actionDescriptor in actionDescriptors)
                     {
+                        actionDescriptor.ControllerDescriptor = controllerDescriptor;
+
                         AddApiExplorerInfo(actionDescriptor, action, controller);
-                        AddActionFilters(actionDescriptor, action.Filters, controller.Filters, model.Filters);
-                        AddActionConstraints(actionDescriptor, action, controller);
+                        AddRouteConstraints(actionDescriptor, controller, action);
                         AddControllerRouteConstraints(
                             actionDescriptor,
                             controller.RouteConstraints,
@@ -324,37 +408,71 @@ namespace Microsoft.AspNet.Mvc
         }
 
         private static IList<ReflectedActionDescriptor> CreateActionDescriptors(
-            ReflectedActionModel action,
+            ReflectedApplicationModel application,
             ReflectedControllerModel controller,
-            ControllerDescriptor controllerDescriptor)
+            ReflectedActionModel action)
         {
             var actionDescriptors = new List<ReflectedActionDescriptor>();
 
             // We check the action to see if the template allows combination behavior
             // (It doesn't start with / or ~/) so that in the case where we have multiple
             // [Route] attributes on the controller we don't end up creating multiple
-            // attribute identical attribute routes.
-            if (controller.AttributeRoutes != null &&
-                controller.AttributeRoutes.Count > 0 &&
-                (action.AttributeRouteModel == null ||
-                !action.AttributeRouteModel.IsAbsoluteTemplate))
+            if (action.AttributeRouteModel != null &&
+                action.AttributeRouteModel.IsAbsoluteTemplate)
             {
+                // We're overriding the attribute routes on the controller, so filter out any metadata
+                // from controller level routes.
+                var actionDescriptor = CreateActionDescriptor(
+                    action,
+                    controllerAttributeRoute: null);
+
+                actionDescriptors.Add(actionDescriptor);
+
+                // If we're using an attribute route on the controller, then filter out any additional
+                // metadata from the 'other' attribute routes.
+                var controllerFilters = controller.Filters
+                    .Where(c => !(c is IRouteTemplateProvider));
+                AddActionFilters(actionDescriptor, action.Filters, controllerFilters, application.Filters);
+
+                var controllerConstraints = controller.ActionConstraints
+                    .Where(c => !(c is IRouteTemplateProvider));
+                AddActionConstraints(actionDescriptor, action, controllerConstraints);
+            }
+            else if (controller.AttributeRoutes != null &&
+                controller.AttributeRoutes.Count > 0)
+            {
+                // We're using the attribute routes from the controller
                 foreach (var controllerAttributeRoute in controller.AttributeRoutes)
                 {
                     var actionDescriptor = CreateActionDescriptor(
                         action,
-                        controllerAttributeRoute,
-                        controllerDescriptor);
+                        controllerAttributeRoute);
 
                     actionDescriptors.Add(actionDescriptor);
+
+                    // If we're using an attribute route on the controller, then filter out any additional
+                    // metadata from the 'other' attribute routes.
+                    var controllerFilters = controller.Filters
+                        .Where(c => c == controllerAttributeRoute?.Attribute || !(c is IRouteTemplateProvider));
+                    AddActionFilters(actionDescriptor, action.Filters, controllerFilters, application.Filters);
+
+                    var controllerConstraints = controller.ActionConstraints
+                        .Where(c => c == controllerAttributeRoute?.Attribute || !(c is IRouteTemplateProvider));
+                    AddActionConstraints(actionDescriptor, action, controllerConstraints);
                 }
             }
             else
             {
-                actionDescriptors.Add(CreateActionDescriptor(
+                // No attribute routes on the controller
+                var actionDescriptor = CreateActionDescriptor(
                     action,
-                    controllerAttributeRoute: null,
-                    controllerDescriptor: controllerDescriptor));
+                    controllerAttributeRoute: null);
+                actionDescriptors.Add(actionDescriptor);
+
+                // If there's no attribute route on the controller, then we can use all of the filters/constraints
+                // on the controller.
+                AddActionFilters(actionDescriptor, action.Filters, controller.Filters, application.Filters);
+                AddActionConstraints(actionDescriptor, action, controller.ActionConstraints);
             }
 
             return actionDescriptors;
@@ -362,32 +480,13 @@ namespace Microsoft.AspNet.Mvc
 
         private static ReflectedActionDescriptor CreateActionDescriptor(
             ReflectedActionModel action,
-            ReflectedAttributeRouteModel controllerAttributeRoute,
-            ControllerDescriptor controllerDescriptor)
+            ReflectedAttributeRouteModel controllerAttributeRoute)
         {
             var parameterDescriptors = new List<ParameterDescriptor>();
             foreach (var parameter in action.Parameters)
             {
-                var isFromBody = parameter.Attributes.OfType<FromBodyAttribute>().Any();
-                var paramDescriptor = new ParameterDescriptor()
-                {
-                    Name = parameter.ParameterName,
-                    IsOptional = parameter.IsOptional
-                };
-
-                if (isFromBody)
-                {
-                    paramDescriptor.BodyParameterInfo = new BodyParameterInfo(
-                        parameter.ParameterInfo.ParameterType);
-                }
-                else
-                {
-                    paramDescriptor.ParameterBindingInfo = new ParameterBindingInfo(
-                            parameter.ParameterName,
-                            parameter.ParameterInfo.ParameterType);
-                }
-
-                parameterDescriptors.Add(paramDescriptor);
+                var parameterDescriptor = CreateParameterDescriptor(parameter);
+                parameterDescriptors.Add(parameterDescriptor);
             }
 
             var attributeRouteInfo = CreateAttributeRouteInfo(
@@ -397,7 +496,6 @@ namespace Microsoft.AspNet.Mvc
             var actionDescriptor = new ReflectedActionDescriptor()
             {
                 Name = action.ActionName,
-                ControllerDescriptor = controllerDescriptor,
                 MethodInfo = action.ActionMethod,
                 Parameters = parameterDescriptors,
                 RouteConstraints = new List<RouteDataActionConstraint>(),
@@ -410,6 +508,30 @@ namespace Microsoft.AspNet.Mvc
                 action.ActionMethod.Name);
 
             return actionDescriptor;
+        }
+
+        private static ParameterDescriptor CreateParameterDescriptor(ReflectedParameterModel parameter)
+        {
+            var parameterDescriptor = new ParameterDescriptor()
+            {
+                Name = parameter.ParameterName,
+                IsOptional = parameter.IsOptional
+            };
+
+            var isFromBody = parameter.Attributes.OfType<FromBodyAttribute>().Any();
+            if (isFromBody)
+            {
+                parameterDescriptor.BodyParameterInfo = new BodyParameterInfo(
+                    parameter.ParameterInfo.ParameterType);
+            }
+            else
+            {
+                parameterDescriptor.ParameterBindingInfo = new ParameterBindingInfo(
+                        parameter.ParameterName,
+                        parameter.ParameterInfo.ParameterType);
+            }
+
+            return parameterDescriptor;
         }
 
         private static void AddApiExplorerInfo(
@@ -469,17 +591,37 @@ namespace Microsoft.AspNet.Mvc
         private static void AddActionConstraints(
             ReflectedActionDescriptor actionDescriptor,
             ReflectedActionModel action,
-            ReflectedControllerModel controller)
+            IEnumerable<IActionConstraintMetadata> controllerConstraints)
         {
+            var constraints = new List<IActionConstraintMetadata>();
+
             var httpMethods = action.HttpMethods;
             if (httpMethods != null && httpMethods.Count > 0)
             {
-                actionDescriptor.MethodConstraints = new List<HttpMethodConstraint>()
-                {
-                    new HttpMethodConstraint(httpMethods)
-                };
+                constraints.Add(new HttpMethodConstraint(httpMethods));
             }
 
+            if (action.ActionConstraints != null)
+            {
+                constraints.AddRange(action.ActionConstraints);
+            }
+
+            if (controllerConstraints != null)
+            {
+                constraints.AddRange(controllerConstraints);
+            }
+
+            if (constraints.Count > 0)
+            {
+                actionDescriptor.ActionConstraints = constraints;
+            }
+        }
+
+        public void AddRouteConstraints(
+            ReflectedActionDescriptor actionDescriptor,
+            ReflectedControllerModel controller,
+            ReflectedActionModel action)
+        {
             actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
                 "controller",
                 controller.ControllerName));

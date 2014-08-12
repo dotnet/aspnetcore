@@ -119,9 +119,9 @@ namespace Microsoft.AspNet.Mvc.Description
 
         private IEnumerable<string> GetHttpMethods(ReflectedActionDescriptor action)
         {
-            if (action.MethodConstraints != null && action.MethodConstraints.Count > 0)
+            if (action.ActionConstraints != null && action.ActionConstraints.Count > 0)
             {
-                return action.MethodConstraints.SelectMany(c => c.HttpMethods);
+                return action.ActionConstraints.OfType<HttpMethodConstraint>().SelectMany(c => c.HttpMethods);
             }
             else
             {

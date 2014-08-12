@@ -5,22 +5,18 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Microsoft.AspNet.Routing;
 
 namespace Microsoft.AspNet.Mvc
 {
     public class HttpMethodConstraint : IActionConstraint
     {
+        public static readonly int HttpMethodConstraintOrder = 100;
+
         private readonly IReadOnlyList<string> _methods;
 
         // Empty collection means any method will be accepted.
-        public HttpMethodConstraint(IEnumerable<string> httpMethods)
+        public HttpMethodConstraint([NotNull] IEnumerable<string> httpMethods)
         {
-            if (httpMethods == null)
-            {
-                throw new ArgumentNullException("httpMethods");
-            }
-
             var methods = new List<string>();
 
             foreach (var method in httpMethods)
@@ -44,19 +40,19 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        public bool Accept([NotNull] RouteContext context)
+        public int Order
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException("context");
-            }
+            get { return HttpMethodConstraintOrder; }
+        }
 
+        public bool Accept([NotNull] ActionConstraintContext context)
+        {
             if (_methods.Count == 0)
             {
                 return true;
             }
 
-            var request = context.HttpContext.Request;
+            var request = context.RouteContext.HttpContext.Request;
 
             return (HttpMethods.Any(m => m.Equals(request.Method, StringComparison.Ordinal)));
         }

@@ -11,7 +11,7 @@ using Microsoft.AspNet.Routing;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class RouteDataActionConstraint : IActionConstraint
+    public class RouteDataActionConstraint
     {
         private IEqualityComparer _comparer;
 

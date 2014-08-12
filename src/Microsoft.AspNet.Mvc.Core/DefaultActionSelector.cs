@@ -9,6 +9,7 @@ using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
+using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Mvc
@@ -17,15 +18,18 @@ namespace Microsoft.AspNet.Mvc
     {
         private readonly IActionDescriptorsCollectionProvider _actionDescriptorsCollectionProvider;
         private readonly IActionSelectorDecisionTreeProvider _decisionTreeProvider;
+        private readonly INestedProviderManager<ActionConstraintProviderContext> _actionConstraintProvider;
         private ILogger _logger;
 
         public DefaultActionSelector(
             [NotNull] IActionDescriptorsCollectionProvider actionDescriptorsCollectionProvider,
             [NotNull] IActionSelectorDecisionTreeProvider decisionTreeProvider,
+            [NotNull] INestedProviderManager<ActionConstraintProviderContext> actionConstraintProvider,
             [NotNull] ILoggerFactory loggerFactory)
         {
             _actionDescriptorsCollectionProvider = actionDescriptorsCollectionProvider;
             _decisionTreeProvider = decisionTreeProvider;
+            _actionConstraintProvider = actionConstraintProvider;
             _logger = loggerFactory.Create<DefaultActionSelector>();
         }
 
@@ -36,45 +40,36 @@ namespace Microsoft.AspNet.Mvc
                 var tree = _decisionTreeProvider.DecisionTree;
                 var matchingRouteConstraints = tree.Select(context.RouteData.Values);
 
-                var matchingRouteAndMethodConstraints =
-                    matchingRouteConstraints.Where(ad =>
-                        MatchMethodConstraints(ad, context)).ToList();
-
-                var matchingRouteAndMethodAndDynamicConstraints =
-                    matchingRouteAndMethodConstraints.Where(ad =>
-                        MatchDynamicConstraints(ad, context)).ToList();
-
-                var matching = matchingRouteAndMethodAndDynamicConstraints;
-
-                var matchesWithConstraints = new List<ActionDescriptor>();
-                foreach (var match in matching)
+                var candidates = new List<ActionSelectorCandidate>();
+                foreach (var action in matchingRouteConstraints)
                 {
-                    if (match.DynamicConstraints != null && match.DynamicConstraints.Any() ||
-                        match.MethodConstraints != null && match.MethodConstraints.Any())
+                    var constraints = GetConstraints(action);
+                    candidates.Add(new ActionSelectorCandidate(action, constraints));
+                }
+
+                var matchingActionConstraints =
+                    EvaluateActionConstraints(context, candidates, startingOrder: null);
+
+                List<ActionDescriptor> matchingActions = null;
+                if (matchingActionConstraints != null)
+                {
+                    matchingActions = new List<ActionDescriptor>(matchingActionConstraints.Count);
+                    foreach (var candidate in matchingActionConstraints)
                     {
-                        matchesWithConstraints.Add(match);
+                        matchingActions.Add(candidate.Action);
                     }
                 }
 
-                // If any action that's applicable has constraints, this is considered better than 
-                // an action without.
-                if (matchesWithConstraints.Any())
-                {
-                    matching = matchesWithConstraints;
-                }
+                var finalMatches = SelectBestActions(matchingActions);
 
-                var finalMatches = SelectBestActions(matching);
-
-                if (finalMatches.Count == 0)
+                if (finalMatches == null || finalMatches.Count == 0)
                 {
                     if (_logger.IsEnabled(TraceType.Information))
                     {
                         _logger.WriteValues(new DefaultActionSelectorSelectAsyncValues()
                         {
                             ActionsMatchingRouteConstraints = matchingRouteConstraints,
-                            ActionsMatchingRouteAndMethodConstraints = matchingRouteAndMethodConstraints,
-                            ActionsMatchingRouteAndMethodAndDynamicConstraints =
-                                matchingRouteAndMethodAndDynamicConstraints,
+                            ActionsMatchingActionConstraints = matchingActions,
                             FinalMatches = finalMatches,
                         });
                     }
@@ -90,9 +85,7 @@ namespace Microsoft.AspNet.Mvc
                         _logger.WriteValues(new DefaultActionSelectorSelectAsyncValues()
                         {
                             ActionsMatchingRouteConstraints = matchingRouteConstraints,
-                            ActionsMatchingRouteAndMethodConstraints = matchingRouteAndMethodConstraints,
-                            ActionsMatchingRouteAndMethodAndDynamicConstraints = 
-                                matchingRouteAndMethodAndDynamicConstraints,
+                            ActionsMatchingActionConstraints = matchingActions,
                             FinalMatches = finalMatches,
                             SelectedAction = selectedAction
                         });
@@ -107,9 +100,7 @@ namespace Microsoft.AspNet.Mvc
                         _logger.WriteValues(new DefaultActionSelectorSelectAsyncValues()
                         {
                             ActionsMatchingRouteConstraints = matchingRouteConstraints,
-                            ActionsMatchingRouteAndMethodConstraints = matchingRouteAndMethodConstraints,
-                            ActionsMatchingRouteAndMethodAndDynamicConstraints =
-                                matchingRouteAndMethodAndDynamicConstraints,
+                            ActionsMatchingActionConstraints = matchingActions,
                             FinalMatches = finalMatches,
                         });
                     }
@@ -137,16 +128,96 @@ namespace Microsoft.AspNet.Mvc
             return actions;
         }
 
-        private bool MatchMethodConstraints(ActionDescriptor descriptor, RouteContext context)
+        private IReadOnlyList<ActionSelectorCandidate> EvaluateActionConstraints(
+            RouteContext context, 
+            IReadOnlyList<ActionSelectorCandidate> candidates, 
+            int? startingOrder)
         {
-            return descriptor.MethodConstraints == null ||
-                    descriptor.MethodConstraints.All(c => c.Accept(context));
-        }
+            // Find the next group of constraints to process. This will be the lowest value of 
+            // order that is higher than startingOrder.
+            int? order = null;
+            foreach (var candidate in candidates)
+            {
+                if (candidate.Constraints != null)
+                {
+                    foreach (var constraint in candidate.Constraints)
+                    {
+                        if ((startingOrder == null || constraint.Order > startingOrder) &&
+                            (order == null || constraint.Order < order))
+                        {
+                            order = constraint.Order;
+                        }
+                    }
+                }
+            }
 
-        private bool MatchDynamicConstraints(ActionDescriptor descriptor, RouteContext context)
-        {
-            return descriptor.DynamicConstraints == null ||
-                    descriptor.DynamicConstraints.All(c => c.Accept(context));
+            // If we don't find a 'next' then there's nothing left to do.
+            if (order == null)
+            {
+                return candidates;
+            }
+
+            // Since we have a constraint to process, bisect the set of actions into those with and without a
+            // constraint for the 'current order'.
+            var actionsWithConstraint = new List<ActionSelectorCandidate>();
+            var actionsWithoutConstraint = new List<ActionSelectorCandidate>();
+
+            var constraintContext = new ActionConstraintContext();
+            constraintContext.Candidates = candidates;
+            constraintContext.RouteContext = context;
+
+            foreach (var candidate in candidates)
+            {
+                var isMatch = true;
+                var foundMatchingConstraint = false;
+
+                if (candidate.Constraints != null)
+                {
+                    constraintContext.CurrentCandidate = candidate;
+                    foreach (var constraint in candidate.Constraints)
+                    {
+                        if (constraint.Order == order)
+                        {
+                            foundMatchingConstraint = true;
+
+                            if (!constraint.Accept(constraintContext))
+                            {
+                                isMatch = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (isMatch && foundMatchingConstraint)
+                {
+                    actionsWithConstraint.Add(candidate);
+                }
+                else if (isMatch)
+                {
+                    actionsWithoutConstraint.Add(candidate);
+                }
+            }
+
+            // If we have matches with constraints, those are 'better' so try to keep processing those
+            if (actionsWithConstraint.Count > 0)
+            {
+                var matches = EvaluateActionConstraints(context, actionsWithConstraint, order);
+                if (matches?.Count > 0)
+                {
+                    return matches;
+                }
+            }
+
+            // If the set of matches with constraints can't work, then process the set without constraints.
+            if (actionsWithoutConstraint.Count == 0)
+            {
+                return null;
+            }
+            else
+            {
+                return EvaluateActionConstraints(context, actionsWithoutConstraint, order);
+            }
         }
 
         // This method attempts to ensure that the route that's about to generate a link will generate a link
@@ -183,6 +254,25 @@ namespace Microsoft.AspNet.Mvc
             }
 
             return descriptors.Items;
+        }
+
+        private IReadOnlyList<IActionConstraint> GetConstraints(ActionDescriptor action)
+        {
+            if (action.ActionConstraints == null || action.ActionConstraints.Count == 0)
+            {
+                return null;
+            }
+
+            var items = action.ActionConstraints.Select(c => new ActionConstraintItem(c)).ToList();
+            var context = new ActionConstraintProviderContext(action, items);
+
+            _actionConstraintProvider.Invoke(context);
+
+            return 
+                context.Results
+                .Where(item => item.Constraint != null)
+                .Select(item => item.Constraint)
+                .ToList();
         }
     }
 }

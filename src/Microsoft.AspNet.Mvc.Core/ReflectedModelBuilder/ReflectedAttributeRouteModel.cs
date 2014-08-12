@@ -19,10 +19,13 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
 
         public ReflectedAttributeRouteModel([NotNull] IRouteTemplateProvider templateProvider)
         {
+            Attribute = templateProvider;
             Template = templateProvider.Template;
             Order = templateProvider.Order;
             Name = templateProvider.Name;
         }
+
+        public IRouteTemplateProvider Attribute { get; private set; }
 
         public string Template { get; set; }
 

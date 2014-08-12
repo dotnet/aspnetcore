@@ -39,6 +39,11 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Singleton<IActionSelectorDecisionTreeProvider, ActionSelectorDecisionTreeProvider>();
             yield return describe.Scoped<IActionSelector, DefaultActionSelector>();
 
+            // This provider needs access to the per-request services, but might be used many times for a given
+            // request.
+            yield return describe.Scoped<INestedProvider<ActionConstraintProviderContext>, 
+                DefaultActionConstraintProvider>();
+
             yield return describe.Transient<IActionInvokerFactory, ActionInvokerFactory>();
             yield return describe.Transient<IControllerAssemblyProvider, DefaultControllerAssemblyProvider>();
             yield return describe.Transient<IActionDiscoveryConventions, DefaultActionDiscoveryConventions>();
