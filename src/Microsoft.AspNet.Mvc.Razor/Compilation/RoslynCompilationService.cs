@@ -29,6 +29,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         private readonly IApplicationEnvironment _environment;
         private readonly IAssemblyLoaderEngine _loader;
 
+        private readonly Lazy<List<MetadataReference>> _applicationReferences;
+
         /// <summary>
         /// Initalizes a new instance of the <see cref="RoslynCompilationService"/> class.
         /// </summary>
@@ -42,6 +44,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             _environment = environment;
             _loader = loaderEngine;
             _libraryManager = libraryManager;
+            _applicationReferences = new Lazy<List<MetadataReference>>(GetApplicationReferences);
         }
 
         /// <inheritdoc />
@@ -51,7 +54,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             var syntaxTrees = new[] { CSharpSyntaxTree.ParseText(sourceText, path: fileInfo.PhysicalPath) };
             var targetFramework = _environment.TargetFramework;
 
-            var references = GetApplicationReferences();
+            var references = _applicationReferences.Value;
 
             var assemblyName = Path.GetRandomFileName();
 
@@ -116,24 +119,49 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 
             foreach (var metadataReference in export.MetadataReferences)
             {
-                var fileMetadataReference = metadataReference as IMetadataFileReference;
-
-                if (fileMetadataReference != null)
-                {
-                    references.Add(CreateMetadataFileReference(fileMetadataReference.Path));
-                }
-                else
-                {
-                    var roslynReference = metadataReference as IRoslynMetadataReference;
-
-                    if (roslynReference != null)
-                    {
-                        references.Add(roslynReference.MetadataReference);
-                    }
-                }
+                references.Add(ConvertMetadataReference(metadataReference));
             }
 
             return references;
+        }
+
+        private MetadataReference ConvertMetadataReference(IMetadataReference metadataReference)
+        {
+            var roslynReference = metadataReference as IRoslynMetadataReference;
+
+            if (roslynReference != null)
+            {
+                return roslynReference.MetadataReference;
+            }
+
+            var embeddedReference = metadataReference as IMetadataEmbeddedReference;
+
+            if (embeddedReference != null)
+            {
+                return new MetadataImageReference(embeddedReference.Contents);
+            }
+
+            var fileMetadataReference = metadataReference as IMetadataFileReference;
+
+            if (fileMetadataReference != null)
+            {
+                return CreateMetadataFileReference(fileMetadataReference.Path);
+            }
+
+            var projectReference = metadataReference as IMetadataProjectReference;
+            if (projectReference != null)
+            {
+                using (var ms = new MemoryStream())
+                {
+                    projectReference.EmitReferenceAssembly(ms);
+
+                    ms.Seek(0, SeekOrigin.Begin);
+
+                    return new MetadataImageReference(ms);
+                }
+            }
+
+            throw new NotSupportedException();
         }
 
         private MetadataReference CreateMetadataFileReference(string path)
