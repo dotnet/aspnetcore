@@ -8,6 +8,9 @@ using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
+    /// <summary>
+    /// A context that contains operating information for model binding and validation.
+    /// </summary>
     public class ModelBindingContext
     {
         private string _modelName;
@@ -15,12 +18,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private Dictionary<string, ModelMetadata> _propertyMetadata;
         private ModelValidationNode _validationNode;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ModelBindingContext"/> class.
+        /// </summary>
         public ModelBindingContext()
         {
         }
 
-        // copies certain values that won't change between parent and child objects,
-        // e.g. ValueProvider, ModelState
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ModelBindingContext"/> class using the
+        /// <param name="bindingContext" />.
+        // </summary>
+        /// <remarks>
+        /// This constructor copies certain values that won't change between parent and child objects,
+        /// e.g. ValueProvider, ModelState
+        /// </remarks>
         public ModelBindingContext(ModelBindingContext bindingContext)
         {
             if (bindingContext != null)
@@ -34,6 +46,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
+        /// <summary>
+        /// Gets or sets the model associated with this context.
+        /// </summary>
+        /// <remarks>
+        /// The <see cref="ModelMetadata"/> property must be set to access this property.
+        /// </remarks>
         public object Model
         {
             get
@@ -48,8 +66,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
+        /// <summary>
+        /// Gets or sets the metadata for the model associated with this context.
+        /// </summary>
         public ModelMetadata ModelMetadata { get; set; }
 
+        /// <summary>
+        /// Gets or sets the name of the model. This property is used as a key for looking up values in
+        /// <see cref="IValueProvider"/> during model binding.
+        /// </summary>
         public string ModelName
         {
             get
@@ -63,6 +88,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             set { _modelName = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="ModelStateDictionary"/> used to capture <see cref="ModelState"/> values
+        /// for properties in the object graph of the model when binding.
+        /// </summary>
         public ModelStateDictionary ModelState
         {
             get
@@ -76,6 +105,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             set { _modelState = value; }
         }
 
+        /// <summary>
+        /// Gets the type of the model.
+        /// </summary>
+        /// <remarks>
+        /// The <see cref="ModelMetadata"/> property must be set to access this property.
+        /// </remarks>
         public Type ModelType
         {
             get
@@ -85,34 +120,43 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value that indicates whether the binder should use an empty prefix to look up
+        /// values in <see cref="IValueProvider"/> when no values are found using the
+        /// <see cref="ModelName"/> prefix.
+        /// </summary>
         public bool FallbackToEmptyPrefix { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="HttpContext"/> for the current request.
+        /// </summary>
         public HttpContext HttpContext { get; set; }
 
-        public IValueProvider ValueProvider
-        {
-            get;
-            set;
-        }
+        /// <summary>
+        /// Gets or sets the <see cref="IValueProvider"/> associated with this context.
+        /// </summary>
+        public IValueProvider ValueProvider { get; set; }
 
-        public IModelBinder ModelBinder
-        {
-            get;
-            set;
-        }
+        /// <summary>
+        /// Gets or sets the <see cref="IModelBinder"/> associated with this context.
+        /// </summary>
+        public IModelBinder ModelBinder { get; set; }
 
-        public IModelMetadataProvider MetadataProvider
-        {
-            get;
-            set;
-        }
+        /// <summary>
+        /// Gets or sets the <see cref="IModelMetadataProvider"/> associated with this context.
+        /// </summary>
+        public IModelMetadataProvider MetadataProvider { get; set; }
 
-        public IEnumerable<IModelValidatorProvider> ValidatorProviders
-        {
-            get;
-            set;
-        }
+        /// <summary>
+        /// Gets or sets the sequence of <see cref="IModelValidatorProvider"/> instances used for model validation
+        /// with this context.
+        /// </summary>
+        public IEnumerable<IModelValidatorProvider> ValidatorProviders { get; set; }
 
+        /// <summary>
+        /// Gets a dictionary of property name to <see cref="ModelMetadata"/> instances for
+        /// <see cref="ModelMetadata.Properties"/>
+        /// </summary>
         public IDictionary<string, ModelMetadata> PropertyMetadata
         {
             get
@@ -128,6 +172,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="ModelValidationNode"/> instance used as a container for
+        /// validation information.
+        /// </summary>
         public ModelValidationNode ValidationNode
         {
             get
