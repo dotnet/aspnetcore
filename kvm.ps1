@@ -22,6 +22,10 @@ $globalKrePath = $env:ProgramFiles + "\KRE"
 $globalKrePackages = $globalKrePath + "\packages"
 $feed = $env:KRE_NUGET_API_URL
 
+function String-IsEmptyOrWhitespace([string]$str) {
+     return [string]::IsNullOrEmpty($str) -or $str.Trim().length -eq 0 
+}
+
 if (!$feed)
 {
     $feed = "https://www.myget.org/F/aspnetvnext/api/v2";
@@ -31,7 +35,7 @@ $scriptPath = $myInvocation.MyCommand.Definition
 
 function Kvm-Help {
 @"
-K Runtime Environment Version Manager - Build 10002
+K Runtime Environment Version Manager - Build 10010
 
 USAGE: kvm <command> [options]
 
@@ -66,13 +70,16 @@ kvm alias
   list KRE aliases which have been defined
 
 kvm alias <alias>
-  display value of named alias
+  display value of the specified alias
 
 kvm alias <alias> <semver>|<alias> [-x86][-x64] [-svr50][-svrc50]
   <alias>            The name of the alias to set
   <semver>|<alias>   The KRE version to set the alias to. Alternatively use the version of the specified alias
 
-"@ | Write-Host
+kvm unalias <alias>
+  remove the specified alias
+
+"@ -replace "`n","`r`n" | Write-Host
 }
 
 function Kvm-Global-Setup {
@@ -218,6 +225,7 @@ param(
     md $kreFolder -Force | Out-Null
     Write-Host "Installing to $kreFolder"
     mv "$kreTempDownload\*" $kreFolder
+    Remove-Item "$kreTempDownload" -Force | Out-Null
 }
 
 function Do-Kvm-Unpack {
@@ -271,7 +279,7 @@ param(
 
     Do-Kvm-Download $kreFullName $globalKrePackages
     Kvm-Use $versionOrAlias
-    if (![string]::IsNullOrWhiteSpace($alias)) {
+    if (!$(String-IsEmptyOrWhitespace($alias))) {
         Kvm-Alias-Set $alias $versionOrAlias
     }
 }
@@ -308,11 +316,12 @@ param(
             md $kreFolder -Force | Out-Null
             Write-Host "Installing to $kreFolder"
             mv "$tempUnpackFolder\*" $kreFolder
+            Remove-Item "$tempUnpackFolder" -Force | Out-Null
         }
 
         $packageVersion = Package-Version $kreFullName
         Kvm-Use $packageVersion
-        if (![string]::IsNullOrWhiteSpace($alias)) {
+        if (!$(String-IsEmptyOrWhitespace($alias))) {
             Kvm-Alias-Set $alias $packageVersion
         }
     }
@@ -325,7 +334,7 @@ param(
 
         Do-Kvm-Download $kreFullName $userKrePackages
         Kvm-Use $versionOrAlias
-        if (![string]::IsNullOrWhiteSpace($alias)) {
+        if (!$(String-IsEmptyOrWhitespace($alias))) {
             Kvm-Alias-Set $alias $versionOrAlias
         }
     }
@@ -334,19 +343,26 @@ param(
 function Kvm-List {
   $kreHome = $env:KRE_HOME
   if (!$kreHome) {
-    $kreHome = $env:ProgramFiles + "\KRE;%USERPROFILE%\.kre"
+    $kreHome = "$globalKrePath;$userKrePath"
   }
+
+  md ($userKrePath + "\alias\") -Force | Out-Null
+  $aliases = Get-ChildItem ($userKrePath + "\alias\") | Select @{label='Alias';expression={$_.BaseName}}, @{label='Name';expression={Get-Content $_.FullName }}
+
   $items = @()
   foreach($portion in $kreHome.Split(';')) {
     $path = [System.Environment]::ExpandEnvironmentVariables($portion)
     if (Test-Path("$path\packages")) {
-      $items += Get-ChildItem ("$path\packages\KRE-*") | List-Parts
+      $items += Get-ChildItem ("$path\packages\KRE-*") | List-Parts $aliases
     }
   }
-  $items | Sort-Object Version, Runtime, Architecture | Format-Table -AutoSize -Property @{name="Active";expression={$_.Active};alignment="center"}, "Version", "Runtime", "Architecture", "Location"
+
+  $items | Sort-Object Version, Runtime, Architecture, Alias | Format-Table -AutoSize -Property @{name="Active";expression={$_.Active};alignment="center"}, "Version", "Runtime", "Architecture", "Location", "Alias"
 }
 
 filter List-Parts {
+  param($aliases)
+
   $hasBin = Test-Path($_.FullName+"\bin")
   if (!$hasBin) {
     return
@@ -357,14 +373,26 @@ filter List-Parts {
       $active = $true
     }
   }
+  
+  $fullAlias=""
+  $delim=""
+
+  foreach($alias in $aliases){
+    if($_.Name.Split('\', 2).Contains($alias.Name)){
+        $fullAlias += $delim + $alias.Alias
+        $delim = ", "
+    }
+  }
+
   $parts1 = $_.Name.Split('.', 2)
   $parts2 = $parts1[0].Split('-', 3)
   return New-Object PSObject -Property @{
-    Active = if($active){"*"}else{""}
+    Active = if ($active) { "*" } else { "" }
     Version = $parts1[1]
     Runtime = $parts2[1]
     Architecture = $parts2[2]
     Location = $_.Parent.FullName
+    Alias = $fullAlias
   }
 }
 
@@ -474,10 +502,24 @@ param(
   [string] $value
 )
     $kreFullName = Requested-VersionOrAlias $value
-
-    Write-Host "Setting alias '$name' to '$kreFullName'"
+    $aliasFilePath = $userKrePath + "\alias\" + $name + ".txt"
+    $action = if (Test-Path $aliasFilePath) { "Updating" } else { "Setting" }
+    Write-Host "$action alias '$name' to '$kreFullName'"
     md ($userKrePath + "\alias\") -Force | Out-Null
-    $kreFullName | Out-File ($userKrePath + "\alias\" + $name + ".txt") ascii
+    $kreFullName | Out-File ($aliasFilePath) ascii
+}
+
+function Kvm-Unalias {
+param(
+  [string] $name
+)
+    $aliasPath=$userKrePath + "\alias\" + $name + ".txt"
+    if (Test-Path -literalPath "$aliasPath") {
+        Write-Host "Removing alias $name"
+        Remove-Item -literalPath $aliasPath
+    } else {
+        Write-Host "Cannot remove alias, '$name' is not a valid alias name"
+    }
 }
 
 function Locate-KreBinFromFullName() {
@@ -486,7 +528,7 @@ param(
 )
   $kreHome = $env:KRE_HOME
   if (!$kreHome) {
-    $kreHome = $env:ProgramFiles + ";%USERPROFILE%\.kre"
+    $kreHome = "$globalKrePath;$userKrePath"
   }
   foreach($portion in $kreHome.Split(';')) {
     $path = [System.Environment]::ExpandEnvironmentVariables($portion)
@@ -623,8 +665,9 @@ function Requested-Switches() {
       "alias 0"           {Kvm-Alias-List}
       "alias 1"           {Kvm-Alias-Get $args[0]}
       "alias 2"           {Kvm-Alias-Set $args[0] $args[1]}
-      "help 0"              {Kvm-Help}
-      " 0"              {Kvm-Help}
+      "unalias 1"         {Kvm-Unalias $args[0]}
+      "help 0"            {Kvm-Help}
+      " 0"                {Kvm-Help}
       default             {Write-Host 'Unknown command'; Kvm-Help;}
     }
    }

@@ -169,7 +169,7 @@ kvm()
     case $1 in
         "help" )
             echo ""
-            echo "K Runtime Environment Version Manager - Build 10002"
+            echo "K Runtime Environment Version Manager - Build 10010"
             echo ""
             echo "USAGE: kvm <command> [options]"
             echo ""
@@ -198,12 +198,14 @@ kvm()
             echo "list KRE aliases which have been defined"
             echo ""
             echo "kvm alias <alias>"
-            echo "display value of named alias"
+            echo "display value of the specified alias"
             echo ""
             echo "kvm alias <alias> <semver>"
             echo "<alias>            The name of the alias to set"
             echo "<semver>|<alias>   The KRE version to set the alias to. Alternatively use the version of the specified alias"
             echo ""
+            echo "kvm unalias <alias>"
+            echo "remove the specified alias"
             echo ""
         ;;
 
@@ -339,11 +341,22 @@ kvm()
 
             local kreFullName=$(_kvm_requested_version_or_alias "$3")
 
-            [[ ! -d "$KRE_USER_PACKAGES/$kreFullName" ]] && echo "$kreFullName is not an installed KRE version." && return 1
+            [[ ! -d "$KRE_USER_PACKAGES/$kreFullName" ]] && echo "$kreFullName is not an installed KRE version" && return 1
 
-            echo "Setting alias '$name' to '$kreFullName'"
-
+            local action="Setting"
+            [[ -e "$KRE_USER_HOME/alias/$name.alias" ]] && action="Updating"
+            echo "$action alias '$name' to '$kreFullName'"
             echo "$kreFullName" > "$KRE_USER_HOME/alias/$name.alias"
+        ;;
+        
+        "unalias" )
+            [[ $# -ne 2 ]] && kvm help && return
+            
+            local name=$2
+            local aliasPath="$KRE_USER_HOME/alias/$name.alias"
+            [[ ! -e  "$aliasPath" ]] && echo "Cannot remove alias, '$name' is not a valid alias name" && return 1
+            echo "Removing alias $name"
+            rm "$aliasPath" >> /dev/null 2>&1
         ;;
 
         "list" )
@@ -357,15 +370,37 @@ kvm()
                 local searchGlob=$(_kvm_requested_version_or_alias "$versionOrAlias")
             fi
             echo ""
-            local formatString="%-6s %-20s %-7s %-12s %s\n"
-            printf "$formatString" "Active" "Version" "Runtime" "Architecture" "Location"
-            printf "$formatString" "------" "-------" "-------" "------------" "--------"
+            
+            local arr=()            
+            local i=0
+            local format="%-20s %s\n"
+            for _kvm_file in $(find "$KRE_USER_HOME/alias" -name *.alias); do
+                arr[$i]="$(basename $_kvm_file | sed 's/.alias//')/$(cat $_kvm_file)"
+                let i+=1
+            done
+    
+            local formatString="%-6s %-20s %-7s %-12s %-20s %s\n"
+            printf "$formatString" "Active" "Version" "Runtime" "Architecture" "Location" "Alias"
+            printf "$formatString" "------" "-------" "-------" "------------" "--------" "-----"
+            
+            local formattedHome=`(echo $KRE_USER_PACKAGES | sed s=$HOME=~=g)`
             for f in $(find $KRE_USER_PACKAGES/* -name "$searchGlob" -type d -prune -exec basename {} \;); do
                 local active=""
                 [[ $PATH == *"$KRE_USER_PACKAGES/$f/bin"* ]] && local active="  *"
                 local pkgName=$(_kvm_package_runtime "$f")
                 local pkgVersion=$(_kvm_package_version "$f")
-                printf "$formatString" "$active" "$pkgVersion" "$pkgName" "x86" "$KRE_USER_PACKAGES"
+
+                local alias=""
+                local delim=""
+                for i in "${arr[@]}"; do    
+                    temp="KRE-$pkgName-x86.$pkgVersion"
+                    if [[ ${i#*/} == $temp ]]; then
+                        alias+="$delim${i%/*}"
+                        delim=", "
+                    fi
+                done
+
+                printf "$formatString" "$active" "$pkgVersion" "$pkgName" "x86" "$formattedHome" "$alias"
                 [[ $# == 2 ]] && echo "" &&  return 0
             done
 
@@ -377,6 +412,8 @@ kvm()
             echo "Unknown command $1"
             return 1
     esac
+    
+    return 0
 }
 
 kvm list default >/dev/null && kvm use default >/dev/null || true
