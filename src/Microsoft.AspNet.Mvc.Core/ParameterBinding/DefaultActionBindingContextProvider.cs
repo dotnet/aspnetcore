@@ -13,20 +13,20 @@ namespace Microsoft.AspNet.Mvc
         private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly ICompositeModelBinder _compositeModelBinder;
         private readonly IValueProviderFactory _compositeValueProviderFactory;
-        private readonly IInputFormatterProvider _inputFormatterProvider;
+        private readonly IInputFormatterSelector _inputFormatterSelector;
         private readonly IEnumerable<IModelValidatorProvider> _validatorProviders;
         private Tuple<ActionContext, ActionBindingContext> _bindingContext;
 
         public DefaultActionBindingContextProvider(IModelMetadataProvider modelMetadataProvider,
                                                    ICompositeModelBinder compositeModelBinder,
                                                    ICompositeValueProviderFactory compositeValueProviderFactory,
-                                                   IInputFormatterProvider inputFormatterProvider,
+                                                   IInputFormatterSelector inputFormatterProvider,
                                                    IEnumerable<IModelValidatorProvider> validatorProviders)
         {
             _modelMetadataProvider = modelMetadataProvider;
             _compositeModelBinder = compositeModelBinder;
             _compositeValueProviderFactory = compositeValueProviderFactory;
-            _inputFormatterProvider = inputFormatterProvider;
+            _inputFormatterSelector = inputFormatterProvider;
             _validatorProviders = validatorProviders;
         }
 
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Mvc
                 _modelMetadataProvider,
                 _compositeModelBinder,
                 valueProvider,
-                _inputFormatterProvider,
+                _inputFormatterSelector,
                 _validatorProviders);
 
             _bindingContext = new Tuple<ActionContext, ActionBindingContext>(actionContext, context);

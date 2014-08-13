@@ -577,7 +577,7 @@ namespace Microsoft.AspNet.Mvc.Test
                                                           metadataProvider,
                                                           binder.Object,
                                                           valueProvider,
-                                                          Mock.Of<IInputFormatterProvider>(),
+                                                          Mock.Of<IInputFormatterSelector>(),
                                                           Enumerable.Empty<IModelValidatorProvider>());
             var bindingContextProvider = new Mock<IActionBindingContextProvider>();
             bindingContextProvider.Setup(b => b.GetActionBindingContextAsync(actionContext))
@@ -618,7 +618,7 @@ namespace Microsoft.AspNet.Mvc.Test
                                                           metadataProvider,
                                                           binder.Object,
                                                           valueProvider,
-                                                          Mock.Of<IInputFormatterProvider>(),
+                                                          Mock.Of<IInputFormatterSelector>(),
                                                           Enumerable.Empty<IModelValidatorProvider>());
             var bindingContextProvider = new Mock<IActionBindingContextProvider>();
             bindingContextProvider.Setup(b => b.GetActionBindingContextAsync(actionContext))
@@ -659,7 +659,7 @@ namespace Microsoft.AspNet.Mvc.Test
                                                           metadataProvider,
                                                           binder.Object,
                                                           Mock.Of<IValueProvider>(),
-                                                          Mock.Of<IInputFormatterProvider>(),
+                                                          Mock.Of<IInputFormatterSelector>(),
                                                           Enumerable.Empty<IModelValidatorProvider>());
             var bindingContextProvider = new Mock<IActionBindingContextProvider>();
             bindingContextProvider.Setup(b => b.GetActionBindingContextAsync(actionContext))

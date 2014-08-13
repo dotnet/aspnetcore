@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Mvc
 
         /// <summary>
         /// Get a list of the <see cref="InputFormatterDescriptor" /> which are used to construct
-        /// a list of <see cref="IInputFormatter"/> by <see cref="IInputFormatterProvider"/>.
+        /// a list of <see cref="IInputFormatter"/> by <see cref="IInputFormattersProvider"/>.
         /// </summary>
         public List<InputFormatterDescriptor> InputFormatters { get; private set; }
 

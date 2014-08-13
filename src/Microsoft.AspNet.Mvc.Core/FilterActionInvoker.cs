@@ -240,16 +240,10 @@ namespace Microsoft.AspNet.Mvc
                     var modelMetadata = metadataProvider.GetMetadataForType(
                         modelAccessor: null,
                         modelType: parameterType);
-                    var providerContext = new InputFormatterProviderContext(
-                        actionBindingContext.ActionContext,
-                        modelMetadata,
-                        modelState);
-
-                    var inputFormatter = actionBindingContext.InputFormatterProvider.GetInputFormatter(
-                        providerContext);
-
                     var formatterContext = new InputFormatterContext(actionBindingContext.ActionContext,
                                                                      modelMetadata.ModelType);
+                    var inputFormatter = actionBindingContext.InputFormatterSelector.SelectFormatter(
+                        formatterContext);
                     parameterValues[parameter.Name] = await inputFormatter.ReadAsync(formatterContext);
                 }
                 else

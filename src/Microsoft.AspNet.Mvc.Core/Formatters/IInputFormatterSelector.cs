@@ -9,8 +9,8 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public interface IInputFormatterProvider
+    public interface IInputFormatterSelector
     {
-        IInputFormatter GetInputFormatter(InputFormatterProviderContext context);
+        IInputFormatter SelectFormatter(InputFormatterContext context);
     }
 }

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -39,6 +40,12 @@ namespace Microsoft.AspNet.Mvc
         public ModelStateDictionary ModelState { get; private set; }
 
         public ActionDescriptor ActionDescriptor { get; private set; }
+        
+        /// <summary>
+        /// Input formatters associated with this context. 
+        /// The formatters are populated only after IInputFormattersProvider runs.
+        /// </summary>
+        public IList<IInputFormatter> InputFormatters { get; set; }
 
         /// <summary>
         /// The controller is available only after the controller factory runs.

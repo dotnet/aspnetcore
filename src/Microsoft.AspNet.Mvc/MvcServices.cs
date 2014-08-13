@@ -64,8 +64,8 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Transient<IModelMetadataProvider, DataAnnotationsModelMetadataProvider>();
             yield return describe.Scoped<IActionBindingContextProvider, DefaultActionBindingContextProvider>();
 
-            yield return describe.Transient<IInputFormatterProvider, TempInputFormatterProvider>();
-            yield return describe.Transient<IInputFormattersProvider, DefaultInputFormattersProvider>();
+            yield return describe.Transient<IInputFormatterSelector, DefaultInputFormatterSelector>();
+            yield return describe.Scoped<IInputFormattersProvider, DefaultInputFormattersProvider>();
 
             yield return describe.Transient<IModelBinderProvider, DefaultModelBindersProvider>();
             yield return describe.Scoped<ICompositeModelBinder, CompositeModelBinder>();

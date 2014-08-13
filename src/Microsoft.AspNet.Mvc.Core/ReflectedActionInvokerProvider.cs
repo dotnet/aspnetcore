@@ -10,14 +10,17 @@ namespace Microsoft.AspNet.Mvc
     {
         private readonly IControllerFactory _controllerFactory;
         private readonly IActionBindingContextProvider _bindingProvider;
+        private readonly IInputFormattersProvider _inputFormattersProvider;
         private readonly INestedProviderManager<FilterProviderContext> _filterProvider;
 
         public ReflectedActionInvokerProvider(IControllerFactory controllerFactory,
                                               IActionBindingContextProvider bindingProvider,
+                                              IInputFormattersProvider inputFormattersProvider,
                                               INestedProviderManager<FilterProviderContext> filterProvider)
         {
             _controllerFactory = controllerFactory;
             _bindingProvider = bindingProvider;
+            _inputFormattersProvider = inputFormattersProvider;
             _filterProvider = filterProvider;
         }
 
@@ -37,7 +40,8 @@ namespace Microsoft.AspNet.Mvc
                                     _bindingProvider,
                                     _filterProvider,
                                     _controllerFactory,
-                                    actionDescriptor);
+                                    actionDescriptor,
+                                    _inputFormattersProvider);
             }
 
             callNext();

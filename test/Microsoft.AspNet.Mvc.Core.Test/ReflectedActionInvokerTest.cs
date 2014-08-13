@@ -1329,13 +1329,16 @@ namespace Microsoft.AspNet.Mvc
                 .Setup(fp => fp.Invoke(It.IsAny<FilterProviderContext>()))
                 .Callback<FilterProviderContext>(
                     context => context.Results.AddRange(filters.Select(f => new FilterItem(null, f))));
-
+            var inputFormattersProvider = new Mock<IInputFormattersProvider>();
+            inputFormattersProvider.SetupGet(o => o.InputFormatters)
+                                            .Returns(new List<IInputFormatter>());
             var invoker = new ReflectedActionInvoker(
                 actionContext,
                 actionBindingContextProvider.Object,
                 filterProvider.Object,
                 controllerFactory.Object,
-                actionDescriptor);
+                actionDescriptor,
+                inputFormattersProvider.Object);
 
             return invoker;
         }
@@ -1366,18 +1369,21 @@ namespace Microsoft.AspNet.Mvc
                                                           Mock.Of<IModelMetadataProvider>(),
                                                           binder.Object,
                                                           Mock.Of<IValueProvider>(),
-                                                          Mock.Of<IInputFormatterProvider>(),
+                                                          Mock.Of<IInputFormatterSelector>(),
                                                           Enumerable.Empty<IModelValidatorProvider>());
 
             var actionBindingContextProvider = new Mock<IActionBindingContextProvider>();
             actionBindingContextProvider.Setup(p => p.GetActionBindingContextAsync(It.IsAny<ActionContext>()))
                                         .Returns(Task.FromResult(bindingContext));
-
+            var inputFormattersProvider = new Mock<IInputFormattersProvider>();
+            inputFormattersProvider.SetupGet(o => o.InputFormatters)
+                                            .Returns(new List<IInputFormatter>());
             var invoker = new ReflectedActionInvoker(actionContext,
                                                      actionBindingContextProvider.Object,
                                                      Mock.Of<INestedProviderManager<FilterProviderContext>>(),
                                                      Mock.Of<IControllerFactory>(),
-                                                     actionDescriptor);
+                                                     actionDescriptor,
+                                                     inputFormattersProvider.Object);
 
             var modelStateDictionary = new ModelStateDictionary();
 
@@ -1422,18 +1428,21 @@ namespace Microsoft.AspNet.Mvc
                                                           Mock.Of<IModelMetadataProvider>(),
                                                           binder.Object,
                                                           Mock.Of<IValueProvider>(),
-                                                          Mock.Of<IInputFormatterProvider>(),
+                                                          Mock.Of<IInputFormatterSelector>(),
                                                           Enumerable.Empty<IModelValidatorProvider>());
 
             var actionBindingContextProvider = new Mock<IActionBindingContextProvider>();
             actionBindingContextProvider.Setup(p => p.GetActionBindingContextAsync(It.IsAny<ActionContext>()))
                                         .Returns(Task.FromResult(bindingContext));
-
+            var inputFormattersProvider = new Mock<IInputFormattersProvider>();
+            inputFormattersProvider.SetupGet(o => o.InputFormatters)
+                                            .Returns(new List<IInputFormatter>());
             var invoker = new ReflectedActionInvoker(actionContext,
                                                      actionBindingContextProvider.Object,
                                                      Mock.Of<INestedProviderManager<FilterProviderContext>>(),
                                                      Mock.Of<IControllerFactory>(),
-                                                     actionDescriptor);
+                                                     actionDescriptor,
+                                                     inputFormattersProvider.Object);
 
             var modelStateDictionary = new ModelStateDictionary();
 
@@ -1479,7 +1488,7 @@ namespace Microsoft.AspNet.Mvc
                                                           Mock.Of<IModelMetadataProvider>(),
                                                           binder.Object,
                                                           Mock.Of<IValueProvider>(),
-                                                          Mock.Of<IInputFormatterProvider>(),
+                                                          Mock.Of<IInputFormatterSelector>(),
                                                           Enumerable.Empty<IModelValidatorProvider>());
 
             var actionBindingContextProvider = new Mock<IActionBindingContextProvider>();
@@ -1488,12 +1497,15 @@ namespace Microsoft.AspNet.Mvc
             var controllerFactory = new Mock<IControllerFactory>();
             controllerFactory.Setup(c => c.CreateController(It.IsAny<ActionContext>()))
                              .Returns(new TestController());
-
+            var inputFormattersProvider = new Mock<IInputFormattersProvider>();
+            inputFormattersProvider.SetupGet(o => o.InputFormatters)
+                                            .Returns(new List<IInputFormatter>());
             var invoker = new ReflectedActionInvoker(actionContext,
                                                      actionBindingContextProvider.Object,
                                                      Mock.Of<INestedProviderManager<FilterProviderContext>>(),
                                                      controllerFactory.Object,
-                                                     actionDescriptor);
+                                                     actionDescriptor,
+                                                     inputFormattersProvider.Object);
 
             // Act
             await invoker.InvokeAsync();

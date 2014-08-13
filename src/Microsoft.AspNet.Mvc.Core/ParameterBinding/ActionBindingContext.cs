@@ -12,14 +12,14 @@ namespace Microsoft.AspNet.Mvc
                                     IModelMetadataProvider metadataProvider,
                                     IModelBinder modelBinder,
                                     IValueProvider valueProvider,
-                                    IInputFormatterProvider inputFormatterProvider,
+                                    IInputFormatterSelector inputFormatterSelector,
                                     IEnumerable<IModelValidatorProvider> validatorProviders)
         {
             ActionContext = context;
             MetadataProvider = metadataProvider;
             ModelBinder = modelBinder;
             ValueProvider = valueProvider;
-            InputFormatterProvider = inputFormatterProvider;
+            InputFormatterSelector = inputFormatterSelector;
             ValidatorProviders = validatorProviders;
         }
 
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc
 
         public IValueProvider ValueProvider { get; private set; }
 
-        public IInputFormatterProvider InputFormatterProvider { get; private set; }
+        public IInputFormatterSelector InputFormatterSelector { get; private set; }
 
         public IEnumerable<IModelValidatorProvider> ValidatorProviders { get; private set; }
     }

@@ -6,31 +6,21 @@ using System.Globalization;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class TempInputFormatterProvider : IInputFormatterProvider
+    public class DefaultInputFormatterSelector : IInputFormatterSelector
     {
-        private IInputFormattersProvider _defaultFormattersProvider;
-
-        public TempInputFormatterProvider([NotNull] IInputFormattersProvider formattersProvider)
+        public IInputFormatter SelectFormatter(InputFormatterContext context)
         {
-            _defaultFormattersProvider = formattersProvider;
-        }
-
-        public IInputFormatter GetInputFormatter(InputFormatterProviderContext context)
-        {
-            var request = context.ActionContext.HttpContext.Request;
-            var formatterContext = new InputFormatterContext(context.ActionContext,
-                                                             context.Metadata.ModelType);
-
             // TODO: https://github.com/aspnet/Mvc/issues/1014
-            var formatters = _defaultFormattersProvider.InputFormatters;
+            var formatters = context.ActionContext.InputFormatters;
             foreach (var formatter in formatters)
             {
-                var formatterMatched = formatter.CanRead(formatterContext);
-                if (formatterMatched)
+                if (formatter.CanRead(context))
                 {
                     return formatter;
                 }
             }
+
+            var request = context.ActionContext.HttpContext.Request;
 
             // TODO: https://github.com/aspnet/Mvc/issues/458
             throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
