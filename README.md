@@ -6,7 +6,7 @@ The Home repository is the starting point for people to learn about ASP.NET vNex
 
 These products are actively developed by the ASP.NET team assigned to the Microsoft Open Tech Hub and in collaboration with a community of open source developers. Together we are dedicated to creating the best possible platform for web development.
 
-The samples provided are designed to show some of the features of the new framework as well as setting up a sandbox for you to try out some of the new features. The NuGet.config file in the repo points to a MyGet feed (https://www.myget.org/F/aspnetvnext/) that has all the packages being developed. The feed is updated every time a full build succeeds.
+The samples provided are designed to show some of the features of the new framework as well as setting up a sandbox for you to try out some of the new features. The NuGet.config file in the repo points to a MyGet feed (https://www.myget.org/F/aspnetmaster/) that has all the packages being developed. The feed is updated every time a full build succeeds.
 
 
 # Minimum Requirements
@@ -38,7 +38,7 @@ Mono and KVM (K Version manager) required to develop & run next generation ASP.N
  * Install [Homebrew](http://brew.sh) by running the following command. If you already have Homebrew installed skip this step. 
 ```ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"```
  * Run command `brew tap aspnet/k` to tap the aspnet vnext related git repositories. 
- * Run command `brew install kvm` to install KVM. This also automatically install the latest KRE package from https://www.myget.org/f/aspnetvnext/api/v2 feed.
+ * Run command `brew install kvm` to install KVM. This also automatically install the latest KRE package from https://www.myget.org/f/aspnetmaster/api/v2 feed.
 
 Now you are set for developing next general ASP.NET applications on OSX. A few things to note:
  * If you would like to use a different KRE version for your development, you can install the desired version using KVM. See [KVM page](https://github.com/aspnet/Home/wiki/version-manager) for more information. 
@@ -56,7 +56,7 @@ This downloads KVM from this repository and puts it on your machine. Alternative
  * ```sh kvminstall.sh && source ~/.kre/kvm/kvm.sh``` on OSX/Linux
 
 This command will setup your environment, getting it ready to install a version of the runtime. It adds KVM to your path and puts it in your user profile. Once you have KVM then you need to get a version of the runtime:
-* Execute ```kvm install 0.1-alpha-build-0446```. This command will download the named version of the KRE and put it on your user profile ready to use. You can get the latest version by running ```kvm upgrade``` but 0446 was the last version explicitly tested. see the [KVM page](https://github.com/aspnet/Home/wiki/version-manager) for more information on KVM.
+* Execute ```kvm install 1.0.0-alpha3```. This command will download the named version of the KRE and put it on your user profile ready to use. You can get the latest version by running ```kvm upgrade``` but 0446 was the last version explicitly tested. see the [KVM page](https://github.com/aspnet/Home/wiki/version-manager) for more information on KVM.
 * Navigate to samples\ConsoleApp
 * Run ```kpm restore```. This downloads the System.Console package so the app can do Console.WriteLine
 * Run ```k run```
@@ -72,7 +72,7 @@ This command will setup your environment, getting it ready to install a version 
 git clone https://github.com/aspnet/Home.git
 cd Home
 kvm setup
-kvm install 0.1-alpha-build-0446 -p
+kvm install 1.0.0-alpha3 -p
 
 cd samples\ConsoleApp
 kpm restore
@@ -108,7 +108,7 @@ The [Entropy repo](https://github.com/aspnet/Entropy) contains samples of specif
 2. Change directory to Samples\HelloWeb
 3. Run ```kpm restore```
 4. You should see a bunch of output as all the dependencies of the app are downloaded from MyGet. The K commands all operate on the app that is in the current directory.
-5. Run ```K web``` to run on WebListener. Or run ```K Kestrel``` to run on Mono. 
+5. Run ```K web``` to run on WebListener. Or run ```K kestrel``` to run on Mono. 
 6. You should see build output and a message to show the site is now started
 7. Navigate to "http://localhost:5001" or "http://localhost:5004" in case of Mono
 8. You should see the welcome page
@@ -122,8 +122,8 @@ If you can do all of the above then everything should be working. You can try ou
 
 By default when running the applications you are running against Desktop CLR (4.5), you can change that using the KVM command.
 
-1. Run ```kvm install 0.1-alpha-build-0446 -svrc50``` This command gets the latest Core CLR version of the k runtime and sets it as your default. The -svrc50 switch tells it to use Core CLR, you can use -svr50 to target desktop again.
-2. Run ```K web``` to run on WebListener. Or run ```K Kestrel``` to run on Mono. 
+1. Run ```kvm install 1.0.0-alpha3 -svrc50``` This command gets the latest Core CLR version of the k runtime and sets it as your default. The -svrc50 switch tells it to use Core CLR, you can use -svr50 to target desktop again.
+2. Run ```K web``` to run on WebListener. Or run ```K kestrel``` to run on Mono. 
 3. The first line of your output should say "Loaded Module: klr.core45.dll" instead of "Loaded Module: klr.net45.dll"
 4. The HelloWeb app should work the same as when running on Desktop CLR.
 
