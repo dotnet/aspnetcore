@@ -6,44 +6,48 @@ use namespace='System'
 use namespace='System.IO'
 use namespace='System.Collections.Generic'
 use namespace='System.Net'
+use namespace='System.Linq'
 use namespace='System.Text.RegularExpressions'
 use import="BuildEnv"
 
-default BASE_DIR='${Directory.GetCurrentDirectory()}'
-default TARGET_DIR='${Path.Combine(BASE_DIR, "artifacts", "build")}'
-
-var useHttps='${UseHttps(BASE_DIR)}'
-var gitHubUriPrefix='${useHttps ? "https://github.com/aspnet/" : "git@github.com:aspnet/"}'
-var repos='${new[] {
-    // The repos list is topologically sorted based on build order
-    "Configuration",
-    "DataCommon",
-    "DataCommon.SQLite",
-    "DataProtection",
-    "DependencyInjection",
-    "Options",
-    "Logging",
-    "Testing",
-    "Diagnostics",
-    "EntityFramework",
-    "FileSystem",
-    "WebSocketAbstractions",
-    "HttpAbstractions",
-    "Hosting",
-    "Helios",
-    "Identity",
-    "Razor",
-    "Routing",
-    "Mvc",
-    "Scaffolding",
-    "Security",
-    "SignalR-Server",
-    "StaticFiles",
-    "WebListener",
-    "KestrelHttpServer",
-    "WebSockets",
-    "Entropy",
-}}'
+functions
+    @{
+        static string BASE_DIR = Directory.GetCurrentDirectory();
+        static string TARGET_DIR = Path.Combine(BASE_DIR, "artifacts", "build");
+        string[] repos = new[] {
+            // The repos list is topologically sorted based on build order
+            "Configuration",
+            "DataCommon",
+            "DataCommon.SQLite",
+            "DataProtection",
+            "DependencyInjection",
+            "Options",
+            "Logging",
+            "Testing",
+            "Diagnostics",
+            "EntityFramework",
+            "FileSystem",
+            "WebSocketAbstractions",
+            "HttpAbstractions",
+            "Hosting",
+            "Helios",
+            "Identity",
+            "Razor",
+            "Routing",
+            "Mvc",
+            "Scaffolding",
+            "Security",
+            "SignalR-Server",
+            "StaticFiles",
+            "WebListener",
+            "KestrelHttpServer",
+            "WebSockets",
+            "Entropy",
+        };
+        
+        static bool useHttps = UseHttps(BASE_DIR);
+        static string gitHubUriPrefix = useHttps ? "https://github.com/aspnet/" : "git@github.com:aspnet/";
+    }
 
 @{
     var kBuildVersion = Environment.GetEnvironmentVariable("K_BUILD_VERSION");
@@ -74,33 +78,7 @@ var repos='${new[] {
     @{
         foreach(var repo in repos) 
         {
-            var repoUrl = gitHubUriPrefix + repo + ".git";
-            if(Directory.Exists(repo))
-            {
-                GitPull(repoUrl, "dev", repo);
-            } 
-            else
-            {
-                if (useHttps &&
-                    !IsAccessible(repo))
-                {
-                    Log.Warn(string.Format("The repo at '{0}' is not accessible. If you do not have access to this repository, skip the git prompt" +
-                                           " for credentials to skip cloning this repository. To avoid this prompt, re-clone the Universe repository over ssh.",
-                                           repoUrl));
-                }
-
-                try
-                {
-                    GitClone(repoUrl, "dev");
-                }
-                catch (Exception ex)
-                {
-                    Log.Warn(string.Format("Unable to clone repository at '{0}': {1}", repoUrl, ex.Message));
-                    continue;
-                }
-                GitConfig("bugtraq.url", "http://github.com/aspnet/" + repo + "/issues/%BUGID%", repo);
-                GitConfig("bugtraq.logregex", @"#(\d+)", repo);
-            }
+            CloneOrUpdate(repo);
         }
     }
 
@@ -132,32 +110,14 @@ var repos='${new[] {
         }
     }
 
-#init-release
-    var templatePath = '${Path.Combine(BASE_DIR, "build-template")}'
-    var fileName = 'NuGet.Config'
-    for each='var repo in repos'
-        var targetFile = '${Path.Combine(Directory.GetCurrentDirectory(), repo, fileName)}'
-        var sourceFile = '${Path.Combine(Directory.GetCurrentDirectory(), templatePath, fileName)}'
+#reset-master
+    -// Resets master branch to release
+    for each='var repo in GetAllRepos()'
+        -CloneOrUpdate(repo);
+
         var gitFolder = '${repo}'
-
-        -// get latest dev and create new release
-        git gitCommand='checkout dev'
-        git gitCommand='pull origin dev'
-        git gitCommand='checkout -b release dev'
-
-        -// alter and commit release NuGet.Config
-        -File.Copy(sourceFile, targetFile, true);
-        update-file updateFile="${targetFile}"
-            -updateText = updateText.Replace("/F/aspnetvnext/", "/F/aspnetrelease/");
-        git gitCommand='add NuGet.Config'
-        git gitCommand='commit -m "Updating release Nuget.config"'
-
-        -// alter dev NuGet.Config and phantom merge release branch
-        git gitCommand='checkout dev'
-        git gitCommand='merge release'
-        -File.Copy(sourceFile, targetFile, true);
-        git gitCommand='add NuGet.Config'
-        git gitCommand='commit -m "Updating dev Nuget.config"'
+        git gitCommand='fetch origin'
+        git gitCommand='checkout origin/release -B master'
 
 #only-compile target='compile'
     @{
@@ -265,12 +225,12 @@ macro name='Exec' program='string' commandline='string' workingdir='string'
 
 functions
     @{
-        bool UseHttps(string directory)
+        static bool UseHttps(string directory)
         {
             var filename = Path.Combine(directory, ".git", "config");
             if (!File.Exists(filename))
             {
-                Log.Warn(string.Format("Unable to find '{0}' file", filename));
+                Console.WriteLine("Unable to find '{0}' file", filename);
                 return false;
             }
 
@@ -280,7 +240,7 @@ functions
 
         // Perform equivalent of `git config remote.origin.url` but directly
         // read config file to get value.
-        string ReadOriginUrl(string filename)
+        static string ReadOriginUrl(string filename)
         {
             // Subsection portion of configuration name is case-sensitive; rest
             // of name is case-insensitive.
@@ -313,7 +273,7 @@ functions
                 }
             }
 
-            Log.Warn(string.Format("Unable to parse '{0}' file", filename));
+            Console.WriteLine("Unable to parse '{0}' file", filename);
             return null;
         }
 
@@ -346,5 +306,50 @@ functions
                 // Ignore any other exception. They should surface as part of git clone with well-known messages.
             }
             return true;
+        }
+
+        IEnumerable<string> GetAllRepos()
+        {
+            var nonDefaultRepos = new[]
+            {
+              "KRuntime",
+              "Claims",
+              "DataAnnotations",
+              "SqlClient",
+              "MusicStore"
+            };
+            return Enumerable.Concat(repos, nonDefaultRepos);
+        }
+
+        void CloneOrUpdate(string repo)
+        {
+            var repoUrl = gitHubUriPrefix + repo + ".git";
+
+            if(Directory.Exists(repo))
+            {
+                GitPull(repoUrl, "dev", repo);
+            }
+            else
+            {
+                if (useHttps &&
+                    !IsAccessible(repo))
+                {
+                    Log.Warn(string.Format("The repo at '{0}' is not accessible. If you do not have access to this repository, skip the git prompt" +
+                                           " for credentials to skip cloning this repository. To avoid this prompt, re-clone the Universe repository over ssh.",
+                                           repoUrl));
+                }
+
+                try
+                {
+                    GitClone(repoUrl, "dev");
+                }
+                catch (Exception ex)
+                {
+                    Log.Warn(string.Format("Unable to clone repository at '{0}': {1}", repoUrl, ex.Message));
+                    return;
+                }
+                GitConfig("bugtraq.url", "http://github.com/aspnet/" + repo + "/issues/%BUGID%", repo);
+                GitConfig("bugtraq.logregex", @"#(\d+)", repo);
+            }
         }
     }
