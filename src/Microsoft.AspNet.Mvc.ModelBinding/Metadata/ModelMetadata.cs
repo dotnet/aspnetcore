@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Mvc.ModelBinding.Internal;
@@ -139,8 +140,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 if (_properties == null)
                 {
-                    _properties = Provider.GetMetadataForProperties(Model, RealModelType);
+                    var properties = Provider.GetMetadataForProperties(Model, RealModelType);
+                    _properties = properties.OrderBy(m => m.Order).ToList();
                 }
+
                 return _properties;
             }
         }
