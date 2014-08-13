@@ -15,7 +15,13 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         [Fact]
         public void ParseBlockAllowsInvalidTagNamesAsLongAsParserCanIdentifyEndTag()
         {
-            SingleSpanBlockTest("<1-foo+bar>foo</1-foo+bar>", BlockType.Markup, SpanKind.Markup, acceptedCharacters: AcceptedCharacters.None);
+            ParseBlockTest("<1-foo+bar>foo</1-foo+bar>",
+                new MarkupBlock(
+                    new MarkupTagBlock(
+                        Factory.Markup("<1-foo+bar>").Accepts(AcceptedCharacters.None)),
+                    Factory.Markup("foo"),
+                    new MarkupTagBlock(
+                        Factory.Markup("</1-foo+bar>").Accepts(AcceptedCharacters.None))));
         }
 
         [Fact]
@@ -23,9 +29,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         {
             ParseBlockTest("<text foo bar></text>",
                 new MarkupBlock(
-                    Factory.MarkupTransition("<text").Accepts(AcceptedCharacters.Any),
-                    Factory.Markup(" foo bar>"),
-                    Factory.MarkupTransition("</text>")),
+                    new MarkupTagBlock(
+                        Factory.MarkupTransition("<text foo bar>").Accepts(AcceptedCharacters.Any)),
+                    new MarkupTagBlock(
+                        Factory.MarkupTransition("</text>"))),
                 new RazorError(RazorResources.ParseError_TextTagCannotContainAttributes, SourceLocation.Zero));
         }
 
@@ -34,9 +41,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         {
             ParseBlockTest("<text></text foo bar>",
                 new MarkupBlock(
-                    Factory.MarkupTransition("<text>"),
-                    Factory.MarkupTransition("</text").Accepts(AcceptedCharacters.Any),
-                    Factory.Markup(" ")),
+                    new MarkupTagBlock(
+                        Factory.MarkupTransition("<text>")),
+                    new MarkupTagBlock(
+                        Factory.MarkupTransition("</text foo bar>").Accepts(AcceptedCharacters.Any))),
                 new RazorError(RazorResources.ParseError_TextTagCannotContainAttributes, 6, 0, 6));
         }
 
@@ -53,7 +61,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         {
             ParseBlockTest("</foo> bar baz",
                 new MarkupBlock(
-                    Factory.Markup("</foo> ").Accepts(AcceptedCharacters.None)),
+                    new MarkupTagBlock(
+                        Factory.Markup("</foo>").Accepts(AcceptedCharacters.None)),
+                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)),
                 new RazorError(RazorResources.FormatParseError_UnexpectedEndTag("foo"), SourceLocation.Zero));
         }
 
@@ -62,7 +72,12 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         {
             ParseBlockTest("<p><foo></bar>",
                 new MarkupBlock(
-                    Factory.Markup("<p><foo></bar>").Accepts(AcceptedCharacters.None)),
+                    new MarkupTagBlock(
+                        Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                    new MarkupTagBlock(
+                        Factory.Markup("<foo>").Accepts(AcceptedCharacters.None)),
+                    new MarkupTagBlock(
+                        Factory.Markup("</bar>").Accepts(AcceptedCharacters.None))),
                 new RazorError(RazorResources.FormatParseError_MissingEndTag("p"), new SourceLocation(0, 0, 0)));
         }
 
@@ -71,7 +86,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         {
             ParseBlockTest("<foo>blah blah blah blah blah",
                 new MarkupBlock(
-                    Factory.Markup("<foo>blah blah blah blah blah")),
+                    new MarkupTagBlock(
+                        Factory.Markup("<foo>").Accepts(AcceptedCharacters.None)),
+                    Factory.Markup("blah blah blah blah blah")),
                 new RazorError(RazorResources.FormatParseError_MissingEndTag("foo"), new SourceLocation(0, 0, 0)));
         }
 
@@ -80,10 +97,11 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         {
             ParseBlockTest("<foo bar=baz",
                 new MarkupBlock(
+                    new MarkupTagBlock(
                     Factory.Markup("<foo"),
-                    new MarkupBlock(new AttributeBlockCodeGenerator("bar", new LocationTagged<string>(" bar=", 4, 0, 4), new LocationTagged<string>(String.Empty, 12, 0, 12)),
-                        Factory.Markup(" bar=").With(SpanCodeGenerator.Null),
-                        Factory.Markup("baz").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 9, 0, 9), new LocationTagged<string>("baz", 9, 0, 9))))),
+                        new MarkupBlock(new AttributeBlockCodeGenerator("bar", new LocationTagged<string>(" bar=", 4, 0, 4), new LocationTagged<string>(String.Empty, 12, 0, 12)),
+                            Factory.Markup(" bar=").With(SpanCodeGenerator.Null),
+                            Factory.Markup("baz").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 9, 0, 9), new LocationTagged<string>("baz", 9, 0, 9)))))),
                 new RazorError(RazorResources.FormatParseError_UnfinishedTag("foo"), new SourceLocation(0, 0, 0)));
         }
     }

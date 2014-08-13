@@ -189,8 +189,13 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                            new StatementBlock(
                                Factory.Code("if(!false) {\r\n    // Foo\r\n").AsStatement(),
                                new MarkupBlock(
-                                   Factory.Markup("\t<p>A real tag!</p>\r\n")
-                                       .Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup("\t"),
+                                   new MarkupTagBlock(
+                                       Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup("A real tag!"),
+                                   new MarkupTagBlock(
+                                       Factory.Markup("</p>").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)),
                                Factory.Code("}").AsStatement()
                                ));
         }

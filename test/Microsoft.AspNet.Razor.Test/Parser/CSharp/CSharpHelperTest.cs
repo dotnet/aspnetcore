@@ -205,7 +205,12 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    .AsStatement()
                                    .AutoCompleteWith("}"),
                             new MarkupBlock(
-                                Factory.Markup("    <p>Foo</p>").Accepts(AcceptedCharacters.None)),
+                                Factory.Markup("    "),
+                                new MarkupTagBlock(
+                                    Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                                Factory.Markup("Foo"),
+                                new MarkupTagBlock(
+                                    Factory.Markup("</p>").Accepts(AcceptedCharacters.None))),
                             Factory.EmptyCSharp().AsStatement()))),
                 new RazorError(
                         RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("helper", "}", "{"),
@@ -227,13 +232,18 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         new StatementBlock(
                             Factory.Code("    \r\n").AsStatement(),
                             new MarkupBlock(
-                                Factory.Markup("    <p>"),
+                                Factory.Markup("    "),
+                                new MarkupTagBlock(
+                                    Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                                Factory.EmptyHtml(),
                                 new ExpressionBlock(
                                     Factory.CodeTransition(),
                                     Factory.Code("foo")
                                            .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                            .Accepts(AcceptedCharacters.NonWhiteSpace)),
-                                Factory.Markup("</p>\r\n").Accepts(AcceptedCharacters.None)),
+                                new MarkupTagBlock(
+                                    Factory.Markup("</p>").Accepts(AcceptedCharacters.None)),
+                                Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)),
                             Factory.EmptyCSharp().AsStatement()),
                         Factory.Code("}").Hidden().Accepts(AcceptedCharacters.None)),
                     Factory.EmptyHtml()));
@@ -258,13 +268,18 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         new StatementBlock(
                             Factory.Code("    \r\n").AsStatement(),
                             new MarkupBlock(
-                                Factory.Markup(@"    <p>"),
+                                Factory.Markup(@"    "),
+                                new MarkupTagBlock(
+                                    Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                                Factory.EmptyHtml(),
                                 new ExpressionBlock(
                                     Factory.CodeTransition(),
                                     Factory.Code("foo")
                                            .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                            .Accepts(AcceptedCharacters.NonWhiteSpace)),
-                                Factory.Markup("</p>\r\n").Accepts(AcceptedCharacters.None)),
+                                new MarkupTagBlock(
+                                    Factory.Markup("</p>").Accepts(AcceptedCharacters.None)),
+                                Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)),
                             Factory.EmptyCSharp().AsStatement()),
                         Factory.Code("}").Hidden().Accepts(AcceptedCharacters.None)),
                     Factory.EmptyHtml()));

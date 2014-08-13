@@ -136,7 +136,13 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                            .AutoCompleteWith(null, atEndOfSpan: true)
                            .Accepts(AcceptedCharacters.Any),
                     new MarkupBlock(
-                        Factory.Markup(" <p>F", "{", "o", "}", "o", "</p> ")),
+                        Factory.Markup(" "),
+                        new MarkupTagBlock(
+                            Factory.Markup("<p>")),
+                        Factory.Markup("F", "{", "o", "}", "o"),
+                        new MarkupTagBlock(
+                            Factory.Markup("</p>")),
+                        Factory.Markup(" ")),
                     Factory.MetaCode("}")
                            .Accepts(AcceptedCharacters.None)));
         }

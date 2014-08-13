@@ -65,15 +65,29 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         }
 
         [Fact]
+        public void ParseDocumentCorrectlyHandlesOddlySpacedHTMLElements()
+        {
+            ParseDocumentTest("<div ><p class = 'bar'> Foo </p></div >",
+                new MarkupBlock(
+                    BlockFactory.MarkupTagBlock("<div >"),
+                    BlockFactory.MarkupTagBlock("<p class = 'bar'>"),
+                    Factory.Markup(" Foo "),
+                    BlockFactory.MarkupTagBlock("</p>"),
+                    BlockFactory.MarkupTagBlock("</div >")));
+        }
+
+        [Fact]
         public void ParseDocumentCorrectlyHandlesSingleLineOfMarkupWithEmbeddedStatement()
         {
             ParseDocumentTest("<div>Foo @if(true) {} Bar</div>",
                 new MarkupBlock(
-                    Factory.Markup("<div>Foo "),
+                    BlockFactory.MarkupTagBlock("<div>"),
+                    Factory.Markup("Foo "),
                     new StatementBlock(
                         Factory.CodeTransition(),
                         Factory.Code("if(true) {}").AsStatement()),
-                    Factory.Markup(" Bar</div>")));
+                    Factory.Markup(" Bar"),
+                    BlockFactory.MarkupTagBlock("</div>")));
         }
 
         [Fact]
@@ -89,7 +103,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                         Factory.MetaCode("section Foo {")
                                .AutoCompleteWith(null, atEndOfSpan: true),
                         new MarkupBlock(
-                            Factory.Markup("\r\n    <html></html>\r\n")),
+                            Factory.Markup("\r\n    "),
+                            BlockFactory.MarkupTagBlock("<html>"),
+                            BlockFactory.MarkupTagBlock("</html>"),
+                            Factory.Markup("\r\n")),
                         Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
                     Factory.EmptyHtml()));
         }
@@ -97,7 +114,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         [Fact]
         public void ParseDocumentParsesWholeContentAsOneSpanIfNoSwapCharacterEncountered()
         {
-            SingleSpanDocumentTest("foo <bar>baz</bar>", BlockType.Markup, SpanKind.Markup);
+            SingleSpanDocumentTest("foo baz", BlockType.Markup, SpanKind.Markup);
         }
 
         [Fact]
@@ -146,7 +163,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         [Fact]
         public void ParseDocumentDoesNotSwitchToCodeOnEmailAddressInText()
         {
-            SingleSpanDocumentTest("<foo>anurse@microsoft.com</foo>", BlockType.Markup, SpanKind.Markup);
+            SingleSpanDocumentTest("anurse@microsoft.com", BlockType.Markup, SpanKind.Markup);
         }
 
         [Fact]
@@ -154,37 +171,56 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         {
             ParseDocumentTest("<a href=\"mailto:anurse@microsoft.com\">Email me</a>",
                 new MarkupBlock(
-                    Factory.Markup("<a"),
-                    new MarkupBlock(new AttributeBlockCodeGenerator("href", new LocationTagged<string>(" href=\"", 2, 0, 2), new LocationTagged<string>("\"", 36, 0, 36)),
-                        Factory.Markup(" href=\"").With(SpanCodeGenerator.Null),
-                        Factory.Markup("mailto:anurse@microsoft.com")
-                               .With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(String.Empty, 9, 0, 9), new LocationTagged<string>("mailto:anurse@microsoft.com", 9, 0, 9))),
-                        Factory.Markup("\"").With(SpanCodeGenerator.Null)),
-                    Factory.Markup(">Email me</a>")));
+                    new MarkupTagBlock(
+                        Factory.Markup("<a"),
+                        new MarkupBlock(new AttributeBlockCodeGenerator("href", new LocationTagged<string>(" href=\"", 2, 0, 2), new LocationTagged<string>("\"", 36, 0, 36)),
+                            Factory.Markup(" href=\"").With(SpanCodeGenerator.Null),
+                            Factory.Markup("mailto:anurse@microsoft.com")
+                                   .With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(String.Empty, 9, 0, 9), new LocationTagged<string>("mailto:anurse@microsoft.com", 9, 0, 9))),
+                            Factory.Markup("\"").With(SpanCodeGenerator.Null)),
+                        Factory.Markup(">")),
+                    Factory.Markup("Email me"),
+                    BlockFactory.MarkupTagBlock("</a>")));
         }
 
         [Fact]
         public void ParseDocumentDoesNotReturnErrorOnMismatchedTags()
         {
-            SingleSpanDocumentTest("Foo <div><p></p></p> Baz", BlockType.Markup, SpanKind.Markup);
+            ParseDocumentTest("Foo <div><p></p></p> Baz",
+                new MarkupBlock(
+                    Factory.Markup("Foo "),
+                    BlockFactory.MarkupTagBlock("<div>"),
+                    BlockFactory.MarkupTagBlock("<p>"),
+                    BlockFactory.MarkupTagBlock("</p>"),
+                    BlockFactory.MarkupTagBlock("</p>"),
+                    Factory.Markup(" Baz")));
         }
 
         [Fact]
         public void ParseDocumentReturnsOneMarkupSegmentIfNoCodeBlocksEncountered()
         {
-            SingleSpanDocumentTest("Foo <p>Baz<!--Foo-->Bar<!-F> Qux", BlockType.Markup, SpanKind.Markup);
+            SingleSpanDocumentTest("Foo Baz<!--Foo-->Bar<!-F> Qux", BlockType.Markup, SpanKind.Markup);
         }
 
         [Fact]
         public void ParseDocumentRendersTextPseudoTagAsMarkup()
         {
-            SingleSpanDocumentTest("Foo <text>Foo</text>", BlockType.Markup, SpanKind.Markup);
+            ParseDocumentTest("Foo <text>Foo</text>",
+                new MarkupBlock(
+                    Factory.Markup("Foo "),
+                    BlockFactory.MarkupTagBlock("<text>"),
+                    Factory.Markup("Foo"),
+                    BlockFactory.MarkupTagBlock("</text>")));
         }
 
         [Fact]
         public void ParseDocumentAcceptsEndTagWithNoMatchingStartTag()
         {
-            SingleSpanDocumentTest("Foo </div> Bar", BlockType.Markup, SpanKind.Markup);
+            ParseDocumentTest("Foo </div> Bar",
+                new MarkupBlock(
+                    Factory.Markup("Foo "),
+                    BlockFactory.MarkupTagBlock("</div>"),
+                    Factory.Markup(" Bar")));
         }
 
         [Fact]
@@ -192,7 +228,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         {
             ParseDocumentTest("<foo>${bar}</foo>",
                 new MarkupBlock(
-                    Factory.Markup("<foo>${bar}</foo>")));
+                    BlockFactory.MarkupTagBlock("<foo>"),
+                    Factory.Markup("${bar}"),
+                    BlockFactory.MarkupTagBlock("</foo>")));
         }
 
         [Fact]
@@ -200,13 +238,15 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         {
             ParseDocumentTest(@"<script>foo<bar baz='@boz'></script>",
                 new MarkupBlock(
-                    Factory.Markup("<script>foo<bar baz='"),
+                    BlockFactory.MarkupTagBlock("<script>"),
+                    Factory.Markup("foo<bar baz='"),
                     new ExpressionBlock(
                         Factory.CodeTransition(),
                         Factory.Code("boz")
                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: false)
                                .Accepts(AcceptedCharacters.NonWhiteSpace)),
-                    Factory.Markup("'></script>")));
+                    Factory.Markup("'>"),
+                    BlockFactory.MarkupTagBlock("</script>")));
         }
 
         [Fact]
@@ -219,13 +259,17 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                         Factory.CodeTransition(),
                         Factory.MetaCode("section Foo {"),
                         new MarkupBlock(
-                            Factory.Markup(" <script>foo<bar baz='"),
+                            Factory.Markup(" "),
+                            BlockFactory.MarkupTagBlock("<script>"),
+                            Factory.Markup("foo<bar baz='"),
                             new ExpressionBlock(
                                 Factory.CodeTransition(),
                                 Factory.Code("boz")
                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: false)
                                        .Accepts(AcceptedCharacters.NonWhiteSpace)),
-                            Factory.Markup("'></script> ")),
+                            Factory.Markup("'>"),
+                            BlockFactory.MarkupTagBlock("</script>"),
+                            Factory.Markup(" ")),
                         Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
                     Factory.EmptyHtml()));
         }
@@ -234,7 +278,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         public void ParseBlockCanParse1000NestedElements()
         {
             string content = Nested1000.ReadAllText();
-            SingleSpanDocumentTest(content, BlockType.Markup, SpanKind.Markup);
+            ParseDocument(content);
         }
     }
 }

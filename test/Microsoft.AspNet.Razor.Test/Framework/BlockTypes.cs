@@ -134,12 +134,27 @@ namespace Microsoft.AspNet.Razor.Test.Framework
         }
     }
 
+    public class MarkupTagBlock : Block
+    {
+        private const BlockType ThisBlockType = BlockType.Tag;
+
+        public MarkupTagBlock(params SyntaxTreeNode[] children)
+            : base(ThisBlockType, children, BlockCodeGenerator.Null)
+        {
+        }
+    }
+
     public class MarkupBlock : Block
     {
         private const BlockType ThisBlockType = BlockType.Markup;
 
+        public MarkupBlock(BlockType blockType, IBlockCodeGenerator codeGenerator, IEnumerable<SyntaxTreeNode> children)
+            : base(blockType, children, codeGenerator)
+        {
+        }
+
         public MarkupBlock(IBlockCodeGenerator codeGenerator, IEnumerable<SyntaxTreeNode> children)
-            : base(ThisBlockType, children, codeGenerator)
+            : this(ThisBlockType, codeGenerator, children)
         {
         }
 

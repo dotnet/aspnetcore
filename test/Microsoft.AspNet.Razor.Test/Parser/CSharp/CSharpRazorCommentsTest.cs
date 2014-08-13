@@ -125,8 +125,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         Factory.Code("\r\n").AsStatement(),
                         new MarkupBlock(
                             Factory.Markup("    "),
-                            Factory.MarkupTransition("<text").Accepts(AcceptedCharacters.Any),
-                            Factory.Markup("\r\n    "),
+                            new MarkupTagBlock(
+                                Factory.MarkupTransition("<text").Accepts(AcceptedCharacters.Any)),
+                            Factory.Markup("\r\n    ").Accepts(AcceptedCharacters.None),
                             new CommentBlock(
                                 Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
                                        .Accepts(AcceptedCharacters.None),

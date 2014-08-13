@@ -79,7 +79,13 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     new SectionBlock(new SectionCodeGenerator(string.Empty),
                         Factory.CodeTransition(),
                         Factory.MetaCode("section ")),
-                    Factory.Markup("9 { <p>Foo</p> }")),
+                    Factory.Markup("9 { "),
+                    new MarkupTagBlock(
+                        Factory.Markup("<p>")),
+                    Factory.Markup("Foo"),
+                    new MarkupTagBlock(
+                        Factory.Markup("</p>")),
+                     Factory.Markup(" }")),
                 new RazorError(
                         RazorResources.FormatParseError_Unexpected_Character_At_Section_Name_Start(RazorResources.FormatErrorComponent_Character("9")),
                     9, 0, 9));
@@ -94,7 +100,13 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     new SectionBlock(new SectionCodeGenerator("foo"),
                         Factory.CodeTransition(),
                         Factory.MetaCode("section foo")),
-                    Factory.Markup("-bar { <p>Foo</p> }")),
+                    Factory.Markup("-bar { "),
+                    new MarkupTagBlock(
+                        Factory.Markup("<p>")),
+                    Factory.Markup("Foo"),
+                    new MarkupTagBlock(
+                        Factory.Markup("</p>")),
+                    Factory.Markup(" }")),
                 new RazorError(RazorResources.ParseError_MissingOpenBraceAfterSection, 12, 0, 12));
         }
 
@@ -115,7 +127,13 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                 Factory.MetaCode("section bar {")
                                        .AutoCompleteWith(null, atEndOfSpan: true),
                                 new MarkupBlock(
-                                    Factory.Markup(" <p>Foo</p> ")),
+                                    Factory.Markup(" "),
+                                    new MarkupTagBlock(
+                                        Factory.Markup("<p>")),
+                                    Factory.Markup("Foo"),
+                                    new MarkupTagBlock(
+                                        Factory.Markup("</p>")),
+                                    Factory.Markup(" ")),
                                 Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
                             Factory.Markup(" ")),
                         Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
@@ -152,8 +170,13 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         Factory.MetaCode("section foo {")
                                .AutoCompleteWith("}", atEndOfSpan: true),
                         new MarkupBlock(
+                            Factory.Markup(" "),
+                            new MarkupTagBlock(
+                                Factory.Markup("<p>")),
                             // Need to provide the markup span as fragments, since the parser will split the {} into separate symbols.
-                            Factory.Markup(" <p>Foo", "{", "}", "</p>")))),
+                            Factory.Markup("Foo", "{", "}"),
+                            new MarkupTagBlock(
+                                Factory.Markup("</p>"))))),
                 new RazorError(
                     RazorResources.FormatParseError_Expected_X("}"),
                     27, 0, 27));
@@ -190,7 +213,13 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         Factory.MetaCode("section foo      \r\n\r\n\r\n\r\n\r\n\r\n{")
                                .AutoCompleteWith(null, atEndOfSpan: true),
                         new MarkupBlock(
-                            Factory.Markup("\r\n<p>Foo</p>\r\n")),
+                            Factory.Markup("\r\n"),
+                            new MarkupTagBlock(
+                                Factory.Markup("<p>")),
+                            Factory.Markup("Foo"),
+                            new MarkupTagBlock(
+                                Factory.Markup("</p>")),
+                            Factory.Markup("\r\n")),
                         Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
                     Factory.EmptyHtml()));
         }
@@ -206,7 +235,13 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         Factory.MetaCode("section foo {")
                                .AutoCompleteWith(null, atEndOfSpan: true),
                         new MarkupBlock(
-                            Factory.Markup(" <p>Foo</p> ")),
+                            Factory.Markup(" "),
+                            new MarkupTagBlock(
+                                Factory.Markup("<p>")),
+                            Factory.Markup("Foo"),
+                            new MarkupTagBlock(
+                                Factory.Markup("</p>")),
+                            Factory.Markup(" ")),
                         Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
                     Factory.EmptyHtml()));
         }
@@ -222,7 +257,13 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         Factory.MetaCode("section foo{")
                                .AutoCompleteWith(null, atEndOfSpan: true),
                         new MarkupBlock(
-                            Factory.Markup(" <p>Foo</p> ")),
+                            Factory.Markup(" "),
+                            new MarkupTagBlock(
+                                Factory.Markup("<p>")),
+                            Factory.Markup("Foo"),
+                            new MarkupTagBlock(
+                                Factory.Markup("</p>")),
+                            Factory.Markup(" ")),
                         Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
                     Factory.EmptyHtml()));
         }
@@ -238,7 +279,13 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         Factory.MetaCode("section foo {")
                                .AutoCompleteWith(null, atEndOfSpan: true),
                         new MarkupBlock(
-                            Factory.Markup(" <script>(function foo() { return 1; })();</script> ")),
+                            Factory.Markup(" "),
+                            new MarkupTagBlock(
+                                Factory.Markup("<script>")),
+                            Factory.Markup("(function foo() { return 1; })();"),
+                            new MarkupTagBlock(
+                                Factory.Markup("</script>")), 
+                            Factory.Markup(" ")),
                         Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
                     Factory.EmptyHtml()));
         }
@@ -372,7 +419,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         Factory.MetaCode("section s {")
                             .AutoCompleteWith(null, atEndOfSpan: true),
                         new MarkupBlock(
-                            Factory.Markup(Environment.NewLine + "<a" + Environment.NewLine + "<!--  > \" '-->")),
+                            Factory.Markup(Environment.NewLine),
+                            new MarkupTagBlock(
+                                Factory.Markup("<a" + Environment.NewLine)),
+                            Factory.Markup("<!--  > \" '-->")),
                         Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
                     Factory.EmptyHtml()));
         }

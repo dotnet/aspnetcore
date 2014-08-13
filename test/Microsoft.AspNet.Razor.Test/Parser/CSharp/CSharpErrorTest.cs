@@ -389,16 +389,21 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                            new StatementBlock(
                                Factory.Code("if(foo) ").AsStatement(),
                                new MarkupBlock(
-                                   Factory.Markup("<p>Bar</p> ").Accepts(AcceptedCharacters.None)
-                                   ),
+                                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharacters.None),
+                                    Factory.Markup("Bar"),
+                                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharacters.None),
+                                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)),
                                Factory.Code("else if(bar) ").AsStatement(),
                                new MarkupBlock(
-                                   Factory.Markup("<p>Baz</p> ").Accepts(AcceptedCharacters.None)
-                                   ),
+                                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharacters.None),
+                                    Factory.Markup("Baz"),
+                                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharacters.None),
+                                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)),
                                Factory.Code("else ").AsStatement(),
                                new MarkupBlock(
-                                   Factory.Markup("<p>Boz</p>").Accepts(AcceptedCharacters.None)
-                                   ),
+                                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharacters.None),
+                                    Factory.Markup("Boz"),
+                                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharacters.None)),
                                Factory.EmptyCSharp().AsStatement()
                                ),
                            new RazorError(expectedMessage, 8, 0, 8),
@@ -427,8 +432,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                new MarkupBlock(
                                    Factory.Markup(" "),
                                    Factory.MarkupTransition(),
-                                   Factory.Markup("<p>Bar</p> ").Accepts(AcceptedCharacters.None)
-                                   ),
+                                   BlockFactory.MarkupTagBlock("<p>", AcceptedCharacters.None),
+                                    Factory.Markup("Bar"),
+                                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharacters.None),
+                                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)),
                                Factory.Code("}").AsStatement()
                                ),
                            new RazorError(
@@ -496,8 +503,11 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                            new StatementBlock(
                                Factory.Code("if(\r\nelse {").AsStatement(),
                                new MarkupBlock(
-                                   Factory.Markup(" <p>Foo</p> ").Accepts(AcceptedCharacters.None)
-                                   ),
+                                   Factory.Markup(" "),
+                                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharacters.None),
+                                    Factory.Markup("Foo"),
+                                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharacters.None),
+                                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)),
                                Factory.Code("}").AsStatement().Accepts(AcceptedCharacters.None)
                                ),
                            new RazorError(
@@ -547,13 +557,15 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                            new StatementBlock(
                                Factory.Code("if(foo) {\r\n    var foo = \"foo bar baz\r\n    ").AsStatement(),
                                new MarkupBlock(
-                                   Factory.Markup("<p>Foo is "),
+                                   BlockFactory.MarkupTagBlock("<p>", AcceptedCharacters.None),
+                                   Factory.Markup("Foo is "),
                                    new ExpressionBlock(
                                        Factory.CodeTransition(),
                                        Factory.Code("foo")
                                            .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                            .Accepts(AcceptedCharacters.NonWhiteSpace)),
-                                   Factory.Markup("</p>\r\n").Accepts(AcceptedCharacters.None)),
+                                   BlockFactory.MarkupTagBlock("</p>", AcceptedCharacters.None),
+                                   Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)),
                                Factory.Code("}").AsStatement()
                                ),
                            new RazorError(
@@ -581,7 +593,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     Factory.Code("String.Format(")
                            .AsStatement(),
                     new MarkupBlock(
-                        Factory.Markup("<html></html>").Accepts(AcceptedCharacters.None)),
+                        BlockFactory.MarkupTagBlock("<html>", AcceptedCharacters.None),
+                        BlockFactory.MarkupTagBlock("</html>", AcceptedCharacters.None)),
                     Factory.EmptyCSharp().AsStatement(),
                     Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
                 expectedErrors: new[] {

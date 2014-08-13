@@ -34,7 +34,11 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                new TemplateBlock(
                                    new MarkupBlock(
                                        Factory.MarkupTransition(),
-                                       Factory.Markup("<p>Foo</p>").Accepts(AcceptedCharacters.None)
+                                       new MarkupTagBlock(
+                                            Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                                       Factory.Markup("Foo"),
+                                       new MarkupTagBlock(
+                                           Factory.Markup("</p>").Accepts(AcceptedCharacters.None))
                                        )
                                    ),
                                Factory.Code("    )")
@@ -75,7 +79,11 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
                                Factory.Code("\r\n    ").AsStatement(),
                                new MarkupBlock(
-                                   Factory.Markup("<p>Foo</p>").Accepts(AcceptedCharacters.None)
+                                        new MarkupTagBlock(
+                                            Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                                       Factory.Markup("Foo"),
+                                       new MarkupTagBlock(
+                                           Factory.Markup("</p>").Accepts(AcceptedCharacters.None))
                                    ),
                                Factory.Code("    \r\n").AsStatement(),
                                Factory.MetaCode("}").Accepts(AcceptedCharacters.None)
@@ -93,7 +101,11 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.Code("\r\n    ").AsStatement(),
                                new MarkupBlock(
                                    Factory.MarkupTransition(),
-                                   Factory.Markup("<p>Foo</p>").Accepts(AcceptedCharacters.None)
+                                        new MarkupTagBlock(
+                                            Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                                       Factory.Markup("Foo"),
+                                       new MarkupTagBlock(
+                                           Factory.Markup("</p>").Accepts(AcceptedCharacters.None))
                                    ),
                                Factory.Code("    \r\n").AsStatement(),
                                Factory.MetaCode("}").Accepts(AcceptedCharacters.None)
@@ -172,13 +184,17 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                        .With(new SingleLineMarkupEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString, AcceptedCharacters.None))
                                    ),
                                new MarkupBlock(
-                                   Factory.Markup("<br/>\r\n")
-                                       .Accepts(AcceptedCharacters.None)
+                                   new MarkupTagBlock(
+                                        Factory.Markup("<br/>").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)
                                    ),
                                new MarkupBlock(
-                                   Factory.Markup("<a>Foo</a>\r\n")
-                                       .Accepts(AcceptedCharacters.None)
-                                   ),
+                                   new MarkupTagBlock(
+                                       Factory.Markup("<a>").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup("Foo"),
+                                   new MarkupTagBlock(
+                                       Factory.Markup("</a>").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)),
                                new MarkupBlock(
                                    Factory.MarkupTransition(),
                                    Factory.MetaMarkup(":", HtmlSymbolType.Colon),
@@ -204,13 +220,19 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                            new StatementBlock(
                                Factory.Code("if(foo) {\r\n    var foo = \"After this statement there are 10 spaces\";          \r\n").AsStatement(),
                                new MarkupBlock(
-                                   Factory.Markup("    <p>\r\n        Foo\r\n"),
+                                   Factory.Markup("    "),
+                                   new MarkupTagBlock(
+                                       Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup("\r\n        Foo\r\n"),
                                    new ExpressionBlock(
                                        Factory.Code("        ").AsStatement(),
                                        Factory.CodeTransition(),
                                        Factory.Code("bar").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharacters.NonWhiteSpace)
                                        ),
-                                   Factory.Markup("\r\n    </p>\r\n").Accepts(AcceptedCharacters.None)
+                                   Factory.Markup("\r\n    "),
+                                   new MarkupTagBlock(
+                                       Factory.Markup("</p>").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)
                                    ),
                                new MarkupBlock(
                                    Factory.Markup("    "),
@@ -228,15 +250,33 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                            new StatementBlock(
                                Factory.Code("if(foo) {").AsStatement(),
                                new MarkupBlock(
-                                   Factory.Markup(" <p>Bar</p> ").Accepts(AcceptedCharacters.None)
+                                   Factory.Markup(" "),
+                                    new MarkupTagBlock(
+                                        Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                                    Factory.Markup("Bar"),
+                                    new MarkupTagBlock(
+                                        Factory.Markup("</p>").Accepts(AcceptedCharacters.None)),
+                                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)
                                    ),
                                Factory.Code("} else if(bar) {").AsStatement(),
                                new MarkupBlock(
-                                   Factory.Markup(" <p>Baz</p> ").Accepts(AcceptedCharacters.None)
+                                   Factory.Markup(" "),
+                                    new MarkupTagBlock(
+                                        Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                                    Factory.Markup("Baz"),
+                                    new MarkupTagBlock(
+                                        Factory.Markup("</p>").Accepts(AcceptedCharacters.None)),
+                                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)
                                    ),
                                Factory.Code("} else {").AsStatement(),
                                new MarkupBlock(
-                                   Factory.Markup(" <p>Boz</p> ").Accepts(AcceptedCharacters.None)
+                                   Factory.Markup(" "),
+                                    new MarkupTagBlock(
+                                        Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                                    Factory.Markup("Boz"),
+                                    new MarkupTagBlock(
+                                        Factory.Markup("</p>").Accepts(AcceptedCharacters.None)),
+                                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)
                                    ),
                                Factory.Code("}").AsStatement().Accepts(AcceptedCharacters.None)
                                ));
@@ -250,15 +290,33 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
                                Factory.Code(" if(foo) {").AsStatement(),
                                new MarkupBlock(
-                                   Factory.Markup(" <p>Bar</p> ").Accepts(AcceptedCharacters.None)
+                                   Factory.Markup(" "),
+                                    new MarkupTagBlock(
+                                        Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                                    Factory.Markup("Bar"),
+                                    new MarkupTagBlock(
+                                        Factory.Markup("</p>").Accepts(AcceptedCharacters.None)),
+                                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)
                                    ),
                                Factory.Code("} else if(bar) {").AsStatement(),
                                new MarkupBlock(
-                                   Factory.Markup(" <p>Baz</p> ").Accepts(AcceptedCharacters.None)
+                                   Factory.Markup(" "),
+                                    new MarkupTagBlock(
+                                        Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                                    Factory.Markup("Baz"),
+                                    new MarkupTagBlock(
+                                        Factory.Markup("</p>").Accepts(AcceptedCharacters.None)),
+                                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)
                                    ),
                                Factory.Code("} else {").AsStatement(),
                                new MarkupBlock(
-                                   Factory.Markup(" <p>Boz</p> ").Accepts(AcceptedCharacters.None)
+                                   Factory.Markup(" "),
+                                    new MarkupTagBlock(
+                                        Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                                    Factory.Markup("Boz"),
+                                    new MarkupTagBlock(
+                                        Factory.Markup("</p>").Accepts(AcceptedCharacters.None)),
+                                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)
                                    ),
                                Factory.Code("} ").AsStatement(),
                                Factory.MetaCode("}").Accepts(AcceptedCharacters.None)
@@ -287,22 +345,52 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                            new StatementBlock(
                                Factory.Code("switch(foo) {\r\n    case 0:\r\n").AsStatement(),
                                new MarkupBlock(
-                                   Factory.Markup("        <p>Foo</p>\r\n").Accepts(AcceptedCharacters.None)
+                                   Factory.Markup("        "),
+                                   new MarkupTagBlock(
+                                       Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup("Foo"),
+                                   new MarkupTagBlock(
+                                       Factory.Markup("</p>").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)
                                    ),
                                Factory.Code("        break;\r\n    case 1:\r\n").AsStatement(),
                                new MarkupBlock(
-                                   Factory.Markup("        <p>Bar</p>\r\n").Accepts(AcceptedCharacters.None)
+                                   Factory.Markup("        "),
+                                   new MarkupTagBlock(
+                                       Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup("Bar"),
+                                   new MarkupTagBlock(
+                                       Factory.Markup("</p>").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)
                                    ),
                                Factory.Code("        return;\r\n    case 2:\r\n        {\r\n").AsStatement(),
                                new MarkupBlock(
-                                   Factory.Markup("            <p>Baz</p>\r\n").Accepts(AcceptedCharacters.None)
+                                   Factory.Markup("            "),
+                                   new MarkupTagBlock(
+                                       Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup("Baz"),
+                                   new MarkupTagBlock(
+                                       Factory.Markup("</p>").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)
                                    ),
                                new MarkupBlock(
-                                   Factory.Markup("            <p>Boz</p>\r\n").Accepts(AcceptedCharacters.None)
+                                   Factory.Markup("            "),
+                                   new MarkupTagBlock(
+                                       Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup("Boz"),
+                                   new MarkupTagBlock(
+                                       Factory.Markup("</p>").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)
                                    ),
                                Factory.Code("        }\r\n    default:\r\n").AsStatement(),
                                new MarkupBlock(
-                                   Factory.Markup("        <p>Biz</p>\r\n").Accepts(AcceptedCharacters.None)
+                                   Factory.Markup("        "),
+                                   new MarkupTagBlock(
+                                       Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup("Biz"),
+                                   new MarkupTagBlock(
+                                       Factory.Markup("</p>").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)
                                    ),
                                Factory.Code("}").AsStatement().Accepts(AcceptedCharacters.None)));
         }
@@ -330,22 +418,52 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
                                Factory.Code(" switch(foo) {\r\n    case 0:\r\n").AsStatement(),
                                new MarkupBlock(
-                                   Factory.Markup("        <p>Foo</p>\r\n").Accepts(AcceptedCharacters.None)
+                                   Factory.Markup("        "),
+                                   new MarkupTagBlock(
+                                       Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup("Foo"),
+                                   new MarkupTagBlock(
+                                       Factory.Markup("</p>").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)
                                    ),
                                Factory.Code("        break;\r\n    case 1:\r\n").AsStatement(),
                                new MarkupBlock(
-                                   Factory.Markup("        <p>Bar</p>\r\n").Accepts(AcceptedCharacters.None)
+                                   Factory.Markup("        "),
+                                   new MarkupTagBlock(
+                                       Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup("Bar"),
+                                   new MarkupTagBlock(
+                                       Factory.Markup("</p>").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)
                                    ),
                                Factory.Code("        return;\r\n    case 2:\r\n        {\r\n").AsStatement(),
                                new MarkupBlock(
-                                   Factory.Markup("            <p>Baz</p>\r\n").Accepts(AcceptedCharacters.None)
+                                   Factory.Markup("            "),
+                                   new MarkupTagBlock(
+                                       Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup("Baz"),
+                                   new MarkupTagBlock(
+                                       Factory.Markup("</p>").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)
                                    ),
                                new MarkupBlock(
-                                   Factory.Markup("            <p>Boz</p>\r\n").Accepts(AcceptedCharacters.None)
+                                   Factory.Markup("            "),
+                                   new MarkupTagBlock(
+                                       Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup("Boz"),
+                                   new MarkupTagBlock(
+                                       Factory.Markup("</p>").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)
                                    ),
                                Factory.Code("        }\r\n    default:\r\n").AsStatement(),
                                new MarkupBlock(
-                                   Factory.Markup("        <p>Biz</p>\r\n").Accepts(AcceptedCharacters.None)
+                                   Factory.Markup("        "),
+                                   new MarkupTagBlock(
+                                       Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup("Biz"),
+                                   new MarkupTagBlock(
+                                       Factory.Markup("</p>").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)
                                    ),
                                Factory.Code("} ").AsStatement(),
                                Factory.MetaCode("}").Accepts(AcceptedCharacters.None)));
@@ -358,7 +476,13 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                            new StatementBlock(
                                Factory.Code("for(int i = 0; i < 10; i++) {").AsStatement(),
                                new MarkupBlock(
-                                   Factory.Markup(" <p>Foo</p> ").Accepts(AcceptedCharacters.None)
+                                   Factory.Markup(" "),
+                                    new MarkupTagBlock(
+                                        Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                                    Factory.Markup("Foo"),
+                                    new MarkupTagBlock(
+                                        Factory.Markup("</p>").Accepts(AcceptedCharacters.None)),
+                                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)
                                    ),
                                Factory.Code("}").AsStatement().Accepts(AcceptedCharacters.None)
                                ));
@@ -372,7 +496,13 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
                                Factory.Code(" for(int i = 0; i < 10; i++) {").AsStatement(),
                                new MarkupBlock(
-                                   Factory.Markup(" <p>Foo</p> ").Accepts(AcceptedCharacters.None)
+                                    Factory.Markup(" "),
+                                    new MarkupTagBlock(
+                                        Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                                    Factory.Markup("Foo"),
+                                    new MarkupTagBlock(
+                                        Factory.Markup("</p>").Accepts(AcceptedCharacters.None)),
+                                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)
                                    ),
                                Factory.Code("} ").AsStatement(),
                                Factory.MetaCode("}").Accepts(AcceptedCharacters.None)));
@@ -422,9 +552,11 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.Code("if (i > 0) {").AsStatement(),
                                new MarkupBlock(
                                    Factory.Markup(" "),
-                                   Factory.MarkupTransition("<text>").Accepts(AcceptedCharacters.None),
-                                   Factory.Markup(";"),
-                                   Factory.MarkupTransition("</text>").Accepts(AcceptedCharacters.None),
+                                   new MarkupTagBlock(
+                                        Factory.MarkupTransition("<text>").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup(";").Accepts(AcceptedCharacters.None),
+                                   new MarkupTagBlock(
+                                        Factory.MarkupTransition("</text>").Accepts(AcceptedCharacters.None)),
                                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)
                                    ),
                                Factory.Code("}").AsStatement()));
@@ -439,9 +571,11 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.Code(" if (i > 0) {").AsStatement(),
                                new MarkupBlock(
                                    Factory.Markup(" "),
-                                   Factory.MarkupTransition("<text>").Accepts(AcceptedCharacters.None),
-                                   Factory.Markup(";"),
-                                   Factory.MarkupTransition("</text>").Accepts(AcceptedCharacters.None),
+                                   new MarkupTagBlock(
+                                        Factory.MarkupTransition("<text>").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup(";").Accepts(AcceptedCharacters.None),
+                                   new MarkupTagBlock(
+                                        Factory.MarkupTransition("</text>").Accepts(AcceptedCharacters.None)),
                                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)
                                    ),
                                Factory.Code("} ").AsStatement(),
@@ -474,18 +608,26 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.Code("    }\r\n    foreach (var p in Enumerable.Range(1, 10)) {\r\n").AsStatement(),
                                new MarkupBlock(
                                    Factory.Markup("        "),
-                                   Factory.MarkupTransition("<text>").Accepts(AcceptedCharacters.None),
-                                   Factory.Markup("The number is "),
+                                   new MarkupTagBlock(
+                                        Factory.MarkupTransition("<text>").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup("The number is ").Accepts(AcceptedCharacters.None),
                                    new ExpressionBlock(
                                        Factory.CodeTransition(),
                                        Factory.Code("p").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharacters.NonWhiteSpace)
                                        ),
-                                   Factory.MarkupTransition("</text>").Accepts(AcceptedCharacters.None),
+                                   new MarkupTagBlock(
+                                        Factory.MarkupTransition("</text>").Accepts(AcceptedCharacters.None)),
                                    Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)
                                    ),
                                Factory.Code("    }\r\n    if(!false) {\r\n").AsStatement(),
                                new MarkupBlock(
-                                   Factory.Markup("        <p>A real tag!</p>\r\n").Accepts(AcceptedCharacters.None)
+                                   Factory.Markup("        "),
+                                   new MarkupTagBlock(
+                                       Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                                    Factory.Markup("A real tag!"),
+                                    new MarkupTagBlock(
+                                        Factory.Markup("</p>").Accepts(AcceptedCharacters.None)),
+                                    Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)
                                    ),
                                Factory.Code("    }\r\n").AsStatement(),
                                Factory.MetaCode("}").Accepts(AcceptedCharacters.None)));

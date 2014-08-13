@@ -21,10 +21,12 @@ namespace Microsoft.AspNet.Razor.Test.Framework
         protected static Block IgnoreOutput = new IgnoreOutputBlock();
 
         public SpanFactory Factory { get; private set; }
+        public BlockFactory BlockFactory { get; private set; }
 
         protected ParserTestBase()
         {
             Factory = CreateSpanFactory();
+            BlockFactory = CreateBlockFactory();
         }
 
         public abstract ParserBase CreateMarkupParser();
@@ -38,6 +40,7 @@ namespace Microsoft.AspNet.Razor.Test.Framework
         }
 
         protected abstract SpanFactory CreateSpanFactory();
+        protected abstract BlockFactory CreateBlockFactory();
 
         protected virtual void ParseBlockTest(string document)
         {

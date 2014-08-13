@@ -432,7 +432,10 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                     tabTest: withTabs ? TabTest.Tabs : TabTest.NoTabs,
                     spans: new TestSpan[]
             {
-                new TestSpan(SpanKind.Markup, 0, 16),
+                new TestSpan(SpanKind.Markup, 0, 6),
+                new TestSpan(SpanKind.Markup, 6, 8),
+                new TestSpan(SpanKind.Markup, 8, 14),
+                new TestSpan(SpanKind.Markup, 14, 16),
                 new TestSpan(SpanKind.Transition, 16, 17),
                 new TestSpan(SpanKind.Code, 17, 31),
                 new TestSpan(SpanKind.Markup, 31, 38),

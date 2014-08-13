@@ -121,10 +121,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                                    .AsStatement()
                                                    .With(new AutoCompleteEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString) { AutoCompleteString = "}" }),
                                                new MarkupBlock(
-                                                   Factory.Markup(@"<p></p>")
-                                                       .With(new MarkupCodeGenerator())
-                                                       .Accepts(AcceptedCharacters.None)
-                                                   ),
+                                                   new MarkupTagBlock(
+                                                        Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                                                   new MarkupTagBlock(
+                                                        Factory.Markup("</p>").Accepts(AcceptedCharacters.None))),
                                                Factory.Span(SpanKind.Code, new CSharpSymbol(Factory.LocationTracker.CurrentLocation, String.Empty, CSharpSymbolType.Unknown))
                                                    .With(new StatementCodeGenerator())
                                                )
@@ -144,7 +144,12 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                            .AutoCompleteWith("}", atEndOfSpan: true)
                            .Accepts(AcceptedCharacters.Any),
                     new MarkupBlock(
-                        Factory.Markup("\r\n<p>Foo</p>"))),
+                        Factory.Markup("\r\n"),
+                        new MarkupTagBlock(
+                            Factory.Markup("<p>")),
+                        Factory.Markup("Foo"),
+                        new MarkupTagBlock(
+                            Factory.Markup("</p>")))),
                 new RazorError(RazorResources.FormatParseError_Expected_X("}"),
                                 29, 1, 10));
         }
@@ -161,10 +166,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    .AsStatement()
                                    .With(new AutoCompleteEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString) { AutoCompleteString = "}" }),
                                new MarkupBlock(
-                                   Factory.Markup(@"<p></p>")
-                                       .With(new MarkupCodeGenerator())
-                                       .Accepts(AcceptedCharacters.None)
-                                   ),
+                                    new MarkupTagBlock(
+                                        Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                                    new MarkupTagBlock(
+                                        Factory.Markup("</p>").Accepts(AcceptedCharacters.None))),
                                Factory.Span(SpanKind.Code, new CSharpSymbol(Factory.LocationTracker.CurrentLocation, String.Empty, CSharpSymbolType.Unknown))
                                    .With(new StatementCodeGenerator())
                                ),

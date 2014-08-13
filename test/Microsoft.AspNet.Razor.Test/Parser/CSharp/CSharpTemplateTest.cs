@@ -21,14 +21,17 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
             return new TemplateBlock(
                 new MarkupBlock(
                     Factory.MarkupTransition(),
-                    Factory.Markup("<p>Foo #"),
+                    new MarkupTagBlock(
+                        Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                    Factory.Markup("Foo #"),
                     new ExpressionBlock(
                         Factory.CodeTransition(),
                         Factory.Code("item")
                             .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                             .Accepts(AcceptedCharacters.NonWhiteSpace)
                         ),
-                    Factory.Markup("</p>").Accepts(AcceptedCharacters.None)
+                    new MarkupTagBlock(
+                        Factory.Markup("</p>").Accepts(AcceptedCharacters.None))
                     )
                 );
         }
@@ -40,7 +43,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
             return new TemplateBlock(
                 new MarkupBlock(
                     Factory.MarkupTransition(),
-                    Factory.Markup("<p>Foo #"),
+                    new MarkupTagBlock(
+                        Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                    Factory.Markup("Foo #"),
                     new ExpressionBlock(
                         Factory.CodeTransition(),
                         Factory.Code("Html.Repeat(10, ")
@@ -48,21 +53,25 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         new TemplateBlock(
                             new MarkupBlock(
                                 Factory.MarkupTransition(),
-                                Factory.Markup("<p>"),
+                                new MarkupTagBlock(
+                                    Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                                Factory.EmptyHtml(),
                                 new ExpressionBlock(
                                     Factory.CodeTransition(),
                                     Factory.Code("item")
                                         .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                         .Accepts(AcceptedCharacters.NonWhiteSpace)
                                     ),
-                                Factory.Markup("</p>").Accepts(AcceptedCharacters.None)
+                                new MarkupTagBlock(
+                                    Factory.Markup("</p>").Accepts(AcceptedCharacters.None))
                                 )
                             ),
                         Factory.Code(")")
                             .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                             .Accepts(AcceptedCharacters.NonWhiteSpace)
                         ),
-                    Factory.Markup("</p>").Accepts(AcceptedCharacters.None)
+                    new MarkupTagBlock(
+                        Factory.Markup("</p>").Accepts(AcceptedCharacters.None))
                     )
                 );
         }

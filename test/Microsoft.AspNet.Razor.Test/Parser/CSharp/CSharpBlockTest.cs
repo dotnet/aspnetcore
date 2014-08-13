@@ -312,7 +312,11 @@ while(true);", BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedC
                                Factory.CodeTransition(),
                                Factory.Code("do { var foo = bar;").AsStatement(),
                                new MarkupBlock(
-                                   Factory.Markup(" <p>Foo</p> ").Accepts(AcceptedCharacters.None)
+                                    Factory.Markup(" "),
+                                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharacters.None),
+                                    Factory.Markup("Foo"),
+                                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharacters.None),
+                                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)
                                    ),
                                Factory.Code("foo++; } while (foo<bar>);").AsStatement().Accepts(AcceptedCharacters.None)
                                ));
@@ -478,7 +482,16 @@ catch(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
         [Fact]
         public void ParseBlockSupportsMarkupWithinTryClause()
         {
-            RunSimpleWrappedMarkupTest("try {", " <p>Foo</p> ", "}");
+            RunSimpleWrappedMarkupTest(
+                prefix: "try {", 
+                markup: " <p>Foo</p> ", 
+                suffix: "}",
+                expectedMarkup: new MarkupBlock(
+                    Factory.Markup(" "),
+                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharacters.None),
+                    Factory.Markup("Foo"),
+                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharacters.None),
+                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)));
         }
 
         [Fact]
@@ -490,7 +503,16 @@ catch(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
         [Fact]
         public void ParseBlockSupportsMarkupWithinCatchClause()
         {
-            RunSimpleWrappedMarkupTest("try { var foo = new { } } catch(Foo Bar Baz) {", " <p>Foo</p> ", "}");
+            RunSimpleWrappedMarkupTest(
+                prefix: "try { var foo = new { } } catch(Foo Bar Baz) {", 
+                markup: " <p>Foo</p> ", 
+                suffix: "}",
+                expectedMarkup: new MarkupBlock(
+                    Factory.Markup(" "),
+                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharacters.None),
+                    Factory.Markup("Foo"),
+                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharacters.None),
+                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)));
         }
 
         [Fact]
@@ -508,7 +530,16 @@ catch(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
         [Fact]
         public void ParseBlockSupportsMarkupWithinAdditionalCatchClauses()
         {
-            RunSimpleWrappedMarkupTest("try { var foo = new { } } catch(Foo Bar Baz) { var foo = new { } } catch(Foo Bar Baz) { var foo = new { } } catch(Foo Bar Baz) {", " <p>Foo</p> ", "}");
+            RunSimpleWrappedMarkupTest(
+                prefix: "try { var foo = new { } } catch(Foo Bar Baz) { var foo = new { } } catch(Foo Bar Baz) { var foo = new { } } catch(Foo Bar Baz) {",
+                markup: " <p>Foo</p> ",
+                suffix: "}",
+                expectedMarkup: new MarkupBlock(
+                    Factory.Markup(" "),
+                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharacters.None),
+                    Factory.Markup("Foo"),
+                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharacters.None),
+                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)));
         }
 
         [Fact]
@@ -520,7 +551,17 @@ catch(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
         [Fact]
         public void ParseBlockSupportsMarkupWithinFinallyClause()
         {
-            RunSimpleWrappedMarkupTest("try { var foo = new { } } finally {", " <p>Foo</p> ", "}", acceptedCharacters: AcceptedCharacters.None);
+            RunSimpleWrappedMarkupTest(
+                prefix: "try { var foo = new { } } finally {",
+                markup: " <p>Foo</p> ",
+                suffix: "}",
+                expectedMarkup: new MarkupBlock(
+                    Factory.Markup(" "),
+                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharacters.None),
+                    Factory.Markup("Foo"),
+                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharacters.None),
+                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)),
+                acceptedCharacters: AcceptedCharacters.None);
         }
 
         [Fact]
@@ -638,38 +679,54 @@ catch(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
                 new StatementBlock(
                     Factory.Code("foreach(var c in db.Categories) {\r\n").AsStatement(),
                     new MarkupBlock(
-                        Factory.Markup("            <div>\r\n                <h1>"),
+                        Factory.Markup("            "),
+                        BlockFactory.MarkupTagBlock("<div>", AcceptedCharacters.None),
+                        Factory.Markup("\r\n                "),
+                        BlockFactory.MarkupTagBlock("<h1>", AcceptedCharacters.None),
+                        Factory.EmptyHtml(),
                         new ExpressionBlock(
                             Factory.CodeTransition(),
                             Factory.Code("c.Name")
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                    .Accepts(AcceptedCharacters.NonWhiteSpace)),
-                        Factory.Markup("</h1>\r\n                <ul>\r\n"),
+                        BlockFactory.MarkupTagBlock("</h1>", AcceptedCharacters.None),
+                        Factory.Markup("\r\n                "),
+                        BlockFactory.MarkupTagBlock("<ul>", AcceptedCharacters.None),
+                        Factory.Markup("\r\n"),
                         new StatementBlock(
                             Factory.Code(@"                    ").AsStatement(),
                             Factory.CodeTransition(),
                             Factory.Code("foreach(var p in c.Products) {\r\n").AsStatement(),
                             new MarkupBlock(
-                                Factory.Markup("                        <li><a"),
-                                new MarkupBlock(new AttributeBlockCodeGenerator("href", new LocationTagged<string>(" href=\"", 193, 5, 30), new LocationTagged<string>("\"", 256, 5, 93)),
-                                    Factory.Markup(" href=\"").With(SpanCodeGenerator.Null),
-                                    new MarkupBlock(new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(String.Empty, 200, 5, 37), 200, 5, 37),
-                                        new ExpressionBlock(
-                                            Factory.CodeTransition(),
-                                            Factory.Code("Html.ActionUrl(\"Products\", \"Detail\", new { id = p.Id })")
-                                                   .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                                   .Accepts(AcceptedCharacters.NonWhiteSpace))),
-                                    Factory.Markup("\"").With(SpanCodeGenerator.Null)),
-                                Factory.Markup(">"),
+                                Factory.Markup("                        "),
+                                BlockFactory.MarkupTagBlock("<li>", AcceptedCharacters.None),
+                                new MarkupTagBlock(
+                                    Factory.Markup("<a"),
+                                    new MarkupBlock(new AttributeBlockCodeGenerator("href", new LocationTagged<string>(" href=\"", 193, 5, 30), new LocationTagged<string>("\"", 256, 5, 93)),
+                                        Factory.Markup(" href=\"").With(SpanCodeGenerator.Null),
+                                        new MarkupBlock(new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(string.Empty, 200, 5, 37), 200, 5, 37),
+                                            new ExpressionBlock(
+                                                Factory.CodeTransition(),
+                                                Factory.Code("Html.ActionUrl(\"Products\", \"Detail\", new { id = p.Id })")
+                                                       .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                                       .Accepts(AcceptedCharacters.NonWhiteSpace))),
+                                        Factory.Markup("\"").With(SpanCodeGenerator.Null)),
+                                    Factory.Markup(">").Accepts(AcceptedCharacters.None)),
+                                Factory.EmptyHtml(),
                                 new ExpressionBlock(
                                     Factory.CodeTransition(),
                                     Factory.Code("p.Name")
                                            .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                            .Accepts(AcceptedCharacters.NonWhiteSpace)),
-                                Factory.Markup("</a></li>\r\n").Accepts(AcceptedCharacters.None)),
+                                BlockFactory.MarkupTagBlock("</a>", AcceptedCharacters.None),
+                                BlockFactory.MarkupTagBlock("</li>", AcceptedCharacters.None),
+                                Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)),
                             Factory.Code("                    }\r\n").AsStatement().Accepts(AcceptedCharacters.None)),
-                        Factory.Markup("                </ul>\r\n            </div>\r\n")
-                               .Accepts(AcceptedCharacters.None)),
+                        Factory.Markup("                "),
+                        BlockFactory.MarkupTagBlock("</ul>", AcceptedCharacters.None),
+                        Factory.Markup("\r\n            "),
+                        BlockFactory.MarkupTagBlock("</div>", AcceptedCharacters.None),
+                        Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)),
                     Factory.Code("        }").AsStatement().Accepts(AcceptedCharacters.None)));
         }
 
@@ -696,14 +753,12 @@ catch(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
                                Factory.Code(postComment).AsStatement().Accepts(acceptedCharacters)));
         }
 
-        private void RunSimpleWrappedMarkupTest(string prefix, string markup, string suffix, AcceptedCharacters acceptedCharacters = AcceptedCharacters.Any)
+        private void RunSimpleWrappedMarkupTest(string prefix, string markup, string suffix, MarkupBlock expectedMarkup, AcceptedCharacters acceptedCharacters = AcceptedCharacters.Any)
         {
             ParseBlockTest(prefix + markup + suffix,
                            new StatementBlock(
                                Factory.Code(prefix).AsStatement(),
-                               new MarkupBlock(
-                                   Factory.Markup(markup).Accepts(AcceptedCharacters.None)
-                                   ),
+                               expectedMarkup,
                                Factory.Code(suffix).AsStatement().Accepts(acceptedCharacters)
                                ));
         }

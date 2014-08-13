@@ -92,9 +92,14 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     Factory.Code("while(true) {")
                            .AsStatement(),
                     new MarkupBlock(
-                        Factory.Markup(" <p>Hello</p> ")
-                               .With(new MarkupCodeGenerator())
-                               .Accepts(AcceptedCharacters.None)),
+                        Factory.Markup(" "),
+                        new MarkupTagBlock(
+                            Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                        Factory.Markup("Hello"),
+                        new MarkupTagBlock(
+                            Factory.Markup("</p>").Accepts(AcceptedCharacters.None)),
+                        Factory.Markup(" ").Accepts(AcceptedCharacters.None)
+                        ),
                     Factory.Code("}")
                            .AsStatement()
                            .Accepts(AcceptedCharacters.None)));

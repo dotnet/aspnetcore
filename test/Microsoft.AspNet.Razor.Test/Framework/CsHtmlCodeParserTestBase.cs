@@ -13,6 +13,11 @@ namespace Microsoft.AspNet.Razor.Test.Framework
             get { return CSharpCodeParser.DefaultKeywords; }
         }
 
+        protected override BlockFactory CreateBlockFactory()
+        {
+            return new BlockFactory(Factory ?? CreateSpanFactory());
+        }
+
         protected override SpanFactory CreateSpanFactory()
         {
             return SpanFactory.CreateCsHtml();

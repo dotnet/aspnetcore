@@ -38,16 +38,22 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         {
             ParseBlockTest("<p></> Bar",
                 new MarkupBlock(
-                    Factory.Markup("<p></> ").Accepts(AcceptedCharacters.None)),
+                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharacters.None),
+                    BlockFactory.MarkupTagBlock("</>", AcceptedCharacters.None),
+                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)),
                 new RazorError(RazorResources.FormatParseError_MissingEndTag("p"), 0, 0, 0));
         }
 
         [Fact]
         public void EmptyTag()
         {
+            // This can happen in situations where a user is in VS' HTML editor and they're modifying
+            // the contents of an HTML tag.
             ParseBlockTest("<></> Bar",
                 new MarkupBlock(
-                    Factory.Markup("<></> ").Accepts(AcceptedCharacters.None)));
+                    BlockFactory.MarkupTagBlock("<>", AcceptedCharacters.None),
+                    BlockFactory.MarkupTagBlock("</>", AcceptedCharacters.None),
+                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)));
         }
 
         [Fact]
@@ -55,7 +61,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         {
             ParseBlockTest("<!--Foo--> Bar",
                 new MarkupBlock(
-                    Factory.Markup("<!--Foo--> ").Accepts(AcceptedCharacters.None)));
+                    Factory.Markup("<!--Foo-->").Accepts(AcceptedCharacters.None),
+                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)));
         }
 
         [Fact]
@@ -63,7 +70,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         {
             ParseBlockTest("<!DOCTYPE html> foo",
                 new MarkupBlock(
-                    Factory.Markup("<!DOCTYPE html> ").Accepts(AcceptedCharacters.None)));
+                    Factory.Markup("<!DOCTYPE html>").Accepts(AcceptedCharacters.None),
+                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)));
         }
 
         [Fact]
@@ -71,7 +79,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         {
             ParseBlockTest("<?xml version=\"1.0\" ?> foo",
                 new MarkupBlock(
-                    Factory.Markup("<?xml version=\"1.0\" ?> ").Accepts(AcceptedCharacters.None)));
+                    Factory.Markup("<?xml version=\"1.0\" ?>").Accepts(AcceptedCharacters.None),
+                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)));
         }
 
         [Fact]
@@ -79,7 +88,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         {
             ParseBlockTest("<p>Foo</p> Bar",
                 new MarkupBlock(
-                    Factory.Markup("<p>Foo</p> ").Accepts(AcceptedCharacters.None)));
+                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharacters.None),
+                    Factory.Markup("Foo"),
+                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharacters.None),
+                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)));
         }
 
         [Fact]
@@ -87,9 +99,11 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         {
             ParseBlockTest("<text>Foo</text>}",
                 new MarkupBlock(
-                    Factory.MarkupTransition("<text>"),
-                    Factory.Markup("Foo"),
-                    Factory.MarkupTransition("</text>")));
+                    new MarkupTagBlock(
+                        Factory.MarkupTransition("<text>")),
+                    Factory.Markup("Foo").Accepts(AcceptedCharacters.None),
+                    new MarkupTagBlock(
+                        Factory.MarkupTransition("</text>"))));
         }
 
         [Fact]
@@ -97,7 +111,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         {
             ParseBlockTest("<![CDATA[Foo]]> Bar",
                 new MarkupBlock(
-                    Factory.Markup("<![CDATA[Foo]]> ").Accepts(AcceptedCharacters.None)));
+                    Factory.Markup("<![CDATA[Foo]]>").Accepts(AcceptedCharacters.None),
+                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)));
         }
 
         [Fact]
@@ -105,7 +120,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         {
             ParseDocumentTest("<script>foo < bar && quantity.toString() !== orderQty.val()</script>",
                 new MarkupBlock(
-                    Factory.Markup("<script>foo < bar && quantity.toString() !== orderQty.val()</script>")));
+                    BlockFactory.MarkupTagBlock("<script>"),
+                    Factory.Markup("foo < bar && quantity.toString() !== orderQty.val()"),
+                    BlockFactory.MarkupTagBlock("</script>")));
         }
 
         [Theory]
@@ -114,8 +131,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         {
             ParseBlockTest("<" + tagName + ">foo",
                 new MarkupBlock(
-                    Factory.Markup("<" + tagName + ">")
-                           .Accepts(AcceptedCharacters.None)));
+                    BlockFactory.MarkupTagBlock("<" + tagName + ">", AcceptedCharacters.None)));
         }
 
         [Theory]
@@ -124,8 +140,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         {
             ParseBlockTest("<" + tagName + "><other>foo",
                 new MarkupBlock(
-                    Factory.Markup("<" + tagName + ">")
-                           .Accepts(AcceptedCharacters.None)));
+                    BlockFactory.MarkupTagBlock("<" + tagName + ">", AcceptedCharacters.None)));
         }
 
         [Theory]
@@ -134,8 +149,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         {
             ParseBlockTest("<" + tagName + "> </" + tagName + ">foo",
                 new MarkupBlock(
-                    Factory.Markup("<" + tagName + "> </" + tagName + ">")
-                           .Accepts(AcceptedCharacters.None)));
+                    BlockFactory.MarkupTagBlock("<" + tagName + ">", AcceptedCharacters.None),
+                    Factory.Markup(" "),
+                    BlockFactory.MarkupTagBlock("</" + tagName + ">", AcceptedCharacters.None)));
         }
 
         [Theory]
@@ -144,8 +160,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         {
             ParseBlockTest("<" + tagName + "></" + tagName,
                 new MarkupBlock(
-                    Factory.Markup("<" + tagName + "></" + tagName)
-                           .Accepts(AcceptedCharacters.Any)));
+                    BlockFactory.MarkupTagBlock("<" + tagName + ">", AcceptedCharacters.None),
+                    BlockFactory.MarkupTagBlock("</" + tagName)));
         }
     }
 }

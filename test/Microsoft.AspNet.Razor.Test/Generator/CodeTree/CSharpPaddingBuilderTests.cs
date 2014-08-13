@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -17,14 +18,14 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         public void CalculatePaddingForEmptySpanReturnsZero()
         {
             // Arrange
-            RazorEngineHost host = CreateHost(designTime: true);
+            var host = CreateHost(designTime: true);
 
-            Span span = new Span(new SpanBuilder());
+            var span = new Span(new SpanBuilder());
 
             var paddingBuilder = new CSharpPaddingBuilder(host);
 
             // Act
-            int padding = paddingBuilder.CalculatePadding(span, 0);
+            var padding = paddingBuilder.CalculatePadding(span, 0);
 
             // Assert
             Assert.Equal(0, padding);
@@ -35,9 +36,9 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         public void CalculatePaddingForEmptySpanWith4Spaces(bool designTime, bool isIndentingWithTabs, int tabSize)
         {
             // Arrange
-            RazorEngineHost host = CreateHost(designTime, isIndentingWithTabs, tabSize);
+            var host = CreateHost(designTime, isIndentingWithTabs, tabSize);
 
-            Span span = GenerateSpan(@"    @{", SpanKind.Code, 3, "");
+            var span = GenerateSpan(@"    @{", SpanKind.Code, 3, "");
 
             var paddingBuilder = new CSharpPaddingBuilder(host);
 
@@ -53,14 +54,14 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         public void CalculatePaddingForIfSpanWith5Spaces(bool designTime, bool isIndentingWithTabs, int tabSize)
         {
             // Arrange
-            RazorEngineHost host = CreateHost(designTime, isIndentingWithTabs, tabSize);
+            var host = CreateHost(designTime, isIndentingWithTabs, tabSize);
 
-            Span span = GenerateSpan(@"    @if (true)", SpanKind.Code, 2, "if (true)");
+            var span = GenerateSpan(@"    @if (true)", SpanKind.Code, 2, "if (true)");
 
             var paddingBuilder = new CSharpPaddingBuilder(host);
 
             // Act
-            int padding = paddingBuilder.CalculatePadding(span, 1);
+            var padding = paddingBuilder.CalculatePadding(span, 1);
 
             // Assert
             Assert.Equal(4, padding);
@@ -85,22 +86,20 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         public void VerifyPaddingForIfSpanWith4Spaces(bool designTime, bool isIndentingWithTabs, int tabSize, int numTabs, int numSpaces)
         {
             // Arrange
-            RazorEngineHost host = CreateHost(designTime, isIndentingWithTabs, tabSize);
+            var host = CreateHost(designTime, isIndentingWithTabs, tabSize);
 
             // no new lines involved
-            Span spanFlat = GenerateSpan("    @if (true)", SpanKind.Code, 2, "if (true)");
-            Span spanNewlines = GenerateSpan("\t<div>\r\n    @if (true)", SpanKind.Code, 3, "if (true)");
+            var spanFlat = GenerateSpan("    @if (true)", SpanKind.Code, 2, "if (true)");
+            var spanNewlines = GenerateSpan("\t<div>" + Environment.NewLine + "    @if (true)", SpanKind.Code, 5, "if (true)");
 
             var paddingBuilder = new CSharpPaddingBuilder(host);
 
             // Act
-            string paddingFlat = paddingBuilder.BuildStatementPadding(spanFlat);
-
-
-            string paddingNewlines = paddingBuilder.BuildStatementPadding(spanNewlines);
+            var paddingFlat = paddingBuilder.BuildStatementPadding(spanFlat);
+            var paddingNewlines = paddingBuilder.BuildStatementPadding(spanNewlines);
 
             // Assert
-            string code = " if (true)";
+            var code = " if (true)";
             VerifyPadded(numTabs, numSpaces, code, paddingFlat);
             VerifyPadded(numTabs, numSpaces, code, paddingNewlines);
         }
@@ -123,20 +122,20 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         public void VerifyPaddingForIfSpanWithTwoTabs(bool designTime, bool isIndentingWithTabs, int tabSize, int numTabs, int numSpaces)
         {
             // Arrange
-            RazorEngineHost host = CreateHost(designTime, isIndentingWithTabs, tabSize);
+            var host = CreateHost(designTime, isIndentingWithTabs, tabSize);
 
             // no new lines involved
-            Span spanFlat = GenerateSpan("\t\t@if (true)", SpanKind.Code, 2, "if (true)");
-            Span spanNewlines = GenerateSpan("\t<div>\r\n\t\t@if (true)", SpanKind.Code, 3, "if (true)");
+            var spanFlat = GenerateSpan("\t\t@if (true)", SpanKind.Code, 2, "if (true)");
+            var spanNewlines = GenerateSpan("\t<div>" + Environment.NewLine + "\t\t@if (true)", SpanKind.Code, 5, "if (true)");
 
             var paddingBuilder = new CSharpPaddingBuilder(host);
 
             // Act
-            string paddingFlat = paddingBuilder.BuildStatementPadding(spanFlat);
-            string paddingNewlines = paddingBuilder.BuildStatementPadding(spanNewlines);
+            var paddingFlat = paddingBuilder.BuildStatementPadding(spanFlat);
+            var paddingNewlines = paddingBuilder.BuildStatementPadding(spanNewlines);
 
             // Assert
-            string code = " if (true)";
+            var code = " if (true)";
             VerifyPadded(numTabs, numSpaces, code, paddingFlat);
             VerifyPadded(numTabs, numSpaces, code, paddingNewlines);
         }
@@ -158,27 +157,26 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         public void CalculatePaddingForOpenedIf(bool designTime, bool isIndentingWithTabs, int tabSize, int numTabs, int numSpaces)
         {
             // Arrange
-            RazorEngineHost host = CreateHost(designTime, isIndentingWithTabs, tabSize);
+            var host = CreateHost(designTime, isIndentingWithTabs, tabSize);
 
-            string text = "\r\n<html>\r\n<body>\r\n\t\t@if (true) { \r\n</body>\r\n</html>";
+            var text = string.Format("{0}<html>{0}<body>{0}\t\t@if (true) {{ {0}</body>{0}</html>", Environment.NewLine);
 
-            Span span = GenerateSpan(text, SpanKind.Code, 3, "if (true) { \r\n");
+            var code = "if (true) { " + Environment.NewLine;
+            var span = GenerateSpan(text, SpanKind.Code, 7, code);
 
             var paddingBuilder = new CSharpPaddingBuilder(host);
 
             // Act
-            string padding = paddingBuilder.BuildStatementPadding(span);
+            var padding = paddingBuilder.BuildStatementPadding(span);
 
             // Assert
-            string code = " if (true) { \r\n";
-
             VerifyPadded(numTabs, numSpaces, code, padding);
         }
 
         private static void VerifyPadded(int numTabs, int numSpaces, string code, string padding)
         {
-            string padded = padding + code;
-            string expectedPadding = new string('\t', numTabs) + new string(' ', numSpaces);
+            var padded = padding + code;
+            var expectedPadding = new string('\t', numTabs) + new string(' ', numSpaces);
 
             Assert.Equal(expectedPadding, padding);
             Assert.Equal(numTabs + numSpaces + code.Length, padded.Length);
@@ -214,7 +212,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
 
         private static Span GenerateSpan(string text, SpanKind spanKind, int spanIndex, string spanText)
         {
-            Span[] spans = GenerateSpans(text, spanKind, spanIndex, spanText);
+            var spans = GenerateSpans(text, spanKind, spanIndex, spanText);
 
             return spans[spanIndex];
         }
