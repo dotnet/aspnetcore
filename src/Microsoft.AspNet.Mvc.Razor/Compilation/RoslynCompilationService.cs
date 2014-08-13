@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                     var type = assembly.GetExportedTypes()
                                        .First();
 
-                    return CompilationResult.Successful(type);
+                    return UncachedCompilationResult.Successful(type, compilationContent);
                 }
             }
         }

@@ -15,7 +15,10 @@ namespace Microsoft.AspNet.Mvc.Razor
     {
         private Type _type;
 
-        private CompilationResult()
+        /// <summary>
+        /// Creates a new instance of <see cref="CompilationResult"/>.
+        /// </summary>
+        protected CompilationResult()
         {
         }
 
@@ -40,12 +43,12 @@ namespace Microsoft.AspNet.Mvc.Razor
         public IEnumerable<CompilationMessage> Messages { get; private set; }
 
         /// <summary>
-        /// Gets the generated C# content that was compiled.
+        /// Gets (or sets in derived types) the generated C# content that was compiled.
         /// </summary>
-        public string CompiledContent { get; private set; }
+        public string CompiledContent { get; protected set; }
 
         /// <summary>
-        /// Gets the type produced as a result of compilation.
+        /// Gets (or sets in derived types) the type produced as a result of compilation.
         /// </summary>
         /// <exception cref="CompilationFailedException">An error occured during compilation.</exception>
         public Type CompiledType
@@ -58,6 +61,10 @@ namespace Microsoft.AspNet.Mvc.Razor
                 }
 
                 return _type;
+            }
+            protected set
+            {
+                _type = value;
             }
         }
 
@@ -91,7 +98,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             return new CompilationResult
             {
-                _type = type
+                CompiledType = type
             };
         }
 
