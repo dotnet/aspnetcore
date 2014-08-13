@@ -119,7 +119,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 
             foreach (var metadataReference in export.MetadataReferences)
             {
-                // Taken from  https://github.com/aspnet/KRuntime/blob/757ba9bfdf80bd6277e715d6375969a7f44370ee/src/Microsoft.Framework.Runtime.Roslyn/RoslynCompiler.cs#L164
+                // Taken from https://github.com/aspnet/KRuntime/blob/757ba9bfdf80bd6277e715d6375969a7f44370ee/src/...
+                // Microsoft.Framework.Runtime.Roslyn/RoslynCompiler.cs#L164
                 // We don't want to take a dependency on the Roslyn bit directly since it pulls in more dependencies
                 // than the view engine needs (Microsoft.Framework.Runtime) for example
                 references.Add(ConvertMetadataReference(metadataReference));
