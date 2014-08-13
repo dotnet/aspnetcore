@@ -38,15 +38,17 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
         [Theory]
         [MemberData("InvalidViewNameValues")]
-        public void FindViewFullPathFailsWithNoCshtmlEnding(string viewName)
+        public void FindView_WithFullPathReturnsNotFound_WhenPathDoesNotMatchExtension(string viewName)
         {
             // Arrange
             var viewEngine = CreateSearchLocationViewEngineTester();
             var context = GetActionContext(_controllerTestContext);
 
-            // Act & Assert
-            Assert.Throws<InvalidOperationException>(() =>
-                viewEngine.FindView(context, viewName));
+            // Act
+            var result = viewEngine.FindView(context, viewName);
+
+            // Assert
+            Assert.False(result.Success);
         }
 
         [Theory]
@@ -68,15 +70,17 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
         [Theory]
         [MemberData("InvalidViewNameValues")]
-        public void FindPartialViewFullPathFailsWithNoCshtmlEnding(string partialViewName)
+        public void FindPartialView_WithFullPathReturnsNotFound_WhenPathDoesNotMatchExtension(string partialViewName)
         {
             // Arrange
             var viewEngine = CreateSearchLocationViewEngineTester();
             var context = GetActionContext(_controllerTestContext);
 
-            // Act & Assert
-            Assert.Throws<InvalidOperationException>(() =>
-                viewEngine.FindPartialView(context, partialViewName));
+            // Act
+            var result = viewEngine.FindPartialView(context, partialViewName);
+
+            // Assert
+            Assert.False(result.Success);
         }
 
         [Theory]

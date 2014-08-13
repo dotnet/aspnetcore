@@ -159,9 +159,6 @@
   <data name="ViewContextMustBeSet" xml:space="preserve">
     <value>'{0} must be set to access '{1}'.</value>
   </data>
-  <data name="ViewMustEndInExtension" xml:space="preserve">
-    <value>View '{0}' must have extension '{1}' when the view represents a full path.</value>
-  </data>
   <data name="View_MethodCannotBeCalled" xml:space="preserve">
     <value>The method '{0}' cannot be invoked by this view.</value>
   </data>

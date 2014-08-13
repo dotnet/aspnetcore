@@ -78,16 +78,15 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             if (nameRepresentsPath)
             {
-                if (!viewName.EndsWith(ViewExtension, StringComparison.OrdinalIgnoreCase))
+                if (viewName.EndsWith(ViewExtension, StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new InvalidOperationException(
-                        Resources.FormatViewMustEndInExtension(viewName, ViewExtension));
+                    var page = _pageFactory.CreateInstance(viewName);
+                    if (page != null)
+                    {
+                        return CreateFoundResult(page, viewName, partial);
+                    }
                 }
-
-                var page = _pageFactory.CreateInstance(viewName);
-
-                return page != null ? CreateFoundResult(page, viewName, partial) :
-                                      ViewEngineResult.NotFound(viewName, new[] { viewName });
+                return ViewEngineResult.NotFound(viewName, new[] { viewName });
             }
             else
             {
