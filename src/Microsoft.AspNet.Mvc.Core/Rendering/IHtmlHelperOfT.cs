@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="HtmlString"/> containing the created HTML.</returns>
         /// <remarks>
         /// For example the default <see cref="object"/> display template includes markup for each property in the
-        /// <see cref="expression"/> result.
+        /// <paramref name="expression"/> result.
         /// </remarks>
         HtmlString DisplayFor<TValue>([NotNull] Expression<Func<TModel, TValue>> expression,
                                       string templateName,
@@ -161,7 +161,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
         /// <remarks>
         /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
-        /// elements for each property in the <see cref="expression"/> result.
+        /// elements for each property in the <paramref name="expression"/> result.
         /// </remarks>
         HtmlString EditorFor<TValue>([NotNull] Expression<Func<TModel, TValue>> expression,
             string templateName,

@@ -177,7 +177,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <remarks>
         /// <para>
         /// For example the default <see cref="object"/> display template includes markup for each property in the
-        /// <see cref="expression"/>'s value.
+        /// <paramref name="expression"/>'s value.
         /// </para>
         /// <para>
         /// Example <paramref name="expression"/>s include <c>string.Empty</c> which identifies the current model and
@@ -258,7 +258,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <remarks>
         /// <para>
         /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
-        /// elements for each property in the <see cref="expression"/>'s value.
+        /// elements for each property in the <paramref name="expression"/>'s value.
         /// </para>
         /// <para>
         /// Example <paramref name="expression"/>s include <c>string.Empty</c> which identifies the current model and

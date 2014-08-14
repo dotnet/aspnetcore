@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <remarks>
         /// <para>
         /// For example the default <see cref="object"/> display template includes markup for each property in the
-        /// <see cref="expression"/>'s value.
+        /// <paramref name="expression"/>'s value.
         /// </para>
         /// <para>
         /// Example <paramref name="expression"/>s include <c>string.Empty</c> which identifies the current model and
@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <remarks>
         /// <para>
         /// For example the default <see cref="object"/> display template includes markup for each property in the
-        /// <see cref="expression"/>'s value.
+        /// <paramref name="expression"/>'s value.
         /// </para>
         /// <para>
         /// Example <paramref name="expression"/>s include <c>string.Empty</c> which identifies the current model and
@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <remarks>
         /// <para>
         /// For example the default <see cref="object"/> display template includes markup for each property in the
-        /// <see cref="expression"/>'s value.
+        /// <paramref name="expression"/>'s value.
         /// </para>
         /// <para>
         /// Example <paramref name="expression"/>s include <c>string.Empty</c> which identifies the current model and
@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <remarks>
         /// <para>
         /// For example the default <see cref="object"/> display template includes markup for each property in the
-        /// <see cref="expression"/>'s value.
+        /// <paramref name="expression"/>'s value.
         /// </para>
         /// <para>
         /// Example <paramref name="expression"/>s include <c>string.Empty</c> which identifies the current model and
@@ -156,7 +156,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <remarks>
         /// <para>
         /// For example the default <see cref="object"/> display template includes markup for each property in the
-        /// <see cref="expression"/>'s value.
+        /// <paramref name="expression"/>'s value.
         /// </para>
         /// <para>
         /// Example <paramref name="expression"/>s include <c>string.Empty</c> which identifies the current model and
@@ -183,7 +183,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="HtmlString"/> containing the created HTML.</returns>
         /// <remarks>
         /// For example the default <see cref="object"/> display template includes markup for each property in the
-        /// <see cref="expression"/> result.
+        /// <paramref name="expression"/> result.
         /// </remarks>
         public static HtmlString DisplayFor<TModel, TValue>([NotNull] this IHtmlHelper<TModel> html,
                                                             [NotNull] Expression<Func<TModel, TValue>> expression)
@@ -209,7 +209,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="HtmlString"/> containing the created HTML.</returns>
         /// <remarks>
         /// For example the default <see cref="object"/> display template includes markup for each property in the
-        /// <see cref="expression"/> result.
+        /// <paramref name="expression"/> result.
         /// </remarks>
         public static HtmlString DisplayFor<TModel, TValue>([NotNull] this IHtmlHelper<TModel> html,
                                                             [NotNull] Expression<Func<TModel, TValue>> expression,
@@ -232,7 +232,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="HtmlString"/> containing the created HTML.</returns>
         /// <remarks>
         /// For example the default <see cref="object"/> display template includes markup for each property in the
-        /// <see cref="expression"/> result.
+        /// <paramref name="expression"/> result.
         /// </remarks>
         public static HtmlString DisplayFor<TModel, TValue>([NotNull] this IHtmlHelper<TModel> html,
                                                             [NotNull] Expression<Func<TModel, TValue>> expression,
@@ -259,7 +259,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="HtmlString"/> containing the created HTML.</returns>
         /// <remarks>
         /// For example the default <see cref="object"/> display template includes markup for each property in the
-        /// <see cref="expression"/> result.
+        /// <paramref name="expression"/> result.
         /// </remarks>
         public static HtmlString DisplayFor<TModel, TValue>([NotNull] this IHtmlHelper<TModel> html,
                                                             [NotNull] Expression<Func<TModel, TValue>> expression,
@@ -287,7 +287,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="HtmlString"/> containing the created HTML.</returns>
         /// <remarks>
         /// For example the default <see cref="object"/> display template includes markup for each property in the
-        /// <see cref="expression"/> result.
+        /// <paramref name="expression"/> result.
         /// </remarks>
         public static HtmlString DisplayFor<TModel, TValue>([NotNull] this IHtmlHelper<TModel> html,
                                                             [NotNull] Expression<Func<TModel, TValue>> expression,
