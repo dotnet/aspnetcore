@@ -186,7 +186,7 @@
     <Compile Include="ReflectedActionDescriptor.cs" />
     <Compile Include="ReflectedActionDescriptorProvider.cs" />
     <Compile Include="ReflectedActionExecutor.cs" />
-    <Compile Include="ReflectedActionInvoker.cs" />
+    <Compile Include="FilterActionInvoker.cs" />
     <Compile Include="ReflectedActionInvokerProvider.cs" />
     <Compile Include="ReflectedModelBuilder\IReflectedApplicationModelConvention.cs" />
     <Compile Include="ReflectedModelBuilder\ReflectedActionModel.cs" />
