@@ -133,7 +133,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             case '!':
                 return EndSymbol(HtmlSymbolType.Bang);
             case '/':
-                return EndSymbol(HtmlSymbolType.Solidus);
+                return EndSymbol(HtmlSymbolType.ForwardSlash);
             case '?':
                 return EndSymbol(HtmlSymbolType.QuestionMark);
             case '[':

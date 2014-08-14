@@ -18,6 +18,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
         Template,
 
         // Special
-        Comment
+        Comment,
+        Tag
     }
 }

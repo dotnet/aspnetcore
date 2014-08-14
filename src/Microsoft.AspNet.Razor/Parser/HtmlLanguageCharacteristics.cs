@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 return "<";
             case HtmlSymbolType.Bang:
                 return "!";
-            case HtmlSymbolType.Solidus:
+            case HtmlSymbolType.ForwardSlash:
                 return "/";
             case HtmlSymbolType.QuestionMark:
                 return "?";

@@ -36,37 +36,65 @@ namespace Microsoft.AspNet.Razor.Parser
         /// Reads the content of a tag (if present) in the MarkupDocument (or MarkupSection) context,
         /// where we don't care about maintaining a stack of tags.
         /// </summary>
-        /// <returns>A boolean indicating if we scanned at least one tag.</returns>
-        private bool ScanTagInDocumentContext()
+        private void ScanTagInDocumentContext()
         {
-            if (Optional(HtmlSymbolType.OpenAngle))
+            if (At(HtmlSymbolType.OpenAngle))
             {
-                if (At(HtmlSymbolType.Bang))
+                if (NextIs(HtmlSymbolType.Bang))
                 {
+                    AcceptAndMoveNext(); // Accept '<'
                     BangTag();
-                    return true;
                 }
-                else if (At(HtmlSymbolType.QuestionMark))
+                else if (NextIs(HtmlSymbolType.QuestionMark))
                 {
+                    AcceptAndMoveNext(); // Accept '<'
                     XmlPI();
-                    return true;
                 }
-                else if (!At(HtmlSymbolType.Solidus))
+                else
                 {
-                    bool scriptTag = At(HtmlSymbolType.Text) &&
-                                     String.Equals(CurrentSymbol.Content, "script", StringComparison.OrdinalIgnoreCase);
-                    Optional(HtmlSymbolType.Text);
-                    TagContent(); // Parse the tag, don't care about the content
-                    Optional(HtmlSymbolType.Solidus);
-                    Optional(HtmlSymbolType.CloseAngle);
-                    if (scriptTag)
+                    Output(SpanKind.Markup);
+
+                    // Start tag block
+                    var tagBlock = Context.StartBlock(BlockType.Tag);
+
+                    AcceptAndMoveNext(); // Accept '<'
+
+                    if (!At(HtmlSymbolType.ForwardSlash))
                     {
-                        SkipToEndScriptAndParseCode();
+                        // Parsing a start tag
+                        var scriptTag = At(HtmlSymbolType.Text) &&
+                                        string.Equals(CurrentSymbol.Content, "script", StringComparison.OrdinalIgnoreCase);
+                        Optional(HtmlSymbolType.Text);
+                        TagContent(); // Parse the tag, don't care about the content
+                        Optional(HtmlSymbolType.ForwardSlash);
+                        Optional(HtmlSymbolType.CloseAngle);
+
+                        if (scriptTag)
+                        {
+                            Output(SpanKind.Markup);
+                            tagBlock.Dispose();
+
+                            SkipToEndScriptAndParseCode();
+                            return;
+                        }
                     }
-                    return true;
+                    else
+                    {
+                        // Parsing an end tag
+                        // This section can accept things like: '</p  >' or '</p>' etc.
+                        Optional(HtmlSymbolType.ForwardSlash);
+                        // Whitespace here is invalid (according to the spec)
+                        Optional(HtmlSymbolType.Text);
+                        AcceptAll(HtmlSymbolType.WhiteSpace);
+                        Optional(HtmlSymbolType.CloseAngle);
+                    }
+
+                    Output(SpanKind.Markup);
+
+                    // End tag block
+                    tagBlock.Dispose();
                 }
             }
-            return false;
         }
     }
 }

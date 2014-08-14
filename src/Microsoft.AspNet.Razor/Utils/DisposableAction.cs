@@ -8,6 +8,7 @@ namespace Microsoft.AspNet.Razor.Utils
     internal class DisposableAction : IDisposable
     {
         private Action _action;
+        private bool _invoked;
 
         public DisposableAction(Action action)
         {
@@ -20,16 +21,10 @@ namespace Microsoft.AspNet.Razor.Utils
 
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            // If we were disposed by the finalizer it's because the user didn't use a "using" block, so don't do anything!
-            if (disposing)
+            if (!_invoked)
             {
                 _action();
+                _invoked = true;
             }
         }
     }

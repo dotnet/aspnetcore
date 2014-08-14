@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
         NewLine, // Newline
         OpenAngle, // <
         Bang, // !
-        Solidus, // /
+        ForwardSlash, // /
         QuestionMark, // ?
         DoubleHyphen, // --
         LeftBracket, // [

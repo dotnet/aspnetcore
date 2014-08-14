@@ -125,25 +125,58 @@ namespace Microsoft.AspNet.Razor.Parser
             do
             {
                 SkipToAndParseCode(HtmlSymbolType.OpenAngle);
-                if (EndOfFile)
+
+                // Output everything prior to the OpenAngle into a markup span
+                Output(SpanKind.Markup);
+
+                // Do not want to start a new tag block if we're at the end of the file.
+                IDisposable tagBlockWrapper = null;
+                try
                 {
-                    EndTagBlock(tags, complete: true);
-                }
-                else
-                {
-                    _bufferedOpenAngle = null;
-                    _lastTagStart = CurrentLocation;
-                    Assert(HtmlSymbolType.OpenAngle);
-                    _bufferedOpenAngle = CurrentSymbol;
-                    SourceLocation tagStart = CurrentLocation;
-                    if (!NextToken())
+                    if (!EndOfFile && !AtSpecialTag)
                     {
-                        Accept(_bufferedOpenAngle);
-                        EndTagBlock(tags, complete: false);
+                        // Start a Block tag.  This is used to wrap things like <p> or <a class="btn"> etc.
+                        tagBlockWrapper = Context.StartBlock(BlockType.Tag);
+                    }
+
+                    if (EndOfFile)
+                    {
+                        EndTagBlock(tags, complete: true);
                     }
                     else
                     {
-                        complete = AfterTagStart(tagStart, tags);
+                        _bufferedOpenAngle = null;
+                        _lastTagStart = CurrentLocation;
+                        Assert(HtmlSymbolType.OpenAngle);
+                        _bufferedOpenAngle = CurrentSymbol;
+                        SourceLocation tagStart = CurrentLocation;
+                        if (!NextToken())
+                        {
+                            Accept(_bufferedOpenAngle);
+                            EndTagBlock(tags, complete: false);
+                        }
+                        else
+                        {
+                            complete = AfterTagStart(tagStart, tags, tagBlockWrapper);
+                        }
+                    }
+
+                    if (complete)
+                    {
+                        // Completed tags have no accepted characters inside of blocks.
+                        Span.EditHandler.AcceptedCharacters = AcceptedCharacters.None;
+                    }
+
+                    // Output the contents of the tag into its own markup span.
+                    Output(SpanKind.Markup);
+                }
+                finally
+                {
+                    // Will be null if we were at end of file or special tag when initially created.
+                    if (tagBlockWrapper != null)
+                    {
+                        // End tag block
+                        tagBlockWrapper.Dispose();
                     }
                 }
             }
@@ -152,15 +185,17 @@ namespace Microsoft.AspNet.Razor.Parser
             EndTagBlock(tags, complete);
         }
 
-        private bool AfterTagStart(SourceLocation tagStart, Stack<Tuple<HtmlSymbol, SourceLocation>> tags)
+        private bool AfterTagStart(SourceLocation tagStart, 
+                                   Stack<Tuple<HtmlSymbol, SourceLocation>> tags, 
+                                   IDisposable tagBlockWrapper)
         {
             if (!EndOfFile)
             {
                 switch (CurrentSymbol.Type)
                 {
-                    case HtmlSymbolType.Solidus:
+                    case HtmlSymbolType.ForwardSlash:
                         // End Tag
-                        return EndTag(tagStart, tags);
+                        return EndTag(tagStart, tags, tagBlockWrapper);
                     case HtmlSymbolType.Bang:
                         // Comment
                         Accept(_bufferedOpenAngle);
@@ -171,7 +206,7 @@ namespace Microsoft.AspNet.Razor.Parser
                         return XmlPI();
                     default:
                         // Start Tag
-                        return StartTag(tags);
+                        return StartTag(tags, tagBlockWrapper);
                 }
             }
             if (tags.Count == 0)
@@ -234,10 +269,12 @@ namespace Microsoft.AspNet.Razor.Parser
             return false;
         }
 
-        private bool EndTag(SourceLocation tagStart, Stack<Tuple<HtmlSymbol, SourceLocation>> tags)
+        private bool EndTag(SourceLocation tagStart, 
+                            Stack<Tuple<HtmlSymbol, SourceLocation>> tags, 
+                            IDisposable tagBlockWrapper)
         {
             // Accept "/" and move next
-            Assert(HtmlSymbolType.Solidus);
+            Assert(HtmlSymbolType.ForwardSlash);
             HtmlSymbol solidus = CurrentSymbol;
             if (!NextToken())
             {
@@ -258,8 +295,7 @@ namespace Microsoft.AspNet.Razor.Parser
                     String.Equals(tagName, SyntaxConstants.TextTagName, StringComparison.OrdinalIgnoreCase) &&
                     matched)
                 {
-                    Output(SpanKind.Markup);
-                    return EndTextTag(solidus);
+                    return EndTextTag(solidus, tagBlockWrapper);
                 }
                 Accept(_bufferedOpenAngle);
                 Accept(solidus);
@@ -271,7 +307,16 @@ namespace Microsoft.AspNet.Razor.Parser
             }
         }
 
-        private bool EndTextTag(HtmlSymbol solidus)
+        private void RecoverTextTag()
+        {
+            // We don't want to skip-to and parse because there shouldn't be anything in the body of text tags.
+            AcceptUntil(HtmlSymbolType.CloseAngle, HtmlSymbolType.NewLine);
+
+            // Include the close angle in the text tag block if it's there, otherwise just move on
+            Optional(HtmlSymbolType.CloseAngle);
+        }
+
+        private bool EndTextTag(HtmlSymbol solidus, IDisposable tagBlockWrapper)
         {
             SourceLocation start = _bufferedOpenAngle.Start;
 
@@ -286,6 +331,9 @@ namespace Microsoft.AspNet.Razor.Parser
             if (!seenCloseAngle)
             {
                 Context.OnError(start, RazorResources.ParseError_TextTagCannotContainAttributes);
+
+                Span.EditHandler.AcceptedCharacters = AcceptedCharacters.Any;
+                RecoverTextTag();
             }
             else
             {
@@ -293,14 +341,27 @@ namespace Microsoft.AspNet.Razor.Parser
             }
 
             Span.CodeGenerator = SpanCodeGenerator.Null;
-            Output(SpanKind.Transition);
+
+            CompleteTagBlockWithSpan(tagBlockWrapper, Span.EditHandler.AcceptedCharacters, SpanKind.Transition);
+
             return seenCloseAngle;
+        }
+
+        // Special tags include <! and <? tags
+        private bool AtSpecialTag
+        {
+            get
+            {
+                return (At(HtmlSymbolType.OpenAngle) &&
+                       (NextIs(HtmlSymbolType.Bang) ||
+                        NextIs(HtmlSymbolType.QuestionMark)));
+            }
         }
 
         private bool IsTagRecoveryStopPoint(HtmlSymbol sym)
         {
             return sym.Type == HtmlSymbolType.CloseAngle ||
-                   sym.Type == HtmlSymbolType.Solidus ||
+                   sym.Type == HtmlSymbolType.ForwardSlash ||
                    sym.Type == HtmlSymbolType.OpenAngle ||
                    sym.Type == HtmlSymbolType.SingleQuote ||
                    sym.Type == HtmlSymbolType.DoubleQuote;
@@ -325,7 +386,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
         private bool IsEndOfTag()
         {
-            if (At(HtmlSymbolType.Solidus))
+            if (At(HtmlSymbolType.ForwardSlash))
             {
                 if (NextIs(HtmlSymbolType.CloseAngle))
                 {
@@ -364,7 +425,7 @@ namespace Microsoft.AspNet.Razor.Parser
                                  sym.Type != HtmlSymbolType.Equals &&
                                  sym.Type != HtmlSymbolType.CloseAngle &&
                                  sym.Type != HtmlSymbolType.OpenAngle &&
-                                 (sym.Type != HtmlSymbolType.Solidus || !NextIs(HtmlSymbolType.CloseAngle)));
+                                 (sym.Type != HtmlSymbolType.ForwardSlash || !NextIs(HtmlSymbolType.CloseAngle)));
             }
             else
             {
@@ -470,12 +531,16 @@ namespace Microsoft.AspNet.Razor.Parser
                 // Dynamic value, start a new block and set the code generator
                 using (Context.StartBlock(BlockType.Markup))
                 {
-                    Context.CurrentBlock.CodeGenerator = new DynamicAttributeBlockCodeGenerator(prefix.GetContent(prefixStart), valueStart);
+                    Context.CurrentBlock.CodeGenerator = 
+                        new DynamicAttributeBlockCodeGenerator(prefix.GetContent(prefixStart), valueStart);
 
                     OtherParserBlock();
                 }
             }
-            else if (At(HtmlSymbolType.Text) && CurrentSymbol.Content.Length > 0 && CurrentSymbol.Content[0] == '~' && NextIs(HtmlSymbolType.Solidus))
+            else if (At(HtmlSymbolType.Text) && 
+                     CurrentSymbol.Content.Length > 0 && 
+                     CurrentSymbol.Content[0] == '~' && 
+                     NextIs(HtmlSymbolType.ForwardSlash))
             {
                 // Virtual Path value
                 SourceLocation valueStart = CurrentLocation;
@@ -489,11 +554,12 @@ namespace Microsoft.AspNet.Razor.Parser
                 // Literal value
                 // 'quote' should be "Unknown" if not quoted and symbols coming from the tokenizer should never have "Unknown" type.
                 var value = ReadWhile(sym =>
-                    // These three conditions find separators which break the attribute value into portions
+                                      // These three conditions find separators which break the attribute value into portions
                                       sym.Type != HtmlSymbolType.WhiteSpace &&
                                       sym.Type != HtmlSymbolType.NewLine &&
                                       sym.Type != HtmlSymbolType.Transition &&
-                                          // This condition checks for the end of the attribute value (it repeats some of the checks above but for now that's ok)
+                                      // This condition checks for the end of the attribute value (it repeats some of the checks above 
+                                      // but for now that's ok)
                                       !IsEndOfAttributeValue(quote, sym));
                 Accept(value);
                 Span.CodeGenerator = new LiteralAttributeCodeGenerator(prefix.GetContent(prefixStart), value.GetContent(prefixStart));
@@ -518,7 +584,7 @@ namespace Microsoft.AspNet.Razor.Parser
                    sym.Type == HtmlSymbolType.SingleQuote ||
                    sym.Type == HtmlSymbolType.OpenAngle ||
                    sym.Type == HtmlSymbolType.Equals ||
-                   (sym.Type == HtmlSymbolType.Solidus && NextIs(HtmlSymbolType.CloseAngle)) ||
+                   (sym.Type == HtmlSymbolType.ForwardSlash && NextIs(HtmlSymbolType.CloseAngle)) ||
                    sym.Type == HtmlSymbolType.CloseAngle ||
                    sym.Type == HtmlSymbolType.WhiteSpace ||
                    sym.Type == HtmlSymbolType.NewLine;
@@ -553,7 +619,7 @@ namespace Microsoft.AspNet.Razor.Parser
                             break;
                         case HtmlSymbolType.OpenAngle:
                         // Another "<" means this tag is invalid.
-                        case HtmlSymbolType.Solidus:
+                        case HtmlSymbolType.ForwardSlash:
                         // Empty tag
                         case HtmlSymbolType.CloseAngle:
                             // End of tag
@@ -583,7 +649,7 @@ namespace Microsoft.AspNet.Razor.Parser
             }
         }
 
-        private bool StartTag(Stack<Tuple<HtmlSymbol, SourceLocation>> tags)
+        private bool StartTag(Stack<Tuple<HtmlSymbol, SourceLocation>> tags, IDisposable tagBlockWrapper)
         {
             // If we're at text, it's the name, otherwise the name is ""
             HtmlSymbol tagName;
@@ -610,11 +676,11 @@ namespace Microsoft.AspNet.Razor.Parser
 
                 int bookmark = CurrentLocation.AbsoluteIndex;
                 IEnumerable<HtmlSymbol> tokens = ReadWhile(IsSpacingToken(includeNewLines: true));
-                bool empty = At(HtmlSymbolType.Solidus);
+                bool empty = At(HtmlSymbolType.ForwardSlash);
                 if (empty)
                 {
                     Accept(tokens);
-                    Assert(HtmlSymbolType.Solidus);
+                    Assert(HtmlSymbolType.ForwardSlash);
                     AcceptAndMoveNext();
                     bookmark = CurrentLocation.AbsoluteIndex;
                     tokens = ReadWhile(IsSpacingToken(includeNewLines: true));
@@ -625,6 +691,8 @@ namespace Microsoft.AspNet.Razor.Parser
                     Context.Source.Position = bookmark;
                     NextToken();
                     Context.OnError(tag.Item2, RazorResources.ParseError_TextTagCannotContainAttributes);
+
+                    RecoverTextTag();
                 }
                 else
                 {
@@ -636,15 +704,19 @@ namespace Microsoft.AspNet.Razor.Parser
                 {
                     tags.Push(tag);
                 }
-                Output(SpanKind.Transition);
+
+                CompleteTagBlockWithSpan(tagBlockWrapper, Span.EditHandler.AcceptedCharacters, SpanKind.Transition);
+
                 return true;
             }
             Accept(_bufferedOpenAngle);
             Optional(HtmlSymbolType.Text);
-            return RestOfTag(tag, tags);
+            return RestOfTag(tag, tags, tagBlockWrapper);
         }
 
-        private bool RestOfTag(Tuple<HtmlSymbol, SourceLocation> tag, Stack<Tuple<HtmlSymbol, SourceLocation>> tags)
+        private bool RestOfTag(Tuple<HtmlSymbol, SourceLocation> tag, 
+                               Stack<Tuple<HtmlSymbol, SourceLocation>> tags, 
+                               IDisposable tagBlockWrapper)
         {
             TagContent();
 
@@ -655,7 +727,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 return false;
             }
 
-            bool isEmpty = At(HtmlSymbolType.Solidus);
+            bool isEmpty = At(HtmlSymbolType.ForwardSlash);
             // Found a solidus, so don't accept it but DON'T push the tag to the stack
             if (isEmpty)
             {
@@ -676,44 +748,63 @@ namespace Microsoft.AspNet.Razor.Parser
                     string tagName = tag.Item1.Content.Trim();
                     if (VoidElements.Contains(tagName))
                     {
+                        CompleteTagBlockWithSpan(tagBlockWrapper, AcceptedCharacters.None, SpanKind.Markup);
+
                         // Technically, void elements like "meta" are not allowed to have end tags. Just in case they do,
                         // we need to look ahead at the next set of tokens. If we see "<", "/", tag name, accept it and the ">" following it
                         // Place a bookmark
                         int bookmark = CurrentLocation.AbsoluteIndex;
 
                         // Skip whitespace
-                        IEnumerable<HtmlSymbol> ws = ReadWhile(IsSpacingToken(includeNewLines: true));
+                        IEnumerable<HtmlSymbol> whiteSpace = ReadWhile(IsSpacingToken(includeNewLines: true));
 
                         // Open Angle
-                        if (At(HtmlSymbolType.OpenAngle) && NextIs(HtmlSymbolType.Solidus))
+                        if (At(HtmlSymbolType.OpenAngle) && NextIs(HtmlSymbolType.ForwardSlash))
                         {
                             HtmlSymbol openAngle = CurrentSymbol;
                             NextToken();
-                            Assert(HtmlSymbolType.Solidus);
+                            Assert(HtmlSymbolType.ForwardSlash);
                             HtmlSymbol solidus = CurrentSymbol;
                             NextToken();
-                            if (At(HtmlSymbolType.Text) && String.Equals(CurrentSymbol.Content, tagName, StringComparison.OrdinalIgnoreCase))
+                            if (At(HtmlSymbolType.Text) && string.Equals(CurrentSymbol.Content, tagName, StringComparison.OrdinalIgnoreCase))
                             {
                                 // Accept up to here
-                                Accept(ws);
-                                Accept(openAngle);
-                                Accept(solidus);
-                                AcceptAndMoveNext();
+                                Accept(whiteSpace);
+                                Output(SpanKind.Markup); // Output the whitespace
 
-                                // Accept to '>', '<' or EOF
-                                AcceptUntil(HtmlSymbolType.CloseAngle, HtmlSymbolType.OpenAngle);
-                                // Accept the '>' if we saw it. And if we do see it, we're complete
-                                return Optional(HtmlSymbolType.CloseAngle);
-                            } // At(HtmlSymbolType.Text) && String.Equals(CurrentSymbol.Content, tagName, StringComparison.OrdinalIgnoreCase)
-                        } // At(HtmlSymbolType.OpenAngle) && NextIs(HtmlSymbolType.Solidus)
+                                using (Context.StartBlock(BlockType.Tag))
+                                {
+                                    Accept(openAngle);
+                                    Accept(solidus);
+                                    AcceptAndMoveNext();
+
+                                    // Accept to '>', '<' or EOF
+                                    AcceptUntil(HtmlSymbolType.CloseAngle, HtmlSymbolType.OpenAngle);
+                                    // Accept the '>' if we saw it. And if we do see it, we're complete
+                                    var complete = Optional(HtmlSymbolType.CloseAngle);
+
+                                    if (complete)
+                                    {
+                                        Span.EditHandler.AcceptedCharacters = AcceptedCharacters.None;
+                                    }
+
+                                    // Output the closing void element
+                                    Output(SpanKind.Markup);
+
+                                    return complete;
+                                }
+                            }
+                        }
 
                         // Go back to the bookmark and just finish this tag at the close angle
                         Context.Source.Position = bookmark;
                         NextToken();
                     }
-                    else if (String.Equals(tagName, "script", StringComparison.OrdinalIgnoreCase))
+                    else if (string.Equals(tagName, "script", StringComparison.OrdinalIgnoreCase))
                     {
-                        SkipToEndScriptAndParseCode();
+                        CompleteTagBlockWithSpan(tagBlockWrapper, AcceptedCharacters.None, SpanKind.Markup);
+
+                        SkipToEndScriptAndParseCode(endTagAcceptedCharacters: AcceptedCharacters.None);
                     }
                     else
                     {
@@ -725,31 +816,72 @@ namespace Microsoft.AspNet.Razor.Parser
             return seenClose;
         }
 
-        private void SkipToEndScriptAndParseCode()
+        private void SkipToEndScriptAndParseCode(AcceptedCharacters endTagAcceptedCharacters = AcceptedCharacters.Any)
         {
             // Special case for <script>: Skip to end of script tag and parse code
             bool seenEndScript = false;
+
             while (!seenEndScript && !EndOfFile)
             {
                 SkipToAndParseCode(HtmlSymbolType.OpenAngle);
                 SourceLocation tagStart = CurrentLocation;
-                AcceptAndMoveNext();
-                AcceptWhile(HtmlSymbolType.WhiteSpace);
-                if (Optional(HtmlSymbolType.Solidus))
+
+                if (NextIs(HtmlSymbolType.ForwardSlash))
                 {
-                    AcceptWhile(HtmlSymbolType.WhiteSpace);
-                    if (At(HtmlSymbolType.Text) && String.Equals(CurrentSymbol.Content, "script", StringComparison.OrdinalIgnoreCase))
+                    var openAngle = CurrentSymbol;
+                    NextToken(); // Skip over '<', current is '/'
+                    var solidus = CurrentSymbol;
+                    NextToken(); // Skip over '/', current should be text
+
+                    if (At(HtmlSymbolType.Text) && string.Equals(CurrentSymbol.Content, "script", StringComparison.OrdinalIgnoreCase))
                     {
-                        // </script!
+                        seenEndScript = true;
+                    }
+
+                    // We put everything back because we just wanted to look ahead to see if the current end tag that we're parsing is
+                    // the script tag.  If so we'll generate correct code to encompass it.
+                    PutCurrentBack(); // Put back whatever was after the solidus
+                    PutBack(solidus); // Put back '/'
+                    PutBack(openAngle); // Put back '<'
+                }
+
+                if (seenEndScript)
+                {
+                    Output(SpanKind.Markup);
+
+                    using (Context.StartBlock(BlockType.Tag))
+                    {
+                        Span.EditHandler.AcceptedCharacters = endTagAcceptedCharacters;
+
+                        AcceptAndMoveNext(); // '<'
+                        AcceptAndMoveNext(); // '/'
                         SkipToAndParseCode(HtmlSymbolType.CloseAngle);
                         if (!Optional(HtmlSymbolType.CloseAngle))
                         {
                             Context.OnError(tagStart, RazorResources.FormatParseError_UnfinishedTag("script"));
                         }
-                        seenEndScript = true;
+                        Output(SpanKind.Markup);
                     }
                 }
+                else
+                {
+                    AcceptAndMoveNext(); // '<' (not the closing script tags open angle)
+                }
             }
+        }
+
+        private void CompleteTagBlockWithSpan(IDisposable tagBlockWrapper, 
+                                              AcceptedCharacters acceptedCharacters,
+                                              SpanKind spanKind)
+        {
+            Debug.Assert(tagBlockWrapper != null, 
+                "Tag block wrapper should not be null when attempting to complete a block");
+
+            Span.EditHandler.AcceptedCharacters = acceptedCharacters;
+            // Write out the current span into the block before closing it.
+            Output(spanKind);
+            // Finish the tag block
+            tagBlockWrapper.Dispose();
         }
 
         private bool AcceptUntilAll(params HtmlSymbolType[] endSequence)

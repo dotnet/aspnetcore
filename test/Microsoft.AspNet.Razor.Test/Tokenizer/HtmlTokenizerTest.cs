@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
         [Fact]
         public void Solidus_Is_Recognized()
         {
-            TestSingleToken("/", HtmlSymbolType.Solidus);
+            TestSingleToken("/", HtmlSymbolType.ForwardSlash);
         }
 
         [Fact]
