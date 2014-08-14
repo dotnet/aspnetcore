@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
@@ -77,7 +76,7 @@ namespace Microsoft.AspNet.Mvc
 
         private IView FindView(ActionContext context, string viewName)
         {
-            var result = _viewEngine.FindView(context, viewName);
+            var result = _viewEngine.FindPartialView(context, viewName);
             if (!result.Success)
             {
                 var locations = string.Empty;
