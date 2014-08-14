@@ -13,6 +13,33 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class ModelMetadataTest
     {
+        public static TheoryData<Action<ModelMetadata>, Func<ModelMetadata, object>, object> MetadataModifierData
+        {
+            get
+            {
+                return new TheoryData<Action<ModelMetadata>, Func<ModelMetadata, object>, object>
+                {
+                    { m => m.ConvertEmptyStringToNull = false, m => m.ConvertEmptyStringToNull, false },
+                    { m => m.HideSurroundingHtml = true, m => m.HideSurroundingHtml, true },
+                    { m => m.IsReadOnly = true, m => m.IsReadOnly, true },
+                    { m => m.IsRequired = true, m => m.IsRequired, true },
+                    { m => m.ShowForDisplay = false, m => m.ShowForDisplay, false },
+                    { m => m.ShowForEdit = false, m => m.ShowForEdit, false },
+
+                    { m => m.DataTypeName = "New data type name", m => m.DataTypeName, "New data type name" },
+                    { m => m.Description = "New description", m => m.Description, "New description" },
+                    { m => m.DisplayFormatString = "New display format", m => m.DisplayFormatString, "New display format" },
+                    { m => m.DisplayName = "New display name", m => m.DisplayName, "New display name" },
+                    { m => m.EditFormatString = "New edit format", m => m.EditFormatString, "New edit format" },
+                    { m => m.NullDisplayText = "New null display", m => m.NullDisplayText, "New null display" },
+                    { m => m.SimpleDisplayText = "New simple display", m => m.SimpleDisplayText, "New simple display" },
+                    { m => m.TemplateHint = "New template hint", m => m.TemplateHint, "New template hint" },
+
+                    { m => m.Order = 23, m => m.Order, 23 },
+                };
+            }
+        }
+
 #if NET45
         // Constructor
 
@@ -27,11 +54,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.Equal(typeof(Exception), metadata.ContainerType);
+
             Assert.True(metadata.ConvertEmptyStringToNull);
+            Assert.False(metadata.HideSurroundingHtml);
             Assert.False(metadata.IsComplexType);
+            Assert.False(metadata.IsNullableValueType);
             Assert.False(metadata.IsReadOnly);
             Assert.False(metadata.IsRequired);
+            Assert.True(metadata.ShowForDisplay);
+            Assert.True(metadata.ShowForEdit);
 
+            Assert.Null(metadata.DataTypeName);
             Assert.Null(metadata.Description);
             Assert.Null(metadata.DisplayFormatString);
             Assert.Null(metadata.DisplayName);
@@ -41,8 +74,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             Assert.Equal("model", metadata.Model);
             Assert.Equal("model", metadata.SimpleDisplayText);
+            Assert.Equal(typeof(string), metadata.RealModelType);
             Assert.Equal(typeof(string), metadata.ModelType);
             Assert.Equal("propertyName", metadata.PropertyName);
+
+            Assert.Equal(ModelMetadata.DefaultOrder, metadata.Order);
         }
 #endif
 
@@ -188,6 +224,78 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Equal("Prop2", newProp.PropertyName);
         }
 
+        [Fact]
+        public void PropertiesSetOnce()
+        {
+            // Arrange
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = new ModelMetadata(
+                provider,
+                containerType: null,
+                modelAccessor: () => new Class1(),
+                modelType: typeof(Class1),
+                propertyName: null);
+
+            // Act
+            var firstPropertiesEvaluation = metadata.Properties;
+            var secondPropertiesEvaluation = metadata.Properties;
+
+            // Assert
+            // Same IEnumerable<ModelMetadata> object.
+            Assert.Same(firstPropertiesEvaluation, secondPropertiesEvaluation);
+        }
+
+        [Fact]
+        public void PropertiesEnumerationEvaluatedOnce()
+        {
+            // Arrange
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = new ModelMetadata(
+                provider,
+                containerType: null,
+                modelAccessor: () => new Class1(),
+                modelType: typeof(Class1),
+                propertyName: null);
+
+            // Act
+            var firstPropertiesEvaluation = metadata.Properties.ToList();
+            var secondPropertiesEvaluation = metadata.Properties.ToList();
+
+            // Assert
+            // Identical ModelMetadata objects every time we run through the Properties collection.
+            Assert.Equal(firstPropertiesEvaluation, secondPropertiesEvaluation);
+        }
+
+        [Theory]
+        [MemberData("MetadataModifierData")]
+        public void PropertiesPropertyChangesPersist(
+            Action<ModelMetadata> setter,
+            Func<ModelMetadata, object> getter,
+            object expected)
+        {
+            // Arrange
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = new ModelMetadata(
+                provider,
+                containerType: null,
+                modelAccessor: () => new Class1(),
+                modelType: typeof(Class1),
+                propertyName: null);
+
+            // Act
+            foreach (var property in metadata.Properties)
+            {
+                setter(property);
+            }
+
+            // Assert
+            foreach (var property in metadata.Properties)
+            {
+                // Due to boxing of structs, can't Assert.Same().
+                Assert.Equal(expected, getter(property));
+            }
+        }
+
         private class Class1
         {
             public string Prop1 { get; set; }
@@ -313,6 +421,31 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private class ComplexClass
         {
             public Class1 Prop1 { get; set; }
+        }
+
+        [Theory]
+        [MemberData("MetadataModifierData")]
+        public void PropertyChangesPersist(
+            Action<ModelMetadata> setter,
+            Func<ModelMetadata, object> getter,
+            object expected)
+        {
+            // Arrange
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = new ModelMetadata(
+                provider,
+                containerType: null,
+                modelAccessor: () => new Class1(),
+                modelType: typeof(Class1),
+                propertyName: null);
+
+            // Act
+            setter(metadata);
+            var result = getter(metadata);
+
+            // Assert
+            // Due to boxing of structs, can't Assert.Same().
+            Assert.Equal(expected, result);
         }
 
         // Helpers

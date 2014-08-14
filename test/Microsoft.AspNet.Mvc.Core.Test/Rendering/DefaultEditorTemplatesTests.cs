@@ -112,6 +112,77 @@ Environment.NewLine;
         }
 
         [Fact]
+        public void ObjectTemplate_HonoursHideSurroundingHtml()
+        {
+            // Arrange
+            var expected =
+                "Model = p1, ModelType = System.String, PropertyName = Property1, SimpleDisplayText = p1" +
+                "<div class=\"editor-label\"><label for=\"Property2\">Property2</label></div>" +
+                Environment.NewLine +
+                "<div class=\"editor-field\">" +
+                    "Model = (null), ModelType = System.String, PropertyName = Property2, SimpleDisplayText = (null) " +
+                    "<span class=\"field-validation-valid\" data-valmsg-for=\"Property2\" data-valmsg-replace=\"true\">" +
+                    "</span></div>" +
+                Environment.NewLine;
+
+            var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "p1", Property2 = null };
+            var html = DefaultTemplatesUtilities.GetHtmlHelper(model);
+            var metadata =
+                html.ViewData.ModelMetadata.Properties.First(m => string.Equals(m.PropertyName, "Property1"));
+            metadata.HideSurroundingHtml = true;
+
+            // Act
+            var result = DefaultEditorTemplates.ObjectTemplate(html);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public void HiddenInputTemplate_ReturnsValueAndHiddenInput()
+        {
+            // Arrange
+            var expected =
+                "Formatted string<input id=\"FieldPrefix\" name=\"FieldPrefix\" type=\"hidden\" value=\"Model string\" />";
+
+            var model = "Model string";
+            var html = DefaultTemplatesUtilities.GetHtmlHelper(model);
+            var templateInfo = html.ViewData.TemplateInfo;
+            templateInfo.HtmlFieldPrefix = "FieldPrefix";
+
+            // TemplateBuilder sets FormattedModelValue before calling TemplateRenderer and it's used below.
+            templateInfo.FormattedModelValue = "Formatted string";
+
+            // Act
+            var result = DefaultEditorTemplates.HiddenInputTemplate(html);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public void HiddenInputTemplate_HonoursHideSurroundingHtml()
+        {
+            // Arrange
+            var expected = "<input id=\"FieldPrefix\" name=\"FieldPrefix\" type=\"hidden\" value=\"Model string\" />";
+
+            var model = "Model string";
+            var html = DefaultTemplatesUtilities.GetHtmlHelper(model);
+            var viewData = html.ViewData;
+            viewData.ModelMetadata.HideSurroundingHtml = true;
+
+            var templateInfo = viewData.TemplateInfo;
+            templateInfo.HtmlFieldPrefix = "FieldPrefix";
+            templateInfo.FormattedModelValue = "Formatted string";
+
+            // Act
+            var result = DefaultEditorTemplates.HiddenInputTemplate(html);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
         public void Editor_FindsViewDataMember()
         {
             // Arrange

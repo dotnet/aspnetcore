@@ -27,6 +27,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Null(cache.DisplayColumn);
             Assert.Null(cache.DisplayFormat);
             Assert.Null(cache.Editable);
+            Assert.Null(cache.HiddenInput);
             Assert.Null(cache.Required);
         }
 
@@ -37,26 +38,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 return new TheoryData<Attribute, Func<CachedDataAnnotationsMetadataAttributes, Attribute>>
                 {
-                    {
-                        new DisplayAttribute(),
-                        (CachedDataAnnotationsMetadataAttributes cache) => cache.Display
-                    },
-                    {
-                        new DisplayColumnAttribute("Property"),
-                        (CachedDataAnnotationsMetadataAttributes cache) => cache.DisplayColumn
-                    },
-                    {
-                        new DisplayFormatAttribute(),
-                        (CachedDataAnnotationsMetadataAttributes cache) => cache.DisplayFormat
-                    },
-                    {
-                        new EditableAttribute(allowEdit: false),
-                        (CachedDataAnnotationsMetadataAttributes cache) => cache.Editable
-                    },
-                    {
-                        new RequiredAttribute(),
-                        (CachedDataAnnotationsMetadataAttributes cache) => cache.Required
-                    },
+                    { new DisplayAttribute(), cache => cache.Display },
+                    { new DisplayColumnAttribute("Property"), cache => cache.DisplayColumn },
+                    { new DisplayFormatAttribute(), cache => cache.DisplayFormat },
+                    { new EditableAttribute(allowEdit: false), cache => cache.Editable },
+                    { new HiddenInputAttribute(), cache => cache.HiddenInput },
+                    { new RequiredAttribute(), cache => cache.Required },
                 };
             }
         }

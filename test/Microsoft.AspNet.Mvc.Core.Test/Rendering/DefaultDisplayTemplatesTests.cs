@@ -98,6 +98,68 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         [Fact]
+        public void ObjectTemplate_HonoursHideSurroundingHtml()
+        {
+            // Arrange
+            var expected =
+                "Model = p1, ModelType = System.String, PropertyName = Property1, SimpleDisplayText = p1" +
+                "<div class=\"display-label\">Property2</div>" + Environment.NewLine +
+                "<div class=\"display-field\">Model = (null), ModelType = System.String, PropertyName = Property2," +
+                    " SimpleDisplayText = (null)</div>" + Environment.NewLine;
+
+            var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "p1", Property2 = null };
+            var html = DefaultTemplatesUtilities.GetHtmlHelper(model);
+            var metadata =
+                html.ViewData.ModelMetadata.Properties.First(m => string.Equals(m.PropertyName, "Property1"));
+            metadata.HideSurroundingHtml = true;
+
+            // Act
+            var result = DefaultDisplayTemplates.ObjectTemplate(html);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public void HiddenInputTemplate_ReturnsValue()
+        {
+            // Arrange
+            var model = "Model string";
+            var html = DefaultTemplatesUtilities.GetHtmlHelper(model);
+            var templateInfo = html.ViewData.TemplateInfo;
+            templateInfo.HtmlFieldPrefix = "FieldPrefix";
+
+            // TemplateBuilder sets FormattedModelValue before calling TemplateRenderer and it's used below.
+            templateInfo.FormattedModelValue = "Formatted string";
+
+            // Act
+            var result = DefaultDisplayTemplates.HiddenInputTemplate(html);
+
+            // Assert
+            Assert.Equal("Formatted string", result);
+        }
+
+        [Fact]
+        public void HiddenInputTemplate_HonoursHideSurroundingHtml()
+        {
+            // Arrange
+            var model = "Model string";
+            var html = DefaultTemplatesUtilities.GetHtmlHelper(model);
+            var viewData = html.ViewData;
+            viewData.ModelMetadata.HideSurroundingHtml = true;
+
+            var templateInfo = viewData.TemplateInfo;
+            templateInfo.HtmlFieldPrefix = "FieldPrefix";
+            templateInfo.FormattedModelValue = "Formatted string";
+
+            // Act
+            var result = DefaultDisplayTemplates.HiddenInputTemplate(html);
+
+            // Assert
+            Assert.Empty(result);
+        }
+
+        [Fact]
         public void Display_FindsViewDataMember()
         {
             // Arrange
