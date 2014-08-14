@@ -22,7 +22,7 @@ namespace AntiForgeryWebSite
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Login(LoginViewModel model, string returnUrl)
+        public ActionResult Login(LoginViewModel model, string returnUrl)
         {
             // Send to register which gets another html antiforgery token.
             return RedirectToAction("Index", "Home");
