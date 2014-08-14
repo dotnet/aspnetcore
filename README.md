@@ -42,6 +42,7 @@ Mono and KVM (K Version manager) required to develop & run next generation ASP.N
 
 Now you are set for developing next general ASP.NET applications on OSX. A few things to note:
  * If you would like to use a different KRE version for your development, you can install the desired version using KVM. See [KVM page](https://github.com/aspnet/Home/wiki/version-manager) for more information. 
+ * To make sure you get the KRE packages from the right myget feed execute `export KRE_FEED=https://www.myget.org/f/aspnetmaster/api/v2`.
  * Run command `source kvm.sh` on your terminal if your terminal cannot understand kvm. 
 
 or on Linux:
