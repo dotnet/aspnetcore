@@ -16,16 +16,5 @@
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
-  <ItemGroup>
-    <Content Include="project.json" />
-    <Content Include="Resources.resx" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="IdentityEntityFrameworkServiceCollectionExtensions.cs" />
-    <Compile Include="IdentityDbContext.cs" />
-    <Compile Include="Properties\Resources.Designer.cs" />
-    <Compile Include="RoleStore.cs" />
-    <Compile Include="UserStore.cs" />
-  </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
