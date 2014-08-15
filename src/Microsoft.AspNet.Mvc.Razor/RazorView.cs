@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public bool ExecuteViewHierarchy { get; set; }
 
         /// <inheritdoc />
-        public async Task RenderAsync([NotNull] ViewContext context)
+        public virtual async Task RenderAsync([NotNull] ViewContext context)
         {
             if (ExecuteViewHierarchy)
             {
