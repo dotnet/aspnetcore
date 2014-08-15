@@ -26,20 +26,12 @@ namespace Microsoft.AspNet.TestHost
 
         public string Configuration
         {
-            get
-            {
-                return "debug";
-            }
+            get { return "Test"; }
         }
-
+        
         public FrameworkName TargetFramework
         {
             get { return new FrameworkName(".NETFramework", new Version(4, 5)); }
-        }
-
-        public string Configuration
-        {
-            get { return "Test"; }
         }
     }
 }
