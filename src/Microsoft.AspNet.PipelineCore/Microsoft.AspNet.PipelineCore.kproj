@@ -16,45 +16,5 @@
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
-  <ItemGroup>
-    <Content Include="project.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Builder.cs" />
-    <Compile Include="Collections\FormCollection.cs" />
-    <Compile Include="Collections\HeaderDictionary.cs" />
-    <Compile Include="Collections\ItemsDictionary.cs" />
-    <Compile Include="Collections\ReadableStringCollection.cs" />
-    <Compile Include="Collections\RequestCookiesCollection.cs" />
-    <Compile Include="Collections\ResponseCookies.cs" />
-    <Compile Include="DefaultHttpRequestFeature.cs" />
-    <Compile Include="DefaultHttpResponseFeature.cs" />
-    <Compile Include="FormFeature.cs" />
-    <Compile Include="ItemsFeature.cs" />
-    <Compile Include="NotNullAttribute.cs" />
-    <Compile Include="QueryFeature.cs" />
-    <Compile Include="RequestCookiesFeature.cs" />
-    <Compile Include="ResponseCookiesFeature.cs" />
-    <Compile Include="ServiceProvidersFeature.cs" />
-    <Compile Include="DefaultHttpContext.cs" />
-    <Compile Include="DefaultHttpRequest.cs" />
-    <Compile Include="DefaultHttpResponse.cs" />
-    <Compile Include="IFormFeature.cs" />
-    <Compile Include="IItemsFeature.cs" />
-    <Compile Include="IQueryFeature.cs" />
-    <Compile Include="IRequestCookiesFeature.cs" />
-    <Compile Include="IResponseCookiesFeature.cs" />
-    <Compile Include="IServiceProvidersFeature.cs" />
-    <Compile Include="Infrastructure\Constants.cs" />
-    <Compile Include="Infrastructure\FeatureReference.cs" />
-    <Compile Include="Infrastructure\ParsingHelpers.cs" />
-    <Compile Include="Security\AuthenticateContext.cs" />
-    <Compile Include="Security\AuthTypeContext.cs" />
-    <Compile Include="Security\ChallengeContext.cs" />
-    <Compile Include="Security\HttpAuthenticationFeature.cs" />
-    <Compile Include="Security\SignInContext.cs" />
-    <Compile Include="Security\SignOutContext.cs" />
-    <Compile Include="WebSocketAcceptContext.cs" />
-  </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>

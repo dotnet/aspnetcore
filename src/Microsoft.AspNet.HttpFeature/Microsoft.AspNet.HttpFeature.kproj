@@ -16,29 +16,5 @@
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
-  <ItemGroup>
-    <Content Include="project.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="AssemblyNeutralAttribute.cs" />
-    <Compile Include="IHttpApplicationFeature.cs" />
-    <Compile Include="IHttpBufferingFeature.cs" />
-    <Compile Include="IHttpConnectionFeature.cs" />
-    <Compile Include="IHttpUpgradeFeature.cs" />
-    <Compile Include="IHttpRequestFeature.cs" />
-    <Compile Include="IHttpRequestLifetimeFeature.cs" />
-    <Compile Include="IHttpResponseFeature.cs" />
-    <Compile Include="IHttpSendFileFeature.cs" />
-    <Compile Include="IHttpClientCertificateFeature.cs" />
-    <Compile Include="IHttpWebSocketFeature.cs" />
-    <Compile Include="IWebSocketAcceptContext.cs" />
-    <Compile Include="Security\IAuthenticateContext.cs" />
-    <Compile Include="Security\IAuthenticationHandler.cs" />
-    <Compile Include="Security\IAuthTypeContext.cs" />
-    <Compile Include="Security\IChallengeContext.cs" />
-    <Compile Include="Security\IHttpAuthenticationFeature.cs" />
-    <Compile Include="Security\ISignInContext.cs" />
-    <Compile Include="Security\ISignOutContext .cs" />
-  </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
