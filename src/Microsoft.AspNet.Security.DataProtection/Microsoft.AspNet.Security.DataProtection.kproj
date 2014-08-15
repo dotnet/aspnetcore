@@ -16,44 +16,5 @@
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
-  <ItemGroup>
-    <Content Include="project.json" />
-    <Content Include="Res.resx" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Algorithms.cs" />
-    <Compile Include="BCryptAlgorithmFlags.cs" />
-    <Compile Include="ProtectedDataProtectionProvider.cs" />
-    <Compile Include="PBKDF2.cs" />
-    <Compile Include="SuppressUnmanagedCodeSecurityAttribute - Copy.cs" />
-    <Compile Include="SafeLibraryHandle.cs" />
-    <Compile Include="BCryptAlgorithmHandle.cs" />
-    <Compile Include="BCryptBuffer.cs" />
-    <Compile Include="BCryptBufferDesc.cs" />
-    <Compile Include="BCryptEncryptFlags.cs" />
-    <Compile Include="BCryptGenRandomFlags.cs" />
-    <Compile Include="BCryptHashHandle.cs" />
-    <Compile Include="BCryptKeyDerivationBufferType.cs" />
-    <Compile Include="BCryptKeyHandle.cs" />
-    <Compile Include="BCryptUtil.cs" />
-    <Compile Include="BCRYPT_KEY_DATA_BLOB_HEADER.cs" />
-    <Compile Include="Constants.cs" />
-    <Compile Include="CryptRand.cs" />
-    <Compile Include="DataProtectionProvider.cs" />
-    <Compile Include="DataProtectionProviderImpl.cs" />
-    <Compile Include="DataProtectorImpl.cs" />
-    <Compile Include="DATA_BLOB.cs" />
-    <Compile Include="DpapiDataProtectionProviderImpl.cs" />
-    <Compile Include="DpapiDataProtectorImpl.cs" />
-    <Compile Include="IDataProtectionProvider.cs" />
-    <Compile Include="IDataProtector.cs" />
-    <Compile Include="Properties\Res.Designer.cs" />
-    <Compile Include="SafeHandleZeroOrMinusOneIsInvalid.cs" />
-    <Compile Include="SP800_108Helper.cs" />
-    <Compile Include="UnsafeNativeMethods.cs" />
-    <Compile Include="Util\BufferUtil.cs" />
-    <Compile Include="Util\ByteArrayExtensions.cs" />
-    <Compile Include="Util\MemoryUtil.cs" />
-  </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
