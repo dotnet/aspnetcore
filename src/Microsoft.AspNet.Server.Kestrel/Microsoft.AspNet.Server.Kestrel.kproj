@@ -22,40 +22,5 @@
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
-  <ItemGroup>
-    <Content Include="native\darwin\universal\libuv.dylib" />
-    <Content Include="native\windows\amd64\libuv.dll" />
-    <Content Include="native\windows\x86\libuv.dll" />
-    <Content Include="project.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Http\FrameDuplexStream.cs" />
-    <Compile Include="Http\FrameRequestStream.cs" />
-    <Compile Include="Http\FrameResponseStream.cs" />
-    <Compile Include="Http\MemoryPoolTextWriter.cs" />
-    <Compile Include="Http\MessageBodyExchanger.cs" />
-    <Compile Include="Http\ReasonPhrases.cs" />
-    <Compile Include="Http\SocketInput.cs" />
-    <Compile Include="Http\Connection.cs" />
-    <Compile Include="Http\Frame.cs" />
-    <Compile Include="Http\Listener.cs" />
-    <Compile Include="Http\MemoryPool.cs" />
-    <Compile Include="Http\MessageBody.cs" />
-    <Compile Include="Http\SocketOutput.cs" />
-    <Compile Include="Infrastructure\Disposable.cs" />
-    <Compile Include="Infrastructure\KestrelThread.cs" />
-    <Compile Include="Infrastructure\KestrelTrace.cs" />
-    <Compile Include="Networking\PlatformApis.cs" />
-    <Compile Include="Networking\UcAsyncHandle.cs" />
-    <Compile Include="Networking\UvMemory.cs" />
-    <Compile Include="Networking\UvShutdownReq.cs" />
-    <Compile Include="Networking\UvTcpHandle.cs" />
-    <Compile Include="Networking\UvStreamHandle.cs" />
-    <Compile Include="Networking\UvHandle.cs" />
-    <Compile Include="Networking\Libuv.cs" />
-    <Compile Include="Networking\UvLoopHandle.cs" />
-    <Compile Include="KestrelEngine.cs" />
-    <Compile Include="Networking\UvWriteRequest.cs" />
-  </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
