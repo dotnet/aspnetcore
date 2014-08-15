@@ -16,39 +16,5 @@
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
-  <ItemGroup>
-    <Content Include="CustomDictionary.xml" />
-    <Content Include="project.json" />
-    <Content Include="Resources.resx" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Constants.cs" />
-    <Compile Include="DefaultFilesExtensions.cs" />
-    <Compile Include="DefaultFilesMiddleware.cs" />
-    <Compile Include="DefaultFilesOptions.cs" />
-    <Compile Include="DirectoryBrowserExtensions.cs" />
-    <Compile Include="DirectoryBrowserMiddleware.cs" />
-    <Compile Include="DirectoryBrowserOptions.cs" />
-    <Compile Include="FileExtensionContentTypeProvider.cs" />
-    <Compile Include="FileServerExtensions.cs" />
-    <Compile Include="FileServerOptions.cs" />
-    <Compile Include="Helpers.cs" />
-    <Compile Include="HtmlDirectoryFormatter.cs" />
-    <Compile Include="IContentTypeProvider.cs" />
-    <Compile Include="IDirectoryFormatter.cs" />
-    <Compile Include="Infrastructure\RangeHelpers.cs" />
-    <Compile Include="Infrastructure\SharedOptions.cs" />
-    <Compile Include="Infrastructure\SharedOptionsBase.cs" />
-    <Compile Include="Resources.Designer.cs" />
-    <Compile Include="SendFileExtensions.cs" />
-    <Compile Include="SendFileMiddleware.cs" />
-    <Compile Include="SendFileResponseExtensions.cs" />
-    <Compile Include="StaticFileContext.cs" />
-    <Compile Include="StaticFileExtensions.cs" />
-    <Compile Include="StaticFileMiddleware.cs" />
-    <Compile Include="StaticFileOptions.cs" />
-    <Compile Include="StaticFileResponseContext.cs" />
-    <Compile Include="StreamCopyOperation.cs" />
-  </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>

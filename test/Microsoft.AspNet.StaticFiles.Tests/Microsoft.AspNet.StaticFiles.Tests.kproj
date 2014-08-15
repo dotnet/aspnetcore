@@ -22,21 +22,5 @@
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
-  <ItemGroup>
-    <Content Include="Project.json" />
-    <Content Include="SubFolder\Default.html" />
-    <Content Include="SubFolder\Extra.xml" />
-    <Content Include="SubFolder\Ranges.txt" />
-    <Content Include="TestDocument.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="CacheHeaderTests.cs" />
-    <Compile Include="DefaultContentTypeProviderTests.cs" />
-    <Compile Include="DefaultFilesMiddlewareTests.cs" />
-    <Compile Include="DirectoryBrowserMiddlewareTests.cs" />
-    <Compile Include="RangeHeaderTests.cs" />
-    <Compile Include="SendFileResponseExtensionsTests.cs" />
-    <Compile Include="StaticFileMiddlewareTests.cs" />
-  </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
