@@ -16,18 +16,5 @@
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
-  <ItemGroup>
-    <Content Include="project.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="ClientHandler.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RequestBuilder.cs" />
-    <Compile Include="RequestFeature.cs" />
-    <Compile Include="ResponseFeature.cs" />
-    <Compile Include="ResponseStream.cs" />
-    <Compile Include="TestClient.cs" />
-    <Compile Include="TestServer.cs" />
-  </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
