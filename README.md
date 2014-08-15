@@ -6,43 +6,39 @@ ASP.NET vNext is being actively developed by the ASP.NET team assigned to the Mi
 
 The samples provided in this repo are designed to show some of the features of the new framework and to provide a starting point for further exploration. The NuGet.config file in the repo points to a MyGet feed (https://www.myget.org/F/aspnetmaster/) that has all the packages being developed. This feed is updated with each preview release. To try out the latest bits under development use the dev feed instead (https://www.myget.org/F/aspnetvnext).
 
-# Minimum Requirements
+## Minimum Requirements
 
-These are the current minimum requirements, they do not necesarilly represent our RTM minimum.
+These are the current minimum requirements for the latest preview release. They do not necessarily represent what the final minimum requirements will be.
 
 ### Windows
-* Windows 7 or greater, though Core CLR will only work on Windows 8 today. If using Core CLR you will need to be on Windows 8 or above. At RTM the whole stack will support Windows 7+ and Windows Server 2008 R2+.
+* Windows 7 or Windows Server 2008 R2.
 * .NET 4.5.1 for hosting in IIS
 
-### OSX/Linux
+### OS X/Linux
  * Mono >= 3.4.1 - Currently this means compiling Mono from source from https://github.com/mono/mono (Note: See instructions below to install the Homebrew formula that can install the required mono)
  * On Linux, you may need to run `mozroots --import --sync` after installing mono
  * bash or zsh and curl
 
-#Getting Started
+## Getting Started
 
-The first thing we need to do is setup the tools required to build and run an application. We will start out by getting the [K Version Manager (KVM)](https://github.com/aspnet/Home/wiki/version-manager)
+The first thing we need to do is setup the tools required to build and run an application. We will start out by getting the [K Version Manager (KVM)](https://github.com/aspnet/Home/wiki/version-manager). You use the K Version Manager to install different versions of the ASP.NET vNext runtime and switch between them.
 
-The easiest way to get the KVM on Windows is to run the following command:
+### Windows
+To install KVM on Windows run the following command, which will download and run a script that installs KVM for the current user:
 ```powershell
 @powershell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/master/kvminstall.ps1'))"
 ```
-or on OSX:
+### OS X:
 
-Mono and KVM (K Version manager) required to develop & run next generation ASP.NET applications on OSX is available as a Homebrew formula. To install the necessary development tools: 
+To install KVM and the correct version of Mono on OS X using [Homebrew](http://brew.sh) follow the following steps: 
 
- * Open a terminal on your MAC
- * Install [Homebrew](http://brew.sh) by running the following command. If you already have Homebrew installed skip this step. 
-```ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"```
- * Run command `brew tap aspnet/k` to tap the aspnet vnext related git repositories. 
+ * Install [Homebrew](http://brew.sh) if it is not already installed.
+ * Run command `brew tap aspnet/k` to tap the ASP.NET vNext related git repositories. 
  * Run command `brew install kvm` to install KVM. This also automatically install the latest KRE package from https://www.myget.org/f/aspnetmaster/api/v2 feed.
-
-Now you are set for developing next general ASP.NET applications on OSX. A few things to note:
- * If you would like to use a different KRE version for your development, you can install the desired version using KVM. See [KVM page](https://github.com/aspnet/Home/wiki/version-manager) for more information. 
- * To make sure you get the KRE packages from the right myget feed execute `export KRE_FEED=https://www.myget.org/f/aspnetmaster/api/v2`.
  * Run command `source kvm.sh` on your terminal if your terminal cannot understand kvm. 
+ * To make sure you get the KRE packages from the right myget feed execute `export KRE_FEED=https://www.myget.org/f/aspnetmaster/api/v2`.
 
-or on Linux:
+### Linux:
 ```
 curl https://raw.githubusercontent.com/aspnet/Home/master/kvminstall.sh | sh && source ~/.kre/kvm/kvm.sh
 ```
