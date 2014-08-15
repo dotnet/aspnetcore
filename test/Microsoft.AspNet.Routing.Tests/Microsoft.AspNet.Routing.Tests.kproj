@@ -16,50 +16,5 @@
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
-  <ItemGroup>
-    <Content Include="project.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="ConstraintMatcherTest.cs" />
-    <Compile Include="ConstraintsBuilderTests.cs" />
-    <Compile Include="Constraints\ConstraintsTestHelper.cs" />
-    <Compile Include="Constraints\BoolRouteConstraintTests.cs" />
-    <Compile Include="Constraints\DateTimeRouteConstraintTests.cs" />
-    <Compile Include="Constraints\DecimalRouteConstraintTests.cs" />
-    <Compile Include="Constraints\DoubleRouteConstraintTests.cs" />
-    <Compile Include="Constraints\FloatRouteConstraintTests.cs" />
-    <Compile Include="Constraints\GuidRouteConstraintTests.cs" />
-    <Compile Include="Constraints\LengthRouteConstraintTests.cs" />
-    <Compile Include="Constraints\CompositeRouteConstraintTests.cs" />
-    <Compile Include="Constraints\MaxLengthRouteConstraintTests.cs" />
-    <Compile Include="Constraints\MinLengthRouteConstraintTests.cs" />
-    <Compile Include="Constraints\MaxRouteConstraintTests.cs" />
-    <Compile Include="Constraints\LongRouteConstraintTests.cs" />
-    <Compile Include="Constraints\RangeRouteConstraintTests.cs" />
-    <Compile Include="Constraints\MinRouteConstraintTests.cs" />
-    <Compile Include="Constraints\AlphaRouteConstraintTests.cs" />
-    <Compile Include="Constraints\RegexConstraintTests.cs" />
-    <Compile Include="Constraints\IntRouteConstraintsTests.cs" />
-    <Compile Include="Constraints\RequiredRouteConstraintTests.cs" />
-    <Compile Include="DefaultInlineConstraintResolverTest.cs" />
-    <Compile Include="Logging\BeginScopeContext.cs" />
-    <Compile Include="Logging\NullDisposable.cs" />
-    <Compile Include="Logging\NullLogger.cs" />
-    <Compile Include="Logging\NullLoggerFactory.cs" />
-    <Compile Include="Logging\TestLogger.cs" />
-    <Compile Include="Logging\TestLoggerFactory.cs" />
-    <Compile Include="Logging\TestSink.cs" />
-    <Compile Include="Logging\WriteCoreContext.cs" />
-    <Compile Include="RouteCollectionTest.cs" />
-    <Compile Include="InlineRouteParameterParserTests.cs" />
-    <Compile Include="RouteOptionsTests.cs" />
-    <Compile Include="RouterMiddlewareTest.cs" />
-    <Compile Include="RouteValueDictionaryTests.cs" />
-    <Compile Include="TemplateParserDefaultValuesTests.cs" />
-    <Compile Include="Template\TemplateBinderTests.cs" />
-    <Compile Include="Template\TemplateMatcherTests.cs" />
-    <Compile Include="Template\TemplateParserTests.cs" />
-    <Compile Include="Template\TemplateRouteTest.cs" />
-  </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
