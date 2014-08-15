@@ -58,8 +58,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
         [Theory]
         [InlineData("ReturnTaskOfString_NullValue")]
-        [InlineData("ReturnTaskOfObject_StringValue")]
-        [InlineData("ReturnTaskOfObject_NullValue")]
+        [InlineData("ReturnTaskOfObject_NullValue")]    
         [InlineData("ReturnObject_NullValue")]
         public async Task NoContentFormatter_ForNullValue_GetsSelectedAndWritesResponse(string actionName)
         {

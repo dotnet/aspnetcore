@@ -61,13 +61,10 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Fact]
-        public async Task WriteAsync_WritesTheStatusCode204_IfNotAlreadySet()
+        public async Task WriteAsync_WritesTheStatusCode204()
         {
             // Arrange 
             var defaultHttpContext = new DefaultHttpContext();
-
-            // Workaround for https://github.com/aspnet/HttpAbstractions/issues/114
-            defaultHttpContext.Response.StatusCode = 0;
             var formatterContext = new OutputFormatterContext()
             {
                 Object = null,
@@ -81,27 +78,6 @@ namespace Microsoft.AspNet.Mvc.Test
 
             // Assert
             Assert.Equal(204, defaultHttpContext.Response.StatusCode);
-        }
-
-        [Fact]
-        public async Task WriteAsync_DoesnNotWriteTheStatusCode204_IfStatusCodeIsSetAlready()
-        {
-            // Arrange 
-            var defaultHttpContext = new DefaultHttpContext();
-            defaultHttpContext.Response.StatusCode = 201;
-            var formatterContext = new OutputFormatterContext()
-            {
-                Object = null,
-                ActionContext = new ActionContext(defaultHttpContext, new RouteData(), new ActionDescriptor())
-            };
-
-            var formatter = new NoContentFormatter();
-
-            // Act
-            await formatter.WriteAsync(formatterContext);
-
-            // Assert
-            Assert.Equal(201, defaultHttpContext.Response.StatusCode);
         }
     }
 }

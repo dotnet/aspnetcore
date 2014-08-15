@@ -24,11 +24,9 @@ namespace Microsoft.AspNet.Mvc
             response.ContentLength = 0;
 
             // Only set the status code if its not already set.
-            if (response.StatusCode == 0)
-            {
-                response.StatusCode = 204;
-            }
-
+            // TODO: By default the status code is set to 200. 
+            // https://github.com/aspnet/HttpAbstractions/issues/114
+            response.StatusCode = 204;
             return Task.FromResult<bool>(true);
         }
     }
