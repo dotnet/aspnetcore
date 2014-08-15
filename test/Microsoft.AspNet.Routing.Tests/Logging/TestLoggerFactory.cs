@@ -18,5 +18,9 @@ namespace Microsoft.AspNet.Routing
         {
             return new TestLogger(name, _sink);
         }
+
+        public void AddProvider(ILoggerProvider provider)
+        {
+        }
     }
 }

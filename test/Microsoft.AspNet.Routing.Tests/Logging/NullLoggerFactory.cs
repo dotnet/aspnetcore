@@ -13,5 +13,9 @@ namespace Microsoft.AspNet.Routing
         {
             return NullLogger.Instance;
         }
+
+        public void AddProvider(ILoggerProvider provider)
+        {
+        }
     }
 }
