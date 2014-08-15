@@ -22,21 +22,5 @@
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
-  <ItemGroup>
-    <Content Include="Project.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Controllers\NormalController.cs" />
-    <Compile Include="Controllers\NoProducesContentOnClassController.cs" />
-    <Compile Include="Controllers\ProducesContentBaseController.cs" />
-    <Compile Include="Controllers\ProducesContentOnClassController.cs" />
-    <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="Controllers\NoContentController.cs" />
-    <Compile Include="Controllers\TextPlainController.cs" />
-    <Compile Include="Models\User.cs" />
-    <Compile Include="ContentType.cs" />
-    <Compile Include="PlainTextFormatter.cs" />
-    <Compile Include="Startup.cs" />
-  </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>

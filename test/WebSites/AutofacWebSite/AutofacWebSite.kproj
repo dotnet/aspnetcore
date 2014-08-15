@@ -25,16 +25,5 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DevelopmentServerPort>38823</DevelopmentServerPort>
   </PropertyGroup>
-  <ItemGroup>
-    <Content Include="project.json" />
-    <Content Include="Views\Basic\Index.cshtml" />
-    <Content Include="Views\DI\Index.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Controllers\BasicController.cs" />
-    <Compile Include="Controllers\DIController.cs" />
-    <Compile Include="HelloWorldBuilder.cs" />
-    <Compile Include="Startup.cs" />
-  </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>

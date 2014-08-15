@@ -17,54 +17,5 @@
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
-  <ItemGroup>
-    <Content Include="project.json" />
-    <Content Include="Resources.resx" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Binders\ArrayModelBinderTest.cs" />
-    <Compile Include="Binders\ByteArrayModelBinderTests.cs" />
-    <Compile Include="Binders\CollectionModelBinderTest.cs" />
-    <Compile Include="Binders\ComplexModelDtoResultTest.cs" />
-    <Compile Include="Binders\ComplexModelDtoTest.cs" />
-    <Compile Include="Binders\CompositeModelBinderTest.cs" />
-    <Compile Include="Binders\DictionaryModelBinderTest.cs" />
-    <Compile Include="Binders\KeyValuePairModelBinderTest.cs" />
-    <Compile Include="Binders\ModelBindingContextTest.cs" />
-    <Compile Include="Binders\MutableObjectModelBinderTest.cs" />
-    <Compile Include="Binders\TypeConverterModelBinderTest.cs" />
-    <Compile Include="Formatters\XmlDataContractSerializerInputFormatterTests.cs" />
-    <Compile Include="Formatters\DelegatingStreamTests.cs" />
-    <Compile Include="Formatters\JsonInputFormatterTest.cs" />
-    <Compile Include="Formatters\XmlSerializerInputFormatterTests.cs" />
-    <Compile Include="Internal\TypeExtensionTests.cs" />
-    <Compile Include="Metadata\AssociatedMetadataProviderTest.cs" />
-    <Compile Include="Metadata\CachedDataAnnotationsMetadataAttributesTest.cs" />
-    <Compile Include="Metadata\CachedDataAnnotationsModelMetadataProviderTest.cs" />
-    <Compile Include="Metadata\CachedDataAnnotationsModelMetadataTest.cs" />
-    <Compile Include="Metadata\ModelMetadataTest.cs" />
-    <Compile Include="ModelBindingContextTest.cs" />
-    <Compile Include="Properties\Resources.Designer.cs" />
-    <Compile Include="Utils\SimpleHttpValueProvider.cs" />
-    <Compile Include="Validation\RequiredAttributeAdapterTest.cs" />
-    <Compile Include="Validation\StringLengthAttributeAdapterTest.cs" />
-    <Compile Include="Validation\RangeAttributeAdapterTest.cs" />
-    <Compile Include="Validation\AssociatedValidatorProviderTest.cs" />
-    <Compile Include="Validation\CompareAttributeTest.cs" />
-    <Compile Include="Validation\DataAnnotationsModelValidatorProviderTest.cs" />
-    <Compile Include="Validation\DataAnnotationsModelValidatorTest.cs" />
-    <Compile Include="Validation\DataMemberModelValidatorProviderTest.cs" />
-    <Compile Include="Validation\ErrorModelValidatorTest.cs" />
-    <Compile Include="Validation\InvalidModelValidatorProviderTest.cs" />
-    <Compile Include="Validation\MaxLengthAttributeAdapterTest.cs" />
-    <Compile Include="Validation\MinLengthAttributeAdapterTest.cs" />
-    <Compile Include="Validation\ModelStateDictionaryTest.cs" />
-    <Compile Include="Validation\ModelValidationNodeTest.cs" />
-    <Compile Include="ValueProviders\DictionaryBasedValueProviderTests.cs" />
-    <Compile Include="ValueProviders\FormValueProviderFactoryTests.cs" />
-    <Compile Include="ValueProviders\QueryStringValueProviderFactoryTest.cs" />
-    <Compile Include="ValueProviders\ReadableStringCollectionValueProviderTests.cs" />
-    <Compile Include="ValueProviders\ValueProviderResultTest.cs" />
-  </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>

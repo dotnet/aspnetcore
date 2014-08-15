@@ -17,17 +17,6 @@
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="FormattingUtilities.cs" />
-    <Compile Include="MediaTypeHeaderValue.cs" />
-    <Compile Include="MediaTypeHeaderValueRange.cs" />
-    <Compile Include="MediaTypeWithQualityHeaderValue.cs" />
-    <Compile Include="Properties\Resources.Designer.cs" />
-    <Compile Include="StringWithQualityHeaderValue.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="project.json" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
     </EmbeddedResource>

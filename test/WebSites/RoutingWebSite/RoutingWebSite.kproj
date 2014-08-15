@@ -27,26 +27,5 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DevelopmentServerPort>11178</DevelopmentServerPort>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="Areas\Admin\UserManagementController.cs" />
-    <Compile Include="Areas\Travel\FlightController.cs" />
-    <Compile Include="Areas\Travel\HomeController.cs" />
-    <Compile Include="Areas\Travel\RailController.cs" />
-    <Compile Include="Controllers\BlogController.cs" />
-    <Compile Include="Controllers\EmployeeController.cs" />
-    <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="Controllers\Products\ProductsController.cs" />
-    <Compile Include="Controllers\Products\US\ProductsController.cs" />
-    <Compile Include="Controllers\StoreController.cs" />
-    <Compile Include="Controllers\TeamController.cs" />
-    <Compile Include="HttpMergeAttribute.cs" />
-    <Compile Include="CountryNeutralAttribute.cs" />
-    <Compile Include="CountrySpecificAttribute.cs" />
-    <Compile Include="Startup.cs" />
-    <Compile Include="TestResponseGenerator.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="project.json" />
-  </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
