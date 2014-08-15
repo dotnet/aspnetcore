@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30327.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.22013.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5FCB2DA3-5395-47F5-BCEE-E0EA319448EA}"
 EndProject
@@ -13,10 +13,8 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{1E570CD4-6F12-44F4-961E-005EE2002BC2}.Debug|x86.ActiveCfg = Debug|x86
-		{1E570CD4-6F12-44F4-961E-005EE2002BC2}.Debug|x86.Build.0 = Debug|x86
-		{1E570CD4-6F12-44F4-961E-005EE2002BC2}.Release|x86.ActiveCfg = Release|x86
-		{1E570CD4-6F12-44F4-961E-005EE2002BC2}.Release|x86.Build.0 = Release|x86
+		{1E570CD4-6F12-44F4-961E-005EE2002BC2}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1E570CD4-6F12-44F4-961E-005EE2002BC2}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
