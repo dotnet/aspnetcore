@@ -51,8 +51,8 @@ namespace Microsoft.AspNet.Hosting
 
             yield return describer.Instance<IApplicationLifetime>(new ApplicationLifetime());
 
-            // TODO: We expect this to be provide by the runtime eventually.
-            yield return describer.Instance<ILoggerFactory>(new NullLoggerFactory());
+            // TODO: Do we expect this to be provide by the runtime eventually?
+            yield return describer.Singleton<ILoggerFactory, LoggerFactory>();
 
             yield return new ServiceDescriptor
             {
@@ -74,39 +74,6 @@ namespace Microsoft.AspNet.Hosting
                 // is deferred until the first call to Protect / Unprotect. It's up to an IIS-based host to
                 // replace this service as part of application initialization.
                 yield return describer.Instance<IDataProtectionProvider>(DataProtectionProvider.CreateFromDpapi());
-            }
-        }
-
-        // TODO: Temp workaround until the runtime reliably provides logging.
-        // If ILoggerFactory is never guaranteed, move this fallback into Microsoft.AspNet.Logging.
-        private class NullLoggerFactory : ILoggerFactory
-        {
-            public ILogger Create(string name)
-            {
-                return new NullLogger();
-            }
-        }
-
-        private class NullLogger : ILogger
-        {
-            public bool WriteCore(TraceType eventType, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
-            {
-                return false;
-            }
-
-            public IDisposable BeginScope(object state)
-            {
-                return NullScope.Instance;
-            }
-        }
-
-        private class NullScope : IDisposable
-        {
-            public static NullScope Instance = new NullScope();
-
-            public void Dispose()
-            {
-                // intentionally does nothing
             }
         }
     }
