@@ -18,5 +18,10 @@ namespace Microsoft.AspNet.Mvc
         {
             return new TestLogger(name, _sink);
         }
+
+        public void AddProvider(ILoggerProvider provider)
+        {
+
+        }
     }
 }

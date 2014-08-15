@@ -13,5 +13,10 @@ namespace Microsoft.AspNet.Mvc
         {
             return NullLogger.Instance;
         }
+
+        public void AddProvider(ILoggerProvider provider)
+        {
+
+        }
     }
 }
