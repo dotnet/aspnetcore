@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
                 builder.UseSqlServer(ConnectionString);
             }
 
-            //protected override void OnModelCreating(ConventionModelBuilder builder)
+            //protected override void OnModelCreating(ModelBuilder builder)
             //{
             //    builder.Entity<TUser>()
             //        .Key(u => u.Id)

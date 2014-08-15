@@ -198,7 +198,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
                 builder.UseInMemoryStore();
             }
 
-            protected override void OnModelCreating(ConventionModelBuilder builder)
+            protected override void OnModelCreating(ModelBuilder builder)
             {
                 builder.Entity<Artist>().Key(a => a.ArtistId);
             }
