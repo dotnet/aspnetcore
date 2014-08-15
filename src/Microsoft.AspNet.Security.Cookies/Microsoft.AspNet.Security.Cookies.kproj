@@ -16,24 +16,5 @@
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
-  <ItemGroup>
-    <Content Include="project.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="CookieAuthenticationDefaults.cs" />
-    <Compile Include="CookieAuthenticationExtensions.cs" />
-    <Compile Include="CookieAuthenticationHandler.cs" />
-    <Compile Include="CookieAuthenticationMiddleware.cs" />
-    <Compile Include="CookieAuthenticationOptions.cs" />
-    <Compile Include="CookieSecureOption.cs" />
-    <Compile Include="Notifications\CookieApplyRedirectContext.cs" />
-    <Compile Include="Notifications\CookieAuthenticationNotifications.cs" />
-    <Compile Include="Notifications\CookieResponseSignInContext.cs" />
-    <Compile Include="Notifications\CookieResponseSignOutContext.cs" />
-    <Compile Include="Notifications\CookieValidateIdentityContext.cs" />
-    <Compile Include="Notifications\DefaultBehavior.cs" />
-    <Compile Include="Notifications\ICookieAuthenticationNotifications.cs" />
-    <Compile Include="NotNullAttribute.cs" />
-  </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
