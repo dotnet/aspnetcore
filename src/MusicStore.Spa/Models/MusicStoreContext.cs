@@ -21,7 +21,7 @@ namespace MusicStore.Models
         public DbSet<CartItem> CartItems { get; set; }
         public DbSet<OrderDetail> OrderDetails { get; set; }
 
-        protected override void OnModelCreating(ConventionModelBuilder builder)
+        protected override void OnModelCreating(ModelBuilder builder)
         {
             // TODO: All this configuration needs to be done manually right now.
             //       We can remove this once EF supports the conventions again.

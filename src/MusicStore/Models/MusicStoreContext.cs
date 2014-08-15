@@ -24,7 +24,7 @@ namespace MusicStore.Models
         public DbSet<CartItem> CartItems { get; set; }
         public DbSet<OrderDetail> OrderDetails { get; set; }
 
-        protected override void OnModelCreating(ConventionModelBuilder builder)
+        protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.Entity<Album>().Key(a => a.AlbumId);
             builder.Entity<Artist>().Key(a => a.ArtistId);
