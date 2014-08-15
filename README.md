@@ -1,13 +1,10 @@
 # ASP.NET vNext Home
 
-In the next version of ASP.NET we are working with multiple teams around Microsoft to create a lean, composable .NET stack that provides a familiar and modern framework for web and cloud scenarios.
+The Home repository is the starting point for people to learn about ASP.NET vNext. This repo contains samples and [documentation](https://github.com/aspnet/Home/wiki) to help folks get started and learn more about what's coming in ASP..NET vNext.
 
-The Home repository is the starting point for people to learn about ASP.NET vNext, it contains samples and [documentation](https://github.com/aspnet/Home/wiki) to help folks get started and learn more about what we are doing.
+ASP.NET vNext is being actively developed by the ASP.NET team assigned to the Microsoft Open Tech Hub and in collaboration with a community of open source developers. Together we are dedicated to creating the best possible platform for web development.
 
-These products are actively developed by the ASP.NET team assigned to the Microsoft Open Tech Hub and in collaboration with a community of open source developers. Together we are dedicated to creating the best possible platform for web development.
-
-The samples provided are designed to show some of the features of the new framework as well as setting up a sandbox for you to try out some of the new features. The NuGet.config file in the repo points to a MyGet feed (https://www.myget.org/F/aspnetmaster/) that has all the packages being developed. The feed is updated every time a full build succeeds.
-
+The samples provided in this repo are designed to show some of the features of the new framework and to provide a starting point for further exploration. The NuGet.config file in the repo points to a MyGet feed (https://www.myget.org/F/aspnetmaster/) that has all the packages being developed. This feed is updated with each preview release. To try out the latest bits under development use the dev feed instead (https://www.myget.org/F/aspnetvnext).
 
 # Minimum Requirements
 
