@@ -355,9 +355,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             var metadata = html.ViewData.ModelMetadata;
             var value = metadata.Model;
-
-            // TODO: add ModelMetadata.HasNonDefaultEditFormat and use here (also return if true)
-            if (html.ViewData.TemplateInfo.FormattedModelValue != value)
+            if (html.ViewData.TemplateInfo.FormattedModelValue != value && metadata.HasNonDefaultEditFormat)
             {
                 return;
             }
