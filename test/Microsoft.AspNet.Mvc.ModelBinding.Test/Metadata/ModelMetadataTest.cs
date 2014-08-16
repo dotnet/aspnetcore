@@ -20,6 +20,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return new TheoryData<Action<ModelMetadata>, Func<ModelMetadata, object>, object>
                 {
                     { m => m.ConvertEmptyStringToNull = false, m => m.ConvertEmptyStringToNull, false },
+                    { m => m.HasNonDefaultEditFormat = true, m => m.HasNonDefaultEditFormat, true },
                     { m => m.HideSurroundingHtml = true, m => m.HideSurroundingHtml, true },
                     { m => m.IsReadOnly = true, m => m.IsReadOnly, true },
                     { m => m.IsRequired = true, m => m.IsRequired, true },
@@ -56,6 +57,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Equal(typeof(Exception), metadata.ContainerType);
 
             Assert.True(metadata.ConvertEmptyStringToNull);
+            Assert.False(metadata.HasNonDefaultEditFormat);
             Assert.False(metadata.HideSurroundingHtml);
             Assert.False(metadata.IsComplexType);
             Assert.False(metadata.IsNullableValueType);

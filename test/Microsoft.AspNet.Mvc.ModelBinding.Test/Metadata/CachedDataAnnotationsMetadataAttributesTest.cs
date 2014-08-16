@@ -23,12 +23,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var cache = new CachedDataAnnotationsMetadataAttributes(attributes);
 
             // Assert
+            Assert.Null(cache.DataType);
             Assert.Null(cache.Display);
             Assert.Null(cache.DisplayColumn);
             Assert.Null(cache.DisplayFormat);
             Assert.Null(cache.Editable);
             Assert.Null(cache.HiddenInput);
             Assert.Null(cache.Required);
+            Assert.Null(cache.ScaffoldColumn);
         }
 
         public static TheoryData<Attribute, Func<CachedDataAnnotationsMetadataAttributes, Attribute>>
@@ -38,12 +40,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 return new TheoryData<Attribute, Func<CachedDataAnnotationsMetadataAttributes, Attribute>>
                 {
+                    { new DataTypeAttribute(DataType.Duration), cache => cache.DataType },
                     { new DisplayAttribute(), cache => cache.Display },
                     { new DisplayColumnAttribute("Property"), cache => cache.DisplayColumn },
                     { new DisplayFormatAttribute(), cache => cache.DisplayFormat },
                     { new EditableAttribute(allowEdit: false), cache => cache.Editable },
                     { new HiddenInputAttribute(), cache => cache.HiddenInput },
                     { new RequiredAttribute(), cache => cache.Required },
+                    { new ScaffoldColumnAttribute(scaffold: false), cache => cache.ScaffoldColumn },
                 };
             }
         }
@@ -63,6 +67,38 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.Same(attribute, result);
+        }
+
+        [Fact]
+        public void Constructor_FindsDisplayFormat_FromDataType()
+        {
+            // Arrange
+            var dataType = new DataTypeAttribute(DataType.Currency);
+            var displayFormat = dataType.DisplayFormat; // Non-null for DataType.Currency.
+            var attributes = new[] { dataType, };
+
+            // Act
+            var cache = new CachedDataAnnotationsMetadataAttributes(attributes);
+            var result = cache.DisplayFormat;
+
+            // Assert
+            Assert.Same(displayFormat, result);
+        }
+
+        [Fact]
+        public void Constructor_FindsDisplayFormat_OverridingDataType()
+        {
+            // Arrange
+            var dataType = new DataTypeAttribute(DataType.Time); // Has a non-null DisplayFormat.
+            var displayFormat = new DisplayFormatAttribute();
+            var attributes = new Attribute[] { dataType, displayFormat, };
+
+            // Act
+            var cache = new CachedDataAnnotationsMetadataAttributes(attributes);
+            var result = cache.DisplayFormat;
+
+            // Assert
+            Assert.Same(displayFormat, result);
         }
     }
 }

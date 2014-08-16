@@ -30,6 +30,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.True(metadata.ConvertEmptyStringToNull);
+            Assert.False(metadata.HasNonDefaultEditFormat);
             Assert.False(metadata.HideSurroundingHtml);
             Assert.True(metadata.IsComplexType);
             Assert.False(metadata.IsReadOnly);
@@ -56,6 +57,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return new TheoryData<Attribute, Func<ModelMetadata, string>>
                 {
                     {
+                        new DataTypeWithCustomDisplayFormat(), metadata => metadata.DisplayFormatString
+                    },
+                    {
+                        new DataTypeWithCustomEditFormat(), metadata => metadata.EditFormatString
+                    },
+                    {
                         new DisplayAttribute { Description = "value" }, metadata => metadata.Description
                     },
                     {
@@ -63,6 +70,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     },
                     {
                         new DisplayColumnAttribute("Property"), metadata => metadata.SimpleDisplayText
+                    },
+                    {
+                        new DisplayFormatAttribute { DataFormatString = "value" },
+                        metadata => metadata.DisplayFormatString
+                    },
+                    {
+                        // DisplayFormatString does not ignore [DisplayFormat] if ApplyFormatInEditMode==true.
+                        new DisplayFormatAttribute { ApplyFormatInEditMode = true, DataFormatString = "value" },
+                        metadata => metadata.DisplayFormatString
+                    },
+                    {
+                        new DisplayFormatAttribute { ApplyFormatInEditMode = true, DataFormatString = "value" },
+                        metadata => metadata.EditFormatString
                     },
                     {
                         new DisplayFormatAttribute { NullDisplayText = "value" }, metadata => metadata.NullDisplayText
@@ -102,6 +122,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return new TheoryData<Attribute, Func<ModelMetadata, bool>, bool>
                 {
                     {
+                        // Edit formats from [DataType] subclass affect HasNonDefaultEditFormat.
+                        new DataTypeWithCustomEditFormat(),
+                        metadata => metadata.HasNonDefaultEditFormat,
+                        true
+                    },
+                    {
+                        // Edit formats from [DataType] do not affect HasNonDefaultEditFormat.
+                        new DataTypeAttribute(DataType.Date),
+                        metadata => metadata.HasNonDefaultEditFormat,
+                        false
+                    },
+                    {
                         new DisplayFormatAttribute { ConvertEmptyStringToNull = false },
                         metadata => metadata.ConvertEmptyStringToNull,
                         false
@@ -109,6 +141,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     {
                         new DisplayFormatAttribute { ConvertEmptyStringToNull = true },
                         metadata => metadata.ConvertEmptyStringToNull,
+                        true
+                    },
+                    {
+                        // Changes only to DisplayFormatString do not affect HasNonDefaultEditFormat.
+                        new DisplayFormatAttribute { DataFormatString = "value" },
+                        metadata => metadata.HasNonDefaultEditFormat,
+                        false
+                    },
+                    {
+                        new DisplayFormatAttribute { ApplyFormatInEditMode = true, DataFormatString = "value" },
+                        metadata => metadata.HasNonDefaultEditFormat,
                         true
                     },
                     {
@@ -162,6 +205,77 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.Equal(expectedResult, result);
+        }
+
+        [Fact]
+        public void DisplayFormatString_AttributesHaveExpectedPrecedence()
+        {
+            // Arrange
+            var expected = "custom format";
+            var dataType = new DataTypeAttribute(DataType.Currency);
+            var displayFormat = new DisplayFormatAttribute { DataFormatString = expected, };
+            var provider = new DataAnnotationsModelMetadataProvider();
+            var metadata = new CachedDataAnnotationsModelMetadata(
+                provider,
+                containerType: null,
+                modelType: typeof(object),
+                propertyName: null,
+                attributes: new Attribute[] { dataType, displayFormat, });
+
+            // Act
+            var result = metadata.DisplayFormatString;
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public void EditFormatString_AttributesHaveExpectedPrecedence()
+        {
+            // Arrange
+            var expected = "custom format";
+            var dataType = new DataTypeAttribute(DataType.Currency);
+            var displayFormat = new DisplayFormatAttribute
+            {
+                ApplyFormatInEditMode = true,
+                DataFormatString = expected,
+            };
+            var provider = new DataAnnotationsModelMetadataProvider();
+            var metadata = new CachedDataAnnotationsModelMetadata(
+                provider,
+                containerType: null,
+                modelType: typeof(object),
+                propertyName: null,
+                attributes: new Attribute[] { dataType, displayFormat, });
+
+            // Act
+            var result = metadata.EditFormatString;
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        private class DataTypeWithCustomDisplayFormat : DataTypeAttribute
+        {
+            public DataTypeWithCustomDisplayFormat() : base("Custom datatype")
+            {
+                DisplayFormat = new DisplayFormatAttribute
+                {
+                    DataFormatString = "value",
+                };
+            }
+        }
+
+        private class DataTypeWithCustomEditFormat : DataTypeAttribute
+        {
+            public DataTypeWithCustomEditFormat() : base("Custom datatype")
+            {
+                DisplayFormat = new DisplayFormatAttribute
+                {
+                    ApplyFormatInEditMode = true,
+                    DataFormatString = "value",
+                };
+            }
         }
 
         private class ClassWithDisplayableColumn
