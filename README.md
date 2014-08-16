@@ -67,9 +67,9 @@ The samples in this repo are basic starting points for you to experiment with.
 + [HelloMvc](https://github.com/aspnet/Home/tree/master/samples/HelloMvc). This sample is a basic MVC app. It is not designed to show all the functionality of the new web stack, but to give you a starting point to play with features.
 + [MVC Music Store](https://github.com/aspnet/MusicStore) and [BugTracker](https://github.com/aspnet/BugTracker) are application samples that are both being ported to ASP.NET vNext. Each of these samples have their own separate repositories that you can look at.
 
-**NOTE: The samples are pinned to a specific version of the packages. If you want to try the latest builds then update the project.json and replace the last part of the version with a '\*', so '0.1-alpha-build-267' becomes '0.1-alpha-\*', and then run ```kpm restore``` to pull down the latest packages**
+**NOTE: The samples are pinned to a specific version of the packages. If you want to try the latest builds then update the project.json and replace the last part of the version with a '\*', so '1.0.0-alpha3' becomes '1.0.0-alpha3-\*', and then run ```kpm restore``` to pull down the latest packages**
 
-## Running the samples
+### Running the samples
 
 1. Clone the Home repository
 2. Change directory to the folder of the sample you want to run
@@ -81,7 +81,7 @@ The samples in this repo are basic starting points for you to experiment with.
 6. You should see the output of the console app or a message that says the site is now started.
 7. You can navigate to the web apps in a browser by going to "http://localhost:5001" or "http://localhost:5004" if running on Mono.
 
-## Switching to Core CLR
+### Switching to Core CLR
 
 By default when running ASP.NET vNext applications on the Windows platform you are running on the full .NET Framework. You can switch to use the new Cloud Optimized runtime, or Core CLR, using the KVM command.
 
