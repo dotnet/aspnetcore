@@ -14,6 +14,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public class AssociatedMetadataProviderTest
     {
         // GetMetadataForProperties
+
         [Fact]
         public void GetMetadataForPropertiesCreatesMetadataForAllPropertiesOnModelWithPropertyValues()
         {
@@ -26,18 +27,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             provider.GetMetadataForProperties(model, typeof(PropertyModel)).ToList();
 
             // Assert
-            var local = provider.CreateMetadataPrototypeLog.Single(m => m.ContainerType == typeof(PropertyModel) &&
-                                                                        m.PropertyName == "LocalAttributes");
+            var local = Assert.Single(
+                provider.CreateMetadataPrototypeLog,
+                m => m.ContainerType == typeof(PropertyModel) && m.PropertyName == "LocalAttributes");
             Assert.Equal(typeof(int), local.ModelType);
             Assert.True(local.Attributes.Any(a => a is RequiredAttribute));
 
-            var metadata = provider.CreateMetadataPrototypeLog.Single(m => m.ContainerType == typeof(PropertyModel) &&
-                                                                           m.PropertyName == "MetadataAttributes");
+            var metadata = Assert.Single(
+                provider.CreateMetadataPrototypeLog,
+                m => m.ContainerType == typeof(PropertyModel) && m.PropertyName == "MetadataAttributes");
             Assert.Equal(typeof(string), metadata.ModelType);
             Assert.True(metadata.Attributes.Any(a => a is RangeAttribute));
 
-            var mixed = provider.CreateMetadataPrototypeLog.Single(m => m.ContainerType == typeof(PropertyModel) &&
-                                                                        m.PropertyName == "MixedAttributes");
+            var mixed = Assert.Single(
+                provider.CreateMetadataPrototypeLog,
+                m => m.ContainerType == typeof(PropertyModel) && m.PropertyName == "MixedAttributes");
             Assert.Equal(typeof(double), mixed.ModelType);
             Assert.True(mixed.Attributes.Any(a => a is RequiredAttribute));
             Assert.True(mixed.Attributes.Any(a => a is RangeAttribute));
@@ -60,17 +64,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Equal(value, provider.CreateMetadataFromPrototypeLog[0].Model);
             Assert.Null(provider.CreateMetadataFromPrototypeLog[1].Model);
 
-            var valueMetadata = provider.CreateMetadataPrototypeLog.Single(m => m.ContainerType == modelType &&
-                                                                        m.PropertyName == "Value");
+            var valueMetadata = Assert.Single(
+                provider.CreateMetadataPrototypeLog,
+                m => m.ContainerType == modelType && m.PropertyName == "Value");
             Assert.Equal(typeof(string), valueMetadata.ModelType);
             Assert.Single(valueMetadata.Attributes.OfType<MinLengthAttribute>());
 
-            var testPropertyMetadata = provider.CreateMetadataPrototypeLog.Single(m => m.ContainerType == modelType &&
-                                                                                     m.PropertyName == "TestProperty");
+            var testPropertyMetadata = Assert.Single(
+                provider.CreateMetadataPrototypeLog,
+                m => m.ContainerType == modelType && m.PropertyName == "TestProperty");
             Assert.Equal(typeof(string), testPropertyMetadata.ModelType);
         }
 
-        // GetMetadataForProperties
         [Fact]
         public void GetMetadataForPropertyWithNullContainerReturnsMetadataWithNullValuesForProperties()
         {
@@ -81,7 +86,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             provider.GetMetadataForProperties(null, typeof(PropertyModel)).ToList(); // Call ToList() to force the lazy evaluation to evaluate
 
             // Assert
-            Assert.True(provider.CreateMetadataFromPrototypeLog.Any());
+            Assert.NotEmpty(provider.CreateMetadataFromPrototypeLog);
             foreach (var parms in provider.CreateMetadataFromPrototypeLog)
             {
                 Assert.Null(parms.Model);
@@ -133,9 +138,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.Same(metadata, result);
-            Assert.True(provider.CreateMetadataPrototypeLog
-                                .Single(parameters => parameters.PropertyName == "LocalAttributes")
-                                .Attributes.Any(a => a is RequiredAttribute));
+            var localAttributes = Assert.Single(
+                provider.CreateMetadataPrototypeLog,
+                parameters => parameters.PropertyName == "LocalAttributes");
+            Assert.Single(localAttributes.Attributes, a => a is RequiredAttribute);
         }
 
         [Fact]
@@ -151,8 +157,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.Same(metadata, result);
-            var parmaters = provider.CreateMetadataPrototypeLog.Single(p => p.PropertyName == "MetadataAttributes");
-            Assert.True(parmaters.Attributes.Any(a => a is RangeAttribute));
+            var parmaters = Assert.Single(
+                provider.CreateMetadataPrototypeLog,
+                p => p.PropertyName == "MetadataAttributes");
+            Assert.Single(parmaters.Attributes, a => a is RangeAttribute);
         }
 
         [Fact]
@@ -168,9 +176,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.Same(metadata, result);
-            var parms = provider.CreateMetadataPrototypeLog.Single(p => p.PropertyName == "MixedAttributes");
-            Assert.True(parms.Attributes.Any(a => a is RequiredAttribute));
-            Assert.True(parms.Attributes.Any(a => a is RangeAttribute));
+            var parms = Assert.Single(provider.CreateMetadataPrototypeLog, p => p.PropertyName == "MixedAttributes");
+            Assert.Single(parms.Attributes, a => a is RequiredAttribute);
+            Assert.Single(parms.Attributes, a => a is RangeAttribute);
         }
 
         // GetMetadataForType
@@ -188,8 +196,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.Same(metadata, result);
-            var parms = provider.CreateMetadataPrototypeLog.Single(p => p.ModelType == typeof(TypeModel));
-            Assert.True(parms.Attributes.Any(a => a is ReadOnlyAttribute));
+            var parms = Assert.Single(provider.CreateMetadataPrototypeLog, p => p.ModelType == typeof(TypeModel));
+            Assert.Single(parms.Attributes, a => a is ReadOnlyAttribute);
         }
 #endif
 
@@ -225,22 +233,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             [MinLength(4)]
             public string Value { get; set; }
-        }
-
-        private sealed class RequiredAttribute : Attribute
-        {
-        }
-
-        private sealed class RangeAttribute : Attribute
-        {
-            public RangeAttribute(int min, int max)
-            {
-            }
-        }
-
-        private class ModelWithReadOnlyProperty
-        {
-            public int ReadOnlyProperty { get; private set; }
         }
 
 #if NET45 // No [ReadOnly] in K
