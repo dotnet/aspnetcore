@@ -8,8 +8,12 @@ using System.Reflection;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
+    // Class does not override ComputeIsComplexType() because value calculated in ModelMetadata's base implementation
+    // is correct.
     public class CachedDataAnnotationsModelMetadata : CachedModelMetadata<CachedDataAnnotationsMetadataAttributes>
     {
+        private bool _isEditFormatStringFromCache;
+
         public CachedDataAnnotationsModelMetadata(CachedDataAnnotationsModelMetadata prototype, 
                                                   Func<object> modelAccessor)
             : base(prototype, modelAccessor)
@@ -50,6 +54,22 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                        : base.ComputeDescription();
         }
 
+        /// <summary>
+        /// Calculate <see cref="ModelMetadata.DisplayFormatString"/> based on presence of an
+        /// <see cref="DisplayFormatAttribute"/> and its <see cref="DisplayFormatAttribute.DataFormatString"/> value.
+        /// </summary>
+        /// <returns>
+        /// Calculated <see cref="ModelMetadata.DisplayFormatString"/> value.
+        /// <see cref="DisplayFormatAttribute.DataFormatString"/> if an <see cref="DisplayFormatAttribute"/> exists.
+        /// <c>null</c> otherwise.
+        /// </returns>
+        protected override string ComputeDisplayFormatString()
+        {
+            return PrototypeCache.DisplayFormat != null
+                ? PrototypeCache.DisplayFormat.DataFormatString
+                : base.ComputeEditFormatString();
+        }
+
         protected override string ComputeDisplayName()
         {
             // DisplayName may be provided by DisplayAttribute.
@@ -65,6 +85,73 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             return base.ComputeDisplayName();
+        }
+
+        /// <summary>
+        /// Calculate <see cref="ModelMetadata.EditFormatString"/> based on presence of an
+        /// <see cref="DisplayFormatAttribute"/> and its <see cref="DisplayFormatAttribute.ApplyFormatInEditMode"/> and
+        /// <see cref="DisplayFormatAttribute.DataFormatString"/> values.
+        /// </summary>
+        /// <returns>
+        /// Calculated <see cref="ModelMetadata.DisplayFormatString"/> value.
+        /// <see cref="DisplayFormatAttribute.DataFormatString"/> if an <see cref="DisplayFormatAttribute"/> exists and
+        /// its <see cref="DisplayFormatAttribute.ApplyFormatInEditMode"/> is <c>true</c>; <c>null</c> otherwise.
+        /// </returns>
+        /// <remarks>
+        /// Subclasses overriding this method should also override <see cref="ComputeHasNonDefaultEditFormat"/> to
+        /// ensure the two calculations remain consistent.
+        /// </remarks>
+        protected override string ComputeEditFormatString()
+        {
+            if (PrototypeCache.DisplayFormat != null && PrototypeCache.DisplayFormat.ApplyFormatInEditMode)
+            {
+                _isEditFormatStringFromCache = true;
+                return PrototypeCache.DisplayFormat.DataFormatString;
+            }
+
+            return base.ComputeEditFormatString();
+        }
+
+        /// <summary>
+        /// Calculate <see cref="ModelMetadata.HasNonDefaultEditFormat"/> based on
+        /// <see cref="ModelMetadata.EditFormatString"/> and presence of <see cref="DataTypeAttribute"/> and
+        /// <see cref="DisplayFormatAttribute"/>.
+        /// </summary>
+        /// <returns>
+        /// Calculated <see cref="ModelMetadata.HasNonDefaultEditFormat"/> value. <c>true</c> if
+        /// <see cref="ModelMetadata.EditFormatString"/> is non-<c>null</c>, non-empty, and came from the cache (was
+        /// not set directly).  In addition the applied <see cref="DisplayFormatAttribute"/> must not have come from an
+        /// applied <see cref="DataTypeAttribute"/>. <c>false</c> otherwise.
+        /// </returns>
+        protected override bool ComputeHasNonDefaultEditFormat()
+        {
+            // Following calculation ignores possibility something (an IModelMetadataProvider) set EditFormatString
+            // directly.
+            if (!string.IsNullOrEmpty(EditFormatString) && _isEditFormatStringFromCache)
+            {
+                // Have a non-empty EditFormatString based on [DisplayFormat] from our cache.
+                if (PrototypeCache.DataType == null)
+                {
+                    // Attributes include no [DataType]; [DisplayFormat] was applied directly.
+                    return true;
+                }
+
+                if (PrototypeCache.DataType.DisplayFormat != PrototypeCache.DisplayFormat)
+                {
+                    // Attributes include separate [DataType] and [DisplayFormat]; [DisplayFormat] provided override.
+                    return true;
+                }
+
+                if (PrototypeCache.DataType.GetType() != typeof(DataTypeAttribute))
+                {
+                    // Attributes include [DisplayFormat] copied from [DataType] and [DataType] was of a subclass.
+                    // Assume the [DataType] constructor used the protected DisplayFormat setter to override its
+                    // default.  That is derived [DataType] provided override.
+                    return true;
+                }
+            }
+
+            return base.ComputeHasNonDefaultEditFormat();
         }
 
         /// <summary>

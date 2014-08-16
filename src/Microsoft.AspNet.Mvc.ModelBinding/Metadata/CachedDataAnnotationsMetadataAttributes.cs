@@ -12,20 +12,43 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     {
         public CachedDataAnnotationsMetadataAttributes(IEnumerable<Attribute> attributes)
         {
+            DataType = attributes.OfType<DataTypeAttribute>().FirstOrDefault();
             Display = attributes.OfType<DisplayAttribute>().FirstOrDefault();
-            DisplayFormat = attributes.OfType<DisplayFormatAttribute>().FirstOrDefault();
             DisplayColumn = attributes.OfType<DisplayColumnAttribute>().FirstOrDefault();
+            DisplayFormat = attributes.OfType<DisplayFormatAttribute>().FirstOrDefault();
             Editable = attributes.OfType<EditableAttribute>().FirstOrDefault();
             HiddenInput = attributes.OfType<HiddenInputAttribute>().FirstOrDefault();
             Required = attributes.OfType<RequiredAttribute>().FirstOrDefault();
             ScaffoldColumn = attributes.OfType<ScaffoldColumnAttribute>().FirstOrDefault();
+
+            // Special case the [DisplayFormat] attribute hanging off an applied [DataType] attribute. This property is
+            // non-null for DataType.Currency, DataType.Date, DataType.Time, and potentially custom [DataType]
+            // subclasses. The DataType.Currency, DataType.Date, and DataType.Time [DisplayFormat] attributes have a
+            // non-null DataFormatString and the DataType.Date and DataType.Time [DisplayFormat] attributes have
+            // ApplyFormatInEditMode==true.
+            if (DisplayFormat == null && DataType != null)
+            {
+                DisplayFormat = DataType.DisplayFormat;
+            }
         }
+
+        /// <summary>
+        /// Gets (or sets in subclasses) <see cref="DataTypeAttribute"/> found in collection passed to the
+        /// <see cref="CachedDataAnnotationsMetadataAttributes(IEnumerable{Attribute})"/> constructor, if any.
+        /// </summary>
+        public DataTypeAttribute DataType { get; protected set; }
 
         public DisplayAttribute Display { get; protected set; }
 
-        public DisplayFormatAttribute DisplayFormat { get; protected set; }
-
         public DisplayColumnAttribute DisplayColumn { get; protected set; }
+
+        /// <summary>
+        /// Gets (or sets in subclasses) <see cref="DisplayFormatAttribute"/> found in collection passed to the
+        /// <see cref="CachedDataAnnotationsMetadataAttributes(IEnumerable{Attribute})"/> constructor, if any.
+        /// If no such attribute was found but a <see cref="DataTypeAttribute"/> was, gets the
+        /// <see cref="DataTypeAttribute.DisplayFormat"/> value.
+        /// </summary>
+        public DisplayFormatAttribute DisplayFormat { get; protected set; }
 
         public EditableAttribute Editable { get; protected set; }
 

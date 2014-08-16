@@ -18,7 +18,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private bool _convertEmptyStringToNull;
         private string _nullDisplayText;
         private string _description;
+        private string _displayFormatString;
         private string _displayName;
+        private string _editFormatString;
+        private bool _hasNonDefaultEditFormat;
         private bool _hideSurroundingHtml;
         private bool _isReadOnly;
         private bool _isComplexType;
@@ -29,7 +32,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private bool _convertEmptyStringToNullComputed;
         private bool _nullDisplayTextComputed;
         private bool _descriptionComputed;
+        private bool _displayFormatStringComputed;
         private bool _displayNameComputed;
+        private bool _editFormatStringComputed;
+        private bool _hasNonDefaultEditFormatComputed;
         private bool _hideSurroundingHtmlComputed;
         private bool _isReadOnlyComputed;
         private bool _isComplexTypeComputed;
@@ -117,6 +123,27 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
+        /// <inheritdoc />
+        public sealed override string DisplayFormatString
+        {
+            get
+            {
+                if (!_displayFormatStringComputed)
+                {
+                    _displayFormatString = ComputeDisplayFormatString();
+                    _displayFormatStringComputed = true;
+                }
+
+                return _displayFormatString;
+            }
+
+            set
+            {
+                _displayFormatString = value;
+                _displayFormatStringComputed = true;
+            }
+        }
+
         public sealed override string DisplayName
         {
             get
@@ -133,6 +160,48 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 _displayName = value;
                 _displayNameComputed = true;
+            }
+        }
+
+        /// <inheritdoc />
+        public sealed override string EditFormatString
+        {
+            get
+            {
+                if (!_editFormatStringComputed)
+                {
+                    _editFormatString = ComputeEditFormatString();
+                    _editFormatStringComputed = true;
+                }
+
+                return _editFormatString;
+            }
+
+            set
+            {
+                _editFormatString = value;
+                _editFormatStringComputed = true;
+            }
+        }
+
+        /// <inheritdoc />
+        public sealed override bool HasNonDefaultEditFormat
+        {
+            get
+            {
+                if (!_hasNonDefaultEditFormatComputed)
+                {
+                    _hasNonDefaultEditFormat = ComputeHasNonDefaultEditFormat();
+                    _hasNonDefaultEditFormatComputed = true;
+                }
+
+                return _hasNonDefaultEditFormat;
+            }
+
+            set
+            {
+                _hasNonDefaultEditFormat = value;
+                _hasNonDefaultEditFormatComputed = true;
             }
         }
 
@@ -242,6 +311,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
+        /// <inheritdoc />
+        public sealed override string SimpleDisplayText
+        {
+            get
+            {
+                // Value already cached in ModelMetadata. That class also already exposes ComputeSimpleDisplayText()
+                // for overrides. Sealed here for consistency with other properties.
+                return base.SimpleDisplayText;
+            }
+            set
+            {
+                base.SimpleDisplayText = value;
+            }
+        }
+
         protected TPrototypeCache PrototypeCache { get; set; }
 
         protected virtual bool ComputeConvertEmptyStringToNull()
@@ -259,9 +343,36 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return base.Description;
         }
 
+        /// <summary>
+        /// Calculate the <see cref="DisplayFormatString"/> value.
+        /// </summary>
+        /// <returns>Calculated <see cref="DisplayFormatString"/> value.</returns>
+        protected virtual string ComputeDisplayFormatString()
+        {
+            return base.DisplayFormatString;
+        }
+
         protected virtual string ComputeDisplayName()
         {
             return base.DisplayName;
+        }
+
+        /// <summary>
+        /// Calculate the <see cref="EditFormatString"/> value.
+        /// </summary>
+        /// <returns>Calculated <see cref="EditFormatString"/> value.</returns>
+        protected virtual string ComputeEditFormatString()
+        {
+            return base.EditFormatString;
+        }
+
+        /// <summary>
+        /// Calculate the <see cref="HasNonDefaultEditFormat"/> value.
+        /// </summary>
+        /// <returns>Calculated <see cref="HasNonDefaultEditFormat"/> value.</returns>
+        protected virtual bool ComputeHasNonDefaultEditFormat()
+        {
+            return base.HasNonDefaultEditFormat;
         }
 
         /// <summary>

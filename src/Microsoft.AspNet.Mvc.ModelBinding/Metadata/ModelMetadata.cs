@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Mvc.ModelBinding.Internal;
@@ -64,11 +63,29 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         public virtual string Description { get; set; }
 
+        /// <summary>
+        /// Gets or sets the composite format <see cref="string"/> (see
+        /// http://msdn.microsoft.com/en-us/library/txafckwd.aspx) used to display the <see cref="Model"/>.
+        /// </summary>
         public virtual string DisplayFormatString { get; set; }
 
         public virtual string DisplayName { get; set; }
 
+        /// <summary>
+        /// Gets or sets the composite format <see cref="string"/> (see
+        /// http://msdn.microsoft.com/en-us/library/txafckwd.aspx) used to edit the <see cref="Model"/>.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="IModelMetadataProvider"/> instances that set this property to a non-<c>null</c>, non-empty,
+        /// non-default value should also set <see cref="HasNonDefaultEditFormat"/> to <c>true</c>.
+        /// </remarks>
         public virtual string EditFormatString { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether <see cref="EditFormatString"/> has a non-<c>null</c>, non-empty
+        /// value different from the default for the datatype.
+        /// </summary>
+        public virtual bool HasNonDefaultEditFormat { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the "HiddenInput" display template should return
