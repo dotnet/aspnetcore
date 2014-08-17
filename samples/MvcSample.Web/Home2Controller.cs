@@ -45,7 +45,6 @@ namespace MvcSample.Web.RandomNameSpace
         public ActionResult UserJson()
         {
             var jsonResult = new JsonResult(_user);
-            jsonResult.Indent = false;
 
             return jsonResult;
         }
