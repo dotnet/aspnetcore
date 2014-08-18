@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Testing;
 using Moq;
 using Xunit;
 
@@ -201,6 +201,126 @@ Environment.NewLine;
             Assert.Equal(
                 "<input class=\"text-box single-line\" id=\"Property1\" name=\"Property1\" type=\"text\" value=\"ViewData string\" />",
                 result.ToString());
+        }
+
+        // DateTime-local is not special-cased unless using Html5DateRenderingMode.Rfc3339.
+        [Theory]
+        [InlineData("date", "{0:d}", "02/01/2000")]
+        [InlineData("datetime", null, "02/01/2000 03:04:05 +00:00")]
+        [InlineData("datetime-local", null, "02/01/2000 03:04:05 +00:00")]
+        [InlineData("time", "{0:t}", "03:04")]
+        [ReplaceCulture]
+        public void Editor_FindsCorrectDateOrTimeTemplate(string dataTypeName, string editFormatString, string expected)
+        {
+            // Arrange
+            var expectedInput = "<input class=\"text-box single-line\" id=\"FieldPrefix\" name=\"FieldPrefix\" type=\"" +
+                dataTypeName + "\" value=\"" + expected + "\" />";
+            var offset = TimeSpan.FromHours(0);
+            var model = new DateTimeOffset(
+                year: 2000,
+                month: 1,
+                day: 2,
+                hour: 3,
+                minute: 4,
+                second: 5,
+                millisecond: 6,
+                offset: offset);
+            var viewEngine = new Mock<ICompositeViewEngine>();
+            viewEngine
+                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
+                .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model, viewEngine.Object);
+            helper.ViewData.ModelMetadata.DataTypeName = dataTypeName;
+            helper.ViewData.ModelMetadata.EditFormatString = editFormatString; // What [DataType] does for given type.
+            helper.ViewData.TemplateInfo.HtmlFieldPrefix = "FieldPrefix";
+
+            // Act
+            var result = helper.Editor("");
+
+            // Assert
+            Assert.Equal(expectedInput, result.ToString());
+        }
+
+        [Theory]
+        [InlineData("date", "{0:d}", "2000-01-02")]
+        [InlineData("datetime", null, "2000-01-02T03:04:05.060+00:00")]
+        [InlineData("datetime-local", null, "2000-01-02T03:04:05.060")]
+        [InlineData("time", "{0:t}", "03:04:05.060")]
+        [ReplaceCulture]
+        public void Editor_AppliesRfc3339(string dataTypeName, string editFormatString, string expected)
+        {
+            // Arrange
+            var expectedInput = "<input class=\"text-box single-line\" id=\"FieldPrefix\" name=\"FieldPrefix\" type=\"" +
+                dataTypeName + "\" value=\"" + expected + "\" />";
+
+            // Place DateTime-local value in current timezone.
+            var offset = string.Equals("", dataTypeName) ? DateTimeOffset.Now.Offset : TimeSpan.FromHours(0);
+            var model = new DateTimeOffset(
+                year: 2000,
+                month: 1,
+                day: 2,
+                hour: 3,
+                minute: 4,
+                second: 5,
+                millisecond: 60,
+                offset: offset);
+            var viewEngine = new Mock<ICompositeViewEngine>();
+            viewEngine
+                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
+                .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model, viewEngine.Object);
+            helper.Html5DateRenderingMode = Html5DateRenderingMode.Rfc3339;
+            helper.ViewData.ModelMetadata.DataTypeName = dataTypeName;
+            helper.ViewData.ModelMetadata.EditFormatString = editFormatString; // What [DataType] does for given type.
+            helper.ViewData.TemplateInfo.HtmlFieldPrefix = "FieldPrefix";
+
+            // Act
+            var result = helper.Editor("");
+
+            // Assert
+            Assert.Equal(expectedInput, result.ToString());
+        }
+
+        [Theory]
+        [InlineData("date", Html5DateRenderingMode.CurrentCulture)]
+        [InlineData("date", Html5DateRenderingMode.Rfc3339)]
+        [InlineData("datetime", Html5DateRenderingMode.CurrentCulture)]
+        [InlineData("datetime", Html5DateRenderingMode.Rfc3339)]
+        [InlineData("datetime-local", Html5DateRenderingMode.CurrentCulture)]
+        [InlineData("datetime-local", Html5DateRenderingMode.Rfc3339)]
+        [InlineData("time", Html5DateRenderingMode.CurrentCulture)]
+        [InlineData("time", Html5DateRenderingMode.Rfc3339)]
+        public void Editor_AppliesNonDefaultEditFormat(string dataTypeName, Html5DateRenderingMode renderingMode)
+        {
+            // Arrange
+            var expectedInput = "<input class=\"text-box single-line\" id=\"FieldPrefix\" name=\"FieldPrefix\" type=\"" +
+                dataTypeName + "\" value=\"Formatted as 2000-01-02T03:04:05.0600000+00:00\" />";
+            var offset = TimeSpan.FromHours(0);
+            var model = new DateTimeOffset(
+                year: 2000,
+                month: 1,
+                day: 2,
+                hour: 3,
+                minute: 4,
+                second: 5,
+                millisecond: 60,
+                offset: offset);
+            var viewEngine = new Mock<ICompositeViewEngine>();
+            viewEngine
+                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
+                .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model, viewEngine.Object);
+            helper.Html5DateRenderingMode = renderingMode; // Ignored due to HasNonDefaultEditFormat.
+            helper.ViewData.ModelMetadata.DataTypeName = dataTypeName;
+            helper.ViewData.ModelMetadata.EditFormatString = "Formatted as {0:O}";
+            helper.ViewData.ModelMetadata.HasNonDefaultEditFormat = true;
+            helper.ViewData.TemplateInfo.HtmlFieldPrefix = "FieldPrefix";
+
+            // Act
+            var result = helper.Editor("");
+
+            // Assert
+            Assert.Equal(expectedInput, result.ToString());
         }
 
         [Fact]
