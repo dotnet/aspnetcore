@@ -31,17 +31,17 @@ namespace Microsoft.AspNet.Identity.InMemory
             return Task.FromResult(0);
         }
 
-        public Task<string> GetRoleIdAsync(TRole role, CancellationToken cancellationToken = new CancellationToken())
+        public Task<string> GetRoleIdAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Task.FromResult(role.Id);
         }
 
-        public Task<string> GetRoleNameAsync(TRole role, CancellationToken cancellationToken = new CancellationToken())
+        public Task<string> GetRoleNameAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Task.FromResult(role.Name);
         }
 
-        public Task SetRoleNameAsync(TRole role, string roleName, CancellationToken cancellationToken = new CancellationToken())
+        public Task SetRoleNameAsync(TRole role, string roleName, CancellationToken cancellationToken = default(CancellationToken))
         {
             role.Name = roleName;
             return Task.FromResult(0);

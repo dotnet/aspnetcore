@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             await SaveChanges(cancellationToken);
         }
 
-        public Task<string> GetRoleIdAsync(TRole role, CancellationToken cancellationToken = new CancellationToken())
+        public Task<string> GetRoleIdAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -110,7 +110,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             return Task.FromResult(ConvertIdToString(role.Id));
         }
 
-        public Task<string> GetRoleNameAsync(TRole role, CancellationToken cancellationToken = new CancellationToken())
+        public Task<string> GetRoleNameAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             return Task.FromResult(role.Name);
         }
 
-        public Task SetRoleNameAsync(TRole role, string roleName, CancellationToken cancellationToken = new CancellationToken())
+        public Task SetRoleNameAsync(TRole role, string roleName, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();

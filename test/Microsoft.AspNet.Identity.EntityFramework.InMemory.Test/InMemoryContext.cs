@@ -8,7 +8,7 @@ using Microsoft.Data.Entity.Metadata;
 namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
 {
     public class InMemoryContext :
-        InMemoryContext<InMemoryUser, IdentityRole, string, IdentityUserLogin, IdentityUserRole, IdentityUserClaim>
+        InMemoryContext<IdentityUser, IdentityRole, string, IdentityUserLogin, IdentityUserRole, IdentityUserClaim>
     {
         public InMemoryContext() { }
         public InMemoryContext(IServiceProvider serviceProvider) : base(serviceProvider) { }
@@ -16,14 +16,14 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
 
     public class InMemoryContext<TUser> :
         InMemoryContext<TUser, IdentityRole, string, IdentityUserLogin, IdentityUserRole, IdentityUserClaim>
-        where TUser : InMemoryUser<string, IdentityUserLogin, IdentityUserRole, IdentityUserClaim>
+        where TUser : IdentityUser
     {
         public InMemoryContext() { }
         public InMemoryContext(IServiceProvider serviceProvider) : base(serviceProvider) { }
     }
 
     public class InMemoryContext<TUser, TRole, TKey, TUserLogin, TUserRole, TUserClaim> : DbContext
-        where TUser : InMemoryUser<TKey, TUserLogin, TUserRole, TUserClaim>
+        where TUser : IdentityUser<TKey>
         where TRole : IdentityRole<TKey>
         where TUserLogin : IdentityUserLogin<TKey>
         where TUserRole : IdentityUserRole<TKey>
@@ -42,7 +42,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
 
         protected override void OnConfiguring(DbContextOptions builder)
         {
-            builder.UseInMemoryStore();
+            // Want fresh in memory store for tests always for now
+            builder.UseInMemoryStore(persist: false);
         }
 
         protected override void OnModelCreating(ModelBuilder builder)

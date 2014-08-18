@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
                 //.Include(u => u.Logins)
         }
 
-        public Task<string> GetUserIdAsync(TUser user, CancellationToken cancellationToken = new CancellationToken())
+        public Task<string> GetUserIdAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             return Task.FromResult(ConvertIdToString(user.Id));
         }
 
-        public Task<string> GetUserNameAsync(TUser user, CancellationToken cancellationToken = new CancellationToken())
+        public Task<string> GetUserNameAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             return Task.FromResult(user.UserName);
         }
 
-        public Task SetUserNameAsync(TUser user, string userName, CancellationToken cancellationToken = new CancellationToken())
+        public Task SetUserNameAsync(TUser user, string userName, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -114,7 +114,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             return Task.FromResult(0);
         }
 
-        public Task<string> GetNormalizedUserNameAsync(TUser user, CancellationToken cancellationToken = new CancellationToken())
+        public Task<string> GetNormalizedUserNameAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             return Task.FromResult(user.NormalizedUserName);
         }
 
-        public Task SetNormalizedUserNameAsync(TUser user, string userName, CancellationToken cancellationToken = new CancellationToken())
+        public Task SetNormalizedUserNameAsync(TUser user, string userName, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -411,7 +411,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
         private DbSet<IdentityUserRole<TKey>> UserRoles { get { return Context.Set<IdentityUserRole<TKey>>(); } }
         private DbSet<IdentityUserLogin<TKey>> UserLogins { get { return Context.Set<IdentityUserLogin<TKey>>(); } }
 
-        public Task<IList<Claim>> GetClaimsAsync(TUser user, CancellationToken cancellationToken = new CancellationToken())
+        public Task<IList<Claim>> GetClaimsAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
             if (user == null)
@@ -422,7 +422,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             return Task.FromResult((IList<Claim>)result);
         }
 
-        public Task AddClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = new CancellationToken())
+        public Task AddClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
             if (user == null)
@@ -440,7 +440,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             return Task.FromResult(0);
         }
 
-        public Task RemoveClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = new CancellationToken())
+        public Task RemoveClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
             if (user == null)
@@ -461,7 +461,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             return Task.FromResult(0);
         }
 
-        public virtual Task AddLoginAsync(TUser user, UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task AddLoginAsync(TUser user, UserLoginInfo login,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -477,7 +478,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             {
                 UserId = user.Id,
                 ProviderKey = login.ProviderKey,
-                LoginProvider = login.LoginProvider
+                LoginProvider = login.LoginProvider,
+                ProviderDisplayName = login.ProviderDisplayName
             };
             // TODO: fixup so we don't have to update both
             UserLogins.Add(l);
@@ -485,7 +487,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             return Task.FromResult(0);
         }
 
-        public virtual Task RemoveLoginAsync(TUser user, UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task RemoveLoginAsync(TUser user, string loginProvider, string providerKey,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -493,15 +496,9 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             {
                 throw new ArgumentNullException("user");
             }
-            if (login == null)
-            {
-                throw new ArgumentNullException("login");
-            }
-            var provider = login.LoginProvider;
-            var key = login.ProviderKey;
             var userId = user.Id;
             // todo: ensure logins loaded
-            var entry = UserLogins.SingleOrDefault(l => l.UserId.Equals(userId) && l.LoginProvider == provider && l.ProviderKey == key);
+            var entry = UserLogins.SingleOrDefault(l => l.UserId.Equals(userId) && l.LoginProvider == loginProvider && l.ProviderKey == providerKey);
             if (entry != null)
             {
                 UserLogins.Remove(entry);
@@ -519,24 +516,19 @@ namespace Microsoft.AspNet.Identity.EntityFramework
                 throw new ArgumentNullException("user");
             }
             // todo: ensure logins loaded
-            var result = user.Logins.Select(l => new UserLoginInfo(l.LoginProvider, l.ProviderKey)).ToList();
-            return Task.FromResult((IList<UserLoginInfo>)result);
+            IList<UserLoginInfo> result = user.Logins
+                .Select(l => new UserLoginInfo(l.LoginProvider, l.ProviderKey, l.ProviderDisplayName)).ToList();
+            return Task.FromResult(result);
         }
 
-        public async virtual Task<TUser> FindByLoginAsync(UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
+        public async virtual Task<TUser> FindByLoginAsync(string loginProvider, string providerKey,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            if (login == null)
-            {
-                throw new ArgumentNullException("login");
-            }
             // todo: ensure logins loaded
-            var provider = login.LoginProvider;
-            var key = login.ProviderKey;
-            // TODO: use FirstOrDefaultAsync
-            var userLogin =
-                UserLogins.FirstOrDefault(l => l.LoginProvider == provider && l.ProviderKey == key);
+            var userLogin = 
+                UserLogins.FirstOrDefault(l => l.LoginProvider == loginProvider && l.ProviderKey == providerKey);
             if (userLogin != null)
             {
                 return await GetUserAggregate(u => u.Id.Equals(userLogin.UserId), cancellationToken);
@@ -646,8 +638,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             {
                 throw new ArgumentNullException("user");
             }
-            return
-                Task.FromResult(user.LockoutEnd);
+            return Task.FromResult(user.LockoutEnd);
         }
 
         /// <summary>

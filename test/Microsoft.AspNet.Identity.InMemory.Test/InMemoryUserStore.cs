@@ -23,8 +23,7 @@ namespace Microsoft.AspNet.Identity.InMemory
         IUserTwoFactorStore<TUser>
         where TUser : IdentityUser
     {
-        private readonly Dictionary<UserLoginInfo, TUser> _logins =
-            new Dictionary<UserLoginInfo, TUser>(new LoginComparer());
+        private readonly Dictionary<string, TUser> _logins = new Dictionary<string, TUser>();
 
         private readonly Dictionary<string, TUser> _users = new Dictionary<string, TUser>();
 
@@ -131,59 +130,69 @@ namespace Microsoft.AspNet.Identity.InMemory
             return Task.FromResult(0);
         }
 
-        public Task AddLoginAsync(TUser user, UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
+        private string GetLoginKey(string loginProvider, string providerKey)
+        {
+            return loginProvider + "|" + providerKey;
+        }
+
+        public virtual Task AddLoginAsync(TUser user, UserLoginInfo login,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             user.Logins.Add(new IdentityUserLogin<string>
             {
-                UserId = user.Id, 
-                LoginProvider = login.LoginProvider, 
-                ProviderKey = login.ProviderKey
+                UserId = user.Id,
+                ProviderKey = login.ProviderKey,
+                LoginProvider = login.LoginProvider,
+                ProviderDisplayName = login.ProviderDisplayName
             });
-            _logins[login] = user;
+            _logins[GetLoginKey(login.LoginProvider, login.ProviderKey)] = user;
             return Task.FromResult(0);
         }
 
-        public Task RemoveLoginAsync(TUser user, UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
+        public Task RemoveLoginAsync(TUser user, string loginProvider, string providerKey,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             var loginEntity =
                 user.Logins.SingleOrDefault(
                     l =>
-                        l.ProviderKey == login.ProviderKey && l.LoginProvider == login.LoginProvider &&
+                        l.ProviderKey == providerKey && l.LoginProvider == loginProvider &&
                         l.UserId == user.Id);
             if (loginEntity != null)
             {
                 user.Logins.Remove(loginEntity);
             }
-            _logins[login] = null;
+            _logins[GetLoginKey(loginProvider, providerKey)] = null;
             return Task.FromResult(0);
         }
 
         public Task<IList<UserLoginInfo>> GetLoginsAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var logins = user.Logins.Select(l => new UserLoginInfo(l.LoginProvider, l.ProviderKey)).ToList();
-            return Task.FromResult<IList<UserLoginInfo>>(logins);
+            IList<UserLoginInfo> result = user.Logins
+                .Select(l => new UserLoginInfo(l.LoginProvider, l.ProviderKey, l.ProviderDisplayName)).ToList();
+            return Task.FromResult(result);
         }
 
-        public Task<TUser> FindByLoginAsync(UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<TUser> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken = default(CancellationToken))
         {
-            if (_logins.ContainsKey(login))
+            string key = GetLoginKey(loginProvider, providerKey);
+            if (_logins.ContainsKey(key))
             {
-                return Task.FromResult(_logins[login]);
+                return Task.FromResult(_logins[key]);
             }
             return Task.FromResult<TUser>(null);
         }
 
-        public Task<string> GetUserIdAsync(TUser user, CancellationToken cancellationToken = new CancellationToken())
+        public Task<string> GetUserIdAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Task.FromResult(user.Id);
         }
 
-        public Task<string> GetUserNameAsync(TUser user, CancellationToken cancellationToken = new CancellationToken())
+        public Task<string> GetUserNameAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Task.FromResult(user.UserName);
         }
 
-        public Task SetUserNameAsync(TUser user, string userName, CancellationToken cancellationToken = new CancellationToken())
+        public Task SetUserNameAsync(TUser user, string userName, CancellationToken cancellationToken = default(CancellationToken))
         {
             user.UserName = userName;
             return Task.FromResult(0);
@@ -328,19 +337,6 @@ namespace Microsoft.AspNet.Identity.InMemory
         {
             user.NormalizedUserName = userName;
             return Task.FromResult(0);
-        }
-
-        private class LoginComparer : IEqualityComparer<UserLoginInfo>
-        {
-            public bool Equals(UserLoginInfo x, UserLoginInfo y)
-            {
-                return x.LoginProvider == y.LoginProvider && x.ProviderKey == y.ProviderKey;
-            }
-
-            public int GetHashCode(UserLoginInfo obj)
-            {
-                return (obj.ProviderKey + "--" + obj.LoginProvider).GetHashCode();
-            }
         }
     }
 }

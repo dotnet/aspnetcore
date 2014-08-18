@@ -502,9 +502,9 @@ namespace Microsoft.AspNet.Identity.Test
             var manager = MockHelpers.TestUserManager(new NoopUserStore());
             Assert.False(manager.SupportsUserLogin);
             await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.AddLoginAsync(null, null));
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.RemoveLoginAsync(null, null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.RemoveLoginAsync(null, null, null));
             await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetLoginsAsync(null));
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.FindByLoginAsync(null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.FindByLoginAsync(null, null));
         }
 
         [Fact]
@@ -603,8 +603,10 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ArgumentNullException>("userName", async () => await manager.FindByNameAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("userName", async () => await manager.FindByUserNamePasswordAsync(null, null));
             await Assert.ThrowsAsync<ArgumentNullException>("login", async () => await manager.AddLoginAsync(null, null));
-            await
-                Assert.ThrowsAsync<ArgumentNullException>("login", async () => await manager.RemoveLoginAsync(null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("loginProvider", 
+                async () => await manager.RemoveLoginAsync(null, null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("providerKey",
+                async () => await manager.RemoveLoginAsync(null, "", null));
             await Assert.ThrowsAsync<ArgumentNullException>("email", async () => await manager.FindByEmailAsync(null));
             Assert.Throws<ArgumentNullException>("twoFactorProvider",
                 () => manager.RegisterTwoFactorProvider(null, null));
@@ -625,7 +627,7 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.AddClaimAsync(null, new Claim("a", "b")));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
-                async () => await manager.AddLoginAsync(null, new UserLoginInfo("", "")));
+                async () => await manager.AddLoginAsync(null, new UserLoginInfo("","","")));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.AddPasswordAsync(null, null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
@@ -645,7 +647,7 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.RemoveClaimAsync(null, new Claim("a", "b")));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
-                async () => await manager.RemoveLoginAsync(null, new UserLoginInfo("", "")));
+                async () => await manager.RemoveLoginAsync(null, "", ""));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.RemovePasswordAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
@@ -736,12 +738,12 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.IsInRoleAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemoveClaimAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemoveClaimsAsync(null, null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemoveLoginAsync(null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemoveLoginAsync(null, null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemovePasswordAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemoveFromRoleAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemoveFromRolesAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByUserNamePasswordAsync(null, null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByLoginAsync(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByLoginAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByIdAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByNameAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.CreateAsync(null));
@@ -858,7 +860,7 @@ namespace Microsoft.AspNet.Identity.Test
                 return Task.FromResult(0);
             }
 
-            public Task RemoveLoginAsync(TestUser user, UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
+            public Task RemoveLoginAsync(TestUser user, string loginProvider, string providerKey, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
@@ -868,7 +870,7 @@ namespace Microsoft.AspNet.Identity.Test
                 return Task.FromResult<IList<UserLoginInfo>>(new List<UserLoginInfo>());
             }
 
-            public Task<TestUser> FindByLoginAsync(UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<TestUser> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult<TestUser>(null);
             }
@@ -877,7 +879,7 @@ namespace Microsoft.AspNet.Identity.Test
             {
             }
 
-            public Task SetUserNameAsync(TestUser user, string userName, CancellationToken cancellationToken = new CancellationToken())
+            public Task SetUserNameAsync(TestUser user, string userName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
@@ -1117,7 +1119,7 @@ namespace Microsoft.AspNet.Identity.Test
                 throw new NotImplementedException();
             }
 
-            public Task RemoveLoginAsync(TestUser user, UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
+            public Task RemoveLoginAsync(TestUser user, string loginProvider, string providerKey, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
@@ -1127,7 +1129,7 @@ namespace Microsoft.AspNet.Identity.Test
                 throw new NotImplementedException();
             }
 
-            public Task<TestUser> FindByLoginAsync(UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<TestUser> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
@@ -1137,17 +1139,17 @@ namespace Microsoft.AspNet.Identity.Test
                 throw new NotImplementedException();
             }
 
-            public Task<string> GetUserIdAsync(TestUser user, CancellationToken cancellationToken = new CancellationToken())
+            public Task<string> GetUserIdAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<string> GetUserNameAsync(TestUser user, CancellationToken cancellationToken = new CancellationToken())
+            public Task<string> GetUserNameAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task SetUserNameAsync(TestUser user, string userName, CancellationToken cancellationToken = new CancellationToken())
+            public Task SetUserNameAsync(TestUser user, string userName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
@@ -1222,22 +1224,22 @@ namespace Microsoft.AspNet.Identity.Test
                 throw new NotImplementedException();
             }
 
-            public Task AddToRoleAsync(TestUser user, string roleName, CancellationToken cancellationToken = new CancellationToken())
+            public Task AddToRoleAsync(TestUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task RemoveFromRoleAsync(TestUser user, string roleName, CancellationToken cancellationToken = new CancellationToken())
+            public Task RemoveFromRoleAsync(TestUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<IList<string>> GetRolesAsync(TestUser user, CancellationToken cancellationToken = new CancellationToken())
+            public Task<IList<string>> GetRolesAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<bool> IsInRoleAsync(TestUser user, string roleName, CancellationToken cancellationToken = new CancellationToken())
+            public Task<bool> IsInRoleAsync(TestUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }

@@ -769,7 +769,7 @@ namespace Microsoft.AspNet.Identity
             return await UpdateAsync(user, cancellationToken);
         }
 
-        // UpdateAsync the security stamp if the store supports it
+        // Update the security stamp if the store supports it
         internal async Task UpdateSecurityStampInternal(TUser user, CancellationToken cancellationToken)
         {
             if (SupportsUserSecurityStamp)
@@ -795,14 +795,26 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Returns the user associated with this login
+        /// Returns the user associated with this login
         /// </summary>
+        /// <param name="loginProvider"></param>
+        /// <param name="providerKey"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task<TUser> FindByLoginAsync(UserLoginInfo login,
+        public virtual Task<TUser> FindByLoginAsync(string loginProvider, string providerKey,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
-            return GetLoginStore().FindByLoginAsync(login, cancellationToken);
+            var loginStore = GetLoginStore();
+            if (loginProvider == null)
+            {
+                throw new ArgumentNullException("loginProvider");
+            }
+            if (providerKey == null)
+            {
+                throw new ArgumentNullException("providerKey");
+            }
+            return loginStore.FindByLoginAsync(loginProvider, providerKey, cancellationToken);
         }
 
         /// <summary>
@@ -812,20 +824,24 @@ namespace Microsoft.AspNet.Identity
         /// <param name="login"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> RemoveLoginAsync(TUser user, UserLoginInfo login,
+        public virtual async Task<IdentityResult> RemoveLoginAsync(TUser user, string loginProvider, string providerKey,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
             var loginStore = GetLoginStore();
-            if (login == null)
+            if (loginProvider == null)
             {
-                throw new ArgumentNullException("login");
+                throw new ArgumentNullException("loginProvider");
+            }
+            if (providerKey == null)
+            {
+                throw new ArgumentNullException("providerKey");
             }
             if (user == null)
             {
                 throw new ArgumentNullException("user");
             }
-            await loginStore.RemoveLoginAsync(user, login, cancellationToken);
+            await loginStore.RemoveLoginAsync(user, loginProvider, providerKey, cancellationToken);
             await UpdateSecurityStampInternal(user, cancellationToken);
             return await UpdateAsync(user, cancellationToken);
         }
@@ -850,7 +866,7 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            var existingUser = await FindByLoginAsync(login, cancellationToken);
+            var existingUser = await FindByLoginAsync(login.LoginProvider, login.ProviderKey, cancellationToken);
             if (existingUser != null)
             {
                 return IdentityResult.Failed(Resources.ExternalLoginExists);

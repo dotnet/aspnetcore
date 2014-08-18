@@ -207,16 +207,21 @@ namespace Microsoft.AspNet.Identity.Authentication.Test
             contextAccessor.VerifyAll();
         }
 
-        [Fact]
-        public async Task PasswordSignInRequiresVerification()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task PasswordSignInRequiresVerification(bool supportsLockout)
         {
             // Setup
             var user = new TestUser { UserName = "Foo" };
             var manager = MockHelpers.MockUserManager<TestUser>();
-            manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
+            manager.Setup(m => m.SupportsUserLockout).Returns(supportsLockout).Verifiable();
+            if (supportsLockout)
+            {
+                manager.Setup(m => m.IsLockedOutAsync(user, CancellationToken.None)).ReturnsAsync(false).Verifiable();
+            }
             manager.Setup(m => m.SupportsUserTwoFactor).Returns(true).Verifiable();
             manager.Setup(m => m.GetTwoFactorEnabledAsync(user, CancellationToken.None)).ReturnsAsync(true).Verifiable();
-            manager.Setup(m => m.IsLockedOutAsync(user, CancellationToken.None)).ReturnsAsync(false).Verifiable();
             manager.Setup(m => m.FindByNameAsync(user.UserName, CancellationToken.None)).ReturnsAsync(user).Verifiable();
             manager.Setup(m => m.GetUserIdAsync(user, CancellationToken.None)).ReturnsAsync(user.Id).Verifiable();
             manager.Setup(m => m.CheckPasswordAsync(user, "password", CancellationToken.None)).ReturnsAsync(true).Verifiable();
@@ -244,16 +249,66 @@ namespace Microsoft.AspNet.Identity.Authentication.Test
         }
 
         [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task CanTwoFactorSignIn(bool isPersistent)
+        [InlineData(true, true)]
+        [InlineData(true, false)]
+        [InlineData(false, true)]
+        [InlineData(false, false)]
+        public async Task CanExternalSignIn(bool isPersistent, bool supportsLockout)
+        {
+            // Setup
+            var user = new TestUser { UserName = "Foo" };
+            const string loginProvider = "login";
+            const string providerKey = "fookey";
+            var manager = MockHelpers.MockUserManager<TestUser>();
+            manager.Setup(m => m.SupportsUserLockout).Returns(supportsLockout).Verifiable();
+            if (supportsLockout)
+            {
+                manager.Setup(m => m.IsLockedOutAsync(user, CancellationToken.None)).ReturnsAsync(false).Verifiable();
+            }
+            manager.Setup(m => m.FindByLoginAsync(loginProvider, providerKey, CancellationToken.None)).ReturnsAsync(user).Verifiable();
+            var context = new Mock<HttpContext>();
+            var response = new Mock<HttpResponse>();
+            context.Setup(c => c.Response).Returns(response.Object).Verifiable();
+            response.Setup(r => r.SignIn(It.Is<AuthenticationProperties>(v => v.IsPersistent == isPersistent), It.IsAny<ClaimsIdentity>())).Verifiable();
+            var contextAccessor = new Mock<IContextAccessor<HttpContext>>();
+            contextAccessor.Setup(a => a.Value).Returns(context.Object);
+            var roleManager = MockHelpers.MockRoleManager<TestRole>();
+            var identityOptions = new IdentityOptions();
+            var claimsFactory = new Mock<ClaimsIdentityFactory<TestUser, TestRole>>(manager.Object, roleManager.Object);
+            claimsFactory.Setup(m => m.CreateAsync(user, identityOptions.ClaimsIdentity, CancellationToken.None)).ReturnsAsync(new ClaimsIdentity("Microsoft.AspNet.Identity")).Verifiable();
+            var options = new Mock<IOptionsAccessor<IdentityOptions>>();
+            options.Setup(a => a.Options).Returns(identityOptions);
+            var helper = new SignInManager<TestUser>(manager.Object, new HttpAuthenticationManager(contextAccessor.Object), claimsFactory.Object, options.Object);
+
+            // Act
+            var result = await helper.ExternalLoginSignInAsync(loginProvider, providerKey, isPersistent);
+
+            // Assert
+            Assert.Equal(SignInStatus.Success, result);
+            manager.VerifyAll();
+            context.VerifyAll();
+            response.VerifyAll();
+            contextAccessor.VerifyAll();
+            claimsFactory.VerifyAll();
+        }
+
+        [Theory]
+        [InlineData(true, true)]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        [InlineData(false, false)]
+        public async Task CanTwoFactorSignIn(bool isPersistent, bool supportsLockout)
         {
             // Setup
             var user = new TestUser { UserName = "Foo" };
             var manager = MockHelpers.MockUserManager<TestUser>();
             var provider = "twofactorprovider";
             var code = "123456";
-            manager.Setup(m => m.IsLockedOutAsync(user, CancellationToken.None)).ReturnsAsync(false).Verifiable();
+            manager.Setup(m => m.SupportsUserLockout).Returns(supportsLockout).Verifiable();
+            if (supportsLockout)
+            {
+                manager.Setup(m => m.IsLockedOutAsync(user, CancellationToken.None)).ReturnsAsync(false).Verifiable();
+            }
             manager.Setup(m => m.FindByIdAsync(user.Id, CancellationToken.None)).ReturnsAsync(user).Verifiable();
             manager.Setup(m => m.VerifyTwoFactorTokenAsync(user, provider, code, CancellationToken.None)).ReturnsAsync(true).Verifiable();
             manager.Setup(m => m.GetUserIdAsync(user, CancellationToken.None)).ReturnsAsync(user.Id).Verifiable();

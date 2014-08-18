@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Identity.Test;
+using Microsoft.Data.Entity;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
+using Microsoft.Framework.OptionsModel;
 using System;
 using Xunit;
 
@@ -26,7 +28,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
     }
 
     [TestCaseOrderer("Microsoft.AspNet.Identity.Test.PriorityOrderer", "Microsoft.AspNet.Identity.EntityFramework.Test")]
-    public class UserStoreIntTest : UserStoreTestBase<IntUser, IntRole, int>
+    public class UserStoreIntTest : SqlStoreTestBase<IntUser, IntRole, int>
     {
         public override string ConnectionString
         {
@@ -34,18 +36,6 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             {
                 return @"Server=(localdb)\v11.0;Database=SqlUserStoreIntTest;Trusted_Connection=True;";
             }
-        }
-
-        public override UserManager<IntUser> CreateManager(ApplicationDbContext context)
-        {
-            return MockHelpers.CreateManager(() => new UserStore<IntUser, IntRole, ApplicationDbContext, int>(context));
-        }
-
-        public override RoleManager<IntRole> CreateRoleManager(ApplicationDbContext context)
-        {
-            var services = new ServiceCollection();
-            services.AddIdentity<IntUser, IntRole>().AddRoleStore(() => new RoleStore<IntRole, ApplicationDbContext, int>(context));
-            return services.BuildServiceProvider().GetService<RoleManager<IntRole>>();
         }
     }
 }

@@ -13,10 +13,12 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="loginProvider"></param>
         /// <param name="providerKey"></param>
-        public UserLoginInfo(string loginProvider, string providerKey)
+        /// <param name="displayName"></param>
+        public UserLoginInfo(string loginProvider, string providerKey, string displayName)
         {
             LoginProvider = loginProvider;
             ProviderKey = providerKey;
+            ProviderDisplayName = displayName;
         }
 
         /// <summary>
@@ -28,5 +30,10 @@ namespace Microsoft.AspNet.Identity
         ///     Key for the linked login at the provider
         /// </summary>
         public string ProviderKey { get; set; }
+
+        /// <summary>
+        ///     Display name for the provider
+        /// </summary>
+        public string ProviderDisplayName { get; set; }
     }
 }

@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
     }
 
     [TestCaseOrderer("Microsoft.AspNet.Identity.Test.PriorityOrderer", "Microsoft.AspNet.Identity.EntityFramework.Test")]
-    public class UserStoreGuidTest : UserStoreTestBase<GuidUser, GuidRole, Guid>
+    public class UserStoreGuidTest : SqlStoreTestBase<GuidUser, GuidRole, Guid>
     {
         public override string ConnectionString
         {
@@ -58,15 +58,23 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             }
         }
 
-        public override UserManager<GuidUser> CreateManager(ApplicationDbContext context)
+        protected override UserManager<GuidUser> CreateManager(object context)
         {
-            return MockHelpers.CreateManager(() => new ApplicationUserStore(context));
+            if (context == null)
+            {
+                context = CreateTestContext();
+            }
+            return MockHelpers.CreateManager(() => new ApplicationUserStore((ApplicationDbContext)context));
         }
 
-        public override RoleManager<GuidRole> CreateRoleManager(ApplicationDbContext context)
+        protected override RoleManager<GuidRole> CreateRoleManager(object context)
         {
+            if (context == null)
+            {
+                context = CreateTestContext();
+            }
             var services = new ServiceCollection();
-            services.AddIdentity<GuidUser, GuidRole>().AddRoleStore(() => new ApplicationRoleStore(context));
+            services.AddIdentity<GuidUser, GuidRole>().AddRoleStore(() => new ApplicationRoleStore((ApplicationDbContext)context));
             return services.BuildServiceProvider().GetService<RoleManager<GuidRole>>();
         }
     }

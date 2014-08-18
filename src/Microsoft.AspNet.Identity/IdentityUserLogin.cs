@@ -24,6 +24,11 @@ namespace Microsoft.AspNet.Identity
         public virtual string ProviderKey { get; set; }
 
         /// <summary>
+        ///     Display name for the login
+        /// </summary>
+        public virtual string ProviderDisplayName { get; set; }
+
+        /// <summary>
         ///     User Id for the user who owns this login
         /// </summary>
         public virtual TKey UserId { get; set; }

@@ -27,10 +27,11 @@ namespace Microsoft.AspNet.Identity
         ///     Removes the user login with the specified combination if it exists, returns true if found and removed
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="login"></param>
+        /// <param name="loginProvider"></param>
+        /// <param name="providerKey"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task RemoveLoginAsync(TUser user, UserLoginInfo login,
+        Task RemoveLoginAsync(TUser user, string loginProvider, string providerKey,
             CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -45,10 +46,11 @@ namespace Microsoft.AspNet.Identity
         /// <summary>
         ///     Returns the user associated with this login
         /// </summary>
-        /// <param name="login"></param>
+        /// <param name="loginProvider"></param>
+        /// <param name="providerKey"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<TUser> FindByLoginAsync(UserLoginInfo login,
+        Task<TUser> FindByLoginAsync(string loginProvider, string providerKey,
             CancellationToken cancellationToken = default(CancellationToken));
     }
 }

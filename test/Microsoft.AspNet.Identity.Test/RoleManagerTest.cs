@@ -80,17 +80,17 @@ namespace Microsoft.AspNet.Identity.Test
                 throw new NotImplementedException();
             }
 
-            public Task<string> GetRoleIdAsync(TestRole role, CancellationToken cancellationToken = new CancellationToken())
+            public Task<string> GetRoleIdAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<string> GetRoleNameAsync(TestRole role, CancellationToken cancellationToken = new CancellationToken())
+            public Task<string> GetRoleNameAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task SetRoleNameAsync(TestRole role, string roleName, CancellationToken cancellationToken = new CancellationToken())
+            public Task SetRoleNameAsync(TestRole role, string roleName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }

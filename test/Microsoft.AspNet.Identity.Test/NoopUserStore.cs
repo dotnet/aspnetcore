@@ -9,17 +9,17 @@ namespace Microsoft.AspNet.Identity.Test
 {
     public class NoopUserStore : IUserStore<TestUser>
     {
-        public Task<string> GetUserIdAsync(TestUser user, CancellationToken cancellationToken = new CancellationToken())
+        public Task<string> GetUserIdAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Task.FromResult(user.Id);
         }
 
-        public Task<string> GetUserNameAsync(TestUser user, CancellationToken cancellationToken = new CancellationToken())
+        public Task<string> GetUserNameAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Task.FromResult(user.UserName);
         }
 
-        public Task SetUserNameAsync(TestUser user, string userName, CancellationToken cancellationToken = new CancellationToken())
+        public Task SetUserNameAsync(TestUser user, string userName, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Task.FromResult(0);
         }

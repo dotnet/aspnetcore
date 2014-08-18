@@ -82,6 +82,11 @@ namespace Microsoft.AspNet.Identity
             AuthenticationManager.SignOut(Options.ClaimsIdentity.AuthenticationType);
         }
 
+        private async Task<bool> IsLockedOut(TUser user, CancellationToken token)
+        {
+            return UserManager.SupportsUserLockout && await UserManager.IsLockedOutAsync(user, token);
+        }
+
         /// <summary>
         /// Validates that the claims identity has a security stamp matching the users
         /// Returns the user if it matches, null otherwise
@@ -113,7 +118,7 @@ namespace Microsoft.AspNet.Identity
             {
                 return SignInStatus.Failure;
             }
-            if (UserManager.SupportsUserLockout && await UserManager.IsLockedOutAsync(user, cancellationToken))
+            if (await IsLockedOut(user, cancellationToken))
             {
                 return SignInStatus.LockedOut;
             }
@@ -186,7 +191,7 @@ namespace Microsoft.AspNet.Identity
             {
                 return SignInStatus.Failure;
             }
-            if (await UserManager.IsLockedOutAsync(user))
+            if (await IsLockedOut(user, cancellationToken))
             {
                 return SignInStatus.LockedOut;
             }
@@ -202,15 +207,15 @@ namespace Microsoft.AspNet.Identity
             return SignInStatus.Failure;
         }
 
-        public async Task<SignInStatus> ExternalLoginSignInAsync(UserLoginInfo loginInfo, bool isPersistent,
+        public async Task<SignInStatus> ExternalLoginSignInAsync(string loginProvider, string providerKey, bool isPersistent,
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            var user = await UserManager.FindByLoginAsync(loginInfo, cancellationToken);
+            var user = await UserManager.FindByLoginAsync(loginProvider, providerKey, cancellationToken);
             if (user == null)
             {
                 return SignInStatus.Failure;
             }
-            if (await UserManager.IsLockedOutAsync(user, cancellationToken))
+            if (await IsLockedOut(user, cancellationToken))
             {
                 return SignInStatus.LockedOut;
             }

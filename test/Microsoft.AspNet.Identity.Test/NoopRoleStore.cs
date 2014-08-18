@@ -18,12 +18,12 @@ namespace Microsoft.AspNet.Identity.Test
             return Task.FromResult(0);
         }
 
-        public Task<string> GetRoleNameAsync(TestRole role, CancellationToken cancellationToken = new CancellationToken())
+        public Task<string> GetRoleNameAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Task.FromResult<string>(null);
         }
 
-        public Task SetRoleNameAsync(TestRole role, string roleName, CancellationToken cancellationToken = new CancellationToken())
+        public Task SetRoleNameAsync(TestRole role, string roleName, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Task.FromResult(0);
         }
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Identity.Test
             return Task.FromResult(0);
         }
 
-        public Task<string> GetRoleIdAsync(TestRole role, CancellationToken cancellationToken = new CancellationToken())
+        public Task<string> GetRoleIdAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Task.FromResult<string>(null);
         }

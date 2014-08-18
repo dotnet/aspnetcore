@@ -13,19 +13,19 @@ using Microsoft.Data.Entity;
 
 namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
 {
-    public class InMemoryUserStore : InMemoryUserStore<InMemoryUser, InMemoryContext>
+    public class InMemoryUserStore : InMemoryUserStore<IdentityUser, InMemoryContext>
     {
         public InMemoryUserStore(InMemoryContext context) : base(context) { }
     }
 
     public class InMemoryUserStore<TUser> : InMemoryUserStore<TUser, InMemoryContext>
-        where TUser : InMemoryUser
+        where TUser : IdentityUser
     {
         public InMemoryUserStore(InMemoryContext context) : base(context) { }
     }
 
     public class InMemoryUserStore<TUser, TContext> : InMemoryUserStore<TUser, IdentityRole, string, IdentityUserLogin, IdentityUserRole, IdentityUserClaim, TContext> 
-        where TUser:InMemoryUser
+        where TUser:IdentityUser
         where TContext : DbContext
     {
         public InMemoryUserStore(TContext context) : base(context) { }
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
         IUserTwoFactorStore<TUser>,
         IUserLockoutStore<TUser>
         where TKey : IEquatable<TKey>
-        where TUser : InMemoryUser<TKey, TUserLogin, TUserRole, TUserClaim>
+        where TUser : IdentityUser<TKey>
         where TRole : IdentityRole<TKey>
         where TUserLogin : IdentityUserLogin<TKey>, new()
         where TUserRole : IdentityUserRole<TKey>, new()
@@ -83,7 +83,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
                 //.Include(u => u.Logins)
         }
 
-        public Task<string> GetUserIdAsync(TUser user, CancellationToken cancellationToken = new CancellationToken())
+        public Task<string> GetUserIdAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             return Task.FromResult(Convert.ToString(user.Id, CultureInfo.InvariantCulture));
         }
 
-        public Task<string> GetUserNameAsync(TUser user, CancellationToken cancellationToken = new CancellationToken())
+        public Task<string> GetUserNameAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             return Task.FromResult(user.UserName);
         }
 
-        public Task SetUserNameAsync(TUser user, string userName, CancellationToken cancellationToken = new CancellationToken())
+        public Task SetUserNameAsync(TUser user, string userName, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             return Task.FromResult(0);
         }
 
-        public Task<string> GetNormalizedUserNameAsync(TUser user, CancellationToken cancellationToken = new CancellationToken())
+        public Task<string> GetNormalizedUserNameAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -128,7 +128,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             return Task.FromResult(user.NormalizedUserName);
         }
 
-        public Task SetNormalizedUserNameAsync(TUser user, string userName, CancellationToken cancellationToken = new CancellationToken())
+        public Task SetNormalizedUserNameAsync(TUser user, string userName, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -213,29 +213,28 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             get { return Context.Set<TUser>(); }
         }
 
-        public async virtual Task AddLoginAsync(TUser user, UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
+        public async virtual Task AddLoginAsync(TUser user, UserLoginInfo login,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
             if (user == null)
             {
                 throw new ArgumentNullException("user");
-            }
-            if (login == null)
-            {
-                throw new ArgumentNullException("login");
             }
             var l = new TUserLogin
             {
                 UserId = user.Id,
                 ProviderKey = login.ProviderKey,
-                LoginProvider = login.LoginProvider
+                LoginProvider = login.LoginProvider,
+                ProviderDisplayName = login.ProviderDisplayName
             };
             await Context.Set<TUserLogin>().AddAsync(l, cancellationToken);
             user.Logins.Add(l);
         }
 
-        public virtual Task RemoveLoginAsync(TUser user, UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task RemoveLoginAsync(TUser user, string loginProvider, string providerKey,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -243,17 +242,11 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             {
                 throw new ArgumentNullException("user");
             }
-            if (login == null)
-            {
-                throw new ArgumentNullException("login");
-            }
-            var provider = login.LoginProvider;
-            var key = login.ProviderKey;
-            var entry = user.Logins.SingleOrDefault(l => l.LoginProvider == provider && l.ProviderKey == key);
+            var entry = user.Logins.SingleOrDefault(l => l.LoginProvider == loginProvider && l.ProviderKey == providerKey);
             if (entry != null)
             {
                 user.Logins.Remove(entry);
-                Context.Set<TUserLogin>().Remove(entry);
+                Context.Set<IdentityUserLogin<TKey>>().Remove(entry);
             }
             return Task.FromResult(0);
         }
@@ -266,24 +259,18 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             {
                 throw new ArgumentNullException("user");
             }
-            IList<UserLoginInfo> result =
-                user.Logins.Select(l => new UserLoginInfo(l.LoginProvider, l.ProviderKey)).ToList();
+            IList<UserLoginInfo> result = user.Logins.Select(
+                l => new UserLoginInfo(l.LoginProvider, l.ProviderKey, l.ProviderDisplayName))
+                .ToList();
             return Task.FromResult(result);
         }
 
-        public async virtual Task<TUser> FindByLoginAsync(UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
+        public async virtual Task<TUser> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            if (login == null)
-            {
-                throw new ArgumentNullException("login");
-            }
-            var provider = login.LoginProvider;
-            var key = login.ProviderKey;
-            // TODO: use FirstOrDefaultAsync
-            var userLogin =
-                Context.Set<TUserLogin>().FirstOrDefault(l => l.LoginProvider == provider && l.ProviderKey == key);
+            var userLogin = await Context.Set<TUserLogin>()
+                .FirstOrDefaultAsync(l => l.LoginProvider == loginProvider && l.ProviderKey == providerKey);
             if (userLogin != null)
             {
                 return await GetUserAggregate(u => u.Id.Equals(userLogin.UserId), cancellationToken);
@@ -523,10 +510,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             {
                 throw new ArgumentNullException("user");
             }
-            return
-                Task.FromResult(user.LockoutEnd.HasValue
-                    ? new DateTimeOffset(DateTime.SpecifyKind(user.LockoutEnd.Value, DateTimeKind.Utc))
-                    : new DateTimeOffset());
+            return Task.FromResult(user.LockoutEnd);
         }
 
         /// <summary>
@@ -544,7 +528,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             {
                 throw new ArgumentNullException("user");
             }
-            user.LockoutEnd = lockoutEnd == DateTimeOffset.MinValue ? (DateTime?)null : lockoutEnd.UtcDateTime;
+            user.LockoutEnd = lockoutEnd;
             return Task.FromResult(0);
         }
 

@@ -64,7 +64,7 @@ namespace IdentitySample
             var user = await GetCurrentUserAsync();
             if (user != null)
             {
-                var result = await UserManager.RemoveLoginAsync(user, new UserLoginInfo(loginProvider, providerKey));
+                var result = await UserManager.RemoveLoginAsync(user, loginProvider, providerKey);
                 if (result.Succeeded)
                 {
                     await SignInManager.SignInAsync(user, isPersistent: false);

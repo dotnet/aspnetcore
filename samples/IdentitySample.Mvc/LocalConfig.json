@@ -3,10 +3,10 @@
     "DefaultAdminPassword": "YouShouldChangeThisPassword1!",
     "Data": {
         "DefaultConnection": {
-            "Connectionstring": "Server=(localdb)\\v11.0;Database=IdentityMvcMusicStore;Trusted_Connection=True;MultipleActiveResultSets=true"
+            "Connectionstring": "Server=(localdb)\\v11.0;Database=IdentitySample-8-12-14;Trusted_Connection=True;MultipleActiveResultSets=true"
         },
         "IdentityConnection": {
-            "Connectionstring": "Server=(localdb)\\v11.0;Database=IdentityMvc;Trusted_Connection=True;MultipleActiveResultSets=true"
+            "Connectionstring": "Server=(localdb)\\v11.0;Database=IdentityMvc-8-12-14;Trusted_Connection=True;MultipleActiveResultSets=true"
         }
     }
 }
