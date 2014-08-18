@@ -59,7 +59,17 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public Html5DateRenderingMode Html5DateRenderingMode { get; set; }
+        public Html5DateRenderingMode Html5DateRenderingMode
+        {
+            get
+            {
+                return ViewContext.Html5DateRenderingMode;
+            }
+            set
+            {
+                ViewContext.Html5DateRenderingMode = value;
+            }
+        }
 
         /// <inheritdoc />
         public string IdAttributeDotReplacement { get; set; }
