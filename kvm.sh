@@ -18,7 +18,7 @@ KRE_MONO45=
 KRE_X86=
 KRE_X64=
 if [ -z "$KRE_FEED" ]; then
-    KRE_FEED="https://www.myget.org/F/aspnetmaster/api/v2"
+    KRE_FEED="https://www.myget.org/F/aspnextvnext/api/v2"
 fi
 
 _kvm_find_latest() {
