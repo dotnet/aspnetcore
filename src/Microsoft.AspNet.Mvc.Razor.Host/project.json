@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "6.0.0-*",
   "compilationOptions": {
     "warningsAsErrors": true
@@ -27,7 +27,7 @@
         "System.Dynamic.Runtime": "4.0.0.0",
         "System.Globalization": "4.0.10.0",
         "System.IO": "4.0.0.0",
-        "System.IO.FileSystem": "4.0.10.0",
+        "System.IO.FileSystem": "4.0.0.0",
         "System.Linq": "4.0.0.0",
         "System.Reflection": "4.0.10.0",
         "System.Resources.ResourceManager": "4.0.0.0",
