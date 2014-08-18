@@ -119,6 +119,12 @@ functions
         git gitCommand='fetch origin'
         git gitCommand='checkout origin/release -B master'
 
+#push-master
+    -// Resets master branch to release
+    for each='var repo in GetAllRepos()'
+        var gitFolder = '${repo}'
+        git gitCommand='push origin master:master -f'
+
 #only-compile target='compile'
     @{
         var failed = new Dictionary<string, Exception>();
