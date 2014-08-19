@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
 using Moq;
 using Xunit;
 
@@ -178,6 +180,18 @@ namespace Microsoft.AspNet.Mvc.Core
             // Assert
             Assert.NotNull(outputFormatterContext.ActionContext.HttpContext.Response.Body);
             Assert.True(outputFormatterContext.ActionContext.HttpContext.Response.Body.CanRead);
+        }
+
+        [Fact]
+        public void XmlDataContractSerializer_CanWriteResult_ReturnsTrue_ForWritableType()
+        {
+            // Arrange
+            var formatter = new XmlDataContractSerializerOutputFormatter(
+                XmlOutputFormatter.GetDefaultXmlWriterSettings());
+            var outputFormatterContext = GetOutputFormatterContext(null, typeof(Dictionary<string, string>));
+
+            // Act & Assert
+            Assert.True(formatter.CanWriteResult(outputFormatterContext, MediaTypeHeaderValue.Parse("application/xml")));
         }
 
         private OutputFormatterContext GetOutputFormatterContext(object outputValue, Type outputType,

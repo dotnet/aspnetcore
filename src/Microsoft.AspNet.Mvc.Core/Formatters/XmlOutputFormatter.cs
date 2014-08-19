@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Xml;
 using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
@@ -27,6 +28,27 @@ namespace Microsoft.AspNet.Mvc
         /// Gets or sets the settings to be used by the XmlWriter.
         /// </summary>
         public XmlWriterSettings WriterSettings { get; private set; }
+
+        /// <summary>
+        /// Returns a serializer to serialzie the particualr type.
+        /// </summary>
+        /// <param name="type">The type which needs to be serialized.</param>
+        /// <returns>The serializer object.</returns>
+        public abstract object CreateSerializer(Type type);
+
+        /// <inheritdoc />
+        public override bool CanWriteResult([NotNull] OutputFormatterContext context, MediaTypeHeaderValue contentType)
+        {
+            if (base.CanWriteResult(context, contentType))
+            {
+                if (CreateSerializer(GetObjectType(context)) != null)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
         /// <summary>
         /// Gets the default XmlWriterSettings.

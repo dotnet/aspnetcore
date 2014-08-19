@@ -62,5 +62,26 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"><SampleInt>10</SampleInt></DummyClass>",
                 new StreamReader(response.Body, Encoding.UTF8).ReadToEnd());
         }
+
+        [Fact]
+        public async Task XmlSerializerFailsAndDataContractSerializerIsCalled()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+            var headers = new Dictionary<string, string[]>();
+            headers.Add("Accept", new string[] { "application/xml;charset=utf-8" });
+
+            // Act
+            var response = await client.SendAsync("POST",
+                "http://localhost/DataContractSerializer/GetPerson?name=HelloWorld", headers, null, null);
+
+            //Assert
+            Assert.Equal(200, response.StatusCode);
+            Assert.Equal("<Person xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" " +
+                "xmlns=\"http://schemas.datacontract.org/2004/07/FormatterWebSite\">" +
+                "<Name>HelloWorld</Name></Person>",
+                new StreamReader(response.Body, Encoding.UTF8).ReadToEnd());
+        }
     }
 }

@@ -37,9 +37,25 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="type">The type of object for which the serializer should be created.</param>
         /// <returns>A new instance of <see cref="DataContractSerializer"/></returns>
-        public virtual DataContractSerializer CreateDataContractSerializer([NotNull] Type type)
+        public override object CreateSerializer([NotNull] Type type)
         {
-            return new DataContractSerializer(type);
+            DataContractSerializer serializer = null;
+            try
+            {
+#if NET45
+                // Verify that type is a valid data contract by forcing the serializer to try to create a data contract
+                FormattingUtilities.XsdDataContractExporter.GetRootElementName(type);
+#endif
+                // If the serializer does not support this type it will throw an exception.
+                serializer = new DataContractSerializer(type);
+            }
+            catch (Exception)
+            {
+                // We do not surface the caught exception because if CanWriteResult returns
+                // false, then this Formatter is not picked up at all.
+            }
+
+            return serializer;
         }
 
         /// <inheritdoc />
@@ -51,7 +67,7 @@ namespace Microsoft.AspNet.Mvc
             tempWriterSettings.Encoding = context.SelectedEncoding;
             using (var xmlWriter = CreateXmlWriter(response.Body, tempWriterSettings))
             {
-                var dataContractSerializer = CreateDataContractSerializer(context.DeclaredType);
+                var dataContractSerializer = (DataContractSerializer)CreateSerializer(GetObjectType(context));
                 dataContractSerializer.WriteObject(xmlWriter, context.Object);
             }
 

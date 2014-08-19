@@ -2,11 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Runtime.Serialization;
 using System.Xml;
-using Microsoft.AspNet.Mvc.Core;
-using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -16,6 +13,10 @@ namespace Microsoft.AspNet.Mvc
     public static class FormattingUtilities
     {
         public static readonly int DefaultMaxDepth = 32;
+
+#if NET45
+        public static readonly XsdDataContractExporter XsdDataContractExporter = new XsdDataContractExporter();
+#endif
 
         /// <summary>
         /// Gets the default Reader Quotas for XmlReader.

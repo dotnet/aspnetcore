@@ -37,9 +37,21 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="type">The type of object for which the serializer should be created.</param>
         /// <returns>A new instance of <see cref="XmlSerializer"/></returns>
-        public virtual XmlSerializer CreateXmlSerializer([NotNull] Type type)
+        public override object CreateSerializer([NotNull] Type type)
         {
-            return new XmlSerializer(type);
+            XmlSerializer serializer = null;
+            try
+            {
+                // If the serializer does not support this type it will throw an exception.
+                serializer = new XmlSerializer(type);
+            }
+            catch (Exception)
+            {
+                // We do not surface the caught exception because if CanWriteResult returns
+                // false, then this Formatter is not picked up at all.
+            }
+
+            return serializer;
         }
 
         /// <inheritdoc />
@@ -51,7 +63,7 @@ namespace Microsoft.AspNet.Mvc
             tempWriterSettings.Encoding = context.SelectedEncoding;
             using (var xmlWriter = CreateXmlWriter(response.Body, tempWriterSettings))
             {
-                var xmlSerializer = CreateXmlSerializer(context.DeclaredType);
+                var xmlSerializer = (XmlSerializer)CreateSerializer(GetObjectType(context));
                 xmlSerializer.Serialize(xmlWriter, context.Object);
             }
 
