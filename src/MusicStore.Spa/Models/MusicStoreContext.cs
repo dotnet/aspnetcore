@@ -47,17 +47,16 @@ namespace MusicStore.Models
             builder.Entity<CartItem>().Key(ci => ci.CartItemId);
             builder.Entity<OrderDetail>().Key(od => od.OrderDetailId);
 
-            builder.Entity<Album>()
-                .ForeignKeys(kb =>
+            builder.Entity<Album>(b =>
                 {
-                    kb.ForeignKey<Genre>(a => a.GenreId);
-                    kb.ForeignKey<Artist>(a => a.ArtistId);
+                    b.ForeignKey<Genre>(a => a.GenreId);
+                    b.ForeignKey<Artist>(a => a.ArtistId);
                 });
-            builder.Entity<OrderDetail>()
-                .ForeignKeys(kb =>
+
+            builder.Entity<OrderDetail>(b =>
                 {
-                    kb.ForeignKey<Album>(a => a.AlbumId);
-                    kb.ForeignKey<Order>(a => a.OrderId);
+                    b.ForeignKey<Album>(a => a.AlbumId);
+                    b.ForeignKey<Order>(a => a.OrderId);
                 });
 
             var genre = builder.Model.GetEntityType(typeof(Genre));
