@@ -64,29 +64,29 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             builder.Entity<TUserRole>(b =>
             {
                 b.Key(r => new { r.UserId, r.RoleId });
-                b.ForeignKeys(fk => fk.ForeignKey<TUser>(f => f.UserId));
-                b.ForeignKeys(fk => fk.ForeignKey<TRole>(f => f.RoleId));
+                b.ForeignKey<TUser>(f => f.UserId);
+                b.ForeignKey<TRole>(f => f.RoleId);
                 b.ToTable("AspNetUserRoles");
             });
 
             builder.Entity<TUserLogin>(b =>
             {
                 b.Key(l => new { l.LoginProvider, l.ProviderKey, l.UserId });
-                b.ForeignKeys(fk => fk.ForeignKey<TUser>(f => f.UserId));
+                b.ForeignKey<TUser>(f => f.UserId);
                 b.ToTable("AspNetUserLogins");
             });
 
             builder.Entity<TUserClaim>(b =>
             {
                 b.Key(c => c.Id);
-                b.ForeignKeys(fk => fk.ForeignKey<TUser>(f => f.UserId));
+                b.ForeignKey<TUser>(f => f.UserId);
                 b.ToTable("AspNetUserClaims");
             });
 
             builder.Entity<IdentityRoleClaim<TKey>>(b =>
             {
                 b.Key(c => c.Id);
-                b.ForeignKeys(fk => fk.ForeignKey<TRole>(f => f.RoleId));
+                b.ForeignKey<TRole>(f => f.RoleId);
                 b.ToTable("AspNetRoleClaims");
             });
         }
