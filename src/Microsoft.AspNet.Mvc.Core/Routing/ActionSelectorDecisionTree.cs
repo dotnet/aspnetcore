@@ -168,19 +168,15 @@ namespace Microsoft.AspNet.Mvc.Routing
                             // would throw.
 #if NET45
                             throw new InvalidEnumArgumentException(
-                                "item", 
-                                (int)constraint.KeyHandling, 
+                                "item",
+                                (int)constraint.KeyHandling,
                                 typeof(RouteKeyHandling));
 #else
                             throw new ArgumentOutOfRangeException("item");
 #endif
                         }
 
-                        // Workaround for Javier's cool bug.
-                        if (!results.ContainsKey(constraint.RouteKey))
-                        {
-                            results.Add(constraint.RouteKey, value);
-                        }
+                        results.Add(constraint.RouteKey, value);
                     }
                 }
 

@@ -84,16 +84,16 @@ namespace Microsoft.AspNet.Mvc.Test
                 typeof(BlockNonAttributedActionsController).GetTypeInfo()).ToArray();
 
             var descriptorWithoutConstraint = Assert.Single(
-                descriptors, 
+                descriptors,
                 ad => ad.RouteConstraints.Any(
                     c => c.RouteKey == "key" && c.KeyHandling == RouteKeyHandling.DenyKey));
 
             var descriptorWithConstraint = Assert.Single(
                 descriptors,
                 ad => ad.RouteConstraints.Any(
-                    c => 
-                        c.KeyHandling == RouteKeyHandling.RequireKey && 
-                        c.RouteKey == "key" && 
+                    c =>
+                        c.KeyHandling == RouteKeyHandling.RequireKey &&
+                        c.RouteKey == "key" &&
                         c.RouteValue == "value"));
 
             // Assert
@@ -266,6 +266,71 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Fact]
+        public void AttributeRouting_RouteGroupConstraint_IsAddedOnceForNonAttributeRoutes()
+        {
+            // Arrange
+            var provider = GetProvider(
+                typeof(MixedAttributeRouteController).GetTypeInfo(),
+                typeof(ConstrainedController).GetTypeInfo());
+
+            // Act
+            var actionDescriptors = provider.GetDescriptors();
+
+            // Assert
+            Assert.NotNull(actionDescriptors);
+            Assert.Equal(4, actionDescriptors.Count());
+
+            foreach (var actionDescriptor in actionDescriptors.Where(ad => ad.AttributeRouteInfo == null))
+            {
+                Assert.Equal(6, actionDescriptor.RouteConstraints.Count);
+                var routeGroupConstraint = Assert.Single(actionDescriptor.RouteConstraints,
+                    rc => rc.RouteKey.Equals(AttributeRouting.RouteGroupKey));
+                Assert.Equal(RouteKeyHandling.DenyKey, routeGroupConstraint.KeyHandling);
+            }
+        }
+
+        [Fact]
+        public void AttributeRouting_AddsDefaultRouteValues_ForAttributeRoutedActions()
+        {
+            // Arrange
+            var provider = GetProvider(
+                typeof(MixedAttributeRouteController).GetTypeInfo(),
+                typeof(ConstrainedController).GetTypeInfo());
+
+            // Act
+            var actionDescriptors = provider.GetDescriptors();
+
+            // Assert
+            Assert.NotNull(actionDescriptors);
+            Assert.Equal(4, actionDescriptors.Count());
+
+            var indexAction = Assert.Single(actionDescriptors, ad => ad.Name.Equals("Index"));
+
+            Assert.Equal(1, indexAction.RouteConstraints.Count);
+
+            var routeGroupConstraint = Assert.Single(indexAction.RouteConstraints, rc => rc.RouteKey.Equals(AttributeRouting.RouteGroupKey));
+            Assert.Equal(RouteKeyHandling.RequireKey, routeGroupConstraint.KeyHandling);
+            Assert.NotNull(routeGroupConstraint.RouteValue);
+
+            Assert.Equal(5, indexAction.RouteValueDefaults.Count);
+
+            var controllerDefault = Assert.Single(indexAction.RouteValueDefaults, rd => rd.Key.Equals("controller", StringComparison.OrdinalIgnoreCase));
+            Assert.Equal("MixedAttributeRoute", controllerDefault.Value);
+
+            var actionDefault = Assert.Single(indexAction.RouteValueDefaults, rd => rd.Key.Equals("action", StringComparison.OrdinalIgnoreCase));
+            Assert.Equal("Index", actionDefault.Value);
+
+            var areaDefault = Assert.Single(indexAction.RouteValueDefaults, rd => rd.Key.Equals("area", StringComparison.OrdinalIgnoreCase));
+            Assert.Equal("Home", areaDefault.Value);
+
+            var myRouteConstraintDefault = Assert.Single(indexAction.RouteValueDefaults, rd => rd.Key.Equals("key", StringComparison.OrdinalIgnoreCase));
+            Assert.Null(myRouteConstraintDefault.Value);
+
+            var anotherRouteConstraint = Assert.Single(indexAction.RouteValueDefaults, rd => rd.Key.Equals("second", StringComparison.OrdinalIgnoreCase));
+            Assert.Null(anotherRouteConstraint.Value);
+        }
+
+        [Fact]
         public void AttributeRouting_TokenReplacement_CaseInsensitive()
         {
             // Arrange
@@ -318,7 +383,7 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         private ReflectedActionDescriptorProvider GetProvider(
-            TypeInfo controllerTypeInfo, 
+            TypeInfo controllerTypeInfo,
             IEnumerable<IFilter> filters = null)
         {
             var conventions = new StaticActionDiscoveryConventions(controllerTypeInfo);
@@ -332,6 +397,26 @@ namespace Microsoft.AspNet.Mvc.Test
                 assemblyProvider.Object,
                 conventions,
                 filters,
+                new MockMvcOptionsAccessor(),
+                Mock.Of<IInlineConstraintResolver>());
+
+            return provider;
+        }
+
+        private ReflectedActionDescriptorProvider GetProvider(
+            params TypeInfo[] controllerTypeInfo)
+        {
+            var conventions = new StaticActionDiscoveryConventions(controllerTypeInfo);
+
+            var assemblyProvider = new Mock<IControllerAssemblyProvider>();
+            assemblyProvider
+                .SetupGet(ap => ap.CandidateAssemblies)
+                .Returns(new Assembly[] { controllerTypeInfo.First().Assembly });
+
+            var provider = new ReflectedActionDescriptorProvider(
+                assemblyProvider.Object,
+                conventions,
+                Enumerable.Empty<IFilter>(),
                 new MockMvcOptionsAccessor(),
                 Mock.Of<IInlineConstraintResolver>());
 
@@ -353,7 +438,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 null,
                 new MockMvcOptionsAccessor(),
                 null);
-            
+
             return provider.GetDescriptors();
         }
 
@@ -382,6 +467,14 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             public MyRouteConstraintAttribute(bool blockNonAttributedActions)
                 : base("key", "value", blockNonAttributedActions)
+            {
+            }
+        }
+
+        public class MySecondRouteConstraintAttribute : RouteConstraintAttribute
+        {
+            public MySecondRouteConstraintAttribute(bool blockNonAttributedActions)
+                : base("second", "value", blockNonAttributedActions)
             {
             }
         }
@@ -457,6 +550,25 @@ namespace Microsoft.AspNet.Mvc.Test
 
             [HttpGet("stub/Action1")]
             public void Action2() { }
+        }
+
+        [Area("Home")]
+        private class MixedAttributeRouteController
+        {
+            [HttpGet("Index")]
+            public void Index() { }
+
+            [HttpGet("Edit")]
+            public void Edit() { }
+
+            public void AnotherNonAttributedAction() { }
+        }
+
+        [MyRouteConstraint(blockNonAttributedActions: true)]
+        [MySecondRouteConstraint(blockNonAttributedActions: true)]
+        private class ConstrainedController
+        {
+            public void ConstrainedNonAttributedAction() { }
         }
     }
 }

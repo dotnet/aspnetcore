@@ -289,41 +289,44 @@ namespace Microsoft.AspNet.Mvc
 
                     actions.Add(actionDescriptor);
                 }
+            }
 
-                foreach (var actionDescriptor in actions)
+            foreach (var actionDescriptor in actions)
+            {
+                if (actionDescriptor.AttributeRouteInfo == null ||
+                    actionDescriptor.AttributeRouteInfo.Template == null)
                 {
+                    // Any any attribute routes are in use, then non-attribute-routed ADs can't be selected
+                    // when a route group returned by the route.
+                    if (hasAttributeRoutes)
+                    {
+                        actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
+                            AttributeRouting.RouteGroupKey,
+                            RouteKeyHandling.DenyKey));
+                    }
+
                     foreach (var key in removalConstraints)
                     {
-                        if (actionDescriptor.AttributeRouteInfo == null ||
-                            actionDescriptor.AttributeRouteInfo.Template == null)
+                        if (!HasConstraint(actionDescriptor.RouteConstraints, key))
                         {
-                            // Any any attribute routes are in use, then non-attribute-routed ADs can't be selected
-                            // when a route group returned by the route.
-                            if (hasAttributeRoutes)
-                            {
-                                actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
-                                    AttributeRouting.RouteGroupKey,
-                                    RouteKeyHandling.DenyKey));
-                            }
-
-                            if (!HasConstraint(actionDescriptor.RouteConstraints, key))
-                            {
-                                actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
-                                    key,
-                                    RouteKeyHandling.DenyKey));
-                            }
+                            actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
+                                key,
+                                RouteKeyHandling.DenyKey));
                         }
-                        else
+                    }
+                }
+                else
+                {
+                    // We still want to add a 'null' for any constraint with DenyKey so that link generation
+                    // works properly.
+                    //
+                    // Consider an action like { area = "", controller = "Home", action = "Index" }. Even if
+                    // it's attribute routed, it needs to know that area must be null to generate a link.
+                    foreach (var key in removalConstraints)
+                    {
+                        if (!actionDescriptor.RouteValueDefaults.ContainsKey(key))
                         {
-                            // We still want to add a 'null' for any constraint with DenyKey so that link generation
-                            // works properly.
-                            //
-                            // Consider an action like { area = "", controller = "Home", action = "Index" }. Even if
-                            // it's attribute routed, it needs to know that area must be null to generate a link.
-                            if (!actionDescriptor.RouteValueDefaults.ContainsKey(key))
-                            {
-                                actionDescriptor.RouteValueDefaults.Add(key, null);
-                            }
+                            actionDescriptor.RouteValueDefaults.Add(key, null);
                         }
                     }
                 }
