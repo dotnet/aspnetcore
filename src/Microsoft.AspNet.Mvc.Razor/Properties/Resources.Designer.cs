@@ -235,6 +235,22 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
+        /// The '{0}' method must be called before '{1}' can be invoked.
+        /// </summary>
+        internal static string ViewMustBeContextualized
+        {
+            get { return GetString("ViewMustBeContextualized"); }
+        }
+
+        /// <summary>
+        /// The '{0}' method must be called before '{1}' can be invoked.
+        /// </summary>
+        internal static string FormatViewMustBeContextualized(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ViewMustBeContextualized"), p0, p1);
+        }
+
+        /// <summary>
         /// The method '{0}' cannot be invoked by this view.
         /// </summary>
         internal static string View_MethodCannotBeCalled

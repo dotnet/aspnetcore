@@ -31,23 +31,14 @@ namespace Microsoft.AspNet.Mvc.Razor
         };
 
         private readonly IRazorPageFactory _pageFactory;
-        private readonly ITypeActivator _typeActivator;
-        private readonly IServiceProvider _serviceProvider;
 
         /// <summary>
-        /// Initializes a new instance of the RazorViewEngine class.
+        /// Initializes a new instance of the <see cref="RazorViewEngine" /> class.
         /// </summary>
-        /// <param name="pageFactory">The page factory used for creating <see cref="IRazorPage"/>.</param>
-        /// <param name="pageActivator">Activator for activated instances of <see cref="IRazorPage"/>.</param>
-        /// <param name="viewStartProvider">The provider used to provide instances of ViewStarts applicable to the 
-        /// page being rendered.</param>
-        public RazorViewEngine(IRazorPageFactory pageFactory,
-                               ITypeActivator typeActivator,
-                               IServiceProvider serviceProvider)
+        /// <param name="pageFactory">The page factory used for creating <see cref="IRazorPage"/> instances.</param>
+        public RazorViewEngine(IRazorPageFactory pageFactory)
         {
             _pageFactory = pageFactory;
-            _typeActivator = typeActivator;
-            _serviceProvider = serviceProvider;
         }
 
         public IEnumerable<string> ViewLocationFormats
@@ -83,7 +74,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     var page = _pageFactory.CreateInstance(viewName);
                     if (page != null)
                     {
-                        return CreateFoundResult(page, viewName, partial);
+                        return CreateFoundResult(context, page, viewName, partial);
                     }
                 }
                 return ViewEngineResult.NotFound(viewName, new[] { viewName });
@@ -100,7 +91,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     var page = _pageFactory.CreateInstance(path);
                     if (page != null)
                     {
-                        return CreateFoundResult(page, path, partial);
+                        return CreateFoundResult(context, page, path, partial);
                     }
                 }
 
@@ -108,10 +99,17 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
-        private ViewEngineResult CreateFoundResult(IRazorPage page, string viewName, bool partial)
+        private ViewEngineResult CreateFoundResult(ActionContext actionContext,
+                                                   IRazorPage page,
+                                                   string viewName,
+                                                   bool partial)
         {
-            var view = _typeActivator.CreateInstance<RazorView>(_serviceProvider, page);
-            view.ExecuteViewHierarchy = !partial;
+            // A single request could result in creating multiple IRazorView instances (for partials, view components)
+            // and might store state. We'll use the service container to create new instances as we require.
+
+            var services = actionContext.HttpContext.RequestServices;
+            var view = services.GetService<IRazorView>();
+            view.Contextualize(page, partial);
             return ViewEngineResult.Found(viewName, view);
         }
 

@@ -159,6 +159,9 @@
   <data name="ViewContextMustBeSet" xml:space="preserve">
     <value>'{0} must be set to access '{1}'.</value>
   </data>
+  <data name="ViewMustBeContextualized" xml:space="preserve">
+    <value>The '{0}' method must be called before '{1}' can be invoked.</value>
+  </data>
   <data name="View_MethodCannotBeCalled" xml:space="preserve">
     <value>The method '{0}' cannot be invoked by this view.</value>
   </data>

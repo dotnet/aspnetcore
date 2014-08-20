@@ -3,10 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.DependencyInjection;
 using Moq;
 using Xunit;
 
@@ -183,17 +182,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             var page = Mock.Of<IRazorPage>();
             pageFactory.Setup(p => p.CreateInstance(It.IsAny<string>()))
                        .Returns(Mock.Of<IRazorPage>());
-
-            var serviceProvider = new Mock<IServiceProvider>();
-            serviceProvider.Setup(p => p.GetService(typeof(IRazorPageFactory)))
-                           .Returns(pageFactory.Object);
-            serviceProvider.Setup(p => p.GetService(typeof(IRazorPageActivator)))
-                           .Returns(Mock.Of<IRazorPageActivator>());
-            serviceProvider.Setup(p => p.GetService(typeof(IViewStartProvider)))
-                           .Returns(Mock.Of<IViewStartProvider>());
-            var viewEngine = new RazorViewEngine(pageFactory.Object,
-                                                 new TypeActivator(),
-                                                 serviceProvider.Object);
+            var viewEngine = new RazorViewEngine(pageFactory.Object);
             var context = GetActionContext(_controllerTestContext);
 
             // Act
@@ -201,7 +190,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
             // Assert
             Assert.True(result.Success);
-            Assert.IsType<RazorView>(result.View);
+            Assert.IsAssignableFrom<IRazorView>(result.View);
             Assert.Equal("/Views/bar/test-view.cshtml", result.ViewName);
         }
 
@@ -211,16 +200,20 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             pageFactory.Setup(vpf => vpf.CreateInstance(It.IsAny<string>()))
                        .Returns<RazorPage>(null);
 
-            var viewEngine = new RazorViewEngine(pageFactory.Object,
-                                                 Mock.Of<ITypeActivator>(),
-                                                 Mock.Of<IServiceProvider>());
+            var viewEngine = new RazorViewEngine(pageFactory.Object);
 
             return viewEngine;
         }
 
-        private static ActionContext GetActionContext(IDictionary<string, object> routeValues)
+        private static ActionContext GetActionContext(IDictionary<string, object> routeValues,
+                                                      IRazorView razorView = null)
         {
-            var httpContext = Mock.Of<HttpContext>();
+            var httpContext = new DefaultHttpContext();
+            var serviceProvider = new Mock<IServiceProvider>();
+            serviceProvider.Setup(p => p.GetService(typeof(IRazorView)))
+                           .Returns(razorView ?? Mock.Of<IRazorView>());
+
+            httpContext.RequestServices = serviceProvider.Object;
             var routeData = new RouteData { Values = routeValues };
             return new ActionContext(httpContext, routeData, new ActionDescriptor());
         }

@@ -16,7 +16,24 @@ namespace Microsoft.AspNet.Mvc.Razor
         private const string LayoutPath = "~/Shared/_Layout.cshtml";
 
         [Fact]
-        public async Task RenderAsync_WithoutHierarchy_DoesNotCreateOutputBuffer()
+        public async Task RenderAsync_ThrowsIfContextualizeHasNotBeenInvoked()
+        {
+            // Arrange
+            var page = new TestableRazorPage(v => { });
+            var view = new RazorView(Mock.Of<IRazorPageFactory>(),
+                                     Mock.Of<IRazorPageActivator>(),
+                                     CreateViewStartProvider());
+            var viewContext = CreateViewContext(view);
+            var expected = viewContext.Writer;
+
+            // Act and Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => view.RenderAsync(viewContext));
+            Assert.Equal("The 'Contextualize' method must be called before 'RenderAsync' can be invoked.",
+                         ex.Message);
+        }
+
+        [Fact]
+        public async Task RenderAsync_AsPartial_DoesNotCreateOutputBuffer()
         {
             // Arrange
             TextWriter actual = null;
@@ -27,8 +44,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             });
             var view = new RazorView(Mock.Of<IRazorPageFactory>(),
                                      Mock.Of<IRazorPageActivator>(),
-                                     CreateViewStartProvider(),
-                                     page);
+                                     CreateViewStartProvider());
+            view.Contextualize(page, isPartial: true);
             var viewContext = CreateViewContext(view);
             var expected = viewContext.Writer;
 
@@ -41,7 +58,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Fact]
-        public async Task RenderAsync_WithoutHierarchy_ActivatesViews_WithThePassedInViewContext()
+        public async Task RenderAsync_AsPartial_ActivatesViews_WithThePassedInViewContext()
         {
             // Arrange
             var viewData = new ViewDataDictionary(Mock.Of<IModelMetadataProvider>());
@@ -54,8 +71,8 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var view = new RazorView(Mock.Of<IRazorPageFactory>(),
                                      activator.Object,
-                                     CreateViewStartProvider(),
-                                     page);
+                                     CreateViewStartProvider());
+            view.Contextualize(page, isPartial: true);
             var viewContext = CreateViewContext(view);
             var expectedWriter = viewContext.Writer;
             activator.Setup(a => a.Activate(page, It.IsAny<ViewContext>()))
@@ -75,7 +92,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Fact]
-        public async Task RenderAsync_WithoutHierarchy_ActivatesViews()
+        public async Task RenderAsync_AsPartial_ActivatesViews()
         {
             // Arrange
             var page = new TestableRazorPage(v => { });
@@ -84,8 +101,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                      .Verifiable();
             var view = new RazorView(Mock.Of<IRazorPageFactory>(),
                                      activator.Object,
-                                     CreateViewStartProvider(),
-                                     page);
+                                     CreateViewStartProvider());
+            view.Contextualize(page, isPartial: true);
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -96,7 +113,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Fact]
-        public async Task RenderAsync_WithoutHierarchy_DoesNotExecuteLayoutOrViewStartPages()
+        public async Task RenderAsync_AsPartial_DoesNotExecuteLayoutOrViewStartPages()
         {
             var page = new TestableRazorPage(v =>
             {
@@ -106,8 +123,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             var viewStartProvider = CreateViewStartProvider();
             var view = new RazorView(pageFactory.Object,
                                      Mock.Of<IRazorPageActivator>(),
-                                     viewStartProvider,
-                                     page);
+                                     viewStartProvider);
+            view.Contextualize(page, isPartial: true);
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -119,7 +136,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Fact]
-        public async Task RenderAsync_WithHierarchy_CreatesOutputBuffer()
+        public async Task RenderAsync_CreatesOutputBuffer()
         {
             // Arrange
             TextWriter actual = null;
@@ -129,11 +146,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             });
             var view = new RazorView(Mock.Of<IRazorPageFactory>(),
                                      Mock.Of<IRazorPageActivator>(),
-                                     CreateViewStartProvider(),
-                                     page)
-                                     {
-                                         ExecuteViewHierarchy = true
-                                     };
+                                     CreateViewStartProvider());
+            view.Contextualize(page, isPartial: false);
             var viewContext = CreateViewContext(view);
             var original = viewContext.Writer;
 
@@ -146,7 +160,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Fact]
-        public async Task RenderAsync_WithHierarchy_CopiesBufferedContentToOutput()
+        public async Task RenderAsync_CopiesBufferedContentToOutput()
         {
             // Arrange
             var page = new TestableRazorPage(v =>
@@ -155,11 +169,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             });
             var view = new RazorView(Mock.Of<IRazorPageFactory>(),
                                      Mock.Of<IRazorPageActivator>(),
-                                     CreateViewStartProvider(),
-                                     page)
-                                     {
-                                         ExecuteViewHierarchy = true
-                                     };
+                                     CreateViewStartProvider());
+            view.Contextualize(page, isPartial: false);
             var viewContext = CreateViewContext(view);
             var original = viewContext.Writer;
 
@@ -171,7 +182,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Fact]
-        public async Task RenderAsync_WithHierarchy_ActivatesPages()
+        public async Task RenderAsync_ActivatesPages()
         {
             // Arrange
             var page = new TestableRazorPage(v =>
@@ -183,12 +194,9 @@ namespace Microsoft.AspNet.Mvc.Razor
                      .Verifiable();
             var view = new RazorView(Mock.Of<IRazorPageFactory>(),
                                      activator.Object,
-                                     CreateViewStartProvider(),
-                                     page)
-                                     {
-                                         ExecuteViewHierarchy = true
-                                     };
-                                     
+                                     CreateViewStartProvider());
+            view.Contextualize(page, isPartial: false);
+
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -199,7 +207,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Fact]
-        public async Task RenderAsync_WithHierarchy_ExecutesViewStart()
+        public async Task RenderAsync_ExecutesViewStart()
         {
             // Arrange
             var actualLayoutPath = "";
@@ -228,11 +236,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                      .Verifiable();
             var view = new RazorView(Mock.Of<IRazorPageFactory>(),
                                      activator.Object,
-                                     CreateViewStartProvider(viewStart1, viewStart2),
-                                     page)
-                                     {
-                                         ExecuteViewHierarchy = true
-                                     };
+                                     CreateViewStartProvider(viewStart1, viewStart2));
+            view.Contextualize(page, isPartial: false);
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -243,7 +248,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Fact]
-        public async Task RenderAsync_WithHierarchy_ExecutesLayoutPages()
+        public async Task RenderAsync_ExecutesLayoutPages()
         {
             // Arrange
             var expected =
@@ -285,11 +290,8 @@ foot-content";
 
             var view = new RazorView(pageFactory.Object,
                                      activator.Object,
-                                     CreateViewStartProvider(),
-                                     page)
-                                     {
-                                         ExecuteViewHierarchy = true
-                                     };
+                                     CreateViewStartProvider());
+            view.Contextualize(page, isPartial: false);
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -302,7 +304,7 @@ foot-content";
         }
 
         [Fact]
-        public async Task RenderAsync_WithHierarchy_ThrowsIfSectionsWereDefinedButNotRendered()
+        public async Task RenderAsync_ThrowsIfSectionsWereDefinedButNotRendered()
         {
             // Arrange
             var page = new TestableRazorPage(v =>
@@ -321,11 +323,8 @@ foot-content";
 
             var view = new RazorView(pageFactory.Object,
                                      Mock.Of<IRazorPageActivator>(),
-                                     CreateViewStartProvider(),
-                                     page)
-                                     {
-                                         ExecuteViewHierarchy = true
-                                     };
+                                     CreateViewStartProvider());
+            view.Contextualize(page, isPartial: false);
             var viewContext = CreateViewContext(view);
 
             // Act and Assert
@@ -334,7 +333,7 @@ foot-content";
         }
 
         [Fact]
-        public async Task RenderAsync_WithHierarchy_ThrowsIfBodyWasNotRendered()
+        public async Task RenderAsync_ThrowsIfBodyWasNotRendered()
         {
             // Arrange
             var page = new TestableRazorPage(v =>
@@ -350,11 +349,8 @@ foot-content";
 
             var view = new RazorView(pageFactory.Object,
                                      Mock.Of<IRazorPageActivator>(),
-                                     CreateViewStartProvider(),
-                                     page)
-                                     {
-                                         ExecuteViewHierarchy = true
-                                     };
+                                     CreateViewStartProvider());
+            view.Contextualize(page, isPartial: false);
             var viewContext = CreateViewContext(view);
 
             // Act and Assert
@@ -363,7 +359,7 @@ foot-content";
         }
 
         [Fact]
-        public async Task RenderAsync_WithHierarchy_ExecutesNestedLayoutPages()
+        public async Task RenderAsync_ExecutesNestedLayoutPages()
         {
             // Arrange
             var expected =
@@ -407,11 +403,8 @@ body-content";
 
             var view = new RazorView(pageFactory.Object,
                                      Mock.Of<IRazorPageActivator>(),
-                                     CreateViewStartProvider(),
-                                     page)
-                                     {
-                                        ExecuteViewHierarchy = true
-                                     };
+                                     CreateViewStartProvider());
+            view.Contextualize(page, isPartial: false);
             var viewContext = CreateViewContext(view);
 
             // Act
