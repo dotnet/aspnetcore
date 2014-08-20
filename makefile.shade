@@ -17,6 +17,7 @@ functions
         string[] repos = new[] {
             // The repos list is topologically sorted based on build order
             "Configuration",
+            "Caching",
             "DataCommon",
             "DataCommon.SQLite",
             "DataProtection",
