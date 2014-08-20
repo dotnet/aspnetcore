@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
@@ -192,6 +194,8 @@ namespace Microsoft.AspNet.Mvc
                 .Returns(invokerFactory);
             httpContext.Setup(h => h.RequestServices.GetService(typeof(ILoggerFactory)))
                 .Returns(loggerFactory);
+            httpContext.Setup(h => h.RequestServices.GetService(typeof(IEnumerable<MvcMarkerService>)))
+                 .Returns(new List<MvcMarkerService> { new MvcMarkerService() });
 
             return new RouteContext(httpContext.Object);
         }

@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
 
@@ -24,6 +25,10 @@ namespace Microsoft.AspNet.Builder
 
         public static IBuilder UseMvc([NotNull] this IBuilder app, [NotNull] Action<IRouteBuilder> configureRoutes)
         {
+            // Verify if AddMvc was done before calling UseMvc
+            // We use the MvcMarkerService to make sure if all the services were added.
+            MvcServicesHelper.ThrowIfMvcNotRegistered(app.ApplicationServices);
+
             var routes = new RouteBuilder
             {
                 DefaultHandler = new MvcRouteHandler(),

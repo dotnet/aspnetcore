@@ -4,6 +4,7 @@
     },
     "dependencies": {
         "ActivatorWebSite": "",
+        "AddServicesWebSite": "",
         "AntiForgeryWebSite": "",
         "BasicWebSite": "",
         "CompositeViewEngine":  "",

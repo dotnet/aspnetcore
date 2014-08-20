@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.OptionDescriptors;
 using Microsoft.AspNet.Mvc.Razor;
@@ -117,6 +118,8 @@ namespace Microsoft.AspNet.Mvc
                     typeof(HtmlHelper<>),
                     implementationInstance: null,
                     lifecycle: LifecycleKind.Transient);
+
+            yield return describe.Transient<MvcMarkerService, MvcMarkerService>();
         }
     }
 }

@@ -1258,6 +1258,22 @@ namespace Microsoft.AspNet.Mvc.Core
             return string.Format(CultureInfo.CurrentCulture, GetString("RouteConstraintAttribute_InvalidKeyHandlingValue"), p0, p1);
         }
 
+        /// <summary>
+        /// Unable to find the required services. Please add all the required services by calling '{0}' inside the call to '{1}' or before calling '{2}' in the application startup code.
+        /// </summary>
+        internal static string UnableToFindServices
+        {
+            get { return GetString("UnableToFindServices"); }
+        }
+
+        /// <summary>
+        /// Unable to find the required services. Please add all the required services by calling '{0}' inside the call to '{1}' or before calling '{2}' in the application startup code.
+        /// </summary>
+        internal static string FormatUnableToFindServices(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("UnableToFindServices"), p0, p1, p2);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

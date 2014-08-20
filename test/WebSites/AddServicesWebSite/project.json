@@ -1,0 +1,10 @@
+﻿{
+    "dependencies": {
+        "Microsoft.AspNet.Mvc": "",
+        "Microsoft.AspNet.Mvc.TestConfiguration": ""
+    },
+    "frameworks": {
+        "net45": { },
+        "k10": { }
+    }
+}
