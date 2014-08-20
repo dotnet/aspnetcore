@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Moq;
@@ -234,6 +235,30 @@ namespace Microsoft.AspNet.Mvc.Core
 
             // Assert
             Assert.Empty(result.ToString());
+        }
+
+        [Fact]
+        public void DisplayFor_DoesNotWrapExceptionThrowsDuringViewRendering()
+        {
+            // Arrange
+            var expectedMessage = "my exception message";
+            var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "Test string", };
+            var view = new Mock<IView>();
+            view.Setup(v => v.RenderAsync(It.IsAny<ViewContext>()))
+                .Returns(Task.Run(() =>
+                {
+                    throw new ArgumentException(expectedMessage);
+                }));
+            var viewEngine = new Mock<ICompositeViewEngine>();
+            viewEngine
+                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
+                .Returns(ViewEngineResult.Found("test-view", view.Object));
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model, viewEngine.Object);
+            helper.ViewData["Property1"] = "ViewData string";
+
+            // Act and Assert
+            var ex = Assert.Throws<ArgumentException>(() => helper.DisplayFor(m => m.Property1));
+            Assert.Equal(expectedMessage, ex.Message);
         }
     }
 }

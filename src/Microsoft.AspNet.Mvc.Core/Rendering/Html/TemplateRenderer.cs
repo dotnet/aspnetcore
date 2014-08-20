@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.Rendering
@@ -99,7 +100,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
                         using (view as IDisposable)
                         {
                             var viewContext = new ViewContext(_viewContext, viewEngineResult.View, _viewData, writer);
-                            viewEngineResult.View.RenderAsync(viewContext).Wait();
+                            var renderTask = viewEngineResult.View.RenderAsync(viewContext);
+                            TaskHelper.ThrowIfFaulted(renderTask);
                             return writer.ToString();
                         }
                     }

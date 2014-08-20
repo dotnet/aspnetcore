@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Testing;
@@ -385,6 +386,30 @@ Environment.NewLine;
             Assert.Equal(
                 "<input class=\"text-box single-line\" id=\"Property1\" name=\"Property1\" type=\"text\" value=\"\" />",
                 result.ToString());
+        }
+
+        [Fact]
+        public void EditorFor_DoesNotWrapExceptionThrowsDuringViewRendering()
+        {
+            // Arrange
+            var expectedMessage = "my exception message";
+            var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "Test string", };
+            var view = new Mock<IView>();
+            view.Setup(v => v.RenderAsync(It.IsAny<ViewContext>()))
+                .Returns(Task.Run(() =>
+                {
+                    throw new FormatException(expectedMessage);
+                }));
+            var viewEngine = new Mock<ICompositeViewEngine>();
+            viewEngine
+                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
+                .Returns(ViewEngineResult.Found("test-view", view.Object));
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model, viewEngine.Object);
+            helper.ViewData["Property1"] = "ViewData string";
+
+            // Act and Assert
+            var ex = Assert.Throws<FormatException>(() => helper.EditorFor(m => m.Property1));
+            Assert.Equal(expectedMessage, ex.Message);
         }
     }
 }
