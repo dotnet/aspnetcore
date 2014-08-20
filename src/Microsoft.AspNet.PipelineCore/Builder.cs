@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Infrastructure;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -15,17 +16,51 @@ namespace Microsoft.AspNet.Builder
 
         public Builder(IServiceProvider serviceProvider)
         {
+            Properties = new Dictionary<string, object>();
             ApplicationServices = serviceProvider;
         }
 
         private Builder(Builder builder)
         {
-            ApplicationServices = builder.ApplicationServices;
-            Server = builder.Server;
+            Properties = builder.Properties;
         }
 
-        public IServiceProvider ApplicationServices { get; set; }
-        public IServerInformation Server { get; set; }
+        public IServiceProvider ApplicationServices
+        {
+            get
+            {
+                return GetProperty<IServiceProvider>(Constants.BuilderProperties.ApplicationServices);
+            }
+            set
+            {
+                SetProperty<IServiceProvider>(Constants.BuilderProperties.ApplicationServices, value);
+            }
+        }
+
+        public IServerInformation Server
+        {
+            get
+            {
+                return GetProperty<IServerInformation>(Constants.BuilderProperties.ServerInformation);
+            }
+            set
+            {
+                SetProperty<IServerInformation>(Constants.BuilderProperties.ServerInformation, value);
+            }
+        }
+
+        public IDictionary<string, object> Properties { get; set; }
+
+        private T GetProperty<T>(string key)
+        {
+            object value;
+            return Properties.TryGetValue(key, out value) ? (T)value : default(T);
+        }
+
+        private void SetProperty<T>(string key, T value)
+        {
+            Properties[key] = value;
+        }
 
         public IBuilder Use(Func<RequestDelegate, RequestDelegate> middleware)
         {

@@ -25,5 +25,11 @@ namespace Microsoft.AspNet.Http.Infrastructure
             internal const string Expires = "Expires";
             internal const string WebSocketSubProtocols = "Sec-WebSocket-Protocol";
         }
+
+        internal static class BuilderProperties
+        {
+            internal static string ServerInformation = "server.Information";
+            internal static string ApplicationServices = "application.Services";
+        }
     }
 }
