@@ -1083,6 +1083,22 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
+        /// Unsupported content type '{0}'.
+        /// </summary>
+        internal static string UnsupportedContentType
+        {
+            get { return GetString("UnsupportedContentType"); }
+        }
+
+        /// <summary>
+        /// Unsupported content type '{0}'.
+        /// </summary>
+        internal static string FormatUnsupportedContentType(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("UnsupportedContentType"), p0);
+        }
+
+        /// <summary>
         /// No supported media type registered for output formatter '{0}'. There must be at least one supported media type registered in order for the output formatter to write content.
         /// </summary>
         internal static string OutputFormatterNoMediaType

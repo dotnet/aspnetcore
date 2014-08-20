@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
 using Microsoft.Framework.DependencyInjection;
@@ -1455,6 +1456,64 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Fact]
+        public async Task GetActionArguments_NoInputFormatterFound_SetsModelStateError()
+        {
+            var actionDescriptor = new ReflectedActionDescriptor
+            {
+                MethodInfo = typeof(TestController).GetTypeInfo().GetMethod("ActionMethodWithDefaultValues"),
+                Parameters = new List<ParameterDescriptor>
+                            {
+                                new ParameterDescriptor
+                                {
+                                    Name = "bodyParam",
+                                    BodyParameterInfo = new BodyParameterInfo(typeof(Person))
+                                }
+                            },
+                FilterDescriptors = new List<FilterDescriptor>()
+            };
+
+            var context = new DefaultHttpContext();
+            var routeContext = new RouteContext(context);
+            var actionContext = new ActionContext(routeContext,
+                                                  actionDescriptor);
+            var bindingContext = new ActionBindingContext(actionContext,
+                                                          Mock.Of<IModelMetadataProvider>(),
+                                                          Mock.Of<IModelBinder>(),
+                                                          Mock.Of<IValueProvider>(),
+                                                          Mock.Of<IInputFormatterSelector>(),
+                                                          Enumerable.Empty<IModelValidatorProvider>());
+
+            var actionBindingContextProvider = new Mock<IActionBindingContextProvider>();
+            actionBindingContextProvider.Setup(p => p.GetActionBindingContextAsync(It.IsAny<ActionContext>()))
+                                        .Returns(Task.FromResult(bindingContext));
+            var controllerFactory = new Mock<IControllerFactory>();
+            controllerFactory.Setup(c => c.CreateController(It.IsAny<ActionContext>()))
+                             .Returns(new TestController());
+            var inputFormattersProvider = new Mock<IInputFormattersProvider>();
+            inputFormattersProvider.SetupGet(o => o.InputFormatters)
+                                            .Returns(new List<IInputFormatter>());
+            var invoker = new ReflectedActionInvoker(actionContext,
+                                                     actionBindingContextProvider.Object,
+                                                     Mock.Of<INestedProviderManager<FilterProviderContext>>(),
+                                                     controllerFactory.Object,
+                                                     actionDescriptor,
+                                                     inputFormattersProvider.Object);
+
+
+            var modelStateDictionary = new ModelStateDictionary();
+
+            // Act
+            var result = await invoker.GetActionArguments(modelStateDictionary);
+
+            // Assert
+            Assert.Empty(result);
+            Assert.DoesNotContain("bodyParam", result.Keys);
+            Assert.False(actionContext.ModelState.IsValid);
+            Assert.Equal("Unsupported content type '" + context.Request.ContentType + "'.",
+                         actionContext.ModelState["bodyParam"].Errors[0].ErrorMessage);
+        }
+
+        [Fact]
         public async Task Invoke_UsesDefaultValuesIfNotBound()
         {
             // Arrange
@@ -1522,6 +1581,18 @@ namespace Microsoft.AspNet.Mvc
         public JsonResult ThrowingActionMethod()
         {
             throw _actionException;
+        }
+
+        public JsonResult ActionMethodWithBodyParameter([FromBody] Person bodyParam)
+        {
+            return new JsonResult(bodyParam);
+        }
+
+        public class Person
+        {
+            public string Name { get; set; }
+
+            public int Age { get; set; }
         }
 
         private sealed class TestController

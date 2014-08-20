@@ -237,14 +237,20 @@ namespace Microsoft.AspNet.Mvc
                 if (parameter.BodyParameterInfo != null)
                 {
                     var parameterType = parameter.BodyParameterInfo.ParameterType;
-                    var modelMetadata = metadataProvider.GetMetadataForType(
-                        modelAccessor: null,
-                        modelType: parameterType);
                     var formatterContext = new InputFormatterContext(actionBindingContext.ActionContext,
-                                                                     modelMetadata.ModelType);
+                                                                     parameterType);
                     var inputFormatter = actionBindingContext.InputFormatterSelector.SelectFormatter(
                         formatterContext);
-                    parameterValues[parameter.Name] = await inputFormatter.ReadAsync(formatterContext);
+                    if (inputFormatter == null)
+                    {
+                        var request = ActionContext.HttpContext.Request;
+                        var unsupportedContentType = Resources.FormatUnsupportedContentType(request.ContentType);
+                        ActionContext.ModelState.AddModelError(parameter.Name, unsupportedContentType);
+                    }
+                    else
+                    {
+                        parameterValues[parameter.Name] = await inputFormatter.ReadAsync(formatterContext);
+                    }
                 }
                 else
                 {

@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -60,23 +61,43 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Theory]
-        [InlineData("")]
-        [InlineData(null)]
-        [InlineData("invalid")]
-        public async Task JsonInputFormatter_IsNotSelectedForNonJsonRequests(string requestContentType)
+        [InlineData("", true)]
+        [InlineData(null, true)]
+        [InlineData("invalid", true)]
+        [InlineData("application/custom", true)]
+        [InlineData("image/jpg", true)]
+        [InlineData("", false)]
+        [InlineData(null, false)]
+        [InlineData("invalid", false)]
+        [InlineData("application/custom", false)]
+        [InlineData("image/jpg", false)]
+        public async Task ModelStateErrorValidation_NoInputFormatterFound_ForGivenContetType(string requestContentType,
+                                                                                             bool filterHandlesModelStateError)
         {
             // Arrange
+            var actionName = filterHandlesModelStateError ? "ActionFilterHandlesError" : "ActionHandlesError";
+            var expectedSource = filterHandlesModelStateError ? "filter" : "action";
+
             var server = TestServer.Create(_services, _app);
             var client = server.Handler;
             var input = "{\"SampleInt\":10}";
 
             // Act
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>
-                            (() => client.PostAsync("http://localhost/Home/CheckIfDummyIsNull", input, requestContentType));
+            var response = await client.PostAsync("http://localhost/InputFormatter/" + actionName,
+                                                  input,
+                                                  requestContentType, 
+                                                  (request) => request.Accept = "application/json");
 
-            //Assert
-            // TODO: Change the validation after https://github.com/aspnet/Mvc/issues/458 is fixed.
-            Assert.Equal("415: Unsupported content type " + requestContentType, ex.Message);
+            var responseBody = await response.ReadBodyAsStringAsync();
+            var result = JsonConvert.DeserializeObject<FormatterWebSite.ErrorInfo>(responseBody);
+
+            // Assert
+            Assert.Equal(1, result.Errors.Count);
+            Assert.Equal("Unsupported content type '" + requestContentType + "'.",
+                         result.Errors[0]);
+            Assert.Equal(actionName, result.ActionName);
+            Assert.Equal("dummy", result.ParameterName);
+            Assert.Equal(expectedSource, result.Source);
         }
 
         // TODO: By default XmlSerializerInputFormatter is called because of the order in which
