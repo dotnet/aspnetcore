@@ -81,8 +81,8 @@ namespace Microsoft.AspNet.Mvc
 
             yield return describe.Transient<INestedProvider<FilterProviderContext>, DefaultFilterProvider>();
 
-            yield return describe.Transient<IModelValidatorProvider, DataAnnotationsModelValidatorProvider>();
-            yield return describe.Transient<IModelValidatorProvider, DataMemberModelValidatorProvider>();
+            yield return describe.Transient<IModelValidatorProviderProvider, DefaultModelValidatorProviderProvider>();
+            yield return describe.Scoped<ICompositeModelValidatorProvider, CompositeModelValidatorProvider>();
 
             yield return describe.Scoped<IUrlHelper, UrlHelper>();
 

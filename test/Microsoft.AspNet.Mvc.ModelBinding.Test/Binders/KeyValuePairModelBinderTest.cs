@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 ValueProvider = valueProvider,
                 ModelBinder = innerBinder ?? CreateIntBinder(),
                 MetadataProvider = metataProvider,
-                ValidatorProviders = Enumerable.Empty<IModelValidatorProvider>()
+                ValidatorProvider = Mock.Of<IModelValidatorProvider>()
             };
             return bindingContext;
         }

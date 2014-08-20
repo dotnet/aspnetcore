@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 {
                     { "someName", "dummyValue" }
                 },
-                ValidatorProviders = Enumerable.Empty<IModelValidatorProvider>()
+                ValidatorProvider = GetValidatorProvider()
             };
 
             var mockIntBinder = new Mock<IModelBinder>();
@@ -78,14 +78,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 {
                     { "someOtherName", "dummyValue" }
                 },
-                ValidatorProviders = Enumerable.Empty<IModelValidatorProvider>()
+                ValidatorProvider = GetValidatorProvider()
             };
 
             var mockIntBinder = new Mock<IModelBinder>();
             mockIntBinder
                 .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
                 .Returns(
-                    delegate(ModelBindingContext mbc)
+                    delegate (ModelBindingContext mbc)
                     {
                         if (!string.IsNullOrEmpty(mbc.ModelName))
                         {
@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                           .Returns(Task.FromResult(false))
                           .Verifiable();
 
-            var shimBinder = (IModelBinder)mockListBinder.Object;
+            var shimBinder = mockListBinder.Object;
 
             var bindingContext = new ModelBindingContext
             {
@@ -233,7 +233,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 { "user.password", "password-val" },
                 { "user.confirmpassword", "not-password-val" },
             };
-            var bindingContext = CreateBindingContext(binder, valueProvider, typeof(User), new[] { validatorProvider });
+            var bindingContext = CreateBindingContext(binder, valueProvider, typeof(User), validatorProvider);
             bindingContext.ModelName = "user";
 
             // Act
@@ -255,7 +255,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 { "user.password", "password" },
                 { "user.confirmpassword", "password" },
             };
-            var bindingContext = CreateBindingContext(binder, valueProvider, typeof(User), new[] { validatorProvider });
+            var bindingContext = CreateBindingContext(binder, valueProvider, typeof(User), validatorProvider);
             bindingContext.ModelName = "user";
 
             // Act
@@ -269,9 +269,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         private static ModelBindingContext CreateBindingContext(IModelBinder binder,
                                                                 IValueProvider valueProvider,
                                                                 Type type,
-                                                                IEnumerable<IModelValidatorProvider> validatorProviders = null)
+                                                                IModelValidatorProvider validatorProvider = null)
         {
-            validatorProviders = validatorProviders ?? Enumerable.Empty<IModelValidatorProvider>();
+            validatorProvider = validatorProvider ?? GetValidatorProvider();
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
             var bindingContext = new ModelBindingContext
             {
@@ -281,7 +281,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 ModelMetadata = metadataProvider.GetMetadataForType(null, type),
                 ModelState = new ModelStateDictionary(),
                 ValueProvider = valueProvider,
-                ValidatorProviders = validatorProviders
+                ValidatorProvider = validatorProvider
             };
             return bindingContext;
         }
@@ -293,8 +293,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             typeActivator
                 .Setup(t => t.CreateInstance(serviceProvider, It.IsAny<Type>(), It.IsAny<object[]>()))
                 .Returns((IServiceProvider sp, Type t, object[] args) => Activator.CreateInstance(t));
-            var binders = new IModelBinder[] 
-            { 
+            var binders = new IModelBinder[]
+            {
                 new TypeMatchModelBinder(),
                 new ByteArrayModelBinder(),
                 new GenericModelBinder(serviceProvider, typeActivator.Object),
@@ -317,6 +317,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             var shimBinder = new CompositeModelBinder(binderProvider.Object);
             return shimBinder;
+        }
+
+        private static IModelValidatorProvider GetValidatorProvider(params IModelValidator[] validators)
+        {
+            var provider = new Mock<IModelValidatorProvider>();
+            provider.Setup(v => v.GetValidators(It.IsAny<ModelMetadata>()))
+                    .Returns(validators ?? Enumerable.Empty<IModelValidator>());
+
+            return provider.Object;
         }
 
         private class SimplePropertiesModel

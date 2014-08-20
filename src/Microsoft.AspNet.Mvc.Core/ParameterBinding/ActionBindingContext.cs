@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace Microsoft.AspNet.Mvc
@@ -13,14 +12,14 @@ namespace Microsoft.AspNet.Mvc
                                     IModelBinder modelBinder,
                                     IValueProvider valueProvider,
                                     IInputFormatterSelector inputFormatterSelector,
-                                    IEnumerable<IModelValidatorProvider> validatorProviders)
+                                    IModelValidatorProvider validatorProvider)
         {
             ActionContext = context;
             MetadataProvider = metadataProvider;
             ModelBinder = modelBinder;
             ValueProvider = valueProvider;
             InputFormatterSelector = inputFormatterSelector;
-            ValidatorProviders = validatorProviders;
+            ValidatorProvider = validatorProvider;
         }
 
         public ActionContext ActionContext { get; private set; }
@@ -33,6 +32,6 @@ namespace Microsoft.AspNet.Mvc
 
         public IInputFormatterSelector InputFormatterSelector { get; private set; }
 
-        public IEnumerable<IModelValidatorProvider> ValidatorProviders { get; private set; }
+        public IModelValidatorProvider ValidatorProvider { get; private set; }
     }
 }

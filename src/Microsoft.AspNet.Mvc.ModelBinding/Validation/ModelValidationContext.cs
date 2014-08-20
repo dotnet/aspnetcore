@@ -1,32 +1,30 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
-
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class ModelValidationContext
     {
         public ModelValidationContext([NotNull] ModelBindingContext bindingContext,
                                       [NotNull] ModelMetadata metadata)
-            : this(bindingContext.MetadataProvider, 
-                   bindingContext.ValidatorProviders, 
-                   bindingContext.ModelState, 
-                   metadata, 
+            : this(bindingContext.MetadataProvider,
+                   bindingContext.ValidatorProvider,
+                   bindingContext.ModelState,
+                   metadata,
                    bindingContext.ModelMetadata)
         {
         }
 
-        public ModelValidationContext([NotNull] IModelMetadataProvider metadataProvider, 
-                                      [NotNull] IEnumerable<IModelValidatorProvider> validatorProviders, 
-                                      [NotNull] ModelStateDictionary modelState, 
-                                      [NotNull] ModelMetadata metadata, 
+        public ModelValidationContext([NotNull] IModelMetadataProvider metadataProvider,
+                                      [NotNull] IModelValidatorProvider validatorProvider,
+                                      [NotNull] ModelStateDictionary modelState,
+                                      [NotNull] ModelMetadata metadata,
                                       ModelMetadata containerMetadata)
         {
             ModelMetadata = metadata;
             ModelState = modelState;
             MetadataProvider = metadataProvider;
-            ValidatorProviders = validatorProviders;
+            ValidatorProvider = validatorProvider;
             ContainerMetadata = containerMetadata;
         }
 
@@ -37,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             ContainerMetadata = parentContext.ModelMetadata;
             ModelState = parentContext.ModelState;
             MetadataProvider = parentContext.MetadataProvider;
-            ValidatorProviders = parentContext.ValidatorProviders;
+            ValidatorProvider = parentContext.ValidatorProvider;
         }
 
         public ModelMetadata ModelMetadata { get; private set; }
@@ -48,6 +46,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         public IModelMetadataProvider MetadataProvider { get; private set; }
 
-        public IEnumerable<IModelValidatorProvider> ValidatorProviders { get; private set; }
+        public IModelValidatorProvider ValidatorProvider { get; private set; }
     }
 }

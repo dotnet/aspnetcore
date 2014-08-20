@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 
@@ -14,20 +13,20 @@ namespace Microsoft.AspNet.Mvc
         private readonly ICompositeModelBinder _compositeModelBinder;
         private readonly IValueProviderFactory _compositeValueProviderFactory;
         private readonly IInputFormatterSelector _inputFormatterSelector;
-        private readonly IEnumerable<IModelValidatorProvider> _validatorProviders;
+        private readonly ICompositeModelValidatorProvider _validatorProvider;
         private Tuple<ActionContext, ActionBindingContext> _bindingContext;
 
         public DefaultActionBindingContextProvider(IModelMetadataProvider modelMetadataProvider,
                                                    ICompositeModelBinder compositeModelBinder,
                                                    ICompositeValueProviderFactory compositeValueProviderFactory,
                                                    IInputFormatterSelector inputFormatterProvider,
-                                                   IEnumerable<IModelValidatorProvider> validatorProviders)
+                                                   ICompositeModelValidatorProvider validatorProvider)
         {
             _modelMetadataProvider = modelMetadataProvider;
             _compositeModelBinder = compositeModelBinder;
             _compositeValueProviderFactory = compositeValueProviderFactory;
             _inputFormatterSelector = inputFormatterProvider;
-            _validatorProviders = validatorProviders;
+            _validatorProvider = validatorProvider;
         }
 
         public Task<ActionBindingContext> GetActionBindingContextAsync(ActionContext actionContext)
@@ -52,7 +51,7 @@ namespace Microsoft.AspNet.Mvc
                 _compositeModelBinder,
                 valueProvider,
                 _inputFormatterSelector,
-                _validatorProviders);
+                _validatorProvider);
 
             _bindingContext = new Tuple<ActionContext, ActionBindingContext>(actionContext, context);
 

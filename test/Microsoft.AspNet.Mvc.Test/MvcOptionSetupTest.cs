@@ -97,5 +97,21 @@ namespace Microsoft.AspNet.Mvc
             Assert.IsType<XmlSerializerInputFormatter>(mvcOptions.InputFormatters[1].Instance);
             Assert.IsType<XmlDataContractSerializerInputFormatter>(mvcOptions.InputFormatters[2].Instance);
         }
+
+        [Fact]
+        public void Setup_SetsUpModelValidatorProviders()
+        {
+            // Arrange
+            var mvcOptions = new MvcOptions();
+            var setup = new MvcOptionsSetup();
+
+            // Act
+            setup.Setup(mvcOptions);
+
+            // Assert
+            Assert.Equal(2, mvcOptions.ModelValidatorProviders.Count);
+            Assert.IsType<DataAnnotationsModelValidatorProvider>(mvcOptions.ModelValidatorProviders[0].Instance);
+            Assert.IsType<DataMemberModelValidatorProvider>(mvcOptions.ModelValidatorProviders[1].Instance);
+        }
     }
 }

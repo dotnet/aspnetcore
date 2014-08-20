@@ -1315,13 +1315,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string name)
         {
             var actionBindingContext = _actionBindingContextProvider.GetActionBindingContextAsync(ViewContext).Result;
-            metadata = metadata ??
-                ExpressionMetadataProvider.FromStringExpression(name, ViewData, MetadataProvider);
-            return actionBindingContext.ValidatorProviders
-                .SelectMany(vp => vp.GetValidators(metadata))
-                .OfType<IClientModelValidator>()
-                .SelectMany(v => v.GetClientValidationRules(
-                    new ClientModelValidationContext(metadata, MetadataProvider)));
+            metadata = metadata ?? ExpressionMetadataProvider.FromStringExpression(name, ViewData, MetadataProvider);
+            return actionBindingContext.ValidatorProvider
+                                       .GetValidators(metadata)
+                                       .OfType<IClientModelValidator>()
+                                       .SelectMany(v => v.GetClientValidationRules(
+                                            new ClientModelValidationContext(metadata, MetadataProvider)));
         }
 
         // Only need a dictionary if htmlAttributes is non-null. TagBuilder.MergeAttributes() is fine with null.

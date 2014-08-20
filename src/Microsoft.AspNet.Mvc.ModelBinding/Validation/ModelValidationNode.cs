@@ -215,7 +215,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private static IEnumerable<IModelValidator> GetValidators(ModelValidationContext validationContext,
                                                                   ModelMetadata metadata)
         {
-            return validationContext.ValidatorProviders.SelectMany(vp => vp.GetValidators(metadata));
+            return validationContext.ValidatorProvider.GetValidators(metadata);
         }
     }
 }

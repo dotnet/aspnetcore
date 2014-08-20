@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 ValueProvider = mockValueProvider.Object,
                 ModelBinder = mockDtoBinder.Object,
                 MetadataProvider = new DataAnnotationsModelMetadataProvider(),
-                ValidatorProviders = Enumerable.Empty<IModelValidatorProvider>()
+                ValidatorProvider = Mock.Of<IModelValidatorProvider>()
             };
 
             mockDtoBinder
@@ -194,7 +194,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var bindingContext = new ModelBindingContext
             {
                 ModelMetadata = GetMetadataForType(typeof(PersonWithBindExclusion)),
-                ValidatorProviders = Enumerable.Empty<IModelValidatorProvider>()
+                ValidatorProvider = Mock.Of<IModelValidatorProvider>()
             };
 
             var testableBinder = new TestableMutableObjectModelBinder();
@@ -215,7 +215,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var bindingContext = new ModelBindingContext
             {
                 ModelMetadata = GetMetadataForType(typeof(Person)),
-                ValidatorProviders = Enumerable.Empty<IModelValidatorProvider>()
+                ValidatorProvider = Mock.Of<IModelValidatorProvider>()
             };
 
             var testableBinder = new TestableMutableObjectModelBinder();
@@ -235,7 +235,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var bindingContext = new ModelBindingContext
             {
                 ModelMetadata = GetMetadataForObject(new ModelWithMixedBindingBehaviors()),
-                ValidatorProviders = Enumerable.Empty<IModelValidatorProvider>()
+                ValidatorProvider = Mock.Of<IModelValidatorProvider>()
             };
 
             // Act
@@ -256,7 +256,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var modelMetadata = GetMetadataForType(typeof(Person));
             var validationNode = new ModelValidationNode(modelMetadata, "foo");
             var validationContext = new ModelValidationContext(new DataAnnotationsModelMetadataProvider(),
-                                                               Enumerable.Empty<IModelValidatorProvider>(),
+                                                               Mock.Of<IModelValidatorProvider>(),
                                                                modelState,
                                                                modelMetadata,
                                                                null);
@@ -278,7 +278,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var modelMetadata = GetMetadataForType(typeof(Person));
             var validationNode = new ModelValidationNode(modelMetadata, "foo");
             var validationContext = new ModelValidationContext(new DataAnnotationsModelMetadataProvider(),
-                                                               Enumerable.Empty<IModelValidatorProvider>(),
+                                                               Mock.Of<IModelValidatorProvider>(),
                                                                modelState,
                                                                modelMetadata,
                                                                null);
@@ -309,7 +309,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 ModelMetadata = containerMetadata,
                 ModelName = "theModel",
-                ValidatorProviders = Enumerable.Empty<IModelValidatorProvider>()
+                ValidatorProvider = Mock.Of<IModelValidatorProvider>()
             };
             var dto = new ComplexModelDto(containerMetadata, containerMetadata.Properties);
 
@@ -354,10 +354,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 ModelMetadata = containerMetadata,
                 ModelName = "theModel",
                 ModelState = new ModelStateDictionary(),
-                ValidatorProviders = Enumerable.Empty<IModelValidatorProvider>()
+                ValidatorProvider = Mock.Of<IModelValidatorProvider>()
             };
             var validationContext = new ModelValidationContext(new EmptyModelMetadataProvider(),
-                                                               bindingContext.ValidatorProviders,
+                                                               bindingContext.ValidatorProvider,
                                                                bindingContext.ModelState,
                                                                containerMetadata,
                                                                null);
@@ -590,10 +590,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var propertyMetadata = bindingContext.ModelMetadata.Properties.First(o => o.PropertyName == "PropertyWithDefaultValue");
             var validationNode = new ModelValidationNode(propertyMetadata, "foo");
             var dtoResult = new ComplexModelDtoResult(model: null, validationNode: validationNode);
-            var requiredValidator = bindingContext.ValidatorProviders
-                                                  .SelectMany(v => v.GetValidators(propertyMetadata))
-                                                  .Where(v => v.IsRequired)
-                                                  .FirstOrDefault();
+            var requiredValidator = bindingContext.ValidatorProvider
+                                                  .GetValidators(propertyMetadata)
+                                                  .FirstOrDefault(v => v.IsRequired);
 
             var testableBinder = new TestableMutableObjectModelBinder();
 
@@ -634,10 +633,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var propertyMetadata = bindingContext.ModelMetadata.Properties.Single(o => o.PropertyName == "DateOfBirth");
             var validationNode = new ModelValidationNode(propertyMetadata, "foo");
             var dtoResult = new ComplexModelDtoResult(new DateTime(2001, 1, 1), validationNode);
-            var requiredValidator = bindingContext.ValidatorProviders
-                                                  .SelectMany(v => v.GetValidators(propertyMetadata))
-                                                  .Where(v => v.IsRequired)
-                                                  .FirstOrDefault();
+            var requiredValidator = bindingContext.ValidatorProvider
+                                                  .GetValidators(propertyMetadata)
+                                                  .FirstOrDefault(v => v.IsRequired);
             var validationContext = new ModelValidationContext(bindingContext, propertyMetadata);
 
             var testableBinder = new TestableMutableObjectModelBinder();
@@ -769,42 +767,45 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private static ModelBindingContext CreateContext(ModelMetadata metadata)
         {
+            var provider = new Mock<IModelValidatorProviderProvider>();
+            provider.SetupGet(p => p.ModelValidatorProviders)
+                    .Returns(new IModelValidatorProvider[]
+                    {
+                        new DataAnnotationsModelValidatorProvider(),
+                        new DataMemberModelValidatorProvider()
+                    });
+
             return new ModelBindingContext
             {
                 ModelState = new ModelStateDictionary(),
                 ModelMetadata = metadata,
                 ModelName = "theModel",
-                ValidatorProviders = new IModelValidatorProvider[] 
-                { 
-                    new DataAnnotationsModelValidatorProvider(), 
-                    new DataMemberModelValidatorProvider() 
-                }
+                ValidatorProvider = new CompositeModelValidatorProvider(provider.Object)
             };
         }
 
         private static IModelValidator GetRequiredValidator(ModelBindingContext bindingContext, ModelMetadata propertyMetadata)
         {
-            return bindingContext.ValidatorProviders
-                                 .SelectMany(v => v.GetValidators(propertyMetadata))
-                                 .Where(v => v.IsRequired)
-                                 .FirstOrDefault();
+            return bindingContext.ValidatorProvider
+                                 .GetValidators(propertyMetadata)
+                                 .FirstOrDefault(v => v.IsRequired);
         }
 
         private static ModelMetadata GetMetadataForCanUpdateProperty(string propertyName)
         {
-            DataAnnotationsModelMetadataProvider metadataProvider = new DataAnnotationsModelMetadataProvider();
+            var metadataProvider = new DataAnnotationsModelMetadataProvider();
             return metadataProvider.GetMetadataForProperty(null, typeof(MyModelTestingCanUpdateProperty), propertyName);
         }
 
         private static ModelMetadata GetMetadataForObject(object o)
         {
-            DataAnnotationsModelMetadataProvider metadataProvider = new DataAnnotationsModelMetadataProvider();
+            var metadataProvider = new DataAnnotationsModelMetadataProvider();
             return metadataProvider.GetMetadataForType(() => o, o.GetType());
         }
 
         private static ModelMetadata GetMetadataForType(Type t)
         {
-            DataAnnotationsModelMetadataProvider metadataProvider = new DataAnnotationsModelMetadataProvider();
+            var metadataProvider = new DataAnnotationsModelMetadataProvider();
             return metadataProvider.GetMetadataForType(null, t);
         }
 

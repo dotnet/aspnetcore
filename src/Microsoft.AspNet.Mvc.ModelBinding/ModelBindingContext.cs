@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 ValueProvider = bindingContext.ValueProvider;
                 MetadataProvider = bindingContext.MetadataProvider;
                 ModelBinder = bindingContext.ModelBinder;
-                ValidatorProviders = bindingContext.ValidatorProviders;
+                ValidatorProvider = bindingContext.ValidatorProvider;
                 HttpContext = bindingContext.HttpContext;
             }
         }
@@ -148,10 +148,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public IModelMetadataProvider MetadataProvider { get; set; }
 
         /// <summary>
-        /// Gets or sets the sequence of <see cref="IModelValidatorProvider"/> instances used for model validation
-        /// with this context.
+        /// Gets or sets the <see cref="IModelValidatorProvider"/> instance used for model validation with this
+        /// context.
         /// </summary>
-        public IEnumerable<IModelValidatorProvider> ValidatorProviders { get; set; }
+        public IModelValidatorProvider ValidatorProvider { get; set; }
 
         /// <summary>
         /// Gets a dictionary of property name to <see cref="ModelMetadata"/> instances for

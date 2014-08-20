@@ -1,10 +1,12 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if NET45
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Microsoft.AspNet.Testing;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -294,8 +296,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 new DataMemberModelValidatorProvider()
             };
 
+            var provider = new Mock<IModelValidatorProviderProvider>();
+            provider.SetupGet(p => p.ModelValidatorProviders)
+                    .Returns(providers);
+
             return new ModelValidationContext(new EmptyModelMetadataProvider(),
-                                              providers,
+                                              new CompositeModelValidatorProvider(provider.Object),
                                               new ModelStateDictionary(),
                                               metadata,
                                               null);
@@ -344,3 +350,4 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
     }
 }
+#endif

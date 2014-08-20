@@ -266,7 +266,7 @@ namespace Microsoft.AspNet.Mvc
                         ModelMetadata = modelMetadata,
                         ModelBinder = actionBindingContext.ModelBinder,
                         ValueProvider = actionBindingContext.ValueProvider,
-                        ValidatorProviders = actionBindingContext.ValidatorProviders,
+                        ValidatorProvider = actionBindingContext.ValidatorProvider,
                         MetadataProvider = metadataProvider,
                         HttpContext = actionBindingContext.ActionContext.HttpContext,
                         FallbackToEmptyPrefix = true

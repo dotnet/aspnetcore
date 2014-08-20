@@ -93,6 +93,12 @@ namespace Microsoft.AspNet.Mvc
         public List<ModelBinderDescriptor> ModelBinders { get; private set; }
 
         /// <summary>
+        /// Get a list of the <see cref="IModelValidatorProvider" />s used by this application.
+        /// </summary>
+        public List<ModelValidatorProviderDescriptor> ModelValidatorProviders { get; } =
+            new List<ModelValidatorProviderDescriptor>();
+
+        /// <summary>
         /// Gets a list of descriptors that represent <see cref="Rendering.IViewEngine"/> used
         /// by this application.
         /// </summary>

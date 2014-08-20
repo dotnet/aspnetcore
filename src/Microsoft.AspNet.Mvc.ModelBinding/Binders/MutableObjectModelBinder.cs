@@ -170,8 +170,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 var propertyName = property.Name;
                 var propertyMetadata = bindingContext.PropertyMetadata[propertyName];
-                var requiredValidator = bindingContext.GetValidators(propertyMetadata)
-                                                      .FirstOrDefault(v => v.IsRequired);
+                var requiredValidator = bindingContext.ValidatorProvider
+                                                      .GetValidators(propertyMetadata)
+                                                      .FirstOrDefault(v => v != null && v.IsRequired);
                 if (requiredValidator != null)
                 {
                     validationInfo.RequiredValidators[propertyName] = requiredValidator;

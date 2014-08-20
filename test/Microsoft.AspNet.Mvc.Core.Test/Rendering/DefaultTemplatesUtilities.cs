@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.Mvc.Core
                                                                 Mock.Of<IModelBinder>(),
                                                                 Mock.Of<IValueProvider>(),
                                                                 Mock.Of<IInputFormatterSelector>(),
-                                                                Enumerable.Empty<IModelValidatorProvider>());
+                                                                Mock.Of<IModelValidatorProvider>());
             var urlHelper = Mock.Of<IUrlHelper>();
             var actionBindingContextProvider = new Mock<IActionBindingContextProvider>();
             actionBindingContextProvider

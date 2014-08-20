@@ -23,8 +23,8 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="metadataProvider">The provider used for reading metadata for the model type.</param>
         /// <param name="modelBinder">The model binder used for binding.</param>
         /// <param name="valueProvider">The value provider used for looking up values.</param>
-        /// <param name="validatorProviders">The validator providers used for executing validation 
-        /// on the model instance.</param>
+        /// <param name="validatorProvider">The validator provider used for executing validation on the model
+        /// instance.</param>
         /// <returns>A Task with a value representing if the the update is successful.</returns>
         public static async Task<bool> TryUpdateModelAsync<TModel>(
                 [NotNull] TModel model,
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Mvc
                 [NotNull] IModelMetadataProvider metadataProvider,
                 [NotNull] IModelBinder modelBinder,
                 [NotNull] IValueProvider valueProvider,
-                [NotNull] IEnumerable<IModelValidatorProvider> validatorProviders)
+                [NotNull] IModelValidatorProvider validatorProvider)
             where TModel : class
         {
             var modelMetadata = metadataProvider.GetMetadataForType(
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Mvc
                 ModelState = modelState,
                 ModelBinder = modelBinder,
                 ValueProvider = valueProvider,
-                ValidatorProviders = validatorProviders,
+                ValidatorProvider = validatorProvider,
                 MetadataProvider = metadataProvider,
                 FallbackToEmptyPrefix = true,
                 HttpContext = httpContext

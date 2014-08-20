@@ -578,7 +578,7 @@ namespace Microsoft.AspNet.Mvc.Test
                                                           binder.Object,
                                                           valueProvider,
                                                           Mock.Of<IInputFormatterSelector>(),
-                                                          Enumerable.Empty<IModelValidatorProvider>());
+                                                          Mock.Of<IModelValidatorProvider>());
             var bindingContextProvider = new Mock<IActionBindingContextProvider>();
             bindingContextProvider.Setup(b => b.GetActionBindingContextAsync(actionContext))
                                   .Returns(Task.FromResult(bindingContext));
@@ -619,7 +619,7 @@ namespace Microsoft.AspNet.Mvc.Test
                                                           binder.Object,
                                                           valueProvider,
                                                           Mock.Of<IInputFormatterSelector>(),
-                                                          Enumerable.Empty<IModelValidatorProvider>());
+                                                          Mock.Of<IModelValidatorProvider>());
             var bindingContextProvider = new Mock<IActionBindingContextProvider>();
             bindingContextProvider.Setup(b => b.GetActionBindingContextAsync(actionContext))
                                   .Returns(Task.FromResult(bindingContext));
@@ -660,7 +660,7 @@ namespace Microsoft.AspNet.Mvc.Test
                                                           binder.Object,
                                                           Mock.Of<IValueProvider>(),
                                                           Mock.Of<IInputFormatterSelector>(),
-                                                          Enumerable.Empty<IModelValidatorProvider>());
+                                                          Mock.Of<IModelValidatorProvider>());
             var bindingContextProvider = new Mock<IActionBindingContextProvider>();
             bindingContextProvider.Setup(b => b.GetActionBindingContextAsync(actionContext))
                                   .Returns(Task.FromResult(bindingContext));

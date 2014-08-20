@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 }
 
                 var validationContext = new ModelValidationContext(bindingContext.MetadataProvider,
-                                                                   bindingContext.ValidatorProviders,
+                                                                   bindingContext.ValidatorProvider,
                                                                    bindingContext.ModelState,
                                                                    bindingContext.ModelMetadata,
                                                                    containerMetadata: null);
@@ -120,7 +120,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 ModelName = modelName,
                 ModelState = oldBindingContext.ModelState,
                 ValueProvider = oldBindingContext.ValueProvider,
-                ValidatorProviders = oldBindingContext.ValidatorProviders,
+                ValidatorProvider = oldBindingContext.ValidatorProvider,
                 MetadataProvider = oldBindingContext.MetadataProvider,
                 ModelBinder = oldBindingContext.ModelBinder,
                 HttpContext = oldBindingContext.HttpContext

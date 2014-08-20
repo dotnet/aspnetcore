@@ -526,7 +526,7 @@ namespace Microsoft.AspNet.Mvc
                                                                 bindingContext.MetadataProvider,
                                                                 bindingContext.ModelBinder,
                                                                 valueProvider,
-                                                                bindingContext.ValidatorProviders);
+                                                                bindingContext.ValidatorProvider);
         }
     }
 }

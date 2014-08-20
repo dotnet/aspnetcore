@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.OptionDescriptors;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.Framework.OptionsModel;
 
@@ -54,6 +52,10 @@ namespace Microsoft.AspNet.Mvc
             options.ValueProviderFactories.Add(new RouteValueValueProviderFactory());
             options.ValueProviderFactories.Add(new QueryStringValueProviderFactory());
             options.ValueProviderFactories.Add(new FormValueProviderFactory());
+
+            // Set up validators
+            options.ModelValidatorProviders.Add(new DataAnnotationsModelValidatorProvider());
+            options.ModelValidatorProviders.Add(new DataMemberModelValidatorProvider());
         }
     }
 }

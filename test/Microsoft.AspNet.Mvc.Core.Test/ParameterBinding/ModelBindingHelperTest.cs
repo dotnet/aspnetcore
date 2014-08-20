@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -39,7 +38,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                                                     metadataProvider.Object,
                                                     GetCompositeBinder(binder.Object),
                                                     Mock.Of<IValueProvider>(),
-                                                    Enumerable.Empty<IModelValidatorProvider>());
+                                                    Mock.Of<IModelValidatorProvider>());
 
             // Assert
             Assert.False(result);
@@ -76,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                                                     new DataAnnotationsModelMetadataProvider(),
                                                     GetCompositeBinder(binders),
                                                     valueProvider,
-                                                    new[] { validator });
+                                                    validator);
 
             // Assert
             Assert.False(result);
@@ -114,7 +113,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                                                     new DataAnnotationsModelMetadataProvider(),
                                                     GetCompositeBinder(binders),
                                                     valueProvider,
-                                                    new[] { validator });
+                                                    validator);
 
             // Assert
             Assert.True(result);
