@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "1.0.0-*",
   "dependencies": {
     "Microsoft.AspNet.Http": "",
@@ -14,7 +14,7 @@
         "System.ComponentModel": "4.0.0.0",
         "System.Diagnostics.Tools": "4.0.0.0",
         "System.Globalization": "4.0.10.0",
-        "System.IO": "4.0.0.0",
+        "System.IO": "4.0.10.0",
         "System.Linq": "4.0.0.0",
         "System.Net.Primitives": "4.0.10.0",
         "System.Runtime": "4.0.20.0",
