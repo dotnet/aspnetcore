@@ -8,7 +8,7 @@ using Microsoft.AspNet.WebUtilities.Collections;
 
 namespace Microsoft.AspNet.WebUtilities
 {
-    internal static partial class ParsingHelpers
+    internal static class ParsingHelpers
     {
         internal static void ParseDelimited(string text, char[] delimiters, Action<string, string, object> callback, object state)
         {

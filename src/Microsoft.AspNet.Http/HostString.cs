@@ -8,7 +8,7 @@ using System.Globalization;
 namespace Microsoft.AspNet.Http
 {
     /// <summary>
-    /// Represents the host portion of a Uri can be used to construct Uri's properly formatted and encoded for use in
+    /// Represents the host portion of a URI can be used to construct URI's properly formatted and encoded for use in
     /// HTTP headers.
     /// </summary>
     public struct HostString : IEquatable<HostString>
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Http
         /// Any Unicode is converted to punycode. IPv6 addresses will have brackets added if they are missing.
         /// </summary>
         /// <returns></returns>
-        [SuppressMessage("Microsoft.Design", "CA1055:UriReturnValuesShouldNotBeStrings", Justification = "Only the host segment of a uri is returned.")]
+        [SuppressMessage("Microsoft.Design", "CA1055:UriReturnValuesShouldNotBeStrings", Justification = "Only the host segment of a URI is returned.")]
         public string ToUriComponent()
         {
             int index;
@@ -82,12 +82,12 @@ namespace Microsoft.AspNet.Http
         }
 
         /// <summary>
-        /// Creates a new HostString from the given uri component.
+        /// Creates a new HostString from the given URI component.
         /// Any punycode will be converted to Unicode.
         /// </summary>
         /// <param name="uriComponent"></param>
         /// <returns></returns>
-        [SuppressMessage("Microsoft.Design", "CA1057:StringUriOverloadsCallSystemUriOverloads", Justification = "Only the host segment of a uri is provided.")]
+        [SuppressMessage("Microsoft.Design", "CA1057:StringUriOverloadsCallSystemUriOverloads", Justification = "Only the host segment of a URI is provided.")]
         public static HostString FromUriComponent(string uriComponent)
         {
             if (!string.IsNullOrEmpty(uriComponent))

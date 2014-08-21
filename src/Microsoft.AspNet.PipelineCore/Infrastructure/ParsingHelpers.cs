@@ -8,7 +8,6 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Infrastructure;
-using Microsoft.AspNet.PipelineCore.Collections;
 
 namespace Microsoft.AspNet.PipelineCore.Infrastructure
 {
@@ -507,7 +506,7 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
         }
     }
 
-    internal static partial class ParsingHelpers
+    internal static class ParsingHelpers
     {
         private static readonly Action<string, string, object> AddCookieCallback = (name, value, state) =>
         {
@@ -592,10 +591,7 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
                 scanIndex = delimiterIndex + 1;
             }
         }
-    }
 
-    internal static partial class ParsingHelpers
-    {
         public static string GetHeader(IDictionary<string, string[]> headers, string key)
         {
             string[] values = GetHeaderUnmodified(headers, key);
@@ -783,10 +779,7 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
                 SetHeaderUnmodified(headers, key, existing.Concat(values));
             }
         }
-    }
 
-    internal static partial class ParsingHelpers
-    {
         private static readonly Action<string, string, object> AppendItemCallback = (name, value, state) =>
         {
             var dictionary = (IDictionary<string, List<String>>)state;
@@ -833,10 +826,7 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
             string[] values;
             return store.TryGetValue(key, out values) ? values : null;
         }
-    }
 
-    internal static partial class ParsingHelpers
-    {
         //internal static string GetHost(HttpRequest request)
         //{
         //    IHeaderDictionary headers = request.Headers;

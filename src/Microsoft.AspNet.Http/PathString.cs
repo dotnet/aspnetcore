@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Http
         /// </summary>
         /// <param name="uriComponent">The escaped path as it appears in the URI format.</param>
         /// <returns>The resulting PathString</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1057:StringUriOverloadsCallSystemUriOverloads", Justification = "Requirements not compatible with Uri processing")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1057:StringUriOverloadsCallSystemUriOverloads", Justification = "Requirements not compatible with URI processing")]
         public static PathString FromUriComponent(string uriComponent)
         {
             // REVIEW: what is the exactly correct thing to do?
