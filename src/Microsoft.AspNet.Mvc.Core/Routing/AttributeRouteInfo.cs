@@ -14,10 +14,17 @@ namespace Microsoft.AspNet.Mvc.Routing
         public string Template { get; set; }
 
         /// <summary>
-        /// Gets the order of the route associated with this <see cref="ActionDescriptor"/>. This property determines
+        /// Gets the order of the route associated with a given action. This property determines
         /// the order in which routes get executed. Routes with a lower order value are tried first. In case a route 
         /// doesn't specify a value, it gets a default order of 0.
         /// </summary>
         public int Order { get; set; }
+
+        /// <summary>
+        /// Gets the name of the route associated with a given action. This property can be used
+        /// to generate a link by referring to the route by name instead of attempting to match a
+        /// route by provided route data.
+        /// </summary>
+        public string Name { get; set; }
     }
 }

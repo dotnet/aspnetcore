@@ -360,4 +360,19 @@
   <data name="UnableToFindServices" xml:space="preserve">
     <value>Unable to find the required services. Please add all the required services by calling '{0}' inside the call to '{1}' or '{2}' in the application startup code.</value>
   </data>
+  <data name="AttributeRoute_DifferentLinkGenerationEntries_SameName" xml:space="preserve">
+    <value>Two or more routes named '{0}' have different templates.</value>
+  </data>
+  <data name="AttributeRoute_DuplicateNames_Item" xml:space="preserve">
+    <value>Action: '{0}' - Template: '{1}'</value>
+    <comment>Formats an action descriptor display name and it's associated template.</comment>
+  </data>
+  <data name="AttributeRoute_DuplicateNames" xml:space="preserve">
+    <value>Attribute routes with the same name '{0}' must have the same template:{1}{2}</value>
+    <comment>{0} is the name of the attribute route, {1} is the newline, {2} is the list of errors formatted using ActionDescriptor_WithNamedAttributeRouteAndDifferentTemplate</comment>
+  </data>
+  <data name="AttributeRoute_AggregateErrorMessage_ErrorNumber" xml:space="preserve">
+    <value>Error {0}:{1}{2}</value>
+    <comment>{0} is the error number, {1} is Environment.NewLine {2} is the  error message</comment>
+  </data>
 </root>

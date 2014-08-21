@@ -37,10 +37,13 @@ namespace RoutingWebSite
                 link = urlHelper.Action(query["link_action"], query["link_controller"], values);
             }
 
+            var attributeRoutingInfo = _actionContext.ActionDescriptor.AttributeRouteInfo;
+
             return new JsonResult(new
             {
                 expectedUrls = expectedUrls,
                 actualUrl = _actionContext.HttpContext.Request.Path.Value,
+                routeName = attributeRoutingInfo == null ? null : attributeRoutingInfo.Name,
                 routeValues = new Dictionary<string, object>(_actionContext.RouteData.Values),
 
                 action = _actionContext.ActionDescriptor.Name,

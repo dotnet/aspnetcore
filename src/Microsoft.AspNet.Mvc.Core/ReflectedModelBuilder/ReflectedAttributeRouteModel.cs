@@ -21,11 +21,14 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
         {
             Template = templateProvider.Template;
             Order = templateProvider.Order;
+            Name = templateProvider.Name;
         }
 
         public string Template { get; set; }
 
         public int? Order { get; set; }
+
+        public string Name { get; set; }
 
         /// <summary>
         /// Combines two <see cref="ReflectedAttributeRouteModel"/> instances and returns
@@ -60,8 +63,23 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
             return new ReflectedAttributeRouteModel()
             {
                 Template = combinedTemplate,
-                Order = right.Order ?? left.Order
+                Order = right.Order ?? left.Order,
+                Name = ChooseName(left, right),
             };
+        }
+
+        private static string ChooseName(
+            ReflectedAttributeRouteModel left,
+            ReflectedAttributeRouteModel right)
+        {
+            if (right.Name == null && string.IsNullOrEmpty(right.Template))
+            {
+                return left.Name;
+            }
+            else
+            {
+                return right.Name;
+            }
         }
 
         internal static string CombineTemplates(string left, string right)
@@ -252,7 +270,7 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
                         {
                             // This is an unclosed replacement token
                             var message = Resources.FormatAttributeRoute_TokenReplacement_InvalidSyntax(
-                                template, 
+                                template,
                                 Resources.AttributeRoute_TokenReplacement_UnclosedToken);
                             throw new InvalidOperationException(message);
                         }
@@ -272,7 +290,7 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
                         {
                             // Unescaped left-bracket is not allowed inside a token.
                             var message = Resources.FormatAttributeRoute_TokenReplacement_InvalidSyntax(
-                                template, 
+                                template,
                                 Resources.AttributeRoute_TokenReplacement_UnescapedBraceInToken);
                             throw new InvalidOperationException(message);
                         }
@@ -303,7 +321,7 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
                             }
 
                             builder.Append(value);
-                            
+
                             if (c == '[')
                             {
                                 state = TemplateParserState.SeenLeft;

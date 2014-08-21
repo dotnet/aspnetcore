@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Internal.Routing;
 using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Routing;
@@ -20,6 +21,8 @@ namespace Microsoft.AspNet.Mvc.Routing
     {
         private readonly IRouter _next;
         private readonly TemplateRoute[] _matchingRoutes;
+        private readonly IDictionary<string, AttributeRouteLinkGenerationEntry> _namedEntries;
+
         private ILogger _logger;
         private ILogger _constraintLogger;
         private readonly LinkGenerationDecisionTree _linkGenerationTree;
@@ -49,6 +52,36 @@ namespace Microsoft.AspNet.Mvc.Routing
                 .Select(e => e.Route)
                 .ToArray();
 
+            var namedEntries = new Dictionary<string, AttributeRouteLinkGenerationEntry>(
+                StringComparer.OrdinalIgnoreCase);
+
+            foreach (var entry in linkGenerationEntries)
+            {
+                // Skip unnamed entries
+                if (entry.Name == null)
+                {
+                    continue;
+                }
+
+                // We only need to keep one AttributeRouteLinkGenerationEntry per route template
+                // so in case two entries have the same name and the same template we only keep
+                // the first entry.
+                AttributeRouteLinkGenerationEntry namedEntry = null;
+                if (namedEntries.TryGetValue(entry.Name, out namedEntry) &&
+                    !namedEntry.TemplateText.Equals(entry.TemplateText, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new ArgumentException(
+                        Resources.FormatAttributeRoute_DifferentLinkGenerationEntries_SameName(entry.Name),
+                        "linkGenerationEntries");
+                }
+                else if (namedEntry == null)
+                {
+                    namedEntries.Add(entry.Name, entry);
+                }
+            }
+
+            _namedEntries = namedEntries;
+
             // The decision tree will take care of ordering for these entries.
             _linkGenerationTree = new LinkGenerationDecisionTree(linkGenerationEntries.ToArray());
 
@@ -61,12 +94,12 @@ namespace Microsoft.AspNet.Mvc.Routing
         {
             using (_logger.BeginScope("AttributeRoute.RouteAsync"))
             {
-            foreach (var route in _matchingRoutes)
-            {
-                await route.RouteAsync(context);
-
-                if (context.IsHandled)
+                foreach (var route in _matchingRoutes)
                 {
+                    await route.RouteAsync(context);
+
+                    if (context.IsHandled)
+                    {
                         break;
                     }
                 }
@@ -85,6 +118,13 @@ namespace Microsoft.AspNet.Mvc.Routing
         /// <inheritdoc />
         public string GetVirtualPath([NotNull] VirtualPathContext context)
         {
+            // If it's a named route we will try to generate a link directly and
+            // if we can't, we will not try to generate it using an unnamed route.
+            if (context.RouteName != null)
+            {
+                return GetVirtualPathForNamedRoute(context);
+            }
+
             // The decision tree will give us back all entries that match the provided route data in the correct
             // order. We just need to iterate them and use the first one that can generate a link.
             var matches = _linkGenerationTree.GetMatches(context);
@@ -99,6 +139,21 @@ namespace Microsoft.AspNet.Mvc.Routing
                 }
             }
 
+            return null;
+        }
+
+        private string GetVirtualPathForNamedRoute(VirtualPathContext context)
+        {
+            AttributeRouteLinkGenerationEntry entry;
+            if (_namedEntries.TryGetValue(context.RouteName, out entry))
+            {
+                var path = GenerateLink(context, entry);
+                if (path != null)
+                {
+                    context.IsBound = true;
+                    return path;
+                }
+            }
             return null;
         }
 

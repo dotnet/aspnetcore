@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host
         }
 
         /// <summary>
-        /// Argument must be an instance of type '{0}'.
+        /// Argument must be an instance of '{0}'.
         /// </summary>
         internal static string ArgumentMustBeOfType
         {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host
         }
 
         /// <summary>
-        /// Argument must be an instance of type '{0}'.
+        /// Argument must be an instance of '{0}'.
         /// </summary>
         internal static string FormatArgumentMustBeOfType(object p0)
         {

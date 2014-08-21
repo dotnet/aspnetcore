@@ -70,5 +70,8 @@ namespace Microsoft.AspNet.Mvc
                 return _order;
             }
         }
+
+        /// <inheritdoc />
+        public string Name { get; set; }
     }
 }

@@ -229,10 +229,79 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
             Assert.Equal(combined.Order, right.Order);
         }
 
+        [Theory]
+        [MemberData("CombineNamesTestData")]
+        public void Combine_Names(
+            ReflectedAttributeRouteModel left,
+            ReflectedAttributeRouteModel right,
+            string expectedName)
+        {
+            // Arrange & Act
+            var combined = ReflectedAttributeRouteModel.CombineReflectedAttributeRouteModel(left, right);
+
+            // Assert
+            Assert.NotNull(combined);
+            Assert.Equal(expectedName, combined.Name);
+        }
+
+        public static IEnumerable<object[]> CombineNamesTestData
+        {
+            get
+            {
+                // AttributeRoute on the controller, attribute route on the action, expected name.
+                var data = new TheoryData<ReflectedAttributeRouteModel, ReflectedAttributeRouteModel, string>();
+
+                // Combined name is null if no name is provided.
+                data.Add(Create(template: "/", order: null, name: null), null, null);
+                data.Add(Create(template: "~/", order: null, name: null), null, null);
+                data.Add(Create(template: "", order: null, name: null), null, null);
+                data.Add(Create(template: "home", order: null, name: null), null, null);
+                data.Add(Create(template: "/", order: 1, name: null), null, null);
+                data.Add(Create(template: "~/", order: 1, name: null), null, null);
+                data.Add(Create(template: "", order: 1, name: null), null, null);
+                data.Add(Create(template: "home", order: 1, name: null), null, null);
+
+                // Combined name is inherited if no right name is provided and the template is empty.
+                data.Add(Create(template: "/", order: null, name: "Named"), null, "Named");
+                data.Add(Create(template: "~/", order: null, name: "Named"), null, "Named");
+                data.Add(Create(template: "", order: null, name: "Named"), null, "Named");
+                data.Add(Create(template: "home", order: null, name: "Named"), null, "Named");
+                data.Add(Create(template: "home", order: null, name: "Named"), Create(null, null, null), "Named");
+                data.Add(Create(template: "", order: null, name: "Named"), Create("", null, null), "Named");
+
+                // Order doesn't matter for combining the name.
+                data.Add(Create(template: "", order: null, name: "Named"), Create("", 1, null), "Named");
+                data.Add(Create(template: "", order: 1, name: "Named"), Create("", 1, null), "Named");
+                data.Add(Create(template: "", order: 2, name: "Named"), Create("", 1, null), "Named");
+                data.Add(Create(template: "", order: null, name: "Named"), Create("index", 1, null), null);
+                data.Add(Create(template: "", order: 1, name: "Named"), Create("index", 1, null), null);
+                data.Add(Create(template: "", order: 2, name: "Named"), Create("index", 1, null), null);
+                data.Add(Create(template: "", order: null, name: "Named"), Create("", 1, "right"), "right");
+                data.Add(Create(template: "", order: 1, name: "Named"), Create("", 1, "right"), "right");
+                data.Add(Create(template: "", order: 2, name: "Named"), Create("", 1, "right"), "right");
+
+                // Combined name is not inherited if right name is provided or the template is not empty.
+                data.Add(Create(template: "/", order: null, name: "Named"), Create(null, null, "right"), "right");
+                data.Add(Create(template: "~/", order: null, name: "Named"), Create(null, null, "right"), "right");
+                data.Add(Create(template: "", order: null, name: "Named"), Create(null, null, "right"), "right");
+                data.Add(Create(template: "home", order: null, name: "Named"), Create(null, null, "right"), "right");
+                data.Add(Create(template: "home", order: null, name: "Named"), Create("index", null, null), null);
+                data.Add(Create(template: "home", order: null, name: "Named"), Create("/", null, null), null);
+                data.Add(Create(template: "home", order: null, name: "Named"), Create("~/", null, null), null);
+                data.Add(Create(template: "home", order: null, name: "Named"), Create("index", null, "right"), "right");
+                data.Add(Create(template: "home", order: null, name: "Named"), Create("/", null, "right"), "right");
+                data.Add(Create(template: "home", order: null, name: "Named"), Create("~/", null, "right"), "right");
+                data.Add(Create(template: "home", order: null, name: "Named"), Create("index", null, ""), "");
+
+                return data;
+            }
+        }
+
         public static IEnumerable<object[]> CombineOrdersTestData
         {
             get
             {
+                // AttributeRoute on the controller, attribute route on the action, expected order.
                 var data = new TheoryData<ReflectedAttributeRouteModel, ReflectedAttributeRouteModel, int?>();
 
                 data.Add(Create("", order: 1), Create("", order: 2), 2);
@@ -261,6 +330,7 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
         {
             get
             {
+                // AttributeRoute on the controller, attribute route on the action.
                 var data = new TheoryData<ReflectedAttributeRouteModel, ReflectedAttributeRouteModel>();
                 var leftModel = Create("Home", order: 3);
 
@@ -279,7 +349,9 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
         {
             get
             {
+                // AttributeRoute on the controller, attribute route on the action.
                 var data = new TheoryData<ReflectedAttributeRouteModel, ReflectedAttributeRouteModel>();
+
                 data.Add(null, null);
                 data.Add(null, Create(null));
                 data.Add(Create(null), null);
@@ -293,9 +365,10 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
         {
             get
             {
+                // AttributeRoute on the controller, attribute route on the action, expected combined attribute route.
                 var data = new TheoryData<ReflectedAttributeRouteModel, ReflectedAttributeRouteModel, ReflectedAttributeRouteModel>();
                 data.Add(null, Create("Index"), Create("Index"));
-                data.Add(Create(null), Create("Index"), Create("Index"));;
+                data.Add(Create(null), Create("Index"), Create("Index"));
                 data.Add(Create("Home"), null, Create("Home"));
                 data.Add(Create("Home"), Create(null), Create("Home"));
                 data.Add(Create("Home"), Create("Index"), Create("Home/Index"));
@@ -451,12 +524,13 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
             }
         }
 
-        private static ReflectedAttributeRouteModel Create(string template, int? order = null)
+        private static ReflectedAttributeRouteModel Create(string template, int? order = null, string name = null)
         {
             return new ReflectedAttributeRouteModel
             {
                 Template = template,
-                Order = order
+                Order = order,
+                Name = name
             };
         }
     }

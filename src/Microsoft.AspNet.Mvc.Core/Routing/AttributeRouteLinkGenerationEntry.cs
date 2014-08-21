@@ -39,6 +39,11 @@ namespace Microsoft.AspNet.Mvc.Routing
         public decimal Precedence { get; set; }
 
         /// <summary>
+        /// The name of the route.
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
         /// The route group.
         /// </summary>
         public string RouteGroup { get; set; }

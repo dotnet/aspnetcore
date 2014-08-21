@@ -379,6 +379,289 @@ namespace Microsoft.AspNet.Mvc.Routing
             Assert.Equal(expectedGroup, selectedGroup);
         }
 
+        public static IEnumerable<object[]> NamedEntriesWithDifferentTemplates
+        {
+            get
+            {
+                var data = new TheoryData<IEnumerable<AttributeRouteLinkGenerationEntry>>();
+                data.Add(new[]
+                {
+                        CreateGenerationEntry("template", null, 0, "NamedEntry"),
+                        CreateGenerationEntry("otherTemplate", null, 0, "NamedEntry"),
+                        CreateGenerationEntry("anotherTemplate", null, 0, "NamedEntry")
+                });
+
+                // Default values for parameters are taken into account by comparing the templates.
+                data.Add(new[]
+                {
+                        CreateGenerationEntry("template/{parameter=0}", null, 0, "NamedEntry"),
+                        CreateGenerationEntry("template/{parameter=1}", null, 0, "NamedEntry"),
+                        CreateGenerationEntry("template/{parameter=2}", null, 0, "NamedEntry")
+                });
+
+                // Names for entries are compared ignoring casing.
+                data.Add(new[]
+                {
+                        CreateGenerationEntry("template/{*parameter:int=0}", null, 0, "NamedEntry"),
+                        CreateGenerationEntry("template/{*parameter:int=1}", null, 0, "NAMEDENTRY"),
+                        CreateGenerationEntry("template/{*parameter:int=2}", null, 0, "namedentry")
+                });
+                return data;
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(AttributeRouteTest.NamedEntriesWithDifferentTemplates))]
+        public void AttributeRoute_CreateAttributeRoute_ThrowsIfDifferentEntriesHaveTheSameName(
+            IEnumerable<AttributeRouteLinkGenerationEntry> namedEntries)
+        {
+            // Arrange
+            string expectedExceptionMessage = "Two or more routes named 'NamedEntry' have different templates." +
+                Environment.NewLine +
+                "Parameter name: linkGenerationEntries";
+
+            var next = new Mock<IRouter>().Object;
+
+            var matchingEntries = Enumerable.Empty<AttributeRouteMatchingEntry>();
+
+            // Act
+            var exception = Assert.Throws<ArgumentException>(
+                "linkGenerationEntries",
+                () => new AttributeRoute(
+                    next,
+                    matchingEntries,
+                    namedEntries,
+                    NullLoggerFactory.Instance));
+
+            Assert.Equal(expectedExceptionMessage, exception.Message, StringComparer.OrdinalIgnoreCase);
+        }
+
+        public static IEnumerable<object[]> NamedEntriesWithTheSameTemplate
+        {
+            get
+            {
+                var data = new TheoryData<IEnumerable<AttributeRouteLinkGenerationEntry>>();
+
+                data.Add(new[]
+                {
+                        CreateGenerationEntry("template", null, 0, "NamedEntry"),
+                        CreateGenerationEntry("template", null, 1, "NamedEntry"),
+                        CreateGenerationEntry("template", null, 2, "NamedEntry")
+                });
+
+                // Templates are compared ignoring casing.
+                data.Add(new[]
+                {
+                        CreateGenerationEntry("template", null, 0, "NamedEntry"),
+                        CreateGenerationEntry("Template", null, 1, "NamedEntry"),
+                        CreateGenerationEntry("TEMPLATE", null, 2, "NamedEntry")
+                });
+
+                data.Add(new[]
+                {
+                        CreateGenerationEntry("template/{parameter=0}", null, 0, "NamedEntry"),
+                        CreateGenerationEntry("template/{parameter=0}", null, 1, "NamedEntry"),
+                        CreateGenerationEntry("template/{parameter=0}", null, 2, "NamedEntry")
+                });
+
+                return data;
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(AttributeRouteTest.NamedEntriesWithTheSameTemplate))]
+        public void AttributeRoute_GeneratesLink_ForMultipleNamedEntriesWithTheSameTemplate(
+            IEnumerable<AttributeRouteLinkGenerationEntry> namedEntries)
+        {
+            // Arrange
+            var expectedLink = namedEntries.First().Template.Parameters.Any() ? "template/5" : "template";
+
+            var expectedGroup = "0&" + namedEntries.First().TemplateText;
+            string selectedGroup = null;
+            var next = new Mock<IRouter>();
+            next.Setup(s => s.GetVirtualPath(It.IsAny<VirtualPathContext>()))
+                .Callback<VirtualPathContext>(vpc =>
+                {
+                    vpc.IsBound = true;
+                    selectedGroup = (string)vpc.ProvidedValues[AttributeRouting.RouteGroupKey];
+                });
+
+            var matchingEntries = Enumerable.Empty<AttributeRouteMatchingEntry>();
+
+            var route = new AttributeRoute(
+                    next.Object,
+                    matchingEntries,
+                    namedEntries,
+                    NullLoggerFactory.Instance);
+
+            var ambientValues = namedEntries.First().Template.Parameters.Any() ? new { parameter = 5 } : null;
+
+            var context = CreateVirtualPathContext(values: null, ambientValues: ambientValues, name: "NamedEntry");
+
+            // Act
+            var result = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(expectedGroup, selectedGroup);
+            Assert.Equal(expectedLink, result);
+        }
+
+        [Fact]
+        public void AttributeRoute_GenerateLink_WithName()
+        {
+            // Arrange
+            string selectedGroup = null;
+            var next = new Mock<IRouter>();
+            next.Setup(s => s.GetVirtualPath(It.IsAny<VirtualPathContext>()))
+                .Callback<VirtualPathContext>(vpc =>
+                {
+                    vpc.IsBound = true;
+                    selectedGroup = (string)vpc.ProvidedValues[AttributeRouting.RouteGroupKey];
+                });
+
+            var namedEntry = CreateGenerationEntry("named", requiredValues: null, order: 1, name: "NamedRoute");
+            var unnamedEntry = CreateGenerationEntry("unnamed", requiredValues: null, order: 0);
+
+            // The named route has a lower order which will ensure that we aren't trying the route as
+            // if it were an unnamed route.
+            var linkGenerationEntries = new[] { namedEntry, unnamedEntry };
+
+            var matchingEntries = Enumerable.Empty<AttributeRouteMatchingEntry>();
+
+            var route = new AttributeRoute(next.Object, matchingEntries, linkGenerationEntries, NullLoggerFactory.Instance);
+
+            var context = CreateVirtualPathContext(values: null, ambientValues: null, name: "NamedRoute");
+
+            // Act
+            var result = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal("1&named", selectedGroup);
+            Assert.Equal("named", result);
+        }
+
+        [Fact]
+        public void AttributeRoute_DoesNotGenerateLink_IfThereIsNoRouteForAGivenName()
+        {
+            // Arrange
+            string selectedGroup = null;
+            var next = new Mock<IRouter>();
+            next.Setup(s => s.GetVirtualPath(It.IsAny<VirtualPathContext>()))
+                .Callback<VirtualPathContext>(vpc =>
+                {
+                    vpc.IsBound = true;
+                    selectedGroup = (string)vpc.ProvidedValues[AttributeRouting.RouteGroupKey];
+                });
+
+            var namedEntry = CreateGenerationEntry("named", requiredValues: null, order: 1, name: "NamedRoute");
+
+            // Add an unnamed entry to ensure we don't fall back to generating a link for an unnamed route.
+            var unnamedEntry = CreateGenerationEntry("unnamed", requiredValues: null, order: 0);
+
+            // The named route has a lower order which will ensure that we aren't trying the route as
+            // if it were an unnamed route.
+            var linkGenerationEntries = new[] { namedEntry, unnamedEntry };
+
+            var matchingEntries = Enumerable.Empty<AttributeRouteMatchingEntry>();
+
+            var route = new AttributeRoute(next.Object, matchingEntries, linkGenerationEntries, NullLoggerFactory.Instance);
+
+            var context = CreateVirtualPathContext(values: null, ambientValues: null, name: "NonExistingNamedRoute");
+
+            // Act
+            var result = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Theory]
+        [InlineData("template/{parameter:int}", null)]
+        [InlineData("template/{parameter:int}", "NaN")]
+        [InlineData("template/{parameter}", null)]
+        [InlineData("template/{*parameter:int}", null)]
+        [InlineData("template/{*parameter:int}", "NaN")]
+        public void AttributeRoute_DoesNotGenerateLink_IfValuesDoNotMatchNamedEntry(string template, string value)
+        {
+            // Arrange
+            string selectedGroup = null;
+            var next = new Mock<IRouter>();
+            next.Setup(s => s.GetVirtualPath(It.IsAny<VirtualPathContext>()))
+                .Callback<VirtualPathContext>(vpc =>
+                {
+                    vpc.IsBound = true;
+                    selectedGroup = (string)vpc.ProvidedValues[AttributeRouting.RouteGroupKey];
+                });
+
+            var namedEntry = CreateGenerationEntry(template, requiredValues: null, order: 1, name: "NamedRoute");
+
+            // Add an unnamed entry to ensure we don't fall back to generating a link for an unnamed route.
+            var unnamedEntry = CreateGenerationEntry("unnamed", requiredValues: null, order: 0);
+
+            // The named route has a lower order which will ensure that we aren't trying the route as
+            // if it were an unnamed route.
+            var linkGenerationEntries = new[] { namedEntry, unnamedEntry };
+
+            var matchingEntries = Enumerable.Empty<AttributeRouteMatchingEntry>();
+
+            var route = new AttributeRoute(next.Object, matchingEntries, linkGenerationEntries, NullLoggerFactory.Instance);
+
+            var ambientValues = value == null ? null : new { parameter = value };
+
+            var context = CreateVirtualPathContext(values: null, ambientValues: ambientValues, name: "NamedRoute");
+
+            // Act
+            var result = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Theory]
+        [InlineData("template/{parameter:int}", "5")]
+        [InlineData("template/{parameter}", "5")]
+        [InlineData("template/{*parameter:int}", "5")]
+        [InlineData("template/{*parameter}", "5")]
+        public void AttributeRoute_GeneratesLink_IfValuesMatchNamedEntry(string template, string value)
+        {
+            // Arrange
+            string selectedGroup = null;
+            var next = new Mock<IRouter>();
+            next.Setup(s => s.GetVirtualPath(It.IsAny<VirtualPathContext>()))
+                .Callback<VirtualPathContext>(vpc =>
+                {
+                    vpc.IsBound = true;
+                    selectedGroup = (string)vpc.ProvidedValues[AttributeRouting.RouteGroupKey];
+                });
+
+            var namedEntry = CreateGenerationEntry(template, requiredValues: null, order: 1, name: "NamedRoute");
+
+            // Add an unnamed entry to ensure we don't fall back to generating a link for an unnamed route.
+            var unnamedEntry = CreateGenerationEntry("unnamed", requiredValues: null, order: 0);
+
+            // The named route has a lower order which will ensure that we aren't trying the route as
+            // if it were an unnamed route.
+            var linkGenerationEntries = new[] { namedEntry, unnamedEntry };
+
+            var matchingEntries = Enumerable.Empty<AttributeRouteMatchingEntry>();
+
+            var route = new AttributeRoute(next.Object, matchingEntries, linkGenerationEntries, NullLoggerFactory.Instance);
+
+            var ambientValues = value == null ? null : new { parameter = value };
+
+            var context = CreateVirtualPathContext(values: null, ambientValues: ambientValues, name: "NamedRoute");
+
+            // Act
+            var result = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(string.Format("1&{0}", template), selectedGroup);
+            Assert.Equal("template/5", result);
+        }
+
         [Fact]
         public async void AttributeRoute_RouteAsyncHandled_LogsCorrectValues()
         {
@@ -843,7 +1126,10 @@ namespace Microsoft.AspNet.Mvc.Routing
             return new RouteContext(context.Object);
         }
 
-        private static VirtualPathContext CreateVirtualPathContext(object values, object ambientValues = null)
+        private static VirtualPathContext CreateVirtualPathContext(
+            object values,
+            object ambientValues = null,
+            string name = null)
         {
             var mockHttpContext = new Mock<HttpContext>();
             mockHttpContext.Setup(h => h.RequestServices.GetService(typeof(ILoggerFactory)))
@@ -852,7 +1138,8 @@ namespace Microsoft.AspNet.Mvc.Routing
             return new VirtualPathContext(
                 mockHttpContext.Object,
                 new RouteValueDictionary(ambientValues),
-                new RouteValueDictionary(values));
+                new RouteValueDictionary(values),
+                name);
         }
 
         private static AttributeRouteMatchingEntry CreateMatchingEntry(IRouter router, string template, int order)
@@ -872,7 +1159,11 @@ namespace Microsoft.AspNet.Mvc.Routing
             return entry;
         }
 
-        private static AttributeRouteLinkGenerationEntry CreateGenerationEntry(string template, object requiredValues, int order = 0)
+        private static AttributeRouteLinkGenerationEntry CreateGenerationEntry(
+            string template,
+            object requiredValues,
+            int order = 0,
+            string name = null)
         {
             var constraintResolver = CreateConstraintResolver();
 
@@ -895,7 +1186,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             entry.Precedence = AttributeRoutePrecedence.Compute(entry.Template);
             entry.RequiredLinkValues = new RouteValueDictionary(requiredValues);
             entry.RouteGroup = CreateRouteGroup(order, template);
-
+            entry.Name = name;
             return entry;
         }
 

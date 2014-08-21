@@ -266,6 +266,76 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Fact]
+        public void AttributeRouting_Name_ThrowsIfMultipleActions_WithDifferentTemplatesHaveTheSameName()
+        {
+            // Arrange
+            var provider = GetProvider(typeof(SameNameDifferentTemplatesController).GetTypeInfo());
+
+            var expectedMessage =
+                "The following errors occurred with attribute routing information:"
+                + Environment.NewLine + Environment.NewLine +
+                "Error 1:" + Environment.NewLine +
+                "Attribute routes with the same name 'Products' must have the same template:"
+                + Environment.NewLine +
+                "Action: 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "SameNameDifferentTemplatesController.Get' - Template: 'Products'"
+                + Environment.NewLine +
+                "Action: 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "SameNameDifferentTemplatesController.Get' - Template: 'Products/{id}'"
+                + Environment.NewLine +
+                "Action: 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "SameNameDifferentTemplatesController.Put' - Template: 'Products/{id}'"
+                + Environment.NewLine +
+                "Action: 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "SameNameDifferentTemplatesController.Post' - Template: 'Products'"
+                + Environment.NewLine +
+                "Action: 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "SameNameDifferentTemplatesController.Delete' - Template: 'Products/{id}'"
+                + Environment.NewLine + Environment.NewLine +
+                "Error 2:" + Environment.NewLine +
+                "Attribute routes with the same name 'Items' must have the same template:"
+                + Environment.NewLine +
+                "Action: 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "SameNameDifferentTemplatesController.GetItems' - Template: 'Items/{id}'"
+                + Environment.NewLine +
+                "Action: 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "SameNameDifferentTemplatesController.PostItems' - Template: 'Items'"
+                + Environment.NewLine +
+                "Action: 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "SameNameDifferentTemplatesController.PutItems' - Template: 'Items/{id}'"
+                + Environment.NewLine +
+                "Action: 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "SameNameDifferentTemplatesController.DeleteItems' - Template: 'Items/{id}'"
+                + Environment.NewLine +
+                "Action: 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "SameNameDifferentTemplatesController.PatchItems' - Template: 'Items'";
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => { provider.GetDescriptors(); });
+
+            // Assert
+            Assert.Equal(expectedMessage, ex.Message);
+        }
+
+        [Fact]
+        public void AttributeRouting_Name_AllowsMultipleAttributeRoutesInDifferentActions_WithTheSameNameAndTemplate()
+        {
+            // Arrange
+            var provider = GetProvider(typeof(DifferentCasingsAttributeRouteNamesController).GetTypeInfo());
+
+            // Act
+            var descriptors = provider.GetDescriptors();
+
+            // Assert
+            foreach (var descriptor in descriptors)
+            {
+                Assert.NotNull(descriptor.AttributeRouteInfo);
+                Assert.Equal("{id}", descriptor.AttributeRouteInfo.Template, StringComparer.OrdinalIgnoreCase);
+                Assert.Equal("Products", descriptor.AttributeRouteInfo.Name, StringComparer.OrdinalIgnoreCase);
+            }
+        }
+
+        [Fact]
         public void AttributeRouting_RouteGroupConstraint_IsAddedOnceForNonAttributeRoutes()
         {
             // Arrange
@@ -562,6 +632,55 @@ namespace Microsoft.AspNet.Mvc.Test
             public void Edit() { }
 
             public void AnotherNonAttributedAction() { }
+        }
+
+        [Route("Products", Name = "Products")]
+        public class SameNameDifferentTemplatesController
+        {
+            [HttpGet]
+            public void Get() { }
+
+            [HttpGet("{id}", Name = "Products")]
+            public void Get(int id) { }
+
+            [HttpPut("{id}", Name = "Products")]
+            public void Put(int id) { }
+
+            [HttpPost]
+            public void Post() { }
+
+            [HttpDelete("{id}", Name = "Products")]
+            public void Delete(int id) { }
+
+            [HttpGet("/Items/{id}", Name = "Items")]
+            public void GetItems(int id) { }
+
+            [HttpPost("/Items", Name = "Items")]
+            public void PostItems() { }
+
+            [HttpPut("/Items/{id}", Name = "Items")]
+            public void PutItems(int id) { }
+
+            [HttpDelete("/Items/{id}", Name = "Items")]
+            public void DeleteItems(int id) { }
+
+            [HttpPatch("/Items", Name = "Items")]
+            public void PatchItems() { }
+        }
+
+        public class DifferentCasingsAttributeRouteNamesController
+        {
+            [HttpGet("{id}", Name = "Products")]
+            public void Get() { }
+
+            [HttpGet("{ID}", Name = "Products")]
+            public void Get(int id) { }
+
+            [HttpPut("{id}", Name = "PRODUCTS")]
+            public void Put(int id) { }
+
+            [HttpDelete("{ID}", Order = 1, Name = "PRODUCTS")]
+            public void Delete(int id) { }
         }
 
         [MyRouteConstraint(blockNonAttributedActions: true)]

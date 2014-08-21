@@ -29,5 +29,8 @@ namespace RoutingWebSite
 
         /// <inheritdoc />
         public int? Order { get; set; }
+
+        /// <inheritdoc />
+        public string Name { get; set; }
     }
 }

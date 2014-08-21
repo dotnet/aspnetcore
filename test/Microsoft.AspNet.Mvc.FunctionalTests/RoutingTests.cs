@@ -529,6 +529,124 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("/", result.Link);
         }
 
+        [Theory]
+        [InlineData("GET", "Get")]
+        [InlineData("PUT", "Put")]
+        public async Task AttributeRoutedAction_LinkWithName_WithNameInheritedFromControllerRoute(string method, string actionName)
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            // Act
+            var response = await client.SendAsync(method, "http://localhost/api/Company/5");
+            Assert.Equal(200, response.StatusCode);
+
+            // Assert
+            var body = await response.ReadBodyAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            // Assert
+            Assert.Equal("Company", result.Controller);
+            Assert.Equal(actionName, result.Action);
+
+            Assert.Equal("/api/Company/5", result.ExpectedUrls.Single());
+            Assert.Equal("Company", result.RouteName);
+        }
+
+        [Fact]
+        public async Task AttributeRoutedAction_LinkWithName_WithNameOverrridenFromController()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            // Act
+            var response = await client.SendAsync("DELETE", "http://localhost/api/Company/5");
+            Assert.Equal(200, response.StatusCode);
+
+            // Assert
+            var body = await response.ReadBodyAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            // Assert
+            Assert.Equal("Company", result.Controller);
+            Assert.Equal("Delete", result.Action);
+
+            Assert.Equal("/api/Company/5", result.ExpectedUrls.Single());
+            Assert.Equal("RemoveCompany", result.RouteName);
+        }
+
+        [Fact]
+        public async Task AttributeRoutedAction_Link_WithNonEmptyActionRouteTemplateAndNoActionRouteName()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            var url = LinkFrom("http://localhost")
+                .To(new { id = 5 });
+
+            // Act
+            var response = await client.SendAsync("GET", "http://localhost/api/Company/5/Employees");
+            Assert.Equal(200, response.StatusCode);
+
+            // Assert
+            var body = await response.ReadBodyAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            // Assert
+            Assert.Equal("Company", result.Controller);
+            Assert.Equal("GetEmployees", result.Action);
+
+            Assert.Equal("/api/Company/5/Employees", result.ExpectedUrls.Single());
+            Assert.Equal(null, result.RouteName);
+        }
+
+        [Fact]
+        public async Task AttributeRoutedAction_LinkWithName_WithNonEmptyActionRouteTemplateAndActionRouteName()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            // Act
+            var response = await client.SendAsync("GET", "http://localhost/api/Company/5/Departments");
+            Assert.Equal(200, response.StatusCode);
+
+            // Assert
+            var body = await response.ReadBodyAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            // Assert
+            Assert.Equal("Company", result.Controller);
+            Assert.Equal("GetDepartments", result.Action);
+
+            Assert.Equal("/api/Company/5/Departments", result.ExpectedUrls.Single());
+            Assert.Equal("Departments", result.RouteName);
+        }
+
+        [Theory]
+        [InlineData("http://localhost/Duplicate/Index")]
+        [InlineData("http://localhost/api/Duplicate/IndexAttribute")]
+        [InlineData("http://localhost/api/Duplicate")]
+        [InlineData("http://localhost/conventional/Duplicate")]
+        public async Task AttributeRoutedAction_ThowsIfConventionalRouteWithTheSameName(string url)
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.Handler;
+
+            var expectedMessage = "The supplied route name 'DuplicateRoute' is ambiguous and matched more than one route.";
+
+            // Act
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await client.SendAsync("GET", url));
+
+            // Assert
+            Assert.Equal(expectedMessage, ex.Message);
+        }
+
         [Fact]
         public async Task ConventionalRoutedAction_LinkToArea()
         {
@@ -869,7 +987,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var client = server.Handler;
 
             // Act
-            var url = 
+            var url =
                 LinkFrom("http://localhost/")
                 .To(new { action = "GetProducts", controller = "Products", country = "US" });
             var response = await client.GetAsync(url);
@@ -934,6 +1052,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             public string ActualUrl { get; set; }
 
             public Dictionary<string, object> RouteValues { get; set; }
+
+            public string RouteName { get; set; }
 
             public string Action { get; set; }
 

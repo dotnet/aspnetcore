@@ -1275,7 +1275,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// Unable to find the required services. Please add all the required services by calling '{0}' inside the call to '{1}' or before calling '{2}' in the application startup code.
+        /// Unable to find the required services. Please add all the required services by calling '{0}' inside the call to '{1}' or '{2}' in the application startup code.
         /// </summary>
         internal static string UnableToFindServices
         {
@@ -1283,11 +1283,75 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// Unable to find the required services. Please add all the required services by calling '{0}' inside the call to '{1}' or before calling '{2}' in the application startup code.
+        /// Unable to find the required services. Please add all the required services by calling '{0}' inside the call to '{1}' or '{2}' in the application startup code.
         /// </summary>
         internal static string FormatUnableToFindServices(object p0, object p1, object p2)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("UnableToFindServices"), p0, p1, p2);
+        }
+
+        /// <summary>
+        /// Two or more routes named '{0}' have different templates.
+        /// </summary>
+        internal static string AttributeRoute_DifferentLinkGenerationEntries_SameName
+        {
+            get { return GetString("AttributeRoute_DifferentLinkGenerationEntries_SameName"); }
+        }
+
+        /// <summary>
+        /// Two or more routes named '{0}' have different templates.
+        /// </summary>
+        internal static string FormatAttributeRoute_DifferentLinkGenerationEntries_SameName(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("AttributeRoute_DifferentLinkGenerationEntries_SameName"), p0);
+        }
+
+        /// <summary>
+        /// Action: '{0}' - Template: '{1}'
+        /// </summary>
+        internal static string AttributeRoute_DuplicateNames_Item
+        {
+            get { return GetString("AttributeRoute_DuplicateNames_Item"); }
+        }
+
+        /// <summary>
+        /// Action: '{0}' - Template: '{1}'
+        /// </summary>
+        internal static string FormatAttributeRoute_DuplicateNames_Item(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("AttributeRoute_DuplicateNames_Item"), p0, p1);
+        }
+
+        /// <summary>
+        /// Attribute routes with the same name '{0}' must have the same template:{1}{2}
+        /// </summary>
+        internal static string AttributeRoute_DuplicateNames
+        {
+            get { return GetString("AttributeRoute_DuplicateNames"); }
+        }
+
+        /// <summary>
+        /// Attribute routes with the same name '{0}' must have the same template:{1}{2}
+        /// </summary>
+        internal static string FormatAttributeRoute_DuplicateNames(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("AttributeRoute_DuplicateNames"), p0, p1, p2);
+        }
+
+        /// <summary>
+        /// Error {0}:{1}{2}
+        /// </summary>
+        internal static string AttributeRoute_AggregateErrorMessage_ErrorNumber
+        {
+            get { return GetString("AttributeRoute_AggregateErrorMessage_ErrorNumber"); }
+        }
+
+        /// <summary>
+        /// Error {0}:{1}{2}
+        /// </summary>
+        internal static string FormatAttributeRoute_AggregateErrorMessage_ErrorNumber(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("AttributeRoute_AggregateErrorMessage_ErrorNumber"), p0, p1, p2);
         }
 
         private static string GetString(string name, params string[] formatterNames)

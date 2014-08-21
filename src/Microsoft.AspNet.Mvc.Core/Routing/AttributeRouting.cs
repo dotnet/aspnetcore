@@ -46,7 +46,8 @@ namespace Microsoft.AspNet.Mvc.Routing
                     RequiredLinkValues = routeInfo.ActionDescriptor.RouteValueDefaults,
                     RouteGroup = routeInfo.RouteGroup,
                     Template = routeInfo.ParsedTemplate,
-                    TemplateText = routeInfo.RouteTemplate
+                    TemplateText = routeInfo.RouteTemplate,
+                    Name = routeInfo.Name,
                 });
             }
 
@@ -215,6 +216,8 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             routeInfo.Precedence = AttributeRoutePrecedence.Compute(routeInfo.ParsedTemplate);
 
+            routeInfo.Name = action.AttributeRouteInfo.Name;
+
             routeInfo.Constraints = routeInfo.ParsedTemplate.Parameters
                 .Where(p => p.InlineConstraint != null)
                 .ToDictionary(p => p.Name, p => p.InlineConstraint, StringComparer.OrdinalIgnoreCase);
@@ -245,6 +248,8 @@ namespace Microsoft.AspNet.Mvc.Routing
             public string RouteGroup { get; set; }
 
             public string RouteTemplate { get; set; }
+
+            public string Name { get; set; }
         }
     }
 }

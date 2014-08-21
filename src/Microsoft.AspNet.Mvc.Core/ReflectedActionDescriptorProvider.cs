@@ -161,7 +161,8 @@ namespace Microsoft.AspNet.Mvc
                     var attributeRouteInfo = combinedRoute == null ? null : new AttributeRouteInfo()
                     {
                         Template = combinedRoute.Template,
-                        Order = combinedRoute.Order ?? DefaultAttributeRouteOrder
+                        Order = combinedRoute.Order ?? DefaultAttributeRouteOrder,
+                        Name = combinedRoute.Name,
                     };
 
                     var actionDescriptor = new ReflectedActionDescriptor()
@@ -291,6 +292,9 @@ namespace Microsoft.AspNet.Mvc
                 }
             }
 
+            var actionsByRouteName = new Dictionary<string, IList<ActionDescriptor>>(
+                StringComparer.OrdinalIgnoreCase);
+
             foreach (var actionDescriptor in actions)
             {
                 if (actionDescriptor.AttributeRouteInfo == null ||
@@ -317,6 +321,25 @@ namespace Microsoft.AspNet.Mvc
                 }
                 else
                 {
+                    var attributeRouteInfo = actionDescriptor.AttributeRouteInfo;
+                    if (attributeRouteInfo.Name != null)
+                    {
+                        // Build a map of attribute route name to action descriptors to ensure that all
+                        // attribute routes with a given name have the same template.
+                        IList<ActionDescriptor> namedActionGroup;
+
+                        if (actionsByRouteName.TryGetValue(attributeRouteInfo.Name, out namedActionGroup))
+                        {
+                            namedActionGroup.Add(actionDescriptor);
+                        }
+                        else
+                        {
+                            namedActionGroup = new List<ActionDescriptor>();
+                            namedActionGroup.Add(actionDescriptor);
+                            actionsByRouteName.Add(attributeRouteInfo.Name, namedActionGroup);
+                        }
+                    }
+
                     // We still want to add a 'null' for any constraint with DenyKey so that link generation
                     // works properly.
                     //
@@ -332,15 +355,84 @@ namespace Microsoft.AspNet.Mvc
                 }
             }
 
+            var namedRoutedErrors = ValidateNamedAttributeRoutedActions(actionsByRouteName);
+            if (namedRoutedErrors.Any())
+            {
+                namedRoutedErrors = AddErrorNumbers(namedRoutedErrors);
+
+                var message = Resources.FormatAttributeRoute_AggregateErrorMessage(
+                    Environment.NewLine,
+                    string.Join(Environment.NewLine + Environment.NewLine, namedRoutedErrors));
+
+                throw new InvalidOperationException(message);
+            }
+
             if (routeTemplateErrors.Any())
             {
                 var message = Resources.FormatAttributeRoute_AggregateErrorMessage(
                     Environment.NewLine,
                     string.Join(Environment.NewLine + Environment.NewLine, routeTemplateErrors));
+
                 throw new InvalidOperationException(message);
             }
 
             return actions;
+        }
+
+        private static IList<string> AddErrorNumbers(IList<string> namedRoutedErrors)
+        {
+            return namedRoutedErrors
+                .Select((nre, i) =>
+                            Resources.FormatAttributeRoute_AggregateErrorMessage_ErrorNumber(
+                                i + 1,
+                                Environment.NewLine,
+                                nre))
+                .ToList();
+        }
+
+        private static IList<string> ValidateNamedAttributeRoutedActions(
+            IDictionary<string,
+            IList<ActionDescriptor>> actionsGroupedByRouteName)
+        {
+            var namedRouteErrors = new List<string>();
+
+            foreach (var kvp in actionsGroupedByRouteName)
+            {
+                // We are looking for attribute routed actions that have the same name but
+                // different route templates. We pick the first template of the group and
+                // we compare it against the rest of the templates that have that same name
+                // associated.
+                // The moment we find one that is different we report the whole group to the
+                // user in the error message so that he can see the different actions and the
+                // different templates for a given named attribute route.
+                var firstActionDescriptor = kvp.Value[0];
+                var firstTemplate = firstActionDescriptor.AttributeRouteInfo.Template;
+
+                for (var i = 1; i < kvp.Value.Count; i++)
+                {
+                    var otherActionDescriptor = kvp.Value[i];
+                    var otherActionTemplate = otherActionDescriptor.AttributeRouteInfo.Template;
+
+                    if (!firstTemplate.Equals(otherActionTemplate, StringComparison.OrdinalIgnoreCase))
+                    {
+                        var descriptions = kvp.Value.Select(ad =>
+                            Resources.FormatAttributeRoute_DuplicateNames_Item(
+                                ad.DisplayName,
+                                ad.AttributeRouteInfo.Template));
+
+                        var errorDescription = string.Join(Environment.NewLine, descriptions);
+                        var message = Resources.FormatAttributeRoute_DuplicateNames(
+                            kvp.Key,
+                            Environment.NewLine,
+                            errorDescription);
+
+                        namedRouteErrors.Add(message);
+                        break;
+                    }
+                }
+            }
+
+            return namedRouteErrors;
         }
 
         private static string GetRouteGroupValue(int order, string template)
