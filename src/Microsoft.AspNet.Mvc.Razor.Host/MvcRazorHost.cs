@@ -22,8 +22,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             "System.Linq",
             "System.Collections.Generic",
             "Microsoft.AspNet.Mvc",
-            "Microsoft.AspNet.Mvc.Razor",
-            "Microsoft.AspNet.Mvc.Rendering"
+            "Microsoft.AspNet.Mvc.Rendering",
         };
 
         private readonly MvcRazorHostOptions _hostOptions;
@@ -51,7 +50,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 writeLiteralMethodName: "WriteLiteral",
                 writeToMethodName: "WriteTo",
                 writeLiteralToMethodName: "WriteLiteralTo",
-                templateTypeName: "HelperResult",
+                templateTypeName: "Microsoft.AspNet.Mvc.Razor.HelperResult",
                 defineSectionMethodName: "DefineSection")
             {
                 ResolveUrlMethodName = "Href"
