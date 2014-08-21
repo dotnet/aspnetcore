@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                         {
                             var viewContext = new ViewContext(_viewContext, viewEngineResult.View, _viewData, writer);
                             var renderTask = viewEngineResult.View.RenderAsync(viewContext);
-                            TaskHelper.ThrowIfFaulted(renderTask);
+                            TaskHelper.WaitAndThrowIfFaulted(renderTask);
                             return writer.ToString();
                         }
                     }

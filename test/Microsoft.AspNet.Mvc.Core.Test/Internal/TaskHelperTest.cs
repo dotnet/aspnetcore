@@ -10,40 +10,40 @@ namespace Microsoft.AspNet.Mvc.Internal
     public class TaskHelperTest
     {
         [Fact]
-        public void ThrowIfFaulted_DoesNotThrowIfTaskIsNotFaulted()
+        public void WaitAndThrowIfFaulted_DoesNotThrowIfTaskIsNotFaulted()
         {
             // Arrange
             var task = Task.FromResult(0);
 
             // Act and Assert
-            Assert.DoesNotThrow(() => TaskHelper.ThrowIfFaulted(task));
+            Assert.DoesNotThrow(() => TaskHelper.WaitAndThrowIfFaulted(task));
         }
 
         [Fact]
-        public void ThrowIfFaulted_ThrowsIfTaskIsFaulted()
+        public void WaitAndThrowIfFaulted_ThrowsIfTaskIsFaulted()
         {
             // Arrange
             var message = "Exception message";
             var task = CreatingFailingTask(message);
 
             // Act and Assert
-            var ex = Assert.Throws<Exception>(() => TaskHelper.ThrowIfFaulted(task));
+            var ex = Assert.Throws<Exception>(() => TaskHelper.WaitAndThrowIfFaulted(task));
             Assert.Equal(message, ex.Message);
         }
 
         [Fact]
-        public void ThrowIfFaulted_ThrowsFirstExceptionWhenAggregateTaskFails()
+        public void WaitAndThrowIfFaulted_ThrowsFirstExceptionWhenAggregateTaskFails()
         {
             // Arrange
             var message = "Exception message";
             var task = Task.Run(async () =>
             {
-                await Task.WhenAll(CreatingFailingTask(message), 
+                await Task.WhenAll(CreatingFailingTask(message),
                                    CreatingFailingTask("different message"));
             });
 
             // Act and Assert
-            var ex = Assert.Throws<Exception>(() => TaskHelper.ThrowIfFaulted(task));
+            var ex = Assert.Throws<Exception>(() => TaskHelper.WaitAndThrowIfFaulted(task));
             Assert.Equal(message, ex.Message);
         }
 
