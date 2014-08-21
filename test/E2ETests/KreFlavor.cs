@@ -3,6 +3,7 @@
     public enum KreFlavor
     {
         DesktopClr,
-        CoreClr
+        CoreClr,
+        Mono
     }
 }

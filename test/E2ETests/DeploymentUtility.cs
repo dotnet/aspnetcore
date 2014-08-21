@@ -56,6 +56,11 @@ namespace E2ETests
 
         public static Process StartApplication(ServerType hostType, KreFlavor kreFlavor, KreArchitecture kreArchitecture, string identityDbName)
         {
+            if (kreFlavor == KreFlavor.Mono)
+            {
+                throw new NotImplementedException("Not implemented for Mono");
+            }
+
             string applicationPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, APP_RELATIVE_PATH));
             //Tweak the %PATH% to the point to the right KREFLAVOR
             Environment.SetEnvironmentVariable("PATH", SwitchPathToKreFlavor(kreFlavor, kreArchitecture));
