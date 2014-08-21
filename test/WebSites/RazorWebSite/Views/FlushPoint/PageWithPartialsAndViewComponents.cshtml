@@ -1,0 +1,15 @@
+﻿@inject WaitService WaitService
+@{
+    Layout = "/Views/Shared/_LayoutWithPartialAndFlush.cshtml";
+    ViewBag.Title = "Page With Components and Partials";
+}
+RenderBody content
+@section content
+{
+    @{
+        FlushAsync().Wait();
+        WaitService.WaitForClient();
+    }
+    @Component.InvokeAsync("ComponentThatSetsTitle").Result
+    <span>Content that takes time to produce</span>
+}

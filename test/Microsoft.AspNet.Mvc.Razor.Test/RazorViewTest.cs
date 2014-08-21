@@ -414,6 +414,161 @@ body-content";
             Assert.Equal(expected, viewContext.Writer.ToString());
         }
 
+        [Fact]
+        public async Task RenderAsync_DoesNotCopyContentOnceRazorTextWriterIsNoLongerBuffering()
+        {
+            // Arrange
+            var expected =
+@"layout-1
+body content
+section-content-1
+section-content-2";
+
+            var page = new TestableRazorPage(v =>
+            {
+                v.Layout = "layout-1";
+                v.WriteLiteral("body content" + Environment.NewLine);
+                v.DefineSection("foo", new HelperResult(_ =>
+                {
+                    v.WriteLiteral("section-content-1" + Environment.NewLine);
+                    v.FlushAsync().Wait();
+                    v.WriteLiteral("section-content-2");
+                }));
+            });
+
+            var layout1 = new TestableRazorPage(v =>
+            {
+                v.Write("layout-1" + Environment.NewLine);
+                v.RenderBodyPublic();
+                v.Write(v.RenderSection("foo"));
+            });
+
+            var pageFactory = new Mock<IRazorPageFactory>();
+            pageFactory.Setup(p => p.CreateInstance("layout-1"))
+                       .Returns(layout1);
+
+            var view = new RazorView(pageFactory.Object,
+                                     Mock.Of<IRazorPageActivator>(),
+                                     CreateViewStartProvider());
+            view.Contextualize(page, isPartial: false);
+            var viewContext = CreateViewContext(view);
+
+            // Act
+            await view.RenderAsync(viewContext);
+
+            // Assert
+            Assert.Equal(expected, viewContext.Writer.ToString());
+        }
+
+        [Fact]
+        public async Task FlushAsync_DoesNotThrowWhenInvokedInsideOfASection()
+        {
+            // Arrange
+            var expected =
+@"layout-1
+section-content-1
+section-content-2";
+
+            var page = new TestableRazorPage(v =>
+           {
+               v.Layout = "layout-1";
+               v.DefineSection("foo", new HelperResult(_ =>
+               {
+                   v.WriteLiteral("section-content-1" + Environment.NewLine);
+                   v.FlushAsync().Wait();
+                   v.WriteLiteral("section-content-2");
+               }));
+           });
+
+            var layout1 = new TestableRazorPage(v =>
+            {
+                v.Write("layout-1" + Environment.NewLine);
+                v.RenderBodyPublic();
+                v.Write(v.RenderSection("foo"));
+            });
+
+            var pageFactory = new Mock<IRazorPageFactory>();
+            pageFactory.Setup(p => p.CreateInstance("layout-1"))
+                       .Returns(layout1);
+
+            var view = new RazorView(pageFactory.Object,
+                                     Mock.Of<IRazorPageActivator>(),
+                                     CreateViewStartProvider());
+            view.Contextualize(page, isPartial: false);
+            var viewContext = CreateViewContext(view);
+
+            // Act
+            await view.RenderAsync(viewContext);
+
+            // Assert
+            Assert.Equal(expected, viewContext.Writer.ToString());
+        }
+
+        [Fact]
+        public async Task RenderAsync_ThrowsIfLayoutIsSpecifiedWhenNotBuffered()
+        {
+            // Arrange
+            var expected = @"A layout page cannot be rendered after 'FlushAsync' has been invoked.";
+            var page = new TestableRazorPage(v =>
+            {
+                v.WriteLiteral("before-flush" + Environment.NewLine);
+                v.FlushAsync().Wait();
+                v.Layout = "test-layout";
+                v.WriteLiteral("after-flush");
+            });
+
+            var view = new RazorView(Mock.Of<IRazorPageFactory>(),
+                                     Mock.Of<IRazorPageActivator>(),
+                                     CreateViewStartProvider());
+            view.Contextualize(page, isPartial: false);
+            var viewContext = CreateViewContext(view);
+
+            // Act and Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => view.RenderAsync(viewContext));
+            Assert.Equal(expected, ex.Message);
+        }
+
+        [Fact]
+        public async Task RenderAsync_ThrowsIfFlushWasInvokedInsideRenderedSectionAndLayoutWasSet()
+        {
+            // Arrange
+            var expected = @"A layout page cannot be rendered after 'FlushAsync' has been invoked.";
+            var page = new TestableRazorPage(v =>
+            {
+                v.DefineSection("foo", new HelperResult(writer =>
+                {
+                    writer.WriteLine("foo-content");
+                    v.FlushAsync().Wait();
+                }));
+                v.Layout = "~/Shared/Layout1.cshtml";
+                v.WriteLiteral("body-content");
+            });
+            var layout1 = new TestableRazorPage(v =>
+            {
+                v.Write("layout-1" + Environment.NewLine);
+                v.Write(v.RenderSection("foo"));
+                v.DefineSection("bar", new HelperResult(writer =>
+                {
+                    writer.WriteLine("bar-content");
+                }));
+                v.RenderBodyPublic();
+                v.Layout = "~/Shared/Layout2.cshtml";
+            });
+            var pageFactory = new Mock<IRazorPageFactory>();
+            pageFactory.Setup(p => p.CreateInstance("~/Shared/Layout1.cshtml"))
+                       .Returns(layout1);
+
+            var view = new RazorView(pageFactory.Object,
+                                     Mock.Of<IRazorPageActivator>(),
+                                     CreateViewStartProvider());
+            view.Contextualize(page, isPartial: false);
+            var viewContext = CreateViewContext(view);
+
+            // Act and Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => view.RenderAsync(viewContext));
+            Assert.Equal(expected, ex.Message);
+        }
+
         private static ViewContext CreateViewContext(RazorView view)
         {
             var httpContext = new DefaultHttpContext();

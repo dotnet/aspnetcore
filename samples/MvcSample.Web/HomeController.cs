@@ -165,6 +165,11 @@ namespace MvcSample.Web
             return View(CreateUser());
         }
 
+        public ActionResult FlushPoint()
+        {
+            return View();
+        }
+
         private static IEnumerable<SelectListItem> CreateAddresses()
         {
             var addresses = new[]

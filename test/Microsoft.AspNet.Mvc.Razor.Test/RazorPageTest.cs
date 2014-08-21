@@ -7,6 +7,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Testing;
 using Moq;
 using Xunit;
@@ -280,8 +281,7 @@ Layout end
             var services = new Mock<IServiceProvider>();
             services.Setup(s => s.GetService(typeof(IUrlHelper)))
                      .Returns(helper.Object);
-            Mock.Get(page.Context).Setup(c => c.RequestServices)
-                                  .Returns(services.Object);
+            page.Context.RequestServices = services.Object;
 
             // Act
             await page.ExecuteAsync();
@@ -292,8 +292,69 @@ Layout end
             helper.Verify();
         }
 
-        private static TestableRazorPage CreatePage(Action<TestableRazorPage> executeAction)
+        [Fact]
+        public async Task FlushAsync_InvokesFlushOnWriter()
         {
+            // Arrange
+            var writer = new Mock<TextWriter>();
+            var context = CreateViewContext(writer.Object);
+            var page = CreatePage(p =>
+            {
+                p.FlushAsync().Wait();
+            }, context);
+
+            // Act
+            await page.ExecuteAsync();
+
+            // Assert
+            writer.Verify(v => v.FlushAsync(), Times.Once());
+        }
+
+        [Fact]
+        public async Task FlushAsync_ThrowsIfTheLayoutHasBeenSet()
+        {
+            // Arrange
+            var expected = @"A layout page cannot be rendered after 'FlushAsync' has been invoked.";
+            var writer = new Mock<TextWriter>();
+            var context = CreateViewContext(writer.Object);
+            var page = CreatePage(p =>
+            {
+                p.Layout = "foo";
+                p.FlushAsync().Wait();
+            }, context);
+
+            // Act and Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => page.ExecuteAsync());
+            Assert.Equal(expected, ex.Message);
+        }
+
+        [Fact]
+        public async Task FlushAsync_DoesNotThrowWhenIsRenderingLayoutIsSet()
+        {
+            // Arrange
+            var writer = new Mock<TextWriter>();
+            var context = CreateViewContext(writer.Object);
+            var page = CreatePage(p =>
+            {
+                p.Layout = "bar";
+                p.DefineSection("test-section", new HelperResult(_ =>
+                {
+                    p.FlushAsync().Wait();
+                }));
+            }, context);
+
+            // Act
+            await page.ExecuteAsync();
+            page.IsLayoutBeingRendered = true;
+
+            // Assert
+            Assert.DoesNotThrow(() => page.SectionWriters["test-section"].WriteTo(TextWriter.Null));
+        }
+
+        private static TestableRazorPage CreatePage(Action<TestableRazorPage> executeAction,
+                                                    ViewContext context = null)
+        {
+            context = context ?? CreateViewContext();
             var view = new Mock<TestableRazorPage> { CallBase = true };
             if (executeAction != null)
             {
@@ -301,19 +362,20 @@ Layout end
                     .Callback(() => executeAction(view.Object))
                     .Returns(Task.FromResult(0));
             }
-            view.Object.ViewContext = CreateViewContext();
 
+            view.Object.ViewContext = context;
             return view.Object;
         }
 
-        private static ViewContext CreateViewContext()
+        private static ViewContext CreateViewContext(TextWriter writer = null)
         {
-            var actionContext = new ActionContext(Mock.Of<HttpContext>(), routeData: null, actionDescriptor: null);
+            writer = writer ?? new StringWriter();
+            var actionContext = new ActionContext(new DefaultHttpContext(), routeData: null, actionDescriptor: null);
             return new ViewContext(
                 actionContext,
                 Mock.Of<IView>(),
                 null,
-                new StringWriter());
+                writer);
         }
 
         private static Action<TextWriter> CreateBodyAction(string value)

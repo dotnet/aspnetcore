@@ -7,6 +7,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Testing;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Razor.Test
@@ -19,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         {
             // Arrange
             var expected = new[] { "True", "3", "18446744073709551615", "Hello world", "3.14", "2.718", "m" };
-            var writer = new RazorTextWriter(Encoding.UTF8);
+            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8);
 
             // Act
             writer.Write(true);
@@ -36,12 +37,90 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
         [Fact]
         [ReplaceCulture]
+        public void Write_WritesDataTypes_ToUnderlyingStream_WhenNotBuffering()
+        {
+            // Arrange
+            var expected = new[] { "True", "3", "18446744073709551615", "Hello world", "3.14", "2.718" };
+            var unbufferedWriter = new Mock<TextWriter>();
+            var writer = new RazorTextWriter(unbufferedWriter.Object, Encoding.UTF8);
+            var testClass = new TestClass();
+
+            // Act
+            writer.Flush();
+            writer.Write(true);
+            writer.Write(3);
+            writer.Write(ulong.MaxValue);
+            writer.Write(testClass);
+            writer.Write(3.14);
+            writer.Write(2.718m);
+
+            // Assert
+            Assert.Empty(writer.Buffer.BufferEntries);
+            foreach (var item in expected)
+            {
+                unbufferedWriter.Verify(v => v.Write(item), Times.Once());
+            }
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public async Task Write_WritesCharValues_ToUnderlyingStream_WhenNotBuffering()
+        {
+            // Arrange
+            var unbufferedWriter = new Mock<TextWriter> { CallBase = true };
+            var writer = new RazorTextWriter(unbufferedWriter.Object, Encoding.UTF8);
+            var buffer1 = new[] { 'a', 'b', 'c', 'd' };
+            var buffer2 = new[] { 'd', 'e', 'f' };
+
+            // Act
+            writer.Flush();
+            writer.Write('x');
+            writer.Write(buffer1, 1, 2);
+            writer.Write(buffer2);
+            await writer.WriteAsync(buffer2, 1, 1);
+            await writer.WriteLineAsync(buffer1);
+
+            // Assert
+            Assert.Empty(writer.Buffer.BufferEntries);
+            unbufferedWriter.Verify(v => v.Write('x'), Times.Once());
+            unbufferedWriter.Verify(v => v.Write(buffer1, 1, 2), Times.Once());
+            unbufferedWriter.Verify(v => v.Write(buffer1, 0, 4), Times.Once());
+            unbufferedWriter.Verify(v => v.Write(buffer2, 0, 3), Times.Once());
+            unbufferedWriter.Verify(v => v.WriteAsync(buffer2, 1, 1), Times.Once());
+            unbufferedWriter.Verify(v => v.WriteLine(), Times.Once());
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public async Task Write_WritesStringValues_ToUnbufferedStream_WhenNotBuffering()
+        {
+            // Arrange
+            var unbufferedWriter = new Mock<TextWriter>();
+            var writer = new RazorTextWriter(unbufferedWriter.Object, Encoding.UTF8);
+
+            // Act
+            await writer.FlushAsync();
+            writer.Write("a");
+            writer.WriteLine("ab");
+            await writer.WriteAsync("ef");
+            await writer.WriteLineAsync("gh");
+
+            // Assert
+            Assert.Empty(writer.Buffer.BufferEntries);
+            unbufferedWriter.Verify(v => v.Write("a"), Times.Once());
+            unbufferedWriter.Verify(v => v.WriteLine("ab"), Times.Once());
+            unbufferedWriter.Verify(v => v.WriteAsync("ef"), Times.Once());
+            unbufferedWriter.Verify(v => v.WriteLineAsync("gh"), Times.Once());
+        }
+
+        [Fact]
+        [ReplaceCulture]
         public void WriteLine_WritesDataTypes_ToBuffer()
         {
             // Arrange 
             var newLine = Environment.NewLine;
             var expected = new List<object> { "False", newLine, "1.1", newLine, "3", newLine };
-            var writer = new RazorTextWriter(Encoding.UTF8);
+            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8);
 
             // Act
             writer.WriteLine(false);
@@ -53,13 +132,35 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         }
 
         [Fact]
+        [ReplaceCulture]
+        public void WriteLine_WritesDataTypes_ToUnbufferedStream_WhenNotBuffering()
+        {
+            // Arrange
+            var unbufferedWriter = new Mock<TextWriter>();
+            var writer = new RazorTextWriter(unbufferedWriter.Object, Encoding.UTF8);
+
+            // Act
+            writer.Flush();
+            writer.WriteLine(false);
+            writer.WriteLine(1.1f);
+            writer.WriteLine(3L);
+
+            // Assert
+            Assert.Empty(writer.Buffer.BufferEntries);
+            unbufferedWriter.Verify(v => v.Write("False"), Times.Once());
+            unbufferedWriter.Verify(v => v.Write("1.1"), Times.Once());
+            unbufferedWriter.Verify(v => v.Write("3"), Times.Once());
+            unbufferedWriter.Verify(v => v.WriteLine(), Times.Exactly(3));
+        }
+
+        [Fact]
         public async Task Write_WritesCharBuffer()
         {
             // Arrange
             var input1 = new ArraySegment<char>(new char[] { 'a', 'b', 'c', 'd' }, 1, 3);
             var input2 = new ArraySegment<char>(new char[] { 'e', 'f' }, 0, 2);
             var input3 = new ArraySegment<char>(new char[] { 'g', 'h', 'i', 'j' }, 3, 1);
-            var writer = new RazorTextWriter(Encoding.UTF8);
+            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8);
 
             // Act
             writer.Write(input1.Array, input1.Offset, input1.Count);
@@ -80,7 +181,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         {
             // Arrange
             var newLine = Environment.NewLine;
-            var writer = new RazorTextWriter(Encoding.UTF8);
+            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8);
 
             // Act
             writer.WriteLine();
@@ -100,7 +201,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             var input2 = "from";
             var input3 = "ASP";
             var input4 = ".Net";
-            var writer = new RazorTextWriter(Encoding.UTF8);
+            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8);
 
             // Act
             writer.Write(input1);
@@ -114,11 +215,11 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         }
 
         [Fact]
-        public void Copy_CopiesContent_IfTargetTextWriterIsARazorTextWriter()
+        public void Copy_CopiesContent_IfTargetTextWriterIsARazorTextWriterAndBuffering()
         {
             // Arrange
-            var source = new RazorTextWriter(Encoding.UTF8);
-            var target = new RazorTextWriter(Encoding.UTF8);
+            var source = new RazorTextWriter(TextWriter.Null, Encoding.UTF8);
+            var target = new RazorTextWriter(TextWriter.Null, Encoding.UTF8);
 
             // Act
             source.Write("Hello world");
@@ -133,10 +234,32 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         }
 
         [Fact]
+        public void Copy_CopiesContent_IfTargetTextWriterIsARazorTextWriterAndNotBuffering()
+        {
+            // Arrange
+            var unbufferedWriter = new Mock<TextWriter>();
+            var source = new RazorTextWriter(TextWriter.Null, Encoding.UTF8);
+            var target = new RazorTextWriter(unbufferedWriter.Object, Encoding.UTF8);
+
+            // Act
+            target.Flush();
+            source.Write("Hello world");
+            source.Write(new [] { 'a', 'b', 'c', 'd' }, 1, 2);
+            source.CopyTo(target);
+
+            // Assert
+            // Make sure content was written to the source.
+            Assert.Equal(2, source.Buffer.BufferEntries.Count);
+            Assert.Empty(target.Buffer.BufferEntries);
+            unbufferedWriter.Verify(v => v.Write("Hello world"), Times.Once());
+            unbufferedWriter.Verify(v => v.Write("bc"), Times.Once());
+        }
+
+        [Fact]
         public void Copy_WritesContent_IfTargetTextWriterIsNotARazorTextWriter()
         {
             // Arrange
-            var source = new RazorTextWriter(Encoding.UTF8);
+            var source = new RazorTextWriter(TextWriter.Null, Encoding.UTF8);
             var target = new StringWriter();
             var expected = @"Hello world
 abc";
@@ -151,11 +274,11 @@ abc";
         }
 
         [Fact]
-        public async Task CopyAsync_WritesContent_IfTargetTextWriterIsARazorTextWriter()
+        public async Task CopyAsync_WritesContent_IfTargetTextWriterIsARazorTextWriterAndBuffering()
         {
             // Arrange
-            var source = new RazorTextWriter(Encoding.UTF8);
-            var target = new RazorTextWriter(Encoding.UTF8);
+            var source = new RazorTextWriter(TextWriter.Null,Encoding.UTF8);
+            var target = new RazorTextWriter(TextWriter.Null, Encoding.UTF8);
 
             // Act
             source.WriteLine("Hello world");
@@ -169,10 +292,33 @@ abc";
         }
 
         [Fact]
+        public async Task CopyAsync_WritesContent_IfTargetTextWriterIsARazorTextWriterAndNotBuffering()
+        {
+            // Arrange
+            var unbufferedWriter = new Mock<TextWriter>();
+            var source = new RazorTextWriter(TextWriter.Null, Encoding.UTF8);
+            var target = new RazorTextWriter(unbufferedWriter.Object, Encoding.UTF8);
+
+            // Act
+            await target.FlushAsync();
+            source.WriteLine("Hello from Asp.Net");
+            await source.WriteAsync(new [] { 'x', 'y', 'z', 'u' }, 0, 3);
+            await source.CopyToAsync(target);
+
+            // Assert
+            // Make sure content was written to the source.
+            Assert.Equal(3, source.Buffer.BufferEntries.Count);
+            Assert.Empty(target.Buffer.BufferEntries);
+            unbufferedWriter.Verify(v => v.WriteAsync("Hello from Asp.Net"), Times.Once());
+            unbufferedWriter.Verify(v => v.WriteAsync(Environment.NewLine), Times.Once());
+            unbufferedWriter.Verify(v => v.WriteAsync("xyz"), Times.Once());
+        }
+
+        [Fact]
         public async Task CopyAsync_WritesContent_IfTargetTextWriterIsNotARazorTextWriter()
         {
             // Arrange
-            var source = new RazorTextWriter(Encoding.UTF8);
+            var source = new RazorTextWriter(TextWriter.Null, Encoding.UTF8);
             var target = new StringWriter();
             var expected = @"Hello world
 ";

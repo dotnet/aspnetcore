@@ -123,8 +123,14 @@
   <data name="CompilationFailed" xml:space="preserve">
     <value>Compilation for '{0}' failed:</value>
   </data>
+  <data name="FlushPointCannotBeInvoked" xml:space="preserve">
+    <value>'{0}' cannot be invoked when a Layout page is set to be executed.</value>
+  </data>
   <data name="LayoutCannotBeLocated" xml:space="preserve">
     <value>The layout view '{0}' could not be located.</value>
+  </data>
+  <data name="LayoutCannotBeRendered" xml:space="preserve">
+    <value>A layout page cannot be rendered after '{0}' has been invoked.</value>
   </data>
   <data name="MvcRazorCodeParser_CannotHaveModelAndInheritsKeyword" xml:space="preserve">
     <value>The 'inherits' keyword is not allowed when a '{0}' keyword is used.</value>

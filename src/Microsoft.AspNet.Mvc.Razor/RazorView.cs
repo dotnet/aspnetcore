@@ -65,12 +65,13 @@ namespace Microsoft.AspNet.Mvc.Razor
                                                             ViewContext context,
                                                             bool executeViewStart)
         {
-            using (var bufferedWriter = new RazorTextWriter(context.Writer.Encoding))
+            using (var bufferedWriter = new RazorTextWriter(context.Writer, context.Writer.Encoding))
             {
                 // The writer for the body is passed through the ViewContext, allowing things like HtmlHelpers
                 // and ViewComponents to reference it.
                 var oldWriter = context.Writer;
                 context.Writer = bufferedWriter;
+
                 try
                 {
                     if (executeViewStart)
@@ -117,6 +118,17 @@ namespace Microsoft.AspNet.Mvc.Razor
             var previousPage = _razorPage;
             while (!string.IsNullOrEmpty(previousPage.Layout))
             {
+                if (!bodyWriter.IsBuffering)
+                {
+                    // Once a call to RazorPage.FlushAsync is made, we can no longer render Layout pages - content has
+                    // already been written to the client and the layout content would be appended rather than surround
+                    // the body content. Throwing this exception wouldn't return a 500 (since content has already been
+                    // written), but a diagnostic component should be able to capture it.
+
+                    var message = Resources.FormatLayoutCannotBeRendered("FlushAsync");
+                    throw new InvalidOperationException(message);
+                }
+
                 var layoutPage = _pageFactory.CreateInstance(previousPage.Layout);
                 if (layoutPage == null)
                 {
@@ -124,6 +136,9 @@ namespace Microsoft.AspNet.Mvc.Razor
                     throw new InvalidOperationException(message);
                 }
 
+                // Notify the previous page that any writes that are performed on it are part of sections being written
+                // in the layout.
+                previousPage.IsLayoutBeingRendered = true;
                 layoutPage.PreviousSectionWriters = previousPage.SectionWriters;
                 layoutPage.RenderBodyDelegate = bodyWriter.CopyTo;
                 bodyWriter = await RenderPageAsync(layoutPage, context, executeViewStart: false);
@@ -134,7 +149,11 @@ namespace Microsoft.AspNet.Mvc.Razor
                 previousPage = layoutPage;
             }
 
-            await bodyWriter.CopyToAsync(context.Writer);
+            if (bodyWriter.IsBuffering)
+            {
+                // Only copy buffered content to the Output if we're currently buffering.
+                await bodyWriter.CopyToAsync(context.Writer);
+            }
         }
     }
 }

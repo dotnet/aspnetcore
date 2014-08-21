@@ -25,6 +25,16 @@ namespace Microsoft.AspNet.Mvc.Razor
         Action<TextWriter> RenderBodyDelegate { get; set; }
 
         /// <summary>
+        /// Gets or sets a flag that determines if the layout of this page is being rendered.
+        /// </summary>
+        /// <remarks>
+        /// Sections defined in a page are deferred and executed as part of the layout page.
+        /// When this flag is set, all write operations performed by the page are part of a 
+        /// section being rendered.
+        /// </remarks>
+        bool IsLayoutBeingRendered { get; set; }
+
+        /// <summary>
         /// Gets the application base relative path to the page.
         /// </summary>
         string Path { get; set; }

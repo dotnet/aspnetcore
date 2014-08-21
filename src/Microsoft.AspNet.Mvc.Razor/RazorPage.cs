@@ -19,8 +19,8 @@ namespace Microsoft.AspNet.Mvc.Razor
     /// </summary>
     public abstract class RazorPage : IRazorPage
     {
-        private IUrlHelper _urlHelper;
         private readonly HashSet<string> _renderedSections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private IUrlHelper _urlHelper;
         private bool _renderedBody;
 
         public RazorPage()
@@ -89,6 +89,9 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         /// <inheritdoc />
         public Action<TextWriter> RenderBodyDelegate { get; set; }
+
+        /// <inheritdoc />
+        public bool IsLayoutBeingRendered { get; set; }
 
         /// <inheritdoc />
         public Dictionary<string, HelperResult> PreviousSectionWriters { get; set; }
@@ -283,13 +286,19 @@ namespace Microsoft.AspNet.Mvc.Razor
             return new HelperResult(RenderBodyDelegate);
         }
 
-        public void DefineSection(string name, HelperResult action)
+        /// <summary>
+        /// Creates a named content section in the page that can be invoked in a Layout page using 
+        /// <see cref="RenderSection(string)"/> or <see cref="RenderSection(string, bool)"/>.
+        /// </summary>
+        /// <param name="name">The name of the section to create.</param>
+        /// <param name="section">The <see cref="HelperResult"/> to execute when rendering the section.</param>
+        public void DefineSection(string name, HelperResult section)
         {
             if (SectionWriters.ContainsKey(name))
             {
                 throw new InvalidOperationException(Resources.FormatSectionAlreadyDefined(name));
             }
-            SectionWriters[name] = action;
+            SectionWriters[name] = section;
         }
 
         public bool IsSectionDefined([NotNull] string name)
@@ -327,6 +336,24 @@ namespace Microsoft.AspNet.Mvc.Razor
                 // If the section is optional and not found, then don't do anything.
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Invokes <see cref="TextWriter.FlushAsync"/> on <see cref="Output"/> writing out any buffered
+        /// content to the <see cref="HttpResponse.Body"/>.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> that represents the asynchronous flush operation.</returns>
+        public Task FlushAsync()
+        {
+            // Calls to Flush are allowed if the page does not specify a Layout or if it is executing a section in the
+            // Layout.
+            if (!IsLayoutBeingRendered && !string.IsNullOrEmpty(Layout))
+            {
+                var message = Resources.FormatLayoutCannotBeRendered(nameof(FlushAsync));
+                throw new InvalidOperationException(message);
+            }
+
+            return Output.FlushAsync();
         }
 
         /// <inheritdoc />
