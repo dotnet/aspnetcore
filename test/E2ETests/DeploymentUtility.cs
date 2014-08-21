@@ -174,7 +174,7 @@ namespace E2ETests
                     if (watchResult.ChangeType == WatcherChangeTypes.Created)
                     {
                         //This event is fired immediately after the localdb file is created. Give it a while to finish populating data and start the application.
-                        Thread.Sleep(2 * 1000);
+                        Thread.Sleep(3 * 1000);
                         Console.WriteLine("Database file created '{0}'. Proceeding with the tests.", identityDBFullPath);
                     }
                     else
