@@ -18,6 +18,7 @@
         "System.Runtime.Extensions": "4.0.10.0",
         "System.Runtime.InteropServices": "4.0.20.0",
         "System.Security.Cryptography.Encryption": "4.0.0.0",
+        "System.Security.Cryptography.Hashing.Algorithms": "4.0.0.0",
         "System.Text.Encoding.Extensions": "4.0.10.0"
       }
     }
