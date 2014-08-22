@@ -351,9 +351,6 @@ namespace Microsoft.AspNet.Security.Infrastructure
             Response.Cookies.Append(correlationKey, correlationId, cookieOptions);
         }
 
-        [SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters",
-            MessageId = "Microsoft.Owin.Logging.LoggerExtensions.WriteWarning(Microsoft.Owin.Logging.ILogger,System.String,System.String[])",
-            Justification = "Logging is not Localized")]
         protected bool ValidateCorrelationId([NotNull] AuthenticationProperties properties, [NotNull] ILogger logger)
         {
             string correlationKey = Constants.CorrelationPrefix + BaseOptions.AuthenticationType;

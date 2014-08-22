@@ -11,50 +11,50 @@ using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.AspNet.Security.Infrastructure;
 using Microsoft.Framework.Logging;
 
-namespace Microsoft.AspNet.Security.Facebook
+namespace Microsoft.AspNet.Security.Google
 {
     /// <summary>
-    /// ASP.NET middleware for authenticating users using Facebook
+    /// ASP.NET middleware for authenticating users using Google OAuth 2.0
     /// </summary>
-    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Middleware is not disposable.")]
-    public class FacebookAuthenticationMiddleware : AuthenticationMiddleware<FacebookAuthenticationOptions>
+    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Middleware are not disposable.")]
+    public class GoogleAuthenticationMiddleware : AuthenticationMiddleware<GoogleAuthenticationOptions>
     {
         private readonly ILogger _logger;
         private readonly HttpClient _httpClient;
 
         /// <summary>
-        /// Initializes a <see cref="FacebookAuthenticationMiddleware"/>
+        /// Initializes a <see cref="GoogleAuthenticationMiddleware"/>
         /// </summary>
-        /// <param name="next">The next middleware in the application pipeline to invoke</param>
+        /// <param name="next">The next middleware in the HTTP pipeline to invoke</param>
         /// <param name="dataProtectionProvider"></param>
         /// <param name="loggerFactory"></param>
         /// <param name="options">Configuration options for the middleware</param>
-        public FacebookAuthenticationMiddleware(
+        public GoogleAuthenticationMiddleware(
             RequestDelegate next,
             IDataProtectionProvider dataProtectionProvider,
             ILoggerFactory loggerFactory,
-            FacebookAuthenticationOptions options)
+            GoogleAuthenticationOptions options)
             : base(next, options)
         {
-            if (string.IsNullOrWhiteSpace(Options.AppId))
+            if (string.IsNullOrWhiteSpace(Options.ClientId))
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "AppId"));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "ClientId"));
             }
-            if (string.IsNullOrWhiteSpace(Options.AppSecret))
+            if (string.IsNullOrWhiteSpace(Options.ClientSecret))
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "AppSecret"));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "ClientSecret"));
             }
 
-            _logger = loggerFactory.Create(typeof(FacebookAuthenticationMiddleware).FullName);
+            _logger = loggerFactory.Create(typeof(GoogleAuthenticationMiddleware).FullName);
 
             if (Options.Notifications == null)
             {
-                Options.Notifications = new FacebookAuthenticationNotifications();
+                Options.Notifications = new GoogleAuthenticationNotifications();
             }
             if (Options.StateDataFormat == null)
             {
                 IDataProtector dataProtector = DataProtectionHelpers.CreateDataProtector(dataProtectionProvider,
-                    typeof(FacebookAuthenticationMiddleware).FullName, options.AuthenticationType, "v1");
+                    typeof(GoogleAuthenticationMiddleware).FullName, options.AuthenticationType, "v1");
                 Options.StateDataFormat = new PropertiesDataFormat(dataProtector);
             }
 
@@ -66,14 +66,14 @@ namespace Microsoft.AspNet.Security.Facebook
         /// <summary>
         /// Provides the <see cref="AuthenticationHandler"/> object for processing authentication-related requests.
         /// </summary>
-        /// <returns>An <see cref="AuthenticationHandler"/> configured with the <see cref="FacebookAuthenticationOptions"/> supplied to the constructor.</returns>
-        protected override AuthenticationHandler<FacebookAuthenticationOptions> CreateHandler()
+        /// <returns>An <see cref="AuthenticationHandler"/> configured with the <see cref="GoogleAuthenticationOptions"/> supplied to the constructor.</returns>
+        protected override AuthenticationHandler<GoogleAuthenticationOptions> CreateHandler()
         {
-            return new FacebookAuthenticationHandler(_httpClient, _logger);
+            return new GoogleAuthenticationHandler(_httpClient, _logger);
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Managed by caller")]
-        private static HttpMessageHandler ResolveHttpMessageHandler(FacebookAuthenticationOptions options)
+        private static HttpMessageHandler ResolveHttpMessageHandler(GoogleAuthenticationOptions options)
         {
             HttpMessageHandler handler = options.BackchannelHttpHandler ??
 #if NET45

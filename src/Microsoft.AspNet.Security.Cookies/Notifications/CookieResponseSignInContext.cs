@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Security.Cookies
         /// <summary>
         /// Creates a new instance of the context object.
         /// </summary>
-        /// <param name="context">The OWIN request context</param>
+        /// <param name="context">The HTTP request context</param>
         /// <param name="options">The middleware options</param>
         /// <param name="authenticationType">Initializes AuthenticationType property</param>
         /// <param name="identity">Initializes Identity property</param>

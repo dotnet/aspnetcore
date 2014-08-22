@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Security.Cookies
         /// <summary>
         /// Creates a new context object.
         /// </summary>
-        /// <param name="context">The OWIN request context</param>
+        /// <param name="context">The HTTP request context</param>
         /// <param name="options">The cookie middleware options</param>
         /// <param name="redirectUri">The initial redirect URI</param>
         [SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "2#", Justification = "Represents header value")]

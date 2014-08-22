@@ -4,9 +4,10 @@
   },
   "dependencies": {
     "Microsoft.AspNet.Http": "1.0.0-*",
-    "Microsoft.AspNet.Security" : "",
-    "Microsoft.AspNet.Security.Cookies" : "",
-    "Microsoft.AspNet.Security.Facebook" : "",
+    "Microsoft.AspNet.Security" : "1.0.0-*",
+    "Microsoft.AspNet.Security.Cookies" : "1.0.0-*",
+    "Microsoft.AspNet.Security.Facebook" : "1.0.0-*",
+    "Microsoft.AspNet.Security.Google" : "1.0.0-*",
     "Microsoft.AspNet.TestHost": "1.0.0-*",
     "Microsoft.Framework.DependencyInjection": "1.0.0-*",
     "System.Net.Http": "4.0.0.0",
