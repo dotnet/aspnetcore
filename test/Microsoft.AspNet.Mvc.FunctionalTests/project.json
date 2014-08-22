@@ -21,6 +21,7 @@
         "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*",
         "Microsoft.AspNet.PipelineCore": "1.0.0-*",
         "ModelBindingWebSite": "",
+        "MvcSample.Web": "",
         "RoutingWebSite": "",
         "RazorWebSite": "",
         "ValueProvidersSite":  "",
