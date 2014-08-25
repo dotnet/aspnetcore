@@ -4,6 +4,7 @@ using Microsoft.AspNet.Http.Security;
 using Microsoft.AspNet.Security.Cookies;
 using Microsoft.AspNet.Security.Facebook;
 using Microsoft.AspNet.Security.Google;
+using Microsoft.AspNet.Security.Twitter;
 
 namespace CookieSample
 {
@@ -30,6 +31,12 @@ namespace CookieSample
             {
                 ClientId = "560027070069-37ldt4kfuohhu3m495hk2j4pjp92d382.apps.googleusercontent.com",
                 ClientSecret = "n2Q-GEw9RQjzcRbU3qhfTj8f",
+            });
+
+            app.UseTwitterAuthentication(new TwitterAuthenticationOptions()
+            {
+                ConsumerKey = "6XaCTaLbMqfj6ww3zvZ5g",
+                ConsumerSecret = "Il2eFzGIrYhz6BWjYhVXBPQSfZuS4xoHpSSyD9PI",
             });
 
             // Choose an authentication type

@@ -14,8 +14,8 @@ namespace Microsoft.AspNet.Security.DataHandler.Serializer
             Ticket = new TicketSerializer();
         }
 
-        public static IDataSerializer<AuthenticationProperties> Properties { get; set; }
+        public static IDataSerializer<AuthenticationProperties> Properties { get; private set; }
 
-        public static IDataSerializer<AuthenticationTicket> Ticket { get; set; }
+        public static IDataSerializer<AuthenticationTicket> Ticket { get; private set; }
     }
 }
