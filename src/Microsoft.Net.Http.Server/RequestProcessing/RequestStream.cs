@@ -321,7 +321,7 @@ namespace Microsoft.Net.Http.Server
 
             if (cancellationToken.IsCancellationRequested)
             {
-                return Helpers.CancelledTask<int>();
+                return Helpers.CanceledTask<int>();
             }
             // TODO: Verbose log parameters
 

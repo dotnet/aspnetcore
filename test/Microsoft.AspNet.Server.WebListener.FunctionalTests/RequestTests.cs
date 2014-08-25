@@ -41,9 +41,6 @@ namespace Microsoft.AspNet.Server.WebListener
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 try
                 {
-                    // General keys
-                    // TODO: Assert.True(env.Get<CancellationToken>("owin.CallCancelled").CanBeCanceled);
-
                     var requestInfo = httpContext.GetFeature<IHttpRequestFeature>();
 
                     // Request Keys

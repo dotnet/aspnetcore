@@ -667,7 +667,7 @@ namespace Microsoft.AspNet.WebSockets
                     throw;
                 }
 
-                // throw OperationCancelledException when canceled by the caller
+                // throw OperationCanceledException when canceled by the caller
                 // otherwise swallow the exception
                 cancellationToken.ThrowIfCancellationRequested();
             }

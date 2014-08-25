@@ -169,7 +169,7 @@ namespace Microsoft.Net.Http.Server
         }
 
         [Fact]
-        public async Task RequestBody_ReadAsyncAlreadyCancelled_ReturnsCanceledTask()
+        public async Task RequestBody_ReadAsyncAlreadyCanceled_ReturnsCanceledTask()
         {
             string address;
             using (var server = Utilities.CreateHttpServer(out address))

@@ -73,7 +73,7 @@ namespace Microsoft.Net.Http.Server
         }
 
         [Fact]
-        public async Task Server_ClientDisconnects_CallCancelled()
+        public async Task Server_ClientDisconnects_CallCanceled()
         {
             TimeSpan interval = TimeSpan.FromSeconds(1);
             ManualResetEvent canceled = new ManualResetEvent(false);
@@ -103,7 +103,7 @@ namespace Microsoft.Net.Http.Server
         }
 
         [Fact]
-        public async Task Server_Abort_CallCancelled()
+        public async Task Server_Abort_CallCanceled()
         {
             TimeSpan interval = TimeSpan.FromSeconds(1);
             ManualResetEvent canceled = new ManualResetEvent(false);

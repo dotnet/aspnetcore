@@ -137,7 +137,7 @@ namespace Microsoft.Net.Http.Server
 
             if (cancellationToken.IsCancellationRequested)
             {
-                return Helpers.CancelledTask<int>();
+                return Helpers.CanceledTask<int>();
             }
 
             CancellationTokenRegistration cancellationRegistration;
@@ -531,7 +531,7 @@ namespace Microsoft.Net.Http.Server
 
             if (cancellationToken.IsCancellationRequested)
             {
-                return Helpers.CancelledTask<int>();
+                return Helpers.CanceledTask<int>();
             }
 
             CancellationTokenRegistration cancellationRegistration;
@@ -639,7 +639,7 @@ namespace Microsoft.Net.Http.Server
 
             if (cancellationToken.IsCancellationRequested)
             {
-                return Helpers.CancelledTask<int>();
+                return Helpers.CanceledTask<int>();
             }
 
             CancellationTokenRegistration cancellationRegistration;
@@ -853,8 +853,8 @@ namespace Microsoft.Net.Http.Server
             _leftToWrite = long.MaxValue;
         }
 
-        // The final Content-Length async write can only be cancelled by CancelIoEx.
-        // Sync can only be cancelled by CancelSynchronousIo, but we don't attempt this right now.
+        // The final Content-Length async write can only be Canceled by CancelIoEx.
+        // Sync can only be Canceled by CancelSynchronousIo, but we don't attempt this right now.
         [SuppressMessage("Microsoft.Usage", "CA1806:DoNotIgnoreMethodResults", Justification =
             "It is safe to ignore the return value on a cancel operation because the connection is being closed")]
         internal unsafe void CancelLastWrite(SafeHandle requestQueueHandle)

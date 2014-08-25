@@ -37,7 +37,7 @@ namespace Microsoft.Net.Http.Server
 {
     public sealed class RequestContext : IDisposable
     {
-        internal static Action<object> AbortDelegate = Abort;
+        internal static readonly Action<object> AbortDelegate = Abort;
 
         private WebListener _server;
         private Request _request;

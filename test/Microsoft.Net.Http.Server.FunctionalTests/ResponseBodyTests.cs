@@ -229,7 +229,7 @@ namespace Microsoft.Net.Http.Server
         }
 
         [Fact]
-        public async Task ResponseBody_FirstWriteAsyncWithCancelledCancellationToken_CancelsButDoesNotAbort()
+        public async Task ResponseBody_FirstWriteAsyncWithCanceledCancellationToken_CancelsButDoesNotAbort()
         {
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
@@ -251,7 +251,7 @@ namespace Microsoft.Net.Http.Server
         }
 
         [Fact]
-        public async Task ResponseBody_SecondWriteAsyncWithCancelledCancellationToken_CancelsButDoesNotAbort()
+        public async Task ResponseBody_SecondWriteAsyncWithCanceledCancellationToken_CancelsButDoesNotAbort()
         {
             string address;
             using (var server = Utilities.CreateHttpServer(out address))

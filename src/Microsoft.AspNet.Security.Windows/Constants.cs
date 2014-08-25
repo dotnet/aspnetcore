@@ -27,7 +27,6 @@ namespace Microsoft.AspNet.Security.Windows
     {
         internal const string VersionKey = "owin.Version";
         internal const string OwinVersion = "1.0";
-        internal const string CallCancelledKey = "owin.CallCancelled";
 
         internal const string RequestBodyKey = "owin.RequestBody";
         internal const string RequestHeadersKey = "owin.RequestHeaders";
