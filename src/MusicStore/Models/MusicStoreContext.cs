@@ -1,6 +1,6 @@
 ﻿using System;
 using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.EntityFramework;
+using Microsoft.AspNet.Identity.SqlServer;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Metadata;
 using Microsoft.Framework.OptionsModel;
