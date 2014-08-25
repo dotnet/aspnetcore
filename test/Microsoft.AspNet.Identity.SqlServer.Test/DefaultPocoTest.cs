@@ -9,7 +9,7 @@ using Microsoft.Framework.DependencyInjection.Fallback;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.AspNet.Identity.EntityFramework.Test
+namespace Microsoft.AspNet.Identity.SqlServer.Test
 {
     public class DefaultPocoTest
     {

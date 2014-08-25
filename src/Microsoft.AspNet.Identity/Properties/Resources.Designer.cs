@@ -219,7 +219,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Passwords must have at least one non letter or digit character.
+        /// Passwords must have at least one non letter and non digit character.
         /// </summary>
         internal static string PasswordRequireNonLetterOrDigit
         {
@@ -227,7 +227,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Passwords must have at least one non letter or digit character.
+        /// Passwords must have at least one non letter and non digit character.
         /// </summary>
         internal static string FormatPasswordRequireNonLetterOrDigit()
         {

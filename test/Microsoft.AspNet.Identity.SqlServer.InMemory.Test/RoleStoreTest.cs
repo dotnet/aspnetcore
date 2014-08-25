@@ -8,7 +8,7 @@ using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
 using Xunit;
 
-namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
+namespace Microsoft.AspNet.Identity.SqlServer.InMemory.Test
 {
     public class RoleStoreTest
     {

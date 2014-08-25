@@ -5,7 +5,7 @@ using System;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Metadata;
 
-namespace Microsoft.AspNet.Identity.EntityFramework
+namespace Microsoft.AspNet.Identity.SqlServer
 {
     public class IdentityDbContext :
         IdentityDbContext<IdentityUser, IdentityRole, string>

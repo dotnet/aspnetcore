@@ -2,7 +2,7 @@
   "dependencies": {
     "Microsoft.AspNet.Http": "1.0.0-*",
     "Microsoft.AspNet.Identity": "",
-    "Microsoft.AspNet.Identity.EntityFramework": "",
+    "Microsoft.AspNet.Identity.SqlServer": "",
     "Microsoft.AspNet.PipelineCore": "1.0.0-*",
     "Microsoft.AspNet.RequestContainer": "1.0.0-*",
     "Microsoft.AspNet.Security.DataProtection": "1.0.0-*",

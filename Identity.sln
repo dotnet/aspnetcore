@@ -9,7 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{52D59F18-6
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Identity", "src\Microsoft.AspNet.Identity\Microsoft.AspNet.Identity.kproj", "{1729302E-A58E-4652-B639-5B6B68DA2748}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Identity.EntityFramework", "src\Microsoft.AspNet.Identity.EntityFramework\Microsoft.AspNet.Identity.EntityFramework.kproj", "{AD42BAFB-1993-4FAF-A280-3711A9F33E2F}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Identity.SqlServer", "src\Microsoft.AspNet.Identity.SqlServer\Microsoft.AspNet.Identity.SqlServer.kproj", "{AD42BAFB-1993-4FAF-A280-3711A9F33E2F}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Identity.Authentication", "src\Microsoft.AspNet.Identity.Authentication\Microsoft.AspNet.Identity.Authentication.kproj", "{7B4CFF5A-1948-45EC-B170-6EB7C039B2F9}"
 EndProject
@@ -19,9 +19,9 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Identity.A
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Identity.InMemory.Test", "test\Microsoft.AspNet.Identity.InMemory.Test\Microsoft.AspNet.Identity.InMemory.Test.kproj", "{65161409-C4C4-4D63-A73B-231FCFF4D503}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Identity.EntityFramework.Test", "test\Microsoft.AspNet.Identity.EntityFramework.Test\Microsoft.AspNet.Identity.EntityFramework.Test.kproj", "{B4C067C1-F934-493C-9DBC-19E8CA305613}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Identity.SqlServer.Test", "test\Microsoft.AspNet.Identity.SqlServer.Test\Microsoft.AspNet.Identity.SqlServer.Test.kproj", "{B4C067C1-F934-493C-9DBC-19E8CA305613}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Identity.EntityFramework.InMemory.Test", "test\Microsoft.AspNet.Identity.EntityFramework.InMemory.Test\Microsoft.AspNet.Identity.EntityFramework.InMemory.Test.kproj", "{813B36FE-BBA5-4449-B157-6EBBA5ED02CA}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Identity.SqlServer.InMemory.Test", "test\Microsoft.AspNet.Identity.SqlServer.InMemory.Test\Microsoft.AspNet.Identity.SqlServer.InMemory.Test.kproj", "{813B36FE-BBA5-4449-B157-6EBBA5ED02CA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{58D94A0E-C2B7-43A7-8826-99ECBB1E0A50}"
 EndProject

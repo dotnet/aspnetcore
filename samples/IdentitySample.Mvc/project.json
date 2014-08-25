@@ -9,7 +9,7 @@
         "Microsoft.AspNet.Mvc": "6.0.0-*",
         "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
         "Microsoft.AspNet.Diagnostics": "1.0.0-*",
-        "Microsoft.AspNet.Identity.EntityFramework": "3.0.0-*",
+        "Microsoft.AspNet.Identity.SqlServer": "3.0.0-*",
         "Microsoft.AspNet.Identity.Authentication": "3.0.0-*",
         "Microsoft.AspNet.Security.Cookies": "1.0.0-*",
         "Microsoft.AspNet.StaticFiles": "1.0.0-*",

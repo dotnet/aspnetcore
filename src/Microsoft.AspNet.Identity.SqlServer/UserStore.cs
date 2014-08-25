@@ -11,48 +11,45 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.Entity;
 
-namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
+namespace Microsoft.AspNet.Identity.SqlServer
 {
-    public class InMemoryUserStore : InMemoryUserStore<IdentityUser, InMemoryContext>
+    public class UserStore : UserStore<IdentityUser>
     {
-        public InMemoryUserStore(InMemoryContext context) : base(context) { }
+        public UserStore(DbContext context) : base(context) { }
     }
 
-    public class InMemoryUserStore<TUser> : InMemoryUserStore<TUser, InMemoryContext>
-        where TUser : IdentityUser
+    public class UserStore<TUser> : UserStore<TUser, IdentityRole, DbContext> where TUser : IdentityUser, new()
     {
-        public InMemoryUserStore(InMemoryContext context) : base(context) { }
+        public UserStore(DbContext context) : base(context) { }
     }
 
-    public class InMemoryUserStore<TUser, TContext> : InMemoryUserStore<TUser, IdentityRole, string, IdentityUserLogin, IdentityUserRole, IdentityUserClaim, TContext> 
-        where TUser:IdentityUser
+    public class UserStore<TUser, TRole, TContext> : UserStore<TUser, TRole, TContext, string>
+        where TUser : IdentityUser, new()
+        where TRole : IdentityRole, new()
         where TContext : DbContext
     {
-        public InMemoryUserStore(TContext context) : base(context) { }
+        public UserStore(TContext context) : base(context) { }
     }
 
-    public class InMemoryUserStore<TUser, TRole, TKey, TUserLogin, TUserRole, TUserClaim, TContext> :
+    public class UserStore<TUser, TRole, TContext, TKey> :
         IUserLoginStore<TUser>,
-        IUserClaimStore<TUser>,
         IUserRoleStore<TUser>,
+        IUserClaimStore<TUser>,
         IUserPasswordStore<TUser>,
         IUserSecurityStampStore<TUser>,
-        IQueryableUserStore<TUser>,
         IUserEmailStore<TUser>,
+        IUserLockoutStore<TUser>,
         IUserPhoneNumberStore<TUser>,
-        IUserTwoFactorStore<TUser>,
-        IUserLockoutStore<TUser>
-        where TKey : IEquatable<TKey>
+        IQueryableUserStore<TUser>,
+        IUserTwoFactorStore<TUser>
         where TUser : IdentityUser<TKey>
         where TRole : IdentityRole<TKey>
-        where TUserLogin : IdentityUserLogin<TKey>, new()
-        where TUserRole : IdentityUserRole<TKey>, new()
-        where TUserClaim : IdentityUserClaim<TKey>, new()
         where TContext : DbContext
+        where TKey : IEquatable<TKey>
     {
         private bool _disposed;
 
-        public InMemoryUserStore(TContext context)
+        public UserStore(TContext context)
         {
             if (context == null)
             {
@@ -76,8 +73,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
 
         protected virtual Task<TUser> GetUserAggregate(Expression<Func<TUser, bool>> filter, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return Task.FromResult(Users.SingleOrDefault(filter));
-            // TODO: return Users.SingleOrDefaultAsync(filter, cancellationToken);
+            return Task.FromResult(Users.FirstOrDefault(filter));
+            // TODO: return Users.FirstOrDefaultAsync(filter, cancellationToken);
                 //Include(u => u.Roles)
                 //.Include(u => u.Claims)
                 //.Include(u => u.Logins)
@@ -91,7 +88,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             {
                 throw new ArgumentNullException("user");
             }
-            return Task.FromResult(Convert.ToString(user.Id, CultureInfo.InvariantCulture));
+            return Task.FromResult(ConvertIdToString(user.Id));
         }
 
         public Task<string> GetUserNameAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
@@ -176,11 +173,6 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             await SaveChanges(cancellationToken);
         }
 
-        public virtual TKey ConvertUserId(string userId)
-        {
-            return (TKey)Convert.ChangeType(userId, typeof(TKey));
-        }
-
         /// <summary>
         ///     Find a user by id
         /// </summary>
@@ -191,91 +183,44 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            var id = ConvertUserId(userId);
+            var id = ConvertIdFromString(userId);
             return GetUserAggregate(u => u.Id.Equals(id), cancellationToken);
         }
 
+        public virtual TKey ConvertIdFromString(string id)
+        {
+            if (id == null)
+            {
+                return default(TKey);
+            }
+            return (TKey)Convert.ChangeType(id, typeof(TKey));
+        }
+
+        public virtual string ConvertIdToString(TKey id)
+        {
+            if (id.Equals(default(TKey)))
+            {
+                return null;
+            }
+            return id.ToString();
+        }
+
         /// <summary>
-        ///     Find a user by name
+        ///     Find a user by normalized name
         /// </summary>
         /// <param name="userName"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task<TUser> FindByNameAsync(string userName, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<TUser> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            return GetUserAggregate(u => u.UserName.ToUpper() == userName.ToUpper(), cancellationToken);
+            return GetUserAggregate(u => u.NormalizedUserName == normalizedUserName, cancellationToken);
         }
 
         public IQueryable<TUser> Users
         {
             get { return Context.Set<TUser>(); }
-        }
-
-        public async virtual Task AddLoginAsync(TUser user, UserLoginInfo login,
-            CancellationToken cancellationToken = default(CancellationToken))
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            ThrowIfDisposed();
-            if (user == null)
-            {
-                throw new ArgumentNullException("user");
-            }
-            var l = new TUserLogin
-            {
-                UserId = user.Id,
-                ProviderKey = login.ProviderKey,
-                LoginProvider = login.LoginProvider,
-                ProviderDisplayName = login.ProviderDisplayName
-            };
-            await Context.Set<TUserLogin>().AddAsync(l, cancellationToken);
-            user.Logins.Add(l);
-        }
-
-        public virtual Task RemoveLoginAsync(TUser user, string loginProvider, string providerKey,
-            CancellationToken cancellationToken = default(CancellationToken))
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            ThrowIfDisposed();
-            if (user == null)
-            {
-                throw new ArgumentNullException("user");
-            }
-            var entry = user.Logins.SingleOrDefault(l => l.LoginProvider == loginProvider && l.ProviderKey == providerKey);
-            if (entry != null)
-            {
-                user.Logins.Remove(entry);
-                Context.Set<IdentityUserLogin<TKey>>().Remove(entry);
-            }
-            return Task.FromResult(0);
-        }
-
-        public virtual Task<IList<UserLoginInfo>> GetLoginsAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            ThrowIfDisposed();
-            if (user == null)
-            {
-                throw new ArgumentNullException("user");
-            }
-            IList<UserLoginInfo> result = user.Logins.Select(
-                l => new UserLoginInfo(l.LoginProvider, l.ProviderKey, l.ProviderDisplayName))
-                .ToList();
-            return Task.FromResult(result);
-        }
-
-        public async virtual Task<TUser> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            ThrowIfDisposed();
-            var userLogin = await Context.Set<TUserLogin>()
-                .FirstOrDefaultAsync(l => l.LoginProvider == loginProvider && l.ProviderKey == providerKey);
-            if (userLogin != null)
-            {
-                return await GetUserAggregate(u => u.Id.Equals(userLogin.UserId), cancellationToken);
-            }
-            return null;
         }
 
         /// <summary>
@@ -327,12 +272,13 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
         }
 
         /// <summary>
-        ///     Return the claims for a user
+        ///     Add a user to a role
         /// </summary>
         /// <param name="user"></param>
+        /// <param name="roleName"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task<IList<Claim>> GetClaimsAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task AddToRoleAsync(TUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -340,73 +286,254 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             {
                 throw new ArgumentNullException("user");
             }
-            IList<Claim> result = user.Claims.Select(c => new Claim(c.ClaimType, c.ClaimValue)).ToList();
+            if (String.IsNullOrWhiteSpace(roleName))
+            {
+                throw new ArgumentException(Resources.ValueCannotBeNullOrEmpty, "roleName");
+            }
+            var roleEntity = Roles.SingleOrDefault(r => r.Name.ToUpper() == roleName.ToUpper());
+            if (roleEntity == null)
+            {
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.RoleNotFound, roleName));
+            }
+            var ur = new IdentityUserRole<TKey> { UserId = user.Id, RoleId = roleEntity.Id };
+            // TODO: rely on fixup?
+            UserRoles.Add(ur);
+            user.Roles.Add(ur);
+            roleEntity.Users.Add(ur);
+            return Task.FromResult(0);
+        }
+
+        /// <summary>
+        ///     Remove a user from a role
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="roleName"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public virtual Task RemoveFromRoleAsync(TUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            if (String.IsNullOrWhiteSpace(roleName))
+            {
+                throw new ArgumentException(Resources.ValueCannotBeNullOrEmpty, "roleName");
+            }
+            var roleEntity = Roles.SingleOrDefault(r => r.Name.ToUpper() == roleName.ToUpper());
+            if (roleEntity != null)
+            {
+                var userRole = UserRoles.FirstOrDefault(r => roleEntity.Id.Equals(r.RoleId) && r.UserId.Equals(user.Id));
+                if (userRole != null)
+                {
+                    UserRoles.Remove(userRole);
+                    user.Roles.Remove(userRole);
+                }
+            }
+            return Task.FromResult(0);
+        }
+
+        /// <summary>
+        ///     Get the names of the roles a user is a member of
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public virtual async Task<IList<string>> GetRolesAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            var userId = user.Id;
+// TODO:            var query = from userRole in UserRoles
+            var query = from userRole in user.Roles
+                        join role in Roles on userRole.RoleId equals role.Id
+                        select role.Name;
+            //return await query.ToListAsync();
+            return query.ToList();
+        }
+
+        /// <summary>
+        ///     Returns true if the user is in the named role
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="roleName"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public virtual async Task<bool> IsInRoleAsync(TUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            if (String.IsNullOrWhiteSpace(roleName))
+            {
+                throw new ArgumentException(Resources.ValueCannotBeNullOrEmpty, "roleName");
+            }
+            //var role = await Roles.SingleOrDefaultAsync(r => r.Name.ToUpper() == roleName.ToUpper());
+            var role = Roles.SingleOrDefault(r => r.Name.ToUpper() == roleName.ToUpper());
+            if (role != null)
+            {
+                var userId = user.Id;
+                var roleId = role.Id;
+                return user.Roles.Any(ur => ur.RoleId.Equals(roleId));
+                //return await UserRoles.AnyAsync(ur => ur.RoleId.Equals(roleId) && ur.UserId.Equals(userId));
+                //return UserRoles.Any(ur => ur.RoleId.Equals(roleId) && ur.UserId.Equals(userId));
+            }
+            return false;
+        }
+
+        private void ThrowIfDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().Name);
+            }
+        }
+
+        /// <summary>
+        ///     Dispose the store
+        /// </summary>
+        public void Dispose()
+        {
+            _disposed = true;
+        }
+
+        private DbSet<TRole> Roles { get { return Context.Set<TRole>(); } }
+        private DbSet<IdentityUserClaim<TKey>> UserClaims { get { return Context.Set<IdentityUserClaim<TKey>>(); } }
+        private DbSet<IdentityUserRole<TKey>> UserRoles { get { return Context.Set<IdentityUserRole<TKey>>(); } }
+        private DbSet<IdentityUserLogin<TKey>> UserLogins { get { return Context.Set<IdentityUserLogin<TKey>>(); } }
+
+        public Task<IList<Claim>> GetClaimsAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            ThrowIfDisposed();
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            var result = UserClaims.Where(uc => uc.UserId.Equals(user.Id)).Select(c => new Claim(c.ClaimType, c.ClaimValue)).ToList();
+            return Task.FromResult((IList<Claim>)result);
+        }
+
+        public Task AddClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            ThrowIfDisposed();
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            if (claims == null)
+            {
+                throw new ArgumentNullException("claims");
+            }
+            foreach (var claim in claims)
+            {
+                UserClaims.Add(new IdentityUserClaim<TKey> { UserId = user.Id, ClaimType = claim.Type, ClaimValue = claim.Value });
+            }
+            return Task.FromResult(0);
+        }
+
+        public Task RemoveClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            ThrowIfDisposed();
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            if (claims == null)
+            {
+                throw new ArgumentNullException("claims");
+            }
+            foreach (var claim in claims) {
+                var matchedClaims = UserClaims.Where(uc => uc.ClaimValue == claim.Value && uc.ClaimType == claim.Type).ToList();
+                foreach (var c in matchedClaims)
+                {
+                    UserClaims.Remove(c);
+                }
+            }
+            return Task.FromResult(0);
+        }
+
+        public virtual Task AddLoginAsync(TUser user, UserLoginInfo login,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            if (login == null)
+            {
+                throw new ArgumentNullException("login");
+            }
+            var l = new IdentityUserLogin<TKey>
+            {
+                UserId = user.Id,
+                ProviderKey = login.ProviderKey,
+                LoginProvider = login.LoginProvider,
+                ProviderDisplayName = login.ProviderDisplayName
+            };
+            // TODO: fixup so we don't have to update both
+            UserLogins.Add(l);
+            user.Logins.Add(l);
+            return Task.FromResult(0);
+        }
+
+        public virtual Task RemoveLoginAsync(TUser user, string loginProvider, string providerKey,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            var userId = user.Id;
+            // todo: ensure logins loaded
+            var entry = UserLogins.SingleOrDefault(l => l.UserId.Equals(userId) && l.LoginProvider == loginProvider && l.ProviderKey == providerKey);
+            if (entry != null)
+            {
+                UserLogins.Remove(entry);
+                user.Logins.Remove(entry);
+            }
+            return Task.FromResult(0);
+        }
+
+        public virtual Task<IList<UserLoginInfo>> GetLoginsAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            // todo: ensure logins loaded
+            IList<UserLoginInfo> result = user.Logins
+                .Select(l => new UserLoginInfo(l.LoginProvider, l.ProviderKey, l.ProviderDisplayName)).ToList();
             return Task.FromResult(result);
         }
 
-        /// <summary>
-        ///     Add claims to a user
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="claims"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public virtual Task AddClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken))
+        public async virtual Task<TUser> FindByLoginAsync(string loginProvider, string providerKey,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            if (user == null)
+            // todo: ensure logins loaded
+            var userLogin = 
+                UserLogins.FirstOrDefault(l => l.LoginProvider == loginProvider && l.ProviderKey == providerKey);
+            if (userLogin != null)
             {
-                throw new ArgumentNullException("user");
+                return await GetUserAggregate(u => u.Id.Equals(userLogin.UserId), cancellationToken);
             }
-            if (claims == null)
-            {
-                throw new ArgumentNullException("claims");
-            }
-            foreach (var claim in claims)
-            {
-                user.Claims.Add(new TUserClaim { UserId = user.Id, ClaimType = claim.Type, ClaimValue = claim.Value });
-            }
-            return Task.FromResult(0);
-        }
-
-        /// <summary>
-        ///     Remove claims from a user
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="claims"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public virtual Task RemoveClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            ThrowIfDisposed();
-            if (user == null)
-            {
-                throw new ArgumentNullException("user");
-            }
-            if (claims == null)
-            {
-                throw new ArgumentNullException("claims");
-            }
-            foreach (var claim in claims)
-            {
-                var matchingClaims =
-                    user.Claims.Where(uc => uc.ClaimValue == claim.Value && uc.ClaimType == claim.Type).ToList();
-                foreach (var c in matchingClaims)
-                {
-                    user.Claims.Remove(c);
-                }
-            }
-            // TODO:these claims might not exist in the dbset
-            //var query =
-            //    _userClaims.Where(
-            //        uc => uc.UserId.Equals(user.Id) && uc.ClaimValue == claim.Value && uc.ClaimType == claim.Type);
-            //foreach (var c in query)
-            //{
-            //    _userClaims.Remove(c);
-            //}
-            return Task.FromResult(0);
+            return null;
         }
 
         /// <summary>
@@ -482,7 +609,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
         }
 
         /// <summary>
-        ///     FindByLoginAsync a user by email
+        ///     Find an user by email
         /// </summary>
         /// <param name="email"></param>
         /// <param name="cancellationToken"></param>
@@ -491,7 +618,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            return Task.FromResult(Users.SingleOrDefault(u => u.Email.ToUpper() == email.ToUpper()));
+            return GetUserAggregate(u => u.Email == email, cancellationToken);
+            // todo: ToUpper blows up with Null Ref
             //return GetUserAggregate(u => u.Email.ToUpper() == email.ToUpper(), cancellationToken);
         }
 
@@ -695,117 +823,6 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
         }
 
         /// <summary>
-        ///     Add a user to a role
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="roleName"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public virtual Task AddToRoleAsync(TUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            ThrowIfDisposed();
-            if (user == null)
-            {
-                throw new ArgumentNullException("user");
-            }
-            // TODO:
-            //if (String.IsNullOrWhiteSpace(roleName))
-            //{
-            //    throw new ArgumentException(IdentityResources.ValueCannotBeNullOrEmpty, "roleName");
-            //}
-            var roleEntity = Context.Set<TRole>().SingleOrDefault(r => r.Name.ToUpper() == roleName.ToUpper());
-            if (roleEntity == null)
-            {
-                throw new InvalidOperationException("Role Not Found");
-                //TODO: String.Format(CultureInfo.CurrentCulture, IdentityResources.RoleNotFound, roleName));
-            }
-            var ur = new TUserRole { UserId = user.Id, RoleId = roleEntity.Id };
-            user.Roles.Add(ur);
-            roleEntity.Users.Add(ur);
-            return Task.FromResult(0);
-        }
-
-        /// <summary>
-        ///     Remove a user from a role
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="roleName"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public virtual Task RemoveFromRoleAsync(TUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            ThrowIfDisposed();
-            if (user == null)
-            {
-                throw new ArgumentNullException("user");
-            }
-            //if (String.IsNullOrWhiteSpace(roleName))
-            //{
-            //    throw new ArgumentException(IdentityResources.ValueCannotBeNullOrEmpty, "roleName");
-            //}
-            var roleEntity = Context.Set<TRole>().SingleOrDefault(r => r.Name.ToUpper() == roleName.ToUpper());
-            if (roleEntity != null)
-            {
-                var userRole = user.Roles.FirstOrDefault(r => roleEntity.Id.Equals(r.RoleId));
-                if (userRole != null)
-                {
-                    user.Roles.Remove(userRole);
-                    roleEntity.Users.Remove(userRole);
-                }
-            }
-            return Task.FromResult(0);
-        }
-
-        /// <summary>
-        ///     Get the names of the roles a user is a member of
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public virtual Task<IList<string>> GetRolesAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            ThrowIfDisposed();
-            if (user == null)
-            {
-                throw new ArgumentNullException("user");
-            }
-            var query = from userRoles in user.Roles
-                        join roles in Context.Set<TRole>()
-                            on userRoles.RoleId equals roles.Id
-                        select roles.Name;
-            return Task.FromResult<IList<string>>(query.ToList());
-        }
-
-        /// <summary>
-        ///     Returns true if the user is in the named role
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="roleName"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public virtual Task<bool> IsInRoleAsync(TUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            ThrowIfDisposed();
-            if (user == null)
-            {
-                throw new ArgumentNullException("user");
-            }
-            //if (String.IsNullOrWhiteSpace(roleName))
-            //{
-            //    throw new ArgumentException(IdentityResources.ValueCannotBeNullOrEmpty, "roleName");
-            //}
-            var any =
-                Context.Set<TRole>().Where(r => r.Name.ToUpper() == roleName.ToUpper())
-                    .Where(r => r.Users.Any(ur => ur.UserId.Equals(user.Id)))
-                    .Count() > 0;
-            return Task.FromResult(any);
-        }
-
-        /// <summary>
         ///     Set the security stamp for the user
         /// </summary>
         /// <param name="user"></param>
@@ -875,22 +892,6 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
                 throw new ArgumentNullException("user");
             }
             return Task.FromResult(user.TwoFactorEnabled);
-        }
-
-        private void ThrowIfDisposed()
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().Name);
-            }
-        }
-
-        /// <summary>
-        ///     Dispose the store
-        /// </summary>
-        public void Dispose()
-        {
-            _disposed = true;
         }
     }
 }

@@ -9,7 +9,7 @@ using Microsoft.Framework.OptionsModel;
 using System;
 using Xunit;
 
-namespace Microsoft.AspNet.Identity.EntityFramework.Test
+namespace Microsoft.AspNet.Identity.SqlServer.Test
 {
     public class IntUser : IdentityUser<int>
     {
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         }
     }
 
-    [TestCaseOrderer("Microsoft.AspNet.Identity.Test.PriorityOrderer", "Microsoft.AspNet.Identity.EntityFramework.Test")]
+    [TestCaseOrderer("Microsoft.AspNet.Identity.Test.PriorityOrderer", "Microsoft.AspNet.Identity.SqlServer.Test")]
     public class UserStoreIntTest : SqlStoreTestBase<IntUser, IntRole, int>
     {
         public override string ConnectionString
