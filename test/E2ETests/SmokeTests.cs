@@ -77,11 +77,8 @@ namespace E2ETests
 
             try
             {
-                if (!RunningOnMono)
-                {
-                    //Deployment helpers not setup for mono yet. Until then set the ApplicationBaseUrl to some static url.
-                    hostProcess = DeploymentUtility.StartApplication(hostType, kreFlavor, architecture, musicStoreDbName);
-                }
+                //Deployment helpers not setup for mono yet. Until then set the ApplicationBaseUrl to some static url.
+                hostProcess = DeploymentUtility.StartApplication(hostType, kreFlavor, architecture, musicStoreDbName);
 
                 httpClientHandler = new HttpClientHandler();
                 httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(applicationBaseUrl) };

@@ -1,12 +1,13 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Threading;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Infrastructure;
-using System.ComponentModel;
 
 namespace E2ETests
 {
@@ -56,30 +57,67 @@ namespace E2ETests
 
         public static Process StartApplication(ServerType hostType, KreFlavor kreFlavor, KreArchitecture kreArchitecture, string identityDbName)
         {
-            if (kreFlavor == KreFlavor.Mono)
-            {
-                throw new NotImplementedException("Not implemented for Mono");
-            }
-
             string applicationPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, APP_RELATIVE_PATH));
-            //Tweak the %PATH% to the point to the right KREFLAVOR
-            Environment.SetEnvironmentVariable("PATH", SwitchPathToKreFlavor(kreFlavor, kreArchitecture));
+
             var backupKreDefaultLibPath = Environment.GetEnvironmentVariable("KRE_DEFAULT_LIB");
             //To avoid the KRE_DEFAULT_LIB of the test process flowing into Helios, set it to empty
             Environment.SetEnvironmentVariable("KRE_DEFAULT_LIB", string.Empty);
+
             Process hostProcess = null;
 
-            if (hostType == ServerType.Helios)
+            if (kreFlavor == KreFlavor.Mono)
             {
-                hostProcess = StartHeliosHost(applicationPath, kreArchitecture);
+                hostProcess = StartMonoHost(hostType, applicationPath);
             }
             else
             {
-                hostProcess = StartSelfHost(hostType, applicationPath, identityDbName);
+                //Tweak the %PATH% to the point to the right KREFLAVOR
+                Environment.SetEnvironmentVariable("PATH", SwitchPathToKreFlavor(kreFlavor, kreArchitecture));
+
+                if (hostType == ServerType.Helios)
+                {
+                    hostProcess = StartHeliosHost(applicationPath, kreArchitecture);
+                }
+                else
+                {
+                    hostProcess = StartSelfHost(hostType, applicationPath, identityDbName);
+                }
             }
 
             //Restore the KRE_DEFAULT_LIB after starting the host process
             Environment.SetEnvironmentVariable("KRE_DEFAULT_LIB", backupKreDefaultLibPath);
+            return hostProcess;
+        }
+
+        private static Process StartMonoHost(ServerType hostType, string applicationPath)
+        {
+            var path = Environment.GetEnvironmentVariable("PATH");
+            var kreBin = path.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).Where(c => c.Contains("KRE-mono45")).FirstOrDefault();
+
+            if (string.IsNullOrWhiteSpace(kreBin))
+            {
+                throw new Exception("KRE not detected on the machine.");
+            }
+
+            var monoPath = Path.Combine(kreBin, "mono");
+            var klrMonoManaged = Path.Combine(kreBin, "klr.mono.managed.dll");
+            var applicationHost = Path.Combine(kreBin, "Microsoft.Framework.ApplicationHost");
+
+            Console.WriteLine(string.Format("Executing command: {0} {1} --appbase {2} {3} {4}", monoPath, klrMonoManaged, applicationPath, applicationHost, hostType.ToString()));
+
+            //https://github.com/aspnet/KRuntime/issues/580
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = monoPath,
+                Arguments = string.Format("{0} --appbase {1} {2} {3}", klrMonoManaged, applicationPath, applicationHost, hostType.ToString()),
+                UseShellExecute = true,
+                CreateNoWindow = true
+            };
+
+            var hostProcess = Process.Start(startInfo);
+            Console.WriteLine("Started {0}. Process Id : {1}", hostProcess.MainModule.FileName, hostProcess.Id);
+            Thread.Sleep(5 * 1000);
+
             return hostProcess;
         }
 
