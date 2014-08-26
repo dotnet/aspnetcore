@@ -412,7 +412,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 }
             }
 
-            public string TryGetParentPath(string subpath, out string parentPath)
+            public bool TryGetParentPath(string subpath, out string parentPath)
             {
                 throw new NotImplementedException();
             }
