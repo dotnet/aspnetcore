@@ -41,5 +41,10 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             return _lookup.TryGetValue(subpath, out fileInfo);
         }
+
+        public bool TryGetParentPath(string subpath, out string parentPath)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
