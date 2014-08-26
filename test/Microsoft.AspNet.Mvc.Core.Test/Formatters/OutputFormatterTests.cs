@@ -120,6 +120,24 @@ namespace Microsoft.AspNet.Mvc.Test
                          formatterContext.SelectedContentType.RawValue);
         }
 
+        [Fact]
+        public void CanWriteResult_ForNullContentType_UsesFirstEntryInSupportedContentTypes()
+        {
+            // For no accept headers,
+            //can write is called twice once for the request media type and once for the type match pass. 
+            // For each adduaccept header, it is called once. 
+            // Arrange
+            var context = new OutputFormatterContext();
+            var formatter = new TestOutputFormatter();
+
+            // Act
+            var result = formatter.CanWriteResult(context, null);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(formatter.SupportedMediaTypes[0].RawValue, context.SelectedContentType.RawValue);
+        }
+
         private class TestOutputFormatter : OutputFormatter
         {
             public TestOutputFormatter()

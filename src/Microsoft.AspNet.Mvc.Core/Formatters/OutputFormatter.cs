@@ -18,19 +18,6 @@ namespace Microsoft.AspNet.Mvc
     public abstract class OutputFormatter : IOutputFormatter
     {
         /// <summary>
-        /// Gets the mutable collection of character encodings supported by
-        /// this <see cref="OutputFormatter"/> instance. The encodings are
-        /// used when writing the data.
-        /// </summary>
-        public IList<Encoding> SupportedEncodings { get; private set; }
-
-        /// <summary>
-        /// Gets the mutable collection of <see cref="MediaTypeHeaderValue"/> elements supported by
-        /// this <see cref="OutputFormatter"/> instance.
-        /// </summary>
-        public IList<MediaTypeHeaderValue> SupportedMediaTypes { get; private set; }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="OutputFormatter"/> class.
         /// </summary>
         protected OutputFormatter()
@@ -38,6 +25,12 @@ namespace Microsoft.AspNet.Mvc
             SupportedEncodings = new List<Encoding>();
             SupportedMediaTypes = new List<MediaTypeHeaderValue>();
         }
+
+        /// <inheritdoc />
+        public IList<Encoding> SupportedEncodings { get; private set; }
+
+        /// <inheritdoc />
+        public IList<MediaTypeHeaderValue> SupportedMediaTypes { get; private set; }
 
         /// <summary>
         /// Determines the best <see cref="Encoding"/> amongst the supported encodings

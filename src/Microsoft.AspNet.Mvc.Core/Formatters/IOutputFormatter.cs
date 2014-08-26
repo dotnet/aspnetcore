@@ -19,6 +19,19 @@ namespace Microsoft.AspNet.Mvc
     public interface IOutputFormatter
     {
         /// <summary>
+        /// Gets the mutable collection of character encodings supported by
+        /// this <see cref="IOutputFormatter"/>. The encodings are
+        /// used when writing the data.
+        /// </summary>
+        IList<Encoding> SupportedEncodings { get; }
+
+        /// <summary>
+        /// Gets the mutable collection of <see cref="MediaTypeHeaderValue"/> elements supported by
+        /// this <see cref="IOutputFormatter"/>.
+        /// </summary>
+        IList<MediaTypeHeaderValue> SupportedMediaTypes { get; }
+
+        /// <summary>
         /// Determines whether this <see cref="IOutputFormatter"/> can serialize
         /// an object of the specified type.
         /// </summary>

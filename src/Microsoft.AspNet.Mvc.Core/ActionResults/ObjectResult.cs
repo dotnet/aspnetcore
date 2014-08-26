@@ -86,6 +86,20 @@ namespace Microsoft.AspNet.Mvc
                                                                                 formatterContext,
                                                                                 formatters,
                                                                                 contentTypes);
+
+                    // This would be the case when no formatter could write the type base on the 
+                    // accept headers and the request content type. Fallback on type based match. 
+                    if(selectedFormatter == null)
+                    {
+                        foreach (var formatter in formatters)
+                        {
+                            if (formatter.CanWriteResult(formatterContext, 
+                                                         formatter.SupportedMediaTypes?.FirstOrDefault()))
+                            {
+                                return formatter;
+                            }
+                        }
+                    }
                 }
             }
             else if (ContentTypes.Count == 1)

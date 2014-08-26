@@ -266,5 +266,67 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var body = await response.Content.ReadAsStringAsync();
             Assert.Equal(expectedBody, body);
         }
+
+        [Theory]
+        [InlineData("UseTheFallback_WithDefaultFormatters")]
+        [InlineData("UseTheFallback_UsingCustomFormatters")]
+        public async Task NoMatchOn_RequestContentType_FallsBackOnTypeBasedMatch_MatchFound(string actionName)
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.Handler;
+            var expectedContentType = "application/json;charset=utf-8";
+            var expectedBody = "1234";
+            var targetUri = "http://localhost/FallbackOnTypeBasedMatch/" + actionName + "/?input=1234";
+            // Act
+
+            var result = await client.PostAsync(targetUri,
+                                                "1234",
+                                                "application/custom",
+                                                (request) => request.Accept = "application/custom1");
+
+            // Assert
+            Assert.Equal(expectedContentType, result.HttpContext.Response.ContentType);
+            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
+            Assert.Equal(expectedBody, body);
+        }
+
+        [Theory]
+        [InlineData("OverrideTheFallback_WithDefaultFormatters")]
+        [InlineData("OverrideTheFallback_UsingCustomFormatters")]
+        public async Task NoMatchOn_RequestContentType_SkipTypeMatchByAddingACustomFormatter(string actionName)
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.Handler;
+            var targetUri = "http://localhost/FallbackOnTypeBasedMatch/" + actionName + "/?input=1234";
+
+            // Act
+            var result = await client.PostAsync(targetUri,
+                                                "1234",
+                                                "application/custom",
+                                                (request) => request.Accept = "application/custom1");
+
+            // Assert
+            Assert.Equal(406, result.HttpContext.Response.StatusCode);
+        }
+
+        [Fact]
+        public async Task NoMatchOn_RequestContentType_FallsBackOnTypeBasedMatch_NoMatchFound_Returns406()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.Handler;
+            var targetUri = "http://localhost/FallbackOnTypeBasedMatch/FallbackGivesNoMatch/?input=1234";
+            
+            // Act
+            var result = await client.PostAsync(targetUri,
+                                                "1234",
+                                                "application/custom",
+                                                (request) => request.Accept = "application/custom1");
+
+            // Assert
+            Assert.Equal(406, result.HttpContext.Response.StatusCode);
+        }
     }
 }

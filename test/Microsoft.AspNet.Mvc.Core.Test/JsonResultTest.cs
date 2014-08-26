@@ -113,6 +113,22 @@ namespace Microsoft.AspNet.Mvc
         {
             public Encoding Encoding { get; set; }
 
+            public IList<Encoding> SupportedEncodings
+            {
+                get
+                {
+                    return null;
+                }
+            }
+
+            public IList<MediaTypeHeaderValue> SupportedMediaTypes
+            {
+                get
+                {
+                    return null;
+                }
+            }
+
             public bool CanWriteResult(OutputFormatterContext context, MediaTypeHeaderValue contentType)
             {
                 return true;

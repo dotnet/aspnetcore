@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
 
@@ -11,6 +14,10 @@ namespace Microsoft.AspNet.Mvc
     /// </summary>
     public class NoContentFormatter : IOutputFormatter
     {
+        public IList<Encoding> SupportedEncodings { get; private set; }
+
+        public IList<MediaTypeHeaderValue> SupportedMediaTypes { get; private set; }
+
         public bool CanWriteResult(OutputFormatterContext context, MediaTypeHeaderValue contentType)
         {
             // ignore the contentType and just look at the content.

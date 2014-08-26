@@ -274,6 +274,52 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             httpResponse.VerifySet(r => r.ContentType = expectedContentType);
         }
 
+        [Theory]
+        [InlineData("", 2)] 
+        [InlineData(null, 2)]
+        [InlineData("application/xml", 3)]
+        [InlineData("application/custom", 3)]
+        [InlineData("application/xml;q=1, application/custom;q=0.8", 4)]
+        public void SelectFormatter_WithNoMatchingAcceptHeadersAndRequestContentType_PicksFormatterBasedOnObjectType
+            (string acceptHeader, int attemptedCountForCanWrite)
+        {
+            // For no accept headers,
+            //can write is called twice once for the request media type and once for the type match pass. 
+            // For each adduaccept header, it is called once. 
+            // Arrange
+            var stream = new MemoryStream();
+            var httpResponse = new Mock<HttpResponse>();
+            httpResponse.SetupProperty<string>(o => o.ContentType);
+            httpResponse.SetupGet(r => r.Body).Returns(stream);
+
+            var actionContext = CreateMockActionContext(httpResponse.Object,
+                                                        requestAcceptHeader: acceptHeader,
+                                                        requestContentType: "application/xml");
+            var input = "testInput";
+            var result = new ObjectResult(input);
+
+            // Set more than one formatters. The test output formatter throws on write.
+            result.Formatters = new List<IOutputFormatter>
+                                    {
+                                        new CannotWriteFormatter(),
+                                        new CountingFormatter(),
+                                    };
+
+            var context = new OutputFormatterContext()
+            {
+                ActionContext = actionContext,
+                Object = input,
+                DeclaredType = typeof(string)
+            };
+
+            // Act
+            var formatter = result.SelectFormatter(context, result.Formatters);
+
+            // Assert
+            var countingFormatter = Assert.IsType<CountingFormatter>(formatter);
+            Assert.Equal(attemptedCountForCanWrite, countingFormatter.GetCanWriteCallCount());
+        }
+
         [Fact]
         public async Task 
             ObjectResult_NoContentTypeSetWithNoAcceptHeadersAndNoRequestContentType_PicksFirstFormatterWhichCanWrite()
@@ -461,21 +507,57 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             return serviceCollection.BuildServiceProvider();
         }
 
+        public class CountingFormatter : OutputFormatter
+        {
+            private int _canWriteCallsCount = 0;
+
+            public CountingFormatter()
+            {
+                SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/plain"));
+                SupportedEncodings.Add(Encoding.GetEncoding("utf-8"));
+            }
+
+            public override bool CanWriteResult(OutputFormatterContext context, MediaTypeHeaderValue contentType)
+            {
+                _canWriteCallsCount++;
+                if (base.CanWriteResult(context, contentType))
+                {
+                    var actionReturnString = context.Object as string;
+                    if (actionReturnString != null)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            public int GetCanWriteCallCount()
+            {
+                return _canWriteCallsCount;
+            }
+
+            public override Task WriteResponseBodyAsync(OutputFormatterContext context)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         public class CannotWriteFormatter : IOutputFormatter
         {
-            public List<Encoding> SupportedEncodings
+            public IList<Encoding> SupportedEncodings
             {
                 get
                 {
-                    throw new NotImplementedException();
+                    return null;
                 }
             }
 
-            public List<MediaTypeHeaderValue> SupportedMediaTypes
+            public IList<MediaTypeHeaderValue> SupportedMediaTypes
             {
                 get
                 {
-                    throw new NotImplementedException();
+                    return null;
                 }
             }
 
