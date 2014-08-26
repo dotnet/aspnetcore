@@ -3,9 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Threading;
 using Microsoft.AspNet.FileSystems;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.Runtime;
@@ -325,14 +323,14 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public class ControllableExpiringFileInfoCache : ExpiringFileInfoCache
         {
             public ControllableExpiringFileInfoCache(IApplicationEnvironment env,
-                                                     IOptionsAccessor<MvcOptions> optionsAccessor) 
+                                                     IOptionsAccessor<MvcOptions> optionsAccessor)
                 : base(env, optionsAccessor)
             {
             }
 
             private DateTime? _internalUtcNow { get; set; }
             private DummyFileSystem _underlyingFileSystem = new DummyFileSystem();
-            
+
             protected override DateTime UtcNow
             {
                 get
@@ -412,6 +410,11 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                     fileInfo = null;
                     return false;
                 }
+            }
+
+            public string TryGetParentPath(string subpath, out string parentPath)
+            {
+                throw new NotImplementedException();
             }
         }
 
