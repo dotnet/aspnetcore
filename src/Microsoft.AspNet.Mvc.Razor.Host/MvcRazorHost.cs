@@ -31,7 +31,6 @@ namespace Microsoft.AspNet.Mvc.Razor
             new InjectChunk("Microsoft.AspNet.Mvc.IUrlHelper", "Url"),
         };
 
-        private readonly string _appRoot;
         private readonly IFileSystem _fileSystem;
         // CodeGenerationContext.DefaultBaseClass is set to MyBaseType<dynamic>. 
         // This field holds the type name without the generic decoration (MyBaseType)
@@ -43,24 +42,17 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         /// <param name="appEnvironment">Contains information about the executing application.</param>
         public MvcRazorHost(IApplicationEnvironment appEnvironment)
-            : this(appEnvironment.ApplicationBasePath,
-                   new PhysicalFileSystem(appEnvironment.ApplicationBasePath))
+            : this(new PhysicalFileSystem(appEnvironment.ApplicationBasePath))
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="MvcRazorHost"/> at the specified application root
-        /// and <paramref name="fileSystem"/>.
+        /// Initializes a new instance of <see cref="MvcRazorHost"/> using the specified <paramref name="fileSystem"/>.
         /// </summary>
-        /// <param name="applicationBasePath">The base path of the application.</param>
-        /// <param name="fileSystem">
-        /// A <see cref="IFileSystem"/> rooted at the <paramref name="applicationBasePath"/>.
-        /// </param>
-        protected internal MvcRazorHost(string applicationBasePath,
-                                        IFileSystem fileSystem)
+        /// <param name="fileSystem">A <see cref="IFileSystem"/> rooted at the application base path.</param>
+        protected internal MvcRazorHost([NotNull] IFileSystem fileSystem)
             : base(new CSharpRazorCodeLanguage())
         {
-            _appRoot = applicationBasePath;
             _fileSystem = fileSystem;
             _baseType = BaseType;
 
@@ -140,7 +132,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var chunkUtility = new ChunkInheritanceUtility(context.CodeTreeBuilder.CodeTree,
                                                            DefaultInheritedChunks,
                                                            DefaultModel);
-            var inheritedChunks = chunkUtility.GetInheritedChunks(this, _fileSystem, _appRoot, context.SourceFile);
+            var inheritedChunks = chunkUtility.GetInheritedChunks(this, _fileSystem, context.SourceFile);
             chunkUtility.MergeInheritedChunks(inheritedChunks);
         }
     }

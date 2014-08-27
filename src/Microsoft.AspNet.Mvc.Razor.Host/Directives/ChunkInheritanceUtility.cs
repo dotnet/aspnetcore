@@ -52,18 +52,16 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         /// </summary>
         /// <param name="razorHost">The <see cref="MvcRazorHost"/> used to parse _ViewStart pages.</param>
         /// <param name="fileSystem">The filesystem that represents the application.</param>
-        /// <param name="appRoot">The root of the application.</param>
         /// <param name="pagePath">The path of the page to locate inherited chunks for.</param>
         /// <returns>A list of chunks that are applicable to the given page.</returns>
         public List<Chunk> GetInheritedChunks([NotNull] MvcRazorHost razorHost,
                                               [NotNull] IFileSystem fileSystem,
-                                              [NotNull] string appRoot,
                                               [NotNull] string pagePath)
         {
             var inheritedChunks = new List<Chunk>();
 
             var templateEngine = new RazorTemplateEngine(razorHost);
-            foreach (var viewStart in ViewStartUtility.GetViewStartLocations(appRoot, pagePath))
+            foreach (var viewStart in ViewStartUtility.GetViewStartLocations(fileSystem, pagePath))
             {
                 IFileInfo fileInfo;
                 if (fileSystem.TryGetFileInfo(viewStart, out fileInfo))

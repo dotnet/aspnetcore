@@ -44,7 +44,8 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         public bool TryGetParentPath(string subpath, out string parentPath)
         {
-            throw new NotImplementedException();
+            parentPath = Path.GetDirectoryName(subpath);
+            return !string.IsNullOrEmpty(parentPath);
         }
     }
 }

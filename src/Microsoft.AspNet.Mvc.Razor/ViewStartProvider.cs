@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNet.FileSystems;
 using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Mvc.Razor
@@ -11,20 +12,21 @@ namespace Microsoft.AspNet.Mvc.Razor
     /// <inheritdoc />
     public class ViewStartProvider : IViewStartProvider
     {
-        private readonly string _appRoot;
+        private readonly IFileSystem _fileSystem;
         private readonly IRazorPageFactory _pageFactory;
 
         public ViewStartProvider(IApplicationEnvironment appEnv,
                                  IRazorPageFactory pageFactory)
         {
-            _appRoot = appEnv.ApplicationBasePath;
+            _fileSystem = new PhysicalFileSystem(appEnv.ApplicationBasePath);
             _pageFactory = pageFactory;
         }
+
 
         /// <inheritdoc />
         public IEnumerable<IRazorPage> GetViewStartPages([NotNull] string path)
         {
-            var viewStartLocations = ViewStartUtility.GetViewStartLocations(_appRoot, path);
+            var viewStartLocations = ViewStartUtility.GetViewStartLocations(_fileSystem, path);
             var viewStarts = viewStartLocations.Select(_pageFactory.CreateInstance)
                                                 .Where(p => p != null)
                                                 .ToArray();

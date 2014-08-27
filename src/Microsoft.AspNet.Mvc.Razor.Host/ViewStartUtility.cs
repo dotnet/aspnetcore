@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.AspNet.FileSystems;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -35,55 +36,26 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// e.g.
         /// /Views/Home/View.cshtml -> [ /Views/Home/_ViewStart.cshtml, /Views/_ViewStart.cshtml, /_ViewStart.cshtml ]
         /// </remarks>
-        public static IEnumerable<string> GetViewStartLocations(string applicationBase, string path)
+        public static IEnumerable<string> GetViewStartLocations(IFileSystem fileSystem, string path)
         {
             if (string.IsNullOrEmpty(path))
             {
                 return Enumerable.Empty<string>();
             }
-
-            applicationBase = TrimTrailingSlash(applicationBase);
-            var viewStartLocations = new List<string>();
-            var currentDir = GetViewDirectory(applicationBase, path);
-            while (IsSubDirectory(applicationBase, currentDir))
+            if (path.StartsWith("~/", StringComparison.Ordinal))
             {
-                viewStartLocations.Add(Path.Combine(currentDir, ViewStartFileName));
-                currentDir = Path.GetDirectoryName(currentDir);
+                path = path.Substring(1);
+            }
+
+            var viewStartLocations = new List<string>();
+
+            while (fileSystem.TryGetParentPath(path, out path))
+            {
+                var viewStartPath = Path.Combine(path, ViewStartFileName);
+                viewStartLocations.Add(viewStartPath);
             }
 
             return viewStartLocations;
-        }
-
-        private static bool IsSubDirectory(string appRoot, string currentDir)
-        {
-            return currentDir.StartsWith(appRoot, StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static string GetViewDirectory(string appRoot, string viewPath)
-        {
-            if (viewPath.StartsWith("~/"))
-            {
-                viewPath = viewPath.Substring(2);
-            }
-            else if (viewPath[0] == Path.DirectorySeparatorChar ||
-                     viewPath[0] == Path.AltDirectorySeparatorChar)
-            {
-                viewPath = viewPath.Substring(1);
-            }
-
-            var viewDir = Path.GetDirectoryName(viewPath);
-            return Path.GetFullPath(Path.Combine(appRoot, viewDir));
-        }
-
-        private static string TrimTrailingSlash(string path)
-        {
-            if (path.Length > 0 &&
-                path[path.Length - 1] == Path.DirectorySeparatorChar)
-            {
-                return path.Substring(0, path.Length - 1);
-            }
-
-            return path;
         }
     }
 }

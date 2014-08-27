@@ -3,14 +3,12 @@
 
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Text;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Razor
@@ -116,7 +114,7 @@ MyType2 @MyPropertyName2
         public void InjectVisitor_GeneratesCorrectLineMappings()
         {
             // Arrange
-            var host = new MvcRazorHost("appRoot", Mock.Of<IFileSystem>())
+            var host = new MvcRazorHost(new TestFileSystem())
             {
                 DesignTimeMode = true
             };
@@ -148,7 +146,7 @@ MyType2 @MyPropertyName2
         public void InjectVisitorWithModel_GeneratesCorrectLineMappings()
         {
             // Arrange
-            var host = new MvcRazorHost("appRoot", Mock.Of<IFileSystem>())
+            var host = new MvcRazorHost(new TestFileSystem())
             {
                 DesignTimeMode = true
             };
@@ -190,7 +188,7 @@ MyType2 @MyPropertyName2
 
         private static CodeGeneratorContext CreateContext()
         {
-            return CodeGeneratorContext.Create(new MvcRazorHost("appRoot", Mock.Of<IFileSystem>()),
+            return CodeGeneratorContext.Create(new MvcRazorHost(new TestFileSystem()),
                                               "MyClass",
                                               "MyNamespace",
                                               string.Empty,

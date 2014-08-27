@@ -15,7 +15,6 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         public void GetInheritedChunks_ReadsChunksFromViewStartsInPath()
         {
             // Arrange
-            var appRoot = @"x:\myapproot";
             var fileSystem = new TestFileSystem();
             fileSystem.AddFile(@"x:\myapproot\views\accounts\_viewstart.cshtml", "@using AccountModels");
             fileSystem.AddFile(@"x:\myapproot\views\Shared\_viewstart.cshtml", "@inject SharedHelper Shared");
@@ -29,13 +28,12 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
 }
 
 ");
-            var host = new MvcRazorHost(appRoot, fileSystem);
+            var host = new MvcRazorHost(fileSystem);
             var utility = new ChunkInheritanceUtility(new CodeTree(), new Chunk[0], "dynamic");
 
             // Act
             var chunks = utility.GetInheritedChunks(host,
                                                     fileSystem,
-                                                    appRoot,
                                                     @"x:\myapproot\views\home\Index.cshtml");
 
             // Assert
@@ -55,18 +53,16 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         public void GetInheritedChunks_ReturnsEmptySequenceIfNoViewStartsArePresent()
         {
             // Arrange
-            var appRoot = @"x:\myapproot";
             var fileSystem = new TestFileSystem();
             fileSystem.AddFile(@"x:\myapproot\_viewstart.cs", string.Empty);
             fileSystem.AddFile(@"x:\myapproot\views\_Layout.cshtml", string.Empty);
             fileSystem.AddFile(@"x:\myapproot\views\home\_not-viewstart.cshtml", string.Empty);
-            var host = new MvcRazorHost(appRoot, fileSystem);
+            var host = new MvcRazorHost(fileSystem);
             var utility = new ChunkInheritanceUtility(new CodeTree(), new Chunk[0], "dynamic");
 
             // Act
             var chunks = utility.GetInheritedChunks(host,
                                                     fileSystem,
-                                                    appRoot,
                                                     @"x:\myapproot\views\home\Index.cshtml");
 
             // Assert
@@ -77,7 +73,6 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         public void GetInheritedChunks_ReturnsDefaultInheritedChunks()
         {
             // Arrange
-            var appRoot = @"x:\myapproot";
             var fileSystem = new TestFileSystem();
             fileSystem.AddFile(@"x:\myapproot\views\_viewstart.cshtml",
 @"@inject DifferentHelper<TModel> Html
@@ -87,7 +82,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
 }
 
 ");
-            var host = new MvcRazorHost(appRoot, fileSystem);
+            var host = new MvcRazorHost(fileSystem);
             var defaultChunks = new Chunk[]
             {
                 new InjectChunk("MyTestHtmlHelper", "Html"),
@@ -98,7 +93,6 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             // Act
             var chunks = utility.GetInheritedChunks(host,
                                                     fileSystem,
-                                                    appRoot,
                                                     @"x:\myapproot\views\home\Index.cshtml");
 
             // Assert
