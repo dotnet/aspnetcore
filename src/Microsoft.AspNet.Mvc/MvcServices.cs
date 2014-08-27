@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Mvc.Description;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -102,6 +103,11 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Singleton<AntiForgery, AntiForgery>();
             yield return describe.Singleton<IAntiForgeryAdditionalDataProvider,
                 DefaultAntiForgeryAdditionalDataProvider>();
+
+            yield return describe.Singleton<IApiDescriptionGroupCollectionProvider,
+                ApiDescriptionGroupCollectionProvider>();
+            yield return describe.Transient<INestedProvider<ApiDescriptionProviderContext>, 
+                DefaultApiDescriptionProvider>();
 
             yield return
                describe.Describe(

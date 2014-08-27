@@ -5,21 +5,21 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.Description
 {
     /// <summary>
     /// Provides a return type and a set of possible content types returned by a successful execution of the action.
     /// </summary>
-    public interface IProducesMetadataProvider
+    public interface IApiResponseMetadataProvider
     {
         /// <summary>
         /// Optimistic return type of the action.
         /// </summary>
-        Type Type { get; set; }
+        Type Type { get; }
 
         /// <summary>
-        /// A collection of allowed content types which can be produced by the action.
+        /// Configures a collection of allowed content types which can be produced by the action.
         /// </summary>
-        IList<MediaTypeHeaderValue> ContentTypes { get; set; }
+        void SetContentTypes(IList<MediaTypeHeaderValue> contentTypes);
     }
 }

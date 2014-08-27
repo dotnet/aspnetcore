@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNet.Mvc.Description;
 using Microsoft.AspNet.Mvc.Routing;
 
 namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
@@ -31,6 +32,18 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
                 .Select(rtp => new ReflectedAttributeRouteModel(rtp))
                 .ToList();
 
+            var apiExplorerNameAttribute = Attributes.OfType<IApiDescriptionGroupNameProvider>().FirstOrDefault();
+            if (apiExplorerNameAttribute != null)
+            {
+                ApiExplorerGroupName = apiExplorerNameAttribute.GroupName;
+            }
+
+            var apiExplorerVisibilityAttribute = Attributes.OfType<IApiDescriptionVisibilityProvider>().FirstOrDefault();
+            if (apiExplorerVisibilityAttribute != null)
+            {
+                ApiExplorerIsVisible = !apiExplorerVisibilityAttribute.IgnoreApi;
+            }
+
             ControllerName = controllerType.Name.EndsWith("Controller", StringComparison.Ordinal)
                         ? controllerType.Name.Substring(0, controllerType.Name.Length - "Controller".Length)
                         : controllerType.Name;
@@ -49,5 +62,17 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
         public List<RouteConstraintAttribute> RouteConstraints { get; private set; }
 
         public List<ReflectedAttributeRouteModel> AttributeRoutes { get; private set; }
+
+        /// <summary>
+        /// If <c>true</c>, <see cref="ApiDescription"/> objects will be created for actions defined by this 
+        /// controller. 
+        /// </summary>
+        public bool? ApiExplorerIsVisible { get; set; }
+
+        /// <summary>
+        /// The value for <see cref="ApiDescription.GroupName"/> of <see cref="ApiDescription"/> objects created
+        /// for actions defined by this controller.
+        /// </summary>
+        public string ApiExplorerGroupName { get; set; }
     }
 }

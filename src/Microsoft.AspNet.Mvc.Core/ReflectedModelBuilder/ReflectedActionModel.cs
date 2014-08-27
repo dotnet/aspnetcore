@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNet.Mvc.Description;
 using Microsoft.AspNet.Mvc.Routing;
 
 namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
@@ -28,6 +29,18 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
                 AttributeRouteModel = new ReflectedAttributeRouteModel(routeTemplateAttribute);
             }
 
+            var apiExplorerNameAttribute = Attributes.OfType<IApiDescriptionGroupNameProvider>().FirstOrDefault();
+            if (apiExplorerNameAttribute != null)
+            {
+                ApiExplorerGroupName = apiExplorerNameAttribute.GroupName;
+            }
+
+            var apiExplorerVisibilityAttribute = Attributes.OfType<IApiDescriptionVisibilityProvider>().FirstOrDefault();
+            if (apiExplorerVisibilityAttribute != null)
+            {
+                ApiExplorerIsVisible = !apiExplorerVisibilityAttribute.IgnoreApi;
+            }
+
             HttpMethods = new List<string>();
             Parameters = new List<ReflectedParameterModel>();
         }
@@ -47,5 +60,18 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
         public List<ReflectedParameterModel> Parameters { get; private set; }
 
         public ReflectedAttributeRouteModel AttributeRouteModel { get; set; }
+
+        /// <summary>
+        /// If <c>true</c>, <see cref="ApiDescription"/> objects will be created for this action. If <c>null</c>
+        /// then the value of <see cref="ReflectedControllerModel.ApiExplorerIsVisible"/> will be used.
+        /// </summary>
+        public bool? ApiExplorerIsVisible { get; set; }
+
+        /// <summary>
+        /// The value for <see cref="ApiDescription.GroupName"/> of <see cref="ApiDescription"/> objects created
+        /// for actions defined by this controller. If <c>null</c> then the value of 
+        /// <see cref="ReflectedControllerModel.ApiExplorerGroupName"/> will be used.
+        /// </summary>
+        public string ApiExplorerGroupName { get; set; }
     }
 }

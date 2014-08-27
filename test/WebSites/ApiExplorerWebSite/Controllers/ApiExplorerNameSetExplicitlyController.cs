@@ -1,0 +1,23 @@
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using Microsoft.AspNet.Mvc;
+
+namespace ApiExplorer
+{
+    [ApiExplorerSettings(GroupName = "SetOnController")]
+    [Route("ApiExplorerNameSetExplicitly")]
+    public class ApiExplorerNameSetExplicitlyController : Controller
+    {
+        [HttpGet("SetOnController")]
+        public void SetOnController()
+        {
+        }
+
+        [ApiExplorerSettings(GroupName = "SetOnAction")]
+        [HttpGet("SetOnAction")]
+        public void SetOnAction()
+        {
+        }
+    }
+}

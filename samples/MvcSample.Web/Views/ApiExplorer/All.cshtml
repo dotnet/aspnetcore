@@ -1,0 +1,23 @@
+﻿@using Microsoft.AspNet.Mvc.Description
+@model IReadOnlyList<ApiDescriptionGroup>
+
+@section header
+{
+    <link rel="stylesheet" href="~/Content/api-description.css" />
+}
+
+<div style="padding: 50px 0px 0px 0px">
+
+    @foreach (var group in Model)
+    {
+        <div class="row">
+            <h1>Group: @group.GroupName</h1>
+
+            @foreach (var item in group.Items)
+            {
+                await Html.RenderPartialAsync("_ApiDescription", item);
+            }
+            
+        </div>
+    }
+</div>

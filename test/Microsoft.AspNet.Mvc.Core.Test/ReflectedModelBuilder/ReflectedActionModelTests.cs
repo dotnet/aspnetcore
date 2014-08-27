@@ -38,6 +38,34 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder.Test
             Assert.IsType<MyFilterAttribute>(model.Filters[0]);
         }
 
+        [Fact]
+        public void ReflectedActionModel_PopulatesApiExplorerInfo()
+        {
+            // Arrange
+            var actionMethod = typeof(BlogController).GetMethod("Create");
+
+            // Act
+            var model = new ReflectedActionModel(actionMethod);
+
+            // Assert
+            Assert.Equal(false, model.ApiExplorerIsVisible);
+            Assert.Equal("Blog", model.ApiExplorerGroupName);
+        }
+
+        [Fact]
+        public void ReflectedActionModel_PopulatesApiExplorerInfo_NoAttribute()
+        {
+            // Arrange
+            var actionMethod = typeof(BlogController).GetMethod("Edit");
+
+            // Act
+            var model = new ReflectedActionModel(actionMethod);
+
+            // Assert
+            Assert.Null(model.ApiExplorerIsVisible);
+            Assert.Null(model.ApiExplorerGroupName);
+        }
+
         private class BlogController
         {
             [MyOther]
@@ -45,6 +73,12 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder.Test
             [HttpGet("Edit")]
             public void Edit()
             {
+            }
+
+            [ApiExplorerSettings(IgnoreApi = true, GroupName = "Blog")]
+            public void Create()
+            {
+
             }
         }
 

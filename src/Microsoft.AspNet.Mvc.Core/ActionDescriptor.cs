@@ -11,6 +11,7 @@ namespace Microsoft.AspNet.Mvc
     {
         public ActionDescriptor()
         {
+            Properties = new Dictionary<object, object>();
             RouteValueDefaults = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
         }
 
@@ -34,5 +35,10 @@ namespace Microsoft.AspNet.Mvc
         /// A friendly name for this action.
         /// </summary>
         public virtual string DisplayName { get; set; }
+
+        /// <summary>
+        /// Stores arbitrary metadata properties associated with the <see cref="ActionDescriptor"/>.
+        /// </summary>
+        public IDictionary<object, object> Properties { get; private set; }
     }
 }

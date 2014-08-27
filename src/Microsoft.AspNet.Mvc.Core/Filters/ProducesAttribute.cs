@@ -3,8 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Mvc.Description;
 using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
 
 namespace Microsoft.AspNet.Mvc
@@ -14,7 +13,7 @@ namespace Microsoft.AspNet.Mvc
     /// which can be used to select a formatter while executing <see cref="ObjectResult"/>.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-    public class ProducesAttribute : ResultFilterAttribute, IProducesMetadataProvider
+    public class ProducesAttribute : ResultFilterAttribute, IApiResponseMetadataProvider
     {
         public ProducesAttribute(string contentType, params string[] additionalContentTypes)
         {
@@ -32,7 +31,7 @@ namespace Microsoft.AspNet.Mvc
 
             if (objectResult != null)
             {
-                objectResult.ContentTypes = ContentTypes;
+                SetContentTypes(objectResult.ContentTypes);
             }
         }
 
@@ -47,6 +46,15 @@ namespace Microsoft.AspNet.Mvc
             }
 
             return contentTypes;
+        }
+
+        public void SetContentTypes(IList<MediaTypeHeaderValue> contentTypes)
+        {
+            contentTypes.Clear();
+            foreach (var contentType in ContentTypes)
+            {
+                contentTypes.Add(contentType);
+            }
         }
     }
 }

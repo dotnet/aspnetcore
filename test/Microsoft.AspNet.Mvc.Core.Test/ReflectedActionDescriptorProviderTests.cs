@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Mvc.Description;
 using Microsoft.AspNet.Mvc.Routing;
 using Moq;
 using Xunit;
@@ -1016,6 +1017,119 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Equal("stub/{controller}/{action}", action.AttributeRouteInfo.Template);
         }
 
+        [Fact]
+        public void ApiExplorer_SetsExtensionData_WhenVisible()
+        {
+            // Arrange
+            var provider = GetProvider(typeof(ApiExplorerVisibleController).GetTypeInfo());
+
+            // Act
+            var actions = provider.GetDescriptors();
+
+            // Assert
+            var action = Assert.Single(actions);
+            Assert.NotNull(action.GetProperty<ApiDescriptionActionData>());
+        }
+
+        [Fact]
+        public void ApiExplorer_SetsExtensionData_WhenVisible_CanOverrideControllerOnAction()
+        {
+            // Arrange
+            var provider = GetProvider(typeof(ApiExplorerVisibilityOverrideController).GetTypeInfo());
+
+            // Act
+            var actions = provider.GetDescriptors();
+
+            // Assert
+            Assert.Equal(2, actions.Count());
+
+            var action = Assert.Single(actions, a => a.Name == "Edit");
+            Assert.NotNull(action.GetProperty<ApiDescriptionActionData>());
+
+            action = Assert.Single(actions, a => a.Name == "Create");
+            Assert.Null(action.GetProperty<ApiDescriptionActionData>());
+        }
+
+        [Theory]
+        [InlineData(typeof(ApiExplorerNotVisibleController))]
+        [InlineData(typeof(ApiExplorerExplicitlyNotVisibleController))]
+        [InlineData(typeof(ApiExplorerExplicitlyNotVisibleOnActionController))]
+        public void ApiExplorer_DoesNotSetExtensionData_WhenNotVisible(Type controllerType)
+        {
+            // Arrange
+            var provider = GetProvider(controllerType.GetTypeInfo());
+
+            // Act
+            var actions = provider.GetDescriptors();
+
+            // Assert
+            var action = Assert.Single(actions);
+            Assert.Null(action.GetProperty<ApiDescriptionActionData>());
+        }
+
+        [Fact]
+        public void ApiExplorer_SetsName_DefaultToNull()
+        {
+            // Arrange
+            var provider = GetProvider(typeof(ApiExplorerNoNameController).GetTypeInfo());
+
+            // Act
+            var actions = provider.GetDescriptors();
+
+            // Assert
+
+            var action = Assert.Single(actions);
+            Assert.Null(action.GetProperty<ApiDescriptionActionData>().GroupName);
+        }
+
+        [Fact]
+        public void ApiExplorer_SetsName_OnController()
+        {
+            // Arrange
+            var provider = GetProvider(typeof(ApiExplorerNameOnControllerController).GetTypeInfo());
+
+            // Act
+            var actions = provider.GetDescriptors();
+
+            // Assert
+
+            var action = Assert.Single(actions);
+            Assert.Equal("Store", action.GetProperty<ApiDescriptionActionData>().GroupName);
+        }
+
+        [Fact]
+        public void ApiExplorer_SetsName_OnAction()
+        {
+            // Arrange
+            var provider = GetProvider(typeof(ApiExplorerNameOnActionController).GetTypeInfo());
+
+            // Act
+            var actions = provider.GetDescriptors();
+
+            // Assert
+            var action = Assert.Single(actions);
+            Assert.Equal("Blog", action.GetProperty<ApiDescriptionActionData>().GroupName);
+        }
+
+        [Fact]
+        public void ApiExplorer_SetsName_CanOverrideControllerOnAction()
+        {
+            // Arrange
+            var provider = GetProvider(typeof(ApiExplorerNameOverrideController).GetTypeInfo());
+
+            // Act
+            var actions = provider.GetDescriptors();
+
+            // Assert
+            Assert.Equal(2, actions.Count());
+
+            var action = Assert.Single(actions, a => a.Name == "Edit");
+            Assert.Equal("Blog", action.GetProperty<ApiDescriptionActionData>().GroupName);
+
+            action = Assert.Single(actions, a => a.Name == "Create");
+            Assert.Equal("Store", action.GetProperty<ApiDescriptionActionData>().GroupName);
+        }
+
         private ReflectedActionDescriptorProvider GetProvider(
             TypeInfo controllerTypeInfo,
             IEnumerable<IFilter> filters = null)
@@ -1403,6 +1517,66 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             public int Id { get; set; }
             public int Name { get; set; }
+        }
+
+        private class ApiExplorerNotVisibleController
+        {
+            public void Edit() { }
+        }
+
+        [ApiExplorerSettings()]
+        private class ApiExplorerVisibleController
+        {
+            public void Edit() { }
+        }
+
+        [ApiExplorerSettings(IgnoreApi = true)]
+        private class ApiExplorerExplicitlyNotVisibleController
+        {
+            public void Edit() { }
+        }
+
+        private class ApiExplorerExplicitlyNotVisibleOnActionController
+        {
+            [ApiExplorerSettings(IgnoreApi = true)]
+            public void Edit() { }
+        }
+
+        [ApiExplorerSettings(IgnoreApi = true)]
+        private class ApiExplorerVisibilityOverrideController
+        {
+            [ApiExplorerSettings(IgnoreApi = false)]
+            public void Edit() { }
+
+            public void Create() { }
+        }
+
+        [ApiExplorerSettings(GroupName = "Store")]
+        private class ApiExplorerNameOnControllerController
+        {
+            public void Edit() { }
+        }
+
+        
+        private class ApiExplorerNameOnActionController
+        {
+            [ApiExplorerSettings(GroupName = "Blog")]
+            public void Edit() { }
+        }
+
+        [ApiExplorerSettings()]
+        private class ApiExplorerNoNameController
+        {
+            public void Edit() { }
+        }
+
+        [ApiExplorerSettings(GroupName = "Store")]
+        private class ApiExplorerNameOverrideController
+        {
+            [ApiExplorerSettings(GroupName = "Blog")]
+            public void Edit() { }
+
+            public void Create() { }
         }
     }
 }

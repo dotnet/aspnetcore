@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Mvc.Description;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.ReflectedModelBuilder;
 using Microsoft.AspNet.Mvc.Routing;
@@ -143,6 +144,7 @@ namespace Microsoft.AspNet.Mvc
 
                     foreach (var actionDescriptor in actionDescriptors)
                     {
+                        AddApiExplorerInfo(actionDescriptor, action, controller);
                         AddActionFilters(actionDescriptor, action.Filters, controller.Filters, model.Filters);
                         AddActionConstraints(actionDescriptor, action, controller);
                         AddControllerRouteConstraints(
@@ -345,6 +347,23 @@ namespace Microsoft.AspNet.Mvc
                 action.ActionMethod.Name);
 
             return actionDescriptor;
+        }
+
+        private static void AddApiExplorerInfo(
+            ReflectedActionDescriptor actionDescriptor,
+            ReflectedActionModel action, 
+            ReflectedControllerModel controller)
+        {
+            var apiExplorerIsVisible = action.ApiExplorerIsVisible ?? controller.ApiExplorerIsVisible ?? false;
+            if (apiExplorerIsVisible)
+            {
+                var apiExplorerActionData = new ApiDescriptionActionData()
+                {
+                    GroupName = action.ApiExplorerGroupName ?? controller.ApiExplorerGroupName,
+                };  
+
+                actionDescriptor.SetProperty(apiExplorerActionData);
+            }
         }
 
         private static void AddActionFilters(

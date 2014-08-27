@@ -1,0 +1,31 @@
+﻿@using Microsoft.AspNet.Mvc.Description
+@model ApiDescription
+
+<div class="api-description">
+    <h4>@(Model.HttpMethod ?? "*") - @(Model.RelativePath ?? "Unknown Url")</h4>
+    <hr />
+    <h5>For action: @Model.ActionDescriptor.DisplayName</h5>
+    <p>Return Type: @(Model.ResponseType?.FullName ?? "Unknown Type")</p>
+
+    @if (Model.ParameterDescriptions.Count > 0)
+    {
+        <p>Parameters:</p>
+        <ul>
+            @foreach (var parameter in Model.ParameterDescriptions)
+            {
+                <li>@parameter.Name - @parameter.Type.FullName - @parameter.Source.ToString()</li>
+            }
+        </ul>
+    }
+
+    @if (Model.SupportedResponseFormats.Count > 0)
+    {
+        <p>Response Formats:</p>
+        <ul>
+            @foreach(var response in Model.SupportedResponseFormats)
+            {
+                <li>@response.MediaType.RawValue - @response.Formatter.GetType().Name</li>
+            }
+        </ul>
+    }
+</div>
