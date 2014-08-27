@@ -8,6 +8,7 @@ using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.AspNet.WebUtilities;
 
 namespace Microsoft.AspNet.Routing.Template
 {
@@ -241,7 +242,7 @@ namespace Microsoft.AspNet.Routing.Template
             encoded.Append(UriEncode(context.Build()));
 
             // Generate the query string from the remaining values
-            var firstParam = true;
+            var queryBuilder = new QueryBuilder();
             foreach (var kvp in acceptedValues)
             {
                 if (_defaults != null && _defaults.ContainsKey(kvp.Key))
@@ -256,14 +257,10 @@ namespace Microsoft.AspNet.Routing.Template
                     continue;
                 }
 
-                encoded.Append(firstParam ? '?' : '&');
-                firstParam = false;
-
-                encoded.Append(Uri.EscapeDataString(kvp.Key));
-                encoded.Append('=');
-                encoded.Append(Uri.EscapeDataString(converted));
+                queryBuilder.Add(kvp.Key, converted);
             }
 
+            encoded.Append(queryBuilder.ToString());
             return encoded.ToString();
         }
 
