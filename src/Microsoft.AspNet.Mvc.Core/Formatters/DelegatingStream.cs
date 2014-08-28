@@ -18,14 +18,17 @@ namespace Microsoft.AspNet.Mvc
         private readonly Stream _innerStream;
 
         /// <summary>
-        /// Initializes a new object of DelegatingStream
+        /// Initializes a new <see cref="DelegatingStream"/>.
         /// </summary>
-        /// <param name="innerStream">The stream on which should not be closed</param>
+        /// <param name="innerStream">The stream which should not be closed or flushed.</param>
         public DelegatingStream([NotNull] Stream innerStream)
         {
             _innerStream = innerStream;
         }
 
+        /// <summary>
+        /// The inner stream this object delegates to.
+        /// </summary>
         protected Stream InnerStream
         {
             get { return _innerStream; }
@@ -122,7 +125,7 @@ namespace Microsoft.AspNet.Mvc
         /// <inheritdoc />
         public override void Flush()
         {
-            _innerStream.Flush();
+            // Do nothing, we want to explicitly avoid flush because it turns on Chunked encoding.
         }
 
         /// <inheritdoc />

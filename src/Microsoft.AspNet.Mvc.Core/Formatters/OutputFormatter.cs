@@ -75,7 +75,8 @@ namespace Microsoft.AspNet.Mvc
         /// <returns>The type of the object to be serialized.</returns>
         public virtual Type GetObjectType([NotNull] OutputFormatterContext context)
         {
-            if (context.DeclaredType == null)
+            if (context.DeclaredType == null ||
+                context.DeclaredType == typeof(object))
             {
                 if (context.Object != null)
                 {

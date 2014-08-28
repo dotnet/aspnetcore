@@ -3,6 +3,10 @@
 
 #if NET45
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.Core;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc
@@ -35,6 +39,52 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             Assert.True(innerStream.CanRead);
+        }
+
+        [Fact]
+        public void InnerStreamIsNotFlushedOnDispose()
+        {
+            var stream = FlushReportingStream.GetThrowingStream();
+            var delegatingStream = new DelegatingStream(stream);
+
+            // Act & Assert
+            delegatingStream.Dispose();
+        }
+
+        [Fact]
+        public void InnerStreamIsNotFlushedOnClose()
+        {
+            // Arrange
+            var stream = FlushReportingStream.GetThrowingStream();
+
+            var delegatingStream = new DelegatingStream(stream);
+
+            // Act & Assert
+            delegatingStream.Close();
+        }
+
+        [Fact]
+        public void InnerStreamIsNotFlushedOnFlush()
+        {
+            // Arrange
+            var stream = FlushReportingStream.GetThrowingStream();
+
+            var delegatingStream = new DelegatingStream(stream);
+
+            // Act & Assert
+            delegatingStream.Flush();
+        }
+
+        [Fact]
+        public async Task InnerStreamIsNotFlushedOnFlushAsync()
+        {
+            // Arrange
+            var stream = FlushReportingStream.GetThrowingStream();
+
+            var delegatingStream = new DelegatingStream(stream);
+
+            // Act & Assert
+            await delegatingStream.FlushAsync();
         }
     }
 }

@@ -61,11 +61,13 @@ namespace Microsoft.AspNet.Mvc
         /// <inheritdoc />
         public override Task WriteResponseBodyAsync([NotNull] OutputFormatterContext context)
         {
-            var response = context.ActionContext.HttpContext.Response;
-
             var tempWriterSettings = WriterSettings.Clone();
             tempWriterSettings.Encoding = context.SelectedEncoding;
-            using (var xmlWriter = CreateXmlWriter(response.Body, tempWriterSettings))
+
+            var innerStream = context.ActionContext.HttpContext.Response.Body;
+
+            using (var outputStream = new DelegatingStream(innerStream))
+            using (var xmlWriter = CreateXmlWriter(outputStream, tempWriterSettings))
             {
                 var dataContractSerializer = (DataContractSerializer)CreateSerializer(GetObjectType(context));
                 dataContractSerializer.WriteObject(xmlWriter, context.Object);

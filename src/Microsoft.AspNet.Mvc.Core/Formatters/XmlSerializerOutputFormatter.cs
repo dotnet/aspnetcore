@@ -61,7 +61,11 @@ namespace Microsoft.AspNet.Mvc
 
             var tempWriterSettings = WriterSettings.Clone();
             tempWriterSettings.Encoding = context.SelectedEncoding;
-            using (var xmlWriter = CreateXmlWriter(response.Body, tempWriterSettings))
+
+            var innerStream = context.ActionContext.HttpContext.Response.Body;
+
+            using (var outputStream = new DelegatingStream(innerStream))
+            using (var xmlWriter = CreateXmlWriter(outputStream, tempWriterSettings))
             {
                 var xmlSerializer = (XmlSerializer)CreateSerializer(GetObjectType(context));
                 xmlSerializer.Serialize(xmlWriter, context.Object);

@@ -183,6 +183,21 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         [Fact]
+        public async Task XmlSerializerOutputFormatterDoesntFlushOutputStream()
+        {
+            // Arrange
+            var sampleInput = new DummyClass { SampleInt = 10 };
+            var formatter = new XmlDataContractSerializerOutputFormatter();
+            var outputFormatterContext = GetOutputFormatterContext(sampleInput, sampleInput.GetType());
+
+            var response = outputFormatterContext.ActionContext.HttpContext.Response;
+            response.Body = FlushReportingStream.GetThrowingStream();
+
+            // Act & Assert
+            await formatter.WriteAsync(outputFormatterContext);
+        }
+
+        [Fact]
         public void XmlDataContractSerializer_CanWriteResult_ReturnsTrue_ForWritableType()
         {
             // Arrange

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -197,6 +198,21 @@ namespace Microsoft.AspNet.Mvc.Core
 
             // Act & Assert
             Assert.True(formatter.CanWriteResult(outputFormatterContext, MediaTypeHeaderValue.Parse("application/xml")));
+        }
+
+        [Fact]
+        public async Task XmlSerializerOutputFormatterDoesntFlushOutputStream()
+        {
+            // Arrange
+            var sampleInput = new DummyClass { SampleInt = 10 };
+            var formatter = new XmlSerializerOutputFormatter();
+            var outputFormatterContext = GetOutputFormatterContext(sampleInput, sampleInput.GetType());
+
+            var response = outputFormatterContext.ActionContext.HttpContext.Response;
+            response.Body = FlushReportingStream.GetThrowingStream();
+
+            // Act & Assert
+            await formatter.WriteAsync(outputFormatterContext);
         }
 
         private OutputFormatterContext GetOutputFormatterContext(object outputValue, Type outputType,
