@@ -30,11 +30,8 @@ namespace E2ETests
         [InlineData(ServerType.Kestrel, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5004/", false)]
         [InlineData(ServerType.WebListener, KreFlavor.DesktopClr, KreArchitecture.x64, "http://localhost:5002/", false)]
         [InlineData(ServerType.Kestrel, KreFlavor.Mono, KreArchitecture.x86, "http://localhost:5004/", true)]
-        // Uncomment Core CLR on x64 after following bugs are resolved
-        // https://github.com/aspnet/Identity/issues/157
-        // https://github.com/aspnet/Mvc/issues/846
-        //[InlineData(ServerType.Helios, KreFlavor.CoreClr, KreArchitecture.x64, "http://localhost:5001/")]
-        //[InlineData(ServerType.Kestrel, KreFlavor.CoreClr, KreArchitecture.x64, "http://localhost:5004/")]
+        [InlineData(ServerType.Helios, KreFlavor.CoreClr, KreArchitecture.x64, "http://localhost:5001/", false)]
+        [InlineData(ServerType.Kestrel, KreFlavor.CoreClr, KreArchitecture.x64, "http://localhost:5004/", false)]
         public void SmokeTestSuite(ServerType hostType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl, bool RunTestOnMono = false)
         {
             Console.WriteLine("Variation Details : HostType = {0}, KreFlavor = {1}, Architecture = {2}, applicationBaseUrl = {3}", hostType, kreFlavor, architecture, applicationBaseUrl);
