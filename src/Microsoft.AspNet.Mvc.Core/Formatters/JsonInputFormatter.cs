@@ -148,7 +148,7 @@ namespace Microsoft.AspNet.Mvc
                     errorHandler = (sender, e) =>
                     {
                         var exception = e.ErrorContext.Error;
-                        context.ActionContext.ModelState.AddModelError(e.ErrorContext.Path, e.ErrorContext.Error);
+                        context.ActionContext.ModelState.TryAddModelError(e.ErrorContext.Path, e.ErrorContext.Error);
                         // Error must always be marked as handled
                         // Failure to do so can cause the exception to be rethrown at every recursive level and 
                         // overflow the stack for x64 CLR processes

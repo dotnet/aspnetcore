@@ -189,4 +189,7 @@
   <data name="DataAnnotationsModelMetadataProvider_UnreadableProperty" xml:space="preserve">
     <value>{0} has a DisplayColumn attribute for {1}, but property {1} does not have a public 'get' method.</value>
   </data>
+  <data name="ModelStateDictionary_MaxModelStateErrors" xml:space="preserve">
+    <value>The maximum number of allowed model errors has been reached.</value>
+  </data>
 </root>

@@ -11,6 +11,7 @@ using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -32,7 +33,7 @@ namespace Microsoft.AspNet.Mvc
         public async Task RouteAsync([NotNull] RouteContext context)
         {
             var services = context.HttpContext.RequestServices;
-            
+
             // Verify if AddMvc was done before calling UseMvc
             // We use the MvcMarkerService to make sure if all the services were added.
             MvcServicesHelper.ThrowIfMvcNotRegistered(services);
@@ -64,18 +65,21 @@ namespace Microsoft.AspNet.Mvc
                     return;
                 }
 
-            if (actionDescriptor.RouteValueDefaults != null)
-            {
-                foreach (var kvp in actionDescriptor.RouteValueDefaults)
+                if (actionDescriptor.RouteValueDefaults != null)
                 {
-                    if (!context.RouteData.Values.ContainsKey(kvp.Key))
+                    foreach (var kvp in actionDescriptor.RouteValueDefaults)
                     {
-                        context.RouteData.Values.Add(kvp.Key, kvp.Value);
+                        if (!context.RouteData.Values.ContainsKey(kvp.Key))
+                        {
+                            context.RouteData.Values.Add(kvp.Key, kvp.Value);
+                        }
                     }
                 }
-            }
 
                 var actionContext = new ActionContext(context.HttpContext, context.RouteData, actionDescriptor);
+
+                var optionsAccessor = services.GetService<IOptionsAccessor<MvcOptions>>();
+                actionContext.ModelState.MaxAllowedErrors = optionsAccessor.Options.MaxModelValidationErrors;
 
                 var contextAccessor = services.GetService<IContextAccessor<ActionContext>>();
                 using (contextAccessor.SetContextSource(() => actionContext, PreventExchange))

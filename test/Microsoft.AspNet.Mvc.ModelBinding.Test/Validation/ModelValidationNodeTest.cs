@@ -278,6 +278,39 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.False(context.ModelState.ContainsKey("theKey"));
         }
 
+        [Fact]
+        [ReplaceCulture]
+        public void Validate_ShortCircuits_IfModelStateHasReachedMaxNumberOfErrors()
+        {
+            // Arrange
+            var model = new ValidateAllPropertiesModel
+            {
+                RequiredString = null /* error */,
+                RangedInt = 0 /* error */,
+                ValidString = "cat"  /* error */
+            };
+
+            var modelMetadata = GetModelMetadata(model);
+            var node = new ModelValidationNode(modelMetadata, "theKey")
+            {
+                ValidateAllProperties = true
+            };
+            var context = CreateContext(modelMetadata);
+            context.ModelState.MaxAllowedErrors = 3;
+            context.ModelState.AddModelError("somekey", "error text");
+
+            // Act
+            node.Validate(context);
+
+            // Assert
+            Assert.Equal(3, context.ModelState.Count);
+            Assert.IsType<TooManyModelErrorsException>(context.ModelState[""].Errors[0].Exception);
+            Assert.Equal("The RequiredString field is required.", 
+                        context.ModelState["theKey.RequiredString"].Errors[0].ErrorMessage);
+            Assert.False(context.ModelState.ContainsKey("theKey.RangedInt"));
+            Assert.False(context.ModelState.ContainsKey("theKey.ValidString"));
+        }
+
         private static ModelMetadata GetModelMetadata()
         {
             return new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(object));

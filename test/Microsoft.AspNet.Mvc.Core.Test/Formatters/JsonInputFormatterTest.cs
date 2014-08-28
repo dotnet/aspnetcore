@@ -144,6 +144,30 @@ namespace Microsoft.AspNet.Mvc
                          actionContext.ModelState["Age"].Errors[0].Exception.Message);
         }
 
+        [Fact]
+        public async Task ReadAsync_UsesTryAddModelValidationErrorsToModelState_WhenCaptureErrorsIsSet()
+        {
+            // Arrange
+            var content = "{name: 'Person Name', Age: 'not-an-age'}";
+            var formatter = new JsonInputFormatter { CaptureDeserilizationErrors = true };
+            var contentBytes = Encoding.UTF8.GetBytes(content);
+
+            var actionContext = GetActionContext(contentBytes);
+            var metadata = new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(User));
+            var context = new InputFormatterContext(actionContext, metadata.ModelType);
+            actionContext.ModelState.MaxAllowedErrors = 3;
+            actionContext.ModelState.AddModelError("key1", "error1");
+            actionContext.ModelState.AddModelError("key2", "error2");
+
+            // Act
+            var model = await formatter.ReadAsync(context);
+
+            // Assert
+            Assert.False(actionContext.ModelState.ContainsKey("age"));
+            var error = Assert.Single(actionContext.ModelState[""].Errors);
+            Assert.IsType<TooManyModelErrorsException>(error.Exception);
+        }
+
         private static ActionContext GetActionContext(byte[] contentBytes,
                                                  string contentType = "application/xml")
         {

@@ -98,11 +98,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
         {
             if (IsFormatException(ex))
             {
-                bindingContext.ModelState.AddModelError(bindingContext.ModelName, ex.Message);
+                bindingContext.ModelState.TryAddModelError(bindingContext.ModelName, ex.Message);
             }
             else
             {
-                bindingContext.ModelState.AddModelError(bindingContext.ModelName, ex);
+                bindingContext.ModelState.TryAddModelError(bindingContext.ModelName, ex);
             }
         }
 

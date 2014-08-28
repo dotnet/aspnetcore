@@ -394,6 +394,22 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return string.Format(CultureInfo.CurrentCulture, GetString("DataAnnotationsModelMetadataProvider_UnreadableProperty"), p0, p1);
         }
 
+        /// <summary>
+        /// The maximum number of allowed model errors has been reached.
+        /// </summary>
+        internal static string ModelStateDictionary_MaxModelStateErrors
+        {
+            get { return GetString("ModelStateDictionary_MaxModelStateErrors"); }
+        }
+
+        /// <summary>
+        /// The maximum number of allowed model errors has been reached.
+        /// </summary>
+        internal static string FormatModelStateDictionary_MaxModelStateErrors()
+        {
+            return GetString("ModelStateDictionary_MaxModelStateErrors");
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

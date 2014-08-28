@@ -16,8 +16,19 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             // Act & Assert
             var ex = Assert.Throws<ArgumentNullException>(() => options.AntiForgeryOptions = null);
-            Assert.Equal("The 'AntiForgeryOptions' property of 'Microsoft.AspNet.Mvc.MvcOptions' must not be null." + 
+            Assert.Equal("The 'AntiForgeryOptions' property of 'Microsoft.AspNet.Mvc.MvcOptions' must not be null." +
                          "\r\nParameter name: value", ex.Message);
+        }
+
+        [Fact]
+        public void MaxValidationError_ThrowsIfValueIsOutOfRange()
+        {
+            // Arrange
+            var options = new MvcOptions();
+
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => options.MaxModelValidationErrors = -1);
+            Assert.Equal("value", ex.ParamName);
         }
     }
 }

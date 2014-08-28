@@ -10,6 +10,7 @@ using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
 
@@ -18,7 +19,7 @@ namespace Microsoft.AspNet.Mvc
     public class MvcRouteHandlerTests
     {
         [Fact]
-        public async void RouteAsync_Success_LogsCorrectValues()
+        public async Task RouteAsync_Success_LogsCorrectValues()
         {
             // Arrange
             var sink = new TestSink();
@@ -56,7 +57,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Fact]
-        public async void RouteAsync_FailOnNoAction_LogsCorrectValues()
+        public async Task RouteAsync_FailOnNoAction_LogsCorrectValues()
         {
             // Arrange
             var sink = new TestSink();
@@ -100,7 +101,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Fact]
-        public async void RouteAsync_FailOnNoInvoker_LogsCorrectValues()
+        public async Task RouteAsync_FailOnNoInvoker_LogsCorrectValues()
         {
             // Arrange
             var sink = new TestSink();
@@ -144,10 +145,47 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(false, values.Handled);
         }
 
+        [Fact]
+        public async Task RouteAsync_SetsMaxErrorCountOnModelStateDictionary()
+        {
+            // Arrange
+            var expected = 199;
+            var optionsAccessor = new Mock<IOptionsAccessor<MvcOptions>>();
+            var options = new MvcOptions
+            {
+                MaxModelValidationErrors = expected
+            };
+            optionsAccessor.SetupGet(o => o.Options)
+                           .Returns(options);
+
+            var invoked = false;
+            var mockInvokerFactory = new Mock<IActionInvokerFactory>();
+            mockInvokerFactory.Setup(f => f.CreateInvoker(It.IsAny<ActionContext>()))
+                              .Callback<ActionContext>(c =>
+                              {
+                                  Assert.Equal(expected, c.ModelState.MaxAllowedErrors);
+                                  invoked = true;
+                              })
+                              .Returns(Mock.Of<IActionInvoker>());
+
+            var context = CreateRouteContext(
+                invokerFactory: mockInvokerFactory.Object,
+                optionsAccessor: optionsAccessor.Object);
+
+            var handler = new MvcRouteHandler();
+
+            // Act
+            await handler.RouteAsync(context);
+
+            // Assert
+            Assert.True(invoked);
+        }
+
         private RouteContext CreateRouteContext(
             IActionSelector actionSelector = null,
             IActionInvokerFactory invokerFactory = null,
-            ILoggerFactory loggerFactory = null)
+            ILoggerFactory loggerFactory = null,
+            IOptionsAccessor<MvcOptions> optionsAccessor = null)
         {
             var mockContextAccessor = new Mock<IContextAccessor<ActionContext>>();
             mockContextAccessor.Setup(c => c.SetContextSource(
@@ -185,6 +223,15 @@ namespace Microsoft.AspNet.Mvc
                 loggerFactory = NullLoggerFactory.Instance;
             }
 
+            if (optionsAccessor == null)
+            {
+                var mockOptionsAccessor = new Mock<IOptionsAccessor<MvcOptions>>();
+                mockOptionsAccessor.SetupGet(o => o.Options)
+                                   .Returns(new MvcOptions());
+
+                optionsAccessor = mockOptionsAccessor.Object;
+            }
+
             var httpContext = new Mock<HttpContext>();
             httpContext.Setup(h => h.RequestServices.GetService(typeof(IContextAccessor<ActionContext>)))
                 .Returns(mockContextAccessor.Object);
@@ -196,6 +243,8 @@ namespace Microsoft.AspNet.Mvc
                 .Returns(loggerFactory);
             httpContext.Setup(h => h.RequestServices.GetService(typeof(IEnumerable<MvcMarkerService>)))
                  .Returns(new List<MvcMarkerService> { new MvcMarkerService() });
+            httpContext.Setup(h => h.RequestServices.GetService(typeof(IOptionsAccessor<MvcOptions>)))
+                 .Returns(optionsAccessor);
 
             return new RouteContext(httpContext.Object);
         }

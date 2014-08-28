@@ -17,6 +17,7 @@ namespace Microsoft.AspNet.Mvc
     {
         private AntiForgeryOptions _antiForgeryOptions = new AntiForgeryOptions();
         private RazorViewEngineOptions _viewEngineOptions = new RazorViewEngineOptions();
+        private int _maxModelStateErrors = 200;
 
         public MvcOptions()
         {
@@ -94,6 +95,25 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
+        /// Gets or sets the maximum number of validation errors that are allowed by this application before further
+        /// errors are ignored.
+        /// </summary>
+        public int MaxModelValidationErrors
+        {
+            get { return _maxModelStateErrors; }
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                }
+
+                _maxModelStateErrors = value;
+            }
+        }
+
+        /// <summary>
+        /// Get a list of the <see cref="ModelBinderDescriptor" /> used by the
         /// Gets a list of the <see cref="ModelBinderDescriptor" /> used by the
         /// <see cref="ModelBinding.CompositeModelBinder" />.
         /// </summary>

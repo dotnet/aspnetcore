@@ -127,10 +127,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     // var errorMessage =  ModelBinderConfig.ValueRequiredErrorMessageProvider(e.ValidationContext, 
                     //                                                                            modelMetadata, 
                     //                                                                            incomingValue);
-                    var errorMessage = "A value is required.";
+                    var errorMessage = Resources.ModelBinderConfig_ValueRequired;
                     if (errorMessage != null)
                     {
-                        modelState.AddModelError(validationNode.ModelStateKey, errorMessage);
+                        modelState.TryAddModelError(validationNode.ModelStateKey, errorMessage);
                     }
                 }
             };
@@ -232,7 +232,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 // (oddly) succeeded.
                 if (!addedError)
                 {
-                    bindingContext.ModelState.AddModelError(
+                    bindingContext.ModelState.TryAddModelError(
                         modelStateKey,
                         Resources.FormatMissingRequiredMember(missingRequiredProperty));
                 }
@@ -285,7 +285,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                         var validationContext = new ModelValidationContext(bindingContext, propertyMetadata);
                         foreach (var validationResult in requiredValidator.Validate(validationContext))
                         {
-                            bindingContext.ModelState.AddModelError(modelStateKey, validationResult.Message);
+                            bindingContext.ModelState.TryAddModelError(modelStateKey, validationResult.Message);
                         }
                     }
                 }
@@ -337,7 +337,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var addedError = false;
             foreach (var validationResult in validator.Validate(validationContext))
             {
-                bindingContext.ModelState.AddModelError(modelStateKey, validationResult.Message);
+                bindingContext.ModelState.TryAddModelError(modelStateKey, validationResult.Message);
                 addedError = true;
             }
 
