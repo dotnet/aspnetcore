@@ -26,11 +26,35 @@ namespace Microsoft.AspNet.Mvc
             SupportedMediaTypes = new List<MediaTypeHeaderValue>();
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Gets the mutable collection of character encodings supported by
+        /// this <see cref="OutputFormatter"/>. The encodings are
+        /// used when writing the data.
+        /// </summary>
         public IList<Encoding> SupportedEncodings { get; private set; }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Gets the mutable collection of <see cref="MediaTypeHeaderValue"/> elements supported by
+        /// this <see cref="OutputFormatter"/>.
+        /// </summary>
         public IList<MediaTypeHeaderValue> SupportedMediaTypes { get; private set; }
+
+        /// <inheritdoc />
+        public virtual IReadOnlyList<MediaTypeHeaderValue> GetSupportedContentTypes(Type dataType, MediaTypeHeaderValue contentType)
+        {
+            var mediaTypes = new List<MediaTypeHeaderValue>();
+
+            if (contentType == null)
+            {
+                mediaTypes.AddRange(SupportedMediaTypes);
+            }
+            else
+            {
+                mediaTypes.Add(SupportedMediaTypes.FirstOrDefault(mt => mt.IsSubsetOf(contentType)));
+            }
+
+            return mediaTypes;
+        }
 
         /// <summary>
         /// Determines the best <see cref="Encoding"/> amongst the supported encodings

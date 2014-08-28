@@ -545,25 +545,15 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
 
         public class CannotWriteFormatter : IOutputFormatter
         {
-            public IList<Encoding> SupportedEncodings
-            {
-                get
-                {
-                    return null;
-                }
-            }
-
-            public IList<MediaTypeHeaderValue> SupportedMediaTypes
-            {
-                get
-                {
-                    return null;
-                }
-            }
-
             public virtual bool CanWriteResult(OutputFormatterContext context, MediaTypeHeaderValue contentType)
             {
                 return false;
+            }
+
+            public IReadOnlyList<MediaTypeHeaderValue> GetSupportedContentTypes(Type dataType,
+                                                                                MediaTypeHeaderValue contentType)
+            {
+                return null;
             }
 
             public virtual Task WriteAsync(OutputFormatterContext context)

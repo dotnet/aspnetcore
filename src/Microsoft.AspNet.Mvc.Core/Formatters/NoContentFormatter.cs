@@ -14,15 +14,16 @@ namespace Microsoft.AspNet.Mvc
     /// </summary>
     public class NoContentFormatter : IOutputFormatter
     {
-        public IList<Encoding> SupportedEncodings { get; private set; }
-
-        public IList<MediaTypeHeaderValue> SupportedMediaTypes { get; private set; }
-
         public bool CanWriteResult(OutputFormatterContext context, MediaTypeHeaderValue contentType)
         {
             // ignore the contentType and just look at the content.
             // This formatter will be selected if the content is null. 
             return context.Object == null;
+        }
+
+        public IReadOnlyList<MediaTypeHeaderValue> GetSupportedContentTypes(Type dataType, MediaTypeHeaderValue contentType)
+        {
+            return null;
         }
 
         public Task WriteAsync(OutputFormatterContext context)

@@ -57,25 +57,15 @@ namespace Microsoft.AspNet.Mvc.Core
 
         private class TestOutputFormatter : IOutputFormatter
         {
-            public IList<Encoding> SupportedEncodings
-            {
-                get
-                {
-                    return null;
-                }
-            }
-
-            public IList<MediaTypeHeaderValue> SupportedMediaTypes
-            {
-                get
-                {
-                    return null;
-                }
-            }
-
             public bool CanWriteResult(OutputFormatterContext context, MediaTypeHeaderValue contentType)
             {
                 throw new NotImplementedException();
+            }
+
+            public IReadOnlyList<MediaTypeHeaderValue> GetSupportedContentTypes(Type dataType,
+                                                                                MediaTypeHeaderValue contentType)
+            {
+                return null;
             }
 
             public Task WriteAsync(OutputFormatterContext context)
