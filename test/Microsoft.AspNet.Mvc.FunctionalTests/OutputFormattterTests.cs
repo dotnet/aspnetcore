@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using ConnegWebsite;
 using Microsoft.AspNet.Builder;
@@ -24,16 +26,16 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var server = TestServer.Create(_provider, _app);
-            var client = server.Handler;
-            var expectedContentType = "text/plain;charset=utf-8";
+            var client = server.CreateClient();
+            var expectedContentType = MediaTypeHeaderValue.Parse("text/plain;charset=utf-8");
             var expectedBody = actionName;
 
             // Act
-            var result = await client.GetAsync("http://localhost/TextPlain/" + actionName);
+            var response = await client.GetAsync("http://localhost/TextPlain/" + actionName);
 
             // Assert
-            Assert.Equal(expectedContentType, result.HttpContext.Response.ContentType);
-            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
+            Assert.Equal(expectedContentType, response.Content.Headers.ContentType);
+            var body = await response.Content.ReadAsStringAsync();
             Assert.Equal(expectedBody, body);
         }
 
@@ -44,41 +46,36 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var server = TestServer.Create(_provider, _app);
-            var client = server.Handler;
-            var expectedContentType = "application/json;charset=utf-8";
-            var expectedBody = actionName;
+            var client = server.CreateClient();
+            var expectedContentType = MediaTypeHeaderValue.Parse("application/json;charset=utf-8");
 
             // Act
-            var result = await client.GetAsync("http://localhost/TextPlain/" + actionName);
+            var response = await client.GetAsync("http://localhost/TextPlain/" + actionName);
 
             // Assert
-            Assert.Equal(expectedContentType, result.HttpContext.Response.ContentType);
-            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
+            Assert.Equal(expectedContentType, response.Content.Headers.ContentType);
         }
 
         [Theory]
         [InlineData("ReturnTaskOfString_NullValue")]
-        [InlineData("ReturnTaskOfObject_NullValue")]    
+        [InlineData("ReturnTaskOfObject_NullValue")]
         [InlineData("ReturnObject_NullValue")]
         public async Task NoContentFormatter_ForNullValue_GetsSelectedAndWritesResponse(string actionName)
         {
             // Arrange
             var server = TestServer.Create(_provider, _app);
-            var client = server.Handler;
-            string expectedContentType = null;
-
-            // ReadBodyAsString returns empty string instead of null.
-            string expectedBody = "";
+            var client = server.CreateClient();
 
             // Act
-            var result = await client.GetAsync("http://localhost/NoContent/" + actionName);
+            var response = await client.GetAsync("http://localhost/NoContent/" + actionName);
 
             // Assert
-            Assert.Equal(expectedContentType, result.HttpContext.Response.ContentType);
-            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
-            Assert.Equal(expectedBody, body);
-            Assert.Equal(204, result.HttpContext.Response.StatusCode);
-            Assert.Equal(0, result.HttpContext.Response.ContentLength);
+            Assert.Null(response.Content.Headers.ContentType);
+            var body = await response.Content.ReadAsStringAsync();
+            // Response body is empty instead of null.
+            Assert.Empty(body);
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+            Assert.Equal(0, response.Content.Headers.ContentLength);
         }
     }
 }

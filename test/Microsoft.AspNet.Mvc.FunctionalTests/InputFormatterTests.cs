@@ -2,6 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
@@ -12,30 +16,26 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class InputFormatterTests
     {
-        private readonly IServiceProvider _services;
+        private readonly IServiceProvider _services = TestHelper.CreateServices("FormatterWebSite");
         private readonly Action<IBuilder> _app = new FormatterWebSite.Startup().Configure;
-
-        public InputFormatterTests()
-        {
-            _services = TestHelper.CreateServices("FormatterWebSite");
-        }
 
         [Fact]
         public async Task CheckIfXmlInputFormatterIsBeingCalled()
         {
             // Arrange
             var server = TestServer.Create(_services, _app);
-            var client = server.Handler;
+            var client = server.CreateClient();
             var sampleInputInt = 10;
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                 "<DummyClass><SampleInt>" + sampleInputInt.ToString() + "</SampleInt></DummyClass>";
+            var content = new StringContent(input, Encoding.UTF8, "application/xml");
 
             // Act
-            var response = await client.PostAsync("http://localhost/Home/Index", input, "application/xml");
+            var response = await client.PostAsync("http://localhost/Home/Index", content);
 
             //Assert
-            Assert.Equal(200, response.StatusCode);
-            Assert.Equal(sampleInputInt.ToString(), await response.ReadBodyAsStringAsync());
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(sampleInputInt.ToString(), await response.Content.ReadAsStringAsync());
         }
 
         [Theory]
@@ -48,16 +48,17 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var server = TestServer.Create(_services, _app);
-            var client = server.Handler;
+            var client = server.CreateClient();
             var sampleInputInt = 10;
             var input = "{\"SampleInt\":10}";
+            var content = new StringContent(input, Encoding.UTF8, requestContentType);
 
             // Act
-            var response = await client.PostAsync("http://localhost/Home/Index", input, requestContentType);
+            var response = await client.PostAsync("http://localhost/Home/Index", content);
 
             //Assert
-            Assert.Equal(200, response.StatusCode);
-            Assert.Equal(sampleInputInt.ToString(), await response.ReadBodyAsStringAsync());
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(sampleInputInt.ToString(), await response.Content.ReadAsStringAsync());
         }
 
         [Theory]
@@ -71,24 +72,27 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("invalid", false)]
         [InlineData("application/custom", false)]
         [InlineData("image/jpg", false)]
-        public async Task ModelStateErrorValidation_NoInputFormatterFound_ForGivenContetType(string requestContentType,
-                                                                                             bool filterHandlesModelStateError)
+        public async Task ModelStateErrorValidation_NoInputFormatterFound_ForGivenContentType(string requestContentType,
+                                                                                              bool filterHandlesModelStateError)
         {
             // Arrange
             var actionName = filterHandlesModelStateError ? "ActionFilterHandlesError" : "ActionHandlesError";
             var expectedSource = filterHandlesModelStateError ? "filter" : "action";
 
             var server = TestServer.Create(_services, _app);
-            var client = server.Handler;
+            var client = server.CreateClient();
             var input = "{\"SampleInt\":10}";
+            var content = new StringContent(input);
+            content.Headers.Clear();
+            content.Headers.TryAddWithoutValidation("Content-Type", requestContentType);
 
             // Act
-            var response = await client.PostAsync("http://localhost/InputFormatter/" + actionName,
-                                                  input,
-                                                  requestContentType, 
-                                                  (request) => request.Accept = "application/json");
+            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/InputFormatter/" + actionName);
+            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/json"));
+            request.Content = content;
+            var response = await client.SendAsync(request);
 
-            var responseBody = await response.ReadBodyAsStringAsync();
+            var responseBody = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<FormatterWebSite.ErrorInfo>(responseBody);
 
             // Assert

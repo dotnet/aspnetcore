@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var server = TestServer.Create(_provider, _app);
-            var client = server.Handler;
+            var client = server.CreateClient();
             var expectedMessage = "TODO: No service for type 'ActivatorWebSite.CannotBeActivatedController+FakeType' " +
                                    "has been registered.";
 
@@ -34,15 +34,16 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var server = TestServer.Create(_provider, _app);
-            var client = server.Handler;
+            var client = server.CreateClient();
             var expected = "4|some-text";
 
             // Act
-            var result = await client.GetAsync("http://localhost/Plain?foo=some-text");
+            var response = await client.GetAsync("http://localhost/Plain?foo=some-text");
 
             // Assert
-            Assert.Equal("Fake-Value", result.HttpContext.Response.Headers["X-Fake-Header"]);
-            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
+            var headerValue = Assert.Single(response.Headers.GetValues("X-Fake-Header"));
+            Assert.Equal("Fake-Value", headerValue);
+            var body = await response.Content.ReadAsStringAsync();
             Assert.Equal(expected, body);
         }
 
@@ -51,14 +52,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var server = TestServer.Create(_provider, _app);
-            var client = server.Handler;
+            var client = server.CreateClient();
             var expected = "Hello world";
 
             // Act
-            var result = await client.GetAsync("http://localhost/Regular");
+            var body = await client.GetStringAsync("http://localhost/Regular");
 
             // Assert
-            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
             Assert.Equal(expected, body);
         }
 
@@ -66,14 +66,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ViewActivator_ActivatesDefaultInjectedProperties()
         {
             var server = TestServer.Create(_provider, _app);
-            var client = server.Handler;
+            var client = server.CreateClient();
             var expected = @"<label for=""Hello"">Hello</label> world! /View/ConsumeServicesFromBaseType";
 
             // Act
-            var result = await client.GetAsync("http://localhost/View/ConsumeDefaultProperties");
+            var body = await client.GetStringAsync("http://localhost/View/ConsumeDefaultProperties");
 
             // Assert
-            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
             Assert.Equal(expected, body.Trim());
         }
 
@@ -81,14 +80,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ViewActivator_ActivatesAndContextualizesInjectedServices()
         {
             var server = TestServer.Create(_provider, _app);
-            var client = server.Handler;
+            var client = server.CreateClient();
             var expected = "4 test-value";
 
             // Act
-            var result = await client.GetAsync("http://localhost/View/ConsumeInjectedService?test=test-value");
+            var body = await client.GetStringAsync("http://localhost/View/ConsumeInjectedService?test=test-value");
 
             // Assert
-            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
             Assert.Equal(expected, body.Trim());
         }
 
@@ -96,15 +94,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ViewActivator_ActivatesServicesFromBaseType()
         {
             var server = TestServer.Create(_provider, _app);
-            var client = server.Handler;
+            var client = server.CreateClient();
             var expected =
 @"/content/scripts/test.js";
 
             // Act
-            var result = await client.GetAsync("http://localhost/View/ConsumeServicesFromBaseType");
+            var body = await client.GetStringAsync("http://localhost/View/ConsumeServicesFromBaseType");
 
             // Assert
-            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
             Assert.Equal(expected, body.Trim());
         }
     }

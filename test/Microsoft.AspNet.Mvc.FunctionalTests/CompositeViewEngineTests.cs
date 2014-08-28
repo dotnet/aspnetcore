@@ -11,26 +11,20 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class CompositeViewEngineTests
     {
-        private readonly IServiceProvider _services;
+        private readonly IServiceProvider _services = TestHelper.CreateServices("CompositeViewEngine");
         private readonly Action<IBuilder> _app = new CompositeViewEngine.Startup().Configure;
-
-        public CompositeViewEngineTests()
-        {
-            _services = TestHelper.CreateServices("CompositeViewEngine");
-        }
 
         [Fact]
         public async Task CompositeViewEngine_FindsPartialViewsAcrossAllEngines()
         {
             // Arrange
             var server = TestServer.Create(_services, _app);
-            var client = server.Handler;
+            var client = server.CreateClient();
 
             // Act
-            var response = await client.GetAsync("http://localhost/");
+            var body = await client.GetStringAsync("http://localhost/");
 
             // Assert
-            var body = await response.ReadBodyAsStringAsync();
             Assert.Equal("Hello world", body.Trim());
         }
 
@@ -39,13 +33,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var server = TestServer.Create(_services, _app);
-            var client = server.Handler;
+            var client = server.CreateClient();
 
             // Act
-            var response = await client.GetAsync("http://localhost/Home/TestView");
+            var body = await client.GetStringAsync("http://localhost/Home/TestView");
 
             // Assert
-            var body = await response.ReadBodyAsStringAsync();
             Assert.Equal("Content from test view", body.Trim());
         }
     }

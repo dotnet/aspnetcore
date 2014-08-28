@@ -57,13 +57,12 @@ ViewWithNestedLayout-Content
         public async Task RazorView_ExecutesPageAndLayout(string actionName, string expected)
         {
             var server = TestServer.Create(_provider, _app);
-            var client = server.Handler;
+            var client = server.CreateClient();
 
             // Act
-            var result = await client.GetAsync("http://localhost/ViewEngine/" + actionName);
+            var body = await client.GetStringAsync("http://localhost/ViewEngine/" + actionName);
 
             // Assert
-            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
             Assert.Equal(expected, body.Trim());
         }
 
@@ -76,13 +75,12 @@ ViewWithNestedLayout-Content
 </partial>
 test-value";
             var server = TestServer.Create(_provider, _app);
-            var client = server.Handler;
+            var client = server.CreateClient();
 
             // Act
-            var result = await client.GetAsync("http://localhost/ViewEngine/ViewWithPartial");
+            var body = await client.GetStringAsync("http://localhost/ViewEngine/ViewWithPartial");
 
             // Assert
-            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
             Assert.Equal(expected, body.Trim());
         }
 
@@ -95,13 +93,12 @@ test-value";
 partial-content
 component-content";
             var server = TestServer.Create(_provider, _app);
-            var client = server.Handler;
+            var client = server.CreateClient();
 
             // Act
-            var result = await client.GetAsync("http://localhost/ViewEngine/ViewPassesViewDataToLayout");
+            var body = await client.GetStringAsync("http://localhost/ViewEngine/ViewPassesViewDataToLayout");
 
             // Assert
-            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
             Assert.Equal(expected, body.Trim());
         }
     }

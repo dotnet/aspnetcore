@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using ConnegWebsite;
 using Microsoft.AspNet.Builder;
@@ -20,18 +22,18 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange            
             var server = TestServer.Create(_provider, _app);
-            var client = server.Handler;
+            var client = server.CreateClient();
 
             // Selects custom even though it is last in the list.
-            var expectedContentType = "application/custom;charset=utf-8";
+            var expectedContentType = MediaTypeHeaderValue.Parse("application/custom;charset=utf-8");
             var expectedBody = "Written using custom format.";
 
             // Act
-            var result = await client.GetAsync("http://localhost/Normal/WriteUserUsingCustomFormat");
+            var response = await client.GetAsync("http://localhost/Normal/WriteUserUsingCustomFormat");
 
             // Assert
-            Assert.Equal(expectedContentType, result.HttpContext.Response.ContentType);
-            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
+            Assert.Equal(expectedContentType, response.Content.Headers.ContentType);
+            var body = await response.Content.ReadAsStringAsync();
             Assert.Equal(expectedBody, body);
         }
 
@@ -40,16 +42,16 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange            
             var server = TestServer.Create(_provider, _app);
-            var client = server.Handler;
-            var expectedContentType = "application/json;charset=utf-8";
+            var client = server.CreateClient();
+            var expectedContentType = MediaTypeHeaderValue.Parse("application/json;charset=utf-8");
             var expectedBody = "{\r\n  \"Name\": \"My name\",\r\n  \"Address\": \"My address\"\r\n}";
 
             // Act
-            var result = await client.GetAsync("http://localhost/Normal/MultipleAllowedContentTypes");
+            var response = await client.GetAsync("http://localhost/Normal/MultipleAllowedContentTypes");
 
             // Assert
-            Assert.Equal(expectedContentType, result.HttpContext.Response.ContentType);
-            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
+            Assert.Equal(expectedContentType, response.Content.Headers.ContentType);
+            var body = await response.Content.ReadAsStringAsync();
             Assert.Equal(expectedBody, body);
         }
 
@@ -58,16 +60,16 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var server = TestServer.Create(_provider, _app);
-            var client = server.Handler;
-            var expectedContentType = "text/plain;charset=utf-8";
+            var client = server.CreateClient();
+            var expectedContentType = MediaTypeHeaderValue.Parse("text/plain;charset=utf-8");
             var expectedBody = "NormalController";
 
             // Act
-            var result = await client.GetAsync("http://localhost/Normal/ReturnClassName");
+            var response = await client.GetAsync("http://localhost/Normal/ReturnClassName");
 
             // Assert
-            Assert.Equal(expectedContentType, result.HttpContext.Response.ContentType);
-            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
+            Assert.Equal(expectedContentType, response.Content.Headers.ContentType);
+            var body = await response.Content.ReadAsStringAsync();
             Assert.Equal(expectedBody, body);
         }
 
@@ -76,15 +78,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var server = TestServer.Create(_provider, _app);
-            var client = server.Handler;
-            var expectedContentType = "application/json;charset=utf-8";
-            //var expectedBody = "\"NormalController\"";
+            var client = server.CreateClient();
+            var expectedContentType = MediaTypeHeaderValue.Parse("application/json;charset=utf-8");
 
             // Act
-            var result = await client.GetAsync("http://localhost/Normal/ReturnUser");
+            var response = await client.GetAsync("http://localhost/Normal/ReturnUser");
 
             // Assert
-            Assert.Equal(expectedContentType, result.HttpContext.Response.ContentType);
+            Assert.Equal(expectedContentType, response.Content.Headers.ContentType);
         }
 
         [Fact]
@@ -92,31 +93,32 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var server = TestServer.Create(_provider, _app);
-            var client = server.Handler;
+            var client = server.CreateClient();
 
             // Act
-            var result = await client.GetAsync("http://localhost/Normal/ReturnUser_NoMatchingFormatter");
+            var response = await client.GetAsync("http://localhost/Normal/ReturnUser_NoMatchingFormatter");
 
             // Assert
-            Assert.Equal(406, result.HttpContext.Response.StatusCode);
+            Assert.Equal(HttpStatusCode.NotAcceptable, response.StatusCode);
         }
 
         [Fact]
         public async Task ProducesContentAttribute_OnAction_OverridesTheValueOnClass()
         {
             var server = TestServer.Create(_provider, _app);
-            var client = server.Handler;
+            var client = server.CreateClient();
 
             // Value on the class is application/json.
-            var expectedContentType = "application/custom_ProducesContentBaseController_Action;charset=utf-8";
+            var expectedContentType = MediaTypeHeaderValue.Parse(
+                "application/custom_ProducesContentBaseController_Action;charset=utf-8");
             var expectedBody = "ProducesContentBaseController";
 
             // Act
-            var result = await client.GetAsync("http://localhost/ProducesContentBase/ReturnClassName");
+            var response = await client.GetAsync("http://localhost/ProducesContentBase/ReturnClassName");
 
             // Assert
-            Assert.Equal(expectedContentType, result.HttpContext.Response.ContentType);
-            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
+            Assert.Equal(expectedContentType, response.Content.Headers.ContentType);
+            var body = await response.Content.ReadAsStringAsync();
             Assert.Equal(expectedBody, body);
         }
 
@@ -124,17 +126,18 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ProducesContentAttribute_OnDerivedClass_OverridesTheValueOnBaseClass()
         {
             var server = TestServer.Create(_provider, _app);
-            var client = server.Handler;
-            var expectedContentType = "application/custom_ProducesContentOnClassController;charset=utf-8";
+            var client = server.CreateClient();
+            var expectedContentType = MediaTypeHeaderValue.Parse(
+                "application/custom_ProducesContentOnClassController;charset=utf-8");
             var expectedBody = "ProducesContentOnClassController";
 
             // Act
-            var result = await client.GetAsync(
+            var response = await client.GetAsync(
                             "http://localhost/ProducesContentOnClass/ReturnClassNameWithNoContentTypeOnAction");
 
             // Assert
-            Assert.Equal(expectedContentType, result.HttpContext.Response.ContentType);
-            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
+            Assert.Equal(expectedContentType, response.Content.Headers.ContentType);
+            var body = await response.Content.ReadAsStringAsync();
             Assert.Equal(expectedBody, body);
         }
 
@@ -142,16 +145,17 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ProducesContentAttribute_OnDerivedAction_OverridesTheValueOnBaseClass()
         {
             var server = TestServer.Create(_provider, _app);
-            var client = server.Handler;
-            var expectedContentType = "application/custom_NoProducesContentOnClassController_Action;charset=utf-8";
+            var client = server.CreateClient();
+            var expectedContentType = MediaTypeHeaderValue.Parse(
+                "application/custom_NoProducesContentOnClassController_Action;charset=utf-8");
             var expectedBody = "NoProducesContentOnClassController";
 
             // Act
-            var result = await client.GetAsync("http://localhost/NoProducesContentOnClass/ReturnClassName");
+            var response = await client.GetAsync("http://localhost/NoProducesContentOnClass/ReturnClassName");
 
             // Assert
-            Assert.Equal(expectedContentType, result.HttpContext.Response.ContentType);
-            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
+            Assert.Equal(expectedContentType, response.Content.Headers.ContentType);
+            var body = await response.Content.ReadAsStringAsync();
             Assert.Equal(expectedBody, body);
         }
 
@@ -159,16 +163,17 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ProducesContentAttribute_OnDerivedAction_OverridesTheValueOnBaseAction()
         {
             var server = TestServer.Create(_provider, _app);
-            var client = server.Handler;
-            var expectedContentType = "application/custom_NoProducesContentOnClassController_Action;charset=utf-8";
+            var client = server.CreateClient();
+            var expectedContentType = MediaTypeHeaderValue.Parse(
+                "application/custom_NoProducesContentOnClassController_Action;charset=utf-8");
             var expectedBody = "NoProducesContentOnClassController";
 
             // Act
-            var result = await client.GetAsync("http://localhost/NoProducesContentOnClass/ReturnClassName");
+            var response = await client.GetAsync("http://localhost/NoProducesContentOnClass/ReturnClassName");
 
             // Assert
-            Assert.Equal(expectedContentType, result.HttpContext.Response.ContentType);
-            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
+            Assert.Equal(expectedContentType, response.Content.Headers.ContentType);
+            var body = await response.Content.ReadAsStringAsync();
             Assert.Equal(expectedBody, body);
         }
 
@@ -177,16 +182,17 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var server = TestServer.Create(_provider, _app);
-            var client = server.Handler;
-            var expectedContentType = "application/custom_ProducesContentOnClassController_Action;charset=utf-8";
+            var client = server.CreateClient();
+            var expectedContentType = MediaTypeHeaderValue.Parse(
+                "application/custom_ProducesContentOnClassController_Action;charset=utf-8");
             var expectedBody = "ProducesContentOnClassController";
 
             // Act
-            var result = await client.GetAsync("http://localhost/ProducesContentOnClass/ReturnClassNameContentTypeOnDerivedAction");
+            var response = await client.GetAsync("http://localhost/ProducesContentOnClass/ReturnClassNameContentTypeOnDerivedAction");
 
             // Assert
-            Assert.Equal(expectedContentType, result.HttpContext.Response.ContentType);
-            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
+            Assert.Equal(expectedContentType, response.Content.Headers.ContentType);
+            var body = await response.Content.ReadAsStringAsync();
             Assert.Equal(expectedBody, body);
         }
         [Fact]
@@ -194,16 +200,16 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var server = TestServer.Create(_provider, _app);
-            var client = server.Handler;
-            var expectedContentType = "application/json;charset=utf-8";
+            var client = server.CreateClient();
+            var expectedContentType = MediaTypeHeaderValue.Parse("application/json;charset=utf-8");
             var expectedBody = "{\"MethodName\":\"Produces_WithNonObjectResult\"}";
 
             // Act
-            var result = await client.GetAsync("http://localhost/JsonResult/Produces_WithNonObjectResult");
+            var response = await client.GetAsync("http://localhost/JsonResult/Produces_WithNonObjectResult");
 
             // Assert
-            Assert.Equal(expectedContentType, result.HttpContext.Response.ContentType);
-            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
+            Assert.Equal(expectedContentType, response.Content.Headers.ContentType);
+            var body = await response.Content.ReadAsStringAsync();
             Assert.Equal(expectedBody, body);
         }
 
@@ -212,16 +218,16 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var server = TestServer.Create(_provider, _app);
-            var client = server.Handler;
-            var expectedContentType = "application/json;charset=utf-8";
+            var client = server.CreateClient();
+            var expectedContentType = MediaTypeHeaderValue.Parse("application/json;charset=utf-8");
             var expectedBody = "{\"MethodName\":\"ReturnJsonResult\"}";
 
             // Act
-            var result = await client.GetAsync("http://localhost/JsonResult/ReturnJsonResult");
+            var response = await client.GetAsync("http://localhost/JsonResult/ReturnJsonResult");
 
             // Assert
-            Assert.Equal(expectedContentType, result.HttpContext.Response.ContentType);
-            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
+            Assert.Equal(expectedContentType, response.Content.Headers.ContentType);
+            var body = await response.Content.ReadAsStringAsync();
             Assert.Equal(expectedBody, body);
         }
 
@@ -230,16 +236,16 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var server = TestServer.Create(_provider, _app);
-            var client = server.Handler;
-            var expectedContentType = "application/custom-json;charset=utf-8";
+            var client = server.CreateClient();
+            var expectedContentType = MediaTypeHeaderValue.Parse("application/custom-json;charset=utf-8");
             var expectedBody = "{ MethodName = ReturnJsonResult_WithCustomMediaType }";
 
             // Act
-            var result = await client.GetAsync("http://localhost/JsonResult/ReturnJsonResult_WithCustomMediaType");
+            var response = await client.GetAsync("http://localhost/JsonResult/ReturnJsonResult_WithCustomMediaType");
 
             // Assert
-            Assert.Equal(expectedContentType, result.HttpContext.Response.ContentType);
-            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
+            Assert.Equal(expectedContentType, response.Content.Headers.ContentType);
+            var body = await response.Content.ReadAsStringAsync();
             Assert.Equal(expectedBody, body);
         }
 
@@ -248,16 +254,16 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var server = TestServer.Create(_provider, _app);
-            var client = server.Handler;
-            var expectedContentType = "application/json;charset=utf-8";
+            var client = server.CreateClient();
+            var expectedContentType = MediaTypeHeaderValue.Parse("application/json;charset=utf-8");
             var expectedBody = "{\"MethodName\":\"ReturnJsonResult_WithCustomMediaType_NoFormatter\"}";
 
             // Act
-            var result = await client.GetAsync("http://localhost/JsonResult/ReturnJsonResult_WithCustomMediaType_NoFormatter");
+            var response = await client.GetAsync("http://localhost/JsonResult/ReturnJsonResult_WithCustomMediaType_NoFormatter");
 
             // Assert
-            Assert.Equal(expectedContentType, result.HttpContext.Response.ContentType);
-            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
+            Assert.Equal(expectedContentType, response.Content.Headers.ContentType);
+            var body = await response.Content.ReadAsStringAsync();
             Assert.Equal(expectedBody, body);
         }
     }

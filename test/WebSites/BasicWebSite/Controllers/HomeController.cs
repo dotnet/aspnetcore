@@ -26,6 +26,9 @@ namespace BasicWebSite.Controllers
 
         public async Task ActionReturningTask()
         {
+            // TODO: #1077. With HttpResponseMessage, there seems to be a race between the write operation setting the
+            // header to 200 and NoContentResult returned by the action invoker setting it to 204.
+            Context.Response.StatusCode = 204;
             await Context.Response.WriteAsync("Hello world");
         }
     }

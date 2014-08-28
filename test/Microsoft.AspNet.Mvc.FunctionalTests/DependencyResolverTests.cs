@@ -1,10 +1,9 @@
 ﻿#if NET45
 using System;
-using System.IO;
+using System.Net.Http;
 using System.Threading.Tasks;
 using AutofacWebSite;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.TestHost;
 using Xunit;
 
@@ -20,20 +19,19 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var provider = TestHelper.CreateServices("AutofacWebSite");
             Action<IBuilder> app = new Startup().Configure;
-            TestServer server = null;
-            HttpResponse response = null;
+            HttpResponseMessage response = null;
 
             // Act & Assert
             await Assert.DoesNotThrowAsync(async () =>
             {
                 // This essentially calls into the Startup.Configuration method
-                server = TestServer.Create(provider, app);
+                var server = TestServer.Create(provider, app);
 
                 // Make a request to start resolving DI pieces
-                response = await server.Handler.GetAsync(url);
+                response = await server.CreateClient().GetAsync(url);
             });
 
-            var actualResponseBody = new StreamReader(response.Body).ReadToEnd();
+            var actualResponseBody = await response.Content.ReadAsStringAsync();
             Assert.Equal(expectedResponseBody, actualResponseBody);
         }
     }
