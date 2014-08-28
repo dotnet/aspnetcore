@@ -97,36 +97,36 @@ namespace E2ETests
                 RegisterUserWithNonMatchingPasswords();
 
                 //Register a valid user
-                var generatedUserName = RegisterValidUser();
+                var generatedEmail = RegisterValidUser();
 
                 //Register a user - Negative scenario : Trying to register a user name that's already registered.
-                RegisterExistingUser(generatedUserName);
+                RegisterExistingUser(generatedEmail);
 
                 //Logout from this user session - This should take back to the home page
-                SignOutUser(generatedUserName);
+                SignOutUser(generatedEmail);
 
                 //Sign in scenarios: Invalid password - Expected an invalid user name password error.
-                SignInWithInvalidPassword(generatedUserName, "InvalidPassword~1");
+                SignInWithInvalidPassword(generatedEmail, "InvalidPassword~1");
 
                 //Sign in scenarios: Valid user name & password.
-                SignInWithUser(generatedUserName, "Password~1");
+                SignInWithUser(generatedEmail, "Password~1");
 
                 //Change password scenario
-                ChangePassword(generatedUserName);
+                ChangePassword(generatedEmail);
 
                 //SignIn with old password and verify old password is not allowed and new password is allowed
-                SignOutUser(generatedUserName);
-                SignInWithInvalidPassword(generatedUserName, "Password~1");
-                SignInWithUser(generatedUserName, "Password~2");
+                SignOutUser(generatedEmail);
+                SignInWithInvalidPassword(generatedEmail, "Password~1");
+                SignInWithUser(generatedEmail, "Password~2");
 
                 //Making a request to a protected resource that this user does not have access to - should automatically redirect to login page again
-                AccessStoreWithoutPermissions(generatedUserName);
+                AccessStoreWithoutPermissions(generatedEmail);
 
                 //Logout from this user session - This should take back to the home page
-                SignOutUser(generatedUserName);
+                SignOutUser(generatedEmail);
 
                 //Login as an admin user
-                SignInWithUser("Administrator", "YouShouldChangeThisPassword1!");
+                SignInWithUser("Administrator@test.com", "YouShouldChangeThisPassword1!");
 
                 //Now navigating to the store manager should work fine as this user has the necessary permission to administer the store.
                 AccessStoreWithPermissions();
@@ -222,9 +222,9 @@ namespace E2ETests
             Assert.Contains("<li class=\"divider\"></li>", responseContent, StringComparison.OrdinalIgnoreCase);
         }
 
-        private void AccessStoreWithoutPermissions(string userName = null)
+        private void AccessStoreWithoutPermissions(string email = null)
         {
-            Console.WriteLine("Trying to access StoreManager that needs ManageStore claim with the current user : {0}", userName ?? "Anonymous");
+            Console.WriteLine("Trying to access StoreManager that needs ManageStore claim with the current user : {0}", email ?? "Anonymous");
             var response = httpClient.GetAsync("StoreManager/").Result;
             ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
@@ -259,11 +259,11 @@ namespace E2ETests
             var responseContent = response.Content.ReadAsStringAsync().Result;
             ValidateLayoutPage(responseContent);
 
-            var generatedUserName = Guid.NewGuid().ToString().Replace("-", string.Empty);
-            Console.WriteLine("Creating a new user with name '{0}'", generatedUserName);
+            var generatedEmail = Guid.NewGuid().ToString().Replace("-", string.Empty) + "@test.com";
+            Console.WriteLine("Creating a new user with name '{0}'", generatedEmail);
             var formParameters = new List<KeyValuePair<string, string>>
                 {
-                    new KeyValuePair<string, string>("UserName", generatedUserName),
+                    new KeyValuePair<string, string>("Email", generatedEmail),
                     new KeyValuePair<string, string>("Password", "Password~1"),
                     new KeyValuePair<string, string>("ConfirmPassword", "Password~2"),
                     new KeyValuePair<string, string>("__RequestVerificationToken", HtmlDOMHelper.RetrieveAntiForgeryToken(responseContent, "/Account/Register")),
@@ -273,8 +273,8 @@ namespace E2ETests
             response = httpClient.PostAsync("Account/Register", content).Result;
             responseContent = response.Content.ReadAsStringAsync().Result;
             Assert.Null(httpClientHandler.CookieContainer.GetCookies(new Uri(ApplicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.Application"));
-            Assert.Contains("<div class=\"validation-summary-errors\" data-valmsg-summary=\"true\"><ul><li>The password and confirmation password do not match.</li>", responseContent, StringComparison.OrdinalIgnoreCase);
-            Console.WriteLine("Server side model validator rejected the user '{0}''s registration as passwords do not match.", generatedUserName);
+            Assert.Contains("<div class=\"validation-summary-errors text-danger\" data-valmsg-summary=\"true\"><ul><li>The password and confirmation password do not match.</li>", responseContent, StringComparison.OrdinalIgnoreCase);
+            Console.WriteLine("Server side model validator rejected the user '{0}''s registration as passwords do not match.", generatedEmail);
         }
 
         private string RegisterValidUser()
@@ -284,11 +284,11 @@ namespace E2ETests
             var responseContent = response.Content.ReadAsStringAsync().Result;
             ValidateLayoutPage(responseContent);
 
-            var generatedUserName = Guid.NewGuid().ToString().Replace("-", string.Empty);
-            Console.WriteLine("Creating a new user with name '{0}'", generatedUserName);
+            var generatedEmail = Guid.NewGuid().ToString().Replace("-", string.Empty) + "@test.com";
+            Console.WriteLine("Creating a new user with name '{0}'", generatedEmail);
             var formParameters = new List<KeyValuePair<string, string>>
                 {
-                    new KeyValuePair<string, string>("UserName", generatedUserName),
+                    new KeyValuePair<string, string>("Email", generatedEmail),
                     new KeyValuePair<string, string>("Password", "Password~1"),
                     new KeyValuePair<string, string>("ConfirmPassword", "Password~1"),
                     new KeyValuePair<string, string>("__RequestVerificationToken", HtmlDOMHelper.RetrieveAntiForgeryToken(responseContent, "/Account/Register")),
@@ -297,24 +297,24 @@ namespace E2ETests
             var content = new FormUrlEncodedContent(formParameters.ToArray());
             response = httpClient.PostAsync("Account/Register", content).Result;
             responseContent = response.Content.ReadAsStringAsync().Result;
-            Assert.Contains(string.Format("Hello {0}!", generatedUserName), responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(string.Format("Hello {0}!", generatedEmail), responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("Log off", responseContent, StringComparison.OrdinalIgnoreCase);
             //Verify cookie sent
             Assert.NotNull(httpClientHandler.CookieContainer.GetCookies(new Uri(ApplicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.Application"));
-            Console.WriteLine("Successfully registered user '{0}' and signed in", generatedUserName);
-            return generatedUserName;
+            Console.WriteLine("Successfully registered user '{0}' and signed in", generatedEmail);
+            return generatedEmail;
         }
 
-        private void RegisterExistingUser(string userName)
+        private void RegisterExistingUser(string email)
         {
-            Console.WriteLine("Trying to register a user with name '{0}' again", userName);
+            Console.WriteLine("Trying to register a user with name '{0}' again", email);
             var response = httpClient.GetAsync("Account/Register").Result;
             ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
-            Console.WriteLine("Creating a new user with name '{0}'", userName);
+            Console.WriteLine("Creating a new user with name '{0}'", email);
             var formParameters = new List<KeyValuePair<string, string>>
                 {
-                    new KeyValuePair<string, string>("UserName", userName),
+                    new KeyValuePair<string, string>("Email", email),
                     new KeyValuePair<string, string>("Password", "Password~1"),
                     new KeyValuePair<string, string>("ConfirmPassword", "Password~1"),
                     new KeyValuePair<string, string>("__RequestVerificationToken", HtmlDOMHelper.RetrieveAntiForgeryToken(responseContent, "/Account/Register")),
@@ -323,13 +323,13 @@ namespace E2ETests
             var content = new FormUrlEncodedContent(formParameters.ToArray());
             response = httpClient.PostAsync("Account/Register", content).Result;
             responseContent = response.Content.ReadAsStringAsync().Result;
-            Assert.Contains(string.Format("Name {0} is already taken.", userName), responseContent, StringComparison.OrdinalIgnoreCase);
-            Console.WriteLine("Identity threw a valid exception that user '{0}' already exists in the system", userName);
+            Assert.Contains(string.Format("Name {0} is already taken.", email), responseContent, StringComparison.OrdinalIgnoreCase);
+            Console.WriteLine("Identity threw a valid exception that user '{0}' already exists in the system", email);
         }
 
-        private void SignOutUser(string userName)
+        private void SignOutUser(string email)
         {
-            Console.WriteLine("Signing out from '{0}''s session", userName);
+            Console.WriteLine("Signing out from '{0}''s session", email);
             var response = httpClient.GetAsync(string.Empty).Result;
             ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
@@ -352,7 +352,7 @@ namespace E2ETests
                 Assert.Contains("/Images/home-showcase.png", responseContent, StringComparison.OrdinalIgnoreCase);
                 //Verify cookie cleared on logout
                 Assert.Null(httpClientHandler.CookieContainer.GetCookies(new Uri(ApplicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.Application"));
-                Console.WriteLine("Successfully signed out of '{0}''s session", userName);
+                Console.WriteLine("Successfully signed out of '{0}''s session", email);
             }
             else
             {
@@ -362,15 +362,15 @@ namespace E2ETests
             }
         }
 
-        private void SignInWithInvalidPassword(string userName, string invalidPassword)
+        private void SignInWithInvalidPassword(string email, string invalidPassword)
         {
             var response = httpClient.GetAsync("Account/Login").Result;
             ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
-            Console.WriteLine("Signing in with user '{0}'", userName);
+            Console.WriteLine("Signing in with user '{0}'", email);
             var formParameters = new List<KeyValuePair<string, string>>
                 {
-                    new KeyValuePair<string, string>("UserName", userName),
+                    new KeyValuePair<string, string>("Email", email),
                     new KeyValuePair<string, string>("Password", invalidPassword),
                     new KeyValuePair<string, string>("__RequestVerificationToken", HtmlDOMHelper.RetrieveAntiForgeryToken(responseContent, "/Account/Login")),
                 };
@@ -378,21 +378,21 @@ namespace E2ETests
             var content = new FormUrlEncodedContent(formParameters.ToArray());
             response = httpClient.PostAsync("Account/Login", content).Result;
             responseContent = response.Content.ReadAsStringAsync().Result;
-            Assert.Contains("<div class=\"validation-summary-errors\"><ul><li>Invalid username or password.</li>", responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("<div class=\"validation-summary-errors text-danger\"><ul><li>Invalid login attempt.</li>", responseContent, StringComparison.OrdinalIgnoreCase);
             //Verify cookie not sent
             Assert.Null(httpClientHandler.CookieContainer.GetCookies(new Uri(ApplicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.Application"));
             Console.WriteLine("Identity successfully prevented an invalid user login.");
         }
 
-        private void SignInWithUser(string userName, string password)
+        private void SignInWithUser(string email, string password)
         {
             var response = httpClient.GetAsync("Account/Login").Result;
             ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
-            Console.WriteLine("Signing in with user '{0}'", userName);
+            Console.WriteLine("Signing in with user '{0}'", email);
             var formParameters = new List<KeyValuePair<string, string>>
                 {
-                    new KeyValuePair<string, string>("UserName", userName),
+                    new KeyValuePair<string, string>("Email", email),
                     new KeyValuePair<string, string>("Password", password),
                     new KeyValuePair<string, string>("__RequestVerificationToken", HtmlDOMHelper.RetrieveAntiForgeryToken(responseContent, "/Account/Login")),
                 };
@@ -400,16 +400,16 @@ namespace E2ETests
             var content = new FormUrlEncodedContent(formParameters.ToArray());
             response = httpClient.PostAsync("Account/Login", content).Result;
             responseContent = response.Content.ReadAsStringAsync().Result;
-            Assert.Contains(string.Format("Hello {0}!", userName), responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(string.Format("Hello {0}!", email), responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("Log off", responseContent, StringComparison.OrdinalIgnoreCase);
             //Verify cookie sent
             Assert.NotNull(httpClientHandler.CookieContainer.GetCookies(new Uri(ApplicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.Application"));
-            Console.WriteLine("Successfully signed in with user '{0}'", userName);
+            Console.WriteLine("Successfully signed in with user '{0}'", email);
         }
 
-        private void ChangePassword(string userName)
+        private void ChangePassword(string email)
         {
-            var response = httpClient.GetAsync("Account/Manage").Result;
+            var response = httpClient.GetAsync("Manage/ChangePassword").Result;
             ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             var formParameters = new List<KeyValuePair<string, string>>
@@ -417,15 +417,15 @@ namespace E2ETests
                     new KeyValuePair<string, string>("OldPassword", "Password~1"),
                     new KeyValuePair<string, string>("NewPassword", "Password~2"),
                     new KeyValuePair<string, string>("ConfirmPassword", "Password~2"),
-                    new KeyValuePair<string, string>("__RequestVerificationToken", HtmlDOMHelper.RetrieveAntiForgeryToken(responseContent, "/Account/Manage")),
+                    new KeyValuePair<string, string>("__RequestVerificationToken", HtmlDOMHelper.RetrieveAntiForgeryToken(responseContent, "/Manage/ChangePassword")),
                 };
 
             var content = new FormUrlEncodedContent(formParameters.ToArray());
-            response = httpClient.PostAsync("Account/Manage", content).Result;
+            response = httpClient.PostAsync("Manage/ChangePassword", content).Result;
             responseContent = response.Content.ReadAsStringAsync().Result;
             Assert.Contains("Your password has been changed.", responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.NotNull(httpClientHandler.CookieContainer.GetCookies(new Uri(ApplicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.Application"));
-            Console.WriteLine("Successfully changed the password for user '{0}'", userName);
+            Console.WriteLine("Successfully changed the password for user '{0}'", email);
         }
 
         private string CreateAlbum()

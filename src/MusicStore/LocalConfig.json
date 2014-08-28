@@ -1,5 +1,5 @@
 ﻿{
-    "DefaultAdminUsername": "Administrator",
+    "DefaultAdminUsername": "Administrator@test.com",
     "DefaultAdminPassword": "YouShouldChangeThisPassword1!",
     "Data": {
         "DefaultConnection": {
