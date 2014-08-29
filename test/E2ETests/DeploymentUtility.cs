@@ -91,6 +91,14 @@ namespace E2ETests
 
         private static Process StartMonoHost(ServerType hostType, string applicationPath)
         {
+            //Mono needs this as GetFullPath does not work if it has \
+            applicationPath = Path.GetFullPath(applicationPath.Replace('\\', '/'));
+
+            //Mono does not have a way to pass in a --appbase switch. So it will be an environment variable. 
+            //https://github.com/aspnet/KRuntime/issues/580
+            Environment.SetEnvironmentVariable("APP_BASE", applicationPath);
+            Console.WriteLine("Setting the APP_BASE to {0}", applicationPath);
+
             var path = Environment.GetEnvironmentVariable("PATH");
             var kreBin = path.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).Where(c => c.Contains("KRE-mono45")).FirstOrDefault();
 
@@ -103,13 +111,12 @@ namespace E2ETests
             var klrMonoManaged = Path.Combine(kreBin, "klr.mono.managed.dll");
             var applicationHost = Path.Combine(kreBin, "Microsoft.Framework.ApplicationHost");
 
-            Console.WriteLine(string.Format("Executing command: {0} {1} --appbase {2} {3} {4}", monoPath, klrMonoManaged, applicationPath, applicationHost, hostType.ToString()));
+            Console.WriteLine(string.Format("Executing command: {0} {1} {3} {4}", monoPath, klrMonoManaged, applicationPath, applicationHost, hostType.ToString()));
 
-            //https://github.com/aspnet/KRuntime/issues/580
             var startInfo = new ProcessStartInfo
             {
                 FileName = monoPath,
-                Arguments = string.Format("{0} --appbase {1} {2} {3}", klrMonoManaged, applicationPath, applicationHost, hostType.ToString()),
+                Arguments = string.Format("{0} {1} {2}", klrMonoManaged, applicationHost, hostType.ToString()),
                 UseShellExecute = true,
                 CreateNoWindow = true
             };
@@ -118,6 +125,8 @@ namespace E2ETests
             Console.WriteLine("Started {0}. Process Id : {1}", hostProcess.MainModule.FileName, hostProcess.Id);
             Thread.Sleep(5 * 1000);
 
+            //Clear the appbase so that it does not create issues with successive runs
+            Environment.SetEnvironmentVariable("APP_BASE", string.Empty);
             return hostProcess;
         }
 
@@ -159,7 +168,7 @@ namespace E2ETests
             {
                 Console.WriteLine("Started {0}. Process Id : {1}", hostProcess.MainModule.FileName, hostProcess.Id);
             }
-            catch (Win32Exception ex)
+            catch (Win32Exception)
             {
                 Console.WriteLine("Cannot access 64 bit modules from a 32 bit process");
             }
@@ -228,6 +237,34 @@ namespace E2ETests
             finally
             {
                 dbWatch.Dispose();
+            }
+        }
+
+        public static void CleanUpApplication(Process hostProcess, string musicStoreDbName)
+        {
+            if (hostProcess != null && !hostProcess.HasExited)
+            {
+                //Shutdown the host process
+                hostProcess.Kill();
+                hostProcess.WaitForExit(5 * 1000);
+                if (!hostProcess.HasExited)
+                {
+                    Console.WriteLine("Unable to terminate the host process with process Id '{0}", hostProcess.Id);
+                }
+                else
+                {
+                    Console.WriteLine("Successfully terminated host process with process Id '{0}'", hostProcess.Id);
+                }
+            }
+            else
+            {
+                Console.WriteLine("Host process already exited or never started successfully.");
+            }
+
+            if (!Helpers.RunningOnMono)
+            {
+                //Mono uses InMemoryStore
+                DbUtils.DropDatabase(musicStoreDbName);
             }
         }
     }

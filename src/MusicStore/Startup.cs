@@ -16,17 +16,14 @@ namespace MusicStore
     {
         public void Configure(IBuilder app)
         {
-            /* Adding IConfiguration as a service in the IoC to avoid instantiating Configuration again.
-                 * Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources, 
-                 * then the later source will win. By this way a Local config can be overridden by a different setting while deployed remotely.
-            */
+            //Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources, 
+            //then the later source will win. By this way a Local config can be overridden by a different setting while deployed remotely.
             var configuration = new Configuration();
             configuration.AddJsonFile("LocalConfig.json");
             configuration.AddEnvironmentVariables(); //All environment variables in the process's context flow in as configuration values.
 
-            /* Error page middleware displays a nice formatted HTML page for any unhandled exceptions in the request pipeline.
-                * Note: ErrorPageOptions.ShowAll to be used only at development time. Not recommended for production.
-                */
+            //Error page middleware displays a nice formatted HTML page for any unhandled exceptions in the request pipeline.
+            //Note: ErrorPageOptions.ShowAll to be used only at development time. Not recommended for production.
             app.UseErrorPage(ErrorPageOptions.ShowAll);
 
             app.UseServices(services =>
@@ -87,8 +84,8 @@ namespace MusicStore
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
-                    name:  "areaRoute", 
-                    template:  "{area:exists}/{controller}/{action}", 
+                    name: "areaRoute",
+                    template: "{area:exists}/{controller}/{action}",
                     defaults: new { action = "Index" });
 
                 routes.MapRoute(
