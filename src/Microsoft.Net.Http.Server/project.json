@@ -9,7 +9,7 @@
   },
   "frameworks": {
     "net45": {},
-    "k10": {
+    "aspnetcore50": {
       "dependencies": {
         "Microsoft.Net.WebSocketAbstractions": "1.0.0-*",
         "Microsoft.Win32.Primitives": "4.0.0.0",

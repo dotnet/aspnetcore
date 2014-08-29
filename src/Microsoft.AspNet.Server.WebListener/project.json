@@ -14,7 +14,7 @@
   },
   "frameworks": {
     "net45": {},
-    "k10": {
+    "aspnetcore50": {
       "dependencies": {
         "Microsoft.Win32.Primitives": "4.0.0.0",
         "System.Collections": "4.0.10.0",
