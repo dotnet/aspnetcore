@@ -1,4 +1,4 @@
-﻿{
+{
     "version": "1.0.0-*",
     "dependencies": {
         "Microsoft.AspNet.Diagnostics":  "",
@@ -12,7 +12,7 @@
                 "System.Runtime":  ""
             }
         },
-        "k10" : { 
+        "aspnetcore50" : { 
             "dependencies": {
                 "System.Console": "4.0.0.0"
             }
