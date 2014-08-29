@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
     {
         public static bool IsWindows() 
         {
-#if K10
+#if ASPNETCORE50
             return true;
 #else
             var p = (int)Environment.OSVersion.Platform;

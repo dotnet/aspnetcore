@@ -8,7 +8,7 @@
         "net45": {
             "compilationOptions": { "define": [ "TRACE" ] }
         },
-        "k10": {
+        "aspnetcore50": {
             "compilationOptions": { "define": [ "TRACE" ] },
             "dependencies": {
                 "System.Net.Sockets": "4.0.0.0",

@@ -10,7 +10,7 @@
                 "allowUnsafe": true
             }
         },
-        "k10": {
+        "aspnetcore50": {
             "compilationOptions": {
                 "define": [ "TRACE", "K10" ],
                 "allowUnsafe": true

@@ -1,4 +1,4 @@
-﻿{
+{
     "version": "1.0.0-*",
     "dependencies": {
         "Kestrel": "1.0.0-*",
@@ -7,7 +7,7 @@
     },
     "frameworks": {
         "net45": { },
-        "k10": {
+        "aspnetcore50": {
             "dependencies": {
                 "System.Console": "4.0.0.0"
             }
