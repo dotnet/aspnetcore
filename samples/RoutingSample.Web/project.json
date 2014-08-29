@@ -1,4 +1,4 @@
-﻿{
+{
   "dependencies": {
     "Microsoft.AspNet.Server.IIS": "1.0.0-*",
     "Microsoft.AspNet.Routing" : "",
@@ -7,7 +7,7 @@
   },
   "frameworks": {
     "net45": { },
-    "k10": {
+    "aspnetcore50": {
       "dependencies": {
         "System.Diagnostics.Debug": "4.0.10.0",
         "System.Runtime": "4.0.20.0",
