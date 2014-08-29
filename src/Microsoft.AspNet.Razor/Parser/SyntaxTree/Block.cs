@@ -14,16 +14,21 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
     public class Block : SyntaxTreeNode
     {
         public Block(BlockBuilder source)
+            : this(source.Type, source.Children, source.CodeGenerator)
         {
-            if (source.Type == null)
+            source.Reset();
+        }
+
+        protected Block(BlockType? type, IEnumerable<SyntaxTreeNode> contents, IBlockCodeGenerator generator)
+        {
+            if (type == null)
             {
                 throw new InvalidOperationException(RazorResources.Block_Type_Not_Specified);
             }
-            Type = source.Type.Value;
-            Children = source.Children;
-            Name = source.Name;
-            CodeGenerator = source.CodeGenerator;
-            source.Reset();
+
+            Type = type.Value;
+            Children = contents;
+            CodeGenerator = generator;
 
             foreach (SyntaxTreeNode node in Children)
             {
@@ -31,6 +36,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
             }
         }
 
+        // A Test constructor
         internal Block(BlockType type, IEnumerable<SyntaxTreeNode> contents, IBlockCodeGenerator generator)
         {
             Type = type;
@@ -42,7 +48,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
         public BlockType Type { get; private set; }
 
         public IEnumerable<SyntaxTreeNode> Children { get; private set; }
-        public string Name { get; private set; }
+
         public IBlockCodeGenerator CodeGenerator { get; private set; }
 
         public override bool IsBlock

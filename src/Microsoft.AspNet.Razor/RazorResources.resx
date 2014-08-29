@@ -403,4 +403,10 @@ Instead, wrap the contents of the block in "{{}}":
   <data name="ParseError_Sections_Cannot_Be_Nested" xml:space="preserve">
     <value>Section blocks ("{0}") cannot be nested.  Only one level of section blocks are allowed.</value>
   </data>
+  <data name="TagHelpers_AttributesMustHaveAName" xml:space="preserve">
+    <value>Tag Helper attributes must have a name.</value>
+  </data>
+  <data name="TagHelpers_CannotHaveCSharpInTagDeclaration" xml:space="preserve">
+    <value>Tag Helpers cannot have C# in an HTML tag element's attribute declaration area.</value>
+  </data>
 </root>

@@ -5,9 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNet.Razor.Parser.TagHelpers.Internal;
+using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.AspNet.Razor.Text;
 
 namespace Microsoft.AspNet.Razor.Parser
@@ -28,12 +31,22 @@ namespace Microsoft.AspNet.Razor.Parser
             MarkupParser = markupParser;
             CodeParser = codeParser;
 
+            // TODO: As part of https://github.com/aspnet/Razor/issues/111 and 
+            // https://github.com/aspnet/Razor/issues/112 pull the provider from some sort of tag helper locator 
+            // object.
+            var provider = new TagHelperDescriptorProvider(Enumerable.Empty<TagHelperDescriptor>());
+
             Optimizers = new List<ISyntaxTreeRewriter>()
             {
+                // TODO: Modify the below WhiteSpaceRewriter & ConditionalAttributeCollapser to handle 
+                // TagHelperBlock's: https://github.com/aspnet/Razor/issues/117
+
                 // Move whitespace from start of expression block to markup
                 new WhiteSpaceRewriter(MarkupParser.BuildSpan),
                 // Collapse conditional attributes where the entire value is literal
                 new ConditionalAttributeCollapser(MarkupParser.BuildSpan),
+                // Enables tag helpers
+                new TagHelperParseTreeRewriter(provider),
             };
         }
 

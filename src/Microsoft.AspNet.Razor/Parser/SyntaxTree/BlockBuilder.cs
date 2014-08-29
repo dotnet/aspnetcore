@@ -18,26 +18,22 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
         {
             Type = original.Type;
             Children = new List<SyntaxTreeNode>(original.Children);
-            Name = original.Name;
             CodeGenerator = original.CodeGenerator;
         }
 
         [SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods", Justification = "Type is the most appropriate name for this property and there is little chance of confusion with GetType")]
         public BlockType? Type { get; set; }
-
         public IList<SyntaxTreeNode> Children { get; private set; }
-        public string Name { get; set; }
         public IBlockCodeGenerator CodeGenerator { get; set; }
 
-        public Block Build()
+        public virtual Block Build()
         {
             return new Block(this);
         }
 
-        public void Reset()
+        public virtual void Reset()
         {
             Type = null;
-            Name = null;
             Children = new List<SyntaxTreeNode>();
             CodeGenerator = BlockCodeGenerator.Null;
         }

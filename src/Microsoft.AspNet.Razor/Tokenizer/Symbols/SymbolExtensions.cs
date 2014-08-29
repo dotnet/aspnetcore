@@ -39,5 +39,17 @@ namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
         {
             return new LocationTagged<string>(symbol.Content, symbol.Start);
         }
+
+        /// <summary>
+        /// Converts the generic <see cref="IEnumerable{ISymbol}"/> to a <see cref="IEnumerable{HtmlSymbol}"/> and
+        /// finds the first <see cref="HtmlSymbol"/> with type <paramref name="type"/>.
+        /// </summary>
+        /// <param name="symbols">The <see cref="IEnumerable{ISymbol}"/> instance this method extends.</param>
+        /// <param name="type">The <see cref="HtmlSymbolType"/> to search for.</param>
+        /// <returns>The first <see cref="HtmlSymbol"/> of type <paramref name="type"/>.</returns>
+        public static HtmlSymbol FirstHtmlSymbolAs(this IEnumerable<ISymbol> symbols, HtmlSymbolType type)
+        {
+            return symbols.OfType<HtmlSymbol>().FirstOrDefault(sym => sym.Type == type);
+        }
     }
 }
