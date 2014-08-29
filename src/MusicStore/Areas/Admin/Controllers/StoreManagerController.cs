@@ -23,14 +23,30 @@ namespace MusicStore.Areas.Admin.Controllers
         public IActionResult Index()
         {
             // TODO [EF] Swap to native support for loading related data when available
-            var albums = db.Albums;
-            foreach (var album in albums)
-            {
-                album.Genre = db.Genres.Single(g => g.GenreId == album.GenreId);
-                album.Artist = db.Artists.Single(a => a.ArtistId == album.ArtistId);
-            }
+            var albums = from album in db.Albums
+                        join genre in db.Genres on album.GenreId equals genre.GenreId
+                        join artist in db.Artists on album.ArtistId equals artist.ArtistId
+                        select new Album()
+                        {
+                            ArtistId = album.ArtistId,
+                            AlbumArtUrl = album.AlbumArtUrl,
+                            AlbumId = album.AlbumId,
+                            GenreId = album.GenreId,
+                            Price = album.Price,
+                            Title = album.Title,
+                            Artist = new Artist()
+                            {
+                                ArtistId = album.ArtistId,
+                                Name = artist.Name
+                            },
+                            Genre = new Genre()
+                            {
+                                GenreId = album.GenreId,
+                                Name = genre.Name
+                            }
+                        };
 
-            return View(albums.ToList());
+            return View(albums);
         }
 
         //
