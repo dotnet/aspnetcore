@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-#if K10
+#if ASPNETCORE50
 using System.Reflection;
 #endif
 using Microsoft.AspNet.Mvc.Core;

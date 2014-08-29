@@ -3,7 +3,7 @@
   "dependencies": {},
   "frameworks": {
     "net45": {},
-    "k10": {
+    "aspnetcore50": {
       "dependencies": {
         "System.Collections": "4.0.10.0",
         "System.Diagnostics.Debug": "4.0.10.0",

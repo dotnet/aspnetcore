@@ -24,7 +24,7 @@
         "System.Xml": ""
       }
     },
-    "k10": {
+    "aspnetcore50": {
       "dependencies": {
         "Microsoft.CSharp": "4.0.0.0",
         "System.Collections": "4.0.10.0",

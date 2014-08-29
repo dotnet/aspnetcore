@@ -1,4 +1,4 @@
-﻿{
+{
     "compilationOptions": {
         "warningsAsErrors": true
     },
@@ -35,6 +35,6 @@
                 "AutofacWebSite": ""
             }
         },
-        "k10": { }
+        "aspnetcore50": { }
     }
 }

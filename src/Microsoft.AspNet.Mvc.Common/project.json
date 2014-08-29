@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "6.0.0-*",
   "shared": "*.cs",
   "dependencies": {
@@ -9,7 +9,7 @@
   },
   "frameworks": {
     "net45": {},
-    "k10": {
+    "aspnetcore50": {
         "dependencies": {
             "System.Text.Encoding.Extensions": "4.0.10.0"
         }
