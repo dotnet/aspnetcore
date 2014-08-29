@@ -225,7 +225,7 @@ namespace E2ETests
         private void AccessStoreWithoutPermissions(string email = null)
         {
             Console.WriteLine("Trying to access StoreManager that needs ManageStore claim with the current user : {0}", email ?? "Anonymous");
-            var response = httpClient.GetAsync("StoreManager/").Result;
+            var response = httpClient.GetAsync("Admin/StoreManager/").Result;
             ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             ValidateLayoutPage(responseContent);
@@ -235,7 +235,7 @@ namespace E2ETests
             if (!RunningOnMono)
             {
                 //Bug in Mono HttpClient that it does not automatically change the RequestMessage uri in case of a 302.
-                Assert.Equal<string>(ApplicationBaseUrl + "Account/Login?ReturnUrl=%2FStoreManager%2F", response.RequestMessage.RequestUri.AbsoluteUri);
+                Assert.Equal<string>(ApplicationBaseUrl + "Account/Login?ReturnUrl=%2FAdmin%2FStoreManager%2F", response.RequestMessage.RequestUri.AbsoluteUri);
             }
 
             Console.WriteLine("Redirected to login page as expected.");
@@ -244,10 +244,10 @@ namespace E2ETests
         private void AccessStoreWithPermissions()
         {
             Console.WriteLine("Trying to access the store inventory..");
-            var response = httpClient.GetAsync("StoreManager/").Result;
+            var response = httpClient.GetAsync("Admin/StoreManager/").Result;
             ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
-            Assert.Equal<string>(ApplicationBaseUrl + "StoreManager/", response.RequestMessage.RequestUri.AbsoluteUri);
+            Assert.Equal<string>(ApplicationBaseUrl + "Admin/StoreManager/", response.RequestMessage.RequestUri.AbsoluteUri);
             Console.WriteLine("Successfully acccessed the store inventory");
         }
 
@@ -432,12 +432,12 @@ namespace E2ETests
         {
             var albumName = Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 12);
             Console.WriteLine("Trying to create an album with name '{0}'", albumName);
-            var response = httpClient.GetAsync("StoreManager/create").Result;
+            var response = httpClient.GetAsync("Admin/StoreManager/create").Result;
             ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             var formParameters = new List<KeyValuePair<string, string>>
                 {
-                    new KeyValuePair<string, string>("__RequestVerificationToken", HtmlDOMHelper.RetrieveAntiForgeryToken(responseContent, "/StoreManager/create")),
+                    new KeyValuePair<string, string>("__RequestVerificationToken", HtmlDOMHelper.RetrieveAntiForgeryToken(responseContent, "/Admin/StoreManager/create")),
                     new KeyValuePair<string, string>("GenreId", "1"),
                     new KeyValuePair<string, string>("ArtistId", "1"),
                     new KeyValuePair<string, string>("Title", albumName),
@@ -446,13 +446,13 @@ namespace E2ETests
                 };
 
             var content = new FormUrlEncodedContent(formParameters.ToArray());
-            response = httpClient.PostAsync("StoreManager/create", content).Result;
+            response = httpClient.PostAsync("Admin/StoreManager/create", content).Result;
             responseContent = response.Content.ReadAsStringAsync().Result;
 
             if (!RunningOnMono)
             {
                 //Bug in mono Httpclient - RequestMessage not automatically changed on 302
-                Assert.Equal<string>(ApplicationBaseUrl + "StoreManager", response.RequestMessage.RequestUri.AbsoluteUri);
+                Assert.Equal<string>(ApplicationBaseUrl + "Admin/StoreManager", response.RequestMessage.RequestUri.AbsoluteUri);
             }
 
             Assert.Contains(albumName, responseContent);
@@ -463,7 +463,7 @@ namespace E2ETests
         private string FetchAlbumIdFromName(string albumName)
         {
             Console.WriteLine("Fetching the album id of '{0}'", albumName);
-            var response = httpClient.GetAsync(string.Format("StoreManager/GetAlbumIdFromName?albumName={0}", albumName)).Result;
+            var response = httpClient.GetAsync(string.Format("Admin/StoreManager/GetAlbumIdFromName?albumName={0}", albumName)).Result;
             ThrowIfResponseStatusNotOk(response);
             var albumId = response.Content.ReadAsStringAsync().Result;
             Console.WriteLine("Album id for album '{0}' is '{1}'", albumName, albumId);
@@ -473,13 +473,13 @@ namespace E2ETests
         private void VerifyAlbumDetails(string albumId, string albumName)
         {
             Console.WriteLine("Getting details of album with Id '{0}'", albumId);
-            var response = httpClient.GetAsync(string.Format("StoreManager/Details?id={0}", albumId)).Result;
+            var response = httpClient.GetAsync(string.Format("Admin/StoreManager/Details?id={0}", albumId)).Result;
             ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             Assert.Contains(albumName, responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("http://myapp/testurl", responseContent, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains(string.Format("<a href=\"/StoreManager/Edit/{0}\">Edit</a>", albumId), responseContent, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains("<a href=\"/StoreManager\">Back to List</a>", responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(string.Format("<a href=\"/Admin/StoreManager/Edit?id={0}\">Edit</a>", albumId), responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("<a href=\"/Admin/StoreManager\">Back to List</a>", responseContent, StringComparison.OrdinalIgnoreCase);
         }
 
         private void AddAlbumToCart(string albumId, string albumName)
@@ -536,11 +536,11 @@ namespace E2ETests
                 };
 
             var content = new FormUrlEncodedContent(formParameters.ToArray());
-            var response = httpClient.PostAsync("StoreManager/RemoveAlbum", content).Result;
+            var response = httpClient.PostAsync("Admin/StoreManager/RemoveAlbum", content).Result;
             ThrowIfResponseStatusNotOk(response);
 
             Console.WriteLine("Verifying if the album '{0}' is deleted from store", albumName);
-            response = httpClient.GetAsync(string.Format("StoreManager/GetAlbumIdFromName?albumName={0}", albumName)).Result;
+            response = httpClient.GetAsync(string.Format("Admin/StoreManager/GetAlbumIdFromName?albumName={0}", albumName)).Result;
             Assert.Equal<HttpStatusCode>(HttpStatusCode.NotFound, response.StatusCode);
             Console.WriteLine("Album is successfully deleted from the store.", albumName, albumId);
         }

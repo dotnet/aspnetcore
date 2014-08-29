@@ -4,8 +4,9 @@ using Microsoft.Data.Entity;
 using MusicStore.Models;
 using System.Linq;
 
-namespace MusicStore.Controllers
+namespace MusicStore.Areas.Admin.Controllers
 {
+    [Area("Admin")]
     [Authorize("ManageStore", "Allowed")]
     public class StoreManagerController : Controller
     {
