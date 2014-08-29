@@ -10,8 +10,8 @@ namespace Microsoft.AspNet.Mvc
     internal static class TypeExtensions
     {
         // NOTE: Do not make #105 worse! Do not add new extension methods that conflict w/ .NET 4.5 methods. The
-        // exising NETFX_CORE || K10 methods should go away (soon).
-#if NETFX_CORE || K10
+        // exising NETFX_CORE || ASPNETCORE50 methods should go away (soon).
+#if NETFX_CORE || ASPNETCORE50
         private static bool EqualTo([NotNull] this Type[] t1, [NotNull] Type[] t2)
         {
             if (t1.Length != t2.Length)
@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Mvc
                 queryType.GetInterfaces().FirstOrDefault(matchesInterface);
         }
 
-#if NETFX_CORE || K10
+#if NETFX_CORE || ASPNETCORE50
         public static Type[] GetGenericArguments([NotNull] this Type type)
         {
             return type.GetTypeInfo().GenericTypeArguments;
