@@ -1,4 +1,4 @@
-﻿{
+{
     "authors": [
         "Microsoft"
     ],
@@ -23,6 +23,6 @@
     },
     "frameworks": {
         "net451": { },
-        "k10": { }
+        "aspnetcore50": { }
     }
 }
