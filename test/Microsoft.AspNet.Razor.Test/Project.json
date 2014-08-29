@@ -1,4 +1,4 @@
-﻿{
+{
     "resources": "TestFiles/**/*",
     "dependencies": {
         "Moq": "4.2.1312.1622",

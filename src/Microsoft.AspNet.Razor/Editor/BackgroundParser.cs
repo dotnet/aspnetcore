@@ -309,7 +309,7 @@ namespace Microsoft.AspNet.Razor.Editor
                     RazorEditorTrace.TraceLine(RazorResources.FormatTrace_BackgroundThreadStart(fileNameOnly));
                     EnsureOnThread();
 
-#if K10
+#if ASPNETCORE50
                     var spinWait = new SpinWait();
 #endif
 
