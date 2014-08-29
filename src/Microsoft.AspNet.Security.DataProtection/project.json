@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "1.0.0-*",
   "frameworks": {
     "net45": {
@@ -6,7 +6,7 @@
             "System.Security": ""
         }
     },
-    "k10": {
+    "aspnetcore50": {
       "dependencies": {
         "System.Diagnostics.Debug": "4.0.10.0",
         "System.Diagnostics.Tools": "4.0.0.0",
