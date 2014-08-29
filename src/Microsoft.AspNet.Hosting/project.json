@@ -12,7 +12,7 @@
   },
   "frameworks": {
     "net45": {},
-    "k10": {
+    "aspnetcore50": {
       "dependencies": {
         "System.Collections": "4.0.10.0",
         "System.ComponentModel": "4.0.0.0",
