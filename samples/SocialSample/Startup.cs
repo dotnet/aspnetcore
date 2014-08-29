@@ -4,6 +4,7 @@ using Microsoft.AspNet.Http.Security;
 using Microsoft.AspNet.Security.Cookies;
 using Microsoft.AspNet.Security.Facebook;
 using Microsoft.AspNet.Security.Google;
+using Microsoft.AspNet.Security.MicrosoftAccount;
 using Microsoft.AspNet.Security.Twitter;
 
 namespace CookieSample
@@ -37,6 +38,30 @@ namespace CookieSample
             {
                 ConsumerKey = "6XaCTaLbMqfj6ww3zvZ5g",
                 ConsumerSecret = "Il2eFzGIrYhz6BWjYhVXBPQSfZuS4xoHpSSyD9PI",
+            });
+
+            /*
+            The MicrosoftAccount service has restrictions that prevent the use of http://localhost:12345/ for test applications.
+            As such, here is how to change this sample to uses http://mssecsample.localhost.this:12345/ instead.
+
+            Edit the Project.json file and replace http://localhost:12345/ with http://mssecsample.localhost.this:12345/.
+
+            From an admin command console first enter:
+             notepad C:\Windows\System32\drivers\etc\hosts
+            and add this to the file, save, and exit (and reboot?):
+             127.0.0.1 MsSecSample.localhost.this
+
+            Then you can choose to run the app as admin (see below) or add the following ACL as admin:
+             netsh http add urlacl url=http://mssecsample.localhost.this:12345/ user=[domain\user]
+
+            The sample app can then be run via:
+             k web
+            */
+            app.UseMicrosoftAccountAuthentication(new MicrosoftAccountAuthenticationOptions()
+            {
+                Caption = "MicrosoftAccount - Requires project changes",
+                ClientId = "00000000480FF62E",
+                ClientSecret = "bLw2JIvf8Y1TaToipPEqxTVlOeJwCUsr",
             });
 
             // Choose an authentication type

@@ -17,13 +17,13 @@ namespace Microsoft.AspNet.Security.Google
     public class GoogleAuthenticatedContext : BaseContext
     {
         /// <summary>
-        /// Initializes a <see cref="GoogleAuthenticatedContext"/>
+        /// Initializes a new <see cref="GoogleAuthenticatedContext"/>.
         /// </summary>
-        /// <param name="context">The HTTP environment</param>
-        /// <param name="user">The JSON-serialized Google user info</param>
-        /// <param name="accessToken">Google OAuth 2.0 access token</param>
-        /// <param name="refreshToken">Goolge OAuth 2.0 refresh token</param>
-        /// <param name="expires">Seconds until expiration</param>
+        /// <param name="context">The HTTP environment.</param>
+        /// <param name="user">The JSON-serialized Google user info.</param>
+        /// <param name="accessToken">Google OAuth 2.0 access token.</param>
+        /// <param name="refreshToken">Goolge OAuth 2.0 refresh token.</param>
+        /// <param name="expires">Seconds until expiration.</param>
         public GoogleAuthenticatedContext(HttpContext context, JObject user, string accessToken, 
             string refreshToken, string expires)
             : base(context)
@@ -47,20 +47,20 @@ namespace Microsoft.AspNet.Security.Google
         }
 
         /// <summary>
-        /// Gets the JSON-serialized user
+        /// Gets the JSON-serialized user.
         /// </summary>
         /// <remarks>
-        /// Contains the Google user obtained from the endpoint https://www.googleapis.com/oauth2/v3/userinfo
+        /// Contains the Google user obtained from the userinfo endpoint.
         /// </remarks>
         public JObject User { get; private set; }
 
         /// <summary>
-        /// Gets the Google access token
+        /// Gets the Google access token.
         /// </summary>
         public string AccessToken { get; private set; }
 
         /// <summary>
-        /// Gets the Google refresh token
+        /// Gets the Google refresh token.
         /// </summary>
         /// <remarks>
         /// This value is not null only when access_type authorize parameter is offline.
@@ -68,47 +68,47 @@ namespace Microsoft.AspNet.Security.Google
         public string RefreshToken { get; private set; }
 
         /// <summary>
-        /// Gets the Google access token expiration time
+        /// Gets the Google access token expiration time.
         /// </summary>
         public TimeSpan? ExpiresIn { get; set; }
 
         /// <summary>
-        /// Gets the Google user ID
+        /// Gets the Google user ID.
         /// </summary>
         public string Id { get; private set; }
 
         /// <summary>
-        /// Gets the user's name
+        /// Gets the user's name.
         /// </summary>
         public string Name { get; private set; }
 
         /// <summary>
-        /// Gets the user's given name
+        /// Gets the user's given name.
         /// </summary>
         public string GivenName { get; set; }
 
         /// <summary>
-        /// Gets the user's family name
+        /// Gets the user's family name.
         /// </summary>
         public string FamilyName { get; set; }
 
         /// <summary>
-        /// Gets the user's profile link
+        /// Gets the user's profile link.
         /// </summary>
         public string Profile { get; private set; }
 
         /// <summary>
-        /// Gets the user's email
+        /// Gets the user's email.
         /// </summary>
         public string Email { get; private set; }
 
         /// <summary>
-        /// Gets the <see cref="ClaimsIdentity"/> representing the user
+        /// Gets the <see cref="ClaimsIdentity"/> representing the user.
         /// </summary>
         public ClaimsIdentity Identity { get; set; }
 
         /// <summary>
-        /// Gets or sets a property bag for common authentication properties
+        /// Gets or sets a property bag for common authentication properties.
         /// </summary>
         public AuthenticationProperties Properties { get; set; }
 

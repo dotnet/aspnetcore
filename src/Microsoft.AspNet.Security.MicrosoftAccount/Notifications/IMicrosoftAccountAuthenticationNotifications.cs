@@ -3,31 +3,31 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Security.Google
+namespace Microsoft.AspNet.Security.MicrosoftAccount
 {
     /// <summary>
-    /// Specifies callback methods which the <see cref="GoogleAuthenticationMiddleware" /> invokes to enable developer control over the authentication process.
+    /// Specifies callback methods which the <see cref="MicrosoftAccountAuthenticationMiddleware"/> invokes to enable developer control over the authentication process.
     /// </summary>
-    public interface IGoogleAuthenticationNotifications
+    public interface IMicrosoftAccountAuthenticationNotifications
     {
         /// <summary>
-        /// Invoked whenever Google succesfully authenticates a user.
+        /// Invoked whenever Microsoft succesfully authenticates a user.
         /// </summary>
         /// <param name="context">Contains information about the login session as well as the user <see cref="System.Security.Claims.ClaimsIdentity"/>.</param>
         /// <returns>A <see cref="Task"/> representing the completed operation.</returns>
-        Task Authenticated(GoogleAuthenticatedContext context);
+        Task Authenticated(MicrosoftAccountAuthenticatedContext context);
 
         /// <summary>
         /// Invoked prior to the <see cref="System.Security.Claims.ClaimsIdentity"/> being saved in a local cookie and the browser being redirected to the originally requested URL.
         /// </summary>
-        /// <param name="context">Contains context information and authentication ticket of the return endpoint.</param>
+        /// <param name="context"></param>
         /// <returns>A <see cref="Task"/> representing the completed operation.</returns>
-        Task ReturnEndpoint(GoogleReturnEndpointContext context);
+        Task ReturnEndpoint(MicrosoftAccountReturnEndpointContext context);
 
         /// <summary>
-        /// Called when a Challenge causes a redirect to authorize endpoint in the Google OAuth 2.0 middleware.
+        /// Called when a Challenge causes a redirect to authorize endpoint in the Microsoft middleware.
         /// </summary>
         /// <param name="context">Contains redirect URI and <see cref="AuthenticationProperties"/> of the challenge.</param>
-        void ApplyRedirect(GoogleApplyRedirectContext context);
+        void ApplyRedirect(MicrosoftAccountApplyRedirectContext context);
     }
 }

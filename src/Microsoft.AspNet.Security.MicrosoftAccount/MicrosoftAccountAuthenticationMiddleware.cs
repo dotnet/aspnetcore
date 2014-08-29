@@ -11,29 +11,29 @@ using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.AspNet.Security.Infrastructure;
 using Microsoft.Framework.Logging;
 
-namespace Microsoft.AspNet.Security.Google
+namespace Microsoft.AspNet.Security.MicrosoftAccount
 {
     /// <summary>
-    /// An ASP.NET middleware for authenticating users using Google OAuth 2.0.
+    /// An ASP.NET middleware for authenticating users using the Microsoft Account service.
     /// </summary>
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Middleware are not disposable.")]
-    public class GoogleAuthenticationMiddleware : AuthenticationMiddleware<GoogleAuthenticationOptions>
+    public class MicrosoftAccountAuthenticationMiddleware : AuthenticationMiddleware<MicrosoftAccountAuthenticationOptions>
     {
         private readonly ILogger _logger;
         private readonly HttpClient _httpClient;
 
         /// <summary>
-        /// Initializes a new <see cref="GoogleAuthenticationMiddleware"/>.
+        /// Initializes a new <see cref="MicrosoftAccountAuthenticationMiddleware"/>.
         /// </summary>
         /// <param name="next">The next middleware in the HTTP pipeline to invoke.</param>
         /// <param name="dataProtectionProvider"></param>
         /// <param name="loggerFactory"></param>
         /// <param name="options">Configuration options for the middleware.</param>
-        public GoogleAuthenticationMiddleware(
+        public MicrosoftAccountAuthenticationMiddleware(
             RequestDelegate next,
             IDataProtectionProvider dataProtectionProvider,
             ILoggerFactory loggerFactory,
-            GoogleAuthenticationOptions options)
+            MicrosoftAccountAuthenticationOptions options)
             : base(next, options)
         {
             if (string.IsNullOrWhiteSpace(Options.ClientId))
@@ -45,16 +45,16 @@ namespace Microsoft.AspNet.Security.Google
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "ClientSecret"));
             }
 
-            _logger = loggerFactory.Create(typeof(GoogleAuthenticationMiddleware).FullName);
+            _logger = loggerFactory.Create(typeof(MicrosoftAccountAuthenticationMiddleware).FullName);
 
             if (Options.Notifications == null)
             {
-                Options.Notifications = new GoogleAuthenticationNotifications();
+                Options.Notifications = new MicrosoftAccountAuthenticationNotifications();
             }
             if (Options.StateDataFormat == null)
             {
                 IDataProtector dataProtector = DataProtectionHelpers.CreateDataProtector(dataProtectionProvider,
-                    typeof(GoogleAuthenticationMiddleware).FullName, options.AuthenticationType, "v1");
+                    typeof(MicrosoftAccountAuthenticationMiddleware).FullName, options.AuthenticationType, "v1");
                 Options.StateDataFormat = new PropertiesDataFormat(dataProtector);
             }
 
@@ -66,14 +66,14 @@ namespace Microsoft.AspNet.Security.Google
         /// <summary>
         /// Provides the <see cref="AuthenticationHandler"/> object for processing authentication-related requests.
         /// </summary>
-        /// <returns>An <see cref="AuthenticationHandler"/> configured with the <see cref="GoogleAuthenticationOptions"/> supplied to the constructor.</returns>
-        protected override AuthenticationHandler<GoogleAuthenticationOptions> CreateHandler()
+        /// <returns>An <see cref="AuthenticationHandler"/> configured with the <see cref="MicrosoftAccountAuthenticationOptions"/> supplied to the constructor.</returns>
+        protected override AuthenticationHandler<MicrosoftAccountAuthenticationOptions> CreateHandler()
         {
-            return new GoogleAuthenticationHandler(_httpClient, _logger);
+            return new MicrosoftAccountAuthenticationHandler(_httpClient, _logger);
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Managed by caller")]
-        private static HttpMessageHandler ResolveHttpMessageHandler(GoogleAuthenticationOptions options)
+        private static HttpMessageHandler ResolveHttpMessageHandler(MicrosoftAccountAuthenticationOptions options)
         {
             HttpMessageHandler handler = options.BackchannelHttpHandler ??
 #if NET45

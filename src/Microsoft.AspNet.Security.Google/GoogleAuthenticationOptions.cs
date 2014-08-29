@@ -10,12 +10,12 @@ using Microsoft.AspNet.Http.Security;
 namespace Microsoft.AspNet.Security.Google
 {
     /// <summary>
-    /// Configuration options for <see cref="GoogleAuthenticationMiddleware"/>
+    /// Configuration options for <see cref="GoogleAuthenticationMiddleware"/>.
     /// </summary>
     public class GoogleAuthenticationOptions : AuthenticationOptions
     {
         /// <summary>
-        /// Initializes a new <see cref="GoogleAuthenticationOptions"/>
+        /// Initializes a new <see cref="GoogleAuthenticationOptions"/>.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", 
             MessageId = "Microsoft.AspNet.Security.Google.GoogleAuthenticationOptions.set_Caption(System.String)", 
@@ -31,12 +31,12 @@ namespace Microsoft.AspNet.Security.Google
         }
 
         /// <summary>
-        /// Gets or sets the Google-assigned client id
+        /// Gets or sets the Google-assigned client id.
         /// </summary>
         public string ClientId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Google-assigned client secret
+        /// Gets or sets the Google-assigned client secret.
         /// </summary>
         public string ClientSecret { get; set; }
 #if NET45

@@ -8,17 +8,17 @@ using Microsoft.AspNet.Security.Notifications;
 namespace Microsoft.AspNet.Security.Twitter
 {
     /// <summary>
-    /// Context passed when a Challenge causes a redirect to authorize endpoint in the Twitter middleware
+    /// The Context passed when a Challenge causes a redirect to authorize endpoint in the Twitter middleware.
     /// </summary>
     public class TwitterApplyRedirectContext : BaseContext<TwitterAuthenticationOptions>
     {
         /// <summary>
         /// Creates a new context object.
         /// </summary>
-        /// <param name="context">The HTTP request context</param>
-        /// <param name="options">The Facebook middleware options</param>
-        /// <param name="properties">The authenticaiton properties of the challenge</param>
-        /// <param name="redirectUri">The initial redirect URI</param>
+        /// <param name="context">The HTTP request context.</param>
+        /// <param name="options">The Twitter middleware options.</param>
+        /// <param name="properties">The authentication properties of the challenge.</param>
+        /// <param name="redirectUri">The initial redirect URI.</param>
         public TwitterApplyRedirectContext(HttpContext context, TwitterAuthenticationOptions options,
             AuthenticationProperties properties, string redirectUri)
             : base(context, options)
@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Security.Twitter
         public string RedirectUri { get; private set; }
 
         /// <summary>
-        /// Gets the authenticaiton properties of the challenge
+        /// Gets the authentication properties of the challenge.
         /// </summary>
         public AuthenticationProperties Properties { get; private set; }
     }

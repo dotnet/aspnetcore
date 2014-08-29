@@ -8,6 +8,7 @@
     "Microsoft.AspNet.Security.Cookies" : "1.0.0-*",
     "Microsoft.AspNet.Security.Facebook" : "1.0.0-*",
     "Microsoft.AspNet.Security.Google" : "1.0.0-*",
+    "Microsoft.AspNet.Security.MicrosoftAccount" : "1.0.0-*",
     "Microsoft.AspNet.Security.Twitter" : "1.0.0-*",
     "Microsoft.AspNet.TestHost": "1.0.0-*",
     "Microsoft.Framework.DependencyInjection": "1.0.0-*",

@@ -12,7 +12,7 @@ using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Security.Cookies
 {
-    internal class CookieAuthenticationMiddleware : AuthenticationMiddleware<CookieAuthenticationOptions>
+    public class CookieAuthenticationMiddleware : AuthenticationMiddleware<CookieAuthenticationOptions>
     {
         private readonly ILogger _logger;
 

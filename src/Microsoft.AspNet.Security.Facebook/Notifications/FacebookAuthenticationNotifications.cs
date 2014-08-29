@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNet.Security.Facebook
 {
     /// <summary>
-    /// Default <see cref="IFacebookAuthenticationProvider"/> implementation.
+    /// The default <see cref="IFacebookAuthenticationNotifications"/> implementation.
     /// </summary>
     public class FacebookAuthenticationNotifications : IFacebookAuthenticationNotifications
     {
         /// <summary>
-        /// Initializes a <see cref="FacebookAuthenticationNotifications"/>
+        /// Initializes a new <see cref="FacebookAuthenticationNotifications"/>.
         /// </summary>
         public FacebookAuthenticationNotifications()
         {
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Security.Facebook
         public Action<FacebookApplyRedirectContext> OnApplyRedirect { get; set; }
 
         /// <summary>
-        /// Invoked whenever Facebook succesfully authenticates a user
+        /// Invoked whenever Facebook succesfully authenticates a user.
         /// </summary>
         /// <param name="context">Contains information about the login session as well as the user <see cref="System.Security.Claims.ClaimsIdentity"/>.</param>
         /// <returns>A <see cref="Task"/> representing the completed operation.</returns>
@@ -58,9 +58,9 @@ namespace Microsoft.AspNet.Security.Facebook
         }
 
         /// <summary>
-        /// Called when a Challenge causes a redirect to authorize endpoint in the Facebook middleware
+        /// Called when a Challenge causes a redirect to authorize endpoint in the Facebook middleware.
         /// </summary>
-        /// <param name="context">Contains redirect URI and <see cref="AuthenticationProperties"/> of the challenge </param>
+        /// <param name="context">Contains redirect URI and <see cref="AuthenticationProperties"/> of the challenge.</param>
         public virtual void ApplyRedirect(FacebookApplyRedirectContext context)
         {
             OnApplyRedirect(context);

@@ -14,7 +14,7 @@ using Microsoft.Framework.Logging;
 namespace Microsoft.AspNet.Security.Facebook
 {
     /// <summary>
-    /// ASP.NET middleware for authenticating users using Facebook
+    /// An ASP.NET middleware for authenticating users using Facebook.
     /// </summary>
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Middleware is not disposable.")]
     public class FacebookAuthenticationMiddleware : AuthenticationMiddleware<FacebookAuthenticationOptions>
@@ -23,12 +23,12 @@ namespace Microsoft.AspNet.Security.Facebook
         private readonly HttpClient _httpClient;
 
         /// <summary>
-        /// Initializes a <see cref="FacebookAuthenticationMiddleware"/>
+        /// Initializes a new <see cref="FacebookAuthenticationMiddleware"/>.
         /// </summary>
-        /// <param name="next">The next middleware in the application pipeline to invoke</param>
+        /// <param name="next">The next middleware in the application pipeline to invoke.</param>
         /// <param name="dataProtectionProvider"></param>
         /// <param name="loggerFactory"></param>
-        /// <param name="options">Configuration options for the middleware</param>
+        /// <param name="options">Configuration options for the middleware.</param>
         public FacebookAuthenticationMiddleware(
             RequestDelegate next,
             IDataProtectionProvider dataProtectionProvider,

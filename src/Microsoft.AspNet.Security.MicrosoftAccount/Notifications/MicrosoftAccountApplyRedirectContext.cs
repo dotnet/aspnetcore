@@ -5,23 +5,21 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Security;
 using Microsoft.AspNet.Security.Notifications;
 
-namespace Microsoft.AspNet.Security.Google
+namespace Microsoft.AspNet.Security.MicrosoftAccount
 {
     /// <summary>
-    /// The Context passed when a Challenge causes a redirect to authorize endpoint in the Google OAuth 2.0 middleware.
+    /// Context passed when a Challenge causes a redirect to authorize endpoint in the Microsoft account middleware.
     /// </summary>
-    public class GoogleApplyRedirectContext : BaseContext<GoogleAuthenticationOptions>
+    public class MicrosoftAccountApplyRedirectContext : BaseContext<MicrosoftAccountAuthenticationOptions>
     {
         /// <summary>
         /// Creates a new context object.
         /// </summary>
         /// <param name="context">The HTTP request context.</param>
-        /// <param name="options">The Google OAuth 2.0 middleware options.</param>
+        /// <param name="options">The Microsoft account middleware options.</param>
         /// <param name="properties">The authentication properties of the challenge.</param>
         /// <param name="redirectUri">The initial redirect URI.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "3#",
-            Justification = "Represents header value")]
-        public GoogleApplyRedirectContext(HttpContext context, GoogleAuthenticationOptions options, 
+        public MicrosoftAccountApplyRedirectContext(HttpContext context, MicrosoftAccountAuthenticationOptions options,
             AuthenticationProperties properties, string redirectUri)
             : base(context, options)
         {
@@ -32,7 +30,6 @@ namespace Microsoft.AspNet.Security.Google
         /// <summary>
         /// Gets the URI used for the redirect operation.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1056:UriPropertiesShouldNotBeStrings", Justification = "Represents header value")]
         public string RedirectUri { get; private set; }
 
         /// <summary>

@@ -6,17 +6,17 @@ using Microsoft.AspNet.Security.Google;
 namespace Microsoft.AspNet.Builder
 {
     /// <summary>
-    /// Extension methods for using <see cref="GoogleAuthenticationMiddleware"/>
+    /// Extension methods for using <see cref="GoogleAuthenticationMiddleware"/>.
     /// </summary>
     public static class GoogleAuthenticationExtensions
     {
         /// <summary>
-        /// Authenticate users using Google OAuth 2.0
+        /// Authenticate users using Google OAuth 2.0.
         /// </summary>
-        /// <param name="app">The <see cref="IBuilder"/> passed to the configure method</param>
-        /// <param name="clientId">The google assigned client id</param>
-        /// <param name="clientSecret">The google assigned client secret</param>
-        /// <returns>The updated <see cref="IAppBuilder"/></returns>
+        /// <param name="app">The <see cref="IBuilder"/> passed to the configure method.</param>
+        /// <param name="clientId">The google assigned client id.</param>
+        /// <param name="clientSecret">The google assigned client secret.</param>
+        /// <returns>The updated <see cref="IBuilder"/>.</returns>
         public static IBuilder UseGoogleAuthentication([NotNull] this IBuilder app, [NotNull] string clientId, [NotNull] string clientSecret)
         {
             return app.UseGoogleAuthentication(
@@ -28,11 +28,11 @@ namespace Microsoft.AspNet.Builder
         }
 
         /// <summary>
-        /// Authenticate users using Google OAuth 2.0
+        /// Authenticate users using Google OAuth 2.0.
         /// </summary>
-        /// <param name="app">The <see cref="IBuilder"/> passed to the configure method</param>
-        /// <param name="options">Middleware configuration options</param>
-        /// <returns>The updated <see cref="IBuilder"/></returns>
+        /// <param name="app">The <see cref="IBuilder"/> passed to the configure method.</param>
+        /// <param name="options">Middleware configuration options.</param>
+        /// <returns>The updated <see cref="IBuilder"/>.</returns>
         public static IBuilder UseGoogleAuthentication([NotNull] this IBuilder app, [NotNull] GoogleAuthenticationOptions options)
         {
             if (string.IsNullOrEmpty(options.SignInAsAuthenticationType))

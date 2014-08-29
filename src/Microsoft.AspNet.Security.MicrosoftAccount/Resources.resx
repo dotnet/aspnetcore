@@ -117,16 +117,13 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Exception_DefaultDpapiRequiresAppNameKey" xml:space="preserve">
-    <value>The default data protection provider may only be used when the IBuilder.Properties contains an appropriate 'host.AppName' key.</value>
+  <data name="Exception_MissingId" xml:space="preserve">
+    <value>The user does not have an id.</value>
   </data>
-  <data name="Exception_UnhookAuthenticationStateType" xml:space="preserve">
-    <value>The state passed to UnhookAuthentication may only be the return value from HookAuthentication.</value>
+  <data name="Exception_OptionMustBeProvided" xml:space="preserve">
+    <value>The '{0}' option must be provided.</value>
   </data>
-  <data name="Exception_MissingDefaultSignInAsAuthenticationType" xml:space="preserve">
-    <value>A default value for SignInAsAuthenticationType was not found in IBuilder Properties. This can happen if your authentication middleware are added in the wrong order, or if one is missing.</value>
-  </data>
-  <data name="Exception_AuthenticationTokenDoesNotProvideSyncMethods" xml:space="preserve">
-    <value>The AuthenticationTokenProvider's required synchronous events have not been registered.</value>
+  <data name="Exception_ValidatorHandlerMismatch" xml:space="preserve">
+    <value>An ICertificateValidator cannot be specified at the same time as an HttpMessageHandler unless it is a WebRequestHandler.</value>
   </data>
 </root>

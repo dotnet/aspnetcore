@@ -12,10 +12,10 @@ namespace Microsoft.AspNet.Security.Google
     public class GoogleReturnEndpointContext : ReturnEndpointContext
     {
         /// <summary>
-        /// Initialize a <see cref="GoogleReturnEndpointContext"/>
+        /// Initialize a <see cref="GoogleReturnEndpointContext"/>.
         /// </summary>
-        /// <param name="context">HTTP environment</param>
-        /// <param name="ticket">The authentication ticket</param>
+        /// <param name="context">The HTTP environment.</param>
+        /// <param name="ticket">The authentication ticket.</param>
         public GoogleReturnEndpointContext(
             HttpContext context,
             AuthenticationTicket ticket)
