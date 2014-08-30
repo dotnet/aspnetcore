@@ -92,7 +92,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Theory]
-        [MemberData("ExpectedAttributeDataStrings")]
+        [MemberData(nameof(ExpectedAttributeDataStrings))]
         public void AttributesOverrideMetadataStrings(Attribute attribute, Func<ModelMetadata, string> accessor)
         {
             // Arrange
@@ -184,7 +184,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Theory]
-        [MemberData("ExpectedAttributeDataBooleans")]
+        [MemberData(nameof(ExpectedAttributeDataBooleans))]
         public void AttributesOverrideMetadataBooleans(
             Attribute attribute,
             Func<ModelMetadata, bool> accessor,

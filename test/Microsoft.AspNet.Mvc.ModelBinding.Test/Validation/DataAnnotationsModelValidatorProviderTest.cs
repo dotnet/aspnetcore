@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Theory]
-        [MemberData("DataAnnotationAdapters")]
+        [MemberData(nameof(DataAnnotationAdapters))]
         public void AdapterFactory_RegistersAdapters_ForDataAnnotationAttributes(ValidationAttribute attribute,
                                                                                  Type expectedAdapterType)
         {
@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Theory]
-        [MemberData("DataTypeAdapters")]
+        [MemberData(nameof(DataTypeAdapters))]
         public void AdapterFactory_RegistersAdapters_ForDataTypeAttributes(ValidationAttribute attribute,
                                                                            string expectedRuleName)
         {

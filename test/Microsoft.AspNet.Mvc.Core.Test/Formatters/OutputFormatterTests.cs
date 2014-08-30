@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Theory]
-        [MemberData("SelectResponseCharacterEncodingData")]
+        [MemberData(nameof(SelectResponseCharacterEncodingData))]
         public void SelectResponseCharacterEncoding_SelectsEncoding(string acceptCharsetHeaders,
                                                                     string requestEncoding,
                                                                     string[] supportedEncodings,

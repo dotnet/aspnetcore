@@ -53,7 +53,7 @@ ViewWithNestedLayout-Content
         }
 
         [Theory]
-        [MemberData("RazorView_ExecutesPageAndLayoutData")]
+        [MemberData(nameof(RazorView_ExecutesPageAndLayoutData))]
         public async Task RazorView_ExecutesPageAndLayout(string actionName, string expected)
         {
             var server = TestServer.Create(_provider, _app);

@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Theory]
-        [MemberData("OutputFormatterContextValues_CanWriteType")]
+        [MemberData(nameof(OutputFormatterContextValues_CanWriteType))]
         public void CanWriteResult_ReturnsTrueOnlyIfTheValueIsNull(object value,
                                                                    bool declaredTypeAsString,
                                                                    bool expectedCanwriteResult,

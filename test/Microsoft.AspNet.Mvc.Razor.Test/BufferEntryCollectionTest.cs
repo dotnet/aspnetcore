@@ -83,7 +83,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Theory]
-        [MemberData("AddWithChar_RepresentsStringsAsChunkedEntriesData")]
+        [MemberData(nameof(AddWithChar_RepresentsStringsAsChunkedEntriesData))]
         public void AddWithChar_RepresentsStringsAsChunkedEntries(char[] value, int index, int count, IList<object> expected)
         {
             // Arrange
@@ -150,7 +150,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
 
         [Theory]
-        [MemberData("Enumerator_TraversesThroughBufferData")]
+        [MemberData(nameof(Enumerator_TraversesThroughBufferData))]
         public void Enumerator_TraversesThroughBuffer(BufferEntryCollection buffer, string[] expected)
         {
             // Act and Assert

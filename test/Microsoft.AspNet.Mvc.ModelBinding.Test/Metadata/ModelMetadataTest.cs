@@ -269,7 +269,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Theory]
-        [MemberData("MetadataModifierData")]
+        [MemberData(nameof(MetadataModifierData))]
         public void PropertiesPropertyChangesPersist(
             Action<ModelMetadata> setter,
             Func<ModelMetadata, object> getter,
@@ -398,7 +398,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Theory]
-        [MemberData("SimpleDisplayTextData")]
+        [MemberData(nameof(SimpleDisplayTextData))]
         public void TestSimpleDisplayText(Func<object> modelAccessor, Type modelType, string expectedResult)
         {
             // Arrange
@@ -426,7 +426,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Theory]
-        [MemberData("MetadataModifierData")]
+        [MemberData(nameof(MetadataModifierData))]
         public void PropertyChangesPersist(
             Action<ModelMetadata> setter,
             Func<ModelMetadata, object> getter,

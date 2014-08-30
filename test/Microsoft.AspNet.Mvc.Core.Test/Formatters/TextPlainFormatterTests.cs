@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Theory]
-        [MemberData("OutputFormatterContextValues")]
+        [MemberData(nameof(OutputFormatterContextValues))]
         public void CanWriteResult_ReturnsTrueForStringTypes(object value, bool useDeclaredTypeAsString, bool expectedCanWriteResult)
         {
             // Arrange

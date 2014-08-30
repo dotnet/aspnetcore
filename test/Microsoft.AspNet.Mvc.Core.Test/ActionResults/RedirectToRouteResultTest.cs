@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.Core
     public class RedirectToRouteResultTest
     {
         [Theory]
-        [MemberData("RedirectToRouteData")]
+        [MemberData(nameof(RedirectToRouteData))]
         public async void RedirectToRoute_Execute_PassesCorrectValuesToRedirect(object values)
         {
             // Arrange

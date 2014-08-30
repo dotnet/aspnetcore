@@ -373,7 +373,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Theory]
-        [MemberData("IntrinsicConversionData")]
+        [MemberData(nameof(IntrinsicConversionData))]
         public void ConvertToCanConvertIntrinsics<T>(object initialValue, T expectedValue)
         {
             // Arrange

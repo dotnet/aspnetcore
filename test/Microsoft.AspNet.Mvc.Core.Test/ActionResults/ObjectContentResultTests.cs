@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
         }
 
         [Theory]
-        [MemberData("ContentTypes")]
+        [MemberData(nameof(ContentTypes))]
         public async Task ObjectResult_WithMultipleContentTypesAndAcceptHeaders_PerformsContentNegotiation(
             IEnumerable<string> contentTypes, string acceptHeader, string expectedHeader)
         {

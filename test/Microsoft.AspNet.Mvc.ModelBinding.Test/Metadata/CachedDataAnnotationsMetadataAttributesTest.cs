@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Theory]
-        [MemberData("ExpectedAttributeData")]
+        [MemberData(nameof(ExpectedAttributeData))]
         public void Constructor_FindsExpectedAttribute(
             Attribute attribute,
             Func<CachedDataAnnotationsMetadataAttributes, Attribute> accessor)

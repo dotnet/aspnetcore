@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
 #if NET45
         [Theory]
-        [MemberData("ValidateSetsMemberNamePropertyDataSet")]
+        [MemberData(nameof(ValidateSetsMemberNamePropertyDataSet))]
         public void ValidateSetsMemberNamePropertyOfValidationContextForProperties(ModelMetadata metadata,
                                                                                    string expectedMemberName)
         {

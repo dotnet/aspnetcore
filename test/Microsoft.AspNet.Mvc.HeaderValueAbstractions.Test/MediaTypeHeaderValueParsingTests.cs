@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.HeaderValueAbstractions
         }
 
         [Theory]
-        [MemberData("GetValidMediaTypeWithQualityHeaderValues")]
+        [MemberData(nameof(GetValidMediaTypeWithQualityHeaderValues))]
         public void MediaTypeWithQualityHeaderValue_ParseSuccessfully(string mediaType,
                                          string mediaSubType,
                                          string charset,

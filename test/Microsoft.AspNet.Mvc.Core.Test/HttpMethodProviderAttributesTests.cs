@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Mvc
     public class HttpMethodProviderAttributesTests
     {
         [Theory]
-        [MemberData("HttpMethodProviderTestData")]
+        [MemberData(nameof(HttpMethodProviderTestData))]
         public void HttpMethodProviderAttributes_ReturnsCorrectHttpMethodSequence(
             IActionHttpMethodProvider httpMethodProvider,
             IEnumerable<string> expectedHttpMethods)

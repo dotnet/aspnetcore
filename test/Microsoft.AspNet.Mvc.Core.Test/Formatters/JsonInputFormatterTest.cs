@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Theory]
-        [MemberData("JsonFormatterReadSimpleTypesData")]
+        [MemberData(nameof(JsonFormatterReadSimpleTypesData))]
         public async Task JsonFormatterReadsSimpleTypes(string content, Type type, object expected)
         {
             // Arrange

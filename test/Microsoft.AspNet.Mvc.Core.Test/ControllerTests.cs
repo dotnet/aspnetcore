@@ -180,7 +180,7 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Theory]
-        [MemberData("RedirectTestData")]
+        [MemberData(nameof(RedirectTestData))]
         public void RedirectToAction_WithParameterActionControllerRouteValues_SetsResultProperties(object routeValues)
         {
             // Arrange
@@ -198,7 +198,7 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Theory]
-        [MemberData("RedirectTestData")]
+        [MemberData(nameof(RedirectTestData))]
         public void RedirectToActionPermanent_WithParameterActionControllerRouteValues_SetsResultProperties(
             object routeValues)
         {
@@ -220,7 +220,7 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Theory]
-        [MemberData("RedirectTestData")]
+        [MemberData(nameof(RedirectTestData))]
         public void RedirectToAction_WithParameterActionAndRouteValues_SetsResultProperties(object routeValues)
         {
             // Arrange
@@ -237,7 +237,7 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Theory]
-        [MemberData("RedirectTestData")]
+        [MemberData(nameof(RedirectTestData))]
         public void RedirectToActionPermanent_WithParameterActionAndRouteValues_SetsResultProperties(
             object routeValues)
         {
@@ -255,7 +255,7 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Theory]
-        [MemberData("RedirectTestData")]
+        [MemberData(nameof(RedirectTestData))]
         public void RedirectToRoute_WithParameterRouteValues_SetsResultEqualRouteValues(object routeValues)
         {
             // Arrange
@@ -271,7 +271,7 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Theory]
-        [MemberData("RedirectTestData")]
+        [MemberData(nameof(RedirectTestData))]
         public void RedirectToRoutePermanent_WithParameterRouteValues_SetsResultEqualRouteValuesAndPermanent(
             object routeValues)
         {
@@ -320,7 +320,7 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Theory]
-        [MemberData("RedirectTestData")]
+        [MemberData(nameof(RedirectTestData))]
         public void RedirectToRoute_WithParameterRouteNameAndRouteValues_SetsResultSameRouteNameAndRouteValues(
             object routeValues)
         {
@@ -339,7 +339,7 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Theory]
-        [MemberData("RedirectTestData")]
+        [MemberData(nameof(RedirectTestData))]
         public void RedirectToRoutePermanent_WithParameterRouteNameAndRouteValues_SetsResultProperties(
             object routeValues)
         {
@@ -372,7 +372,7 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Theory]
-        [MemberData("PublicNormalMethodsFromController")]
+        [MemberData(nameof(PublicNormalMethodsFromController))]
         public void NonActionAttribute_IsOnEveryPublicNormalMethodFromController(MethodInfo method)
         {
             // Arrange & Act & Assert

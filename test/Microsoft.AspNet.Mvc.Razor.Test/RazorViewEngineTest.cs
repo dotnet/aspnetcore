@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         }
 
         [Theory]
-        [MemberData("InvalidViewNameValues")]
+        [MemberData(nameof(InvalidViewNameValues))]
         public void FindView_WithFullPathReturnsNotFound_WhenPathDoesNotMatchExtension(string viewName)
         {
             // Arrange
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         }
 
         [Theory]
-        [MemberData("InvalidViewNameValues")]
+        [MemberData(nameof(InvalidViewNameValues))]
         public void FindViewFullPathSucceedsWithCshtmlEnding(string viewName)
         {
             // Arrange
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         }
 
         [Theory]
-        [MemberData("InvalidViewNameValues")]
+        [MemberData(nameof(InvalidViewNameValues))]
         public void FindPartialView_WithFullPathReturnsNotFound_WhenPathDoesNotMatchExtension(string partialViewName)
         {
             // Arrange
@@ -83,7 +83,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         }
 
         [Theory]
-        [MemberData("InvalidViewNameValues")]
+        [MemberData(nameof(InvalidViewNameValues))]
         public void FindPartialViewFullPathSucceedsWithCshtmlEnding(string partialViewName)
         {
             // Arrange

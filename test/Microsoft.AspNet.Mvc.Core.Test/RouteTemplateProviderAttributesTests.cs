@@ -6,7 +6,7 @@ namespace Microsoft.AspNet.Mvc
     public class RouteTemplateProviderAttributesTest
     {
         [Theory]
-        [MemberData("RouteTemplateProvidersTestData")]
+        [MemberData(nameof(RouteTemplateProvidersTestData))]
         public void Order_Defaults_ToNull(IRouteTemplateProvider routeTemplateProvider)
         {
             // Act & Assert

@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         }
 
         [Theory]
-        [MemberData("ImmediateExpirationTimespans")]
+        [MemberData(nameof(ImmediateExpirationTimespans))]
         public void GettingFileInfoReturnsNewDataWithCustomImmediateExpiration(TimeSpan expiration)
         {
             // Arrange
@@ -244,7 +244,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         }
 
         [Theory]
-        [MemberData("CustomExpirationTimespans")]
+        [MemberData(nameof(CustomExpirationTimespans))]
         public void GettingFileInfoReturnsNewDataWithCustomExpiration(TimeSpan expiration)
         {
             // Arrange
@@ -270,7 +270,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         }
 
         [Theory]
-        [MemberData("CustomExpirationTimespans")]
+        [MemberData(nameof(CustomExpirationTimespans))]
         public void GettingFileInfoReturnsSameDataWithCustomExpiration(TimeSpan expiration)
         {
             // Arrange

@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         }
 
         [Theory]
-        [MemberData("SortValues")]
+        [MemberData(nameof(SortValues))]
         public void SortMediaTypeWithQualityHeaderValuesByQFactor_SortsCorrectly(IEnumerable<string> unsorted, IEnumerable<string> expectedSorted)
         {
             // Arrange

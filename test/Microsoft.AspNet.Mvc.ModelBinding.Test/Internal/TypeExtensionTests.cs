@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Theory]
-        [MemberData("TypesWithValues")]
+        [MemberData(nameof(TypesWithValues))]
         public void IsCompatibleWithReturnsTrue_IfValueIsAssignable(Type type, object value)
         {
             // Act

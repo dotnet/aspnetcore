@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
         }
 
         [Theory]
-        [MemberData("ReplaceTokens_ValueValuesData")]
+        [MemberData(nameof(ReplaceTokens_ValueValuesData))]
         public void ReplaceTokens_ValidValues(string template, object values, string expected)
         {
             // Arrange
@@ -120,7 +120,7 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
         }
 
         [Theory]
-        [MemberData("ReplaceTokens_InvalidFormatValuesData")]
+        [MemberData(nameof(ReplaceTokens_InvalidFormatValuesData))]
         public void ReplaceTokens_InvalidFormat(string template, object values, string reason)
         {
             // Arrange
@@ -169,7 +169,7 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
         }
 
         [Theory]
-        [MemberData("CombineOrdersTestData")]
+        [MemberData(nameof(CombineOrdersTestData))]
         public void Combine_Orders(
             ReflectedAttributeRouteModel left,
             ReflectedAttributeRouteModel right,
@@ -184,7 +184,7 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
         }
 
         [Theory]
-        [MemberData("ValidReflectedAttributeRouteModelsTestData")]
+        [MemberData(nameof(ValidReflectedAttributeRouteModelsTestData))]
         public void Combine_ValidReflectedAttributeRouteModels(
             ReflectedAttributeRouteModel left,
             ReflectedAttributeRouteModel right,
@@ -199,7 +199,7 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
         }
 
         [Theory]
-        [MemberData("NullOrNullTemplateReflectedAttributeRouteModelTestData")]
+        [MemberData(nameof(NullOrNullTemplateReflectedAttributeRouteModelTestData))]
         public void Combine_NullOrNullTemplateReflectedAttributeRouteModels(
             ReflectedAttributeRouteModel left,
             ReflectedAttributeRouteModel right)
@@ -212,7 +212,7 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
         }
 
         [Theory]
-        [MemberData("RightOverridesReflectedAttributeRouteModelTestData")]
+        [MemberData(nameof(RightOverridesReflectedAttributeRouteModelTestData))]
         public void Combine_RightOverridesReflectedAttributeRouteModel(
             ReflectedAttributeRouteModel left,
             ReflectedAttributeRouteModel right)
@@ -230,7 +230,7 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
         }
 
         [Theory]
-        [MemberData("CombineNamesTestData")]
+        [MemberData(nameof(CombineNamesTestData))]
         public void Combine_Names(
             ReflectedAttributeRouteModel left,
             ReflectedAttributeRouteModel right,

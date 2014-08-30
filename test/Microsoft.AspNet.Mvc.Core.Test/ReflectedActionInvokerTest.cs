@@ -1261,7 +1261,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Theory]
-        [MemberData("CreateActionResult_ReturnsObjectContentResultData")]
+        [MemberData(nameof(CreateActionResult_ReturnsObjectContentResultData))]
         public void CreateActionResult_ReturnsObjectContentResult(Type type, object input)
         {
             // Arrange & Act

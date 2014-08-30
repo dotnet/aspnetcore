@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Theory]
-        [MemberData("GetViewStartLocations_ReturnsPotentialViewStartLocationsData")]
+        [MemberData(nameof(GetViewStartLocations_ReturnsPotentialViewStartLocationsData))]
         public void GetViewStartLocations_ReturnsPotentialViewStartLocations(string appPath,
                                                                              string viewPath,
                                                                              IEnumerable<string> expected)
