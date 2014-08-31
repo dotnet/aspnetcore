@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var actionNames = descriptors.Select(ad => ad.Name);
 
             // Assert
-            Assert.Equal(new[] { "GetPerson", "ListPeople", }, actionNames);
+            Assert.Equal(new[] { "GetPerson", "ShowPeople", }, actionNames);
         }
 
         [Fact]
@@ -58,21 +58,244 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Equal(FilterScope.Action, filter3.Scope);
         }
 
-        [Fact]
-        public void GetDescriptors_AddsHttpMethodConstraints()
+        [Theory]
+        [InlineData(typeof(HttpMethodController), nameof(HttpMethodController.OnlyPost), "POST")]
+        [InlineData(typeof(AttributeRoutedHttpMethodController), nameof(AttributeRoutedHttpMethodController.PutOrPatch), "PUT,PATCH")]
+        public void GetDescriptors_AddsHttpMethodConstraints(Type controllerType, string actionName, string expectedMethods)
         {
             // Arrange
-            var provider = GetProvider(typeof(HttpMethodController).GetTypeInfo());
+            var provider = GetProvider(controllerType.GetTypeInfo());
 
             // Act
             var descriptors = provider.GetDescriptors();
             var descriptor = Assert.Single(descriptors);
 
             // Assert
-            Assert.Equal("OnlyPost", descriptor.Name);
+            Assert.Equal(actionName, descriptor.Name);
 
             Assert.Single(descriptor.MethodConstraints);
-            Assert.Equal(new string[] { "POST" }, descriptor.MethodConstraints[0].HttpMethods);
+            Assert.Equal(expectedMethods.Split(','), descriptor.MethodConstraints[0].HttpMethods);
+        }
+
+        [Fact]
+        public void GetDescriptors_AddsParameters_ToActionDescriptor()
+        {
+            // Arrange & Act
+            var descriptors = GetDescriptors(
+                typeof(ActionParametersController).GetTypeInfo());
+
+            // Assert
+            var main = Assert.Single(descriptors,
+                d => d.Name.Equals(nameof(ActionParametersController.RequiredInt)));
+
+            Assert.NotNull(main.Parameters);
+            var id = Assert.Single(main.Parameters);
+
+            Assert.Equal("id", id.Name);
+            Assert.False(id.IsOptional);
+            Assert.Null(id.BodyParameterInfo);
+
+            Assert.NotNull(id.ParameterBindingInfo);
+            Assert.Equal("id", id.ParameterBindingInfo.Prefix);
+            Assert.Equal(typeof(int), id.ParameterBindingInfo.ParameterType);
+        }
+
+        [Fact]
+        public void GetDescriptors_AddsMultipleParameters_ToActionDescriptor()
+        {
+            // Arrange & Act
+            var descriptors = GetDescriptors(
+                typeof(ActionParametersController).GetTypeInfo());
+
+            // Assert
+            var main = Assert.Single(descriptors,
+                d => d.Name.Equals(nameof(ActionParametersController.MultipleParameters)));
+
+            Assert.NotNull(main.Parameters);
+            var id = Assert.Single(main.Parameters, p => p.Name == "id");
+
+            Assert.Equal("id", id.Name);
+            Assert.False(id.IsOptional);
+            Assert.Null(id.BodyParameterInfo);
+
+            Assert.NotNull(id.ParameterBindingInfo);
+            Assert.Equal("id", id.ParameterBindingInfo.Prefix);
+            Assert.Equal(typeof(int), id.ParameterBindingInfo.ParameterType);
+
+            var entity = Assert.Single(main.Parameters, p => p.Name == "entity");
+
+            Assert.Equal("entity", entity.Name);
+            Assert.False(entity.IsOptional);
+            Assert.Null(entity.ParameterBindingInfo);
+
+            Assert.NotNull(entity.BodyParameterInfo);
+            Assert.Equal(typeof(TestActionParameter), entity.BodyParameterInfo.ParameterType);
+        }
+
+        [Fact]
+        public void GetDescriptors_AddsMultipleParametersWithDifferentCasing_ToActionDescriptor()
+        {
+            // Arrange & Act
+            var descriptors = GetDescriptors(
+                typeof(ActionParametersController).GetTypeInfo());
+
+            // Assert
+            var main = Assert.Single(descriptors,
+                d => d.Name.Equals(nameof(ActionParametersController.DifferentCasing)));
+
+            Assert.NotNull(main.Parameters);
+            var id = Assert.Single(main.Parameters, p => p.Name == "id");
+
+            Assert.Equal("id", id.Name);
+            Assert.False(id.IsOptional);
+            Assert.Null(id.BodyParameterInfo);
+
+            Assert.NotNull(id.ParameterBindingInfo);
+            Assert.Equal("id", id.ParameterBindingInfo.Prefix);
+            Assert.Equal(typeof(int), id.ParameterBindingInfo.ParameterType);
+
+            var upperCaseId = Assert.Single(main.Parameters, p => p.Name == "ID");
+
+            Assert.Equal("ID", upperCaseId.Name);
+            Assert.False(upperCaseId.IsOptional);
+            Assert.Null(upperCaseId.BodyParameterInfo);
+
+            Assert.NotNull(upperCaseId.ParameterBindingInfo);
+            Assert.Equal("ID", upperCaseId.ParameterBindingInfo.Prefix);
+            Assert.Equal(typeof(int), upperCaseId.ParameterBindingInfo.ParameterType);
+
+            var pascalCaseId = Assert.Single(main.Parameters, p => p.Name == "Id");
+
+            Assert.Equal("Id", pascalCaseId.Name);
+            Assert.False(pascalCaseId.IsOptional);
+            Assert.Null(pascalCaseId.BodyParameterInfo);
+
+            Assert.NotNull(pascalCaseId.ParameterBindingInfo);
+            Assert.Equal("Id", pascalCaseId.ParameterBindingInfo.Prefix);
+            Assert.Equal(typeof(int), pascalCaseId.ParameterBindingInfo.ParameterType);
+        }
+
+        [Theory]
+        [InlineData(nameof(ActionParametersController.OptionalInt), typeof(Nullable<int>))]
+        [InlineData(nameof(ActionParametersController.OptionalChar), typeof(char))]
+        public void GetDescriptors_AddsParametersWithDefaultValues_AsOptionalParameters(
+            string actionName,
+            Type parameterType)
+        {
+            // Arrange & Act
+            var descriptors = GetDescriptors(
+                typeof(ActionParametersController).GetTypeInfo());
+
+            // Assert
+            var optional = Assert.Single(descriptors,
+                d => d.Name.Equals(actionName));
+
+            Assert.NotNull(optional.Parameters);
+            var id = Assert.Single(optional.Parameters);
+
+            Assert.Equal("id", id.Name);
+            Assert.True(id.IsOptional);
+            Assert.Null(id.BodyParameterInfo);
+
+            Assert.NotNull(id.ParameterBindingInfo);
+            Assert.Equal("id", id.ParameterBindingInfo.Prefix);
+            Assert.Equal(parameterType, id.ParameterBindingInfo.ParameterType);
+        }
+
+        [Fact]
+        public void GetDescriptors_AddsParameters_DetectsFromBodyParameters()
+        {
+            // Arrange & Act
+            var actionName = nameof(ActionParametersController.FromBodyParameter);
+
+            var descriptors = GetDescriptors(
+                typeof(ActionParametersController).GetTypeInfo());
+
+            // Assert
+            var fromBody = Assert.Single(descriptors,
+                d => d.Name.Equals(actionName));
+
+            Assert.NotNull(fromBody.Parameters);
+            var entity = Assert.Single(fromBody.Parameters);
+
+            Assert.Equal("entity", entity.Name);
+            Assert.False(entity.IsOptional);
+
+            Assert.NotNull(entity.BodyParameterInfo);
+            Assert.Equal(typeof(TestActionParameter), entity.BodyParameterInfo.ParameterType);
+
+            Assert.Null(entity.ParameterBindingInfo);
+        }
+
+        [Fact]
+        public void GetDescriptors_AddsParameters_DoesNotDetectParameterFromBody_IfNoFromBodyAttribute()
+        {
+            // Arrange & Act
+            var actionName = nameof(ActionParametersController.NotFromBodyParameter);
+
+            var descriptors = GetDescriptors(
+                typeof(ActionParametersController).GetTypeInfo());
+
+            // Assert
+            var notFromBody = Assert.Single(descriptors,
+                d => d.Name.Equals(actionName));
+
+            Assert.NotNull(notFromBody.Parameters);
+            var entity = Assert.Single(notFromBody.Parameters);
+
+            Assert.Equal("entity", entity.Name);
+            Assert.False(entity.IsOptional);
+            Assert.Null(entity.BodyParameterInfo);
+
+            Assert.NotNull(entity.ParameterBindingInfo);
+            Assert.Equal("entity", entity.ParameterBindingInfo.Prefix);
+            Assert.Equal(typeof(TestActionParameter), entity.ParameterBindingInfo.ParameterType);
+        }
+
+        [Fact]
+        public void GetDescriptors_AddsControllerAndActionConstraints_ToConventionallyRoutedActions()
+        {
+            // Arrange & Act
+            var descriptors = GetDescriptors(
+                typeof(ConventionallyRoutedController).GetTypeInfo());
+
+            // Assert
+            var action = Assert.Single(descriptors);
+
+            Assert.NotNull(action.RouteConstraints);
+
+            var controller = Assert.Single(action.RouteConstraints,
+                rc => rc.RouteKey.Equals("controller"));
+            Assert.Equal(RouteKeyHandling.RequireKey, controller.KeyHandling);
+            Assert.Equal("ConventionallyRouted", controller.RouteValue);
+
+            var actionConstraint = Assert.Single(action.RouteConstraints,
+                rc => rc.RouteKey.Equals("action"));
+            Assert.Equal(RouteKeyHandling.RequireKey, actionConstraint.KeyHandling);
+            Assert.Equal(nameof(ConventionallyRoutedController.ConventionalAction), actionConstraint.RouteValue);
+        }
+
+        [Fact]
+        public void GetDescriptors_AddsControllerAndActionDefaults_ToAttributeRoutedActions()
+        {
+            // Arrange & Act
+            var descriptors = GetDescriptors(
+                typeof(AttributeRoutedController).GetTypeInfo());
+
+            // Assert
+            var action = Assert.Single(descriptors);
+
+            var routeconstraint = Assert.Single(action.RouteConstraints);
+            Assert.Equal(RouteKeyHandling.RequireKey, routeconstraint.KeyHandling);
+            Assert.Equal(AttributeRouting.RouteGroupKey, routeconstraint.RouteKey);
+
+            var controller = Assert.Single(action.RouteValueDefaults,
+                rc => rc.Key.Equals("controller"));
+            Assert.Equal("AttributeRouted", controller.Value);
+
+            var actionConstraint = Assert.Single(action.RouteValueDefaults,
+                rc => rc.Key.Equals("action"));
+            Assert.Equal(nameof(AttributeRoutedController.AttributeRoutedAction), actionConstraint.Value);
         }
 
         [Fact]
@@ -110,6 +333,12 @@ namespace Microsoft.AspNet.Mvc.Test
                 c =>
                     c.RouteKey == "action" &&
                     c.RouteValue == "Edit");
+            Assert.Single(
+                descriptorWithConstraint.RouteConstraints,
+                c =>
+                    c.RouteKey == "key" &&
+                    c.RouteValue == "value" &&
+                    c.KeyHandling == RouteKeyHandling.RequireKey);
 
             Assert.Equal(3, descriptorWithoutConstraint.RouteConstraints.Count);
             Assert.Single(
@@ -122,6 +351,12 @@ namespace Microsoft.AspNet.Mvc.Test
                 c =>
                     c.RouteKey == "action" &&
                     c.RouteValue == "OnlyPost");
+            Assert.Single(
+                descriptorWithoutConstraint.RouteConstraints,
+                c =>
+                    c.RouteKey == "key" &&
+                    c.RouteValue == null &&
+                    c.KeyHandling == RouteKeyHandling.DenyKey);
         }
 
         [Fact]
@@ -158,6 +393,12 @@ namespace Microsoft.AspNet.Mvc.Test
                 c =>
                     c.RouteKey == "action" &&
                     c.RouteValue == "Create");
+            Assert.Single(
+                descriptorWithConstraint.RouteConstraints,
+                c =>
+                    c.RouteKey == "key" &&
+                    c.RouteValue == "value" &&
+                    c.KeyHandling == RouteKeyHandling.RequireKey);
 
             Assert.Equal(2, descriptorWithoutConstraint.RouteConstraints.Count);
             Assert.Single(
@@ -188,6 +429,66 @@ namespace Microsoft.AspNet.Mvc.Test
             // Assert
             var filters = model.Filters;
             Assert.Same(filter, Assert.Single(filters));
+        }
+
+        [Fact]
+        public void BuildModel_CreatesReflectedControllerModels_ForAllControllers()
+        {
+            // Arrange
+            var provider = GetProvider(
+                typeof(ConventionallyRoutedController).GetTypeInfo(),
+                typeof(AttributeRoutedController).GetTypeInfo(),
+                typeof(EmptyController).GetTypeInfo(),
+                typeof(NonActionAttributeController).GetTypeInfo());
+
+            // Act
+            var model = provider.BuildModel();
+
+            // Assert
+            Assert.NotNull(model);
+            Assert.Equal(4, model.Controllers.Count);
+
+            var conventional = Assert.Single(model.Controllers,
+                c => c.ControllerName == "ConventionallyRouted");
+            Assert.Null(conventional.AttributeRouteModel);
+            Assert.Single(conventional.Actions);
+
+            var attributeRouted = Assert.Single(model.Controllers,
+                c => c.ControllerName == "AttributeRouted");
+            Assert.Single(attributeRouted.Actions);
+            Assert.NotNull(attributeRouted.AttributeRouteModel);
+
+            var empty = Assert.Single(model.Controllers,
+                c => c.ControllerName == "Empty");
+            Assert.Empty(empty.Actions);
+
+            var nonAction = Assert.Single(model.Controllers,
+                c => c.ControllerName == "NonActionAttribute");
+            Assert.Empty(nonAction.Actions);
+        }
+
+        [Fact]
+        public void BuildModel_CreatesReflectedActionDescriptors_ForValidActions()
+        {
+            // Arrange
+            var provider = GetProvider(
+                typeof(PersonController).GetTypeInfo());
+
+            // Act
+            var model = provider.BuildModel();
+
+            // Assert
+            var controller = Assert.Single(model.Controllers);
+
+            Assert.Equal(2, controller.Actions.Count);
+
+            var getPerson = Assert.Single(controller.Actions, a => a.ActionName == "GetPerson");
+            Assert.Empty(getPerson.HttpMethods);
+            Assert.True(getPerson.IsActionNameMatchRequired);
+
+            var showPeople = Assert.Single(controller.Actions, a => a.ActionName == "ShowPeople");
+            Assert.Empty(showPeople.HttpMethods);
+            Assert.True(showPeople.IsActionNameMatchRequired);
         }
 
         [Fact]
@@ -340,7 +641,7 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             // Arrange
             var provider = GetProvider(
-                typeof(MixedAttributeRouteController).GetTypeInfo(),
+                typeof(ConventionalAndAttributeRoutedActionsWithAreaController).GetTypeInfo(),
                 typeof(ConstrainedController).GetTypeInfo());
 
             // Act
@@ -364,7 +665,7 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             // Arrange
             var provider = GetProvider(
-                typeof(MixedAttributeRouteController).GetTypeInfo(),
+                typeof(ConventionalAndAttributeRoutedActionsWithAreaController).GetTypeInfo(),
                 typeof(ConstrainedController).GetTypeInfo());
 
             // Act
@@ -385,7 +686,7 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Equal(5, indexAction.RouteValueDefaults.Count);
 
             var controllerDefault = Assert.Single(indexAction.RouteValueDefaults, rd => rd.Key.Equals("controller", StringComparison.OrdinalIgnoreCase));
-            Assert.Equal("MixedAttributeRoute", controllerDefault.Value);
+            Assert.Equal("ConventionalAndAttributeRoutedActionsWithArea", controllerDefault.Value);
 
             var actionDefault = Assert.Single(indexAction.RouteValueDefaults, rd => rd.Key.Equals("action", StringComparison.OrdinalIgnoreCase));
             Assert.Equal("Index", actionDefault.Value);
@@ -520,11 +821,19 @@ namespace Microsoft.AspNet.Mvc.Test
             }
         }
 
+        [Route("Products")]
+        private class AttributeRoutedHttpMethodController
+        {
+            [AcceptVerbs("PUT", "PATCH")]
+            public void PutOrPatch() { }
+        }
+
         private class PersonController
         {
             public void GetPerson()
             { }
 
+            [ActionName("ShowPeople")]
             public void ListPeople()
             { }
 
@@ -533,7 +842,7 @@ namespace Microsoft.AspNet.Mvc.Test
             { }
         }
 
-        public class MyRouteConstraintAttribute : RouteConstraintAttribute
+        private class MyRouteConstraintAttribute : RouteConstraintAttribute
         {
             public MyRouteConstraintAttribute(bool blockNonAttributedActions)
                 : base("key", "value", blockNonAttributedActions)
@@ -541,7 +850,7 @@ namespace Microsoft.AspNet.Mvc.Test
             }
         }
 
-        public class MySecondRouteConstraintAttribute : RouteConstraintAttribute
+        private class MySecondRouteConstraintAttribute : RouteConstraintAttribute
         {
             public MySecondRouteConstraintAttribute(bool blockNonAttributedActions)
                 : base("second", "value", blockNonAttributedActions)
@@ -549,7 +858,7 @@ namespace Microsoft.AspNet.Mvc.Test
             }
         }
 
-        [MyRouteConstraintAttribute(blockNonAttributedActions: true)]
+        [MyRouteConstraint(blockNonAttributedActions: true)]
         private class BlockNonAttributedActionsController
         {
             public void Edit()
@@ -557,7 +866,7 @@ namespace Microsoft.AspNet.Mvc.Test
             }
         }
 
-        [MyRouteConstraintAttribute(blockNonAttributedActions: false)]
+        [MyRouteConstraint(blockNonAttributedActions: false)]
         private class DontBlockNonAttributedActionsController
         {
             public void Create()
@@ -623,7 +932,7 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Area("Home")]
-        private class MixedAttributeRouteController
+        private class ConventionalAndAttributeRoutedActionsWithAreaController
         {
             [HttpGet("Index")]
             public void Index() { }
@@ -635,7 +944,7 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Route("Products", Name = "Products")]
-        public class SameNameDifferentTemplatesController
+        private class SameNameDifferentTemplatesController
         {
             [HttpGet]
             public void Get() { }
@@ -668,7 +977,7 @@ namespace Microsoft.AspNet.Mvc.Test
             public void PatchItems() { }
         }
 
-        public class DifferentCasingsAttributeRouteNamesController
+        private class DifferentCasingsAttributeRouteNamesController
         {
             [HttpGet("{id}", Name = "Products")]
             public void Get() { }
@@ -688,6 +997,51 @@ namespace Microsoft.AspNet.Mvc.Test
         private class ConstrainedController
         {
             public void ConstrainedNonAttributedAction() { }
+        }
+
+        private class ActionParametersController
+        {
+            public void RequiredInt(int id) { }
+
+            public void OptionalInt(int? id = 5) { }
+
+            public void OptionalChar(char id = 'c') { }
+
+            public void FromBodyParameter([FromBody] TestActionParameter entity) { }
+
+            public void NotFromBodyParameter(TestActionParameter entity) { }
+
+            public void MultipleParameters(int id, [FromBody] TestActionParameter entity) { }
+
+            public void DifferentCasing(int id, int ID, int Id) { }
+        }
+
+        private class ConventionallyRoutedController
+        {
+            public void ConventionalAction() { }
+        }
+
+        [Route("api")]
+        private class AttributeRoutedController()
+        {
+            [HttpGet("AttributeRoute")]
+            public void AttributeRoutedAction() { }
+        }
+
+        private class EmptyController
+        {
+        }
+
+        private class NonActionAttributeController
+        {
+            [NonAction]
+            public void Action() { }
+        }
+
+        private class TestActionParameter
+        {
+            public int Id { get; set; }
+            public int Name { get; set; }
         }
     }
 }
