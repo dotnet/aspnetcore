@@ -20,7 +20,6 @@ namespace Microsoft.AspNet.TestHost
         private static readonly string ServerName = typeof(TestServer).FullName;
         private static readonly ServerInformation ServerInfo = new ServerInformation();
         private Func<object, Task> _appDelegate;
-        private TestClient _handler;
         private IDisposable _appInstance;
         private bool _disposed = false;
 
@@ -43,19 +42,6 @@ namespace Microsoft.AspNet.TestHost
 
             var engine = serviceProvider.GetService<IHostingEngine>();
             _appInstance = engine.Start(hostContext);
-        }
-
-        public TestClient Handler
-        {
-            get
-            {
-                if (_handler == null)
-                {
-                    _handler = new TestClient(Invoke);
-                }
-
-                return _handler;
-            }
         }
 
         public static TestServer Create(Action<IBuilder> app)
