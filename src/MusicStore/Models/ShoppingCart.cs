@@ -94,6 +94,7 @@ namespace MusicStore.Models
 
         public int GetCount()
         {
+            //https://github.com/aspnet/EntityFramework/issues/557
             // Get the count of each item in the cart and sum them up
             int? count = (from cartItems in _db.CartItems
                           where cartItems.CartId == ShoppingCartId

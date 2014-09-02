@@ -1,0 +1,133 @@
+﻿using System;
+using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Diagnostics;
+using Microsoft.AspNet.Routing;
+using Microsoft.Data.Entity;
+using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.DependencyInjection;
+using MusicStore.Models;
+using Microsoft.Net.Http.Server;
+using Microsoft.AspNet.Server.WebListener;
+using System.Security.Claims;
+using System.Security.Principal;
+
+namespace MusicStore
+{
+    /// <summary>
+    /// To make runtime to load an environment based startup class, specify the environment by the following ways: 
+    /// 1. Drop a Microsoft.AspNet.Hosting.ini file in the application folder
+    /// 2. Add a setting in the ini file named 'env' with value of the format 'Startup[EnvironmentName]'. For example: To load a Startup class named
+    /// 'StartupNtlmAuthentication' the value of the env should be 'NtlmAuthentication' (eg. env=NtlmAuthentication). Runtime adds a 'Startup' prefix to this and loads 'StartupNtlmAuthentication'. 
+    /// If no environment name is specified the default startup class loaded is 'Startup'. 
+    /// https://github.com/aspnet/Helios/issues/53 - Environment based startup class loading is not available on Helios.
+    /// Alternative ways to specify environment are:
+    /// 1. Set the environment variable named SET env=NtlmAuthentication
+    /// 2. For selfhost based servers pass in a command line variable named --env with this value. Eg:
+    /// "commands": {
+    ///    "WebListener": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5002 --env NtlmAuthentication",
+    ///  },
+    /// </summary>
+    public class StartupNtlmAuthentication
+    {
+        public void Configure(IBuilder app)
+        {
+            //Set up NTLM authentication for WebListener like below. 
+            //For IIS and IISExpress: Use inetmgr to setup NTLM authentication on the application vDir or modify the applicationHost.config to enable NTLM. 
+            //Note: This does not work on CoreCLR yet!
+            if ((app.Server as ServerInformation) != null)
+            {
+                var serverInformation = (ServerInformation)app.Server;
+                serverInformation.Listener.AuthenticationManager.AuthenticationTypes = AuthenticationTypes.NTLM;
+            }
+
+            app.Use(async (context, next) =>
+            {
+                //Who will get admin access? For demo sake I'm listing the currently logged on user as the application administrator. But this can be changed to suit the needs.
+                var identity = (ClaimsIdentity)context.User.Identity;
+
+                if (identity.GetUserName() == Environment.UserDomainName + "\\" + Environment.UserName)
+                {
+                    identity.AddClaim(new Claim("ManageStore", "Allowed"));
+                }
+
+                await next.Invoke();
+            });
+
+            //Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources, 
+            //then the later source will win. By this way a Local config can be overridden by a different setting while deployed remotely.
+            var configuration = new Configuration();
+            configuration.AddJsonFile("LocalConfig.json");
+            configuration.AddEnvironmentVariables(); //All environment variables in the process's context flow in as configuration values.
+
+            //Error page middleware displays a nice formatted HTML page for any unhandled exceptions in the request pipeline.
+            //Note: ErrorPageOptions.ShowAll to be used only at development time. Not recommended for production.
+            app.UseErrorPage(ErrorPageOptions.ShowAll);
+
+            app.UseServices(services =>
+            {
+                //If this type is present - we're on mono
+                var runningOnMono = Type.GetType("Mono.Runtime") != null;
+
+                // Add EF services to the services container
+                if (runningOnMono)
+                {
+                    services.AddEntityFramework()
+                            .AddInMemoryStore();
+                }
+                else
+                {
+                    services.AddEntityFramework()
+                            .AddSqlServer();
+                }
+
+                services.AddScoped<MusicStoreContext>();
+
+                // Configure DbContext           
+                services.SetupOptions<MusicStoreDbContextOptions>(options =>
+                        {
+                            options.DefaultAdminUserName = configuration.Get("DefaultAdminUsername");
+                            options.DefaultAdminPassword = configuration.Get("DefaultAdminPassword");
+                            if (runningOnMono)
+                            {
+                                options.UseInMemoryStore();
+                            }
+                            else
+                            {
+                                options.UseSqlServer(configuration.Get("Data:DefaultConnection:ConnectionString"));
+                            }
+                        });
+
+                // Add Identity services to the services container
+                services.AddIdentitySqlServer<MusicStoreContext, ApplicationUser>()
+                        .AddAuthentication();
+
+                // Add MVC services to the services container
+                services.AddMvc();
+            });
+
+            // Add static files to the request pipeline
+            app.UseStaticFiles();
+
+            // Add MVC to the request pipeline
+            app.UseMvc(routes =>
+            {
+                routes.MapRoute(
+                    name: "areaRoute",
+                    template: "{area:exists}/{controller}/{action}",
+                    defaults: new { action = "Index" });
+
+                routes.MapRoute(
+                    name: "default",
+                    template: "{controller}/{action}/{id?}",
+                    defaults: new { controller = "Home", action = "Index" });
+
+                routes.MapRoute(
+                    name: "api",
+                    template: "{controller}/{id?}");
+            });
+
+            //Populates the MusicStore sample data
+            SampleData.InitializeMusicStoreDatabaseAsync(app.ApplicationServices).Wait();
+        }
+    }
+}

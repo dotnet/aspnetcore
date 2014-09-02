@@ -25,5 +25,8 @@ This project is part of ASP.NET vNext. You can find samples, documentation and g
 * Try `k kestrel` to run the application
 **NOTE: On Mono since SQL client is not available the sample uses an InMemoryStore to run the application. So the changes that you make will not be persisted.
 
+###NTLM authentication & Environment based Startup detection
+TODO
+
 ### Note:
 1. Application is started on different ports on different hosts. To change the port or URL modify ```Helios.cmd``` or project.json commands section in case of self-host and customhost.
