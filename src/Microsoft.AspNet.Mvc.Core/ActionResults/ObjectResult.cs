@@ -94,8 +94,9 @@ namespace Microsoft.AspNet.Mvc
                         foreach (var formatter in formatters)
                         {
                             var supportedContentTypes = formatter.GetSupportedContentTypes(
-                                                                        GetObjectType(formatterContext),
-                                                                        contentType: null);
+                                                                         formatterContext.DeclaredType,
+                                                                         formatterContext.Object?.GetType(),
+                                                                         contentType: null);
 
                             if (formatter.CanWriteResult(formatterContext, supportedContentTypes?.FirstOrDefault()))
                             {
@@ -217,19 +218,6 @@ namespace Microsoft.AspNet.Mvc
             }
 
             return formatters;
-        }
-
-        private Type GetObjectType([NotNull] OutputFormatterContext context)
-        {
-            if (context.DeclaredType == null || context.DeclaredType == typeof(object))
-            {
-                if (context.Object != null)
-                {
-                    return context.Object.GetType();
-                }
-            }
-
-            return context.DeclaredType;
         }
     }
 }

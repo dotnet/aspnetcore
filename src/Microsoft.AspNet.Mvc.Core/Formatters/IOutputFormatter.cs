@@ -20,12 +20,13 @@ namespace Microsoft.AspNet.Mvc
     {
         /// <summary>
         /// Gets a filtered list of content types which are supported by this formatter 
-        /// for the <paramref name="dataType"/> and <paramref name="contentType"/>.
+        /// for the <paramref name="declaredType"/> and <paramref name="contentType"/>.
         /// </summary>
-        /// <param name="dataType">Type for which the supported content types are desired.</param>
+        /// <param name="declaredType">The declared type for which the supported content types are desired.</param>
+        /// <param name="instanceType">The runtime type for which the supported content types are desired.</param>
         /// <param name="contentType">Content type for which the supported content types are desired.</param>
-        /// <returns>Content types which can are supported by this formatter.</returns>
-        IReadOnlyList<MediaTypeHeaderValue> GetSupportedContentTypes(Type dataType, MediaTypeHeaderValue contentType);
+        /// <returns>Content types which are supported by this formatter.</returns>
+        IReadOnlyList<MediaTypeHeaderValue> GetSupportedContentTypes(Type declaredType, Type instanceType, MediaTypeHeaderValue contentType);
 
         /// <summary>
         /// Determines whether this <see cref="IOutputFormatter"/> can serialize

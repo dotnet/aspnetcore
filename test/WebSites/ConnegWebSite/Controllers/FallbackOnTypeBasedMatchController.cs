@@ -74,7 +74,7 @@ namespace ConnegWebsite
                 return contentType == null;
             }
 
-            public IReadOnlyList<MediaTypeHeaderValue> GetSupportedContentTypes(Type dataType, MediaTypeHeaderValue contentType)
+            public IReadOnlyList<MediaTypeHeaderValue> GetSupportedContentTypes(Type declaredType, Type runtimeType, MediaTypeHeaderValue contentType)
             {
                 return null;
             }

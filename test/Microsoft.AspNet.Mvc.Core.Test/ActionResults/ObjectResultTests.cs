@@ -550,7 +550,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
                 return false;
             }
 
-            public IReadOnlyList<MediaTypeHeaderValue> GetSupportedContentTypes(Type dataType,
+            public IReadOnlyList<MediaTypeHeaderValue> GetSupportedContentTypes(Type declaredType,
+                                                                                Type runtimeType,
                                                                                 MediaTypeHeaderValue contentType)
             {
                 return null;

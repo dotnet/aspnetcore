@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Mvc
         public IList<MediaTypeHeaderValue> SupportedMediaTypes { get; private set; }
 
         /// <inheritdoc />
-        public virtual IReadOnlyList<MediaTypeHeaderValue> GetSupportedContentTypes(Type dataType, MediaTypeHeaderValue contentType)
+        public virtual IReadOnlyList<MediaTypeHeaderValue> GetSupportedContentTypes(Type declaredType, Type runtimeType, MediaTypeHeaderValue contentType)
         {
             var mediaTypes = new List<MediaTypeHeaderValue>();
 

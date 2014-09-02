@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc
             return context.Object == null;
         }
 
-        public IReadOnlyList<MediaTypeHeaderValue> GetSupportedContentTypes(Type dataType, MediaTypeHeaderValue contentType)
+        public IReadOnlyList<MediaTypeHeaderValue> GetSupportedContentTypes(Type declaredType, Type runtimeType, MediaTypeHeaderValue contentType)
         {
             return null;
         }
