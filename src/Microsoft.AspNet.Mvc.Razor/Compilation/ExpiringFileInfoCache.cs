@@ -7,7 +7,7 @@ using Microsoft.AspNet.FileSystems;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.Runtime;
 
-namespace Microsoft.AspNet.Mvc.Core
+namespace Microsoft.AspNet.Mvc.Razor
 {
     /// <summary>
     /// A default implementation for the <see cref="IFileInfoCache"/> interface.
@@ -37,11 +37,11 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         public ExpiringFileInfoCache(IApplicationEnvironment env,
-                                     IOptionsAccessor<MvcOptions> optionsAccessor)
+                                     IOptionsAccessor<RazorViewEngineOptions> optionsAccessor)
         {
             // TODO: Inject the IFileSystem but only when we get it from the host
             _fileSystem = new PhysicalFileSystem(env.ApplicationBasePath);
-            _offset = optionsAccessor.Options.ViewEngineOptions.ExpirationBeforeCheckingFilesOnDisk;
+            _offset = optionsAccessor.Options.ExpirationBeforeCheckingFilesOnDisk;
         }
 
         /// <inheritdoc />

@@ -375,6 +375,15 @@
     <value>Error {0}:{1}{2}</value>
     <comment>{0} is the error number, {1} is Environment.NewLine {2} is the  error message</comment>
   </data>
+  <data name="TemplatedViewLocationExpander_NoReplacementToken" xml:space="preserve">
+    <value>Could not find a replacement for view expansion token '{0}'.</value>
+  </data>
+  <data name="TemplatedExpander_PopulateValuesMustBeInvokedFirst" xml:space="preserve">
+    <value>{0} must be executed before {1} can be invoked.</value>
+  </data>
+  <data name="TemplatedExpander_ValueFactoryCannotReturnNull" xml:space="preserve">
+    <value>The result of value factory cannot be null.</value>
+  </data>
   <data name="AttributeRoute_InvalidHttpConstraints" xml:space="preserve">
     <value>A method '{0}' that defines attribute routed actions must not have attributes that implement '{1}' and do not implement '{2}':{3}{4}</value>
     <comment>{0} is the MethodInfo.FullName, {1} is typeof(IActionHttpMethodProvider).FullName, {2} is typeof(IRouteTemplateProvider).FullName, {3} is Environment.NewLine, {4} is the list of actions and their respective invalid IActionHttpMethodProvider attributes formatted using AttributeRoute_InvalidHttpMethodConstraints_Item</comment>

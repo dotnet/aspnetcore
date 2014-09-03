@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title - My ASP.NET Application</title>
     <link rel="stylesheet" href="~/content/bootstrap.min.css" />
+    <style>
+        body { padding-top: 60px; }
+        @@media screen and (max-width: 768px) {
+            body { padding-top: 0px; }
+        }
+    </style>
     @RenderSection("header", required: false)
 </head>
 <body>

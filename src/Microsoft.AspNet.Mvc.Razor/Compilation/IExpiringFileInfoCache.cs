@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.FileSystems;
 
-namespace Microsoft.AspNet.Mvc.Core
+namespace Microsoft.AspNet.Mvc.Razor
 {
     /// <summary>
     /// Provides cached access to file infos.

@@ -3,6 +3,7 @@
 
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Razor;
+using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc

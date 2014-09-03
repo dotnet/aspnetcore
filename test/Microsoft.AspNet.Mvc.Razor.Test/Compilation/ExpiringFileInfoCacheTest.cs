@@ -10,7 +10,7 @@ using Microsoft.Framework.Runtime;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Core.Test
+namespace Microsoft.AspNet.Mvc.Razor
 {
     public class ExpiringFileInfoCacheTest
     {
@@ -27,28 +27,28 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             }
         }
 
-        public MvcOptions Options
+        public RazorViewEngineOptions Options
         {
             get
             {
-                return new MvcOptions();
+                return new RazorViewEngineOptions();
             }
         }
 
-        public IOptionsAccessor<MvcOptions> OptionsAccessor
+        public IOptionsAccessor<RazorViewEngineOptions> OptionsAccessor
         {
             get
             {
                 var options = Options;
 
-                var mock = new Mock<IOptionsAccessor<MvcOptions>>(MockBehavior.Strict);
+                var mock = new Mock<IOptionsAccessor<RazorViewEngineOptions>>(MockBehavior.Strict);
                 mock.Setup(oa => oa.Options).Returns(options);
 
                 return mock.Object;
             }
         }
 
-        public ControllableExpiringFileInfoCache GetCache(IOptionsAccessor<MvcOptions> optionsAccessor)
+        public ControllableExpiringFileInfoCache GetCache(IOptionsAccessor<RazorViewEngineOptions> optionsAccessor)
         {
             return new ControllableExpiringFileInfoCache(ApplicationEnvironment, optionsAccessor);
         }
@@ -69,16 +69,16 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             cache.Sleep(offsetMilliseconds);
         }
 
-        public void Sleep(IOptionsAccessor<MvcOptions> accessor, ControllableExpiringFileInfoCache cache, int offsetMilliSeconds)
+        public void Sleep(IOptionsAccessor<RazorViewEngineOptions> accessor, ControllableExpiringFileInfoCache cache, int offsetMilliSeconds)
         {
-            var baseMilliSeconds = (int)accessor.Options.ViewEngineOptions.ExpirationBeforeCheckingFilesOnDisk.TotalMilliseconds;
+            var baseMilliSeconds = (int)accessor.Options.ExpirationBeforeCheckingFilesOnDisk.TotalMilliseconds;
 
             cache.Sleep(baseMilliSeconds + offsetMilliSeconds);
         }
 
-        public void SetExpiration(IOptionsAccessor<MvcOptions> accessor, TimeSpan expiration)
+        public void SetExpiration(IOptionsAccessor<RazorViewEngineOptions> accessor, TimeSpan expiration)
         {
-            accessor.Options.ViewEngineOptions.ExpirationBeforeCheckingFilesOnDisk = expiration;
+            accessor.Options.ExpirationBeforeCheckingFilesOnDisk = expiration;
         }
 
         [Fact]
@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var optionsAccessor = OptionsAccessor;
 
             // Assert
-            Assert.Equal(2000, optionsAccessor.Options.ViewEngineOptions.ExpirationBeforeCheckingFilesOnDisk.TotalMilliseconds);
+            Assert.Equal(2000, optionsAccessor.Options.ExpirationBeforeCheckingFilesOnDisk.TotalMilliseconds);
         }
 
         [Fact]
@@ -323,7 +323,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public class ControllableExpiringFileInfoCache : ExpiringFileInfoCache
         {
             public ControllableExpiringFileInfoCache(IApplicationEnvironment env,
-                                                     IOptionsAccessor<MvcOptions> optionsAccessor)
+                                                     IOptionsAccessor<RazorViewEngineOptions> optionsAccessor)
                 : base(env, optionsAccessor)
             {
             }

@@ -97,6 +97,11 @@ namespace MvcSample.Web
             Context.Response.WriteAsync("Hello World raw");
         }
 
+        public ActionResult Language()
+        {
+            return View();
+        }
+
         [Produces("application/json", "application/xml", "application/custom", "text/json", Type = typeof(User))]
         public object ReturnUser()
         {

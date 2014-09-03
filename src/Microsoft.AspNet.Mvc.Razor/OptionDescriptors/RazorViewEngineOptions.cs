@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using Microsoft.AspNet.Mvc.Razor.OptionDescriptors;
 
-namespace Microsoft.AspNet.Mvc.Core
+namespace Microsoft.AspNet.Mvc.Razor
 {
     /// <summary>
     /// Provides programmatic configuration for the default <see cref="Microsoft.AspNet.Mvc.Rendering.IViewEngine"/>.
@@ -38,5 +40,12 @@ namespace Microsoft.AspNet.Mvc.Core
                 }
             }
         }
+
+        /// <summary>
+        /// Get a <see cref="IList{T}"/> of descriptors for <see cref="IViewLocationExpander" />s used by this
+        /// application.
+        /// </summary>
+        public IList<ViewLocationExpanderDescriptor> ViewLocationExpanders { get; }
+            = new List<ViewLocationExpanderDescriptor>();
     }
 }

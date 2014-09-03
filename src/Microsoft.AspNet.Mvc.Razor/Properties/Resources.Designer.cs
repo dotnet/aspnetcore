@@ -267,6 +267,22 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
+        /// '{0}' must be a {1} that is generated as result of the call to '{2}'.
+        /// </summary>
+        internal static string ViewLocationCache_KeyMustBeString
+        {
+            get { return GetString("ViewLocationCache_KeyMustBeString"); }
+        }
+
+        /// <summary>
+        /// '{0}' must be a {1} that is generated as result of the call to '{2}'.
+        /// </summary>
+        internal static string FormatViewLocationCache_KeyMustBeString(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ViewLocationCache_KeyMustBeString"), p0, p1, p2);
+        }
+
+        /// <summary>
         /// The '{0}' method must be called before '{1}' can be invoked.
         /// </summary>
         internal static string ViewMustBeContextualized

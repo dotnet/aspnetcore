@@ -101,5 +101,42 @@ component-content";
             // Assert
             Assert.Equal(expected, body.Trim());
         }
+
+        public static IEnumerable<object[]> RazorViewEngine_UsesAllExpandedPathsToLookForViewsData
+        {
+            get
+            {
+                var expected1 = string.Join(Environment.NewLine,
+                                            "expander-index",
+                                            "gb-partial");
+                yield return new[] { "gb", expected1 };
+
+                var expected2 = string.Join(Environment.NewLine,
+                                            "fr-index",
+                                            "fr-partial");
+                yield return new[] { "fr", expected2 };
+
+                var expected3 = string.Join(Environment.NewLine,
+                                            "expander-index",
+                                            "expander-partial");
+                yield return new[] { "na", expected3 };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(RazorViewEngine_UsesAllExpandedPathsToLookForViewsData))]
+        public async Task RazorViewEngine_UsesViewExpandersForViewsAndPartials(string value, string expected)
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var body = await client.GetStringAsync("http://localhost/TemplateExpander?language-expander-value=" +
+                                                   value);
+
+            // Assert
+            Assert.Equal(expected, body.Trim());
+        }
     }
 }

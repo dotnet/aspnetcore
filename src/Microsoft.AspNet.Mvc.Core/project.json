@@ -11,7 +11,7 @@
     "Microsoft.AspNet.Mvc.ModelBinding": "",
     "Microsoft.AspNet.Routing": "1.0.0-*",
     "Microsoft.AspNet.Security": "1.0.0-*",
-    "Microsoft.AspNet.Security.DataProtection" : "1.0.0-*",
+    "Microsoft.AspNet.Security.DataProtection": "1.0.0-*",
     "Microsoft.Framework.DependencyInjection": "1.0.0-*",
     "Microsoft.Framework.Runtime.Interfaces":  "1.0.0-*",
     "Microsoft.Framework.Logging": "1.0.0-*",

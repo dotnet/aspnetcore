@@ -1355,6 +1355,54 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
+        /// Could not find a replacement for view expansion token '{0}'.
+        /// </summary>
+        internal static string TemplatedViewLocationExpander_NoReplacementToken
+        {
+            get { return GetString("TemplatedViewLocationExpander_NoReplacementToken"); }
+        }
+
+        /// <summary>
+        /// Could not find a replacement for view expansion token '{0}'.
+        /// </summary>
+        internal static string FormatTemplatedViewLocationExpander_NoReplacementToken(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TemplatedViewLocationExpander_NoReplacementToken"), p0);
+        }
+
+        /// <summary>
+        /// {0} must be executed before {1} can be invoked.
+        /// </summary>
+        internal static string TemplatedExpander_PopulateValuesMustBeInvokedFirst
+        {
+            get { return GetString("TemplatedExpander_PopulateValuesMustBeInvokedFirst"); }
+        }
+
+        /// <summary>
+        /// {0} must be executed before {1} can be invoked.
+        /// </summary>
+        internal static string FormatTemplatedExpander_PopulateValuesMustBeInvokedFirst(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TemplatedExpander_PopulateValuesMustBeInvokedFirst"), p0, p1);
+        }
+
+        /// <summary>
+        /// The result of value factory cannot be null.
+        /// </summary>
+        internal static string TemplatedExpander_ValueFactoryCannotReturnNull
+        {
+            get { return GetString("TemplatedExpander_ValueFactoryCannotReturnNull"); }
+        }
+
+        /// <summary>
+        /// The result of value factory cannot be null.
+        /// </summary>
+        internal static string FormatTemplatedExpander_ValueFactoryCannotReturnNull()
+        {
+            return GetString("TemplatedExpander_ValueFactoryCannotReturnNull");
+        }
+
+        /// <summary>
         /// A method '{0}' that defines attribute routed actions must not have attributes that implement '{1}' and do not implement '{2}':{3}{4}
         /// </summary>
         internal static string AttributeRoute_InvalidHttpConstraints

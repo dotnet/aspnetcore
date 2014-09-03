@@ -165,6 +165,9 @@
   <data name="ViewContextMustBeSet" xml:space="preserve">
     <value>'{0} must be set to access '{1}'.</value>
   </data>
+  <data name="ViewLocationCache_KeyMustBeString" xml:space="preserve">
+    <value>'{0}' must be a {1} that is generated as result of the call to '{2}'.</value>
+  </data>
   <data name="ViewMustBeContextualized" xml:space="preserve">
     <value>The '{0}' method must be called before '{1}' can be invoked.</value>
   </data>
