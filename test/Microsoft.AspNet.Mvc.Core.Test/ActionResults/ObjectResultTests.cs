@@ -284,8 +284,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             (string acceptHeader, int attemptedCountForCanWrite)
         {
             // For no accept headers,
-            //can write is called twice once for the request media type and once for the type match pass. 
-            // For each adduaccept header, it is called once. 
+            // can write is called twice once for the request media type and once for the type match pass. 
+            // For each additional accept header, it is called once. 
             // Arrange
             var stream = new MemoryStream();
             var httpResponse = new Mock<HttpResponse>();

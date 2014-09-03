@@ -4,6 +4,8 @@
 using System;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 using ConnegWebsite;
 using Microsoft.AspNet.Builder;
@@ -274,20 +276,21 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var server = TestServer.Create(_provider, _app);
-            var client = server.Handler;
-            var expectedContentType = "application/json;charset=utf-8";
+            var client = server.CreateClient();
+            var expectedContentType = MediaTypeHeaderValue.Parse("application/json;charset=utf-8");
             var expectedBody = "1234";
             var targetUri = "http://localhost/FallbackOnTypeBasedMatch/" + actionName + "/?input=1234";
-            // Act
+            var content = new StringContent("1234", Encoding.UTF8, "application/custom");
+            var request = new HttpRequestMessage(HttpMethod.Post, targetUri);
+            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/custom1"));
+            request.Content = content;
 
-            var result = await client.PostAsync(targetUri,
-                                                "1234",
-                                                "application/custom",
-                                                (request) => request.Accept = "application/custom1");
+            // Act
+            var response = await client.SendAsync(request);
 
             // Assert
-            Assert.Equal(expectedContentType, result.HttpContext.Response.ContentType);
-            var body = await result.HttpContext.Response.ReadBodyAsStringAsync();
+            Assert.Equal(expectedContentType, response.Content.Headers.ContentType);
+            var body = await response.Content.ReadAsStringAsync();
             Assert.Equal(expectedBody, body);
         }
 
@@ -298,17 +301,18 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var server = TestServer.Create(_provider, _app);
-            var client = server.Handler;
+            var client = server.CreateClient();
             var targetUri = "http://localhost/FallbackOnTypeBasedMatch/" + actionName + "/?input=1234";
+            var content = new StringContent("1234", Encoding.UTF8, "application/custom");
+            var request = new HttpRequestMessage(HttpMethod.Post, targetUri);
+            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/custom1"));
+            request.Content = content;
 
             // Act
-            var result = await client.PostAsync(targetUri,
-                                                "1234",
-                                                "application/custom",
-                                                (request) => request.Accept = "application/custom1");
+            var response = await client.SendAsync(request);
 
             // Assert
-            Assert.Equal(406, result.HttpContext.Response.StatusCode);
+            Assert.Equal(HttpStatusCode.NotAcceptable, response.StatusCode);
         }
 
         [Fact]
@@ -316,17 +320,18 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var server = TestServer.Create(_provider, _app);
-            var client = server.Handler;
+            var client = server.CreateClient();
             var targetUri = "http://localhost/FallbackOnTypeBasedMatch/FallbackGivesNoMatch/?input=1234";
-            
-            // Act
-            var result = await client.PostAsync(targetUri,
-                                                "1234",
-                                                "application/custom",
-                                                (request) => request.Accept = "application/custom1");
+            var content = new StringContent("1234", Encoding.UTF8, "application/custom");
+            var request = new HttpRequestMessage(HttpMethod.Post, targetUri);
+            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/custom1"));
+            request.Content = content;
 
+            // Act
+            var response = await client.SendAsync(request);
+           
             // Assert
-            Assert.Equal(406, result.HttpContext.Response.StatusCode);
+            Assert.Equal(HttpStatusCode.NotAcceptable, response.StatusCode);
         }
     }
 }
