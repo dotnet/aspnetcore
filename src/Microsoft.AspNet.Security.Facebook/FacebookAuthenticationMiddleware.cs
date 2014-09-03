@@ -2,13 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Net.Http;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Security.DataHandler;
 using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.AspNet.Security.Infrastructure;
+using Microsoft.AspNet.Security.OAuth;
 using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Security.Facebook
@@ -16,12 +14,8 @@ namespace Microsoft.AspNet.Security.Facebook
     /// <summary>
     /// An ASP.NET middleware for authenticating users using Facebook.
     /// </summary>
-    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Middleware is not disposable.")]
-    public class FacebookAuthenticationMiddleware : AuthenticationMiddleware<FacebookAuthenticationOptions>
+    public class FacebookAuthenticationMiddleware : OAuthAuthenticationMiddleware<FacebookAuthenticationOptions, IFacebookAuthenticationNotifications>
     {
-        private readonly ILogger _logger;
-        private readonly HttpClient _httpClient;
-
         /// <summary>
         /// Initializes a new <see cref="FacebookAuthenticationMiddleware"/>.
         /// </summary>
@@ -34,7 +28,7 @@ namespace Microsoft.AspNet.Security.Facebook
             IDataProtectionProvider dataProtectionProvider,
             ILoggerFactory loggerFactory,
             FacebookAuthenticationOptions options)
-            : base(next, options)
+            : base(next, dataProtectionProvider, loggerFactory, options)
         {
             if (string.IsNullOrWhiteSpace(Options.AppId))
             {
@@ -45,22 +39,10 @@ namespace Microsoft.AspNet.Security.Facebook
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "AppSecret"));
             }
 
-            _logger = loggerFactory.Create(typeof(FacebookAuthenticationMiddleware).FullName);
-
             if (Options.Notifications == null)
             {
                 Options.Notifications = new FacebookAuthenticationNotifications();
             }
-            if (Options.StateDataFormat == null)
-            {
-                IDataProtector dataProtector = DataProtectionHelpers.CreateDataProtector(dataProtectionProvider,
-                    typeof(FacebookAuthenticationMiddleware).FullName, options.AuthenticationType, "v1");
-                Options.StateDataFormat = new PropertiesDataFormat(dataProtector);
-            }
-
-            _httpClient = new HttpClient(ResolveHttpMessageHandler(Options));
-            _httpClient.Timeout = Options.BackchannelTimeout;
-            _httpClient.MaxResponseContentBufferSize = 1024 * 1024 * 10; // 10 MB
         }
 
         /// <summary>
@@ -69,30 +51,7 @@ namespace Microsoft.AspNet.Security.Facebook
         /// <returns>An <see cref="AuthenticationHandler"/> configured with the <see cref="FacebookAuthenticationOptions"/> supplied to the constructor.</returns>
         protected override AuthenticationHandler<FacebookAuthenticationOptions> CreateHandler()
         {
-            return new FacebookAuthenticationHandler(_httpClient, _logger);
-        }
-
-        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Managed by caller")]
-        private static HttpMessageHandler ResolveHttpMessageHandler(FacebookAuthenticationOptions options)
-        {
-            HttpMessageHandler handler = options.BackchannelHttpHandler ??
-#if ASPNET50
-                new WebRequestHandler();
-            // If they provided a validator, apply it or fail.
-            if (options.BackchannelCertificateValidator != null)
-            {
-                // Set the cert validate callback
-                var webRequestHandler = handler as WebRequestHandler;
-                if (webRequestHandler == null)
-                {
-                    throw new InvalidOperationException(Resources.Exception_ValidatorHandlerMismatch);
-                }
-                webRequestHandler.ServerCertificateValidationCallback = options.BackchannelCertificateValidator.Validate;
-            }
-#else
-                new WinHttpHandler();
-#endif
-            return handler;
+            return new FacebookAuthenticationHandler(Backchannel, Logger);
         }
     }
 }

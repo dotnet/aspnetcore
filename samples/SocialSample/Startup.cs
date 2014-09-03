@@ -1,11 +1,19 @@
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Security.Claims;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Security;
+using Microsoft.AspNet.Security;
 using Microsoft.AspNet.Security.Cookies;
 using Microsoft.AspNet.Security.Facebook;
 using Microsoft.AspNet.Security.Google;
 using Microsoft.AspNet.Security.MicrosoftAccount;
+using Microsoft.AspNet.Security.OAuth;
 using Microsoft.AspNet.Security.Twitter;
+using Newtonsoft.Json.Linq;
 
 namespace CookieSample
 {
@@ -26,6 +34,16 @@ namespace CookieSample
             {
                 AppId = "569522623154478",
                 AppSecret = "a124463c4719c94b4228d9a240e5dc1a",
+            });
+
+            app.UseOAuthAuthentication(new OAuthAuthenticationOptions<IOAuthAuthenticationNotifications>("Google-AccessToken")
+            {
+                ClientId = "560027070069-37ldt4kfuohhu3m495hk2j4pjp92d382.apps.googleusercontent.com",
+                ClientSecret = "n2Q-GEw9RQjzcRbU3qhfTj8f",
+                CallbackPath = new PathString("/signin-google-token"),
+                AuthorizationEndpoint = GoogleAuthenticationDefaults.AuthorizationEndpoint,
+                TokenEndpoint = GoogleAuthenticationDefaults.TokenEndpoint,
+                Scope = { "openid", "profile", "email" },
             });
 
             app.UseGoogleAuthentication(new GoogleAuthenticationOptions()
@@ -57,11 +75,86 @@ namespace CookieSample
             The sample app can then be run via:
              k web
             */
+            app.UseOAuthAuthentication(new OAuthAuthenticationOptions<IOAuthAuthenticationNotifications>("Microsoft-AccessToken")
+            {
+                Caption = "MicrosoftAccount-AccessToken - Requires project changes",
+                ClientId = "00000000480FF62E",
+                ClientSecret = "bLw2JIvf8Y1TaToipPEqxTVlOeJwCUsr",
+                CallbackPath = new PathString("/signin-microsoft-token"),
+                AuthorizationEndpoint = MicrosoftAccountAuthenticationDefaults.AuthorizationEndpoint,
+                TokenEndpoint = MicrosoftAccountAuthenticationDefaults.TokenEndpoint,
+                Scope = { "wl.basic" },
+            });
+
             app.UseMicrosoftAccountAuthentication(new MicrosoftAccountAuthenticationOptions()
             {
                 Caption = "MicrosoftAccount - Requires project changes",
                 ClientId = "00000000480FF62E",
                 ClientSecret = "bLw2JIvf8Y1TaToipPEqxTVlOeJwCUsr",
+            });
+
+            app.UseOAuthAuthentication(new OAuthAuthenticationOptions<IOAuthAuthenticationNotifications>("GitHub-AccessToken")
+            {
+                ClientId = "8c0c5a572abe8fe89588",
+                ClientSecret = "e1d95eaf03461d27acd6f49d4fc7bf19d6ac8cda",
+                CallbackPath = new PathString("/signin-github-token"),
+                AuthorizationEndpoint = "https://github.com/login/oauth/authorize",
+                TokenEndpoint = "https://github.com/login/oauth/access_token",
+            });
+
+            app.UseOAuthAuthentication(new OAuthAuthenticationOptions<IOAuthAuthenticationNotifications>("GitHub")
+            {
+                ClientId = "49e302895d8b09ea5656",
+                ClientSecret = "98f1bf028608901e9df91d64ee61536fe562064b",
+                CallbackPath = new PathString("/signin-github"),
+                AuthorizationEndpoint = "https://github.com/login/oauth/authorize",
+                TokenEndpoint = "https://github.com/login/oauth/access_token",
+                UserInformationEndpoint = "https://api.github.com/user",
+                // Retrieving user information is unique to each provider.
+                Notifications = new OAuthAuthenticationNotifications()
+                {
+                    OnGetUserInformationAsync = async (context) =>
+                    {
+                        // Get the GitHub user
+                        HttpRequestMessage userRequest = new HttpRequestMessage(HttpMethod.Get, context.Options.UserInformationEndpoint);
+                        userRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", context.AccessToken);
+                        userRequest.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                        userRequest.Headers.UserAgent.ParseAdd("Microsoft ASP.NET OAuth middleware for GitHub");
+                        HttpResponseMessage userResponse = await context.Backchannel.SendAsync(userRequest, context.HttpContext.RequestAborted);
+                        userResponse.EnsureSuccessStatusCode();
+                        var text = await userResponse.Content.ReadAsStringAsync();
+                        JObject user = JObject.Parse(text);
+
+                        var identity = new ClaimsIdentity(
+                            context.Options.AuthenticationType,
+                            ClaimsIdentity.DefaultNameClaimType,
+                            ClaimsIdentity.DefaultRoleClaimType);
+
+                        JToken value;
+                        var id = user.TryGetValue("id", out value) ? value.ToString() : null;
+                        if (!string.IsNullOrEmpty(id))
+                        {
+                            identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, id, ClaimValueTypes.String, context.Options.AuthenticationType));
+                        }
+                        var userName = user.TryGetValue("login", out value) ? value.ToString() : null;
+                        if (!string.IsNullOrEmpty(userName))
+                        {
+                            identity.AddClaim(new Claim(ClaimsIdentity.DefaultNameClaimType, userName, ClaimValueTypes.String, context.Options.AuthenticationType));
+                        }
+                        var name = user.TryGetValue("name", out value) ? value.ToString() : null;
+                        if (!string.IsNullOrEmpty(name))
+                        {
+                            identity.AddClaim(new Claim("urn:github:name", name, ClaimValueTypes.String, context.Options.AuthenticationType));
+                        }
+                        var link = user.TryGetValue("url", out value) ? value.ToString() : null;
+                        if (!string.IsNullOrEmpty(link))
+                        {
+                            identity.AddClaim(new Claim("urn:github:url", link, ClaimValueTypes.String, context.Options.AuthenticationType));
+                        }
+
+                        context.Identity = identity;
+                    },
+                },
             });
 
             // Choose an authentication type

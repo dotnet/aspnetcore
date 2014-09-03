@@ -2,13 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Net.Http;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Security.DataHandler;
 using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.AspNet.Security.Infrastructure;
+using Microsoft.AspNet.Security.OAuth;
 using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Security.MicrosoftAccount
@@ -16,12 +14,8 @@ namespace Microsoft.AspNet.Security.MicrosoftAccount
     /// <summary>
     /// An ASP.NET middleware for authenticating users using the Microsoft Account service.
     /// </summary>
-    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Middleware are not disposable.")]
-    public class MicrosoftAccountAuthenticationMiddleware : AuthenticationMiddleware<MicrosoftAccountAuthenticationOptions>
+    public class MicrosoftAccountAuthenticationMiddleware : OAuthAuthenticationMiddleware<MicrosoftAccountAuthenticationOptions, IMicrosoftAccountAuthenticationNotifications>
     {
-        private readonly ILogger _logger;
-        private readonly HttpClient _httpClient;
-
         /// <summary>
         /// Initializes a new <see cref="MicrosoftAccountAuthenticationMiddleware"/>.
         /// </summary>
@@ -34,33 +28,18 @@ namespace Microsoft.AspNet.Security.MicrosoftAccount
             IDataProtectionProvider dataProtectionProvider,
             ILoggerFactory loggerFactory,
             MicrosoftAccountAuthenticationOptions options)
-            : base(next, options)
+            : base(next, dataProtectionProvider, loggerFactory, options)
         {
-            if (string.IsNullOrWhiteSpace(Options.ClientId))
-            {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "ClientId"));
-            }
-            if (string.IsNullOrWhiteSpace(Options.ClientSecret))
-            {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "ClientSecret"));
-            }
-
-            _logger = loggerFactory.Create(typeof(MicrosoftAccountAuthenticationMiddleware).FullName);
-
             if (Options.Notifications == null)
             {
                 Options.Notifications = new MicrosoftAccountAuthenticationNotifications();
             }
-            if (Options.StateDataFormat == null)
+            if (Options.Scope.Count == 0)
             {
-                IDataProtector dataProtector = DataProtectionHelpers.CreateDataProtector(dataProtectionProvider,
-                    typeof(MicrosoftAccountAuthenticationMiddleware).FullName, options.AuthenticationType, "v1");
-                Options.StateDataFormat = new PropertiesDataFormat(dataProtector);
+                // LiveID requires a scope string, so if the user didn't set one we go for the least possible.
+                // TODO: Should we just add these by default when we create the Options?
+                Options.Scope.Add("wl.basic");
             }
-
-            _httpClient = new HttpClient(ResolveHttpMessageHandler(Options));
-            _httpClient.Timeout = Options.BackchannelTimeout;
-            _httpClient.MaxResponseContentBufferSize = 1024 * 1024 * 10; // 10 MB
         }
 
         /// <summary>
@@ -69,30 +48,7 @@ namespace Microsoft.AspNet.Security.MicrosoftAccount
         /// <returns>An <see cref="AuthenticationHandler"/> configured with the <see cref="MicrosoftAccountAuthenticationOptions"/> supplied to the constructor.</returns>
         protected override AuthenticationHandler<MicrosoftAccountAuthenticationOptions> CreateHandler()
         {
-            return new MicrosoftAccountAuthenticationHandler(_httpClient, _logger);
-        }
-
-        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Managed by caller")]
-        private static HttpMessageHandler ResolveHttpMessageHandler(MicrosoftAccountAuthenticationOptions options)
-        {
-            HttpMessageHandler handler = options.BackchannelHttpHandler ??
-#if ASPNET50
-                new WebRequestHandler();
-            // If they provided a validator, apply it or fail.
-            if (options.BackchannelCertificateValidator != null)
-            {
-                // Set the cert validate callback
-                var webRequestHandler = handler as WebRequestHandler;
-                if (webRequestHandler == null)
-                {
-                    throw new InvalidOperationException(Resources.Exception_ValidatorHandlerMismatch);
-                }
-                webRequestHandler.ServerCertificateValidationCallback = options.BackchannelCertificateValidator.Validate;
-            }
-#else
-                new WinHttpHandler();
-#endif
-            return handler;
+            return new MicrosoftAccountAuthenticationHandler(Backchannel, Logger);
         }
     }
 }

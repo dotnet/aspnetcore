@@ -6,5 +6,11 @@ namespace Microsoft.AspNet.Security.MicrosoftAccount
     public static class MicrosoftAccountAuthenticationDefaults
     {
         public const string AuthenticationType = "Microsoft";
+
+        public const string AuthorizationEndpoint = "https://login.live.com/oauth20_authorize.srf";
+
+        public const string TokenEndpoint = "https://login.live.com/oauth20_token.srf";
+
+        public const string UserInformationEndpoint = "https://apis.live.net/v5.0/me";
     }
 }

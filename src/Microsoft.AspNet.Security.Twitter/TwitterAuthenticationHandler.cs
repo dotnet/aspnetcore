@@ -328,9 +328,9 @@ namespace Microsoft.AspNet.Security.Twitter
             var request = new HttpRequestMessage(HttpMethod.Post, AccessTokenEndpoint);
             request.Headers.Add("Authorization", authorizationHeaderBuilder.ToString());
 
-            var formPairs = new List<KeyValuePair<string, string>>()
+            var formPairs = new Dictionary<string, string>()
             {
-                new KeyValuePair<string, string>("oauth_verifier", verifier)
+                { "oauth_verifier", verifier },
             };
 
             request.Content = new FormUrlEncodedContent(formPairs);

@@ -5,6 +5,7 @@
         "Microsoft.AspNet.RequestContainer": "1.0.0-*",
         "Microsoft.AspNet.Security": "1.0.0-*",
         "Microsoft.AspNet.Security.DataProtection": "1.0.0-*",
+        "Microsoft.AspNet.Security.OAuth": "1.0.0-*",
         "Microsoft.AspNet.WebUtilities": "1.0.0-*",
         "Microsoft.Framework.Logging": "1.0.0-*",
         "Newtonsoft.Json": "5.0.8",
@@ -13,7 +14,6 @@
     "frameworks": {
         "aspnet50": {
             "dependencies": {
-                "System.Net.Http.WebRequest": ""
             }
         },
         "aspnetcore50": {
@@ -27,7 +27,6 @@
                 "System.IO": "4.0.10.0",
                 "System.IO.Compression": "4.0.0.0",
                 "System.Linq": "4.0.0.0",
-                "System.Net.Http.WinHttpHandler": "4.0.0.0",
                 "System.Reflection": "4.0.10.0",
                 "System.Resources.ResourceManager": "4.0.0.0",
                 "System.Runtime": "4.0.20.0",

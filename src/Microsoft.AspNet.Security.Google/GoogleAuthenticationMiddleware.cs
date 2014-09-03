@@ -9,6 +9,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Security.DataHandler;
 using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.AspNet.Security.Infrastructure;
+using Microsoft.AspNet.Security.OAuth;
 using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Security.Google
@@ -17,11 +18,8 @@ namespace Microsoft.AspNet.Security.Google
     /// An ASP.NET middleware for authenticating users using Google OAuth 2.0.
     /// </summary>
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Middleware are not disposable.")]
-    public class GoogleAuthenticationMiddleware : AuthenticationMiddleware<GoogleAuthenticationOptions>
+    public class GoogleAuthenticationMiddleware : OAuthAuthenticationMiddleware<GoogleAuthenticationOptions, IGoogleAuthenticationNotifications>
     {
-        private readonly ILogger _logger;
-        private readonly HttpClient _httpClient;
-
         /// <summary>
         /// Initializes a new <see cref="GoogleAuthenticationMiddleware"/>.
         /// </summary>
@@ -34,33 +32,22 @@ namespace Microsoft.AspNet.Security.Google
             IDataProtectionProvider dataProtectionProvider,
             ILoggerFactory loggerFactory,
             GoogleAuthenticationOptions options)
-            : base(next, options)
+            : base(next, dataProtectionProvider, loggerFactory, options)
         {
-            if (string.IsNullOrWhiteSpace(Options.ClientId))
-            {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "ClientId"));
-            }
-            if (string.IsNullOrWhiteSpace(Options.ClientSecret))
-            {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "ClientSecret"));
-            }
-
-            _logger = loggerFactory.Create(typeof(GoogleAuthenticationMiddleware).FullName);
-
             if (Options.Notifications == null)
             {
                 Options.Notifications = new GoogleAuthenticationNotifications();
             }
-            if (Options.StateDataFormat == null)
-            {
-                IDataProtector dataProtector = DataProtectionHelpers.CreateDataProtector(dataProtectionProvider,
-                    typeof(GoogleAuthenticationMiddleware).FullName, options.AuthenticationType, "v1");
-                Options.StateDataFormat = new PropertiesDataFormat(dataProtector);
-            }
 
-            _httpClient = new HttpClient(ResolveHttpMessageHandler(Options));
-            _httpClient.Timeout = Options.BackchannelTimeout;
-            _httpClient.MaxResponseContentBufferSize = 1024 * 1024 * 10; // 10 MB
+            if (Options.Scope.Count == 0)
+            {
+                // Google OAuth 2.0 asks for non-empty scope. If user didn't set it, set default scope to 
+                // "openid profile email" to get basic user information.
+                // TODO: Should we just add these by default when we create the Options?
+                Options.Scope.Add("openid");
+                Options.Scope.Add("profile");
+                Options.Scope.Add("email");
+            }
         }
 
         /// <summary>
@@ -69,30 +56,7 @@ namespace Microsoft.AspNet.Security.Google
         /// <returns>An <see cref="AuthenticationHandler"/> configured with the <see cref="GoogleAuthenticationOptions"/> supplied to the constructor.</returns>
         protected override AuthenticationHandler<GoogleAuthenticationOptions> CreateHandler()
         {
-            return new GoogleAuthenticationHandler(_httpClient, _logger);
-        }
-
-        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Managed by caller")]
-        private static HttpMessageHandler ResolveHttpMessageHandler(GoogleAuthenticationOptions options)
-        {
-            HttpMessageHandler handler = options.BackchannelHttpHandler ??
-#if ASPNET50
-                new WebRequestHandler();
-            // If they provided a validator, apply it or fail.
-            if (options.BackchannelCertificateValidator != null)
-            {
-                // Set the cert validate callback
-                var webRequestHandler = handler as WebRequestHandler;
-                if (webRequestHandler == null)
-                {
-                    throw new InvalidOperationException(Resources.Exception_ValidatorHandlerMismatch);
-                }
-                webRequestHandler.ServerCertificateValidationCallback = options.BackchannelCertificateValidator.Validate;
-            }
-#else
-                new WinHttpHandler();
-#endif
-            return handler;
+            return new GoogleAuthenticationHandler(Backchannel, Logger);
         }
     }
 }

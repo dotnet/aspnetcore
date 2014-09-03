@@ -62,11 +62,11 @@ namespace Microsoft.AspNet.Security.Facebook
             transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
             var location = transaction.Response.Headers.Location.AbsoluteUri;
             location.ShouldContain("https://www.facebook.com/dialog/oauth");
-            location.ShouldContain("?response_type=code");
-            location.ShouldContain("&client_id=");
-            location.ShouldContain("&redirect_uri=");
-            location.ShouldContain("&scope=");
-            location.ShouldContain("&state=");
+            location.ShouldContain("response_type=code");
+            location.ShouldContain("client_id=");
+            location.ShouldContain("redirect_uri=");
+            location.ShouldContain("scope=");
+            location.ShouldContain("state=");
         }
 
         private static TestServer CreateServer(Action<IBuilder> configure, Func<HttpContext, bool> handler)

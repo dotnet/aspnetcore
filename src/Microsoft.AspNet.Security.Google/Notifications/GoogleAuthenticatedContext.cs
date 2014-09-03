@@ -3,10 +3,11 @@
 
 using System;
 using System.Globalization;
+using System.Net.Http;
 using System.Security.Claims;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Security;
-using Microsoft.AspNet.Security.Notifications;
+using Microsoft.AspNet.Security.OAuth;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.Security.Google
@@ -14,30 +15,17 @@ namespace Microsoft.AspNet.Security.Google
     /// <summary>
     /// Contains information about the login session as well as the user <see cref="System.Security.Claims.ClaimsIdentity"/>.
     /// </summary>
-    public class GoogleAuthenticatedContext : BaseContext
+    public class GoogleAuthenticatedContext : OAuthAuthenticatedContext
     {
         /// <summary>
         /// Initializes a new <see cref="GoogleAuthenticatedContext"/>.
         /// </summary>
         /// <param name="context">The HTTP environment.</param>
         /// <param name="user">The JSON-serialized Google user info.</param>
-        /// <param name="accessToken">Google OAuth 2.0 access token.</param>
-        /// <param name="refreshToken">Goolge OAuth 2.0 refresh token.</param>
-        /// <param name="expires">Seconds until expiration.</param>
-        public GoogleAuthenticatedContext(HttpContext context, JObject user, string accessToken, 
-            string refreshToken, string expires)
-            : base(context)
+        /// <param name="tokens">Google OAuth 2.0 access token, refresh token, etc.</param>
+        public GoogleAuthenticatedContext(HttpContext context, OAuthAuthenticationOptions options, JObject user, TokenResponse tokens)
+            : base(context, options, user, tokens)
         {
-            User = user;
-            AccessToken = accessToken;
-            RefreshToken = refreshToken;
-
-            int expiresValue;
-            if (Int32.TryParse(expires, NumberStyles.Integer, CultureInfo.InvariantCulture, out expiresValue))
-            {
-                ExpiresIn = TimeSpan.FromSeconds(expiresValue);
-            }
-
             Id = TryGetValue(user, "id");
             Name = TryGetValue(user, "displayName");
             GivenName = TryGetValue(user, "name", "givenName");
@@ -45,32 +33,6 @@ namespace Microsoft.AspNet.Security.Google
             Profile = TryGetValue(user, "url");
             Email = TryGetFirstValue(user, "emails", "value");
         }
-
-        /// <summary>
-        /// Gets the JSON-serialized user.
-        /// </summary>
-        /// <remarks>
-        /// Contains the Google user obtained from the userinfo endpoint.
-        /// </remarks>
-        public JObject User { get; private set; }
-
-        /// <summary>
-        /// Gets the Google access token.
-        /// </summary>
-        public string AccessToken { get; private set; }
-
-        /// <summary>
-        /// Gets the Google refresh token.
-        /// </summary>
-        /// <remarks>
-        /// This value is not null only when access_type authorize parameter is offline.
-        /// </remarks>
-        public string RefreshToken { get; private set; }
-
-        /// <summary>
-        /// Gets the Google access token expiration time.
-        /// </summary>
-        public TimeSpan? ExpiresIn { get; set; }
 
         /// <summary>
         /// Gets the Google user ID.
@@ -101,16 +63,6 @@ namespace Microsoft.AspNet.Security.Google
         /// Gets the user's email.
         /// </summary>
         public string Email { get; private set; }
-
-        /// <summary>
-        /// Gets the <see cref="ClaimsIdentity"/> representing the user.
-        /// </summary>
-        public ClaimsIdentity Identity { get; set; }
-
-        /// <summary>
-        /// Gets or sets a property bag for common authentication properties.
-        /// </summary>
-        public AuthenticationProperties Properties { get; set; }
 
         private static string TryGetValue(JObject user, string propertyName)
         {
