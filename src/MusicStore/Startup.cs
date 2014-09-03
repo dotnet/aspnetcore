@@ -66,7 +66,13 @@ namespace MusicStore
 
                 // Add MVC services to the services container
                 services.AddMvc();
+
+                //Add all SignalR related services to IoC.
+                services.AddSignalR();
             });
+
+            //Configure SignalR
+            app.UseSignalR();
 
             // Add static files to the request pipeline
             app.UseStaticFiles();

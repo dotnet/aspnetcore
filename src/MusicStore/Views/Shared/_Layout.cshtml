@@ -11,6 +11,26 @@
     <link rel="stylesheet" href="~/Content/bootstrap.min.css" />
     <link rel="stylesheet" href="~/Content/Site.css" />
     <script type="text/javascript" src="~/Scripts/modernizr-2.6.2.js"></script>
+    <script src="~/Scripts/jquery-2.0.3.js"></script>
+    <script src="~/Scripts/jquery.signalR-2.0.1.min.js"></script>
+    <script src="~/signalr/hubs" type="text/javascript"></script>
+    <script>
+        @*To display what's new in the store*@
+        $(function () {
+            $.connection.hub.logging = true;
+            var announcementsHub = $.connection.Announcement;
+
+            announcementsHub.client.announcement = function (item) {
+                var newArrivals = $('a#NewArrivalsPanel');
+                newArrivals.attr("href", item.Url); //Set the URL
+                newArrivals.text(item.Title); //Set the title
+            };
+
+            $.connection.hub.start().done(function () {
+                console.log('hub connection open');
+            });
+        });
+    </script>
 </head>
 <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -28,6 +48,7 @@
                     <li>@Html.ActionLink("Home", "Index", "Home")</li>
                     @await Component.InvokeAsync("GenreMenu")
                     @await Component.InvokeAsync("CartSummary")
+                    @await Component.InvokeAsync("Announcement")
                 </ul>
                 @await Html.PartialAsync("_LoginPartial")
             </div>
@@ -45,7 +66,6 @@
     @*TODO : Until script helpers are available, adding script references manually*@
     @*@Scripts.Render("~/bundles/jquery")
         @Scripts.Render("~/bundles/bootstrap")*@
-    <script src="~/Scripts/jquery-1.10.2.js"></script>
     <script src="~/Scripts/bootstrap.js"></script>
     <script src="~/Scripts/respond.js"></script>
     @RenderSection("scripts", required: false)

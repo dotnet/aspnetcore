@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.AspNet.Mvc.ModelBinding;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace MusicStore.Models
@@ -30,12 +32,18 @@ namespace MusicStore.Models
         public virtual Artist Artist { get; set; }
         public virtual List<OrderDetail> OrderDetails { get; set; }
 
+        [ScaffoldColumn(false)]
+        [BindNever]
+        [Required]
+        public DateTime Created { get; set; }
+
         /// <summary>
         /// TODO: Temporary hack to populate the orderdetails until EF does this automatically. 
         /// </summary>
         public Album()
         {
             this.OrderDetails = new List<OrderDetail>();
+            this.Created = DateTime.UtcNow;
         }
     }
 }

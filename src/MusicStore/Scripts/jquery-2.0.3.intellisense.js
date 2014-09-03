@@ -1,17 +1,3 @@
-﻿/* NUGET: BEGIN LICENSE TEXT
- *
- * Microsoft grants you the right to use these script files for the sole
- * purpose of either: (i) interacting through your browser with the Microsoft
- * website or online service, subject to the applicable licensing or use
- * terms; or (ii) using the files as included with a Microsoft product subject
- * to that product's license terms. Microsoft reserves all other rights to the
- * files not expressly granted by Microsoft, whether by implication, estoppel
- * or otherwise. Insofar as a script file is dual licensed under GPL,
- * Microsoft neither took the code under GPL nor distributes it thereunder but
- * under the terms set out in this paragraph. All notices and licenses
- * below are for informational purposes only.
- *
- * NUGET: END LICENSE TEXT */
 intellisense.annotate(jQuery, {
   'ajax': function() {
     /// <signature>
@@ -35,7 +21,7 @@ intellisense.annotate(jQuery, {
   },
   'ajaxSetup': function() {
     /// <signature>
-    ///   <summary>Set default values for future Ajax requests.</summary>
+    ///   <summary>Set default values for future Ajax requests. Its use is not recommended.</summary>
     ///   <param name="options" type="PlainObject">A set of key/value pairs that configure the default Ajax request. All options are optional.</param>
     /// </signature>
   },
@@ -51,11 +37,11 @@ intellisense.annotate(jQuery, {
     /// <returns type="Boolean" />
   },
   'browser': function() {
-    /// <summary>Contains flags for the useragent, read from navigator.userAgent. We recommend against using this property; please try to use feature detection instead (see jQuery.support). jQuery.browser may be moved to a plugin in a future release of jQuery.</summary>
+    /// <summary>Contains flags for the useragent, read from navigator.userAgent. This property was removed in jQuery 1.9 and is available only through the jQuery.migrate plugin. Please try to use feature detection instead.</summary>
     /// <returns type="PlainObject" />
   },
   'browser.version': function() {
-    /// <summary>The version number of the rendering engine for the user's browser.</summary>
+    /// <summary>The version number of the rendering engine for the user's browser. This property was removed in jQuery 1.9 and is available only through the jQuery.migrate plugin.</summary>
     /// <returns type="String" />
   },
   'Callbacks': function() {
@@ -135,11 +121,18 @@ intellisense.annotate(jQuery, {
     ///   <returns type="Object" />
     /// </signature>
   },
+  'fn.extend': function() {
+    /// <signature>
+    ///   <summary>Merge the contents of an object onto the jQuery prototype to provide new jQuery instance methods.</summary>
+    ///   <param name="object" type="Object">An object to merge onto the jQuery prototype.</param>
+    ///   <returns type="Object" />
+    /// </signature>
+  },
   'get': function() {
     /// <signature>
     ///   <summary>Load data from the server using a HTTP GET request.</summary>
     ///   <param name="url" type="String">A string containing the URL to which the request is sent.</param>
-    ///   <param name="data" type="String">A plain object or string that is sent to the server with the request.</param>
+    ///   <param name="data" type="">A plain object or string that is sent to the server with the request.</param>
     ///   <param name="success(data, textStatus, jqXHR)" type="Function">A callback function that is executed if the request succeeds.</param>
     ///   <param name="dataType" type="String">The type of data expected from the server. Default: Intelligent Guess (xml, json, script, or html).</param>
     ///   <returns type="jqXHR" />
@@ -203,7 +196,7 @@ intellisense.annotate(jQuery, {
     /// <signature>
     ///   <summary>Determine whether the argument is an array.</summary>
     ///   <param name="obj" type="Object">Object to test whether or not it is an array.</param>
-    ///   <returns type="boolean" />
+    ///   <returns type="Boolean" />
     /// </signature>
   },
   'isEmptyObject': function() {
@@ -217,7 +210,7 @@ intellisense.annotate(jQuery, {
     /// <signature>
     ///   <summary>Determine if the argument passed is a Javascript function object.</summary>
     ///   <param name="obj" type="PlainObject">Object to test whether or not it is a function.</param>
-    ///   <returns type="boolean" />
+    ///   <returns type="Boolean" />
     /// </signature>
   },
   'isNumeric': function() {
@@ -238,7 +231,7 @@ intellisense.annotate(jQuery, {
     /// <signature>
     ///   <summary>Determine whether the argument is a window.</summary>
     ///   <param name="obj" type="PlainObject">Object to test whether or not it is a window.</param>
-    ///   <returns type="boolean" />
+    ///   <returns type="Boolean" />
     /// </signature>
   },
   'isXMLDoc': function() {
@@ -264,7 +257,7 @@ intellisense.annotate(jQuery, {
     /// </signature>
     /// <signature>
     ///   <summary>Translate all items in an array or object to new array of items.</summary>
-    ///   <param name="arrayOrObject" type="Object">The Array or Object to translate.</param>
+    ///   <param name="arrayOrObject" type="">The Array or Object to translate.</param>
     ///   <param name="callback( value, indexOrKey )" type="Function">The function to process each item against.  The first argument to the function is the value; the second argument is the index or key of the array or object property. The function can return any value to add to the array. A returned array will be flattened into the resulting array. Within the function, this refers to the global (window) object.</param>
     ///   <returns type="Array" />
     /// </signature>
@@ -294,12 +287,12 @@ intellisense.annotate(jQuery, {
   'param': function() {
     /// <signature>
     ///   <summary>Create a serialized representation of an array or object, suitable for use in a URL query string or Ajax request.</summary>
-    ///   <param name="obj" type="Object">An array or object to serialize.</param>
+    ///   <param name="obj" type="">An array or object to serialize.</param>
     ///   <returns type="String" />
     /// </signature>
     /// <signature>
     ///   <summary>Create a serialized representation of an array or object, suitable for use in a URL query string or Ajax request.</summary>
-    ///   <param name="obj" type="Object">An array or object to serialize.</param>
+    ///   <param name="obj" type="">An array or object to serialize.</param>
     ///   <param name="traditional" type="Boolean">A Boolean indicating whether to perform a traditional "shallow" serialization.</param>
     ///   <returns type="String" />
     /// </signature>
@@ -308,7 +301,7 @@ intellisense.annotate(jQuery, {
     /// <signature>
     ///   <summary>Parses a string into an array of DOM nodes.</summary>
     ///   <param name="data" type="String">HTML string to be parsed</param>
-    ///   <param name="context" type="Element">DOM element to serve as the context in which the HTML fragment will be created</param>
+    ///   <param name="context" type="Element">Document element to serve as the context in which the HTML fragment will be created</param>
     ///   <param name="keepScripts" type="Boolean">A Boolean indicating whether to include scripts passed in the HTML string</param>
     ///   <returns type="Array" />
     /// </signature>
@@ -331,8 +324,8 @@ intellisense.annotate(jQuery, {
     /// <signature>
     ///   <summary>Load data from the server using a HTTP POST request.</summary>
     ///   <param name="url" type="String">A string containing the URL to which the request is sent.</param>
-    ///   <param name="data" type="String">A plain object or string that is sent to the server with the request.</param>
-    ///   <param name="success(data, textStatus, jqXHR)" type="Function">A callback function that is executed if the request succeeds.</param>
+    ///   <param name="data" type="">A plain object or string that is sent to the server with the request.</param>
+    ///   <param name="success(data, textStatus, jqXHR)" type="Function">A callback function that is executed if the request succeeds. Required if dataType is provided, but can be null in that case.</param>
     ///   <param name="dataType" type="String">The type of data expected from the server. Default: Intelligent Guess (xml, json, script, text, html).</param>
     ///   <returns type="jqXHR" />
     /// </signature>
@@ -434,7 +427,7 @@ intellisense.annotate(_object, {
   'add': function() {
     /// <signature>
     ///   <summary>Add a callback or a collection of callbacks to a callback list.</summary>
-    ///   <param name="callbacks" type="Array">A function, or array of functions, that are to be added to the callback list.</param>
+    ///   <param name="callbacks" type="">A function, or array of functions, that are to be added to the callback list.</param>
     ///   <returns type="Callbacks" />
     /// </signature>
   },
@@ -487,7 +480,7 @@ intellisense.annotate(_object, {
   'remove': function() {
     /// <signature>
     ///   <summary>Remove a callback or a collection of callbacks from a callback list.</summary>
-    ///   <param name="callbacks" type="Array">A function, or array of functions, that are to be removed from the callback list.</param>
+    ///   <param name="callbacks" type="">A function, or array of functions, that are to be removed from the callback list.</param>
     ///   <returns type="Callbacks" />
     /// </signature>
   },
@@ -566,7 +559,7 @@ intellisense.annotate(_object, {
   'progress': function() {
     /// <signature>
     ///   <summary>Add handlers to be called when the Deferred object generates progress notifications.</summary>
-    ///   <param name="progressCallbacks" type="Function">A function, or array of functions, that is called when the Deferred generates progress notifications.</param>
+    ///   <param name="progressCallbacks" type="">A function, or array of functions, to be called when the Deferred generates progress notifications.</param>
     ///   <returns type="Deferred" />
     /// </signature>
   },
@@ -580,7 +573,7 @@ intellisense.annotate(_object, {
   'reject': function() {
     /// <signature>
     ///   <summary>Reject a Deferred object and call any failCallbacks with the given args.</summary>
-    ///   <param name="args" type="Object">Optional arguments that are passed to the failCallbacks.</param>
+    ///   <param name="args" type="Anything">Optional arguments that are passed to the failCallbacks.</param>
     ///   <returns type="Deferred" />
     /// </signature>
   },
@@ -595,7 +588,7 @@ intellisense.annotate(_object, {
   'resolve': function() {
     /// <signature>
     ///   <summary>Resolve a Deferred object and call any doneCallbacks with the given args.</summary>
-    ///   <param name="args" type="Object">Optional arguments that are passed to the doneCallbacks.</param>
+    ///   <param name="args" type="Anything">Optional arguments that are passed to the doneCallbacks.</param>
     ///   <returns type="Deferred" />
     /// </signature>
   },
@@ -729,7 +722,7 @@ intellisense.annotate(jQuery.fn, {
     /// </signature>
     /// <signature>
     ///   <summary>Add elements to the set of matched elements.</summary>
-    ///   <param name="html" type="String">An HTML fragment to add to the set of matched elements.</param>
+    ///   <param name="html" type="htmlString">An HTML fragment to add to the set of matched elements.</param>
     ///   <returns type="jQuery" />
     /// </signature>
     /// <signature>
@@ -766,8 +759,8 @@ intellisense.annotate(jQuery.fn, {
   'after': function() {
     /// <signature>
     ///   <summary>Insert content, specified by the parameter, after each element in the set of matched elements.</summary>
-    ///   <param name="content" type="jQuery">HTML string, DOM element, or jQuery object to insert after each element in the set of matched elements.</param>
-    ///   <param name="content" type="jQuery">One or more additional DOM elements, arrays of elements, HTML strings, or jQuery objects to insert after each element in the set of matched elements.</param>
+    ///   <param name="content" type="">HTML string, DOM element, or jQuery object to insert after each element in the set of matched elements.</param>
+    ///   <param name="content" type="">One or more additional DOM elements, arrays of elements, HTML strings, or jQuery objects to insert after each element in the set of matched elements.</param>
     ///   <returns type="jQuery" />
     /// </signature>
     /// <signature>
@@ -847,8 +840,8 @@ intellisense.annotate(jQuery.fn, {
   'append': function() {
     /// <signature>
     ///   <summary>Insert content, specified by the parameter, to the end of each element in the set of matched elements.</summary>
-    ///   <param name="content" type="jQuery">DOM element, HTML string, or jQuery object to insert at the end of each element in the set of matched elements.</param>
-    ///   <param name="content" type="jQuery">One or more additional DOM elements, arrays of elements, HTML strings, or jQuery objects to insert at the end of each element in the set of matched elements.</param>
+    ///   <param name="content" type="">DOM element, HTML string, or jQuery object to insert at the end of each element in the set of matched elements.</param>
+    ///   <param name="content" type="">One or more additional DOM elements, arrays of elements, HTML strings, or jQuery objects to insert at the end of each element in the set of matched elements.</param>
     ///   <returns type="jQuery" />
     /// </signature>
     /// <signature>
@@ -860,7 +853,7 @@ intellisense.annotate(jQuery.fn, {
   'appendTo': function() {
     /// <signature>
     ///   <summary>Insert every element in the set of matched elements to the end of the target.</summary>
-    ///   <param name="target" type="jQuery">A selector, element, HTML string, or jQuery object; the matched set of elements will be inserted at the end of the element(s) specified by this parameter.</param>
+    ///   <param name="target" type="">A selector, element, HTML string, or jQuery object; the matched set of elements will be inserted at the end of the element(s) specified by this parameter.</param>
     ///   <returns type="jQuery" />
     /// </signature>
   },
@@ -868,7 +861,7 @@ intellisense.annotate(jQuery.fn, {
     /// <signature>
     ///   <summary>Set one or more attributes for the set of matched elements.</summary>
     ///   <param name="attributeName" type="String">The name of the attribute to set.</param>
-    ///   <param name="value" type="Number">A value to set for the attribute.</param>
+    ///   <param name="value" type="">A value to set for the attribute.</param>
     ///   <returns type="jQuery" />
     /// </signature>
     /// <signature>
@@ -949,8 +942,8 @@ intellisense.annotate(jQuery.fn, {
   'before': function() {
     /// <signature>
     ///   <summary>Insert content, specified by the parameter, before each element in the set of matched elements.</summary>
-    ///   <param name="content" type="jQuery">HTML string, DOM element, or jQuery object to insert before each element in the set of matched elements.</param>
-    ///   <param name="content" type="jQuery">One or more additional DOM elements, arrays of elements, HTML strings, or jQuery objects to insert before each element in the set of matched elements.</param>
+    ///   <param name="content" type="">HTML string, DOM element, or jQuery object to insert before each element in the set of matched elements.</param>
+    ///   <param name="content" type="">One or more additional DOM elements, arrays of elements, HTML strings, or jQuery objects to insert before each element in the set of matched elements.</param>
     ///   <returns type="jQuery" />
     /// </signature>
     /// <signature>
@@ -1013,7 +1006,7 @@ intellisense.annotate(jQuery.fn, {
     /// <summary>Selects all elements of type checkbox.</summary>
   },
   'checked': function() {
-    /// <summary>Matches all elements that are checked.</summary>
+    /// <summary>Matches all elements that are checked or selected.</summary>
   },
   'child': function() {
     /// <signature>
@@ -1109,7 +1102,7 @@ intellisense.annotate(jQuery.fn, {
     /// <signature>
     ///   <summary>Set one or more CSS properties for the set of matched elements.</summary>
     ///   <param name="propertyName" type="String">A CSS property name.</param>
-    ///   <param name="value" type="Number">A value to set for the property.</param>
+    ///   <param name="value" type="">A value to set for the property.</param>
     ///   <returns type="jQuery" />
     /// </signature>
     /// <signature>
@@ -1310,14 +1303,14 @@ intellisense.annotate(jQuery.fn, {
   'fadeTo': function() {
     /// <signature>
     ///   <summary>Adjust the opacity of the matched elements.</summary>
-    ///   <param name="duration" type="Number">A string or number determining how long the animation will run.</param>
+    ///   <param name="duration" type="">A string or number determining how long the animation will run.</param>
     ///   <param name="opacity" type="Number">A number between 0 and 1 denoting the target opacity.</param>
     ///   <param name="complete" type="Function">A function to call once the animation is complete.</param>
     ///   <returns type="jQuery" />
     /// </signature>
     /// <signature>
     ///   <summary>Adjust the opacity of the matched elements.</summary>
-    ///   <param name="duration" type="Number">A string or number determining how long the animation will run.</param>
+    ///   <param name="duration" type="">A string or number determining how long the animation will run.</param>
     ///   <param name="opacity" type="Number">A number between 0 and 1 denoting the target opacity.</param>
     ///   <param name="easing" type="String">A string indicating which easing function to use for the transition.</param>
     ///   <param name="complete" type="Function">A function to call once the animation is complete.</param>
@@ -1437,15 +1430,19 @@ intellisense.annotate(jQuery.fn, {
   },
   'get': function() {
     /// <signature>
-    ///   <summary>Retrieve the DOM elements matched by the jQuery object.</summary>
+    ///   <summary>Retrieve one of the DOM elements matched by the jQuery object.</summary>
     ///   <param name="index" type="Number">A zero-based integer indicating which element to retrieve.</param>
-    ///   <returns type="Element, Array" />
+    ///   <returns type="Element" />
     /// </signature>
   },
   'gt': function() {
     /// <signature>
     ///   <summary>Select all elements at an index greater than index within the matched set.</summary>
     ///   <param name="index" type="Number">Zero-based index.</param>
+    /// </signature>
+    /// <signature>
+    ///   <summary>Select all elements at an index greater than index within the matched set.</summary>
+    ///   <param name="-index" type="Number">Zero-based index, counting backwards from the last element.</param>
     /// </signature>
   },
   'has': function() {
@@ -1473,7 +1470,7 @@ intellisense.annotate(jQuery.fn, {
   'height': function() {
     /// <signature>
     ///   <summary>Set the CSS height of every matched element.</summary>
-    ///   <param name="value" type="Number">An integer representing the number of pixels, or an integer with an optional unit of measure appended (as a string).</param>
+    ///   <param name="value" type="">An integer representing the number of pixels, or an integer with an optional unit of measure appended (as a string).</param>
     ///   <returns type="jQuery" />
     /// </signature>
     /// <signature>
@@ -1516,7 +1513,7 @@ intellisense.annotate(jQuery.fn, {
   'html': function() {
     /// <signature>
     ///   <summary>Set the HTML contents of each element in the set of matched elements.</summary>
-    ///   <param name="htmlString" type="String">A string of HTML to set as the content of each matched element.</param>
+    ///   <param name="htmlString" type="htmlString">A string of HTML to set as the content of each matched element.</param>
     ///   <returns type="jQuery" />
     /// </signature>
     /// <signature>
@@ -1542,7 +1539,7 @@ intellisense.annotate(jQuery.fn, {
     /// </signature>
     /// <signature>
     ///   <summary>Search for a given element from among the matched elements.</summary>
-    ///   <param name="element" type="jQuery">The DOM element or first element within the jQuery object to look for.</param>
+    ///   <param name="element" type="">The DOM element or first element within the jQuery object to look for.</param>
     ///   <returns type="Number" />
     /// </signature>
   },
@@ -1550,7 +1547,7 @@ intellisense.annotate(jQuery.fn, {
     /// <signature>
     ///   <summary>Accepts a string containing a CSS selector which is then used to match a set of elements.</summary>
     ///   <param name="selector" type="String">A string containing a selector expression</param>
-    ///   <param name="context" type="jQuery">A DOM Element, Document, or jQuery to use as context</param>
+    ///   <param name="context" type="">A DOM Element, Document, or jQuery to use as context</param>
     ///   <returns type="jQuery" />
     /// </signature>
     /// <signature>
@@ -1576,11 +1573,11 @@ intellisense.annotate(jQuery.fn, {
   },
   'innerHeight': function() {
     /// <summary>Get the current computed height for the first element in the set of matched elements, including padding but not border.</summary>
-    /// <returns type="Integer" />
+    /// <returns type="Number" />
   },
   'innerWidth': function() {
     /// <summary>Get the current computed width for the first element in the set of matched elements, including padding but not border.</summary>
-    /// <returns type="Integer" />
+    /// <returns type="Number" />
   },
   'input': function() {
     /// <summary>Selects all input, textarea, select and button elements.</summary>
@@ -1588,14 +1585,14 @@ intellisense.annotate(jQuery.fn, {
   'insertAfter': function() {
     /// <signature>
     ///   <summary>Insert every element in the set of matched elements after the target.</summary>
-    ///   <param name="target" type="jQuery">A selector, element, HTML string, or jQuery object; the matched set of elements will be inserted after the element(s) specified by this parameter.</param>
+    ///   <param name="target" type="">A selector, element, HTML string, or jQuery object; the matched set of elements will be inserted after the element(s) specified by this parameter.</param>
     ///   <returns type="jQuery" />
     /// </signature>
   },
   'insertBefore': function() {
     /// <signature>
     ///   <summary>Insert every element in the set of matched elements before the target.</summary>
-    ///   <param name="target" type="jQuery">A selector, element, HTML string, or jQuery object; the matched set of elements will be inserted before the element(s) specified by this parameter.</param>
+    ///   <param name="target" type="">A selector, element, HTML string, or jQuery object; the matched set of elements will be inserted before the element(s) specified by this parameter.</param>
     ///   <returns type="jQuery" />
     /// </signature>
   },
@@ -1720,6 +1717,10 @@ intellisense.annotate(jQuery.fn, {
     /// <signature>
     ///   <summary>Select all elements at an index less than index within the matched set.</summary>
     ///   <param name="index" type="Number">Zero-based index.</param>
+    /// </signature>
+    /// <signature>
+    ///   <summary>Select all elements at an index less than index within the matched set.</summary>
+    ///   <param name="-index" type="Number">Zero-based index, counting backwards from the last element.</param>
     /// </signature>
   },
   'map': function() {
@@ -2001,14 +2002,14 @@ intellisense.annotate(jQuery.fn, {
     /// <signature>
     ///   <summary>Get the current computed height for the first element in the set of matched elements, including padding, border, and optionally margin. Returns an integer (without "px") representation of the value or null if called on an empty set of elements.</summary>
     ///   <param name="includeMargin" type="Boolean">A Boolean indicating whether to include the element's margin in the calculation.</param>
-    ///   <returns type="Integer" />
+    ///   <returns type="Number" />
     /// </signature>
   },
   'outerWidth': function() {
     /// <signature>
     ///   <summary>Get the current computed width for the first element in the set of matched elements, including padding and border.</summary>
     ///   <param name="includeMargin" type="Boolean">A Boolean indicating whether to include the element's margin in the calculation.</param>
-    ///   <returns type="Integer" />
+    ///   <returns type="Number" />
     /// </signature>
   },
   'parent': function() {
@@ -2049,8 +2050,8 @@ intellisense.annotate(jQuery.fn, {
   'prepend': function() {
     /// <signature>
     ///   <summary>Insert content, specified by the parameter, to the beginning of each element in the set of matched elements.</summary>
-    ///   <param name="content" type="jQuery">DOM element, array of elements, HTML string, or jQuery object to insert at the beginning of each element in the set of matched elements.</param>
-    ///   <param name="content" type="jQuery">One or more additional DOM elements, arrays of elements, HTML strings, or jQuery objects to insert at the beginning of each element in the set of matched elements.</param>
+    ///   <param name="content" type="">DOM element, array of elements, HTML string, or jQuery object to insert at the beginning of each element in the set of matched elements.</param>
+    ///   <param name="content" type="">One or more additional DOM elements, arrays of elements, HTML strings, or jQuery objects to insert at the beginning of each element in the set of matched elements.</param>
     ///   <returns type="jQuery" />
     /// </signature>
     /// <signature>
@@ -2062,7 +2063,7 @@ intellisense.annotate(jQuery.fn, {
   'prependTo': function() {
     /// <signature>
     ///   <summary>Insert every element in the set of matched elements to the beginning of the target.</summary>
-    ///   <param name="target" type="jQuery">A selector, element, HTML string, or jQuery object; the matched set of elements will be inserted at the beginning of the element(s) specified by this parameter.</param>
+    ///   <param name="target" type="">A selector, element, HTML string, or jQuery object; the matched set of elements will be inserted at the beginning of the element(s) specified by this parameter.</param>
     ///   <returns type="jQuery" />
     /// </signature>
   },
@@ -2106,7 +2107,7 @@ intellisense.annotate(jQuery.fn, {
     /// <signature>
     ///   <summary>Set one or more properties for the set of matched elements.</summary>
     ///   <param name="propertyName" type="String">The name of the property to set.</param>
-    ///   <param name="value" type="Boolean">A value to set for the property.</param>
+    ///   <param name="value" type="">A value to set for the property.</param>
     ///   <returns type="jQuery" />
     /// </signature>
     /// <signature>
@@ -2193,7 +2194,7 @@ intellisense.annotate(jQuery.fn, {
     /// </signature>
     /// <signature>
     ///   <summary>Remove a previously-stored piece of data.</summary>
-    ///   <param name="list" type="String">An array or space-separated string naming the pieces of data to delete.</param>
+    ///   <param name="list" type="">An array or space-separated string naming the pieces of data to delete.</param>
     ///   <returns type="jQuery" />
     /// </signature>
   },
@@ -2207,14 +2208,14 @@ intellisense.annotate(jQuery.fn, {
   'replaceAll': function() {
     /// <signature>
     ///   <summary>Replace each target element with the set of matched elements.</summary>
-    ///   <param name="target" type="String">A selector expression indicating which element(s) to replace.</param>
+    ///   <param name="target" type="">A selector string, jQuery object, or DOM element reference indicating which element(s) to replace.</param>
     ///   <returns type="jQuery" />
     /// </signature>
   },
   'replaceWith': function() {
     /// <signature>
     ///   <summary>Replace each element in the set of matched elements with the provided new content and return the set of elements that was removed.</summary>
-    ///   <param name="newContent" type="jQuery">The content to insert. May be an HTML string, DOM element, or jQuery object.</param>
+    ///   <param name="newContent" type="">The content to insert. May be an HTML string, DOM element, or jQuery object.</param>
     ///   <returns type="jQuery" />
     /// </signature>
     /// <signature>
@@ -2240,10 +2241,7 @@ intellisense.annotate(jQuery.fn, {
     /// </signature>
   },
   'root': function() {
-    /// <signature>
-    ///   <summary>Selects the element that is the root of the document.</summary>
-    ///   <param name="index" type="String">The index of each child to match, starting with 1, the string even or odd, or an equation ( eg. :nth-last-child(even), :nth-last-child(4n) )</param>
-    /// </signature>
+    /// <summary>Selects the element that is the root of the document.</summary>
   },
   'scroll': function() {
     /// <signature>
@@ -2289,7 +2287,7 @@ intellisense.annotate(jQuery.fn, {
     /// <summary>Selects all elements that are selected.</summary>
   },
   'selector': function() {
-    /// <summary>A selector representing selector originally passed to jQuery().</summary>
+    /// <summary>A selector representing selector passed to jQuery(), if any, when creating the original set.</summary>
     /// <returns type="String" />
   },
   'serialize': function() {
@@ -2499,12 +2497,13 @@ intellisense.annotate(jQuery.fn, {
     /// <signature>
     ///   <summary>Execute all handlers and behaviors attached to the matched elements for the given event type.</summary>
     ///   <param name="eventType" type="String">A string containing a JavaScript event type, such as click or submit.</param>
-    ///   <param name="extraParameters" type="PlainObject">Additional parameters to pass along to the event handler.</param>
+    ///   <param name="extraParameters" type="">Additional parameters to pass along to the event handler.</param>
     ///   <returns type="jQuery" />
     /// </signature>
     /// <signature>
     ///   <summary>Execute all handlers and behaviors attached to the matched elements for the given event type.</summary>
     ///   <param name="event" type="Event">A jQuery.Event object.</param>
+    ///   <param name="extraParameters" type="">Additional parameters to pass along to the event handler.</param>
     ///   <returns type="jQuery" />
     /// </signature>
   },
@@ -2581,7 +2580,7 @@ intellisense.annotate(jQuery.fn, {
   'val': function() {
     /// <signature>
     ///   <summary>Set the value of each element in the set of matched elements.</summary>
-    ///   <param name="value" type="Array">A string of text or an array of strings corresponding to the value of each matched element to set as selected/checked.</param>
+    ///   <param name="value" type="">A string of text or an array of strings corresponding to the value of each matched element to set as selected/checked.</param>
     ///   <returns type="jQuery" />
     /// </signature>
     /// <signature>
@@ -2596,7 +2595,7 @@ intellisense.annotate(jQuery.fn, {
   'width': function() {
     /// <signature>
     ///   <summary>Set the CSS width of each element in the set of matched elements.</summary>
-    ///   <param name="value" type="Number">An integer representing the number of pixels, or an integer along with an optional unit of measure appended (as a string).</param>
+    ///   <param name="value" type="">An integer representing the number of pixels, or an integer along with an optional unit of measure appended (as a string).</param>
     ///   <returns type="jQuery" />
     /// </signature>
     /// <signature>
@@ -2608,7 +2607,7 @@ intellisense.annotate(jQuery.fn, {
   'wrap': function() {
     /// <signature>
     ///   <summary>Wrap an HTML structure around each element in the set of matched elements.</summary>
-    ///   <param name="wrappingElement" type="jQuery">An HTML snippet, selector expression, jQuery object, or DOM element specifying the structure to wrap around the matched elements.</param>
+    ///   <param name="wrappingElement" type="">A selector, element, HTML string, or jQuery object specifying the structure to wrap around the matched elements.</param>
     ///   <returns type="jQuery" />
     /// </signature>
     /// <signature>
@@ -2620,7 +2619,7 @@ intellisense.annotate(jQuery.fn, {
   'wrapAll': function() {
     /// <signature>
     ///   <summary>Wrap an HTML structure around all elements in the set of matched elements.</summary>
-    ///   <param name="wrappingElement" type="jQuery">An HTML snippet, selector expression, jQuery object, or DOM element specifying the structure to wrap around the matched elements.</param>
+    ///   <param name="wrappingElement" type="">A selector, element, HTML string, or jQuery object specifying the structure to wrap around the matched elements.</param>
     ///   <returns type="jQuery" />
     /// </signature>
   },
@@ -2643,7 +2642,7 @@ intellisense.annotate(window, {
     /// <signature>
     ///   <summary>Accepts a string containing a CSS selector which is then used to match a set of elements.</summary>
     ///   <param name="selector" type="String">A string containing a selector expression</param>
-    ///   <param name="context" type="jQuery">A DOM Element, Document, or jQuery to use as context</param>
+    ///   <param name="context" type="">A DOM Element, Document, or jQuery to use as context</param>
     ///   <returns type="jQuery" />
     /// </signature>
     /// <signature>

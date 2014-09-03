@@ -1,20 +1,26 @@
 ﻿using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.SignalR;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.Data.Entity;
 using MusicStore.Models;
 using System.Linq;
+using MusicStore.Hubs;
+using MusicStore.ViewModels;
 
 namespace MusicStore.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize("ManageStore", "Allowed")]
+    [Microsoft.AspNet.Mvc.Authorize("ManageStore", "Allowed")]
     public class StoreManagerController : Controller
     {
         private readonly MusicStoreContext db;
+        private IHubContext annoucementHub;
 
-        public StoreManagerController(MusicStoreContext context)
+        public StoreManagerController(MusicStoreContext context, IConnectionManager connectionManager)
         {
             db = context;
+            annoucementHub = connectionManager.GetHubContext<AnnouncementHub>();
         }
 
         //
@@ -24,27 +30,27 @@ namespace MusicStore.Areas.Admin.Controllers
         {
             // TODO [EF] Swap to native support for loading related data when available
             var albums = from album in db.Albums
-                        join genre in db.Genres on album.GenreId equals genre.GenreId
-                        join artist in db.Artists on album.ArtistId equals artist.ArtistId
-                        select new Album()
-                        {
-                            ArtistId = album.ArtistId,
-                            AlbumArtUrl = album.AlbumArtUrl,
-                            AlbumId = album.AlbumId,
-                            GenreId = album.GenreId,
-                            Price = album.Price,
-                            Title = album.Title,
-                            Artist = new Artist()
-                            {
-                                ArtistId = album.ArtistId,
-                                Name = artist.Name
-                            },
-                            Genre = new Genre()
-                            {
-                                GenreId = album.GenreId,
-                                Name = genre.Name
-                            }
-                        };
+                         join genre in db.Genres on album.GenreId equals genre.GenreId
+                         join artist in db.Artists on album.ArtistId equals artist.ArtistId
+                         select new Album()
+                         {
+                             ArtistId = album.ArtistId,
+                             AlbumArtUrl = album.AlbumArtUrl,
+                             AlbumId = album.AlbumId,
+                             GenreId = album.GenreId,
+                             Price = album.Price,
+                             Title = album.Title,
+                             Artist = new Artist()
+                             {
+                                 ArtistId = album.ArtistId,
+                                 Name = artist.Name
+                             },
+                             Genre = new Genre()
+                             {
+                                 GenreId = album.GenreId,
+                                 Name = genre.Name
+                             }
+                         };
 
             return View(albums);
         }
@@ -55,7 +61,7 @@ namespace MusicStore.Areas.Admin.Controllers
         public IActionResult Details(int id = 0)
         {
             Album album = db.Albums.Single(a => a.AlbumId == id);
-            
+
             if (album == null)
             {
                 return HttpNotFound();
@@ -85,6 +91,7 @@ namespace MusicStore.Areas.Admin.Controllers
             {
                 db.Albums.Add(album);
                 db.SaveChanges();
+                annoucementHub.Clients.All.announcement(new AlbumData() { Title = album.Title, Url = Url.Action("Details", "Store", new { id = album.AlbumId }) });
                 return RedirectToAction("Index");
             }
 

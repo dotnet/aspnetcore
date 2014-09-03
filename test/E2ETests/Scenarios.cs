@@ -1,7 +1,9 @@
-﻿using System;
+﻿using Microsoft.AspNet.SignalR.Client;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using Xunit;
 
 namespace E2ETests
@@ -15,7 +17,6 @@ namespace E2ETests
             var response = httpClient.GetAsync("favicon.ico").Result;
             ThrowIfResponseStatusNotOk(response);
             Console.WriteLine("Etag received: {0}", response.Headers.ETag.Tag);
-            Console.WriteLine("Etag received: {0}", response.Headers.ETag.IsWeak);
 
             //Check if you receive a NotModified on sending an etag
             Console.WriteLine("Sending an IfNoneMatch header with e-tag");
@@ -263,6 +264,19 @@ namespace E2ETests
         private string CreateAlbum()
         {
             var albumName = Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 12);
+            string dataFromHub = null;
+            var OnReceivedEvent = new AutoResetEvent(false);
+            var hubConnection = new HubConnection(ApplicationBaseUrl + "SignalR");
+            hubConnection.Received += (data) =>
+            {
+                Console.WriteLine("Data received by SignalR client: {0}", data);
+                dataFromHub = data;
+                OnReceivedEvent.Set();
+            };
+
+            IHubProxy proxy = hubConnection.CreateHubProxy("Announcement");
+            hubConnection.Start().Wait();
+
             Console.WriteLine("Trying to create an album with name '{0}'", albumName);
             var response = httpClient.GetAsync("Admin/StoreManager/create").Result;
             ThrowIfResponseStatusNotOk(response);
@@ -288,6 +302,10 @@ namespace E2ETests
             }
 
             Assert.Contains(albumName, responseContent);
+            Console.WriteLine("Waiting for the SignalR client to receive album created announcement");
+            OnReceivedEvent.WaitOne(TimeSpan.FromSeconds(10));
+            dataFromHub = dataFromHub ?? "No relevant data received from Hub";
+            Assert.Contains(albumName, dataFromHub);
             Console.WriteLine("Successfully created an album with name '{0}' in the store", albumName);
             return albumName;
         }
