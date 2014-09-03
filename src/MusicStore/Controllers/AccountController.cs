@@ -270,7 +270,7 @@ namespace MusicStore.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public ActionResult ExternalLogin(string provider, string returnUrl)
+        public ActionResult ExternalLogin(string provider, string returnUrl = null)
         {
             // Request a redirect to the external login provider
             var redirectUri = Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl });

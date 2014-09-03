@@ -9,6 +9,11 @@ using Microsoft.Data.Entity;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using MusicStore.Models;
+using Microsoft.AspNet.Security.Facebook;
+using Microsoft.AspNet.Security.Google;
+using Microsoft.AspNet.Security.Twitter;
+using Microsoft.AspNet.Security.MicrosoftAccount;
+using Microsoft.AspNet.Security;
 
 namespace MusicStore
 {
@@ -25,6 +30,8 @@ namespace MusicStore
             //Error page middleware displays a nice formatted HTML page for any unhandled exceptions in the request pipeline.
             //Note: ErrorPageOptions.ShowAll to be used only at development time. Not recommended for production.
             app.UseErrorPage(ErrorPageOptions.ShowAll);
+
+            app.SetDefaultSignInAsAuthenticationType("External");
 
             app.UseServices(services =>
             {
@@ -80,11 +87,44 @@ namespace MusicStore
             // Add cookie-based authentication to the request pipeline
             app.UseCookieAuthentication(new CookieAuthenticationOptions
             {
+                AuthenticationType = "External",
+                AuthenticationMode = AuthenticationMode.Passive,
+                ExpireTimeSpan = TimeSpan.FromMinutes(5)
+            });
+
+            // Add cookie-based authentication to the request pipeline
+            app.UseCookieAuthentication(new CookieAuthenticationOptions
+            {
                 AuthenticationType = ClaimsIdentityOptions.DefaultAuthenticationType,
                 LoginPath = new PathString("/Account/Login")
             });
 
             app.UseTwoFactorSignInCookies();
+
+            app.UseFacebookAuthentication(new FacebookAuthenticationOptions()
+            {
+                AppId = "[AppId]",
+                AppSecret = "[AppSecret]",
+            });
+
+            app.UseGoogleAuthentication(new GoogleAuthenticationOptions()
+            {
+                ClientId = "[ClientId]",
+                ClientSecret = "[ClientSecret]",
+            });
+
+            app.UseTwitterAuthentication(new TwitterAuthenticationOptions()
+            {
+                ConsumerKey = "[ConsumerKey]",
+                ConsumerSecret = "[ConsumerSecret]",
+            });
+
+            app.UseMicrosoftAccountAuthentication(new MicrosoftAccountAuthenticationOptions()
+            {
+                Caption = "MicrosoftAccount - Requires project changes",
+                ClientId = "[ClientId]",
+                ClientSecret = "[ClientSecret]",
+            });
 
             // Add MVC to the request pipeline
             app.UseMvc(routes =>

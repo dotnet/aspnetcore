@@ -14,6 +14,10 @@
         "Microsoft.AspNet.Identity.SqlServer": "3.0.0-*",
         "Microsoft.AspNet.Identity.Authentication": "3.0.0-*",
         "Microsoft.AspNet.Security.Cookies": "1.0.0-*",
+        "Microsoft.AspNet.Security.Facebook": "1.0.0-*",
+        "Microsoft.AspNet.Security.Google": "1.0.0-*",
+        "Microsoft.AspNet.Security.MicrosoftAccount": "1.0.0-*",
+        "Microsoft.AspNet.Security.Twitter": "1.0.0-*",
         "Microsoft.AspNet.StaticFiles": "1.0.0-*",
         "EntityFramework.SqlServer": "7.0.0-*",
         /*For Mono*/

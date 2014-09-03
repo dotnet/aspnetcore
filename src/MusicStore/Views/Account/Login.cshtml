@@ -52,11 +52,11 @@
             }
         </section>
     </div>
-    @*<div class="col-md-4">
-            <section id="socialLoginForm">
-                @Html.PartialAsync("_ExternalLoginsListPartial", new ExternalLoginListViewModel { ReturnUrl = ViewBag.ReturnUrl })
-            </section>
-        </div>*@
+    <div class="col-md-4">
+        <section id="socialLoginForm">
+            @await Html.PartialAsync("_ExternalLoginsListPartial", new ExternalLoginListViewModel { ReturnUrl = ViewBag.ReturnUrl })
+        </section>
+    </div>
 </div>
 @section Scripts {
     @*TODO : Until script helpers are available, adding script references manually*@
