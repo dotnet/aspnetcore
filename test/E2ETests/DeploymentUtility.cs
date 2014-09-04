@@ -95,7 +95,6 @@ namespace E2ETests
             applicationPath = Path.GetFullPath(applicationPath.Replace('\\', '/'));
 
             //Mono does not have a way to pass in a --appbase switch. So it will be an environment variable. 
-            //https://github.com/aspnet/KRuntime/issues/580
             Environment.SetEnvironmentVariable("KRE_APPBASE", applicationPath);
             Console.WriteLine("Setting the KRE_APPBASE to {0}", applicationPath);
 

@@ -3,7 +3,8 @@
 @if (Model != null)
 {
     <li>
-        <small><i>@Html.Label(null, "New!", new { style = "color: red" })</i></small>
+        <br />
+        <small><i>@Html.Label(null, "New Arrivals!", new { style = "color: red" })</i></small>
         <i>@Html.ActionLink(Model.Title, "Details", "Store", new { id = Model.AlbumId }, new { id = "NewArrivalsPanel" })</i>
     </li>
 }
