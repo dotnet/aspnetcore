@@ -96,8 +96,8 @@ namespace E2ETests
 
             //Mono does not have a way to pass in a --appbase switch. So it will be an environment variable. 
             //https://github.com/aspnet/KRuntime/issues/580
-            Environment.SetEnvironmentVariable("APP_BASE", applicationPath);
-            Console.WriteLine("Setting the APP_BASE to {0}", applicationPath);
+            Environment.SetEnvironmentVariable("KRE_APPBASE", applicationPath);
+            Console.WriteLine("Setting the KRE_APPBASE to {0}", applicationPath);
 
             var path = Environment.GetEnvironmentVariable("PATH");
             var kreBin = path.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).Where(c => c.Contains("KRE-mono45")).FirstOrDefault();
@@ -126,7 +126,7 @@ namespace E2ETests
             Thread.Sleep(5 * 1000);
 
             //Clear the appbase so that it does not create issues with successive runs
-            Environment.SetEnvironmentVariable("APP_BASE", string.Empty);
+            Environment.SetEnvironmentVariable("KRE_APPBASE", string.Empty);
             return hostProcess;
         }
 
