@@ -10,7 +10,7 @@
         "Microsoft.AspNet.SignalR.Client": "2.1.1"
     },
     "frameworks": {
-        "net45": {
+        "aspnet50": {
             "dependencies": {
                 "System.Runtime": "",
                 "System.Runtime.Extensions": "",
