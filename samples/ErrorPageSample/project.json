@@ -9,7 +9,7 @@
   },
   "commands": { "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001" },
   "frameworks": {
-    "net45": {},
+    "aspnet50": {},
     "aspnetcore50": {
       "dependencies": {
         "System.Collections": "4.0.10.0",
