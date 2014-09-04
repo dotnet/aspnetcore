@@ -11,7 +11,7 @@
     "test": "Xunit.KRunner"
   },
   "frameworks": {
-    "net45": { 
+    "aspnet50": { 
       "dependencies": {
         "Shouldly": "1.1.1.1",
         "System.Runtime": ""

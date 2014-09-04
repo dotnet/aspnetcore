@@ -6,7 +6,7 @@
     "Microsoft.AspNet.StaticFiles": ""
   },
   "frameworks": {
-    "net45": {
+    "aspnet50": {
     },
     "aspnetcore50": {
         "dependencies": {

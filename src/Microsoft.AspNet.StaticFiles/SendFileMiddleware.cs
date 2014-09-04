@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.StaticFiles
                     throw new ArgumentOutOfRangeException("length", length, string.Empty);
                 }
 
-#if NET45
+#if ASPNET50
                 Stream fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 1024 * 64,
                     FileOptions.Asynchronous | FileOptions.SequentialScan);
 #else
