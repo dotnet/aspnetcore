@@ -32,7 +32,7 @@ namespace Microsoft.Net.Http.Server
 
         static ComNetOS()
         {
-#if NET45
+#if ASPNET50
             var win8Version = new Version(6, 2);
             IsWin8orLater = (Environment.OSVersion.Version >= win8Version);
 #else

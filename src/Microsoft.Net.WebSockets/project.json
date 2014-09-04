@@ -5,7 +5,7 @@
      },
      "compilationOptions" : { "allowUnsafe": true },
      "frameworks": {
-          "net45" : { },
+          "aspnet50" : { },
           "aspnetcore50" : {
                "dependencies": {
                     "Microsoft.Win32.Primitives": "4.0.0.0",

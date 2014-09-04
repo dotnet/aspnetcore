@@ -50,7 +50,7 @@ namespace Microsoft.Net.WebSockets
         public const int MinSendBufferSize = 16;
         internal const int MinReceiveBufferSize = 256;
         internal const int MaxBufferSize = 64 * 1024;
-#if NET45
+#if ASPNET50
         private static readonly int SizeOfUInt = Marshal.SizeOf(typeof(uint));
         private static readonly int SizeOfBool = Marshal.SizeOf(typeof(bool));
 #else

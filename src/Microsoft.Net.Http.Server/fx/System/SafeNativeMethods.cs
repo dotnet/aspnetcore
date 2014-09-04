@@ -21,7 +21,7 @@
 // </copyright>                                                                
 //------------------------------------------------------------------------------
 
-#if !NET45
+#if !ASPNET50
 using System.Runtime.InteropServices;
 using System.Text;
 

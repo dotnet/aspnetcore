@@ -39,7 +39,7 @@ namespace Microsoft.Net.Http.Server
     /// </summary>
     public sealed class AuthenticationManager
     {
-#if NET45
+#if ASPNET50
         private static readonly int AuthInfoSize =
             Marshal.SizeOf(typeof(UnsafeNclNativeMethods.HttpApi.HTTP_SERVER_AUTHENTICATION_INFO));
 #else
@@ -163,7 +163,7 @@ namespace Microsoft.Net.Http.Server
                 && requestInfo->InfoType == UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth
                 && requestInfo->pInfo->AuthStatus == UnsafeNclNativeMethods.HttpApi.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
             {
-#if NET45
+#if ASPNET50
                 return true;
 #endif
             }
@@ -176,7 +176,7 @@ namespace Microsoft.Net.Http.Server
                 && requestInfo->InfoType == UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth
                 && requestInfo->pInfo->AuthStatus == UnsafeNclNativeMethods.HttpApi.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
             {
-#if NET45
+#if ASPNET50
                 return new WindowsPrincipal(new WindowsIdentity(requestInfo->pInfo->AccessToken,
                     GetAuthTypeFromRequest(requestInfo->pInfo->AuthType).ToString()));
 #endif

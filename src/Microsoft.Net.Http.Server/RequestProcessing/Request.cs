@@ -29,7 +29,7 @@ using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
-#if NET45
+#if ASPNET50
 using System.Security.Principal;
 #endif
 using System.Threading;

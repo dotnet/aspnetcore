@@ -8,7 +8,7 @@
     "xunit.execution": "2.0.0-aspnet-*"
   },
   "frameworks": {
-    "net45": {
+    "aspnet50": {
       "dependencies": {
           "System.Net.Http": "",
           "System.Net.Http.WebRequest": ""

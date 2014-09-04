@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
@@ -51,7 +51,7 @@ namespace Microsoft.Net.Http.Server
                 Assert.Equal("Hello World", response);
             }
         }
-#if NET45
+#if ASPNET50
         [Fact]
         public async Task RequestBody_ReadBeginEnd_Success()
         {

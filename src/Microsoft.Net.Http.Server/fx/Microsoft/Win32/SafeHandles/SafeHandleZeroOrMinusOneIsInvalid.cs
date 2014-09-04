@@ -21,7 +21,7 @@
 // 
 // ==--==
 
-#if !NET45
+#if !ASPNET50
 
 namespace Microsoft.Win32.SafeHandles
 {

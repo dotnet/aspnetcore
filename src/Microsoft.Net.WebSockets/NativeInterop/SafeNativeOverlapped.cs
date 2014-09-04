@@ -87,7 +87,7 @@ namespace Microsoft.Net.WebSockets
             get
             {
                 return Environment.HasShutdownStarted
-#if NET45
+#if ASPNET50
                     || AppDomain.CurrentDomain.IsFinalizingForUnload()
 #endif
                     ;

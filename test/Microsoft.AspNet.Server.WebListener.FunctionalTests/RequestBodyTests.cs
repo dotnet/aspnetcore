@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 Assert.Equal("Hello World", response);
             }
         }
-#if NET45
+#if ASPNET50
         [Fact]
         public async Task RequestBody_ReadBeginEnd_Success()
         {

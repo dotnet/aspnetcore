@@ -701,7 +701,7 @@ namespace Microsoft.Net.Http.Server
 
                             knownHeaderInfo[_nativeResponse.ResponseInfoCount].Type = UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_INFO_TYPE.HttpResponseInfoTypeMultipleKnownHeaders;
                             knownHeaderInfo[_nativeResponse.ResponseInfoCount].Length =
-#if NET45
+#if ASPNET50
                                 (uint)Marshal.SizeOf(typeof(UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS));
 #else
                                 (uint)Marshal.SizeOf<UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS>();

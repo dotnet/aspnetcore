@@ -28,7 +28,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.Net.WebSockets
 {
-#if NET45
+#if ASPNET50
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2237:MarkISerializableTypesWithSerializable")]
 #endif
     internal sealed class WebSocketException : Win32Exception
