@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Security.MicrosoftAccount
             Scope = new List<string>();
             BackchannelTimeout = TimeSpan.FromSeconds(60);
         }
-#if NET45
+#if ASPNET50
         /// <summary>
         /// Gets or sets the a pinned certificate validator to use to validate the endpoints used
         /// in back channel communications belong to Microsoft Account.

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.Security.Twitter
         private static HttpMessageHandler ResolveHttpMessageHandler(TwitterAuthenticationOptions options)
         {
             HttpMessageHandler handler = options.BackchannelHttpHandler ??
-#if NET45
+#if ASPNET50
                 new WebRequestHandler();
             // If they provided a validator, apply it or fail.
             if (options.BackchannelCertificateValidator != null)

@@ -14,7 +14,7 @@
   },
   "commands": { "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:12345" },
   "frameworks": {
-    "net45": {
+    "aspnet50": {
     },
     "aspnetcore50": {
       "dependencies": {

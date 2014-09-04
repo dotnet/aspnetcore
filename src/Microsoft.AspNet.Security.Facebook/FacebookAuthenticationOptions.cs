@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Security.Facebook
         /// Gets or sets the Facebook-assigned app secret.
         /// </summary>
         public string AppSecret { get; set; }
-#if NET45
+#if ASPNET50
         /// <summary>
         /// Gets or sets the a pinned certificate validator to use to validate the endpoints used
         /// in back channel communications belong to Facebook.
