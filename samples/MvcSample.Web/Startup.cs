@@ -4,13 +4,13 @@ using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.OptionsModel;
 using MvcSample.Web.Filters;
 using MvcSample.Web.Services;
 
 #if ASPNET50 
 using Autofac;
 using Microsoft.Framework.DependencyInjection.Autofac;
-using Microsoft.Framework.OptionsModel;
 #endif
 
 namespace MvcSample.Web
@@ -42,6 +42,10 @@ namespace MvcSample.Web
                     // sample's assemblies are loaded. This prevents loading controllers from other assemblies
                     // when the sample is used in the Functional Tests.
                     services.AddTransient<IControllerAssemblyProvider, TestAssemblyProvider<Startup>>();
+                    services.SetupOptions<MvcOptions>(options =>
+                    {
+                        options.Filters.Add(typeof(PassThroughAttribute), order: 17);
+                    });
 
                     // Create the autofac container 
                     ContainerBuilder builder = new ContainerBuilder();
@@ -72,6 +76,11 @@ namespace MvcSample.Web
                     // sample's assemblies are loaded. This prevents loading controllers from other assemblies
                     // when the sample is used in the Functional Tests.
                     services.AddTransient<IControllerAssemblyProvider, TestAssemblyProvider<Startup>>();
+
+                    services.SetupOptions<MvcOptions>(options =>
+                    {
+                        options.Filters.Add(typeof(PassThroughAttribute), order: 17);
+                    });
                 });
             }
 

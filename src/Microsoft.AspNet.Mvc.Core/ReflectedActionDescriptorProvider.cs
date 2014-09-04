@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.ReflectedModelBuilder;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
@@ -27,19 +28,19 @@ namespace Microsoft.AspNet.Mvc
 
         private readonly IControllerAssemblyProvider _controllerAssemblyProvider;
         private readonly IActionDiscoveryConventions _conventions;
-        private readonly IEnumerable<IFilter> _globalFilters;
+        private readonly IReadOnlyList<IFilter> _globalFilters;
         private readonly IEnumerable<IReflectedApplicationModelConvention> _modelConventions;
         private readonly IInlineConstraintResolver _constraintResolver;
 
         public ReflectedActionDescriptorProvider(IControllerAssemblyProvider controllerAssemblyProvider,
                                                  IActionDiscoveryConventions conventions,
-                                                 IEnumerable<IFilter> globalFilters,
+                                                 IGlobalFilterProvider globalFilters,
                                                  IOptionsAccessor<MvcOptions> optionsAccessor,
                                                  IInlineConstraintResolver constraintResolver)
         {
             _controllerAssemblyProvider = controllerAssemblyProvider;
             _conventions = conventions;
-            _globalFilters = globalFilters ?? Enumerable.Empty<IFilter>();
+            _globalFilters = globalFilters.Filters;
             _modelConventions = optionsAccessor.Options.ApplicationModelConventions;
             _constraintResolver = constraintResolver;
         }
@@ -352,8 +353,8 @@ namespace Microsoft.AspNet.Mvc
             IEnumerable<IFilter> controllerFilters,
             IEnumerable<IFilter> globalFilters)
         {
-            actionDescriptor.FilterDescriptors = actionFilters
-                .Select(f => new FilterDescriptor(f, FilterScope.Action))
+            actionDescriptor.FilterDescriptors =
+                actionFilters.Select(f => new FilterDescriptor(f, FilterScope.Action))
                 .Concat(controllerFilters.Select(f => new FilterDescriptor(f, FilterScope.Controller)))
                 .Concat(globalFilters.Select(f => new FilterDescriptor(f, FilterScope.Global)))
                 .OrderBy(d => d, FilterDescriptorOrderComparer.Comparer)

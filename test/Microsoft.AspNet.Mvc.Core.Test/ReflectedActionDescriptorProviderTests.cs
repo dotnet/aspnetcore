@@ -9,6 +9,7 @@ using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Mvc.Routing;
 using Moq;
 using Xunit;
+using Microsoft.AspNet.Mvc.Filters;
 
 namespace Microsoft.AspNet.Mvc.Test
 {
@@ -1029,7 +1030,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var provider = new ReflectedActionDescriptorProvider(
                 assemblyProvider.Object,
                 conventions,
-                filters,
+                new TestGlobalFilterProvider(filters),
                 new MockMvcOptionsAccessor(),
                 Mock.Of<IInlineConstraintResolver>());
 
@@ -1049,7 +1050,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var provider = new ReflectedActionDescriptorProvider(
                 assemblyProvider.Object,
                 conventions,
-                Enumerable.Empty<IFilter>(),
+                new TestGlobalFilterProvider(),
                 new MockMvcOptionsAccessor(),
                 Mock.Of<IInlineConstraintResolver>());
 
@@ -1068,7 +1069,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var provider = new ReflectedActionDescriptorProvider(
                 assemblyProvider.Object,
                 conventions,
-                null,
+                new TestGlobalFilterProvider(),
                 new MockMvcOptionsAccessor(),
                 null);
 

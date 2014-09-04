@@ -10,12 +10,9 @@ namespace Microsoft.AspNet.Mvc.Filters
 {
     public class DefaultFilterProvider : INestedProvider<FilterProviderContext>
     {
-        private readonly ITypeActivator _typeActivator;
-
-        public DefaultFilterProvider(IServiceProvider serviceProvider, ITypeActivator typeActivator)
+        public DefaultFilterProvider(IServiceProvider serviceProvider)
         {
             ServiceProvider = serviceProvider;
-            _typeActivator = typeActivator;
         }
 
         public int Order
@@ -78,15 +75,6 @@ namespace Microsoft.AspNet.Mvc.Filters
 
         private void InsertControllerAsFilter(FilterProviderContext context, IFilter controllerFilter)
         {
-            // If the controller implements a filter, and doesn't specify order, then it should
-            // run closest to the action.
-            var order = Int32.MaxValue;
-            var orderedControllerFilter = controllerFilter as IOrderedFilter;
-            if (orderedControllerFilter != null)
-            {
-                order = orderedControllerFilter.Order;
-            }
-
             var descriptor = new FilterDescriptor(controllerFilter, FilterScope.Controller);
             var item = new FilterItem(descriptor, controllerFilter);
 

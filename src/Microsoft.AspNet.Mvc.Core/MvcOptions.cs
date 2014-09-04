@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.OptionDescriptors;
 using Microsoft.AspNet.Mvc.ReflectedModelBuilder;
@@ -25,6 +26,7 @@ namespace Microsoft.AspNet.Mvc
             ValueProviderFactories = new List<ValueProviderFactoryDescriptor>();
             OutputFormatters = new List<OutputFormatterDescriptor>();
             InputFormatters = new List<InputFormatterDescriptor>();
+            Filters = new List<IFilter>();
         }
 
         /// <summary>
@@ -51,13 +53,19 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Get a list of the <see cref="OutputFormatterDescriptor" /> which are used to construct
+        /// Gets a list of <see cref="IFilter"/> which are used to construct filters that 
+        /// apply to all actions.
+        /// </summary>
+        public ICollection<IFilter> Filters { get; private set; }
+
+        /// <summary>
+        /// Gets a list of the <see cref="OutputFormatterDescriptor" /> which are used to construct
         /// a list of <see cref="IOutputFormatter"/> by <see cref="IOutputFormattersProvider"/>.
         /// </summary>
         public List<OutputFormatterDescriptor> OutputFormatters { get; private set; }
 
         /// <summary>
-        /// Get a list of the <see cref="InputFormatterDescriptor" /> which are used to construct
+        /// Gets a list of the <see cref="InputFormatterDescriptor" /> which are used to construct
         /// a list of <see cref="IInputFormatter"/> by <see cref="IInputFormattersProvider"/>.
         /// </summary>
         public List<InputFormatterDescriptor> InputFormatters { get; private set; }
@@ -86,13 +94,13 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Get a list of the <see cref="ModelBinderDescriptor" /> used by the
+        /// Gets a list of the <see cref="ModelBinderDescriptor" /> used by the
         /// <see cref="ModelBinding.CompositeModelBinder" />.
         /// </summary>
         public List<ModelBinderDescriptor> ModelBinders { get; private set; }
 
         /// <summary>
-        /// Get a list of the <see cref="ModelValidatorProviderDescriptor" />s used by
+        /// Gets a list of the <see cref="ModelValidatorProviderDescriptor" />s used by
         /// <see cref="ModelBinding.CompositeModelValidatorProvider"/>.
         /// </summary>
         public List<ModelValidatorProviderDescriptor> ModelValidatorProviders { get; } =

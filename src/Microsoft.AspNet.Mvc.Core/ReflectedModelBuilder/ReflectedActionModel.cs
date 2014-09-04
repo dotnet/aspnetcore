@@ -18,7 +18,16 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
             // is needed to so that the result of ToList() is List<object>
             Attributes = actionMethod.GetCustomAttributes(inherit: true).OfType<object>().ToList();
 
-            Filters = Attributes.OfType<IFilter>().ToList();
+            Filters = Attributes
+                .OfType<IFilter>()
+                .ToList();
+
+            var routeTemplateAttribute = Attributes.OfType<IRouteTemplateProvider>().FirstOrDefault();
+            if (routeTemplateAttribute != null)
+            {
+                AttributeRouteModel = new ReflectedAttributeRouteModel(routeTemplateAttribute);
+            }
+
             HttpMethods = new List<string>();
             Parameters = new List<ReflectedParameterModel>();
         }

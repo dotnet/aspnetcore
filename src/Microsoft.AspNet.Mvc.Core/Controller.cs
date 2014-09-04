@@ -12,7 +12,7 @@ using Microsoft.AspNet.Mvc.Rendering;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class Controller : IActionFilter, IAsyncActionFilter
+    public class Controller : IActionFilter, IAsyncActionFilter, IOrderedFilter
     {
         private DynamicViewData _viewBag;
 
@@ -77,6 +77,15 @@ namespace Microsoft.AspNet.Mvc
                 }
 
                 return _viewBag;
+            }
+        }
+
+        int IOrderedFilter.Order
+        {
+            get
+            {
+                // Controller-filter methods run closest the action by default.
+                return int.MaxValue;
             }
         }
 

@@ -3,16 +3,16 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Mvc.Rendering
+namespace Microsoft.AspNet.Mvc.Filters
 {
     /// <summary>
-    /// Provides an activated collection of <see cref="IViewEngine"/> instances.
+    /// Provides access to the collection of <see cref="IFilter"/> for globally registered filters.
     /// </summary>
-    public interface IViewEngineProvider
+    public interface IGlobalFilterProvider
     {
         /// <summary>
-        /// Gets a collection of activated IViewEngine instances.
+        /// Gets the collection of <see cref="IFilter"/>.
         /// </summary>
-        IReadOnlyList<IViewEngine> ViewEngines { get; }
+        IReadOnlyList<IFilter> Filters { get; }
     }
 }

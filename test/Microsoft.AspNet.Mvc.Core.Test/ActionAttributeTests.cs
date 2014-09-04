@@ -226,7 +226,7 @@ namespace Microsoft.AspNet.Mvc
             return new ReflectedActionDescriptorProvider(
                                         controllerAssemblyProvider,
                                         actionDiscoveryConventions,
-                                        null,
+                                        new TestGlobalFilterProvider(),
                                         new MockMvcOptionsAccessor(),
                                         Mock.Of<IInlineConstraintResolver>());
         }
