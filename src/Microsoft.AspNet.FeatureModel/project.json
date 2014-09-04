@@ -2,7 +2,7 @@
   "version": "1.0.0-*",
   "dependencies": {},
   "frameworks": {
-    "net45": {},
+    "aspnet50": {},
     "aspnetcore50": {
       "dependencies": {
         "System.Collections": "4.0.10.0",

@@ -8,7 +8,7 @@
     "test": "Xunit.KRunner"
   },
   "frameworks": {
-    "net45": {
+    "aspnet50": {
       "dependencies": {
         "System.Runtime":  ""
       }
