@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-#if NET45
+#if ASPNET50
 using Moq;
 using Moq.Protected;
 #endif
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
-#if NET45
+#if ASPNET50
         [Theory]
         [MemberData(nameof(ValidateSetsMemberNamePropertyDataSet))]
         public void ValidateSetsMemberNamePropertyOfValidationContextForProperties(ModelMetadata metadata,

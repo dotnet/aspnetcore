@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-#if NET45
+#if ASPNET50
 using Moq;
 #endif
 using Xunit;
@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     {
         private readonly DataAnnotationsModelMetadataProvider _metadataProvider = new DataAnnotationsModelMetadataProvider();
 
-#if NET45
+#if ASPNET50
         [Fact]
         public void GetValidators_ReturnsValidatorForIValidatableObject()
         {
@@ -164,7 +164,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         // Default IValidatableObject adapter factory
 
-#if NET45
+#if ASPNET50
         [Fact]
         public void IValidatableObjectGetsAValidator()
         {

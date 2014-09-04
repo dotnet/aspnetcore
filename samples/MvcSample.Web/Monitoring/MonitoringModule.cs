@@ -1,4 +1,4 @@
-﻿#if NET45
+#if ASPNET50
 using System;
 using System.Collections.Concurrent;
 using Autofac;

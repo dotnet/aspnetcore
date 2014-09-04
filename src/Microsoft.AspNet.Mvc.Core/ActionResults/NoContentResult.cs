@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Mvc
         {
             var response = context.HttpContext.Response;
 
-#if NET45
+#if ASPNET50
             response.StatusCode = (int)HttpStatusCode.NoContent;
 #else
             response.StatusCode = 204;

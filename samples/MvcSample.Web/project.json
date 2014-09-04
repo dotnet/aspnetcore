@@ -19,7 +19,7 @@
   },
   "commands": { "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001" },
   "frameworks": {
-    "net45": {
+    "aspnet50": {
       "dependencies": {
         "System.ComponentModel.DataAnnotations": "",
         "Microsoft.Framework.DependencyInjection.Autofac": "1.0.0-*",

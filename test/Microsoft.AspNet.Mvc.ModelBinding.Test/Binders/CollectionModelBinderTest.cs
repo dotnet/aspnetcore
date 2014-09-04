@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-#if NET45
+#if ASPNET50
 using Moq;
 #endif
 using Xunit;
@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 {
     public class CollectionModelBinderTest
     {
-#if NET45
+#if ASPNET50
         [Fact]
         public async Task BindComplexCollectionFromIndexes_FiniteIndexes()
         {
@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Null(boundCollection);
         }
 
-#if NET45
+#if ASPNET50
         [Fact]
         public async Task BindSimpleCollection_SubBindingSucceeds()
         {

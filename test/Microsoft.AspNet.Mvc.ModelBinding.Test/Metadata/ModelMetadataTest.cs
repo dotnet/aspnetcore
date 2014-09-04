@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-#if NET45
+#if ASPNET50
 using Moq;
 #endif
 using Xunit;
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
-#if NET45
+#if ASPNET50
         // Constructor
 
         [Fact]
@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
         }
 
-#if NET45
+#if ASPNET50
         [Theory]
         [InlineData(typeof(string))]
         [InlineData(typeof(Nullable<int>))]
@@ -331,7 +331,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Equal("displayName", result);
         }
 
-#if NET45
+#if ASPNET50
         [Fact]
         public void ReturnsPropertyNameWhenSetAndDisplayNameIsNull()
         {

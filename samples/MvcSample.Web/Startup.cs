@@ -6,7 +6,7 @@ using Microsoft.Framework.DependencyInjection;
 using MvcSample.Web.Filters;
 using MvcSample.Web.Services;
 
-#if NET45 
+#if ASPNET50 
 using Autofac;
 using Microsoft.Framework.DependencyInjection.Autofac;
 using Microsoft.Framework.OptionsModel;
@@ -19,7 +19,7 @@ namespace MvcSample.Web
         public void Configure(IBuilder app)
         {
             app.UseFileServer();
-#if NET45
+#if ASPNET50
             var configuration = new Configuration()
                                     .AddJsonFile(@"App_Data\config.json")
                                     .AddEnvironmentVariables();

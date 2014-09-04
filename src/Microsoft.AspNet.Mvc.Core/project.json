@@ -19,7 +19,7 @@
     "Newtonsoft.Json": "5.0.8"
   },
   "frameworks": {
-    "net45": {
+    "aspnet50": {
       "dependencies": {
         "System.Xml": ""
       }

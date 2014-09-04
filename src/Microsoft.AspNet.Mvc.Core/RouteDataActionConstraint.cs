@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Mvc
                     KeyHandling = keyHandling;
                     break;
                 default:
-#if NET45
+#if ASPNET50
                     throw new InvalidEnumArgumentException("keyHandling", (int)keyHandling, typeof (RouteKeyHandling));
 #else
                     throw new ArgumentOutOfRangeException("keyHandling");

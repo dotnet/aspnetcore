@@ -183,7 +183,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         // GetMetadataForType
 
-#if NET45 // No ReadOnlyAttribute in K
+#if ASPNET50 // No ReadOnlyAttribute in K
         [Fact]
         public void GetMetadataForTypeIncludesAttributesOnType()
         {
@@ -235,7 +235,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             public string Value { get; set; }
         }
 
-#if NET45 // No [ReadOnly] in K
+#if ASPNET50 // No [ReadOnly] in K
         [ReadOnly(true)]
         private class TypeModel
         {

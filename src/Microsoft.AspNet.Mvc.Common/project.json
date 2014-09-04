@@ -8,7 +8,7 @@
     "System.Runtime" : "4.0.20.0"
   },
   "frameworks": {
-    "net45": {},
+    "aspnet50": {},
     "aspnetcore50": {
         "dependencies": {
             "System.Text.Encoding.Extensions": "4.0.10.0"

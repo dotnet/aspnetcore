@@ -6,6 +6,6 @@
         "Autofac": "3.3.0"
     },
     "frameworks" : {
-        "net45" : { }
+        "aspnet50" : { }
     }
 }

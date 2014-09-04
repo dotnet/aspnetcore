@@ -6,7 +6,7 @@
         "Microsoft.Framework.ConfigurationModel": ""
     },
     "configurations": {
-        "net45": { },
+        "aspnet50": { },
         "aspnetcore50": { }
     }
 }

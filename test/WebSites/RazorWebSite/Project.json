@@ -5,7 +5,7 @@
         "Microsoft.AspNet.Mvc.TestConfiguration": ""
     },
     "frameworks": {
-        "net45": { },
+        "aspnet50": { },
         "aspnetcore50": { }
     }
 }

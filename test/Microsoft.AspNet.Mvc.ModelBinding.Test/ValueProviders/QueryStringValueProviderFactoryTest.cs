@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNet.Http;
-#if NET45
+#if ASPNET50
 using Moq;
 #endif
 using Xunit;
@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
     {
         private readonly QueryStringValueProviderFactory _factory = new QueryStringValueProviderFactory();
 
-#if NET45
+#if ASPNET50
         [Fact]
         public void GetValueProvider_ReturnsQueryStringValueProviderInstaceWithInvariantCulture()
         {

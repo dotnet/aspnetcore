@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc
     {
         public static readonly int DefaultMaxDepth = 32;
 
-#if NET45
+#if ASPNET50
         public static readonly XsdDataContractExporter XsdDataContractExporter = new XsdDataContractExporter();
 #endif
 
@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc
         /// <returns>XmlReaderQuotas with default values</returns>
         public static XmlDictionaryReaderQuotas GetDefaultXmlReaderQuotas()
         {
-#if NET45
+#if ASPNET50
             return new XmlDictionaryReaderQuotas()
             {
                 MaxArrayLength = Int32.MaxValue,
