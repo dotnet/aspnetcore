@@ -11,7 +11,7 @@
     "Microsoft.Framework.Runtime.Interfaces":  "1.0.0-*"
   },
   "frameworks": {
-    "net45": {},
+    "aspnet50": {},
     "aspnetcore50": {
       "dependencies": {
         "System.Collections": "4.0.10.0",
