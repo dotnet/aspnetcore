@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-#if NET45
+#if ASPNET50
 using System.Net.Mail;
 #endif
 using System.Threading;
@@ -120,7 +120,7 @@ namespace Microsoft.AspNet.Identity
                 errors.Add(String.Format(CultureInfo.CurrentCulture, Resources.PropertyTooShort, "Email"));
                 return;
             }
-#if NET45
+#if ASPNET50
             try
             {
                 var m = new MailAddress(email);

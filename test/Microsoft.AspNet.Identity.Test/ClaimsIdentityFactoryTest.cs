@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Identity.Test
                 async () => await factory.CreateAsync(new TestUser(), null));
         }
 
-#if NET45
+#if ASPNET50
         //TODO: Mock fails in K (this works fine in net45)
         [Theory]
         [InlineData(false, false, false)]

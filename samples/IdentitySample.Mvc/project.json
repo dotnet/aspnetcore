@@ -22,7 +22,7 @@
         "run": "run server.urls=http://localhost:5003"
     },
     "frameworks": {
-        "net451": {
+        "aspnet50": {
         },
         "aspnetcore50": {
         }

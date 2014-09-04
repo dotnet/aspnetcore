@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
 using IdentitySample.Models;
 using System.Security.Principal;
@@ -92,7 +92,7 @@ namespace IdentitySample
                 return View(model);
             }
             // Generate the token and send it
-#if NET45
+#if ASPNET50
             var code = await UserManager.GenerateChangePhoneNumberTokenAsync(await GetCurrentUserAsync(), model.Number);
             if (UserManager.SmsService != null)
             {
@@ -165,7 +165,7 @@ namespace IdentitySample
         {
             // This code allows you exercise the flow without actually sending codes
             // For production use please register a SMS provider in IdentityConfig and generate a code here.
-#if NET45
+#if ASPNET50
             var code = await UserManager.GenerateChangePhoneNumberTokenAsync(await GetCurrentUserAsync(), phoneNumber);
             ViewBag.Status = "For DEMO purposes only, the current code is " + code;
 #endif

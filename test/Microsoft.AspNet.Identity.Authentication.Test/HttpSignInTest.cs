@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Identity.Authentication.Test
 
     public class HttpSignInTest
     {
-#if NET45
+#if ASPNET50
         //[Theory]
         //[InlineData(true)]
         //[InlineData(false)]

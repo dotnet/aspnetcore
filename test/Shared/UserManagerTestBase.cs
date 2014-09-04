@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.Identity.Test
             IdentityResultAssert.IsFailure(await manager.CreateAsync(user), "Email cannot be null or empty.");
         }
 
-#if NET45
+#if ASPNET50
         [Theory]
         [InlineData("@@afd")]
         [InlineData("bogus")]

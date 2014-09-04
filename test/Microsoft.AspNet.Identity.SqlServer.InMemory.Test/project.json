@@ -14,7 +14,7 @@
   },
   "code": "**\\*.cs;..\\Shared\\*.cs",
   "frameworks": {
-    "net451": {
+    "aspnet50": {
       "dependencies": {
         "Moq" : "4.2.1312.1622",
         "System.Collections": "",
