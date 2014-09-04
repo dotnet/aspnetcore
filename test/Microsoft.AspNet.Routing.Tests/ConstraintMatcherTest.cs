@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing.Logging;
-#if NET45
+#if ASPNET50
 using Moq;
 #endif
 using Xunit;
@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Routing
 {
     public class ConstraintMatcherTest
     {
-#if NET45
+#if ASPNET50
         [Fact]
         public void MatchUrlGeneration_DoesNotLogData()
         {

@@ -21,7 +21,7 @@
         "System.Text.RegularExpressions": "4.0.0.0"
       }
     },
-    "net45": {
+    "aspnet50": {
       "dependencies": {
         "Moq": "4.2.1312.1622",
         "System.Runtime": ""

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
@@ -6,7 +6,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing.Logging;
 using Microsoft.Framework.Logging;
-#if NET45
+#if ASPNET50
 using Moq;
 #endif
 using Xunit;
@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Routing
 {
     public class RouterMiddlewareTest
     {
-#if NET45
+#if ASPNET50
         [Fact]
         public async void Invoke_LogsCorrectValuesWhenNotHandled()
         {
