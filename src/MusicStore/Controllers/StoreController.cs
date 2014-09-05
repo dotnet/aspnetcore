@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNet.Mvc;
+﻿using Microsoft.AspNet.MemoryCache;
+using Microsoft.AspNet.Mvc;
 using MusicStore.Models;
 using System.Linq;
 
@@ -7,10 +8,12 @@ namespace MusicStore.Controllers
     public class StoreController : Controller
     {
         private readonly MusicStoreContext db;
+        private readonly IMemoryCache cache;
 
-        public StoreController(MusicStoreContext context)
+        public StoreController(MusicStoreContext context, IMemoryCache memoryCache)
         {
             db = context;
+            cache = memoryCache;
         }
 
         //
@@ -39,11 +42,15 @@ namespace MusicStore.Controllers
 
         public IActionResult Details(int id)
         {
-            var album = db.Albums.Single(a => a.AlbumId == id);
+            var album = cache.GetOrAdd(string.Format("album_{0}", id), context =>
+            {
+                var albumData = db.Albums.Single(a => a.AlbumId == id);
 
-            // TODO [EF] We don't query related data as yet. We have to populate this until we do automatically.
-            album.Genre = db.Genres.Single(g => g.GenreId == album.GenreId);
-            album.Artist = db.Artists.Single(a => a.ArtistId == album.ArtistId);
+                // TODO [EF] We don't query related data as yet. We have to populate this until we do automatically.
+                albumData.Genre = db.Genres.Single(g => g.GenreId == albumData.GenreId);
+                albumData.Artist = db.Artists.Single(a => a.ArtistId == albumData.ArtistId);
+                return albumData;
+            });
 
             return View(album);
         }

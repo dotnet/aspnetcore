@@ -7,6 +7,7 @@ using MusicStore.Models;
 using System.Linq;
 using MusicStore.Hubs;
 using MusicStore.ViewModels;
+using Microsoft.AspNet.MemoryCache;
 
 namespace MusicStore.Areas.Admin.Controllers
 {
@@ -16,11 +17,13 @@ namespace MusicStore.Areas.Admin.Controllers
     {
         private readonly MusicStoreContext db;
         private IHubContext annoucementHub;
+        private readonly IMemoryCache cache;
 
-        public StoreManagerController(MusicStoreContext context, IConnectionManager connectionManager)
+        public StoreManagerController(MusicStoreContext context, IConnectionManager connectionManager, IMemoryCache memoryCache)
         {
             db = context;
             annoucementHub = connectionManager.GetHubContext<AnnouncementHub>();
+            cache = memoryCache;
         }
 
         //
@@ -58,12 +61,18 @@ namespace MusicStore.Areas.Admin.Controllers
         //
         // GET: /StoreManager/Details/5
 
-        public IActionResult Details(int id = 0)
+        public IActionResult Details(int id)
         {
-            Album album = db.Albums.Single(a => a.AlbumId == id);
+            string cacheId = string.Format("album_{0}", id);
+            var album = cache.GetOrAdd(cacheId, context =>
+            {
+                //If this returns null how do we prevent the cache to store this. 
+                return db.Albums.Single(a => a.AlbumId == id);
+            });
 
             if (album == null)
             {
+                cache.Remove(cacheId);
                 return HttpNotFound();
             }
 
@@ -102,7 +111,7 @@ namespace MusicStore.Areas.Admin.Controllers
 
         //
         // GET: /StoreManager/Edit/5
-        public IActionResult Edit(int id = 0)
+        public IActionResult Edit(int id)
         {
             Album album = db.Albums.Single(a => a.AlbumId == id);
 
@@ -126,6 +135,8 @@ namespace MusicStore.Areas.Admin.Controllers
             {
                 db.ChangeTracker.Entry(album).State = EntityState.Modified;
                 db.SaveChanges();
+                //Invalidate the cache entry as it is modified
+                cache.Remove(string.Format("album_{0}", album.AlbumId));
                 return RedirectToAction("Index");
             }
 
@@ -136,7 +147,7 @@ namespace MusicStore.Areas.Admin.Controllers
 
         //
         // GET: /StoreManager/RemoveAlbum/5
-        public IActionResult RemoveAlbum(int id = 0)
+        public IActionResult RemoveAlbum(int id)
         {
             Album album = db.Albums.Single(a => a.AlbumId == id);
             if (album == null)
@@ -154,6 +165,8 @@ namespace MusicStore.Areas.Admin.Controllers
             Album album = db.Albums.Single(a => a.AlbumId == id);
             db.Albums.Remove(album);
             db.SaveChanges();
+            //Remove the cache entry as it is removed
+            cache.Remove(string.Format("album_{0}", id));
             return RedirectToAction("Index");
         }
 

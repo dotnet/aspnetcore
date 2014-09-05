@@ -27,7 +27,7 @@ namespace MusicStore.Components
 
         private Task<IOrderedEnumerable<string>> GetCartItems()
         {
-            var cart = ShoppingCart.GetCart(db, this.Context);
+            var cart = ShoppingCart.GetCart(db, Context);
 
             var cartItems = cart.GetCartItems()
                 .Select(a => a.Album.Title)

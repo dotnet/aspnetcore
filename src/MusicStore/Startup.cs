@@ -14,6 +14,7 @@ using Microsoft.AspNet.Security.Google;
 using Microsoft.AspNet.Security.Twitter;
 using Microsoft.AspNet.Security.MicrosoftAccount;
 using Microsoft.AspNet.Security;
+using Microsoft.AspNet.MemoryCache;
 
 namespace MusicStore
 {
@@ -76,6 +77,10 @@ namespace MusicStore
 
                 //Add all SignalR related services to IoC.
                 services.AddSignalR();
+
+                //Add InMemoryCache
+                //Currently not able to AddSingleTon
+                services.AddInstance<IMemoryCache>(new MemoryCache());
             });
 
             //Configure SignalR

@@ -42,8 +42,8 @@ namespace MusicStore.Models
         /// </summary>
         public Album()
         {
-            this.OrderDetails = new List<OrderDetail>();
-            this.Created = DateTime.UtcNow;
+            OrderDetails = new List<OrderDetail>();
+            Created = DateTime.UtcNow;
         }
     }
 }

@@ -52,7 +52,7 @@ namespace MusicStore.Controllers
                     db.Orders.Add(order);
 
                     //Process the order
-                    var cart = ShoppingCart.GetCart(db, this.Context);
+                    var cart = ShoppingCart.GetCart(db, Context);
                     cart.CreateOrder(order);
 
                     // Save all changes

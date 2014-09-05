@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNet.Mvc;
+﻿using Microsoft.AspNet.MemoryCache;
+using Microsoft.AspNet.Mvc;
 using MusicStore.Models;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,10 +9,12 @@ namespace MusicStore.Controllers
     public class HomeController : Controller
     {
         private readonly MusicStoreContext db;
+        private readonly IMemoryCache cache;
 
-        public HomeController(MusicStoreContext context)
+        public HomeController(MusicStoreContext context, IMemoryCache memoryCache)
         {
             db = context;
+            cache = memoryCache;
         }
 
         //
@@ -19,7 +22,7 @@ namespace MusicStore.Controllers
         public IActionResult Index()
         {
             // Get most popular albums
-            var albums = GetTopSellingAlbums(6);
+            var albums = cache.GetOrAdd("topselling", (context => GetTopSellingAlbums(6)));
 
             return View(albums);
         }
