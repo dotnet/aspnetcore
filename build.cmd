@@ -21,10 +21,10 @@ IF EXIST packages\KoreBuild goto run
 
 IF "%SKIP_KRE_INSTALL%"=="1" goto run
 CALL packages\KoreBuild\build\kvm upgrade -x64
-CALL packages\KoreBuild\build\kvm install default -svrc50 -x64
+CALL packages\KoreBuild\build\kvm install default -runtime CoreCLR -x64
 CALL packages\KoreBuild\build\kvm install default -x86
-CALL packages\KoreBuild\build\kvm install default -svrc50 -x86
+CALL packages\KoreBuild\build\kvm install default -runtime CoreCLR -x86
 
 :run
-CALL packages\KoreBuild\build\kvm use default -svr50 -x86
+CALL packages\KoreBuild\build\kvm use default -runtime CLR -x86
 packages\Sake\tools\Sake.exe -I packages\KoreBuild\build -f makefile.shade %*
