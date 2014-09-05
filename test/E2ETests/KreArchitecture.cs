@@ -2,7 +2,7 @@
 {
     public enum KreArchitecture
     {
-        x64,
+        amd64,
         x86
     }
 }

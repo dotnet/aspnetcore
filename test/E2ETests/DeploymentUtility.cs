@@ -19,7 +19,7 @@ namespace E2ETests
             var iisExpressPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "IIS Express", "iisexpress.exe");
 
             // Get path to 64 bit of IIS Express
-            if (architecture == KreArchitecture.x64)
+            if (architecture == KreArchitecture.amd64)
             {
                 iisExpressPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "IIS Express", "iisexpress.exe");
 
@@ -186,9 +186,9 @@ namespace E2ETests
             StringBuilder replaceStr = new StringBuilder();
             replaceStr.Append("KRE");
             replaceStr.Append((kreFlavor == KreFlavor.CoreClr) ? "-CoreCLR" : "-CLR");
-            replaceStr.Append((kreArchitecture == KreArchitecture.x86) ? "-x86" : "-x64");
+            replaceStr.Append((kreArchitecture == KreArchitecture.x86) ? "-x86" : "-amd64");
 
-            pathValue = Regex.Replace(pathValue, "KRE-(CLR|CoreCLR)50-(x86|x64)", replaceStr.ToString(), RegexOptions.IgnoreCase);
+            pathValue = Regex.Replace(pathValue, "KRE-(CLR|CoreCLR)-(x86|amd64)", replaceStr.ToString(), RegexOptions.IgnoreCase);
 
             Console.WriteLine();
             Console.WriteLine("Setting %PATH% value to : {0}", pathValue);
