@@ -85,7 +85,7 @@ The samples in this repo are basic starting points for you to experiment with.
 
 By default when running ASP.NET vNext applications on the Windows platform you are running on the full .NET Framework. You can switch to use the new Cloud Optimized runtime, or Core CLR, using the KVM command.
 
-1. Run ```kvm upgrade -svrc50``` This command gets the latest Core CLR version of the k runtime and sets it as your default. The -svrc50 switch tells it to use Core CLR. You can use -svr50 to target desktop again.
+1. Run ```kvm upgrade -runtime CoreCLR``` This command gets the latest Core CLR version of the k runtime and sets it as your default. The `-runtime CoreCLR` switch tells it to use Core CLR. You can use `-r CLR` to target desktop again.
 2. Run ```k web``` to run on WebListener. 
 3. The first line of your output should say "Loaded Module: klr.core45.dll" instead of "Loaded Module: klr.net45.dll"
 4. The HelloWeb app should work the same as when running on the full desktop .NET Framework but now as a fully self-contained app with true side-by-side versioning support.
