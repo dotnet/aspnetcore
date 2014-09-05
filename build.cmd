@@ -20,9 +20,9 @@ IF EXIST packages\KoreBuild goto run
 .nuget\NuGet.exe install Sake -version 0.2 -o packages -ExcludeVersion
 
 IF "%SKIP_KRE_INSTALL%"=="1" goto run
-CALL packages\KoreBuild\build\kvm upgrade -svr50 -x86
-CALL packages\KoreBuild\build\kvm install default -svrc50 -x86
+CALL packages\KoreBuild\build\kvm upgrade -runtime CLR -x86
+CALL packages\KoreBuild\build\kvm install default -runtime CoreCLR -x86
 
 :run
-CALL packages\KoreBuild\build\kvm use default -svr50 -x86
+CALL packages\KoreBuild\build\kvm use default -runtime CLR -x86
 packages\Sake\tools\Sake.exe -I packages\KoreBuild\build -f makefile.shade %*
