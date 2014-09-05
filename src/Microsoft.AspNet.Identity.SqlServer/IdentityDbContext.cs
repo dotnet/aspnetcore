@@ -92,16 +92,16 @@ namespace Microsoft.AspNet.Identity.SqlServer
             var userClaimType = builder.Model.GetEntityType(typeof(IdentityUserClaim<TKey>));
             var roleClaimType = builder.Model.GetEntityType(typeof(IdentityRoleClaim<TKey>));
             var userRoleType = builder.Model.GetEntityType(typeof(IdentityUserRole<TKey>));
-            var ucfk = userClaimType.AddForeignKey(userType.GetPrimaryKey(), new[] { userClaimType.GetProperty("UserId") });
+            var ucfk = userClaimType.GetOrAddForeignKey(userType.GetPrimaryKey(), new[] { userClaimType.GetProperty("UserId") });
             userType.AddNavigation(new Navigation(ucfk, "Claims", false));
             //userClaimType.AddNavigation(new Navigation(ucfk, "User", true));
-            //var urfk = userRoleType.AddForeignKey(userType.GetPrimaryKey(), new[] { userRoleType.GetProperty("UserId") });
+            //var urfk = userRoleType.GetOrAddForeignKey(userType.GetPrimaryKey(), new[] { userRoleType.GetProperty("UserId") });
             //userType.AddNavigation(new Navigation(urfk, "Roles", false));
 
-            //var urfk2 = userRoleType.AddForeignKey(roleType.GetPrimaryKey(), new[] { userRoleType.GetProperty("RoleId") });
+            //var urfk2 = userRoleType.GetOrAddForeignKey(roleType.GetPrimaryKey(), new[] { userRoleType.GetProperty("RoleId") });
             //roleType.AddNavigation(new Navigation(urfk2, "Users", false));
 
-            var rcfk = roleClaimType.AddForeignKey(roleType.GetPrimaryKey(), new[] { roleClaimType.GetProperty("RoleId") });
+            var rcfk = roleClaimType.GetOrAddForeignKey(roleType.GetPrimaryKey(), new[] { roleClaimType.GetProperty("RoleId") });
             roleType.AddNavigation(new Navigation(rcfk, "Claims", false));
 
             builder.Entity<IdentityUserRole<TKey>>(b =>
