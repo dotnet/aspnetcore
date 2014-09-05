@@ -167,9 +167,9 @@ namespace E2ETests
             {
                 Console.WriteLine("Started {0}. Process Id : {1}", hostProcess.MainModule.FileName, hostProcess.Id);
             }
-            catch (Win32Exception)
+            catch (Win32Exception win32Exception)
             {
-                Console.WriteLine("Cannot access 64 bit modules from a 32 bit process");
+                Console.WriteLine("Cannot access 64 bit modules from a 32 bit process. Failed with following message : {0}", win32Exception.Message);
             }
 
             WaitTillDbCreated(identityDbName);
