@@ -185,10 +185,10 @@ namespace E2ETests
 
             StringBuilder replaceStr = new StringBuilder();
             replaceStr.Append("KRE");
-            replaceStr.Append((kreFlavor == KreFlavor.CoreClr) ? "-svrc50" : "-svr50");
+            replaceStr.Append((kreFlavor == KreFlavor.CoreClr) ? "-CoreCLR" : "-CLR");
             replaceStr.Append((kreArchitecture == KreArchitecture.x86) ? "-x86" : "-x64");
 
-            pathValue = Regex.Replace(pathValue, "KRE-(svr|svrc)50-(x86|x64)", replaceStr.ToString(), RegexOptions.IgnoreCase);
+            pathValue = Regex.Replace(pathValue, "KRE-(CLR|CoreCLR)50-(x86|x64)", replaceStr.ToString(), RegexOptions.IgnoreCase);
 
             Console.WriteLine();
             Console.WriteLine("Setting %PATH% value to : {0}", pathValue);
