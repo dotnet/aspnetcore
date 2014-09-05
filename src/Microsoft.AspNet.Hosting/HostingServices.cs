@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.Hosting
 
             if (PlatformHelper.IsMono)
             {
-#if NET45
+#if ASPNET50
                 yield return describer.Instance<IDataProtectionProvider>(DataProtectionProvider.CreateFromLegacyDpapi());
 #endif
             }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -161,7 +161,7 @@ namespace Microsoft.AspNet.TestHost
                 _readLock.Release();
             }
         }
-#if NET45
+#if ASPNET50
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             // TODO: This option doesn't preserve the state object.
@@ -258,7 +258,7 @@ namespace Microsoft.AspNet.TestHost
                 _writeLock.Release();
             }
         }
-#if NET45
+#if ASPNET50
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             Write(buffer, offset, count);

@@ -16,14 +16,14 @@
 // permissions and limitations under the License.
 
 using System;
-#if NET45
+#if ASPNET50
 using System.Runtime.Remoting.Messaging;
 #endif
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection;
-#if NET45
+#if ASPNET50
 using System.Runtime.Remoting;
 #endif
 namespace Microsoft.AspNet.RequestContainer
@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.RequestContainer
 
         private HttpContext AccessRootHttpContext()
         {
-#if NET45
+#if ASPNET50
             var handle = CallContext.LogicalGetData(LogicalDataKey) as ObjectHandle;
             return handle != null ? handle.Unwrap() as HttpContext : null;
 #else
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.RequestContainer
 
         private HttpContext ExchangeRootHttpContext(HttpContext httpContext)
         {
-#if NET45
+#if ASPNET50
             var prior = CallContext.LogicalGetData(LogicalDataKey) as ObjectHandle;
             CallContext.LogicalSetData(LogicalDataKey, new ObjectHandle(httpContext));
             return prior != null ? prior.Unwrap() as HttpContext : null;
