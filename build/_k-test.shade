@@ -48,7 +48,7 @@ projectFile=''
             }
             else if (!IsMono)
             {
-                K("test", projectFolder, "default -svrc50");
+                K("test", projectFolder, "default -runtime CoreCLR");
             }
         }
     }
