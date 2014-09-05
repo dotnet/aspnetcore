@@ -1,4 +1,6 @@
 # ASP.NET vNext Home
+Latest dev version: ![dev version](http://img.shields.io/myget/aspnetvnext/v/KRE-svr50-x64.svg?style=flat)  
+Latest master version: ![master version](http://img.shields.io/myget/aspnetmaster/v/KRE-svr50-x64.svg?style=flat)  
 
 The Home repository is the starting point for people to learn about ASP.NET vNext. This repo contains samples and [documentation](https://github.com/aspnet/Home/wiki) to help folks get started and learn more about what's coming in ASP..NET vNext.
 
