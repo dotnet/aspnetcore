@@ -28,8 +28,13 @@ namespace TestOutput
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
+            Instrumentation.BeginContext(19, 2, true);
             WriteLiteral("\r\n");
+            Instrumentation.EndContext();
+            Instrumentation.BeginContext(140, 26, true);
             WriteLiteral("\r\nHere\'s a random number: ");
+            Instrumentation.EndContext();
+            Instrumentation.BeginContext(167, 11, false);
             Write(
 #line 12 "FunctionsBlock.cshtml"
                          RandomInt()
@@ -38,6 +43,7 @@ namespace TestOutput
 #line hidden
             );
 
+            Instrumentation.EndContext();
         }
         #pragma warning restore 1998
     }

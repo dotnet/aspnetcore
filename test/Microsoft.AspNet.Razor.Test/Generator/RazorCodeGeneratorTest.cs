@@ -118,8 +118,8 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                                                                    "WriteLiteralTo",
                                                                    "Template",
                                                                    "DefineSection",
-                                                                   "BeginContext",
-                                                                   "EndContext")
+                                                                   "Instrumentation.BeginContext",
+                                                                   "Instrumentation.EndContext")
                                                                    {
                                                                        LayoutPropertyName = "Layout",
                                                                        ResolveUrlMethodName = "Href"
@@ -130,6 +130,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             }
 
             host.IsIndentingWithTabs = withTabs;
+            host.EnableInstrumentation = true;
 
             RazorTemplateEngine engine = new RazorTemplateEngine(host);
 

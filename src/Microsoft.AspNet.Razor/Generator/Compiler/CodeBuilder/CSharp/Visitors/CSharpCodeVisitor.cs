@@ -59,7 +59,14 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 return;
             }
 
-            // TODO: Add instrumentation
+            var generateInstrumentation = ShouldGenerateInstrumentationForExpressions();
+
+            if (generateInstrumentation)
+            {
+                // Add a non-literal context call (non-literal because the expanded URL will not match the source
+                // character-by-character)
+                Writer.WriteStartInstrumentationContext(Context, chunk.Association, isLiteral: false);
+            }
 
             if (!String.IsNullOrEmpty(chunk.Url) && !Context.Host.DesignTimeMode)
             {
@@ -86,6 +93,11 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                     Writer.WriteEndMethodInvocation();
                 }
             }
+
+            if (generateInstrumentation)
+            {
+                Writer.WriteEndInstrumentationContext(Context);
+            }
         }
 
         protected override void Visit(LiteralChunk chunk)
@@ -95,7 +107,10 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 return;
             }
 
-            // TODO: Add instrumentation
+            if (Context.Host.EnableInstrumentation)
+            {
+                Writer.WriteStartInstrumentationContext(Context, chunk.Association, isLiteral: true);
+            }
 
             if (!String.IsNullOrEmpty(chunk.Text) && !Context.Host.DesignTimeMode)
             {
@@ -114,13 +129,14 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                        .WriteEndMethodInvocation();
             }
 
-            // TODO: Add instrumentation
+            if (Context.Host.EnableInstrumentation)
+            {
+                Writer.WriteEndInstrumentationContext(Context);
+            }
         }
 
         protected override void Visit(ExpressionBlockChunk chunk)
         {
-            // TODO: Handle instrumentation
-
             if (Context.Host.DesignTimeMode)
             {
                 RenderDesignTimeExpressionBlockChunk(chunk);
@@ -280,21 +296,19 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
             var currentTargetWriterName = Context.TargetWriterName;
             Context.TargetWriterName = TemplateWriterName;
-            
+
             using (Writer.BuildLambda(endLine: false, parameterNames: TemplateWriterName))
             {
                 Accept(chunk.Children);
             }
             Context.TargetWriterName = currentTargetWriterName;
-            
+
             Writer.WriteEndMethodInvocation(endLine: false);
             Writer.WriteEndMethodInvocation();
         }
 
         public void RenderDesignTimeExpressionBlockChunk(ExpressionBlockChunk chunk)
         {
-            // TODO: Handle instrumentation
-
             var firstChild = (ExpressionChunk)chunk.Children.FirstOrDefault();
 
             if (firstChild != null)
@@ -329,7 +343,28 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
         public void RenderRuntimeExpressionBlockChunk(ExpressionBlockChunk chunk)
         {
-            // TODO: Handle instrumentation
+            var generateInstrumentation = ShouldGenerateInstrumentationForExpressions();
+            Span contentSpan = null;
+
+            if (generateInstrumentation)
+            {
+                // For expression chunks, such as @value, @(value) etc, pick the first Code or Markup span
+                // from the expression (in this case "value") and use that to calculate the length. This works
+                // accurately for most parts. The scenarios that don't work are
+                // (a) Expressions with inline comments (e.g. @(a @* comment *@ b)) - these have multiple code spans
+                // (b) Expressions with inline templates (e.g. @Foo(@<p>Hello world</p>)).
+                // Tracked via https://github.com/aspnet/Razor/issues/153
+
+                var block = (Block)chunk.Association;
+                contentSpan = block.Children
+                                   .OfType<Span>()
+                                   .FirstOrDefault(s => s.Kind == SpanKind.Code || s.Kind == SpanKind.Markup);
+
+                if (contentSpan != null)
+                {
+                    Writer.WriteStartInstrumentationContext(Context, contentSpan, isLiteral: false);
+                }
+            }
 
             if (Context.ExpressionRenderingMode == ExpressionRenderingMode.InjectCode)
             {
@@ -352,6 +387,11 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
                 Writer.WriteEndMethodInvocation()
                       .WriteLine();
+            }
+
+            if (contentSpan != null)
+            {
+                Writer.WriteEndInstrumentationContext(Context);
             }
         }
 
@@ -384,6 +424,14 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             {
                 Writer.Write(code);
             }
+        }
+
+        private bool ShouldGenerateInstrumentationForExpressions()
+        {
+            // Only generate instrumentation for expression blocks if instrumentation is enabled and we're generating a
+            // "Write(<expression>)" statement.
+            return Context.Host.EnableInstrumentation &&
+                   Context.ExpressionRenderingMode == ExpressionRenderingMode.WriteToOutput;
         }
     }
 }

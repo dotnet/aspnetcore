@@ -13,7 +13,9 @@ namespace TestOutput
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
+            Instrumentation.BeginContext(0, 34, true);
             WriteLiteral("\r\n<p>This should  be shown</p>\r\n\r\n");
+            Instrumentation.EndContext();
 #line 4 "RazorComments.cshtml"
   
     
@@ -37,14 +39,19 @@ namespace TestOutput
 #line default
 #line hidden
 
+            Instrumentation.BeginContext(232, 4, true);
             WriteLiteral("\r\n\r\n");
+            Instrumentation.EndContext();
 #line 12 "RazorComments.cshtml"
    var bar = "@* bar *@"; 
 
 #line default
 #line hidden
 
+            Instrumentation.BeginContext(263, 46, true);
             WriteLiteral("\r\n<p>But this should show the comment syntax: ");
+            Instrumentation.EndContext();
+            Instrumentation.BeginContext(310, 3, false);
             Write(
 #line 13 "RazorComments.cshtml"
                                              bar
@@ -53,7 +60,11 @@ namespace TestOutput
 #line hidden
             );
 
+            Instrumentation.EndContext();
+            Instrumentation.BeginContext(313, 8, true);
             WriteLiteral("</p>\r\n\r\n");
+            Instrumentation.EndContext();
+            Instrumentation.BeginContext(323, 1, false);
             Write(
 #line 15 "RazorComments.cshtml"
   a
@@ -67,7 +78,10 @@ namespace TestOutput
 #line hidden
             );
 
+            Instrumentation.EndContext();
+            Instrumentation.BeginContext(330, 2, true);
             WriteLiteral("\r\n");
+            Instrumentation.EndContext();
         }
         #pragma warning restore 1998
     }

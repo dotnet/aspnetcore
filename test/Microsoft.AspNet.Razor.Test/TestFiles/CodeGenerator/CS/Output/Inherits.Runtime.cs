@@ -13,6 +13,7 @@ namespace TestOutput
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
+            Instrumentation.BeginContext(1, 5, false);
             Write(
 #line 1 "Inherits.cshtml"
  foo()
@@ -21,7 +22,10 @@ namespace TestOutput
 #line hidden
             );
 
+            Instrumentation.EndContext();
+            Instrumentation.BeginContext(6, 4, true);
             WriteLiteral("\r\n\r\n");
+            Instrumentation.EndContext();
         }
         #pragma warning restore 1998
     }

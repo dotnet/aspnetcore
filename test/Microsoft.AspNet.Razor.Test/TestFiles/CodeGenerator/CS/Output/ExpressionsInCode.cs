@@ -21,7 +21,9 @@ namespace TestOutput
 #line default
 #line hidden
 
+            Instrumentation.BeginContext(54, 4, true);
             WriteLiteral("\r\n\r\n");
+            Instrumentation.EndContext();
 #line 6 "ExpressionsInCode.cshtml"
  if(foo != null) {
     
@@ -29,6 +31,7 @@ namespace TestOutput
 #line default
 #line hidden
 
+            Instrumentation.BeginContext(83, 3, false);
             Write(
 #line 7 "ExpressionsInCode.cshtml"
      foo
@@ -37,6 +40,7 @@ namespace TestOutput
 #line hidden
             );
 
+            Instrumentation.EndContext();
 #line 7 "ExpressionsInCode.cshtml"
         
 } else {
@@ -44,14 +48,18 @@ namespace TestOutput
 #line default
 #line hidden
 
+            Instrumentation.BeginContext(98, 25, true);
             WriteLiteral("    <p>Foo is Null!</p>\r\n");
+            Instrumentation.EndContext();
 #line 10 "ExpressionsInCode.cshtml"
 }
 
 #line default
 #line hidden
 
+            Instrumentation.BeginContext(126, 7, true);
             WriteLiteral("\r\n<p>\r\n");
+            Instrumentation.EndContext();
 #line 13 "ExpressionsInCode.cshtml"
  if(!String.IsNullOrEmpty(bar)) {
     
@@ -59,6 +67,7 @@ namespace TestOutput
 #line default
 #line hidden
 
+            Instrumentation.BeginContext(174, 21, false);
             Write(
 #line 14 "ExpressionsInCode.cshtml"
       bar.Replace("F", "B")
@@ -67,6 +76,7 @@ namespace TestOutput
 #line hidden
             );
 
+            Instrumentation.EndContext();
 #line 14 "ExpressionsInCode.cshtml"
                             
 }
@@ -74,7 +84,9 @@ namespace TestOutput
 #line default
 #line hidden
 
+            Instrumentation.BeginContext(201, 4, true);
             WriteLiteral("</p>");
+            Instrumentation.EndContext();
         }
         #pragma warning restore 1998
     }

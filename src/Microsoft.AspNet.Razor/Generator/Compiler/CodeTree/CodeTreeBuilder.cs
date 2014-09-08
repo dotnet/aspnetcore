@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 
 namespace Microsoft.AspNet.Razor.Generator.Compiler
@@ -40,9 +41,22 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
 
         public void AddLiteralChunk(string literal, SyntaxTreeNode association)
         {
-            if (_lastChunk is LiteralChunk)
+            // If the previous chunk was also a LiteralChunk, append the content of the current node to the previous one.
+            var literalChunk = _lastChunk as LiteralChunk;
+            if (literalChunk != null)
             {
-                ((LiteralChunk)_lastChunk).Text += literal;
+                // Literal chunks are always associated with Spans
+                var lastSpan = (Span)literalChunk.Association;
+                var currentSpan = (Span)association;
+
+                var builder = new SpanBuilder(lastSpan);
+                foreach (var symbol in currentSpan.Symbols)
+                {
+                    builder.Accept(symbol);
+                }
+
+                literalChunk.Association = builder.Build();
+                literalChunk.Text += literal;
             }
             else
             {

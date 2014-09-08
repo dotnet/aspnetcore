@@ -18,7 +18,9 @@ Link(string link) {
 #line default
 #line hidden
 
+            Instrumentation.BeginContext(29, 6, true);
             WriteLiteralTo(__razor_helper_writer, "    <a");
+            Instrumentation.EndContext();
             WriteAttributeTo(__razor_helper_writer, "href", Tuple.Create(" href=\"", 35), Tuple.Create("\"", 93), 
             Tuple.Create(Tuple.Create("", 42), Tuple.Create<System.Object, System.Int32>(new Template((__razor_attribute_value_writer) => {
 #line 2 "InlineBlocks.cshtml"
@@ -27,6 +29,7 @@ Link(string link) {
 #line default
 #line hidden
 
+                Instrumentation.BeginContext(63, 4, false);
                 WriteTo(__razor_attribute_value_writer, 
 #line 2 "InlineBlocks.cshtml"
                                   link
@@ -35,13 +38,16 @@ Link(string link) {
 #line hidden
                 );
 
+                Instrumentation.EndContext();
 #line 2 "InlineBlocks.cshtml"
                                        } else {
 
 #line default
 #line hidden
 
+                Instrumentation.BeginContext(76, 3, true);
                 WriteLiteralTo(__razor_attribute_value_writer, " # ");
+                Instrumentation.EndContext();
 #line 2 "InlineBlocks.cshtml"
                                                                }
 
@@ -50,7 +56,9 @@ Link(string link) {
 
             }
             ), 42), false));
+            Instrumentation.BeginContext(94, 5, true);
             WriteLiteralTo(__razor_helper_writer, " />\r\n");
+            Instrumentation.EndContext();
 #line 3 "InlineBlocks.cshtml"
 
 #line default

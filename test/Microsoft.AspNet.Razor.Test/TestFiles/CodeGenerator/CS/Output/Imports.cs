@@ -30,7 +30,10 @@ using System
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
+            Instrumentation.BeginContext(68, 30, true);
             WriteLiteral("\r\n<p>Path\'s full type name is ");
+            Instrumentation.EndContext();
+            Instrumentation.BeginContext(99, 21, false);
             Write(
 #line 5 "Imports.cshtml"
                              typeof(Path).FullName
@@ -39,7 +42,11 @@ using System
 #line hidden
             );
 
+            Instrumentation.EndContext();
+            Instrumentation.BeginContext(120, 40, true);
             WriteLiteral("</p>\r\n<p>Foo\'s actual full type name is ");
+            Instrumentation.EndContext();
+            Instrumentation.BeginContext(161, 20, false);
             Write(
 #line 6 "Imports.cshtml"
                                    typeof(Foo).FullName
@@ -48,7 +55,10 @@ using System
 #line hidden
             );
 
+            Instrumentation.EndContext();
+            Instrumentation.BeginContext(181, 4, true);
             WriteLiteral("</p>");
+            Instrumentation.EndContext();
         }
         #pragma warning restore 1998
     }

@@ -20,7 +20,10 @@ namespace TestOutput
 #line default
 #line hidden
 
+            Instrumentation.BeginContext(40, 27, true);
             WriteLiteral("        <p>Hello from C#, #");
+            Instrumentation.EndContext();
+            Instrumentation.BeginContext(69, 12, false);
             Write(
 #line 3 "MarkupInCodeBlock.cshtml"
                              i.ToString()
@@ -29,14 +32,19 @@ namespace TestOutput
 #line hidden
             );
 
+            Instrumentation.EndContext();
+            Instrumentation.BeginContext(82, 6, true);
             WriteLiteral("</p>\r\n");
+            Instrumentation.EndContext();
 #line 4 "MarkupInCodeBlock.cshtml"
     }
 
 #line default
 #line hidden
 
+            Instrumentation.BeginContext(96, 2, true);
             WriteLiteral("\r\n");
+            Instrumentation.EndContext();
         }
         #pragma warning restore 1998
     }

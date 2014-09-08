@@ -13,7 +13,10 @@ namespace TestOutput
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
+            Instrumentation.BeginContext(0, 8, true);
             WriteLiteral("1 + 1 = ");
+            Instrumentation.EndContext();
+            Instrumentation.BeginContext(10, 3, false);
             Write(
 #line 1 "ExplicitExpression.cshtml"
           1+1
@@ -22,6 +25,7 @@ namespace TestOutput
 #line hidden
             );
 
+            Instrumentation.EndContext();
         }
         #pragma warning restore 1998
     }

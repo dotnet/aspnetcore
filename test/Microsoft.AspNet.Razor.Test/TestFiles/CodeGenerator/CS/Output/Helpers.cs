@@ -19,7 +19,10 @@ Bold(string s) {
 #line default
 #line hidden
 
+            Instrumentation.BeginContext(48, 12, true);
             WriteLiteralTo(__razor_helper_writer, "    <strong>");
+            Instrumentation.EndContext();
+            Instrumentation.BeginContext(61, 1, false);
             WriteTo(__razor_helper_writer, 
 #line 3 "Helpers.cshtml"
              s
@@ -28,7 +31,10 @@ Bold(string s) {
 #line hidden
             );
 
+            Instrumentation.EndContext();
+            Instrumentation.BeginContext(62, 11, true);
             WriteLiteralTo(__razor_helper_writer, "</strong>\r\n");
+            Instrumentation.EndContext();
 #line 4 "Helpers.cshtml"
 
 #line default
@@ -56,7 +62,10 @@ Italic(string s) {
 #line default
 #line hidden
 
+            Instrumentation.BeginContext(128, 8, true);
             WriteLiteralTo(__razor_helper_writer, "    <em>");
+            Instrumentation.EndContext();
+            Instrumentation.BeginContext(137, 1, false);
             WriteTo(__razor_helper_writer, 
 #line 8 "Helpers.cshtml"
          s
@@ -65,7 +74,10 @@ Italic(string s) {
 #line hidden
             );
 
+            Instrumentation.EndContext();
+            Instrumentation.BeginContext(138, 7, true);
             WriteLiteralTo(__razor_helper_writer, "</em>\r\n");
+            Instrumentation.EndContext();
 #line 9 "Helpers.cshtml"
 
 #line default
@@ -87,8 +99,13 @@ Italic(string s) {
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
+            Instrumentation.BeginContext(76, 2, true);
             WriteLiteral("\r\n");
+            Instrumentation.EndContext();
+            Instrumentation.BeginContext(148, 2, true);
             WriteLiteral("\r\n");
+            Instrumentation.EndContext();
+            Instrumentation.BeginContext(151, 13, false);
             Write(
 #line 11 "Helpers.cshtml"
  Bold("Hello")
@@ -97,6 +114,7 @@ Italic(string s) {
 #line hidden
             );
 
+            Instrumentation.EndContext();
         }
         #pragma warning restore 1998
     }
