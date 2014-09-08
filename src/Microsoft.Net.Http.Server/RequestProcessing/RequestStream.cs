@@ -107,6 +107,12 @@ namespace Microsoft.Net.Http.Server
             throw new InvalidOperationException(Resources.Exception_ReadOnlyStream);
         }
 
+        internal void Abort()
+        {
+            _closed = true;
+            _requestContext.Abort();
+        }
+
         private void ValidateReadBuffer(byte[] buffer, int offset, int size)
         {
             if (buffer == null)
@@ -174,6 +180,7 @@ namespace Microsoft.Net.Http.Server
                 {
                     Exception exception = new WebListenerException((int)statusCode);
                     LogHelper.LogException(_requestContext.Logger, "Read", exception);
+                    Abort();
                     throw exception;
                 }
                 UpdateAfterRead(statusCode, dataRead);
@@ -270,6 +277,7 @@ namespace Microsoft.Net.Http.Server
                     {
                         Exception exception = new WebListenerException((int)statusCode);
                         LogHelper.LogException(_requestContext.Logger, "BeginRead", exception);
+                        Abort();
                         throw exception;
                     }
                 }
@@ -376,6 +384,7 @@ namespace Microsoft.Net.Http.Server
                 catch (Exception e)
                 {
                     asyncResult.Dispose();
+                    Abort();
                     LogHelper.LogException(_requestContext.Logger, "ReadAsync", e);
                     throw;
                 }
@@ -394,6 +403,7 @@ namespace Microsoft.Net.Http.Server
                     {
                         Exception exception = new WebListenerException((int)statusCode);
                         LogHelper.LogException(_requestContext.Logger, "ReadAsync", exception);
+                        Abort();
                         throw exception;
                     }
                 }

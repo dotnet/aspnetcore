@@ -166,6 +166,7 @@ namespace Microsoft.Net.Http.Server
                 }
             }
             Dispose();
+            _requestStream.Abort();
         }
 
         [SuppressMessage("Microsoft.Usage", "CA2216:DisposableTypesShouldDeclareFinalizer", Justification = "The disposable resource referenced does have a finalizer.")]

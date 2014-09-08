@@ -119,8 +119,7 @@ namespace Microsoft.Net.Http.Server
             catch (Exception e)
             {
                 LogHelper.LogException(_requestContext.Logger, "Flush", e);
-                _closed = true;
-                _requestContext.Abort();
+                Abort();
                 throw;
             }
         }
@@ -172,8 +171,7 @@ namespace Microsoft.Net.Http.Server
             {
                 LogHelper.LogException(_requestContext.Logger, "FlushAsync", e);
                 asyncResult.Dispose();
-                _closed = true;
-                _requestContext.Abort();
+                Abort();
                 throw;
             }
 
@@ -210,6 +208,12 @@ namespace Microsoft.Net.Http.Server
 #endif
 
         #endregion
+
+        internal void Abort()
+        {
+            _closed = true;
+            _requestContext.Abort();
+        }
 
         private UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS ComputeLeftToWrite(bool endOfRequest = false)
         {
@@ -349,8 +353,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Exception exception = new WebListenerException((int)statusCode);
                 LogHelper.LogException(_requestContext.Logger, "Write", exception);
-                _closed = true;
-                _requestContext.Abort();
+                Abort();
                 throw exception;
             }
             UpdateWritenCount(dataToWrite);
@@ -428,8 +431,7 @@ namespace Microsoft.Net.Http.Server
             {
                 LogHelper.LogException(_requestContext.Logger, "BeginWrite", e);
                 asyncResult.Dispose();
-                _closed = true;
-                _requestContext.Abort();
+                Abort();
                 throw;
             }
 
@@ -444,8 +446,7 @@ namespace Microsoft.Net.Http.Server
                 {
                     Exception exception = new WebListenerException((int)statusCode);
                     LogHelper.LogException(_requestContext.Logger, "BeginWrite", exception);
-                    _closed = true;
-                    _requestContext.Abort();
+                    Abort();
                     throw exception;
                 }
             }
@@ -456,7 +457,7 @@ namespace Microsoft.Net.Http.Server
                 asyncResult.IOCompleted(statusCode, bytesSent);
             }
 
-            // Last write, cache it for special cancelation handling.
+            // Last write, cache it for special cancellation handling.
             if ((flags & UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA) == 0)
             {
                 _lastWrite = asyncResult;
@@ -488,14 +489,13 @@ namespace Microsoft.Net.Http.Server
             try
             {
                 // wait & then check for errors
-                // TODO: Gracefull re-throw
+                // TODO: Graceful re-throw
                 castedAsyncResult.Task.Wait();
             }
             catch (Exception exception)
             {
                 LogHelper.LogException(_requestContext.Logger, "EndWrite", exception);
-                _closed = true;
-                _requestContext.Abort();
+                Abort();
                 throw;
             }
         }
@@ -576,8 +576,7 @@ namespace Microsoft.Net.Http.Server
             {
                 LogHelper.LogException(_requestContext.Logger, "WriteAsync", e);
                 asyncResult.Dispose();
-                _closed = true;
-                _requestContext.Abort();
+                Abort();
                 throw;
             }
 
@@ -592,8 +591,7 @@ namespace Microsoft.Net.Http.Server
                 {
                     Exception exception = new WebListenerException((int)statusCode);
                     LogHelper.LogException(_requestContext.Logger, "WriteAsync", exception);
-                    _closed = true;
-                    _requestContext.Abort();
+                    Abort();
                     throw exception;
                 }
             }
@@ -699,8 +697,7 @@ namespace Microsoft.Net.Http.Server
             {
                 LogHelper.LogException(_requestContext.Logger, "SendFileAsync", e);
                 asyncResult.Dispose();
-                _closed = true;
-                _requestContext.Abort();
+                Abort();
                 throw;
             }
 
@@ -715,8 +712,7 @@ namespace Microsoft.Net.Http.Server
                 {
                     Exception exception = new WebListenerException((int)statusCode);
                     LogHelper.LogException(_requestContext.Logger, "SendFileAsync", exception);
-                    _closed = true;
-                    _requestContext.Abort();
+                    Abort();
                     throw exception;
                 }
             }

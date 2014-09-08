@@ -355,6 +355,7 @@ namespace Microsoft.Net.Http.Server
                 }
             }
             Dispose();
+            _responseStream.Abort();
         }
 
         /*++
@@ -362,7 +363,7 @@ namespace Microsoft.Net.Http.Server
             GetChunkHeader
 
             A private utility routine to convert an integer to a chunk header,
-            which is an ASCII hex number followed by a CRLF. The header is retuned
+            which is an ASCII hex number followed by a CRLF. The header is returned
             as a byte array.
 
             Input:

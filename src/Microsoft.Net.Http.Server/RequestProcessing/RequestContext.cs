@@ -411,7 +411,7 @@ namespace Microsoft.Net.Http.Server
             context.Abort();
         }
 
-        // This is only called while processing incoming requests.  We don't have to worry about cancelling 
+        // This is only called while processing incoming requests.  We don't have to worry about canceling 
         // any response writes.
         [SuppressMessage("Microsoft.Usage", "CA1806:DoNotIgnoreMethodResults", Justification =
             "It is safe to ignore the return value on a cancel operation because the connection is being closed")]
