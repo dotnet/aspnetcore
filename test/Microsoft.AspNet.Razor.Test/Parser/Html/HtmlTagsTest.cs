@@ -125,6 +125,46 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                     BlockFactory.MarkupTagBlock("</script>")));
         }
 
+        [Fact]
+        public void ScriptTag_WithNestedMalformedTag()
+        {
+            ParseDocumentTest("<script>var four = 4; /* </ */</script>",
+                new MarkupBlock(
+                    BlockFactory.MarkupTagBlock("<script>"),
+                    Factory.Markup("var four = 4; /* </ */"),
+                    BlockFactory.MarkupTagBlock("</script>")));
+        }
+
+        [Fact]
+        public void ScriptTag_WithNestedEndTag()
+        {
+            ParseDocumentTest("<script></p></script>",
+                new MarkupBlock(
+                    BlockFactory.MarkupTagBlock("<script>"),
+                    Factory.Markup("</p>"),
+                    BlockFactory.MarkupTagBlock("</script>")));
+        }
+
+        [Fact]
+        public void ScriptTag_WithNestedBeginTag()
+        {
+            ParseDocumentTest("<script><p></script>",
+                new MarkupBlock(
+                    BlockFactory.MarkupTagBlock("<script>"),
+                    Factory.Markup("<p>"),
+                    BlockFactory.MarkupTagBlock("</script>")));
+        }
+
+        [Fact]
+        public void ScriptTag_WithNestedTag()
+        {
+            ParseDocumentTest("<script><p></p></script>",
+                new MarkupBlock(
+                    BlockFactory.MarkupTagBlock("<script>"),
+                    Factory.Markup("<p></p>"),
+                    BlockFactory.MarkupTagBlock("</script>")));
+        }
+
         [Theory]
         [MemberData("VoidElementNames")]
         public void VoidElementFollowedByContent(string tagName)
