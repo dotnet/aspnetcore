@@ -37,8 +37,7 @@ namespace Microsoft.AspNet.Security.Cookies
 
         protected override async Task<AuthenticationTicket> AuthenticateCoreAsync()
         {
-            IReadableStringCollection cookies = Request.Cookies;
-            string cookie = cookies[Options.CookieName];
+            string cookie = Options.CookieManager.GetRequestCookie(Context, Options.CookieName);
             if (string.IsNullOrWhiteSpace(cookie))
             {
                 return null;
@@ -148,7 +147,8 @@ namespace Microsoft.AspNet.Security.Cookies
                     var model = new AuthenticationTicket(context.Identity, context.Properties);
                     string cookieValue = Options.TicketDataFormat.Protect(model);
 
-                    Response.Cookies.Append(
+                    Options.CookieManager.AppendResponseCookie(
+                        Context,
                         Options.CookieName,
                         cookieValue,
                         cookieOptions);
@@ -162,7 +162,8 @@ namespace Microsoft.AspNet.Security.Cookies
                     
                     Options.Notifications.ResponseSignOut(context);
 
-                    Response.Cookies.Delete(
+                    Options.CookieManager.DeleteCookie(
+                        Context,
                         Options.CookieName,
                         cookieOptions);
                 }
@@ -180,7 +181,8 @@ namespace Microsoft.AspNet.Security.Cookies
                         cookieOptions.Expires = _renewExpiresUtc.ToUniversalTime().DateTime;
                     }
 
-                    Response.Cookies.Append(
+                    Options.CookieManager.AppendResponseCookie(
+                        Context,
                         Options.CookieName,
                         cookieValue,
                         cookieOptions);

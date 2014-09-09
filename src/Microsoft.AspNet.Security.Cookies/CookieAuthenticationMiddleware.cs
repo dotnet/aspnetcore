@@ -5,6 +5,7 @@
 using System;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Security.Cookies.Infrastructure;
 using Microsoft.AspNet.Security.DataHandler;
 using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.AspNet.Security.Infrastructure;
@@ -32,6 +33,10 @@ namespace Microsoft.AspNet.Security.Cookies
                 IDataProtector dataProtector = DataProtectionHelpers.CreateDataProtector(dataProtectionProvider,
                     typeof(CookieAuthenticationMiddleware).FullName, options.AuthenticationType, "v1");
                 options.TicketDataFormat = new TicketDataFormat(dataProtector);
+            }
+            if (Options.CookieManager == null)
+            {
+                Options.CookieManager = new ChunkingCookieManager();
             }
 
             _logger = loggerFactory.Create(typeof(CookieAuthenticationMiddleware).FullName);
