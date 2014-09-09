@@ -567,6 +567,27 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Fact]
+        public void AttributeRouting_RouteOnControllerAndAction_CreatesActionDescriptorWithoutHttpConstraints()
+        {
+            // Arrange
+            var provider = GetProvider(typeof(OnlyRouteController).GetTypeInfo());
+
+            // Act
+            var actions = provider.GetDescriptors();
+
+            // Assert
+            var action = Assert.Single(actions);
+
+            Assert.Equal("Action", action.Name);
+            Assert.Equal("OnlyRoute", action.ControllerName);
+
+            Assert.NotNull(action.AttributeRouteInfo);
+            Assert.Equal("Products/Index", action.AttributeRouteInfo.Template);
+
+            Assert.Null(action.MethodConstraints);
+        }
+
+        [Fact]
         public void AttributeRouting_Name_ThrowsIfMultipleActions_WithDifferentTemplatesHaveTheSameName()
         {
             // Arrange
@@ -990,6 +1011,13 @@ namespace Microsoft.AspNet.Mvc.Test
 
             [HttpDelete("{ID}", Order = 1, Name = "PRODUCTS")]
             public void Delete(int id) { }
+        }
+
+        [Route("Products")]
+        public class OnlyRouteController
+        {
+            [Route("Index")]
+            public void Action() { }
         }
 
         [MyRouteConstraint(blockNonAttributedActions: true)]

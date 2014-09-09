@@ -256,6 +256,84 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("List", result.Action);
         }
 
+        // We are intentionally skipping GET because we have another method with [HttpGet] on the same controller
+        // and a test that verifies that if you define another action with a specific verb we'll route to that
+        // more specific action.
+        [Theory]
+        [InlineData("PUT")]
+        [InlineData("POST")]
+        [InlineData("PATCH")]
+        [InlineData("DELETE")]
+        public async Task AttributeRoutedAction_RouteAttributeOnAction_IsReachable(string method)
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+            var message = new HttpRequestMessage(new HttpMethod(method), "http://localhost/Store/Shop/Orders");
+
+            // Act
+            var response = await client.SendAsync(message);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Contains("/Store/Shop/Orders", result.ExpectedUrls);
+            Assert.Equal("Store", result.Controller);
+            Assert.Equal("Orders", result.Action);
+        }
+
+        [Theory]
+        [InlineData("GET")]
+        [InlineData("POST")]
+        [InlineData("PUT")]
+        [InlineData("PATCH")]
+        [InlineData("DELETE")]
+        public async Task AttributeRoutedAction_RouteAttributeOnActionAndController_IsReachable(string method)
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+            var message = new HttpRequestMessage(new HttpMethod(method), "http://localhost/api/Employee/5/Salary");
+
+            // Act
+            var response = await client.SendAsync(message);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Contains("/api/Employee/5/Salary", result.ExpectedUrls);
+            Assert.Equal("Employee", result.Controller);
+            Assert.Equal("Salary", result.Action);
+        }
+
+        [Fact]
+        public async Task AttributeRoutedAction_RouteAttributeOnActionAndHttpGetOnDifferentAction_ReachesHttpGetAction()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+            var message = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Store/Shop/Orders");
+
+            // Act
+            var response = await client.SendAsync(message);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Contains("/Store/Shop/Orders", result.ExpectedUrls);
+            Assert.Equal("Store", result.Controller);
+            Assert.Equal("GetOrders", result.Action);
+        }
+
         // There's no [HttpGet] on the action here.
         [Theory]
         [InlineData("PUT")]
@@ -276,7 +354,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var body = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
 
-            // Assert
             Assert.Contains("/api/Employee", result.ExpectedUrls);
             Assert.Equal("Employee", result.Controller);
             Assert.Equal("UpdateEmployee", result.Action);
@@ -421,7 +498,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task AttributeRoutedAction__LinkGeneration_OrderOnActionOverridesOrderOnController()
+        public async Task AttributeRoutedAction_LinkGeneration_OrderOnActionOverridesOrderOnController()
         {
             // Arrange
             var server = TestServer.Create(_services, _app);

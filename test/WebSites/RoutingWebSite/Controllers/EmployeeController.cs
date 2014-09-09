@@ -55,5 +55,11 @@ namespace RoutingWebSite
         {
             return _generator.Generate("/api/Employee/" + id + "/Administrator");
         }
+
+        [Route("{id}/Salary")]
+        public IActionResult Salary(int id)
+        {
+            return _generator.Generate("/api/Employee/" + id + "/Salary");
+        }
     }
 }
