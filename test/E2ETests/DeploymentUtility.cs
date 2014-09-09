@@ -99,7 +99,7 @@ namespace E2ETests
             Console.WriteLine("Setting the KRE_APPBASE to {0}", applicationPath);
 
             var path = Environment.GetEnvironmentVariable("PATH");
-            var kreBin = path.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).Where(c => c.Contains("KRE-mono45")).FirstOrDefault();
+            var kreBin = path.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).Where(c => c.Contains("KRE-Mono")).FirstOrDefault();
 
             if (string.IsNullOrWhiteSpace(kreBin))
             {
