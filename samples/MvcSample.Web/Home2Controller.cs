@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc;
 using MvcSample.Web.Models;
@@ -37,9 +38,9 @@ namespace MvcSample.Web.RandomNameSpace
             };
         }
 
-        public void Raw()
+        public async Task Raw()
         {
-            Response.WriteAsync("Hello World raw");
+            await Response.WriteAsync("Hello World raw");
         }
 
         public ActionResult UserJson()
