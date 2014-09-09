@@ -8,14 +8,14 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
 {
     public abstract class ChunkVisitor<T> : IChunkVisitor where T : CodeWriter
     {
-        public ChunkVisitor(T writer, CodeGeneratorContext context)
+        public ChunkVisitor(T writer, CodeBuilderContext context)
         {
             Writer = writer;
             Context = context;
         }
 
         protected T Writer { get; private set; }
-        protected CodeGeneratorContext Context { get; private set; }
+        protected CodeBuilderContext Context { get; private set; }
 
         public void Accept(IList<Chunk> chunks)
         {

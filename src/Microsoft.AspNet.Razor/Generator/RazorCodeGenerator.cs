@@ -71,7 +71,11 @@ namespace Microsoft.AspNet.Razor.Generator
         {
             if (_context == null)
             {
-                _context = CodeGeneratorContext.Create(Host, ClassName, RootNamespaceName, SourceFileName, GenerateLinePragmas);
+                _context = new CodeGeneratorContext(Host, 
+                                                    ClassName, 
+                                                    RootNamespaceName, 
+                                                    SourceFileName, 
+                                                    GenerateLinePragmas);
                 Initialize(_context);
             }
         }

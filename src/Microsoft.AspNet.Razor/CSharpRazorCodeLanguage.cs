@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Razor
             return new CSharpRazorCodeGenerator(className, rootNamespaceName, sourceFileName, host);
         }
 
-        public override CodeBuilder CreateCodeBuilder(CodeGeneratorContext context)
+        public override CodeBuilder CreateCodeBuilder(CodeBuilderContext context)
         {
             return new CSharpCodeBuilder(context);
         }

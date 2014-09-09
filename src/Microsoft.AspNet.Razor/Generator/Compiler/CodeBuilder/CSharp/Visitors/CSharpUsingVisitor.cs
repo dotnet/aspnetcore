@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 {
     public class CSharpUsingVisitor : CodeVisitor<CSharpCodeWriter>
     {
-        public CSharpUsingVisitor(CSharpCodeWriter writer, CodeGeneratorContext context)
+        public CSharpUsingVisitor(CSharpCodeWriter writer, CodeBuilderContext context)
             : base(writer, context)
         {
             ImportedUsings = new List<string>();

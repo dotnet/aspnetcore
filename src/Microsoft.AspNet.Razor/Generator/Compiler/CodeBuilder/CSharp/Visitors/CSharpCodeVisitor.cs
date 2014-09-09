@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
         private CSharpPaddingBuilder _paddingBuilder;
 
-        public CSharpCodeVisitor(CSharpCodeWriter writer, CodeGeneratorContext context)
+        public CSharpCodeVisitor(CSharpCodeWriter writer, CodeBuilderContext context)
             : base(writer, context)
         {
             _paddingBuilder = new CSharpPaddingBuilder(context.Host);

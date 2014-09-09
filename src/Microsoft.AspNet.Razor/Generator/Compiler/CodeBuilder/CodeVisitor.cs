@@ -5,7 +5,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
 {
     public class CodeVisitor<T> : ChunkVisitor<T> where T : CodeWriter
     {
-        public CodeVisitor(T writer, CodeGeneratorContext context)
+        public CodeVisitor(T writer, CodeBuilderContext context)
             : base(writer, context) { }
 
         protected override void Visit(LiteralChunk chunk)

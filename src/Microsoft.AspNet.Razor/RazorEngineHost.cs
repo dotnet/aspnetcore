@@ -207,7 +207,7 @@ namespace Microsoft.AspNet.Razor
         /// </summary>
         /// <param name="incomingBuilder">The code builder</param>
         /// <returns>Either the same code builder, after modifications, or a different code builder.</returns>
-        public virtual CodeBuilder DecorateCodeBuilder(CodeBuilder incomingBuilder, CodeGeneratorContext context)
+        public virtual CodeBuilder DecorateCodeBuilder(CodeBuilder incomingBuilder, CodeBuilderContext context)
         {
             if (incomingBuilder == null)
             {

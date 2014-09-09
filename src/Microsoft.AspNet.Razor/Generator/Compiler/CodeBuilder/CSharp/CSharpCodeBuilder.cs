@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         private const string Sha1AlgorithmId = "{ff1816ec-aa5e-4d10-87f7-6f4963833460}";
         private const int DisableAsyncWarning = 1998;
 
-        public CSharpCodeBuilder(CodeGeneratorContext context)
+        public CSharpCodeBuilder(CodeBuilderContext context)
             : base(context)
         {
         }

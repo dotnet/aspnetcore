@@ -48,15 +48,16 @@ namespace Microsoft.AspNet.Razor.Test
         {
             // Arrange
             var language = new CSharpRazorCodeLanguage();
-            var host = new RazorEngineHost(language);
-            var context = CodeGeneratorContext.Create(host,
-                                                      "myclass",
-                                                      "myns",
-                                                      string.Empty,
-                                                      shouldGenerateLinePragmas: false);
+            var host = new RazorEngineHost(language);            
+            var codeBuilderContext = new CodeBuilderContext(
+                host,
+                "myclass",
+                "myns",
+                string.Empty,
+                shouldGenerateLinePragmas: false);
 
             // Act
-            var generator = language.CreateCodeBuilder(context);
+            var generator = language.CreateCodeBuilder(codeBuilderContext);
 
             // Assert
             Assert.IsType<CSharpCodeBuilder>(generator);

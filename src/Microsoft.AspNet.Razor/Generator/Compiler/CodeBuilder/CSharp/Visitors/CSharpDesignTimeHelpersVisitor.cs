@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
         private const int DisableVariableNamingWarnings = 219;
 
-        public CSharpDesignTimeHelpersVisitor(CSharpCodeWriter writer, CodeGeneratorContext context)
+        public CSharpDesignTimeHelpersVisitor(CSharpCodeWriter writer, CodeBuilderContext context)
             : base(writer, context) { }
 
         public void AcceptTree(CodeTree tree)

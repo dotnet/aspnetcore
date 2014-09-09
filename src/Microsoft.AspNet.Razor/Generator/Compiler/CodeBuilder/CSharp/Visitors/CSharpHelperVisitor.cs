@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
         private CSharpCodeVisitor _codeVisitor;
 
-        public CSharpHelperVisitor(CSharpCodeWriter writer, CodeGeneratorContext context)
+        public CSharpHelperVisitor(CSharpCodeWriter writer, CodeBuilderContext context)
             : base(writer, context)
         {
             _codeVisitor = new CSharpCodeVisitor(writer, context);

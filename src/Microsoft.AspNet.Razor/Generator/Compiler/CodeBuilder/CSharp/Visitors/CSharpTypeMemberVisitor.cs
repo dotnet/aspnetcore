@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
     {
         private CSharpCodeVisitor _csharpCodeVisitor;
 
-        public CSharpTypeMemberVisitor(CSharpCodeWriter writer, CodeGeneratorContext context)
+        public CSharpTypeMemberVisitor(CSharpCodeWriter writer, CodeBuilderContext context)
             : base(writer, context)
         {
             _csharpCodeVisitor = new CSharpCodeVisitor(writer, context);

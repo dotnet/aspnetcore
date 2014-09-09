@@ -114,19 +114,21 @@ namespace Microsoft.AspNet.Razor.Test
         {
             // Arrange
             var mockHost = new Mock<RazorEngineHost>(new CSharpRazorCodeLanguage()) { CallBase = true };
-            var context = CodeGeneratorContext.Create(mockHost.Object,
-                                                      "different-class",
-                                                      "different-ns",
-                                                      string.Empty,
-                                                      shouldGenerateLinePragmas: true);
-            var expected = new CSharpCodeBuilder(context);
+            var codeBuilderContext = new CodeBuilderContext(
+                mockHost.Object,
+                "different-class",
+                "different-ns",
+                string.Empty,
+                shouldGenerateLinePragmas: true);
 
-            mockHost.Setup(h => h.DecorateCodeBuilder(It.IsAny<CSharpCodeBuilder>(), context))
+            var expected = new CSharpCodeBuilder(codeBuilderContext);
+
+            mockHost.Setup(h => h.DecorateCodeBuilder(It.IsAny<CSharpCodeBuilder>(), codeBuilderContext))
                     .Returns(expected);
             var engine = new RazorTemplateEngine(mockHost.Object);
 
             // Act
-            var actual = engine.CreateCodeBuilder(context);
+            var actual = engine.CreateCodeBuilder(codeBuilderContext);
 
             // Assert
             Assert.Equal(expected, actual);

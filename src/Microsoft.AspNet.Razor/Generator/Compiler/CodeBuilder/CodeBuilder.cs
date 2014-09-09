@@ -5,14 +5,14 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
 {
     public abstract class CodeBuilder
     {
-        private readonly CodeGeneratorContext _context;
+        private readonly CodeBuilderContext _context;
 
-        public CodeBuilder(CodeGeneratorContext context)
+        public CodeBuilder(CodeBuilderContext context)
         {
             _context = context;
         }
 
-        protected CodeGeneratorContext Context
+        protected CodeBuilderContext Context
         {
             get { return _context; }
         }

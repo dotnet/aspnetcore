@@ -252,8 +252,8 @@ namespace Microsoft.AspNet.Razor
             generator.DesignTimeMode = Host.DesignTimeMode;
             generator.Visit(results);
 
-
-            var codeGenerationContext = generator.Context;
+            var codeBuilderContext = new CodeBuilderContext(generator.Context);
+            var builder = CreateCodeBuilder(codeBuilderContext);
             codeGenerationContext.Checksum = checksum;
 
             var builder = CreateCodeBuilder(codeGenerationContext);
@@ -281,7 +281,7 @@ namespace Microsoft.AspNet.Razor
             };
         }
 
-        protected internal virtual CodeBuilder CreateCodeBuilder(CodeGeneratorContext context)
+        protected internal virtual CodeBuilder CreateCodeBuilder(CodeBuilderContext context)
         {
             return Host.DecorateCodeBuilder(Host.CodeLanguage.CreateCodeBuilder(context),
                                             context);

@@ -17,15 +17,22 @@ namespace Microsoft.AspNet.Razor.Test.Generator.CodeTree
             var syntaxTreeNode = new Mock<Span>(new SpanBuilder());
             var language = new CSharpRazorCodeLanguage();
             var host = new RazorEngineHost(language);
-            var context = CodeGeneratorContext.Create(host, "TestClass", "TestNamespace", "Foo.cs", shouldGenerateLinePragmas: false);
-            context.CodeTreeBuilder.AddUsingChunk("FakeNamespace1", syntaxTreeNode.Object);
-            context.CodeTreeBuilder.AddUsingChunk("FakeNamespace2.SubNamespace", syntaxTreeNode.Object);
-            var codeBuilder = language.CreateCodeBuilder(context);
+            var codeBuilderContext = new CodeBuilderContext(
+                host,
+                "TestClass",
+                "TestNamespace",
+                "Foo.cs",
+                shouldGenerateLinePragmas: false);
+            codeBuilderContext.CodeTreeBuilder.AddUsingChunk("FakeNamespace1", syntaxTreeNode.Object);
+            codeBuilderContext.CodeTreeBuilder.AddUsingChunk("FakeNamespace2.SubNamespace", syntaxTreeNode.Object);
+            var codeBuilder = language.CreateCodeBuilder(codeBuilderContext);
 
             // Act
             var result = codeBuilder.Build();
 
-            BaselineWriter.WriteBaseline(@"test\Microsoft.AspNet.Razor.Test\TestFiles\CodeGenerator\CS\Output\CSharpCodeBuilder.cs", result.Code);
+            BaselineWriter.WriteBaseline(
+                @"test\Microsoft.AspNet.Razor.Test\TestFiles\CodeGenerator\CS\Output\CSharpCodeBuilder.cs", 
+                result.Code);
 
             var expectedOutput = TestFile.Create("TestFiles/CodeGenerator/CS/Output/CSharpCodeBuilder.cs").ReadAllText();
 

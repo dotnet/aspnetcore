@@ -5,7 +5,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 {
     public class CSharpBaseTypeVisitor : CodeVisitor<CSharpCodeWriter>
     {
-        public CSharpBaseTypeVisitor(CSharpCodeWriter writer, CodeGeneratorContext context)
+        public CSharpBaseTypeVisitor(CSharpCodeWriter writer, CodeBuilderContext context)
             : base(writer, context) { }
 
         public string CurrentBaseType { get; set; }
