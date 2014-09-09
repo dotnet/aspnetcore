@@ -10,6 +10,7 @@ using Microsoft.Net.Http.Server;
 using Microsoft.AspNet.Server.WebListener;
 using System.Security.Claims;
 using System.Security.Principal;
+using Microsoft.AspNet.MemoryCache;
 
 namespace MusicStore
 {
@@ -107,6 +108,10 @@ namespace MusicStore
 
                 //Add all SignalR related services to IoC.
                 services.AddSignalR();
+
+                //Add InMemoryCache
+                //Currently not able to AddSingleTon
+                services.AddInstance<IMemoryCache>(new MemoryCache());
             });
 
             //Configure SignalR
