@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
     [TestCaseOrderer("Microsoft.AspNet.Identity.Test.PriorityOrderer", "Microsoft.AspNet.Identity.SqlServer.Test")]
     public class UserStoreTest : UserManagerTestBase<IdentityUser, IdentityRole>
     {
-        private static readonly string ConnectionString = @"Server=(localdb)\v11.0;Database=SqlUserStoreTest;Trusted_Connection=True;";
+        private readonly string ConnectionString = @"Server=(localdb)\v11.0;Database=SqlUserStoreTest" + DateTime.Now.Month + "-" + DateTime.Now.Day + "-" + DateTime.Now.Year + ";Trusted_Connection=True;";
 
         public class ApplicationUser : IdentityUser { }
 
@@ -135,9 +135,10 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
         {
             var services = new ServiceCollection();
             services.AddEntityFramework().AddSqlServer();
+            var dbOptions = new DbContextOptions();
+            dbOptions.UseSqlServer(ConnectionString);
             var serviceProvider = services.BuildServiceProvider();
-
-            var db = new IdentityDbContext(serviceProvider, ConnectionString);
+            var db = new IdentityDbContext(serviceProvider, dbOptions);
             if (delete)
             {
                 db.Database.EnsureDeleted();

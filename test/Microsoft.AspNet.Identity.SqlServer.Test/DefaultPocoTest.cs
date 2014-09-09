@@ -6,32 +6,44 @@ using Microsoft.AspNet.Identity.Test;
 using Microsoft.Data.Entity;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
+using Microsoft.Framework.OptionsModel;
+using System;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.SqlServer.Test
 {
+    [TestCaseOrderer("Microsoft.AspNet.Identity.Test.PriorityOrderer", "Microsoft.AspNet.Identity.SqlServer.Test")]
     public class DefaultPocoTest
     {
-        private const string ConnectionString = @"Server=(localdb)\v11.0;Database=DefaultPocoTest;Trusted_Connection=True;";
-        public static IdentityDbContext CreateContext(bool delete = false)
+        private readonly string ConnectionString = @"Server=(localdb)\v11.0;Database=DefaultSchemaTest" + DateTime.Now.Month + "-" + DateTime.Now.Day + "-" + DateTime.Now.Year + ";Trusted_Connection=True;";
+        public IdentityDbContext CreateContext(bool ensureCreated = false)
         {
             var services = new ServiceCollection();
+            services.Add(OptionsServices.GetDefaultServices());
             services.AddEntityFramework().AddSqlServer();
+            services.SetupOptions<DbContextOptions>(options => options.UseSqlServer(ConnectionString));
             var serviceProvider = services.BuildServiceProvider();
-
-            var db = new IdentityDbContext(serviceProvider, ConnectionString);
-            if (delete)
+            var db = new IdentityDbContext(serviceProvider, 
+                serviceProvider.GetService<IOptionsAccessor<DbContextOptions>>().Options);
+            if (ensureCreated)
             {
-                db.Database.EnsureDeleted();
+                db.Database.EnsureCreated();
             }
-            db.Database.EnsureCreated();
             return db;
         }
 
-        public static void EnsureDatabase()
+        public void DropDb()
         {
-            CreateContext();
+            var db = CreateContext();
+            db.Database.EnsureDeleted();
+        }
+
+        [TestPriority(-1000)]
+        [Fact]
+        public void DropDatabaseStart()
+        {
+            DropDb();
         }
 
         [Fact]
@@ -61,6 +73,13 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
             var user = new IdentityUser { UserName = userName };
             IdentityResultAssert.IsSuccess(await userManager.CreateAsync(user, password));
             IdentityResultAssert.IsSuccess(await userManager.DeleteAsync(user));
+        }
+
+        [TestPriority(10000)]
+        [Fact]
+        public void DropDatabaseDone()
+        {
+            DropDb();
         }
     }
 }

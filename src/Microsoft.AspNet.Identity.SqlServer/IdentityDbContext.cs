@@ -12,7 +12,6 @@ namespace Microsoft.AspNet.Identity.SqlServer
     {
         public IdentityDbContext() { }
         public IdentityDbContext(IServiceProvider serviceProvider) : base(serviceProvider) { }
-        public IdentityDbContext(IServiceProvider serviceProvider, string nameOrConnectionString) : base(serviceProvider, nameOrConnectionString) { }
         public IdentityDbContext(DbContextOptions options) : base(options) { }
         public IdentityDbContext(IServiceProvider serviceProvider, DbContextOptions options) : base(serviceProvider, options) { }
     }
@@ -23,7 +22,6 @@ namespace Microsoft.AspNet.Identity.SqlServer
     {
         public IdentityDbContext() { }
         public IdentityDbContext(IServiceProvider serviceProvider) : base(serviceProvider) { }
-        public IdentityDbContext(IServiceProvider serviceProvider, string nameOrConnectionString) : base(serviceProvider, nameOrConnectionString) { }
         public IdentityDbContext(DbContextOptions options) : base(options) { }
         public IdentityDbContext(IServiceProvider serviceProvider, DbContextOptions options) : base(serviceProvider, options) { }
     }
@@ -40,24 +38,10 @@ namespace Microsoft.AspNet.Identity.SqlServer
         public DbSet<TRole> Roles { get; set; }
         public DbSet<IdentityRoleClaim<TKey>> RoleClaims { get; set; }
 
-        private readonly string _nameOrConnectionString;
-
         public IdentityDbContext() { }
-        public IdentityDbContext(IServiceProvider serviceProvider, string nameOrConnectionString) : base(serviceProvider)
-        {
-            _nameOrConnectionString = nameOrConnectionString;
-        }
         public IdentityDbContext(IServiceProvider serviceProvider) : base(serviceProvider) { }
         public IdentityDbContext(DbContextOptions options) : base(options) { }
         public IdentityDbContext(IServiceProvider serviceProvider, DbContextOptions options) : base(serviceProvider, options) { }
-
-        protected override void OnConfiguring(DbContextOptions builder)
-        {
-            if (!string.IsNullOrEmpty(_nameOrConnectionString))
-            {
-                builder.UseSqlServer(_nameOrConnectionString);
-            }
-        }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

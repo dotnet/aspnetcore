@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNet.Identity.Test;
 using Microsoft.Data.Entity;
-using Microsoft.Data.Entity.Metadata;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
+using Microsoft.Framework.OptionsModel;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,9 +13,10 @@ using Xunit;
 
 namespace Microsoft.AspNet.Identity.SqlServer.Test
 {
+    [TestCaseOrderer("Microsoft.AspNet.Identity.Test.PriorityOrderer", "Microsoft.AspNet.Identity.SqlServer.Test")]
     public class CustomPocoTest
     {
-        private const string ConnectionString = @"Server=(localdb)\v11.0;Database=CustomPocoTest;Trusted_Connection=True;";
+        private readonly string ConnectionString = @"Server=(localdb)\v11.0;Database=CustomUserContextTest" + DateTime.Now.Month + "-" + DateTime.Now.Day + "-" + DateTime.Now.Year + ";Trusted_Connection=True;";
 
         public class User<TKey> where TKey : IEquatable<TKey>
         {
@@ -23,39 +25,53 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
         }
 
         public class CustomDbContext<TUser> : DbContext where TUser : class
-            //where TUser : User<TKey> where TKey : IEquatable<TKey>
         {
             public DbSet<TUser> Users { get; set; }
 
-            public CustomDbContext(IServiceProvider services) : base(services) { }
-
-            protected override void OnConfiguring(DbContextOptions builder)
-            {
-                builder.UseSqlServer(ConnectionString);
-            }
-
-            //protected override void OnModelCreating(ModelBuilder builder)
-            //{
-            //    builder.Entity<TUser>()
-            //        .Key(u => u.Id)
-            //        .Properties(ps => ps.Property(u => u.UserName));
-            //}
+            public CustomDbContext(IServiceProvider services) : 
+                base(services, services.GetService<IOptionsAccessor<DbContextOptions>>().Options) { }
         }
 
-        //public static CustomDbContext<User<TKey>, TKey> CreateContext<TKey>(bool delete = false) where TKey : IEquatable<TKey>
-        public static CustomDbContext<TUser> CreateContext<TUser>(bool delete = false) where TUser : class
+
+        public CustomDbContext<TUser> GetContext<TUser>() where TUser : class
         {
             var services = new ServiceCollection();
+            services.Add(OptionsServices.GetDefaultServices());
             services.AddEntityFramework().AddSqlServer();
+            services.SetupOptions<DbContextOptions>(options => options.UseSqlServer(ConnectionString));
             var serviceProvider = services.BuildServiceProvider();
+            return new CustomDbContext<TUser>(serviceProvider);
+        }
 
-            var db = new CustomDbContext<TUser>(serviceProvider);
+        public CustomDbContext<TUser> CreateContext<TUser>(bool delete = false) where TUser : class
+        {
+            var db = GetContext<TUser>();
             if (delete)
             {
                 db.Database.EnsureDeleted();
             }
             db.Database.EnsureCreated();
             return db;
+        }
+
+        [TestPriority(-1000)]
+        [Fact]
+        public void DropDatabaseStart()
+        {
+            DropDb();
+        }
+
+        [TestPriority(10000)]
+        [Fact]
+        public void DropDatabaseDone()
+        {
+            DropDb();
+        }
+
+        public void DropDb()
+        {
+            var db = GetContext<User<string>>();
+            db.Database.EnsureDeleted();
         }
 
         [Fact]

@@ -30,11 +30,13 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
     [TestCaseOrderer("Microsoft.AspNet.Identity.Test.PriorityOrderer", "Microsoft.AspNet.Identity.SqlServer.Test")]
     public class UserStoreIntTest : SqlStoreTestBase<IntUser, IntRole, int>
     {
+        private readonly string _connectionString = @"Server=(localdb)\v11.0;Database=SqlUserStoreIntTest" + DateTime.Now.Month + "-" + DateTime.Now.Day + "-" + DateTime.Now.Year + ";Trusted_Connection=True;";
+
         public override string ConnectionString
         {
             get
             {
-                return @"Server=(localdb)\v11.0;Database=SqlUserStoreIntTest;Trusted_Connection=True;";
+                return _connectionString;
             }
         }
     }
