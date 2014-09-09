@@ -43,5 +43,11 @@ namespace Microsoft.AspNet.Security.Cookies
         /// </summary>
         /// <param name="context">Contains information about the login session as well as information about the authentication cookie.</param>
         void ResponseSignOut(CookieResponseSignOutContext context);
+
+        /// <summary>
+        /// Called when an exception occurs during request or response processing.
+        /// </summary>
+        /// <param name="context">Contains information about the exception that occurred</param>
+        void Exception(CookieExceptionContext context);
     }
 }

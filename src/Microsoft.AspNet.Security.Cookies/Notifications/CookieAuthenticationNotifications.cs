@@ -24,6 +24,7 @@ namespace Microsoft.AspNet.Security.Cookies
             OnResponseSignedIn = context => { };
             OnResponseSignOut = context => { };
             OnApplyRedirect = DefaultBehavior.ApplyRedirect;
+            OnException = context => { };
         }
 
         /// <summary>
@@ -50,6 +51,11 @@ namespace Microsoft.AspNet.Security.Cookies
         /// A delegate assigned to this property will be invoked when the related method is called
         /// </summary>
         public Action<CookieApplyRedirectContext> OnApplyRedirect { get; set; }
+
+        /// <summary>
+        /// A delegate assigned to this property will be invoked when the related method is called
+        /// </summary>
+        public Action<CookieExceptionContext> OnException { get; set; }
 
         /// <summary>
         /// Implements the interface method by invoking the related delegate method
@@ -95,6 +101,15 @@ namespace Microsoft.AspNet.Security.Cookies
         public void ApplyRedirect(CookieApplyRedirectContext context)
         {
             OnApplyRedirect.Invoke(context);
+        }
+
+        /// <summary>
+        /// Implements the interface method by invoking the related delegate method
+        /// </summary>
+        /// <param name="context">Contains information about the event</param>
+        public virtual void Exception(CookieExceptionContext context)
+        {
+            OnException.Invoke(context);
         }
     }
 }
