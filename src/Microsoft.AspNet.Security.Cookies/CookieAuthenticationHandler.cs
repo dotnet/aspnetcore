@@ -88,7 +88,8 @@ namespace Microsoft.AspNet.Security.Cookies
                     return null;
                 }
 
-                if (issuedUtc != null && expiresUtc != null && Options.SlidingExpiration)
+                bool allowRefresh = ticket.Properties.AllowRefresh ?? true;
+                if (issuedUtc != null && expiresUtc != null && Options.SlidingExpiration && allowRefresh)
                 {
                     TimeSpan timeElapsed = currentUtc.Subtract(issuedUtc.Value);
                     TimeSpan timeRemaining = expiresUtc.Value.Subtract(currentUtc);
