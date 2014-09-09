@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using Microsoft.AspNet.Mvc.Routing;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -55,7 +56,7 @@ namespace Microsoft.AspNet.Mvc
 
         // If the convention is All methods starting with Get do not have an action name,
         // for a input GetXYZ methodInfo, the return value will be
-        // { { HttpMethods = "GET", ActionName = "GetXYZ", RequireActionNameMatch = false }}
+        // { { HttpMethods = "GET", ActionName = "GetXYZ", RequireActionNameMatch = false, AttributeRoute = null }}
         public virtual IEnumerable<ActionInfo> GetActions(
             [NotNull] MethodInfo methodInfo,
             [NotNull] TypeInfo controllerTypeInfo)
@@ -65,7 +66,7 @@ namespace Microsoft.AspNet.Mvc
                 return null;
             }
 
-            var actionInfos = GetActionsForMethodsWithCustomAttributes(methodInfo);
+            var actionInfos = GetActionsForMethodsWithCustomAttributes(methodInfo, controllerTypeInfo);
             if (actionInfos.Any())
             {
                 return actionInfos;
@@ -129,26 +130,77 @@ namespace Microsoft.AspNet.Mvc
             var attributes = methodInfo.GetCustomAttributes();
             var actionNameAttribute = attributes.OfType<ActionNameAttribute>().FirstOrDefault();
             var httpMethodConstraints = attributes.OfType<IActionHttpMethodProvider>();
+            var routeTemplates = attributes.OfType<IRouteTemplateProvider>();
+
             return new ActionAttributes()
             {
+                ActionNameAttribute = actionNameAttribute,
                 HttpMethodProviderAttributes = httpMethodConstraints,
-                ActionNameAttribute = actionNameAttribute
+                RouteTemplateProviderAttributes = routeTemplates,
             };
         }
 
-        private IEnumerable<ActionInfo> GetActionsForMethodsWithCustomAttributes(MethodInfo methodInfo)
+        private IEnumerable<ActionInfo> GetActionsForMethodsWithCustomAttributes(
+            MethodInfo methodInfo,
+            TypeInfo controller)
         {
+            var hasControllerAttributeRoutes = HasValidControllerRouteTemplates(controller);
             var actionAttributes = GetActionCustomAttributes(methodInfo);
-            if (!actionAttributes.Any())
+
+            // We need to check controllerRouteTemplates to take into account the
+            // case where the controller has [Route] on it and the action does not have any
+            // attributes applied to it.
+            if (actionAttributes.Any() || hasControllerAttributeRoutes)
+            {
+                var actionNameAttribute = actionAttributes.ActionNameAttribute;
+                var actionName = actionNameAttribute != null ? actionNameAttribute.Name : methodInfo.Name;
+
+                // The moment we see a non null attribute route template in the method or
+                // in the controller we consider the whole group to be attribute routed actions.
+                // If a combination ends up producing a non attribute routed action we consider
+                // that an error and throw at a later point in the pipeline.
+                if (hasControllerAttributeRoutes || ActionHasAttributeRoutes(actionAttributes))
+                {
+                    return GetAttributeRoutedActions(actionAttributes, actionName);
+                }
+                else
+                {
+                    return GetHttpConstrainedActions(actionAttributes, actionName);
+                }
+            }
+            else
             {
                 // If the action is not decorated with any of the attributes,
                 // it would be handled by convention.
-                yield break;
+                return Enumerable.Empty<ActionInfo>();
             }
+        }
 
-            var actionNameAttribute = actionAttributes.ActionNameAttribute;
-            var actionName = actionNameAttribute != null ? actionNameAttribute.Name : methodInfo.Name;
+        private static bool ActionHasAttributeRoutes(ActionAttributes actionAttributes)
+        {
+            // We neet to check for null as some attributes implement IActionHttpMethodProvider
+            // and IRouteTemplateProvider and allow the user to provide a null template. An example
+            // of this is HttpGetAttribute. If the user provides a template, the attribute marks the
+            // action as attribute routed, but in other case, the attribute only adds a constraint
+            // that allows the action to be called with the GET HTTP method.
+            return actionAttributes.RouteTemplateProviderAttributes
+                .Any(rtp => rtp.Template != null);
+        }
 
+        private static bool HasValidControllerRouteTemplates(TypeInfo controller)
+        {
+            // A method inside a controller is considered to create attribute routed actions if the controller
+            // has one or more attributes that implement IRouteTemplateProvider with a non null template applied
+            // to it.
+            return controller.GetCustomAttributes()
+                            .OfType<IRouteTemplateProvider>()
+                            .Any(cr => cr.Template != null);
+        }
+
+        private static IEnumerable<ActionInfo> GetHttpConstrainedActions(
+            ActionAttributes actionAttributes,
+            string actionName)
+        {
             var httpMethodProviders = actionAttributes.HttpMethodProviderAttributes;
             var httpMethods = httpMethodProviders.SelectMany(x => x.HttpMethods).Distinct().ToArray();
 
@@ -156,8 +208,52 @@ namespace Microsoft.AspNet.Mvc
             {
                 HttpMethods = httpMethods,
                 ActionName = actionName,
-                RequireActionNameMatch = true
+                RequireActionNameMatch = true,
             };
+        }
+
+        private static IEnumerable<ActionInfo> GetAttributeRoutedActions(
+            ActionAttributes actionAttributes,
+            string actionName)
+        {
+            var actions = new List<ActionInfo>();
+
+            // This is the case where the controller has [Route] applied to it and
+            // the action doesn't have any [Route] or [Http*] attribute applied.
+            if (!actionAttributes.RouteTemplateProviderAttributes.Any())
+            {
+                actions.Add(new ActionInfo
+                {
+                    ActionName = actionName,
+                    HttpMethods = null,
+                    RequireActionNameMatch = true,
+                    AttributeRoute = null
+                });
+            }
+
+            foreach (var routeTemplateProvider in actionAttributes.RouteTemplateProviderAttributes)
+            {
+                actions.Add(new ActionInfo()
+                {
+                    ActionName = actionName,
+                    HttpMethods = GetRouteTemplateHttpMethods(routeTemplateProvider),
+                    RequireActionNameMatch = true,
+                    AttributeRoute = routeTemplateProvider
+                });
+            }
+
+            return actions;
+        }
+
+        private static string[] GetRouteTemplateHttpMethods(IRouteTemplateProvider routeTemplateProvider)
+        {
+            var provider = routeTemplateProvider as IActionHttpMethodProvider;
+            if (provider != null && provider.HttpMethods != null)
+            {
+                return provider.HttpMethods.ToArray();
+            }
+
+            return null;
         }
 
         private IEnumerable<ActionInfo> GetActionsForMethodsWithoutCustomAttributes(
@@ -226,12 +322,15 @@ namespace Microsoft.AspNet.Mvc
 
         private class ActionAttributes
         {
-            public IEnumerable<IActionHttpMethodProvider> HttpMethodProviderAttributes { get; set; }
             public ActionNameAttribute ActionNameAttribute { get; set; }
+            public IEnumerable<IActionHttpMethodProvider> HttpMethodProviderAttributes { get; set; }
+            public IEnumerable<IRouteTemplateProvider> RouteTemplateProviderAttributes { get; set; }
 
             public bool Any()
             {
-                return ActionNameAttribute != null || HttpMethodProviderAttributes.Any();
+                return ActionNameAttribute != null ||
+                    HttpMethodProviderAttributes.Any() ||
+                    RouteTemplateProviderAttributes.Any();
             }
         }
     }

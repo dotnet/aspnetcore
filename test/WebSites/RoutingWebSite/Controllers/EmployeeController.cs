@@ -26,6 +26,12 @@ namespace RoutingWebSite
             return _generator.Generate("/api/Employee");
         }
 
+        [AcceptVerbs("PUT", "PATCH", Route = "Manager")]
+        public IActionResult UpdateManager()
+        {
+            return _generator.Generate("/api/Employee/Manager");
+        }
+
         [HttpMerge("{id}")]
         public IActionResult MergeEmployee(int id)
         {

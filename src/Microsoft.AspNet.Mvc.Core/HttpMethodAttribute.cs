@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc
     /// <summary>
     /// Identifies an action that only supports a given set of HTTP methods.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public abstract class HttpMethodAttribute : Attribute, IActionHttpMethodProvider, IRouteTemplateProvider
     {
         private int? _order;

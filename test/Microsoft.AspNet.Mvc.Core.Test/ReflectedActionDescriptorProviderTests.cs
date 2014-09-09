@@ -58,23 +58,55 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Equal(FilterScope.Action, filter3.Scope);
         }
 
-        [Theory]
-        [InlineData(typeof(HttpMethodController), nameof(HttpMethodController.OnlyPost), "POST")]
-        [InlineData(typeof(AttributeRoutedHttpMethodController), nameof(AttributeRoutedHttpMethodController.PutOrPatch), "PUT,PATCH")]
-        public void GetDescriptors_AddsHttpMethodConstraints(Type controllerType, string actionName, string expectedMethods)
+        [Fact]
+        public void GetDescriptors_AddsHttpMethodConstraints_ForConventionallyRoutedActions()
         {
             // Arrange
-            var provider = GetProvider(controllerType.GetTypeInfo());
+            var provider = GetProvider(typeof(HttpMethodController).GetTypeInfo());
 
             // Act
             var descriptors = provider.GetDescriptors();
             var descriptor = Assert.Single(descriptors);
 
             // Assert
-            Assert.Equal(actionName, descriptor.Name);
+            Assert.Equal("OnlyPost", descriptor.Name);
 
             Assert.Single(descriptor.MethodConstraints);
-            Assert.Equal(expectedMethods.Split(','), descriptor.MethodConstraints[0].HttpMethods);
+            Assert.Equal(new string[] { "POST" }, descriptor.MethodConstraints[0].HttpMethods);
+        }
+
+        [Fact]
+        public void GetDescriptors_ThrowsIfHttpMethodConstraints_OnAttributeRoutedActions()
+        {
+            // Arrange
+            var expectedExceptionMessage =
+                "The following errors occurred with attribute routing information:" + Environment.NewLine +
+                Environment.NewLine +
+                "Error 1:" + Environment.NewLine +
+                "A method 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "AttributeRoutedHttpMethodController.PutOrPatch'" +
+                " that defines attribute routed actions must not have attributes that implement " +
+                "'Microsoft.AspNet.Mvc.IActionHttpMethodProvider' and do not implement " +
+                "'Microsoft.AspNet.Mvc.Routing.IRouteTemplateProvider':" + Environment.NewLine +
+                "Action 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "AttributeRoutedHttpMethodController.PutOrPatch' with route template 'Products' has " +
+                "'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+CustomHttpMethodConstraintAttribute'" +
+                " invalid 'Microsoft.AspNet.Mvc.IActionHttpMethodProvider' attributes." + Environment.NewLine +
+                "Action 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "AttributeRoutedHttpMethodController.PutOrPatch' with route template 'Items' has " +
+                "'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+CustomHttpMethodConstraintAttribute'" +
+                " invalid 'Microsoft.AspNet.Mvc.IActionHttpMethodProvider' attributes.";
+
+            var provider = GetProvider(
+                typeof(AttributeRoutedHttpMethodController)
+                .GetTypeInfo());
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(
+                () => provider.GetDescriptors());
+
+            // Act
+            Assert.Equal(expectedExceptionMessage, ex.Message);
         }
 
         [Fact]
@@ -450,13 +482,13 @@ namespace Microsoft.AspNet.Mvc.Test
 
             var conventional = Assert.Single(model.Controllers,
                 c => c.ControllerName == "ConventionallyRouted");
-            Assert.Null(conventional.AttributeRouteModel);
+            Assert.Empty(conventional.AttributeRoutes);
             Assert.Single(conventional.Actions);
 
             var attributeRouted = Assert.Single(model.Controllers,
                 c => c.ControllerName == "AttributeRouted");
             Assert.Single(attributeRouted.Actions);
-            Assert.NotNull(attributeRouted.AttributeRouteModel);
+            Assert.Single(attributeRouted.AttributeRoutes);
 
             var empty = Assert.Single(model.Controllers,
                 c => c.ControllerName == "Empty");
@@ -521,7 +553,9 @@ namespace Microsoft.AspNet.Mvc.Test
 
             // Assert
             var controller = Assert.Single(model.Controllers);
-            Assert.Equal("api/Token/[key]/[controller]", controller.AttributeRouteModel.Template);
+
+            var attributeRouteModel = Assert.Single(controller.AttributeRoutes);
+            Assert.Equal("api/Token/[key]/[controller]", attributeRouteModel.Template);
 
             var action = Assert.Single(controller.Actions);
             Assert.Equal("stub/[action]", action.AttributeRouteModel.Template);
@@ -550,11 +584,13 @@ namespace Microsoft.AspNet.Mvc.Test
             var expectedMessage =
                 "The following errors occurred with attribute routing information:" + Environment.NewLine +
                 Environment.NewLine +
+                "Error 1:" + Environment.NewLine +
                 "For action: 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
                 "MultipleErrorsController.Unknown'" + Environment.NewLine +
                 "Error: While processing template 'stub/[action]/[unknown]', a replacement value for the token 'unknown' " +
                 "could not be found. Available tokens: 'controller, action'." + Environment.NewLine +
                 Environment.NewLine +
+                "Error 2:" + Environment.NewLine +
                 "For action: 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
                 "MultipleErrorsController.Invalid'" + Environment.NewLine +
                 "Error: The route template '[invalid/syntax' has invalid syntax. A replacement token is not closed.";
@@ -564,6 +600,211 @@ namespace Microsoft.AspNet.Mvc.Test
 
             // Assert
             Assert.Equal(expectedMessage, ex.Message);
+        }
+
+        [Fact]
+        public void AttributeRouting_CreatesOneActionDescriptor_PerControllerAndActionRouteCombination()
+        {
+            // Arrange
+            var provider = GetProvider(typeof(MultiRouteAttributesController).GetTypeInfo());
+
+            // Act
+            var descriptors = provider.GetDescriptors();
+
+            // Assert
+            var actions = descriptors.Where(d => d.Name == "MultipleHttpGet");
+            Assert.Equal(4, actions.Count());
+
+            foreach (var action in actions)
+            {
+                Assert.Equal("MultipleHttpGet", action.Name);
+                Assert.Equal("MultiRouteAttributes", action.ControllerName);
+            }
+
+            Assert.Single(actions, a => a.AttributeRouteInfo.Template.Equals("v1/List"));
+            Assert.Single(actions, a => a.AttributeRouteInfo.Template.Equals("v1/All"));
+            Assert.Single(actions, a => a.AttributeRouteInfo.Template.Equals("v2/List"));
+            Assert.Single(actions, a => a.AttributeRouteInfo.Template.Equals("v2/All"));
+        }
+
+        [Fact]
+        public void AttributeRouting_AcceptVerbsOnAction_CreatesActionPerControllerAttributeRouteCombination()
+        {
+            // Arrange
+            var provider = GetProvider(typeof(MultiRouteAttributesController).GetTypeInfo());
+
+            // Act
+            var descriptors = provider.GetDescriptors();
+
+            // Assert
+            var actions = descriptors.Where(d => d.Name == "AcceptVerbs");
+            Assert.Equal(2, actions.Count());
+
+            foreach (var action in actions)
+            {
+                Assert.Equal("MultiRouteAttributes", action.ControllerName);
+
+                Assert.NotNull(action.MethodConstraints);
+                var methodConstraint = Assert.Single(action.MethodConstraints);
+
+                Assert.NotNull(methodConstraint.HttpMethods);
+                Assert.Equal(new[] { "POST" }, methodConstraint.HttpMethods);
+            }
+
+            Assert.Single(actions, a => a.AttributeRouteInfo.Template.Equals("v1/List"));
+            Assert.Single(actions, a => a.AttributeRouteInfo.Template.Equals("v2/List"));
+        }
+
+        [Fact]
+        public void AttributeRouting_AcceptVerbsOnActionWithOverrideTemplate_CreatesSingleAttributeRoutedAction()
+        {
+            // Arrange
+            var provider = GetProvider(typeof(MultiRouteAttributesController).GetTypeInfo());
+
+            // Act
+            var descriptors = provider.GetDescriptors();
+
+            // Assert
+            var action = Assert.Single(descriptors, d => d.Name == "AcceptVerbsOverride");
+
+            Assert.Equal("MultiRouteAttributes", action.ControllerName);
+
+            Assert.NotNull(action.MethodConstraints);
+            var methodConstraint = Assert.Single(action.MethodConstraints);
+
+            Assert.NotNull(methodConstraint.HttpMethods);
+            Assert.Equal(new[] { "PUT" }, methodConstraint.HttpMethods);
+
+            Assert.NotNull(action.AttributeRouteInfo);
+            Assert.Equal("Override", action.AttributeRouteInfo.Template);
+        }
+
+        [Fact]
+        public void AttributeRouting_AcceptVerbsOnAction_DoesNotApplyHttpMethods_ToOtherAttributeRoutes()
+        {
+            // Arrange
+            var provider = GetProvider(typeof(MultiRouteAttributesController).GetTypeInfo());
+
+            // Act
+            var descriptors = provider.GetDescriptors();
+
+            // Assert
+            var actions = descriptors.Where(d => d.Name == "AcceptVerbsRouteAttributeAndHttpPut");
+            Assert.Equal(6, actions.Count());
+
+            foreach (var action in actions)
+            {
+                Assert.Equal("MultiRouteAttributes", action.ControllerName);
+
+                Assert.NotNull(action.AttributeRouteInfo);
+                Assert.NotNull(action.AttributeRouteInfo.Template);
+            }
+
+            var constrainedActions = actions.Where(a => a.MethodConstraints != null);
+            Assert.Equal(4, constrainedActions.Count());
+
+            // Actions generated by AcceptVerbs
+            var postActions = constrainedActions.Where(a => a.MethodConstraints.Single().HttpMethods.Single() == "POST");
+            Assert.Equal(2, postActions.Count());
+            Assert.Single(postActions, a => a.AttributeRouteInfo.Template.Equals("v1"));
+            Assert.Single(postActions, a => a.AttributeRouteInfo.Template.Equals("v2"));
+
+            // Actions generated by PutAttribute
+            var putActions = constrainedActions.Where(a => a.MethodConstraints.Single().HttpMethods.Single() == "PUT");
+            Assert.Equal(2, putActions.Count());
+            Assert.Single(putActions, a => a.AttributeRouteInfo.Template.Equals("v1/All"));
+            Assert.Single(putActions, a => a.AttributeRouteInfo.Template.Equals("v2/All"));
+
+            // Actions generated by RouteAttribute
+            var unconstrainedActions = actions.Where(a => a.MethodConstraints == null);
+            Assert.Equal(2, unconstrainedActions.Count());
+            Assert.Single(unconstrainedActions, a => a.AttributeRouteInfo.Template.Equals("v1/List"));
+            Assert.Single(unconstrainedActions, a => a.AttributeRouteInfo.Template.Equals("v2/List"));
+        }
+
+        [Fact]
+        public void AttributeRouting_AllowsDuplicateAttributeRoutedActions_WithTheSameTemplateAndSameHttpMethodsOnDifferentActions()
+        {
+            // Arrange
+            var provider = GetProvider(typeof(NonDuplicatedAttributeRouteController).GetTypeInfo());
+            var firstActionName = nameof(NonDuplicatedAttributeRouteController.ControllerAndAction);
+            var secondActionName = nameof(NonDuplicatedAttributeRouteController.OverrideOnAction);
+
+            // Act
+            var actions = provider.GetDescriptors();
+
+            // Assert
+            var controllerAndAction = Assert.Single(actions, a => a.Name.Equals(firstActionName));
+            Assert.NotNull(controllerAndAction.AttributeRouteInfo);
+
+            var controllerActionAndOverride = Assert.Single(actions, a => a.Name.Equals(secondActionName));
+            Assert.NotNull(controllerActionAndOverride.AttributeRouteInfo);
+
+            Assert.Equal(
+                controllerAndAction.AttributeRouteInfo.Template,
+                controllerActionAndOverride.AttributeRouteInfo.Template,
+                StringComparer.OrdinalIgnoreCase);
+        }
+
+        [Fact]
+        public void AttributeRouting_AllowsDuplicateAttributeRoutedActions_WithTheSameTemplateAndDifferentHttpMethodsOnTheSameAction()
+        {
+            // Arrange
+            var provider = GetProvider(typeof(NonDuplicatedAttributeRouteController).GetTypeInfo());
+            var actionName = nameof(NonDuplicatedAttributeRouteController.DifferentHttpMethods);
+
+            // Act
+            var descriptors = provider.GetDescriptors();
+
+            // Assert
+            var actions = descriptors.Where(d => d.Name.Equals(actionName));
+            Assert.Equal(5, actions.Count());
+
+            foreach (var method in new[] { "GET", "POST", "PUT", "PATCH", "DELETE" })
+            {
+                var action = Assert.Single(
+                    actions,
+                    a => a.MethodConstraints.SelectMany(c => c.HttpMethods).Contains(method));
+
+                Assert.NotNull(action.AttributeRouteInfo);
+                Assert.Equal("Products/list", action.AttributeRouteInfo.Template);
+            }
+        }
+
+        [Fact]
+        public void AttributeRouting_ThrowsIfAttributeRoutedAndNonAttributedActions_OnTheSameMethod()
+        {
+            // Arrange
+            var expectedMessage =
+                "The following errors occurred with attribute routing information:" + Environment.NewLine +
+                Environment.NewLine +
+                "Error 1:" + Environment.NewLine +
+                "A method 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "AttributeAndNonAttributeRoutedActionsOnSameMethodController.Method'" +
+                " must not define attribute routed actions and non attribute routed actions at the same time:" + Environment.NewLine +
+                "Action: 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "AttributeAndNonAttributeRoutedActionsOnSameMethodController.Method' - Template: 'AttributeRouted'" + Environment.NewLine +
+                "Action: 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "AttributeAndNonAttributeRoutedActionsOnSameMethodController.Method' - Template: '(none)'" + Environment.NewLine +
+                "Action: 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "AttributeAndNonAttributeRoutedActionsOnSameMethodController.Method' - Template: '(none)'" + Environment.NewLine +
+                "A method 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "AttributeAndNonAttributeRoutedActionsOnSameMethodController.Method' that defines attribute routed actions must not" +
+                " have attributes that implement 'Microsoft.AspNet.Mvc.IActionHttpMethodProvider' and do not implement" +
+                " 'Microsoft.AspNet.Mvc.Routing.IRouteTemplateProvider':" + Environment.NewLine +
+                "Action 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "AttributeAndNonAttributeRoutedActionsOnSameMethodController.Method' with route template 'AttributeRouted' has " +
+                "'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+CustomHttpMethodConstraintAttribute'" +
+                " invalid 'Microsoft.AspNet.Mvc.IActionHttpMethodProvider' attributes.";
+
+            var provider = GetProvider(
+                typeof(AttributeAndNonAttributeRoutedActionsOnSameMethodController).GetTypeInfo());
+
+            // Act
+            var exception = Assert.Throws<InvalidOperationException>(() => provider.GetDescriptors());
+
+            // Assert
+            Assert.Equal(expectedMessage, exception.Message);
         }
 
         [Fact]
@@ -843,9 +1084,10 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Route("Products")]
+        [Route("Items")]
         private class AttributeRoutedHttpMethodController
         {
-            [AcceptVerbs("PUT", "PATCH")]
+            [CustomHttpMethodConstraint("PUT", "PATCH")]
             public void PutOrPatch() { }
         }
 
@@ -1013,11 +1255,73 @@ namespace Microsoft.AspNet.Mvc.Test
             public void Delete(int id) { }
         }
 
+        [Route("v1")]
+        [Route("v2")]
+        public class MultiRouteAttributesController
+        {
+            [HttpGet("List")]
+            [HttpGet("All")]
+            public void MultipleHttpGet() { }
+
+            [AcceptVerbs("POST", Route = "List")]
+            public void AcceptVerbs() { }
+
+            [AcceptVerbs("PUT", Route = "/Override")]
+            public void AcceptVerbsOverride() { }
+
+            [AcceptVerbs("POST")]
+            [Route("List")]
+            [HttpPut("All")]
+            public void AcceptVerbsRouteAttributeAndHttpPut() { }
+        }
+
         [Route("Products")]
         public class OnlyRouteController
         {
             [Route("Index")]
             public void Action() { }
+        }
+
+        public class AttributeAndNonAttributeRoutedActionsOnSameMethodController
+        {
+            [HttpGet("AttributeRouted")]
+            [HttpPost]
+            [AcceptVerbs("PUT", "PATCH")]
+            [CustomHttpMethodConstraint("DELETE")]
+            public void Method() { }
+        }
+
+        [Route("Product")]
+        [Route("/Product")]
+        [Route("/product")]
+        public class DuplicatedAttributeRouteController : Controller
+        {
+            [HttpGet("/List")]
+            [HttpGet("/List")]
+            public void Action() { }
+
+            public void Controller() { }
+
+            [HttpPut("list")]
+            [PutOrPatch("list")]
+            public void CommonHttpMethod() { }
+        }
+
+        [Route("Products")]
+        public class NonDuplicatedAttributeRouteController : Controller
+        {
+            [HttpGet("list")]
+            public void ControllerAndAction() { }
+
+            [HttpGet("/PRODUCTS/LIST")]
+            public void OverrideOnAction() { }
+
+            [HttpGet("list")]
+            [HttpPost("list")]
+            [HttpPut("list")]
+            [HttpPatch("list")]
+            [HttpDelete("list")]
+            public void DifferentHttpMethods() { }
         }
 
         [MyRouteConstraint(blockNonAttributedActions: true)]
@@ -1064,6 +1368,34 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             [NonAction]
             public void Action() { }
+        }
+
+        private class CustomHttpMethodConstraintAttribute : Attribute, IActionHttpMethodProvider
+        {
+            private readonly string[] _methods;
+
+            public CustomHttpMethodConstraintAttribute(params string[] methods)
+            {
+                _methods = methods;
+            }
+
+            public IEnumerable<string> HttpMethods
+            {
+                get
+                {
+                    return _methods;
+                }
+            }
+        }
+
+        private class PutOrPatchAttribute : HttpMethodAttribute
+        {
+            private static readonly string[] _httpMethods = new string[] { "PUT", "PATCH" };
+
+            public PutOrPatchAttribute(string template)
+                : base(_httpMethods, template)
+            {
+            }
         }
 
         private class TestActionParameter

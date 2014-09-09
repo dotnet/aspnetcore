@@ -375,4 +375,22 @@
     <value>Error {0}:{1}{2}</value>
     <comment>{0} is the error number, {1} is Environment.NewLine {2} is the  error message</comment>
   </data>
+  <data name="AttributeRoute_InvalidHttpConstraints" xml:space="preserve">
+    <value>A method '{0}' that defines attribute routed actions must not have attributes that implement '{1}' and do not implement '{2}':{3}{4}</value>
+    <comment>{0} is the MethodInfo.FullName, {1} is typeof(IActionHttpMethodProvider).FullName, {2} is typeof(IRouteTemplateProvider).FullName, {3} is Environment.NewLine, {4} is the list of actions and their respective invalid IActionHttpMethodProvider attributes formatted using AttributeRoute_InvalidHttpMethodConstraints_Item</comment>
+  </data>
+  <data name="AttributeRoute_InvalidHttpConstraints_Item" xml:space="preserve">
+    <value>Action '{0}' with route template '{1}' has '{2}' invalid '{3}' attributes.</value>
+    <comment>{0} The display name of the action, {1} the route template, {2} the formatted list of invalid attributes using string.Join(", ", attributes), {3} is typeof(IActionHttpMethodProvider).FullName.</comment>
+  </data>
+  <data name="AttributeRoute_MixedAttributeAndConventionallyRoutedActions_ForMethod" xml:space="preserve">
+    <value>A method '{0}' must not define attribute routed actions and non attribute routed actions at the same time:{1}{2}</value>
+    <comment>{0} is the MethodInfo.FullName, {1} is Environment.NewLine, {2} is the formatted list of actions defined by that method info.</comment>
+  </data>
+  <data name="AttributeRoute_MixedAttributeAndConventionallyRoutedActions_ForMethod_Item" xml:space="preserve">
+    <value>Action: '{0}' - Template: '{1}'</value>
+  </data>
+  <data name="AttributeRoute_NullTemplateRepresentation" xml:space="preserve">
+    <value>(none)</value>
+  </data>
 </root>

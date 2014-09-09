@@ -38,20 +38,6 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder.Test
             Assert.IsType<MyFilterAttribute>(model.Filters[0]);
         }
 
-        [Fact]
-        public void ReflectedActionModel_PopulatesAttributeRouteInfo()
-        {
-            // Arrange
-            var actionMethod = typeof(BlogController).GetMethod("Edit");
-
-            // Act
-            var model = new ReflectedActionModel(actionMethod);
-
-            // Assert
-            Assert.NotNull(model.AttributeRouteModel);
-            Assert.Equal("Edit", model.AttributeRouteModel.Template);
-        }
-
         private class BlogController
         {
             [MyOther]

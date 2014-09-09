@@ -1354,6 +1354,86 @@ namespace Microsoft.AspNet.Mvc.Core
             return string.Format(CultureInfo.CurrentCulture, GetString("AttributeRoute_AggregateErrorMessage_ErrorNumber"), p0, p1, p2);
         }
 
+        /// <summary>
+        /// A method '{0}' that defines attribute routed actions must not have attributes that implement '{1}' and do not implement '{2}':{3}{4}
+        /// </summary>
+        internal static string AttributeRoute_InvalidHttpConstraints
+        {
+            get { return GetString("AttributeRoute_InvalidHttpConstraints"); }
+        }
+
+        /// <summary>
+        /// A method '{0}' that defines attribute routed actions must not have attributes that implement '{1}' and do not implement '{2}':{3}{4}
+        /// </summary>
+        internal static string FormatAttributeRoute_InvalidHttpConstraints(object p0, object p1, object p2, object p3, object p4)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("AttributeRoute_InvalidHttpConstraints"), p0, p1, p2, p3, p4);
+        }
+
+        /// <summary>
+        /// Action '{0}' with route template '{1}' has '{2}' invalid '{3}' attributes.
+        /// </summary>
+        internal static string AttributeRoute_InvalidHttpConstraints_Item
+        {
+            get { return GetString("AttributeRoute_InvalidHttpConstraints_Item"); }
+        }
+
+        /// <summary>
+        /// Action '{0}' with route template '{1}' has '{2}' invalid '{3}' attributes.
+        /// </summary>
+        internal static string FormatAttributeRoute_InvalidHttpConstraints_Item(object p0, object p1, object p2, object p3)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("AttributeRoute_InvalidHttpConstraints_Item"), p0, p1, p2, p3);
+        }
+
+        /// <summary>
+        /// A method '{0}' must not define attribute routed actions and non attribute routed actions at the same time:{1}{2}
+        /// </summary>
+        internal static string AttributeRoute_MixedAttributeAndConventionallyRoutedActions_ForMethod
+        {
+            get { return GetString("AttributeRoute_MixedAttributeAndConventionallyRoutedActions_ForMethod"); }
+        }
+
+        /// <summary>
+        /// A method '{0}' must not define attribute routed actions and non attribute routed actions at the same time:{1}{2}
+        /// </summary>
+        internal static string FormatAttributeRoute_MixedAttributeAndConventionallyRoutedActions_ForMethod(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("AttributeRoute_MixedAttributeAndConventionallyRoutedActions_ForMethod"), p0, p1, p2);
+        }
+
+        /// <summary>
+        /// Action: '{0}' - Template: '{1}'
+        /// </summary>
+        internal static string AttributeRoute_MixedAttributeAndConventionallyRoutedActions_ForMethod_Item
+        {
+            get { return GetString("AttributeRoute_MixedAttributeAndConventionallyRoutedActions_ForMethod_Item"); }
+        }
+
+        /// <summary>
+        /// Action: '{0}' - Template: '{1}'
+        /// </summary>
+        internal static string FormatAttributeRoute_MixedAttributeAndConventionallyRoutedActions_ForMethod_Item(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("AttributeRoute_MixedAttributeAndConventionallyRoutedActions_ForMethod_Item"), p0, p1);
+        }
+
+        /// <summary>
+        /// (none)
+        /// </summary>
+        internal static string AttributeRoute_NullTemplateRepresentation
+        {
+            get { return GetString("AttributeRoute_NullTemplateRepresentation"); }
+        }
+
+        /// <summary>
+        /// (none)
+        /// </summary>
+        internal static string FormatAttributeRoute_NullTemplateRepresentation()
+        {
+            return GetString("AttributeRoute_NullTemplateRepresentation");
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

@@ -19,13 +19,6 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
             Attributes = actionMethod.GetCustomAttributes(inherit: true).OfType<object>().ToList();
 
             Filters = Attributes.OfType<IFilter>().ToList();
-
-            var routeTemplateAttribute = Attributes.OfType<IRouteTemplateProvider>().FirstOrDefault();
-            if (routeTemplateAttribute != null)
-            {
-                AttributeRouteModel = new ReflectedAttributeRouteModel(routeTemplateAttribute);
-            }
-
             HttpMethods = new List<string>();
             Parameters = new List<ReflectedParameterModel>();
         }

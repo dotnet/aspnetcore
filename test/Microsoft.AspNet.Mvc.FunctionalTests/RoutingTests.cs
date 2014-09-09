@@ -162,6 +162,163 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 result.RouteValues);
         }
 
+        [Theory]
+        [InlineData("http://localhost/api/v1/Maps")]
+        [InlineData("http://localhost/api/v2/Maps")]
+        public async Task AttributeRoutedAction_MultipleRouteAttributes_WorksWithNameAndOrder(string url)
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync(url);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Equal("Maps", result.Controller);
+            Assert.Equal("Get", result.Action);
+
+            Assert.Equal(new string[]
+            {
+                    "/api/v2/Maps",
+                    "/api/v1/Maps",
+                    "/api/v2/Maps"
+            },
+            result.ExpectedUrls);
+        }
+
+        [Fact]
+        public async Task AttributeRoutedAction_MultipleRouteAttributes_WorksWithOverrideRoutes()
+        {
+            // Arrange
+            var url = "http://localhost/api/v2/Maps";
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Post, url));
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Equal("Maps", result.Controller);
+            Assert.Equal("Post", result.Action);
+
+            Assert.Equal(new string[]
+            {
+                    "/api/v2/Maps",
+                    "/api/v2/Maps"
+            },
+            result.ExpectedUrls);
+        }
+
+        [Fact]
+        public async Task AttributeRoutedAction_MultipleRouteAttributes_RouteAttributeTemplatesIgnoredForOverrideActions()
+        {
+            // Arrange
+            var url = "http://localhost/api/v1/Maps";
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.SendAsync(new HttpRequestMessage(new HttpMethod("POST"), url));
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Theory]
+        [InlineData("http://localhost/api/v1/Maps/5", "PUT")]
+        [InlineData("http://localhost/api/v2/Maps/5", "PUT")]
+        [InlineData("http://localhost/api/v1/Maps/PartialUpdate/5", "PATCH")]
+        [InlineData("http://localhost/api/v2/Maps/PartialUpdate/5", "PATCH")]
+        public async Task AttributeRoutedAction_MultipleRouteAttributes_CombinesWithMultipleHttpAttributes(
+            string url,
+            string method)
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.SendAsync(new HttpRequestMessage(new HttpMethod(method), url));
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Equal("Maps", result.Controller);
+            Assert.Equal("Update", result.Action);
+
+            Assert.Equal(new string[]
+            {
+                    "/api/v2/Maps/PartialUpdate/5",
+                    "/api/v2/Maps/PartialUpdate/5"
+            },
+            result.ExpectedUrls);
+        }
+
+        [Theory]
+        [InlineData("http://localhost/Banks/Get/5")]
+        [InlineData("http://localhost/Bank/Get/5")]
+        public async Task AttributeRoutedAction_MultipleHttpAttributesAndTokenReplacement(string url)
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+            var expectedUrl = new Uri(url).AbsolutePath;
+
+            // Act
+            var response = await client.GetAsync(url);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Equal("Banks", result.Controller);
+            Assert.Equal("Get", result.Action);
+
+            Assert.Equal(new string[]
+            {
+                    "/Bank/Get/5",
+                    "/Bank/Get/5"
+            },
+            result.ExpectedUrls);
+        }
+
+        [Theory]
+        [InlineData("http://localhost/api/v1/Maps/5", "PATCH")]
+        [InlineData("http://localhost/api/v2/Maps/5", "PATCH")]
+        [InlineData("http://localhost/api/v1/Maps/PartialUpdate/5", "PUT")]
+        [InlineData("http://localhost/api/v2/Maps/PartialUpdate/5", "PUT")]
+        public async Task AttributeRoutedAction_MultipleRouteAttributes_WithMultipleHttpAttributes_RespectsConstraints(
+            string url,
+            string method)
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+            var expectedUrl = new Uri(url).AbsolutePath;
+
+            // Act
+            var response = await client.SendAsync(new HttpRequestMessage(new HttpMethod(method), url));
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
         // The url would be /Store/ListProducts with conventional routes
         [Fact]
         public async Task AttributeRoutedAction_IsNotReachableWithTraditionalRoute()
@@ -357,6 +514,57 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Contains("/api/Employee", result.ExpectedUrls);
             Assert.Equal("Employee", result.Controller);
             Assert.Equal("UpdateEmployee", result.Action);
+        }
+
+        [Theory]
+        [InlineData("PUT")]
+        [InlineData("PATCH")]
+        public async Task AttributeRoutedAction_ControllerLevelRoute_WithAcceptVerbsAndRouteTemplate_IsReachable(string verb)
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var message = new HttpRequestMessage(new HttpMethod(verb), "http://localhost/api/Employee/Manager");
+            var response = await client.SendAsync(message);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Contains("/api/Employee/Manager", result.ExpectedUrls);
+            Assert.Equal("Employee", result.Controller);
+            Assert.Equal("UpdateManager", result.Action);
+        }
+
+        [Theory]
+        [InlineData("PUT", "Bank")]
+        [InlineData("PATCH", "Bank")]
+        [InlineData("PUT", "Bank/Update")]
+        [InlineData("PATCH", "Bank/Update")]
+        public async Task AttributeRoutedAction_AcceptVerbsAndRouteTemplate_IsReachable(string verb, string path)
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+            var expectedUrl = "/Bank";
+
+            // Act
+            var message = new HttpRequestMessage(new HttpMethod(verb), "http://localhost/" + path);
+            var response = await client.SendAsync(message);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Equal(new string[] { expectedUrl, expectedUrl }, result.ExpectedUrls);
+            Assert.Equal("Banks", result.Controller);
+            Assert.Equal("UpdateBank", result.Action);
         }
 
         [Fact]

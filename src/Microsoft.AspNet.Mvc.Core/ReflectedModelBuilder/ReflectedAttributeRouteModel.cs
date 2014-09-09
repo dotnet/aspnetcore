@@ -30,6 +30,15 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
 
         public string Name { get; set; }
 
+        public bool IsAbsoluteTemplate
+        {
+            get
+            {
+                return Template != null &&
+                    IsOverridePattern(Template);
+            }
+        }
+
         /// <summary>
         /// Combines two <see cref="ReflectedAttributeRouteModel"/> instances and returns
         /// a new <see cref="ReflectedAttributeRouteModel"/> instance with the result.
