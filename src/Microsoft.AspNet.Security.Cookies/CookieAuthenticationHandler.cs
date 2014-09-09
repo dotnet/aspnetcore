@@ -138,7 +138,7 @@ namespace Microsoft.AspNet.Security.Cookies
 
                 if (shouldSignin)
                 {
-                    var context = new CookieResponseSignInContext(
+                    var signInContext = new CookieResponseSignInContext(
                         Context,
                         Options,
                         Options.AuthenticationType,
@@ -162,15 +162,15 @@ namespace Microsoft.AspNet.Security.Cookies
                         signin.Properties.ExpiresUtc = issuedUtc.Add(Options.ExpireTimeSpan);
                     }
 
-                    Options.Notifications.ResponseSignIn(context);
+                    Options.Notifications.ResponseSignIn(signInContext);
 
-                    if (context.Properties.IsPersistent)
+                    if (signInContext.Properties.IsPersistent)
                     {
-                        DateTimeOffset expiresUtc = context.Properties.ExpiresUtc ?? issuedUtc.Add(Options.ExpireTimeSpan);
-                        context.CookieOptions.Expires = expiresUtc.ToUniversalTime().DateTime;
+                        DateTimeOffset expiresUtc = signInContext.Properties.ExpiresUtc ?? issuedUtc.Add(Options.ExpireTimeSpan);
+                        signInContext.CookieOptions.Expires = expiresUtc.ToUniversalTime().DateTime;
                     }
 
-                    model = new AuthenticationTicket(context.Identity, context.Properties);
+                    model = new AuthenticationTicket(signInContext.Identity, signInContext.Properties);
                     if (Options.SessionStore != null)
                     {
                         if (_sessionKey != null)
@@ -190,6 +190,15 @@ namespace Microsoft.AspNet.Security.Cookies
                         Options.CookieName,
                         cookieValue,
                         cookieOptions);
+
+                    var signedInContext = new CookieResponseSignedInContext(
+                        Context,
+                        Options,
+                        Options.AuthenticationType,
+                        signInContext.Identity,
+                        signInContext.Properties);
+
+                    Options.Notifications.ResponseSignedIn(signedInContext);
                 }
                 else if (shouldSignout)
                 {

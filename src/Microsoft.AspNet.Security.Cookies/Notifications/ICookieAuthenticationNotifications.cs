@@ -27,6 +27,12 @@ namespace Microsoft.AspNet.Security.Cookies
         void ResponseSignIn(CookieResponseSignInContext context);
 
         /// <summary>
+        /// Called when an endpoint has provided sign in information after it is converted into a cookie.
+        /// </summary>
+        /// <param name="context">Contains information about the login session as well as the user <see cref="System.Security.Claims.ClaimsIdentity"/>.</param>
+        void ResponseSignedIn(CookieResponseSignedInContext context);
+
+        /// <summary>
         /// Called when a Challenge, SignIn, or SignOut causes a redirect in the cookie middleware
         /// </summary>
         /// <param name="context">Contains information about the event</param>

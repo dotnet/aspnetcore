@@ -21,6 +21,7 @@ namespace Microsoft.AspNet.Security.Cookies
         {
             OnValidateIdentity = context => Task.FromResult(0);
             OnResponseSignIn = context => { };
+            OnResponseSignedIn = context => { };
             OnResponseSignOut = context => { };
             OnApplyRedirect = DefaultBehavior.ApplyRedirect;
         }
@@ -34,6 +35,11 @@ namespace Microsoft.AspNet.Security.Cookies
         /// A delegate assigned to this property will be invoked when the related method is called
         /// </summary>
         public Action<CookieResponseSignInContext> OnResponseSignIn { get; set; }
+
+        /// <summary>
+        /// A delegate assigned to this property will be invoked when the related method is called
+        /// </summary>
+        public Action<CookieResponseSignedInContext> OnResponseSignedIn { get; set; }
 
         /// <summary>
         /// A delegate assigned to this property will be invoked when the related method is called
@@ -62,6 +68,15 @@ namespace Microsoft.AspNet.Security.Cookies
         public virtual void ResponseSignIn(CookieResponseSignInContext context)
         {
             OnResponseSignIn.Invoke(context);
+        }
+
+        /// <summary>
+        /// Implements the interface method by invoking the related delegate method
+        /// </summary>
+        /// <param name="context"></param>
+        public virtual void ResponseSignedIn(CookieResponseSignedInContext context)
+        {
+            OnResponseSignedIn.Invoke(context);
         }
 
         /// <summary>
