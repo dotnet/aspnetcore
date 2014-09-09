@@ -843,6 +843,9 @@ namespace Microsoft.AspNet.Razor.Parser
                     PutCurrentBack(); // Put back whatever was after the solidus
                     PutBack(solidus); // Put back '/'
                     PutBack(openAngle); // Put back '<'
+
+                    // We just looked ahead, this NextToken will set CurrentSymbol to an open angle bracket.
+                    NextToken();
                 }
 
                 if (seenEndScript)
@@ -865,7 +868,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 }
                 else
                 {
-                    AcceptAndMoveNext(); // '<' (not the closing script tags open angle)
+                    AcceptAndMoveNext(); // Accept '<' (not the closing script tag's open angle)
                 }
             }
         }
