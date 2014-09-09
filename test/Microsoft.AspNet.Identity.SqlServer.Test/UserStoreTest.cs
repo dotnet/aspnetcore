@@ -37,6 +37,21 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
             CreateContext(true);
         }
 
+        [TestPriority(10000)]
+        [Fact]
+        public void DropDatabase()
+        {
+            var services = new ServiceCollection();
+            services.AddEntityFramework().AddSqlServer();
+            services.Add(OptionsServices.GetDefaultServices());
+            services.SetupOptions<DbContextOptions>(options =>
+                options.UseSqlServer(ConnectionString));
+            var serviceProvider = services.BuildServiceProvider();
+            var db = new ApplicationDbContext(serviceProvider,
+                serviceProvider.GetService<IOptionsAccessor<DbContextOptions>>());
+            db.Database.EnsureDeleted();
+        }
+
         [Fact]
         public async Task EnsureStartupUsageWorks()
         {
