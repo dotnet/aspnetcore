@@ -9,7 +9,7 @@ namespace MusicStore.Mocks.Facebook
     /// <summary>
     /// Summary description for FacebookMockBackChannelHttpHandler
     /// </summary>
-    public class FacebookMockBackChannelHttpHandler : WebRequestHandler
+    public class FacebookMockBackChannelHttpHandler : HttpMessageHandler
     {
         protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {

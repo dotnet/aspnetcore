@@ -9,7 +9,7 @@ namespace MusicStore.Mocks.Google
     /// <summary>
     /// Summary description for GoogleMockBackChannelHttpHandler
     /// </summary>
-    public class GoogleMockBackChannelHttpHandler : WebRequestHandler
+    public class GoogleMockBackChannelHttpHandler : HttpMessageHandler
     {
         protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {

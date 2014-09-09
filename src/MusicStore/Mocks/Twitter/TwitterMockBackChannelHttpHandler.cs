@@ -11,7 +11,7 @@ namespace MusicStore.Mocks.Twitter
     /// <summary>
     /// Summary description for TwitterMockBackChannelHttpHandler
     /// </summary>
-    public class TwitterMockBackChannelHttpHandler : WebRequestHandler
+    public class TwitterMockBackChannelHttpHandler : HttpMessageHandler
     {
         private static bool RequestTokenEndpointInvoked = false;
 
