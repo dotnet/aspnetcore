@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
     [TestCaseOrderer("Microsoft.AspNet.Identity.Test.PriorityOrderer", "Microsoft.AspNet.Identity.SqlServer.Test")]
     public class UserStoreTest : UserManagerTestBase<IdentityUser, IdentityRole>
     {
-        private const string ConnectionString = @"Server=(localdb)\v11.0;Database=SqlUserStoreTest;Trusted_Connection=True;";
+        private static readonly string ConnectionString = @"Server=(localdb)\v11.0;Database=SqlUserStoreTest;Trusted_Connection=True;";
 
         public class ApplicationUser : IdentityUser { }
 
@@ -30,16 +30,21 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
             public ApplicationDbContext(IServiceProvider services, IOptionsAccessor<DbContextOptions> options) : base(services, options.Options) { }
         }
 
-        [TestPriority(-1)]
+        [TestPriority(-1000)]
         [Fact]
-        public void RecreateDatabase()
+        public void DropDatabaseStart()
         {
-            CreateContext(true);
+            DropDb();
         }
 
         [TestPriority(10000)]
         [Fact]
-        public void DropDatabase()
+        public void DropDatabaseDone()
+        {
+            DropDb();
+        }
+
+        public void DropDb()
         {
             var services = new ServiceCollection();
             services.AddEntityFramework().AddSqlServer();
@@ -126,7 +131,7 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
             }
         }
 
-        public static IdentityDbContext CreateContext(bool delete = false)
+        public IdentityDbContext CreateContext(bool delete = false)
         {
             var services = new ServiceCollection();
             services.AddEntityFramework().AddSqlServer();
@@ -146,12 +151,12 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
             return CreateContext();
         }
 
-        public static void EnsureDatabase()
+        public void EnsureDatabase()
         {
             CreateContext();
         }
 
-        public static ApplicationDbContext CreateAppContext()
+        public ApplicationDbContext CreateAppContext()
         {
             CreateContext();
             var services = new ServiceCollection();

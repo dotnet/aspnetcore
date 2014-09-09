@@ -28,16 +28,21 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
             public ApplicationDbContext(IServiceProvider services, IOptionsAccessor<DbContextOptions> options) : base(services, options.Options) { }
         }
 
-        [TestPriority(-1)]
+        [TestPriority(-1000)]
         [Fact]
-        public void RecreateDatabase()
+        public void DropDatabaseStart()
         {
-            CreateContext(true);
+            DropDb();
         }
 
         [TestPriority(10000)]
         [Fact]
-        public void DropDatabase()
+        public void DropDatabaseDone()
+        {
+            DropDb();
+        }
+
+        public void DropDb()
         {
             var services = new ServiceCollection();
             services.AddEntityFramework().AddSqlServer();
