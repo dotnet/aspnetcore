@@ -6,7 +6,7 @@ namespace StaticFilesSample
 {
     public class Startup
     {
-        public void Configuration(IBuilder app)
+        public void Configuration(IApplicationBuilder app)
         {
             app.UseFileServer(new FileServerOptions()
             {

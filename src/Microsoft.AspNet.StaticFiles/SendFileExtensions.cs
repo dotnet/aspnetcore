@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.StaticFiles
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static IBuilder UseSendFileFallback(this IBuilder builder)
+        public static IApplicationBuilder UseSendFileFallback(this IApplicationBuilder builder)
         {
             if (builder == null)
             {

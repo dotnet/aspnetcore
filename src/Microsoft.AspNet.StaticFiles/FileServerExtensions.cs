@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Builder
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static IBuilder UseFileServer(this IBuilder builder)
+        public static IApplicationBuilder UseFileServer(this IApplicationBuilder builder)
         {
             return UseFileServer(builder, new FileServerOptions());
         }
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="enableDirectoryBrowsing">Should directory browsing be enabled?</param>
         /// <returns></returns>
-        public static IBuilder UseFileServer(this IBuilder builder, bool enableDirectoryBrowsing)
+        public static IApplicationBuilder UseFileServer(this IApplicationBuilder builder, bool enableDirectoryBrowsing)
         {
             return UseFileServer(builder, new FileServerOptions() { EnableDirectoryBrowsing = enableDirectoryBrowsing });
         }
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="requestPath">The relative request path and physical path.</param>
         /// <returns></returns>
-        public static IBuilder UseFileServer(this IBuilder builder, string requestPath)
+        public static IApplicationBuilder UseFileServer(this IApplicationBuilder builder, string requestPath)
         {
             return UseFileServer(builder, new FileServerOptions() { RequestPath = new PathString(requestPath) });
         }
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static IBuilder UseFileServer(this IBuilder builder, FileServerOptions options)
+        public static IApplicationBuilder UseFileServer(this IApplicationBuilder builder, FileServerOptions options)
         {
             if (options == null)
             {

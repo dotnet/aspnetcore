@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Builder
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static IBuilder UseDirectoryBrowser(this IBuilder builder)
+        public static IApplicationBuilder UseDirectoryBrowser(this IApplicationBuilder builder)
         {
             return builder.UseDirectoryBrowser(new DirectoryBrowserOptions());
         }
@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="requestPath">The relative request path and physical path.</param>
         /// <returns></returns>
-        public static IBuilder UseDirectoryBrowser(this IBuilder builder, string requestPath)
+        public static IApplicationBuilder UseDirectoryBrowser(this IApplicationBuilder builder, string requestPath)
         {
             return UseDirectoryBrowser(builder, new DirectoryBrowserOptions() { RequestPath = new PathString(requestPath) });
         }
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static IBuilder UseDirectoryBrowser(this IBuilder builder, DirectoryBrowserOptions options)
+        public static IApplicationBuilder UseDirectoryBrowser(this IApplicationBuilder builder, DirectoryBrowserOptions options)
         {
             if (builder == null)
             {

@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Builder
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static IBuilder UseStaticFiles(this IBuilder builder)
+        public static IApplicationBuilder UseStaticFiles(this IApplicationBuilder builder)
         {
             return UseStaticFiles(builder, new StaticFileOptions());
         }
@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="requestPath">The relative request path and physical path.</param>
         /// <returns></returns>
-        public static IBuilder UseStaticFiles(this IBuilder builder, string requestPath)
+        public static IApplicationBuilder UseStaticFiles(this IApplicationBuilder builder, string requestPath)
         {
             return UseStaticFiles(builder, new StaticFileOptions() { RequestPath = new PathString(requestPath) });
         }
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static IBuilder UseStaticFiles(this IBuilder builder, StaticFileOptions options)
+        public static IApplicationBuilder UseStaticFiles(this IApplicationBuilder builder, StaticFileOptions options)
         {
             if (builder == null)
             {
