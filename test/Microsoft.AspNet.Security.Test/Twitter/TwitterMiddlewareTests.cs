@@ -152,7 +152,7 @@ namespace Microsoft.AspNet.Security.Twitter
         private static async Task<HttpResponseMessage> ReturnJsonResponse(object content)
         {
             var res = new HttpResponseMessage(HttpStatusCode.OK);
-            var text = await JsonConvert.SerializeObjectAsync(content);
+            var text = await Task.Factory.StartNew(() => JsonConvert.SerializeObject(content));
             res.Content = new StringContent(text, Encoding.UTF8, "application/json");
             return res;
         }
