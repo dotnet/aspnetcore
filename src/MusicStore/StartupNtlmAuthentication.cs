@@ -30,7 +30,7 @@ namespace MusicStore
     /// </summary>
     public class StartupNtlmAuthentication
     {
-        public void Configure(IBuilder app)
+        public void Configure(IApplicationBuilder app)
         {
             //Set up NTLM authentication for WebListener like below. 
             //For IIS and IISExpress: Use inetmgr to setup NTLM authentication on the application vDir or modify the applicationHost.config to enable NTLM. 

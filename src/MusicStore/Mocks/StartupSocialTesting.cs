@@ -24,7 +24,7 @@ namespace MusicStore
 {
     public class StartupSocialTesting
     {
-        public void Configure(IBuilder app)
+        public void Configure(IApplicationBuilder app)
         {
             Console.WriteLine("Social Testing mode...");
             //Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources, 

@@ -16,7 +16,7 @@ namespace MusicStore.Spa
 {
     public class Startup
     {
-        public void Configure(IBuilder app)
+        public void Configure(IApplicationBuilder app)
         {
             var configuration = new Configuration()
                 .AddJsonFile("Config.json")
