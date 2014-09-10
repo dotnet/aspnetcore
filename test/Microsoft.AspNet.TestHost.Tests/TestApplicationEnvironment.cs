@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.TestHost
             get { return "Test"; }
         }
         
-        public FrameworkName TargetFramework
+        public FrameworkName RuntimeFramework
         {
             get { return new FrameworkName(".NETFramework", new Version(4, 5)); }
         }
