@@ -18,14 +18,19 @@ namespace AntiForgeryWebSite
             return View();
         }
 
+        [AllowAnonymous]
+        public string UseFacebookLogin()
+        {
+            return "somestring";
+        }
+
         // POST: /Account/Login
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public ActionResult Login(LoginViewModel model, string returnUrl)
+        public string Login(LoginViewModel model)
         {
-            // Send to register which gets another html antiforgery token.
-            return RedirectToAction("Index", "Home");
+            return "OK";
         }
     }
 }

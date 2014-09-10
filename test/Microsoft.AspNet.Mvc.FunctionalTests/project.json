@@ -7,7 +7,7 @@
         "AddServicesWebSite": "",
         "AntiForgeryWebSite": "",
         "BasicWebSite": "",
-        "CompositeViewEngine":  "",
+        "CompositeViewEngine": "",
         "ConnegWebsite": "",
         "FiltersWebSite":  "",
         "FormatterWebSite": "",
@@ -25,7 +25,7 @@
         "MvcSample.Web": "",
         "RoutingWebSite": "",
         "RazorWebSite": "",
-        "ValueProvidersSite":  "",
+        "ValueProvidersSite": "",
         "Xunit.KRunner": "1.0.0-*"
     },
     "commands": {
@@ -37,6 +37,10 @@
                 "AutofacWebSite": ""
             }
         },
-        "aspnetcore50": { }
+        "aspnetcore50": {
+            "dependencies": {
+                "System.Xml.XmlDocument": "4.0.0.0"
+            }
+        }
     }
 }
