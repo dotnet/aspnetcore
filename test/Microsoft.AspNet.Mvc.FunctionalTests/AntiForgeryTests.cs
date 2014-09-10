@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     public class AntiForgeryTests
     {
         private readonly IServiceProvider _services = TestHelper.CreateServices("AntiForgeryWebSite");
-        private readonly Action<IBuilder> _app = new AntiForgeryWebSite.Startup().Configure;
+        private readonly Action<IApplicationBuilder> _app = new AntiForgeryWebSite.Startup().Configure;
 
         [Fact]
         public async Task MultipleAFTokensWithinTheSamePage_AreAllowed()

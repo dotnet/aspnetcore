@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     public class InlineConstraintTests
     {
         private readonly IServiceProvider _provider;
-        private readonly Action<IBuilder> _app = new Startup().Configure;
+        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         public InlineConstraintTests()
         {

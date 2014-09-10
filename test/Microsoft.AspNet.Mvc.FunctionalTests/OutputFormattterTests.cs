@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     public class OutputFormatterTests
     {
         private readonly IServiceProvider _provider = TestHelper.CreateServices("ConnegWebsite");
-        private readonly Action<IBuilder> _app = new Startup().Configure;
+        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Theory]
         [InlineData("ReturnTaskOfString")]

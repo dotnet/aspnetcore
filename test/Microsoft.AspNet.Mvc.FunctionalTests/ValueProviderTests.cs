@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     public class ValueProviderTest
     {
         private readonly IServiceProvider _services = TestHelper.CreateServices("ValueProvidersSite");
-        private readonly Action<IBuilder> _app = new Startup().Configure;
+        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Fact]
         public async Task ValueProviderFactories_AreVisitedInSequentialOrder_ForValueProviders()

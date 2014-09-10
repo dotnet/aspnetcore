@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.Internal
             if (services.GetServiceOrNull(typeof(MvcMarkerService)) == null)
             {
                 throw new InvalidOperationException(Resources.FormatUnableToFindServices(
-                    "IServiceCollection.AddMvc()", "IBuilder.UseServices(...)", "IBuilder.UseMvc(...)"));
+                    "IServiceCollection.AddMvc()", "IApplicationBuilder.UseServices(...)", "IApplicationBuilder.UseMvc(...)"));
             }
         }
     }

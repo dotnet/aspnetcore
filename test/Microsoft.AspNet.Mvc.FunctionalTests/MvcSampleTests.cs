@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         // Path relative to Mvc\\test\Microsoft.AspNet.Mvc.FunctionalTests
         private readonly IServiceProvider _services =
             TestHelper.CreateServices("MvcSample.Web", Path.Combine("..", "..", "samples"));
-        private readonly Action<IBuilder> _app = new MvcSample.Web.Startup().Configure;
+        private readonly Action<IApplicationBuilder> _app = new MvcSample.Web.Startup().Configure;
 
         [Fact]
         public async Task Home_Index_ReturnsSuccess()

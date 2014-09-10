@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     public class XmlOutputFormatterTests
     {
         private readonly IServiceProvider _services;
-        private readonly Action<IBuilder> _app = new FormatterWebSite.Startup().Configure;
+        private readonly Action<IApplicationBuilder> _app = new FormatterWebSite.Startup().Configure;
 
         public XmlOutputFormatterTests()
         {

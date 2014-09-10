@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     public class ModelBindingTests
     {
         private readonly IServiceProvider _services = TestHelper.CreateServices("ModelBindingWebSite");
-        private readonly Action<IBuilder> _app = new ModelBindingWebSite.Startup().Configure;
+        private readonly Action<IApplicationBuilder> _app = new ModelBindingWebSite.Startup().Configure;
 
         [Fact]
         public async Task ModelBindingBindsBase64StringsToByteArrays()

@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Builder
 {
     public static class BuilderExtensions
     {
-        public static Configuration GetTestConfiguration(this IBuilder app)
+        public static Configuration GetTestConfiguration(this IApplicationBuilder app)
         {
             var configurationProvider = app.ApplicationServices.GetServiceOrDefault<ITestConfigurationProvider>();
             var configuration = configurationProvider == null

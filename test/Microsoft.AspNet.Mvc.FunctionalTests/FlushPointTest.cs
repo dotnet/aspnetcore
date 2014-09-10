@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     public class FlushPointTest
     {
         private readonly IServiceProvider _provider = TestHelper.CreateServices("RazorWebSite");
-        private readonly Action<IBuilder> _app = new Startup().Configure;
+        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Fact]
         public async Task FlushPointsAreExecutedForPagesWithLayouts()

@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     public class InputFormatterTests
     {
         private readonly IServiceProvider _services = TestHelper.CreateServices("FormatterWebSite");
-        private readonly Action<IBuilder> _app = new FormatterWebSite.Startup().Configure;
+        private readonly Action<IApplicationBuilder> _app = new FormatterWebSite.Startup().Configure;
 
         [Fact]
         public async Task CheckIfXmlInputFormatterIsBeingCalled()

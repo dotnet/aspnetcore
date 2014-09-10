@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     public class RoutingTests
     {
         private readonly IServiceProvider _services = TestHelper.CreateServices("RoutingWebSite");
-        private readonly Action<IBuilder> _app = new RoutingWebSite.Startup().Configure;
+        private readonly Action<IApplicationBuilder> _app = new RoutingWebSite.Startup().Configure;
 
         [Fact]
         public async Task ConventionRoutedController_ActionIsReachable()

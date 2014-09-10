@@ -19,8 +19,8 @@ namespace Microsoft.AspNet.Mvc
             services.Setup(o => o.GetService(typeof(IEnumerable<MvcMarkerService>)))
                 .Returns(new List<MvcMarkerService>());
             var expectedMessage = "Unable to find the required services. Please add all the required " +
-                "services by calling 'IServiceCollection.AddMvc()' inside the call to 'IBuilder.UseServices(...)' " +
-                "or 'IBuilder.UseMvc(...)' in the application startup code.";
+                "services by calling 'IServiceCollection.AddMvc()' inside the call to 'IApplicationBuilder.UseServices(...)' " +
+                "or 'IApplicationBuilder.UseMvc(...)' in the application startup code.";
 
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(

@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var provider = TestHelper.CreateServices("AutofacWebSite");
-            Action<IBuilder> app = new Startup().Configure;
+            Action<IApplicationBuilder> app = new Startup().Configure;
             HttpResponseMessage response = null;
 
             // Act & Assert

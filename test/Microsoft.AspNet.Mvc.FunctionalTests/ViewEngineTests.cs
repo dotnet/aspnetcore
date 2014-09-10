@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     public class ViewEngineTests
     {
         private readonly IServiceProvider _provider = TestHelper.CreateServices("RazorWebSite");
-        private readonly Action<IBuilder> _app = new Startup().Configure;
+        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         public static IEnumerable<object[]> RazorView_ExecutesPageAndLayoutData
         {

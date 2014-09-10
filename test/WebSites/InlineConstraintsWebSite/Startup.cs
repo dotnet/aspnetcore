@@ -14,7 +14,7 @@ namespace InlineConstraints
     {
         public Action<IRouteBuilder> RouteCollectionProvider { get; set; }
 
-        public void Configure(IBuilder app)
+        public void Configure(IApplicationBuilder app)
         {
             var configuration = app.GetTestConfiguration();
 

@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     public class BasicTests
     {
         private readonly IServiceProvider _provider = TestHelper.CreateServices("BasicWebSite");
-        private readonly Action<IBuilder> _app = new Startup().Configure;
+        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         // Some tests require comparing the actual response body against an expected response baseline
         // so they require a reference to the assembly on which the resources are located, in order to
