@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Builder
         /// </summary>
         /// <param name="app">App builder passed to the application startup code</param>
         /// <returns></returns>
-        public static string GetDefaultSignInAsAuthenticationType([NotNull] this IBuilder app)
+        public static string GetDefaultSignInAsAuthenticationType([NotNull] this IApplicationBuilder app)
         {
             object value;
             if (app.Properties.TryGetValue(Constants.DefaultSignInAsAuthenticationType, out value))
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Builder
         /// </summary>
         /// <param name="app">App builder passed to the application startup code</param>
         /// <param name="authenticationType">AuthenticationType that external middleware should sign in as.</param>
-        public static void SetDefaultSignInAsAuthenticationType([NotNull] this IBuilder app, [NotNull] string authenticationType)
+        public static void SetDefaultSignInAsAuthenticationType([NotNull] this IApplicationBuilder app, [NotNull] string authenticationType)
         {
             app.Properties[Constants.DefaultSignInAsAuthenticationType] = authenticationType;
         }

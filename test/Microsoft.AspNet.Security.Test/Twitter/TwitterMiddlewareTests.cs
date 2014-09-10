@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.Security.Twitter
             location.ShouldContain("https://twitter.com/oauth/authenticate?oauth_token=");
         }
 
-        private static TestServer CreateServer(Action<IBuilder> configure, Func<HttpContext, bool> handler)
+        private static TestServer CreateServer(Action<IApplicationBuilder> configure, Func<HttpContext, bool> handler)
         {
             return TestServer.Create(app =>
             {

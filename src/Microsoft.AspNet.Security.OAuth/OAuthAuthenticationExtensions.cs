@@ -15,10 +15,10 @@ namespace Microsoft.AspNet.Builder
         /// <summary>
         /// Authenticate users using OAuth.
         /// </summary>
-        /// <param name="app">The <see cref="IBuilder"/> passed to the configure method.</param>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> passed to the configure method.</param>
         /// <param name="options">The middleware configuration options.</param>
-        /// <returns>The updated <see cref="IBuilder"/>.</returns>
-        public static IBuilder UseOAuthAuthentication([NotNull] this IBuilder app, [NotNull] OAuthAuthenticationOptions<IOAuthAuthenticationNotifications> options)
+        /// <returns>The updated <see cref="IApplicationBuilder"/>.</returns>
+        public static IApplicationBuilder UseOAuthAuthentication([NotNull] this IApplicationBuilder app, [NotNull] OAuthAuthenticationOptions<IOAuthAuthenticationNotifications> options)
         {
             if (string.IsNullOrEmpty(options.SignInAsAuthenticationType))
             {

@@ -13,11 +13,11 @@ namespace Microsoft.AspNet.Builder
         /// <summary>
         /// Authenticate users using Facebook.
         /// </summary>
-        /// <param name="app">The <see cref="IBuilder"/> passed to the configure method.</param>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> passed to the configure method.</param>
         /// <param name="appId">The appId assigned by Facebook.</param>
         /// <param name="appSecret">The appSecret assigned by Facebook.</param>
-        /// <returns>The updated <see cref="IBuilder"/>.</returns>
-        public static IBuilder UseFacebookAuthentication([NotNull] this IBuilder app, [NotNull] string appId, [NotNull] string appSecret)
+        /// <returns>The updated <see cref="IApplicationBuilder"/>.</returns>
+        public static IApplicationBuilder UseFacebookAuthentication([NotNull] this IApplicationBuilder app, [NotNull] string appId, [NotNull] string appSecret)
         {
             return app.UseFacebookAuthentication(new FacebookAuthenticationOptions()
             {
@@ -29,10 +29,10 @@ namespace Microsoft.AspNet.Builder
         /// <summary>
         /// Authenticate users using Facebook.
         /// </summary>
-        /// <param name="app">The <see cref="IBuilder"/> passed to the configure method.</param>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> passed to the configure method.</param>
         /// <param name="options">The middleware configuration options.</param>
-        /// <returns>The updated <see cref="IBuilder"/>.</returns>
-        public static IBuilder UseFacebookAuthentication([NotNull] this IBuilder app, [NotNull] FacebookAuthenticationOptions options)
+        /// <returns>The updated <see cref="IApplicationBuilder"/>.</returns>
+        public static IApplicationBuilder UseFacebookAuthentication([NotNull] this IApplicationBuilder app, [NotNull] FacebookAuthenticationOptions options)
         {
             if (string.IsNullOrEmpty(options.SignInAsAuthenticationType))
             {

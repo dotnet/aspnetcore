@@ -13,11 +13,11 @@ namespace Microsoft.AspNet.Builder
         /// <summary>
         /// Authenticate users using Microsoft Account.
         /// </summary>
-        /// <param name="app">The <see cref="IBuilder"/> passed to the configure method.</param>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> passed to the configure method.</param>
         /// <param name="clientId">The application client ID assigned by the Microsoft authentication service.</param>
         /// <param name="clientSecret">The application client secret assigned by the Microsoft authentication service.</param>
-        /// <returns>The updated <see cref="IBuilder"/>.</returns>
-        public static IBuilder UseMicrosoftAccountAuthentication([NotNull] this IBuilder app, [NotNull] string clientId, [NotNull] string clientSecret)
+        /// <returns>The updated <see cref="IApplicationBuilder"/>.</returns>
+        public static IApplicationBuilder UseMicrosoftAccountAuthentication([NotNull] this IApplicationBuilder app, [NotNull] string clientId, [NotNull] string clientSecret)
         {
             return app.UseMicrosoftAccountAuthentication(
                 new MicrosoftAccountAuthenticationOptions
@@ -30,10 +30,10 @@ namespace Microsoft.AspNet.Builder
         /// <summary>
         /// Authenticate users using Microsoft Account.
         /// </summary>
-        /// <param name="app">The <see cref="IBuilder"/> passed to the configure method.</param>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> passed to the configure method.</param>
         /// <param name="options">The middleware configuration options.</param>
-        /// <returns>The updated <see cref="IBuilder"/>.</returns>
-        public static IBuilder UseMicrosoftAccountAuthentication([NotNull] this IBuilder app, [NotNull] MicrosoftAccountAuthenticationOptions options)
+        /// <returns>The updated <see cref="IApplicationBuilder"/>.</returns>
+        public static IApplicationBuilder UseMicrosoftAccountAuthentication([NotNull] this IApplicationBuilder app, [NotNull] MicrosoftAccountAuthenticationOptions options)
         {
             if (string.IsNullOrEmpty(options.SignInAsAuthenticationType))
             {

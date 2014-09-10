@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.Security.Cookies
         /// <summary>
         /// The TicketDataFormat is used to protect and unprotect the identity and other properties which are stored in the
         /// cookie value. If it is not provided a default data handler is created using the data protection service contained
-        /// in the IBuilder.Properties. The default data protection service is based on machine key when running on ASP.NET, 
+        /// in the IApplicationBuilder.Properties. The default data protection service is based on machine key when running on ASP.NET, 
         /// and on DPAPI when running in a different process.
         /// </summary>
         public ISecureDataFormat<AuthenticationTicket> TicketDataFormat { get; set; }

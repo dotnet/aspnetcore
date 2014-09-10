@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Security {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The default data protection provider may only be used when the IBuilder.Properties contains an appropriate &apos;host.AppName&apos; key..
+        ///   Looks up a localized string similar to The default data protection provider may only be used when the IApplicationBuilder.Properties contains an appropriate &apos;host.AppName&apos; key..
         /// </summary>
         internal static string Exception_DefaultDpapiRequiresAppNameKey {
             get {
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Security {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A default value for SignInAsAuthenticationType was not found in IBuilder Properties. This can happen if your authentication middleware are added in the wrong order, or if one is missing..
+        ///   Looks up a localized string similar to A default value for SignInAsAuthenticationType was not found in IApplicationBuilder Properties. This can happen if your authentication middleware are added in the wrong order, or if one is missing..
         /// </summary>
         internal static string Exception_MissingDefaultSignInAsAuthenticationType {
             get {

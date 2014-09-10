@@ -69,7 +69,7 @@ namespace Microsoft.AspNet.Security.Facebook
             location.ShouldContain("state=");
         }
 
-        private static TestServer CreateServer(Action<IBuilder> configure, Func<HttpContext, bool> handler)
+        private static TestServer CreateServer(Action<IApplicationBuilder> configure, Func<HttpContext, bool> handler)
         {
             return TestServer.Create(app =>
             {

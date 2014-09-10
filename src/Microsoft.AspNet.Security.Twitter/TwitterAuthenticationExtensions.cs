@@ -13,11 +13,11 @@ namespace Microsoft.AspNet.Builder
         /// <summary>
         /// Authenticate users using Twitter
         /// </summary>
-        /// <param name="app">The <see cref="IBuilder"/> passed to the configure method</param>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> passed to the configure method</param>
         /// <param name="consumerKey">The Twitter-issued consumer key</param>
         /// <param name="consumerSecret">The Twitter-issued consumer secret</param>
-        /// <returns>The updated <see cref="IBuilder"/></returns>
-        public static IBuilder UseTwitterAuthentication([NotNull] this IBuilder app, [NotNull] string consumerKey, [NotNull] string consumerSecret)
+        /// <returns>The updated <see cref="IApplicationBuilder"/></returns>
+        public static IApplicationBuilder UseTwitterAuthentication([NotNull] this IApplicationBuilder app, [NotNull] string consumerKey, [NotNull] string consumerSecret)
         {
             return app.UseTwitterAuthentication(
                 new TwitterAuthenticationOptions
@@ -30,10 +30,10 @@ namespace Microsoft.AspNet.Builder
         /// <summary>
         /// Authenticate users using Twitter
         /// </summary>
-        /// <param name="app">The <see cref="IBuilder"/> passed to the configure method</param>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> passed to the configure method</param>
         /// <param name="options">Middleware configuration options</param>
-        /// <returns>The updated <see cref="IBuilder"/></returns>
-        public static IBuilder UseTwitterAuthentication([NotNull] this IBuilder app, [NotNull] TwitterAuthenticationOptions options)
+        /// <returns>The updated <see cref="IApplicationBuilder"/></returns>
+        public static IApplicationBuilder UseTwitterAuthentication([NotNull] this IApplicationBuilder app, [NotNull] TwitterAuthenticationOptions options)
         {
             if (string.IsNullOrEmpty(options.SignInAsAuthenticationType))
             {
