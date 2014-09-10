@@ -17,6 +17,7 @@ namespace Microsoft.AspNet.Http.Security
         internal const string ExpiresUtcKey = ".expires";
         internal const string IsPersistentKey = ".persistent";
         internal const string RedirectUriKey = ".redirect";
+        internal const string RefreshKey = ".refresh";
         internal const string UtcDateTimeFormat = "r";
 
         /// <summary>
@@ -156,6 +157,40 @@ namespace Microsoft.AspNet.Http.Security
                     if (Dictionary.ContainsKey(ExpiresUtcKey))
                     {
                         Dictionary.Remove(ExpiresUtcKey);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets if refreshing the authentication session should be allowed.
+        /// </summary>
+        public bool? AllowRefresh
+        {
+            get
+            {
+                string value;
+                if (Dictionary.TryGetValue(RefreshKey, out value))
+                {
+                    bool refresh;
+                    if (bool.TryParse(value, out refresh))
+                    {
+                        return refresh;
+                    }
+                }
+                return null;
+            }
+            set
+            {
+                if (value.HasValue)
+                {
+                    Dictionary[RefreshKey] = value.Value.ToString();
+                }
+                else
+                {
+                    if (Dictionary.ContainsKey(RefreshKey))
+                    {
+                        Dictionary.Remove(RefreshKey);
                     }
                 }
             }
