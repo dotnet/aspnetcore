@@ -19,7 +19,6 @@ using System;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
-using Microsoft.AspNet;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Server.WebListener;
@@ -29,7 +28,7 @@ namespace SelfHostServer
 {
     public class Startup
     {
-        public void Configure(IBuilder app)
+        public void Configure(IApplicationBuilder app)
         {
             var info = (ServerInformation)app.Server;
             info.Listener.AuthenticationManager.AuthenticationTypes = AuthenticationTypes.AllowAnonymous;
