@@ -44,9 +44,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             }
         }
 
-        public FrameworkName TargetFramework
+        public FrameworkName RuntimeFramework
         {
-            get { return _originalAppEnvironment.TargetFramework; }
+            get { return _originalAppEnvironment.RuntimeFramework; }
         }
     }
 }
