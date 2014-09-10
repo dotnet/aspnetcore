@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Hosting.Startup
 {
     public interface IStartupLoader
     {
-        Action<IBuilder> LoadStartup(
+        Action<IApplicationBuilder> LoadStartup(
             string applicationName, 
             string environmentName,
             IList<string> diagnosticMessages);

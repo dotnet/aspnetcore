@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Hosting.Fakes
         {
         }
 
-        public void Configure(IBuilder builder)
+        public void Configure(IApplicationBuilder builder)
         {
         }
     }

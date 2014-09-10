@@ -29,13 +29,13 @@ namespace Microsoft.AspNet.Hosting
     {
         private readonly IServerManager _serverManager;
         private readonly IStartupManager _startupManager;
-        private readonly IBuilderFactory _builderFactory;
+        private readonly IApplicationBuilderFactory _builderFactory;
         private readonly IHttpContextFactory _httpContextFactory;
 
         public HostingEngine(
             IServerManager serverManager,
             IStartupManager startupManager,
-            IBuilderFactory builderFactory,
+            IApplicationBuilderFactory builderFactory,
             IHttpContextFactory httpContextFactory)
         {
             _serverManager = serverManager;

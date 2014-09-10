@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Hosting.Startup
 {
     public interface IStartupManager
     {
-        Action<IBuilder> LoadStartup(
+        Action<IApplicationBuilder> LoadStartup(
             string applicationName,
             string environmentName);
     }

@@ -16,12 +16,11 @@
 // permissions and limitations under the License.
 
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Hosting.Builder
 {
-    public interface IBuilderFactory
+    public interface IApplicationBuilderFactory
     {
-        IBuilder CreateBuilder();
+        IApplicationBuilder CreateBuilder();
     }
 }

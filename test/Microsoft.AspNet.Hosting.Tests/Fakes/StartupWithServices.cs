@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Hosting.Fakes
             _fakeStartupCallback = fakeStartupCallback;
         }
 
-        public void Configure(IBuilder builder, IFakeStartupCallback fakeStartupCallback2)
+        public void Configure(IApplicationBuilder builder, IFakeStartupCallback fakeStartupCallback2)
         {
             _fakeStartupCallback.ConfigurationMethodCalled(this);
             fakeStartupCallback2.ConfigurationMethodCalled(this);

@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.TestHost
         private IDisposable _appInstance;
         private bool _disposed = false;
 
-        public TestServer(IConfiguration config, IServiceProvider serviceProvider, Action<IBuilder> appStartup)
+        public TestServer(IConfiguration config, IServiceProvider serviceProvider, Action<IApplicationBuilder> appStartup)
         {
             var env = serviceProvider.GetService<IApplicationEnvironment>();
             if (env == null)
@@ -44,12 +44,12 @@ namespace Microsoft.AspNet.TestHost
             _appInstance = engine.Start(hostContext);
         }
 
-        public static TestServer Create(Action<IBuilder> app)
+        public static TestServer Create(Action<IApplicationBuilder> app)
         {
             return Create(provider: CallContextServiceLocator.Locator.ServiceProvider, app: app);
         }
 
-        public static TestServer Create(IServiceProvider provider, Action<IBuilder> app)
+        public static TestServer Create(IServiceProvider provider, Action<IApplicationBuilder> app)
         {
             var collection = new ServiceCollection();
             var hostingServices = HostingServices.GetDefaultServices();

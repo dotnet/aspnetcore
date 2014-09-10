@@ -28,12 +28,12 @@ namespace Microsoft.AspNet.Builder
 {
     public static class ContainerExtensions
     {
-        public static IBuilder UseMiddleware<T>(this IBuilder builder, params object[] args)
+        public static IApplicationBuilder UseMiddleware<T>(this IApplicationBuilder builder, params object[] args)
         {
             return builder.UseMiddleware(typeof(T), args);
         }
 
-        public static IBuilder UseMiddleware(this IBuilder builder, Type middleware, params object[] args)
+        public static IApplicationBuilder UseMiddleware(this IApplicationBuilder builder, Type middleware, params object[] args)
         {
             // TODO: move this ext method someplace nice
             return builder.Use(next =>
@@ -45,24 +45,24 @@ namespace Microsoft.AspNet.Builder
             });
         }
 
-        public static IBuilder UseServices(this IBuilder builder)
+        public static IApplicationBuilder UseServices(this IApplicationBuilder builder)
         {
             return builder.UseMiddleware(typeof(ContainerMiddleware));
         }
 
-        public static IBuilder UseServices(this IBuilder builder, IServiceProvider applicationServices)
+        public static IApplicationBuilder UseServices(this IApplicationBuilder builder, IServiceProvider applicationServices)
         {
             builder.ApplicationServices = applicationServices;
 
             return builder.UseMiddleware(typeof(ContainerMiddleware));
         }
 
-        public static IBuilder UseServices(this IBuilder builder, IEnumerable<IServiceDescriptor> applicationServices)
+        public static IApplicationBuilder UseServices(this IApplicationBuilder builder, IEnumerable<IServiceDescriptor> applicationServices)
         {
             return builder.UseServices(services => services.Add(applicationServices));
         }
 
-        public static IBuilder UseServices(this IBuilder builder, Action<ServiceCollection> configureServices)
+        public static IApplicationBuilder UseServices(this IApplicationBuilder builder, Action<ServiceCollection> configureServices)
         {
             return builder.UseServices(serviceCollection =>
             {
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Builder
             });
         }
 
-        public static IBuilder UseServices(this IBuilder builder, Func<ServiceCollection, IServiceProvider> configureServices)
+        public static IApplicationBuilder UseServices(this IApplicationBuilder builder, Func<ServiceCollection, IServiceProvider> configureServices)
         {
             var serviceCollection = new ServiceCollection();
 

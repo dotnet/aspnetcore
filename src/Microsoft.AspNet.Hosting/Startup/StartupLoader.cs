@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Hosting.Startup
             _next = next;
         }
 
-        public Action<IBuilder> LoadStartup(
+        public Action<IApplicationBuilder> LoadStartup(
             string applicationName,
             string environmentName,
             IList<string> diagnosticMessages)
@@ -120,7 +120,7 @@ namespace Microsoft.AspNet.Hosting.Startup
                 for (var index = 0; index != parameterInfos.Length; ++index)
                 {
                     var parameterInfo = parameterInfos[index];
-                    if (parameterInfo.ParameterType == typeof(IBuilder))
+                    if (parameterInfo.ParameterType == typeof(IApplicationBuilder))
                     {
                         parameters[index] = builder;
                     }

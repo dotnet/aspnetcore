@@ -28,11 +28,11 @@ namespace Microsoft.AspNet.Hosting
         public IServiceProvider Services { get; set; }
         public IConfiguration Configuration { get; set; }
 
-        public IBuilder Builder { get; set; }
+        public IApplicationBuilder Builder { get; set; }
 
         public string ApplicationName { get; set; }
         public string EnvironmentName { get; set; }
-        public Action<IBuilder> ApplicationStartup { get; set; }
+        public Action<IApplicationBuilder> ApplicationStartup { get; set; }
         public RequestDelegate ApplicationDelegate { get; set; }
 
         public string ServerName { get; set; }

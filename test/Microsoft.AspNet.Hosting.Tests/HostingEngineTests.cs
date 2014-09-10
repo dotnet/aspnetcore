@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Hosting
             Assert.Equal(1, _startInstances[0].DisposeCalls);
         }
 
-        public void Initialize(IBuilder builder)
+        public void Initialize(IApplicationBuilder builder)
         {
 
         }

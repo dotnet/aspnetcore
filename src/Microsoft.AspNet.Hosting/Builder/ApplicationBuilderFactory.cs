@@ -17,22 +17,21 @@
 
 using System;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Hosting.Builder
 {
-    public class BuilderFactory : IBuilderFactory
+    public class ApplicationBuilderFactory : IApplicationBuilderFactory
     {
         private readonly IServiceProvider _serviceProvider;
 
-        public BuilderFactory(IServiceProvider serviceProvider)
+        public ApplicationBuilderFactory(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
         }
 
-        public IBuilder CreateBuilder()
+        public IApplicationBuilder CreateBuilder()
         {
-            return new Microsoft.AspNet.Builder.Builder(_serviceProvider);
+            return new ApplicationBuilder(_serviceProvider);
         }
     }
 }

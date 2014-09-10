@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Hosting
             yield return describer.Transient<IStartupManager, StartupManager>();
             yield return describer.Transient<IStartupLoaderProvider, StartupLoaderProvider>();
 
-            yield return describer.Transient<IBuilderFactory, BuilderFactory>();
+            yield return describer.Transient<IApplicationBuilderFactory, ApplicationBuilderFactory>();
             yield return describer.Transient<IHttpContextFactory, HttpContextFactory>();
 
             yield return describer.Transient<ITypeActivator, TypeActivator>();

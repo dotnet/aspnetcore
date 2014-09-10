@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Hosting.Tests
         public void OptionsAccessorCanBeResolvedAfterCallingUseServicesWithAction()
         {
             var baseServiceProvider = new ServiceCollection().BuildServiceProvider();
-            var builder = new Microsoft.AspNet.Builder.Builder(baseServiceProvider);
+            var builder = new ApplicationBuilder(baseServiceProvider);
 
             builder.UseServices(serviceCollection => { });
 
@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Hosting.Tests
         public void OptionsAccessorCanBeResolvedAfterCallingUseServicesWithFunc()
         {
             var baseServiceProvider = new ServiceCollection().BuildServiceProvider();
-            var builder = new Microsoft.AspNet.Builder.Builder(baseServiceProvider);
+            var builder = new ApplicationBuilder(baseServiceProvider);
             IServiceProvider serviceProvider = null;
 
             builder.UseServices(serviceCollection =>

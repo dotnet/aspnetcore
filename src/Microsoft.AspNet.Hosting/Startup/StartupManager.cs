@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Hosting.Startup
             _providers = providers;
         }
 
-        public Action<IBuilder> LoadStartup(
+        public Action<IApplicationBuilder> LoadStartup(
             string applicationName,
             string environmentName)
         {

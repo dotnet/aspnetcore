@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.TestHost
 
         public class Startup
         {
-            public void Configuration(IBuilder builder)
+            public void Configuration(IApplicationBuilder builder)
             {
                 builder.Run(ctx => ctx.Response.WriteAsync("Startup"));
             }
@@ -115,7 +115,7 @@ namespace Microsoft.AspNet.TestHost
 
         public class AnotherStartup
         {
-            public void Configuration(IBuilder builder)
+            public void Configuration(IApplicationBuilder builder)
             {
                 builder.Run(ctx => ctx.Response.WriteAsync("Another Startup"));
             }
