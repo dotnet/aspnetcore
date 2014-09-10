@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Builder
 {
-    public interface IBuilder
+    public interface IApplicationBuilder
     {
         IServiceProvider ApplicationServices { get; set; }
 
@@ -14,9 +14,9 @@ namespace Microsoft.AspNet.Builder
 
         IDictionary<string, object> Properties { get; set; }
 
-        IBuilder Use(Func<RequestDelegate, RequestDelegate> middleware);
+        IApplicationBuilder Use(Func<RequestDelegate, RequestDelegate> middleware);
 
-        IBuilder New();
+        IApplicationBuilder New();
 
         RequestDelegate Build();
     }

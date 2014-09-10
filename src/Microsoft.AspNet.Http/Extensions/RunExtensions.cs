@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Builder
 {
     public static class RunExtensions
     {
-        public static void Run([NotNull] this IBuilder app, [NotNull] RequestDelegate handler)
+        public static void Run([NotNull] this IApplicationBuilder app, [NotNull] RequestDelegate handler)
         {
             app.Use(_ => handler);
         }

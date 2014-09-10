@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Builder
 
     public static class OwinExtensions
     {
-        public static AddMiddleware UseOwin(this IBuilder builder)
+        public static AddMiddleware UseOwin(this IApplicationBuilder builder)
         {
             AddMiddleware add = middleware =>
             {
@@ -58,17 +58,17 @@ namespace Microsoft.AspNet.Builder
             return add;
         }
 
-        public static IBuilder UseOwin(this IBuilder builder, Action<AddMiddleware> pipeline)
+        public static IApplicationBuilder UseOwin(this IApplicationBuilder builder, Action<AddMiddleware> pipeline)
         {
             pipeline(builder.UseOwin());
             return builder;
         }
 
-        public static IBuilder UseBuilder(this AddMiddleware app)
+        public static IApplicationBuilder UseBuilder(this AddMiddleware app)
         {
             // Adapt WebSockets by default.
             app(OwinWebSocketAcceptAdapter.AdaptWebSockets);
-            var builder = new Builder(serviceProvider: null);
+            var builder = new ApplicationBuilder(serviceProvider: null);
 
             CreateMiddleware middleware = CreateMiddlewareFactory(exit =>
             {
@@ -111,7 +111,7 @@ namespace Microsoft.AspNet.Builder
             };
         }
 
-        public static AddMiddleware UseBuilder(this AddMiddleware app, Action<IBuilder> pipeline)
+        public static AddMiddleware UseBuilder(this AddMiddleware app, Action<IApplicationBuilder> pipeline)
         {
             var builder = app.UseBuilder();
             pipeline(builder);

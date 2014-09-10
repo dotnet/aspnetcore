@@ -5,22 +5,21 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Infrastructure;
 
 namespace Microsoft.AspNet.Builder
 {
-    public class Builder : IBuilder
+    public class ApplicationBuilder : IApplicationBuilder
     {
         private readonly IList<Func<RequestDelegate, RequestDelegate>> _components = new List<Func<RequestDelegate, RequestDelegate>>();
 
-        public Builder(IServiceProvider serviceProvider)
+        public ApplicationBuilder(IServiceProvider serviceProvider)
         {
             Properties = new Dictionary<string, object>();
             ApplicationServices = serviceProvider;
         }
 
-        private Builder(Builder builder)
+        private ApplicationBuilder(ApplicationBuilder builder)
         {
             Properties = builder.Properties;
         }
@@ -62,15 +61,15 @@ namespace Microsoft.AspNet.Builder
             Properties[key] = value;
         }
 
-        public IBuilder Use(Func<RequestDelegate, RequestDelegate> middleware)
+        public IApplicationBuilder Use(Func<RequestDelegate, RequestDelegate> middleware)
         {
             _components.Add(middleware);
             return this;
         }
 
-        public IBuilder New()
+        public IApplicationBuilder New()
         {
-            return new Builder(this);
+            return new ApplicationBuilder(this);
         }
 
         public RequestDelegate Build()

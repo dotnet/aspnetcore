@@ -6,12 +6,12 @@ using Xunit;
 
 namespace Microsoft.AspNet.Builder.Tests
 {
-    public class BuilderTests
+    public class ApplicationBuilderTests
     {
         [Fact]
         public void BuildReturnsCallableDelegate()
         {
-            var builder = new Builder(null);
+            var builder = new ApplicationBuilder(null);
             var app = builder.Build();
 
             var mockHttpContext = new Moq.Mock<HttpContext>();

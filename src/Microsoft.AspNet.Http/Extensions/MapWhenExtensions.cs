@@ -23,10 +23,10 @@ namespace Microsoft.AspNet.Builder
         /// <param name="predicate">Invoked with the request environment to determine if the branch should be taken</param>
         /// <param name="configuration">Configures a branch to take</param>
         /// <returns></returns>
-        public static IBuilder MapWhen([NotNull] this IBuilder app, [NotNull] Predicate predicate, [NotNull] Action<IBuilder> configuration)
+        public static IApplicationBuilder MapWhen([NotNull] this IApplicationBuilder app, [NotNull] Predicate predicate, [NotNull] Action<IApplicationBuilder> configuration)
         {
             // create branch
-            IBuilder branchBuilder = app.New();
+            var branchBuilder = app.New();
             configuration(branchBuilder);
             var branch = branchBuilder.Build();
 
@@ -46,10 +46,10 @@ namespace Microsoft.AspNet.Builder
         /// <param name="predicate">Invoked asynchronously with the request environment to determine if the branch should be taken</param>
         /// <param name="configuration">Configures a branch to take</param>
         /// <returns></returns>
-        public static IBuilder MapWhenAsync([NotNull] this IBuilder app, [NotNull] PredicateAsync predicate, [NotNull] Action<IBuilder> configuration)
+        public static IApplicationBuilder MapWhenAsync([NotNull] this IApplicationBuilder app, [NotNull] PredicateAsync predicate, [NotNull] Action<IApplicationBuilder> configuration)
         {
             // create branch
-            IBuilder branchBuilder = app.New();
+            var branchBuilder = app.New();
             configuration(branchBuilder);
             var branch = branchBuilder.Build();
 

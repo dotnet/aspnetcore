@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Builder
         /// <param name="pathMatch">The path to match</param>
         /// <param name="configuration">The branch to take for positive path matches</param>
         /// <returns></returns>
-        public static IBuilder Map([NotNull] this IBuilder app, [NotNull] string pathMatch, [NotNull] Action<IBuilder> configuration)
+        public static IApplicationBuilder Map([NotNull] this IApplicationBuilder app, [NotNull] string pathMatch, [NotNull] Action<IApplicationBuilder> configuration)
         {
             return Map(app, new PathString(pathMatch), configuration);
         }
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Builder
         /// <param name="pathMatch">The path to match</param>
         /// <param name="configuration">The branch to take for positive path matches</param>
         /// <returns></returns>
-        public static IBuilder Map([NotNull] this IBuilder app, PathString pathMatch, [NotNull] Action<IBuilder> configuration)
+        public static IApplicationBuilder Map([NotNull] this IApplicationBuilder app, PathString pathMatch, [NotNull] Action<IApplicationBuilder> configuration)
         {
             if (pathMatch.HasValue && pathMatch.Value.EndsWith("/", StringComparison.Ordinal))
             {
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Builder
             }
 
             // create branch
-            IBuilder branchBuilder = app.New();
+            var branchBuilder = app.New();
             configuration(branchBuilder);
             var branch = branchBuilder.Build();
 
