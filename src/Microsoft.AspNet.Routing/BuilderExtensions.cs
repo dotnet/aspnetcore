@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.Builder
 {
     public static class BuilderExtensions
     {
-        public static IBuilder UseRouter([NotNull] this IBuilder builder, [NotNull] IRouter router)
+        public static IApplicationBuilder UseRouter([NotNull] this IApplicationBuilder builder, [NotNull] IRouter router)
         {
             return builder.Use((next) => new RouterMiddleware(next, router).Invoke);
         }

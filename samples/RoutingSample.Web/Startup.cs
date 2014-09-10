@@ -12,7 +12,7 @@ namespace RoutingSample.Web
 {
     public class Startup
     {
-        public void Configure(IBuilder builder)
+        public void Configure(IApplicationBuilder builder)
         {
             builder.UseServices(services =>
             {
