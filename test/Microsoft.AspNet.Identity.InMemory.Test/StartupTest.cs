@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         [Fact]
         public async Task EnsureStartupUsageWorks()
         {
-            var builder = new Builder.Builder(new ServiceCollection().BuildServiceProvider());
+            var builder = new ApplicationBuilder(new ServiceCollection().BuildServiceProvider());
 
             builder.UseServices(services => services.AddIdentity<ApplicationUser>().AddInMemory());
 
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         [Fact]
         public void VerifyUseInMemoryLifetimes()
         {
-            var builder = new Builder.Builder(new ServiceCollection().BuildServiceProvider());
+            var builder = new ApplicationBuilder(new ServiceCollection().BuildServiceProvider());
             builder.UseServices(services => services.AddIdentity<ApplicationUser>().AddInMemory());
 
             var userStore = builder.ApplicationServices.GetService<IUserStore<ApplicationUser>>();

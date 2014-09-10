@@ -15,7 +15,7 @@ namespace IdentitySamples
 {
     public class Startup
     {
-        public void Configure(IBuilder app)
+        public void Configure(IApplicationBuilder app)
         {
             /* Adding IConfiguration as a service in the IoC to avoid instantiating Configuration again.
                  * Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources, 

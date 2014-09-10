@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public void CanCustomizeIdentityOptions()
         {
-            var builder = new Builder.Builder(new ServiceCollection().BuildServiceProvider());
+            var builder = new ApplicationBuilder(new ServiceCollection().BuildServiceProvider());
             builder.UseServices(services =>
             {
                 services.AddIdentity<IdentityUser>();
@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public void CanSetupIdentityOptions()
         {
-            var app = new Builder.Builder(new ServiceCollection().BuildServiceProvider());
+            var app = new ApplicationBuilder(new ServiceCollection().BuildServiceProvider());
             app.UseServices(services =>
             {
                 services.AddIdentity<IdentityUser>().SetupOptions(options => options.User.RequireUniqueEmail = true);

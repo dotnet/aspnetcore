@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
         public async Task EnsureStartupUsageWorks()
         {
             EnsureDatabase();
-            IBuilder builder = new Builder.Builder(new ServiceCollection().BuildServiceProvider());
+            var builder = new ApplicationBuilder(new ServiceCollection().BuildServiceProvider());
 
             builder.UseServices(services =>
             {
@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
         public async Task EnsureStartupOptionsChangeWorks()
         {
             EnsureDatabase();
-            IBuilder builder = new Builder.Builder(new ServiceCollection().BuildServiceProvider());
+            var builder = new ApplicationBuilder(new ServiceCollection().BuildServiceProvider());
 
             builder.UseServices(services =>
             {

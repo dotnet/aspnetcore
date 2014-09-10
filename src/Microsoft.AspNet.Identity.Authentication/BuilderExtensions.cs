@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Builder
     /// </summary>
     public static class BuilderExtensions
     {
-        public static IBuilder UseTwoFactorSignInCookies(this IBuilder builder)
+        public static IApplicationBuilder UseTwoFactorSignInCookies(this IApplicationBuilder builder)
         {
             // TODO: expose some way for them to customize these cookie lifetimes?
             builder.UseCookieAuthentication(new CookieAuthenticationOptions

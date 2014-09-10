@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         [InlineData(false)]
         public async Task VerifyAccountControllerSignIn(bool isPersistent)
         {
-            IBuilder app = new Builder.Builder(new ServiceCollection().BuildServiceProvider());
+            var app = new ApplicationBuilder(new ServiceCollection().BuildServiceProvider());
             app.UseCookieAuthentication(new CookieAuthenticationOptions
             {
                 AuthenticationType = ClaimsIdentityOptions.DefaultAuthenticationType
