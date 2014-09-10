@@ -5,7 +5,7 @@ namespace ErrorPageSample
 {
     public class Startup
     {
-        public void Configure(IBuilder app)
+        public void Configure(IApplicationBuilder app)
         {
             app.UseErrorPage();
             app.Run(context =>

@@ -1,25 +1,23 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-
 using System;
 using Microsoft.AspNet.Diagnostics;
-using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Builder
 {
     /// <summary>
-    /// IBuilder extension methods for the ErrorPageMiddleware.
+    /// IApplicationBuilder extension methods for the ErrorPageMiddleware.
     /// </summary>
     public static class ErrorPageExtensions
     {
         /// <summary>
         /// Captures synchronous and asynchronous exceptions from the pipeline and generates HTML error responses.
-        /// Full error details are only displayed by default if 'host.AppMode' is set to 'development' in the IBuilder.Properties.
+        /// Full error details are only displayed by default if 'host.AppMode' is set to 'development' in the IApplicationBuilder.Properties.
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static IBuilder UseErrorPage(this IBuilder builder)
+        public static IApplicationBuilder UseErrorPage(this IApplicationBuilder builder)
         {
             if (builder == null)
             {
@@ -31,12 +29,12 @@ namespace Microsoft.AspNet.Builder
 
         /// <summary>
         /// Captures synchronous and asynchronous exceptions from the pipeline and generates HTML error responses.
-        /// Full error details are only displayed by default if 'host.AppMode' is set to 'development' in the IBuilder.Properties.
+        /// Full error details are only displayed by default if 'host.AppMode' is set to 'development' in the IApplicationBuilder.Properties.
         /// </summary>
         /// <param name="builder"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static IBuilder UseErrorPage(this IBuilder builder, ErrorPageOptions options)
+        public static IApplicationBuilder UseErrorPage(this IApplicationBuilder builder, ErrorPageOptions options)
         {
             if (builder == null)
             {

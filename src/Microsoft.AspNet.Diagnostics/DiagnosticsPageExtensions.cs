@@ -10,7 +10,7 @@ using Microsoft.AspNet.Diagnostics;
 namespace Microsoft.AspNet.Builder
 {
     /// <summary>
-    /// IBuilder extensions for the DiagnosticsPageMiddleware.
+    /// IApplicationBuilder extensions for the DiagnosticsPageMiddleware.
     /// </summary>
     public static class DiagnosticsPageExtensions
     {
@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static IBuilder UseDiagnosticsPage(this IBuilder builder, DiagnosticsPageOptions options)
+        public static IApplicationBuilder UseDiagnosticsPage(this IApplicationBuilder builder, DiagnosticsPageOptions options)
         {
             if (builder == null)
             {
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="path"></param>
         /// <returns></returns>
-        public static IBuilder UseDiagnosticsPage(this IBuilder builder, PathString path)
+        public static IApplicationBuilder UseDiagnosticsPage(this IApplicationBuilder builder, PathString path)
         {
             return UseDiagnosticsPage(builder, new DiagnosticsPageOptions { Path = path });
         }
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Builder
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static IBuilder UseDiagnosticsPage(this IBuilder builder)
+        public static IApplicationBuilder UseDiagnosticsPage(this IApplicationBuilder builder)
         {
             return UseDiagnosticsPage(builder, new DiagnosticsPageOptions());
         }

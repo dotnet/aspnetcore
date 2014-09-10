@@ -9,7 +9,7 @@ using Microsoft.AspNet.Diagnostics;
 namespace Microsoft.AspNet.Builder
 {
     /// <summary>
-    /// IBuilder extensions for the WelcomePageMiddleware.
+    /// IApplicationBuilder extensions for the WelcomePageMiddleware.
     /// </summary>
     public static class WelcomePageExtensions
     {
@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static IBuilder UseWelcomePage(this IBuilder builder, WelcomePageOptions options)
+        public static IApplicationBuilder UseWelcomePage(this IApplicationBuilder builder, WelcomePageOptions options)
         {
             if (builder == null)
             {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="path"></param>
         /// <returns></returns>
-        public static IBuilder UseWelcomePage(this IBuilder builder, PathString path)
+        public static IApplicationBuilder UseWelcomePage(this IApplicationBuilder builder, PathString path)
         {
             return UseWelcomePage(builder, new WelcomePageOptions { Path = path });
         }
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="path"></param>
         /// <returns></returns>
-        public static IBuilder UseWelcomePage(this IBuilder builder, string path)
+        public static IApplicationBuilder UseWelcomePage(this IApplicationBuilder builder, string path)
         {
             return UseWelcomePage(builder, new WelcomePageOptions { Path = new PathString(path) });
         }
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Builder
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static IBuilder UseWelcomePage(this IBuilder builder)
+        public static IApplicationBuilder UseWelcomePage(this IApplicationBuilder builder)
         {
             return UseWelcomePage(builder, new WelcomePageOptions());
         }
