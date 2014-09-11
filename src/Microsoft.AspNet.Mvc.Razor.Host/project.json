@@ -6,16 +6,24 @@
   "dependencies": {
     "Microsoft.AspNet.FileSystems": "1.0.0-*",
     "Microsoft.AspNet.Mvc.Common": "",
-    "Microsoft.AspNet.Razor": "4.0.0-*",
-    "Microsoft.Framework.Runtime.Interfaces":  "1.0.0-*"
+    "Microsoft.AspNet.Razor": "4.0.0-*"
   },
   "frameworks": {
-    "aspnet50": {
+    "net45": {
       "dependencies": {
         "System.Collections": "",
         "System.Runtime": "",
         "System.Xml": "",
         "System.Xml.Linq": ""
+      }
+    },
+    "aspnet50": {
+      "dependencies": {
+        "System.Collections": "",
+        "System.Runtime": "",
+        "System.Xml": "",
+        "System.Xml.Linq": "",
+        "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
       }
     },
     "aspnetcore50": {
@@ -36,7 +44,8 @@
         "System.Runtime": "4.0.20.0",
         "System.Runtime.Extensions": "4.0.10.0",
         "System.Runtime.InteropServices": "4.0.20.0",
-        "System.Threading.Tasks": "4.0.10.0"
+        "System.Threading.Tasks": "4.0.10.0",
+        "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
       }
     }
   }

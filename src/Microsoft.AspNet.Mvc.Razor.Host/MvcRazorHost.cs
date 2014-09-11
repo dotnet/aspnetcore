@@ -9,7 +9,10 @@ using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser;
+
+#if ASPNET50 || ASPNETCORE50
 using Microsoft.Framework.Runtime;
+#endif
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -36,6 +39,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         // This field holds the type name without the generic decoration (MyBaseType)
         private readonly string _baseType;
 
+#if ASPNET50 || ASPNETCORE50
         /// <summary>
         /// Initializes a new instance of <see cref="MvcRazorHost"/> with the specified
         /// <param name="appEnvironment"/>.
@@ -45,6 +49,18 @@ namespace Microsoft.AspNet.Mvc.Razor
             : this(new PhysicalFileSystem(appEnvironment.ApplicationBasePath))
         {
         }
+#elif NET45
+        /// <summary>
+        /// Initializes a new instance of <see cref="MvcRazorHost"/> with the specified
+        /// <param name="root"/>.
+        /// </summary>
+        /// <param name="root">The path to the application base.</param>
+        public MvcRazorHost(string root) :
+            this(new PhysicalFileSystem(root))
+        {
+
+        }
+#endif
 
         /// <summary>
         /// Initializes a new instance of <see cref="MvcRazorHost"/> using the specified <paramref name="fileSystem"/>.
