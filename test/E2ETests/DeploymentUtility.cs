@@ -55,48 +55,55 @@ namespace E2ETests
 
         private const string APP_RELATIVE_PATH = @"..\..\src\MusicStore\";
 
-        public static Process StartApplication(ServerType hostType, KreFlavor kreFlavor, KreArchitecture kreArchitecture, string identityDbName)
+        public static Process StartApplication(StartParameters startParameters, string identityDbName)
         {
-            string applicationPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, APP_RELATIVE_PATH));
+            startParameters.ApplicationPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, APP_RELATIVE_PATH));
 
-            var backupKreDefaultLibPath = Environment.GetEnvironmentVariable("KRE_DEFAULT_LIB");
             //To avoid the KRE_DEFAULT_LIB of the test process flowing into Helios, set it to empty
+            var backupKreDefaultLibPath = Environment.GetEnvironmentVariable("KRE_DEFAULT_LIB");
             Environment.SetEnvironmentVariable("KRE_DEFAULT_LIB", string.Empty);
+
+            if (!string.IsNullOrWhiteSpace(startParameters.EnvironmentName))
+            {
+                //To choose an environment based Startup
+                Environment.SetEnvironmentVariable("ENV", startParameters.EnvironmentName);
+            }
 
             Process hostProcess = null;
 
-            if (kreFlavor == KreFlavor.Mono)
+            if (startParameters.KreFlavor == KreFlavor.Mono)
             {
-                hostProcess = StartMonoHost(hostType, applicationPath);
+                hostProcess = StartMonoHost(startParameters);
             }
             else
             {
                 //Tweak the %PATH% to the point to the right KREFLAVOR
-                Environment.SetEnvironmentVariable("PATH", SwitchPathToKreFlavor(kreFlavor, kreArchitecture));
+                Environment.SetEnvironmentVariable("PATH", SwitchPathToKreFlavor(startParameters.KreFlavor, startParameters.KreArchitecture));
 
-                if (hostType == ServerType.Helios)
+                if (startParameters.ServerType == ServerType.Helios)
                 {
-                    hostProcess = StartHeliosHost(applicationPath, kreArchitecture);
+                    hostProcess = StartHeliosHost(startParameters);
                 }
                 else
                 {
-                    hostProcess = StartSelfHost(hostType, applicationPath, identityDbName);
+                    hostProcess = StartSelfHost(startParameters, identityDbName);
                 }
             }
 
             //Restore the KRE_DEFAULT_LIB after starting the host process
             Environment.SetEnvironmentVariable("KRE_DEFAULT_LIB", backupKreDefaultLibPath);
+            Environment.SetEnvironmentVariable("ENV", string.Empty);
             return hostProcess;
         }
 
-        private static Process StartMonoHost(ServerType hostType, string applicationPath)
+        private static Process StartMonoHost(StartParameters startParameters)
         {
             //Mono needs this as GetFullPath does not work if it has \
-            applicationPath = Path.GetFullPath(applicationPath.Replace('\\', '/'));
+            startParameters.ApplicationPath = Path.GetFullPath(startParameters.ApplicationPath.Replace('\\', '/'));
 
             //Mono does not have a way to pass in a --appbase switch. So it will be an environment variable. 
-            Environment.SetEnvironmentVariable("KRE_APPBASE", applicationPath);
-            Console.WriteLine("Setting the KRE_APPBASE to {0}", applicationPath);
+            Environment.SetEnvironmentVariable("KRE_APPBASE", startParameters.ApplicationPath);
+            Console.WriteLine("Setting the KRE_APPBASE to {0}", startParameters.ApplicationPath);
 
             var path = Environment.GetEnvironmentVariable("PATH");
             var kreBin = path.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).Where(c => c.Contains("KRE-Mono")).FirstOrDefault();
@@ -110,12 +117,12 @@ namespace E2ETests
             var klrMonoManaged = Path.Combine(kreBin, "klr.mono.managed.dll");
             var applicationHost = Path.Combine(kreBin, "Microsoft.Framework.ApplicationHost");
 
-            Console.WriteLine(string.Format("Executing command: {0} {1} {3} {4}", monoPath, klrMonoManaged, applicationPath, applicationHost, hostType.ToString()));
+            Console.WriteLine(string.Format("Executing command: {0} {1} {3} {4}", monoPath, klrMonoManaged, startParameters.ApplicationPath, applicationHost, startParameters.ServerType.ToString()));
 
             var startInfo = new ProcessStartInfo
             {
                 FileName = monoPath,
-                Arguments = string.Format("{0} {1} {2}", klrMonoManaged, applicationHost, hostType.ToString()),
+                Arguments = string.Format("{0} {1} {2}", klrMonoManaged, applicationHost, startParameters.ServerType.ToString()),
                 UseShellExecute = true,
                 CreateNoWindow = true
             };
@@ -129,14 +136,31 @@ namespace E2ETests
             return hostProcess;
         }
 
-        private static Process StartHeliosHost(string applicationPath, KreArchitecture kreArchitecture)
+        private static Process StartHeliosHost(StartParameters startParameters)
         {
-            CopyAspNetLoader(applicationPath);
+            CopyAspNetLoader(startParameters.ApplicationPath);
+
+            if (!string.IsNullOrWhiteSpace(startParameters.ApplicationHostConfigTemplateContent))
+            {
+                //Pass on the applicationhost.config to iis express. With this don't need to pass in the /path /port switches as they are in the applicationHost.config
+                //We take a copy of the original specified applicationHost.Config to prevent modifying the one in the repo.
+                var tempApplicationHostConfig = Path.GetTempFileName();
+                File.WriteAllText(tempApplicationHostConfig, startParameters.ApplicationHostConfigTemplateContent.Replace("[ApplicationPhysicalPath]", startParameters.ApplicationPath));
+                startParameters.ApplicationHostConfigLocation = tempApplicationHostConfig;
+            }
+
+            var parameters = string.IsNullOrWhiteSpace(startParameters.ApplicationHostConfigLocation) ?
+                                string.Format("/port:5001 /path:{0}", startParameters.ApplicationPath) :
+                                string.Format("/site:{0} /config:{1}", startParameters.SiteName, startParameters.ApplicationHostConfigLocation);
+
+            var iisExpressPath = GetIISExpressPath(startParameters.KreArchitecture);
+
+            Console.WriteLine("Executing command : {0} {1}", iisExpressPath, parameters);
 
             var startInfo = new ProcessStartInfo
             {
-                FileName = GetIISExpressPath(kreArchitecture),
-                Arguments = string.Format("/port:5001 /path:{0}", applicationPath),
+                FileName = iisExpressPath,
+                Arguments = parameters,
                 UseShellExecute = true,
                 CreateNoWindow = true
             };
@@ -147,14 +171,15 @@ namespace E2ETests
             return hostProcess;
         }
 
-        private static Process StartSelfHost(ServerType hostType, string applicationPath, string identityDbName)
+        private static Process StartSelfHost(StartParameters startParameters, string identityDbName)
         {
-            Console.WriteLine(string.Format("Executing klr.exe --appbase {0} \"Microsoft.Framework.ApplicationHost\" {1}", applicationPath, hostType.ToString()));
+            //ServerType hostType, string applicationPath, string identityDbName
+            Console.WriteLine(string.Format("Executing klr.exe --appbase {0} \"Microsoft.Framework.ApplicationHost\" {1}", startParameters.ApplicationPath, startParameters.ServerType.ToString()));
 
             var startInfo = new ProcessStartInfo
             {
                 FileName = "klr.exe",
-                Arguments = string.Format("--appbase {0} \"Microsoft.Framework.ApplicationHost\" {1}", applicationPath, hostType.ToString()),
+                Arguments = string.Format("--appbase {0} \"Microsoft.Framework.ApplicationHost\" {1}", startParameters.ApplicationPath, startParameters.ServerType.ToString()),
                 UseShellExecute = true,
                 CreateNoWindow = true
             };
@@ -239,7 +264,7 @@ namespace E2ETests
             }
         }
 
-        public static void CleanUpApplication(Process hostProcess, string musicStoreDbName)
+        public static void CleanUpApplication(StartParameters startParameters, Process hostProcess, string musicStoreDbName)
         {
             if (hostProcess != null && !hostProcess.HasExited)
             {
@@ -264,6 +289,23 @@ namespace E2ETests
             {
                 //Mono uses InMemoryStore
                 DbUtils.DropDatabase(musicStoreDbName);
+            }
+
+            if (!string.IsNullOrWhiteSpace(startParameters.ApplicationHostConfigLocation))
+            {
+                //Delete the temp applicationHostConfig that we created
+                if (File.Exists(startParameters.ApplicationHostConfigLocation))
+                {
+                    try
+                    {
+                        File.Delete(startParameters.ApplicationHostConfigLocation);
+                    }
+                    catch (Exception exception)
+                    {
+                        //Ignore delete failures - just write a log
+                        Console.WriteLine("Failed to delete '{0}'. Exception : {1}", startParameters.ApplicationHostConfigLocation, exception.Message);
+                    }
+                }
             }
         }
     }

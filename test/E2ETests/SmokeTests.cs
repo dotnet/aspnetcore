@@ -24,33 +24,22 @@ namespace E2ETests
         [InlineData(ServerType.Kestrel, KreFlavor.Mono, KreArchitecture.x86, "http://localhost:5004/", true)]
         [InlineData(ServerType.Helios, KreFlavor.CoreClr, KreArchitecture.amd64, "http://localhost:5001/", false)]
         [InlineData(ServerType.Kestrel, KreFlavor.CoreClr, KreArchitecture.amd64, "http://localhost:5004/", false)]
-        public void SmokeTestSuite(ServerType hostType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl, bool RunTestOnMono = false)
+        public void SmokeTestSuite(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl, bool RunTestOnMono = false)
         {
-            Console.WriteLine("Variation Details : HostType = {0}, KreFlavor = {1}, Architecture = {2}, applicationBaseUrl = {3}", hostType, kreFlavor, architecture, applicationBaseUrl);
+            Console.WriteLine("Variation Details : HostType = {0}, KreFlavor = {1}, Architecture = {2}, applicationBaseUrl = {3}", serverType, kreFlavor, architecture, applicationBaseUrl);
 
-            if (RunTestOnMono && !Helpers.RunningOnMono)
+            if (Helpers.SkipTestOnCurrentConfiguration(RunTestOnMono, architecture))
             {
-                //Skip Mono variations on Windows
-                Console.WriteLine("Skipping mono variation on .NET");
                 Assert.True(true);
                 return;
             }
 
-            if (!RunTestOnMono && Helpers.RunningOnMono)
+            var startParameters = new StartParameters
             {
-                //Skip .net variations on mono
-                Console.WriteLine("Skipping .NET variation on mono");
-                Assert.True(true);
-                return;
-            }
-
-            // Check if processor architecture is x64, else skip test
-            if (architecture == KreArchitecture.amd64 && !Environment.Is64BitOperatingSystem)
-            {
-                Console.WriteLine("Skipping x64 test since machine is of type x86");
-                Assert.True(true);
-                return;
-            }
+                ServerType = serverType,
+                KreFlavor = kreFlavor,
+                KreArchitecture = architecture
+            };
 
             var testStartTime = DateTime.Now;
             var musicStoreDbName = Guid.NewGuid().ToString().Replace("-", string.Empty);
@@ -66,8 +55,7 @@ namespace E2ETests
 
             try
             {
-                //Deployment helpers not setup for mono yet. Until then set the ApplicationBaseUrl to some static url.
-                hostProcess = DeploymentUtility.StartApplication(hostType, kreFlavor, architecture, musicStoreDbName);
+                hostProcess = DeploymentUtility.StartApplication(startParameters, musicStoreDbName);
 
                 httpClientHandler = new HttpClientHandler();
                 httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(applicationBaseUrl) };
@@ -152,7 +140,7 @@ namespace E2ETests
                     Console.WriteLine("Some tests failed. Proceeding with cleanup.");
                 }
 
-                DeploymentUtility.CleanUpApplication(hostProcess, musicStoreDbName);
+                DeploymentUtility.CleanUpApplication(startParameters, hostProcess, musicStoreDbName);
             }
         }
     }

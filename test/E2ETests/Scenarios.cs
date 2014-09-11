@@ -32,15 +32,21 @@ namespace E2ETests
             Console.WriteLine("Verified static contents are served successfully");
         }
 
-        private void VerifyHomePage(HttpResponseMessage response, string responseContent)
+        private void VerifyHomePage(HttpResponseMessage response, string responseContent, bool useNtlmAuthentication = false)
         {
             Console.WriteLine("Home page content : {0}", responseContent);
             Assert.Equal<HttpStatusCode>(HttpStatusCode.OK, response.StatusCode);
             ValidateLayoutPage(responseContent);
             Assert.Contains("<a href=\"/Store/Details/", responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("<title>Home Page – MVC Music Store</title>", responseContent, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains("Register", responseContent, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains("Login", responseContent, StringComparison.OrdinalIgnoreCase);
+
+            if (!useNtlmAuthentication)
+            {
+                //We don't display these for Ntlm
+                Assert.Contains("Register", responseContent, StringComparison.OrdinalIgnoreCase);
+                Assert.Contains("Login", responseContent, StringComparison.OrdinalIgnoreCase);
+            }
+
             Assert.Contains("mvcmusicstore.codeplex.com", responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("/Images/home-showcase.png", responseContent, StringComparison.OrdinalIgnoreCase);
             Console.WriteLine("Application initialization successful.");
