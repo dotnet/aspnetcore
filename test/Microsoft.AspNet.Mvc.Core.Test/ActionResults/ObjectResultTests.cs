@@ -275,18 +275,23 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
         }
 
         [Theory]
-        [InlineData("", 2)] 
-        [InlineData(null, 2)]
-        [InlineData("application/xml", 3)]
-        [InlineData("application/custom", 3)]
-        [InlineData("application/xml;q=1, application/custom;q=0.8", 4)]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("application/xml")]
+        [InlineData("application/custom")]
+        [InlineData("application/xml;q=1, application/custom;q=0.8")]
         public void SelectFormatter_WithNoMatchingAcceptHeadersAndRequestContentType_PicksFormatterBasedOnObjectType
-            (string acceptHeader, int attemptedCountForCanWrite)
+            (string acceptHeader)
         {
             // For no accept headers,
             // can write is called twice once for the request media type and once for the type match pass. 
             // For each additional accept header, it is called once. 
             // Arrange
+            var acceptHeaderCollection = string.IsNullOrEmpty(acceptHeader) ? 
+                                         null :
+                                         acceptHeader?.Split(',')
+                                                      .Select(header => MediaTypeWithQualityHeaderValue.Parse(header))
+                                                      .ToArray();
             var stream = new MemoryStream();
             var httpResponse = new Mock<HttpResponse>();
             httpResponse.SetupProperty<string>(o => o.ContentType);
@@ -295,15 +300,10 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             var actionContext = CreateMockActionContext(httpResponse.Object,
                                                         requestAcceptHeader: acceptHeader,
                                                         requestContentType: "application/xml");
+            var requestContentType = MediaTypeHeaderValue.Parse("application/xml");
             var input = "testInput";
             var result = new ObjectResult(input);
-
-            // Set more than one formatters. The test output formatter throws on write.
-            result.Formatters = new List<IOutputFormatter>
-                                    {
-                                        new CannotWriteFormatter(),
-                                        new CountingFormatter(),
-                                    };
+            var mockCountingFormatter = new Mock<IOutputFormatter>();
 
             var context = new OutputFormatterContext()
             {
@@ -311,13 +311,37 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
                 Object = input,
                 DeclaredType = typeof(string)
             };
+            var mockCountingSupportedContentType = MediaTypeHeaderValue.Parse("application/text");
+            mockCountingFormatter.Setup(o => o.CanWriteResult(context,
+                                            It.IsNotIn<MediaTypeHeaderValue>(mockCountingSupportedContentType)))
+                                 .Returns(false);
+            mockCountingFormatter.Setup(o => o.CanWriteResult(context, mockCountingSupportedContentType))
+                                 .Returns(true);
+
+            mockCountingFormatter.Setup(o => o.GetSupportedContentTypes(context.DeclaredType,
+                                                                        input.GetType(),
+                                                                        It.IsAny<MediaTypeHeaderValue>()))
+                                 .Returns(new List<MediaTypeHeaderValue> { mockCountingSupportedContentType });
+
+            // Set more than one formatters. The test output formatter throws on write.
+            result.Formatters = new List<IOutputFormatter>
+                                    {
+                                        new CannotWriteFormatter(),
+                                        mockCountingFormatter.Object,
+                                    };
 
             // Act
             var formatter = result.SelectFormatter(context, result.Formatters);
 
             // Assert
-            var countingFormatter = Assert.IsType<CountingFormatter>(formatter);
-            Assert.Equal(attemptedCountForCanWrite, countingFormatter.GetCanWriteCallCount());
+            Assert.Equal(mockCountingFormatter.Object, formatter);
+            mockCountingFormatter.Verify(v => v.CanWriteResult(context,
+                                                               mockCountingSupportedContentType),
+                                                               Times.Once());
+            var callCount = (acceptHeaderCollection == null ? 0 : acceptHeaderCollection.Count()) + 1;
+            mockCountingFormatter.Verify(v => v.CanWriteResult(context,
+                                              It.IsNotIn<MediaTypeHeaderValue>(mockCountingSupportedContentType)),
+                                              Times.Exactly(callCount));
         }
 
         [Fact]
@@ -505,42 +529,6 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddInstance<IOptionsAccessor<MvcOptions>>(optionsAccessor.Object);
             return serviceCollection.BuildServiceProvider();
-        }
-
-        public class CountingFormatter : OutputFormatter
-        {
-            private int _canWriteCallsCount = 0;
-
-            public CountingFormatter()
-            {
-                SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/plain"));
-                SupportedEncodings.Add(Encoding.GetEncoding("utf-8"));
-            }
-
-            public override bool CanWriteResult(OutputFormatterContext context, MediaTypeHeaderValue contentType)
-            {
-                _canWriteCallsCount++;
-                if (base.CanWriteResult(context, contentType))
-                {
-                    var actionReturnString = context.Object as string;
-                    if (actionReturnString != null)
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
-            }
-
-            public int GetCanWriteCallCount()
-            {
-                return _canWriteCallsCount;
-            }
-
-            public override Task WriteResponseBodyAsync(OutputFormatterContext context)
-            {
-                throw new NotImplementedException();
-            }
         }
 
         public class CannotWriteFormatter : IOutputFormatter

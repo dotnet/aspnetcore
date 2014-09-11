@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             Assert.Equal(5, mvcOptions.OutputFormatters.Count);
-            Assert.IsType<NoContentFormatter>(mvcOptions.OutputFormatters[0].Instance);
+            Assert.IsType<HttpNoContentOutputFormatter>(mvcOptions.OutputFormatters[0].Instance);
             Assert.IsType<TextPlainFormatter>(mvcOptions.OutputFormatters[1].Instance);
             Assert.IsType<JsonOutputFormatter>(mvcOptions.OutputFormatters[2].Instance);
             Assert.IsType<XmlDataContractSerializerOutputFormatter>(mvcOptions.OutputFormatters[3].Instance);

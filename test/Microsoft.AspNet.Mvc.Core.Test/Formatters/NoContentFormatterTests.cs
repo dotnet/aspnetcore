@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 ActionContext = null,
             };
             var contetType = useNonNullContentType ? MediaTypeHeaderValue.Parse("text/plain") : null;
-            var formatter = new NoContentFormatter();
+            var formatter = new HttpNoContentOutputFormatter();
 
             // Act
             var actualCanWriteResult = formatter.CanWriteResult(formatterContext, contetType);
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 ActionContext = new ActionContext(defaultHttpContext, new RouteData(), new ActionDescriptor())
             };
 
-            var formatter = new NoContentFormatter();
+            var formatter = new HttpNoContentOutputFormatter();
 
             // Act
             await formatter.WriteAsync(formatterContext);

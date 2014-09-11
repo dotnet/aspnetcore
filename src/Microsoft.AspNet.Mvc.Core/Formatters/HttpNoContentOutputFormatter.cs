@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Mvc
     /// <summary>
     /// Sets the status code to 204 if the content is null.
     /// </summary>
-    public class NoContentFormatter : IOutputFormatter
+    public class HttpNoContentOutputFormatter : IOutputFormatter
     {
         public bool CanWriteResult(OutputFormatterContext context, MediaTypeHeaderValue contentType)
         {

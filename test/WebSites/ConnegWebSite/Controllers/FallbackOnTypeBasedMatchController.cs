@@ -47,7 +47,7 @@ namespace ConnegWebsite
         public IActionResult OverrideTheFallback_UsingCustomFormatters(int input)
         {
             var objectResult = new ObjectResult(input);
-            objectResult.Formatters.Add(new StopIfNoMatchOutputFormatter());
+            objectResult.Formatters.Add(new HttpNotAcceptableOutputFormatter());
             objectResult.Formatters.Add(new PlainTextFormatter());
             objectResult.Formatters.Add(new JsonOutputFormatter(JsonOutputFormatter.CreateDefaultSettings(), false));
             return objectResult;
@@ -57,34 +57,13 @@ namespace ConnegWebsite
         {
             var objectResult = new ObjectResult(input);
             var formattersProvider = ActionContext.HttpContext.RequestServices.GetService<IOutputFormattersProvider>();
-            objectResult.Formatters.Add(new StopIfNoMatchOutputFormatter());
+            objectResult.Formatters.Add(new HttpNotAcceptableOutputFormatter());
             foreach (var formatter in formattersProvider.OutputFormatters)
             {
                 objectResult.Formatters.Add(formatter);
             }
 
             return objectResult;
-        }
-
-        public class StopIfNoMatchOutputFormatter : IOutputFormatter
-        {
-            // Select if no Registered content type.
-            public bool CanWriteResult(OutputFormatterContext context, MediaTypeHeaderValue contentType)
-            {
-                return contentType == null;
-            }
-
-            public IReadOnlyList<MediaTypeHeaderValue> GetSupportedContentTypes(Type declaredType, Type runtimeType, MediaTypeHeaderValue contentType)
-            {
-                return null;
-            }
-
-            public Task WriteAsync(OutputFormatterContext context)
-            {
-                var response = context.ActionContext.HttpContext.Response;
-                response.StatusCode = 406;
-                return Task.FromResult<bool>(true);
-            }
         }
     }
 }
