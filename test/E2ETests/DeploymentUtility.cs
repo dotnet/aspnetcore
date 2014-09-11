@@ -66,7 +66,7 @@ namespace E2ETests
             if (!string.IsNullOrWhiteSpace(startParameters.EnvironmentName))
             {
                 //To choose an environment based Startup
-                Environment.SetEnvironmentVariable("ENV", startParameters.EnvironmentName);
+                Environment.SetEnvironmentVariable("KRE_ENV", startParameters.EnvironmentName);
             }
 
             Process hostProcess = null;
