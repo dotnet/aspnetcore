@@ -126,6 +126,9 @@
   <data name="FlushPointCannotBeInvoked" xml:space="preserve">
     <value>'{0}' cannot be invoked when a Layout page is set to be executed.</value>
   </data>
+  <data name="Instrumentation_WriterMustBeBufferedTextWriter" xml:space="preserve">
+    <value>The {0} returned by '{1}' must be an instance of '{2}'.</value>
+  </data>
   <data name="LayoutCannotBeLocated" xml:space="preserve">
     <value>The layout view '{0}' could not be located.</value>
   </data>

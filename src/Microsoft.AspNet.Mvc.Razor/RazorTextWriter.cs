@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.Razor
     /// This is primarily designed to avoid creating large in-memory strings.
     /// Refer to https://aspnetwebstack.codeplex.com/workitem/585 for more details.
     /// </remarks>
-    public class RazorTextWriter : TextWriter
+    public class RazorTextWriter : TextWriter, IBufferedTextWriter
     {
         private static readonly Task _completedTask = Task.FromResult(0);
         private readonly TextWriter _unbufferedWriter;
@@ -43,9 +43,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             get { return _encoding; }
         }
 
-        /// <summary>
-        /// Gets a flag that determines if this instance of <see cref="RazorTextWriter"/> is buffering content.
-        /// </summary>
+        /// <inheritdoc />
         public bool IsBuffering { get; private set; } = true;
 
         /// <summary>
@@ -267,10 +265,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             await _unbufferedWriter.FlushAsync();
         }
 
-        /// <summary>
-        /// Copies the content of the <see cref="RazorTextWriter"/> to the <see cref="TextWriter"/> instance.
-        /// </summary>
-        /// <param name="writer">The writer to copy contents to.</param>
+        /// <inheritdoc />
         public void CopyTo(TextWriter writer)
         {
             var targetRazorTextWriter = writer as RazorTextWriter;
@@ -286,11 +281,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
-        /// <summary>
-        /// Copies the content of the <see cref="RazorTextWriter"/> to the specified <see cref="TextWriter"/> instance.
-        /// </summary>
-        /// <param name="writer">The writer to copy contents to.</param>
-        /// <returns>A task that represents the asynchronous copy operation.</returns>
+        /// <inheritdoc />
         public Task CopyToAsync(TextWriter writer)
         {
             var targetRazorTextWriter = writer as RazorTextWriter;

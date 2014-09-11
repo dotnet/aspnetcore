@@ -59,6 +59,22 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
+        /// The {0} returned by '{1}' must be an instance of '{2}'.
+        /// </summary>
+        internal static string Instrumentation_WriterMustBeBufferedTextWriter
+        {
+            get { return GetString("Instrumentation_WriterMustBeBufferedTextWriter"); }
+        }
+
+        /// <summary>
+        /// The {0} returned by '{1}' must be an instance of '{2}'.
+        /// </summary>
+        internal static string FormatInstrumentation_WriterMustBeBufferedTextWriter(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Instrumentation_WriterMustBeBufferedTextWriter"), p0, p1, p2);
+        }
+
+        /// <summary>
         /// The layout view '{0}' could not be located.
         /// </summary>
         internal static string LayoutCannotBeLocated

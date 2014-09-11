@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.PageExecutionInstrumentation;
 using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Testing;
 using Moq;
@@ -349,6 +349,68 @@ Layout end
 
             // Assert
             Assert.DoesNotThrow(() => page.SectionWriters["test-section"].WriteTo(TextWriter.Null));
+        }
+
+        [Fact]
+        public async Task WriteAttribute_CallsBeginAndEndContext_OnPageExecutionListenerContext()
+        {
+            // Arrange
+            var page = CreatePage(p =>
+            {
+                p.WriteAttribute("href",
+                                 new PositionTagged<string>("prefix", 0),
+                                 new PositionTagged<string>("suffix", 34),
+                                 new AttributeValue(new PositionTagged<string>("prefix", 0),
+                                                    new PositionTagged<object>("attr1-value", 8),
+                                                    literal: true),
+                                 new AttributeValue(new PositionTagged<string>("prefix2", 22),
+                                                    new PositionTagged<object>("attr2", 29),
+                                                    literal: false));
+            });
+            var context = new Mock<IPageExecutionContext>(MockBehavior.Strict);
+            var sequence = new MockSequence();
+            context.InSequence(sequence).Setup(f => f.BeginContext(0, 6, true)).Verifiable();
+            context.InSequence(sequence).Setup(f => f.EndContext()).Verifiable();
+            context.InSequence(sequence).Setup(f => f.BeginContext(8, 14, true)).Verifiable();
+            context.InSequence(sequence).Setup(f => f.EndContext()).Verifiable();
+            context.InSequence(sequence).Setup(f => f.BeginContext(22, 7, true)).Verifiable();
+            context.InSequence(sequence).Setup(f => f.EndContext()).Verifiable();
+            context.InSequence(sequence).Setup(f => f.BeginContext(29, 5, false)).Verifiable();
+            context.InSequence(sequence).Setup(f => f.EndContext()).Verifiable();
+            context.InSequence(sequence).Setup(f => f.BeginContext(34, 6, true)).Verifiable();
+            context.InSequence(sequence).Setup(f => f.EndContext()).Verifiable();
+            page.PageExecutionContext = context.Object;
+
+            // Act
+            await page.ExecuteAsync();
+
+            // Assert
+            context.Verify();
+        }
+
+        [Fact]
+        public async Task WriteAttribute_CallsBeginAndEndContext_OnPrefixAndSuffixValues()
+        {
+            // Arrange
+            var page = CreatePage(p =>
+            {
+                p.WriteAttribute("href",
+                                 new PositionTagged<string>("prefix", 0),
+                                 new PositionTagged<string>("tail", 7));
+            });
+            var context = new Mock<IPageExecutionContext>(MockBehavior.Strict);
+            var sequence = new MockSequence();
+            context.InSequence(sequence).Setup(f => f.BeginContext(0, 6, true)).Verifiable();
+            context.InSequence(sequence).Setup(f => f.EndContext()).Verifiable();
+            context.InSequence(sequence).Setup(f => f.BeginContext(7, 4, true)).Verifiable();
+            context.InSequence(sequence).Setup(f => f.EndContext()).Verifiable();
+            page.PageExecutionContext = context.Object;
+
+            // Act
+            await page.ExecuteAsync();
+
+            // Assert
+            context.Verify();
         }
 
         private static TestableRazorPage CreatePage(Action<TestableRazorPage> executeAction,

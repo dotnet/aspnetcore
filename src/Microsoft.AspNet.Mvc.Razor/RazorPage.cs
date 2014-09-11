@@ -10,6 +10,7 @@ using System.Security.Principal;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.PageExecutionInstrumentation;
 using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.Razor
@@ -47,7 +48,11 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <inheritdoc />
         public ViewContext ViewContext { get; set; }
 
+        /// <inheritdoc />
         public string Layout { get; set; }
+
+        /// <inheritdoc />
+        public IPageExecutionContext PageExecutionContext { get; set; }
 
         /// <summary>
         /// Gets the TextWriter that the page is writing output to.
@@ -268,6 +273,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     // Calculate length of the source span by the position of the next value (or suffix)
                     var sourceLength = next.Position - attrVal.Value.Position;
 
+                    BeginContext(attrVal.Value.Position, sourceLength, isLiteral: attrVal.Literal);
                     // The extra branching here is to ensure that we call the Write*To(string) overload whe
                     // possible.
                     if (attrVal.Literal && stringValue != null)
@@ -287,6 +293,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                         WriteTo(writer, val.Value);
                     }
 
+                    EndContext();
                     wroteSomething = true;
                 }
                 if (wroteSomething)
@@ -308,7 +315,9 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private void WritePositionTaggedLiteral(TextWriter writer, string value, int position)
         {
+            BeginContext(position, value.Length, isLiteral: true);
             WriteLiteralTo(writer, value);
+            EndContext();
         }
 
         private void WritePositionTaggedLiteral(TextWriter writer, PositionTagged<string> value)
@@ -418,6 +427,16 @@ namespace Microsoft.AspNet.Mvc.Razor
                 // If a body was defined, then RenderBody should have been called.
                 throw new InvalidOperationException(Resources.FormatRenderBodyNotCalled("RenderBody"));
             }
+        }
+
+        public void BeginContext(int position, int length, bool isLiteral)
+        {
+            PageExecutionContext?.BeginContext(position, length, isLiteral);
+        }
+
+        public void EndContext()
+        {
+            PageExecutionContext?.EndContext();
         }
 
         private void EnsureMethodCanBeInvoked(string methodName)
