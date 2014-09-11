@@ -17,13 +17,8 @@ namespace Microsoft.AspNet.StaticFiles
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseSendFileFallback(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseSendFileFallback([NotNull] this IApplicationBuilder builder)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException("builder");
-            }
-
             /* TODO builder.GetItem(typeof(ISendFile))
 
             // Check for advertised support
@@ -35,7 +30,7 @@ namespace Microsoft.AspNet.StaticFiles
             // Otherwise, insert a fallback SendFile middleware and advertise support
             SetSendFileCapability(builder.Properties);
              */
-            return builder.Use(next => new SendFileMiddleware(next).Invoke);
+            return builder.UseMiddleware<SendFileMiddleware>();
         }
 
         private static bool IsSendFileSupported(IDictionary<string, object> properties)

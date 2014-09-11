@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.StaticFiles;
 
@@ -17,7 +16,7 @@ namespace Microsoft.AspNet.Builder
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseDirectoryBrowser(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseDirectoryBrowser([NotNull] this IApplicationBuilder builder)
         {
             return builder.UseDirectoryBrowser(new DirectoryBrowserOptions());
         }
@@ -28,9 +27,9 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="requestPath">The relative request path and physical path.</param>
         /// <returns></returns>
-        public static IApplicationBuilder UseDirectoryBrowser(this IApplicationBuilder builder, string requestPath)
+        public static IApplicationBuilder UseDirectoryBrowser([NotNull] this IApplicationBuilder builder, [NotNull] string requestPath)
         {
-            return UseDirectoryBrowser(builder, new DirectoryBrowserOptions() { RequestPath = new PathString(requestPath) });
+            return builder.UseDirectoryBrowser(new DirectoryBrowserOptions() { RequestPath = new PathString(requestPath) });
         }
 
         /// <summary>
@@ -39,14 +38,9 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseDirectoryBrowser(this IApplicationBuilder builder, DirectoryBrowserOptions options)
+        public static IApplicationBuilder UseDirectoryBrowser([NotNull] this IApplicationBuilder builder, [NotNull] DirectoryBrowserOptions options)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException("builder");
-            }
-
-            return builder.Use(next => new DirectoryBrowserMiddleware(next, options).Invoke);
+            return builder.UseMiddleware<DirectoryBrowserMiddleware>(options);
         }
     }
 }

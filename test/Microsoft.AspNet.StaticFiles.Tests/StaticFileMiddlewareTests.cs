@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.FileSystems;
@@ -18,8 +19,7 @@ namespace Microsoft.AspNet.StaticFiles
         [Fact]
         public async Task NullArguments()
         {
-            Assert.Throws<ArgumentNullException>(() => TestServer.Create(app => app.UseStaticFiles((StaticFileOptions)null)));
-            Assert.Throws<ArgumentException>(() => TestServer.Create(app => app.UseStaticFiles(new StaticFileOptions() { ContentTypeProvider = null })));
+            Assert.Throws<TargetInvocationException>(() => TestServer.Create(app => app.UseStaticFiles(new StaticFileOptions() { ContentTypeProvider = null })));
 
             // No exception, default provided
             TestServer.Create(app => app.UseStaticFiles(new StaticFileOptions() { FileSystem = null }));
@@ -33,20 +33,20 @@ namespace Microsoft.AspNet.StaticFiles
         [Fact]
         public void GivenDirDoesntExist_Throw()
         {
-            Assert.Throws<DirectoryNotFoundException>(() => TestServer.Create(app => app.UseStaticFiles("/ThisDirDoesntExist")));
+            Assert.Throws<TargetInvocationException>(() => TestServer.Create(app => app.UseStaticFiles("/ThisDirDoesntExist")));
         }
 
         [Theory]
         [InlineData("", @".", "/missing.file")]
         [InlineData("/subdir", @".", "/subdir/missing.file")]
-        [InlineData("/missing.file", @"\", "/missing.file")]
-        [InlineData("", @"\", "/xunit.xml")]
+        [InlineData("/missing.file", @".\", "/missing.file")]
+        [InlineData("", @".\", "/xunit.xml")]
         public async Task NoMatch_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
             TestServer server = TestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()
             {
                 RequestPath = new PathString(baseUrl),
-                FileSystem = new PhysicalFileSystem(baseDir)
+                FileSystem = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, baseDir))
             }));
             HttpResponseMessage response = await server.CreateRequest(requestUrl).GetAsync();
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.StaticFiles
             TestServer server = TestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()
             {
                 RequestPath = new PathString(baseUrl),
-                FileSystem = new PhysicalFileSystem(baseDir)
+                FileSystem = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, baseDir))
             }));
             HttpResponseMessage response = await server.CreateRequest(requestUrl).GetAsync();
 
@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.StaticFiles
             TestServer server = TestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()
             {
                 RequestPath = new PathString(baseUrl),
-                FileSystem = new PhysicalFileSystem(baseDir)
+                FileSystem = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, baseDir))
             }));
             HttpResponseMessage response = await server.CreateRequest(requestUrl).PostAsync();
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.StaticFiles
             TestServer server = TestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()
             {
                 RequestPath = new PathString(baseUrl),
-                FileSystem = new PhysicalFileSystem(baseDir)
+                FileSystem = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, baseDir))
             }));
             HttpResponseMessage response = await server.CreateRequest(requestUrl).SendAsync("HEAD");
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.IO;
 using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.StaticFiles
@@ -48,6 +49,11 @@ namespace Microsoft.AspNet.StaticFiles
         internal static bool TryParseHttpDate(string dateString, out DateTime parsedDate)
         {
             return DateTime.TryParseExact(dateString, Constants.HttpDateFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedDate);
+        }
+
+        internal static string ResolveRootPath(string webRoot, PathString path)
+        {
+            return Path.GetFullPath(Path.Combine(webRoot, path.Value ?? string.Empty));
         }
     }
 }

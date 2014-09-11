@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.StaticFiles
@@ -23,23 +24,15 @@ namespace Microsoft.AspNet.StaticFiles
         /// </summary>
         /// <param name="next">The next middleware in the pipeline.</param>
         /// <param name="options">The configuration options.</param>
-        public StaticFileMiddleware(RequestDelegate next, StaticFileOptions options)
+        public StaticFileMiddleware([NotNull] RequestDelegate next, [NotNull] IHostingEnvironment hostingEnv, [NotNull] StaticFileOptions options)
         {
-            if (next == null)
-            {
-                throw new ArgumentNullException("next");
-            }
-            if (options == null)
-            {
-                throw new ArgumentNullException("options");
-            }
             if (options.ContentTypeProvider == null)
             {
                 throw new ArgumentException(Resources.Args_NoContentTypeProvider);
             }
             if (options.FileSystem == null)
             {
-                options.FileSystem = new PhysicalFileSystem("." + options.RequestPath.Value);
+                options.FileSystem = new PhysicalFileSystem(Helpers.ResolveRootPath(hostingEnv.WebRoot, options.RequestPath));
             }
 
             _next = next;

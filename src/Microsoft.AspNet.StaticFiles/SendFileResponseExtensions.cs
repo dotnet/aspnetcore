@@ -19,12 +19,8 @@ namespace Microsoft.AspNet.StaticFiles
         /// </summary>
         /// <param name="response"></param>
         /// <returns>True if sendfile.SendAsync is defined in the environment.</returns>
-        public static bool SupportsSendFile(this HttpResponse response)
+        public static bool SupportsSendFile([NotNull] this HttpResponse response)
         {
-            if (response == null)
-            {
-                throw new ArgumentNullException("response");
-            }
             return response.HttpContext.GetFeature<IHttpSendFileFeature>() != null;
         }
 
@@ -34,12 +30,8 @@ namespace Microsoft.AspNet.StaticFiles
         /// <param name="response"></param>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        public static Task SendFileAsync(this HttpResponse response, string fileName)
+        public static Task SendFileAsync([NotNull] this HttpResponse response, [NotNull] string fileName)
         {
-            if (response == null)
-            {
-                throw new ArgumentNullException("response");
-            }
             return response.SendFileAsync(fileName, 0, null, CancellationToken.None);
         }
 
@@ -52,12 +44,8 @@ namespace Microsoft.AspNet.StaticFiles
         /// <param name="count">The number of types to send, or null to send the remainder of the file.</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static Task SendFileAsync(this HttpResponse response, string fileName, long offset, long? count, CancellationToken cancellationToken)
+        public static Task SendFileAsync([NotNull] this HttpResponse response, [NotNull] string fileName, long offset, long? count, CancellationToken cancellationToken)
         {
-            if (response == null)
-            {
-                throw new ArgumentNullException("response");
-            }
             var sendFile = response.HttpContext.GetFeature<IHttpSendFileFeature>();
             if (sendFile == null)
             {

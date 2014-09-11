@@ -18,9 +18,9 @@ namespace Microsoft.AspNet.Builder
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseFileServer(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseFileServer([NotNull] this IApplicationBuilder builder)
         {
-            return UseFileServer(builder, new FileServerOptions());
+            return builder.UseFileServer(new FileServerOptions());
         }
 
         /// <summary>
@@ -29,9 +29,9 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="enableDirectoryBrowsing">Should directory browsing be enabled?</param>
         /// <returns></returns>
-        public static IApplicationBuilder UseFileServer(this IApplicationBuilder builder, bool enableDirectoryBrowsing)
+        public static IApplicationBuilder UseFileServer([NotNull] this IApplicationBuilder builder, bool enableDirectoryBrowsing)
         {
-            return UseFileServer(builder, new FileServerOptions() { EnableDirectoryBrowsing = enableDirectoryBrowsing });
+            return builder.UseFileServer(new FileServerOptions() { EnableDirectoryBrowsing = enableDirectoryBrowsing });
         }
 
         /// <summary>
@@ -40,9 +40,9 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="requestPath">The relative request path and physical path.</param>
         /// <returns></returns>
-        public static IApplicationBuilder UseFileServer(this IApplicationBuilder builder, string requestPath)
+        public static IApplicationBuilder UseFileServer([NotNull] this IApplicationBuilder builder, [NotNull] string requestPath)
         {
-            return UseFileServer(builder, new FileServerOptions() { RequestPath = new PathString(requestPath) });
+            return builder.UseFileServer(new FileServerOptions() { RequestPath = new PathString(requestPath) });
         }
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseFileServer(this IApplicationBuilder builder, FileServerOptions options)
+        public static IApplicationBuilder UseFileServer([NotNull] this IApplicationBuilder builder, [NotNull] FileServerOptions options)
         {
             if (options == null)
             {

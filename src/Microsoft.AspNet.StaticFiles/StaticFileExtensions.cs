@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.StaticFiles;
 
@@ -17,9 +16,9 @@ namespace Microsoft.AspNet.Builder
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseStaticFiles(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseStaticFiles([NotNull] this IApplicationBuilder builder)
         {
-            return UseStaticFiles(builder, new StaticFileOptions());
+            return builder.UseStaticFiles(new StaticFileOptions());
         }
 
         /// <summary>
@@ -28,9 +27,9 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="requestPath">The relative request path and physical path.</param>
         /// <returns></returns>
-        public static IApplicationBuilder UseStaticFiles(this IApplicationBuilder builder, string requestPath)
+        public static IApplicationBuilder UseStaticFiles([NotNull] this IApplicationBuilder builder, [NotNull] string requestPath)
         {
-            return UseStaticFiles(builder, new StaticFileOptions() { RequestPath = new PathString(requestPath) });
+            return builder.UseStaticFiles(new StaticFileOptions() { RequestPath = new PathString(requestPath) });
         }
 
         /// <summary>
@@ -39,13 +38,9 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseStaticFiles(this IApplicationBuilder builder, StaticFileOptions options)
+        public static IApplicationBuilder UseStaticFiles([NotNull] this IApplicationBuilder builder, [NotNull] StaticFileOptions options)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException("builder");
-            }
-            return builder.Use(next => new StaticFileMiddleware(next, options).Invoke);
+            return builder.UseMiddleware<StaticFileMiddleware>(options);
         }
     }
 }

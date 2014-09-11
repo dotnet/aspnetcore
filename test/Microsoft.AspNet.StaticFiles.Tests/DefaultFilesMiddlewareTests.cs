@@ -20,8 +20,6 @@ namespace Microsoft.AspNet.StaticFiles
         [Fact]
         public async Task NullArguments()
         {
-            Assert.Throws<ArgumentNullException>(() => TestServer.Create(app => app.UseDefaultFiles((DefaultFilesOptions)null)));
-
             // No exception, default provided
             TestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions() { FileSystem = null }));
 
@@ -32,11 +30,11 @@ namespace Microsoft.AspNet.StaticFiles
         }
 
         [Theory]
-        [InlineData("", @"", "/missing.dir")]
+        [InlineData("", @".", "/missing.dir")]
         [InlineData("", @".", "/missing.dir/")]
         [InlineData("/subdir", @".", "/subdir/missing.dir")]
-        [InlineData("/subdir", @"", "/subdir/missing.dir/")]
-        [InlineData("", @"\", "/missing.dir")]
+        [InlineData("/subdir", @".", "/subdir/missing.dir/")]
+        [InlineData("", @".\", "/missing.dir")]
         public async Task NoMatch_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
             TestServer server = TestServer.Create(app =>
@@ -44,7 +42,7 @@ namespace Microsoft.AspNet.StaticFiles
                 app.UseDefaultFiles(new DefaultFilesOptions()
                 {
                     RequestPath = new PathString(baseUrl),
-                    FileSystem = new PhysicalFileSystem(baseDir)
+                    FileSystem = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, baseDir))
                 });
                 app.Run(context => context.Response.WriteAsync(context.Request.Path.Value));
             });
@@ -55,10 +53,8 @@ namespace Microsoft.AspNet.StaticFiles
         }
 
         [Theory]
-        [InlineData("", @"", "/SubFolder/")]
         [InlineData("", @".", "/SubFolder/")]
         [InlineData("", @".\", "/SubFolder/")]
-        [InlineData("", @"SubFolder", "/")]
         [InlineData("", @".\SubFolder", "/")]
         public async Task FoundDirectoryWithDefaultFile_PathModified(string baseUrl, string baseDir, string requestUrl)
         {
@@ -67,7 +63,7 @@ namespace Microsoft.AspNet.StaticFiles
                 app.UseDefaultFiles(new DefaultFilesOptions()
                 {
                     RequestPath = new PathString(baseUrl),
-                    FileSystem = new PhysicalFileSystem(baseDir)
+                    FileSystem = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, baseDir))
                 });
                 app.Run(context => context.Response.WriteAsync(context.Request.Path.Value));
             });
@@ -78,18 +74,15 @@ namespace Microsoft.AspNet.StaticFiles
         }
 
         [Theory]
-        [InlineData("", @"", "/SubFolder", "")]
         [InlineData("", @".", "/SubFolder", "")]
         [InlineData("", @".\", "/SubFolder", "")]
-        [InlineData("", @".\", "/SubFolder", "?a=b")]
-        [InlineData("", @".\", "/SubFolder", "?a=b")]
         [InlineData("", @".\", "/SubFolder", "?a=b")]
         public async Task NearMatch_RedirectAddSlash(string baseUrl, string baseDir, string requestUrl, string queryString)
         {
             TestServer server = TestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions()
             {
                 RequestPath = new PathString(baseUrl),                
-                FileSystem = new PhysicalFileSystem(baseDir)
+                FileSystem = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, baseDir))
             }));
             HttpResponseMessage response = await server.CreateRequest(requestUrl + queryString).GetAsync();
             
@@ -99,8 +92,8 @@ namespace Microsoft.AspNet.StaticFiles
         }
 
         [Theory]
-        [InlineData("/SubFolder", @"\", "/SubFolder/")]
-        [InlineData("/SubFolder", @"", "/somedir/")]
+        [InlineData("/SubFolder", @".\", "/SubFolder/")]
+        [InlineData("/SubFolder", @".", "/somedir/")]
         [InlineData("", @".\SubFolder", "/")]
         [InlineData("", @".\SubFolder\", "/")]
         public async Task PostDirectory_PassesThrough(string baseUrl, string baseDir, string requestUrl)
@@ -108,7 +101,7 @@ namespace Microsoft.AspNet.StaticFiles
             TestServer server = TestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions()
             {
                 RequestPath = new PathString(baseUrl),
-                FileSystem = new PhysicalFileSystem(baseDir)
+                FileSystem = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, baseDir))
             }));
             HttpResponseMessage response = await server.CreateRequest(requestUrl).GetAsync();
 

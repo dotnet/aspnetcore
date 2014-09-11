@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.StaticFiles;
 
@@ -17,7 +16,7 @@ namespace Microsoft.AspNet.Builder
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseDefaultFiles(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseDefaultFiles([NotNull] this IApplicationBuilder builder)
         {
             return builder.UseDefaultFiles(new DefaultFilesOptions());
         }
@@ -28,9 +27,9 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="requestPath">The relative request path and physical path.</param>
         /// <returns></returns>
-        public static IApplicationBuilder UseDefaultFiles(this IApplicationBuilder builder, string requestPath)
+        public static IApplicationBuilder UseDefaultFiles([NotNull] this IApplicationBuilder builder, [NotNull] string requestPath)
         {
-            return UseDefaultFiles(builder, new DefaultFilesOptions() { RequestPath = new PathString(requestPath) });
+            return builder.UseDefaultFiles(new DefaultFilesOptions() { RequestPath = new PathString(requestPath) });
         }
 
         /// <summary>
@@ -39,14 +38,9 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseDefaultFiles(this IApplicationBuilder builder, DefaultFilesOptions options)
+        public static IApplicationBuilder UseDefaultFiles([NotNull] this IApplicationBuilder builder, [NotNull] DefaultFilesOptions options)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException("builder");
-            }
-
-            return builder.Use(next => new DefaultFilesMiddleware(next, options).Invoke);
+            return builder.UseMiddleware<DefaultFilesMiddleware>(options);
         }
     }
 }

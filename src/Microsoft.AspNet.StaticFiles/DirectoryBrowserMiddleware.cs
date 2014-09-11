@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.StaticFiles
@@ -24,23 +25,15 @@ namespace Microsoft.AspNet.StaticFiles
         /// </summary>
         /// <param name="next">The next middleware in the pipeline.</param>
         /// <param name="options">The configuration for this middleware.</param>
-        public DirectoryBrowserMiddleware(RequestDelegate next, DirectoryBrowserOptions options)
+        public DirectoryBrowserMiddleware([NotNull] RequestDelegate next, [NotNull] IHostingEnvironment hostingEnv, [NotNull] DirectoryBrowserOptions options)
         {
-            if (next == null)
-            {
-                throw new ArgumentNullException("next");
-            }
-            if (options == null)
-            {
-                throw new ArgumentNullException("options");
-            }
             if (options.Formatter == null)
             {
                 throw new ArgumentException(Resources.Args_NoFormatter);
             }
             if (options.FileSystem == null)
             {
-                options.FileSystem = new PhysicalFileSystem("." + options.RequestPath.Value);
+                options.FileSystem = new PhysicalFileSystem(Helpers.ResolveRootPath(hostingEnv.WebRoot, options.RequestPath));
             }
 
             _next = next;

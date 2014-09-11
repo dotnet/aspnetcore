@@ -25,13 +25,8 @@ namespace Microsoft.AspNet.StaticFiles
         /// Creates a new instance of the SendFileMiddleware.
         /// </summary>
         /// <param name="next">The next middleware in the pipeline.</param>
-        public SendFileMiddleware(RequestDelegate next)
+        public SendFileMiddleware([NotNull] RequestDelegate next)
         {
-            if (next == null)
-            {
-                throw new ArgumentNullException("next");
-            }
-
             _next = next;
         }
 
