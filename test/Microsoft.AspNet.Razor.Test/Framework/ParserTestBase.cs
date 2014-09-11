@@ -11,6 +11,7 @@ using System.Text;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNet.Razor.Parser.TagHelpers;
 using Microsoft.AspNet.Razor.Text;
 using Xunit;
 
@@ -291,6 +292,22 @@ namespace Microsoft.AspNet.Razor.Test.Framework
             }
         }
 
+        private static void EvaluateTagHelperAttribute(ErrorCollector collector,
+                                                       KeyValuePair<string, SyntaxTreeNode> actual,
+                                                       KeyValuePair<string, SyntaxTreeNode> expected)
+        {
+            if (actual.Key != expected.Key)
+            {
+                collector.AddError("{0} - FAILED :: Attribute names do not match", expected.Key);
+            }
+            else
+            {
+                collector.AddMessage("{0} - PASSED :: Attribute names match", expected.Key);
+            }
+
+            EvaluateSyntaxTreeNode(collector, actual.Value, expected.Value);
+        }
+
         private static void EvaluateSpan(ErrorCollector collector, Span actual, Span expected)
         {
             if (!Equals(expected, actual))
@@ -311,11 +328,16 @@ namespace Microsoft.AspNet.Razor.Test.Framework
             }
             else
             {
+                if (actual is TagHelperBlock)
+                {
+                    EvaluateTagHelperBlock(collector, actual as TagHelperBlock, expected as TagHelperBlock);
+                }
+
                 AddPassedMessage(collector, expected);
                 using (collector.Indent())
                 {
-                    IEnumerator<SyntaxTreeNode> expectedNodes = expected.Children.GetEnumerator();
-                    IEnumerator<SyntaxTreeNode> actualNodes = actual.Children.GetEnumerator();
+                    var expectedNodes = expected.Children.GetEnumerator();
+                    var actualNodes = actual.Children.GetEnumerator();
                     while (expectedNodes.MoveNext())
                     {
                         if (!actualNodes.MoveNext())
@@ -331,6 +353,35 @@ namespace Microsoft.AspNet.Razor.Test.Framework
                     {
                         collector.AddError("End of Node - FAILED :: Found Node: {0}", actualNodes.Current);
                     }
+                }
+            }
+        }
+
+        private static void EvaluateTagHelperBlock(ErrorCollector collector, TagHelperBlock actual, TagHelperBlock expected)
+        {
+            if (expected == null)
+            {
+                AddMismatchError(collector, actual, expected);
+            }
+            else
+            {
+                var expectedAttributes = expected.Attributes.GetEnumerator();
+                var actualAttributes = actual.Attributes.GetEnumerator();
+
+                while (expectedAttributes.MoveNext())
+                {
+                    if (!actualAttributes.MoveNext())
+                    {
+                        collector.AddError("{0} - FAILED :: No more attributes on this node", expectedAttributes.Current);
+                    }
+                    else
+                    {
+                        EvaluateTagHelperAttribute(collector, actualAttributes.Current, expectedAttributes.Current);
+                    }
+                }
+                while (actualAttributes.MoveNext())
+                {
+                    collector.AddError("End of Attributes - FAILED :: Found Attribute: {0}", actualAttributes.Current.Key);
                 }
             }
         }

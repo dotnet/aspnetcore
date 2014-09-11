@@ -29,24 +29,6 @@ namespace Microsoft.AspNet.Razor.Test.Parser
         }
 
         [Fact]
-        public void ConstructorCopiesBasicValuesFromBlockBuilder()
-        {
-            // Arrange
-            BlockBuilder builder = new BlockBuilder()
-            {
-                Name = "Foo",
-                Type = BlockType.Helper
-            };
-
-            // Act
-            Block actual = builder.Build();
-
-            // Assert
-            Assert.Equal("Foo", actual.Name);
-            Assert.Equal(BlockType.Helper, actual.Type);
-        }
-
-        [Fact]
         public void ConstructorTransfersInstanceOfCodeGeneratorFromBlockBuilder()
         {
             // Arrange

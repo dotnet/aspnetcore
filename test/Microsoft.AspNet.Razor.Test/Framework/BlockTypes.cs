@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNet.Razor.Parser.TagHelpers;
 
 namespace Microsoft.AspNet.Razor.Test.Framework
 {
@@ -170,6 +172,33 @@ namespace Microsoft.AspNet.Razor.Test.Framework
 
         public MarkupBlock(IEnumerable<SyntaxTreeNode> children)
             : this(BlockCodeGenerator.Null, children)
+        {
+        }
+    }
+
+    public class MarkupTagHelperBlock : TagHelperBlock
+    {
+        public MarkupTagHelperBlock(string tagName)
+            : this(tagName, new Dictionary<string, SyntaxTreeNode>())
+        {
+        }
+
+        public MarkupTagHelperBlock(string tagName, 
+                                    IDictionary<string, SyntaxTreeNode> attributes)
+            : this(tagName, attributes, new SyntaxTreeNode[0])
+        {
+        }
+
+        public MarkupTagHelperBlock(string tagName,
+                                    params SyntaxTreeNode[] children)
+            : this(tagName, new Dictionary<string, SyntaxTreeNode>(), children)
+        {
+        }
+
+        public MarkupTagHelperBlock(string tagName,
+                                    IDictionary<string, SyntaxTreeNode> attributes,
+                                    params SyntaxTreeNode[] children)
+            : base(new TagHelperBlockBuilder(tagName, attributes, children))
         {
         }
     }
