@@ -114,16 +114,19 @@ namespace Microsoft.AspNet.Razor.Text
             return null;
         }
 
-        internal class CharacterReference
+        internal struct CharacterReference
         {
+            private readonly char _character;
+            private readonly SourceLocation _location;
+
             public CharacterReference(char character, SourceLocation location)
             {
-                Character = character;
-                Location = location;
+                _character = character;
+                _location = location;
             }
 
-            public char Character { get; private set; }
-            public SourceLocation Location { get; private set; }
+            public char Character { get { return _character; } }
+            public SourceLocation Location { get { return _location; } }
         }
 
         private class TextLine
