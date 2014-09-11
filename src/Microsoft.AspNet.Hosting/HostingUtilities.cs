@@ -16,10 +16,12 @@
 // permissions and limitations under the License.
 
 using System;
+using System.IO;
+using Microsoft.Framework.ConfigurationModel;
 
 namespace Microsoft.AspNet.Hosting
 {
-    internal static class Utilities
+    public static class HostingUtilities
     {
         internal static Tuple<string, string> SplitTypeName(string identifier)
         {
@@ -32,6 +34,21 @@ namespace Microsoft.AspNet.Hosting
                 assemblyName = parts[1].Trim();
             }
             return new Tuple<string, string>(typeName, assemblyName);
+        }
+
+        public static string GetWebRoot(string applicationBasePath)
+        {
+            try
+            {
+                var config = new Configuration();
+                config.AddJsonFile(Path.Combine(applicationBasePath, "project.json"));
+                var webroot = config.Get("webroot") ?? string.Empty;
+                return Path.GetFullPath(Path.Combine(applicationBasePath, webroot));
+            }
+            catch (Exception)
+            {
+                return applicationBasePath;
+            }
         }
     }
 }

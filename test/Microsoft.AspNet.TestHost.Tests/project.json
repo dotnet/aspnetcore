@@ -14,5 +14,6 @@
             "System.Runtime": ""
         }
     }
-  }
+  },
+  "webroot" : "testroot"
 }

@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Hosting.Server
                 throw new ArgumentException(string.Empty, "serverFactoryIdentifier");
             }
 
-            var nameParts = Utilities.SplitTypeName(serverFactoryIdentifier);
+            var nameParts = HostingUtilities.SplitTypeName(serverFactoryIdentifier);
             string typeName = nameParts.Item1;
             string assemblyName = nameParts.Item2;
 

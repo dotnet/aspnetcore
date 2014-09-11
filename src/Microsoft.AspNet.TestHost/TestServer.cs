@@ -17,7 +17,8 @@ namespace Microsoft.AspNet.TestHost
 {
     public class TestServer : IServerFactory, IDisposable
     {
-        private static readonly string ServerName = typeof(TestServer).FullName;
+        private const string DefaultEnvironmentName = "Development";
+        private const string ServerName = nameof(TestServer);
         private static readonly ServerInformation ServerInfo = new ServerInformation();
         private Func<object, Task> _appDelegate;
         private IDisposable _appInstance;
@@ -25,15 +26,11 @@ namespace Microsoft.AspNet.TestHost
 
         public TestServer(IConfiguration config, IServiceProvider serviceProvider, Action<IApplicationBuilder> appStartup)
         {
-            var env = serviceProvider.GetService<IApplicationEnvironment>();
-            if (env == null)
-            {
-                throw new ArgumentException("IApplicationEnvironment couldn't be resolved.", "serviceProvider");
-            }
+            var appEnv = serviceProvider.GetService<IApplicationEnvironment>();
 
             HostingContext hostContext = new HostingContext()
             {
-                ApplicationName = env.ApplicationName,
+                ApplicationName = appEnv.ApplicationName,
                 Configuration = config,
                 ServerFactory = this,
                 Services = serviceProvider,
@@ -51,14 +48,22 @@ namespace Microsoft.AspNet.TestHost
 
         public static TestServer Create(IServiceProvider provider, Action<IApplicationBuilder> app)
         {
+            var appEnv = provider.GetService<IApplicationEnvironment>();
+
+            var hostingEnv = new HostingEnvironment()
+            {
+                EnvironmentName = DefaultEnvironmentName,
+                WebRoot = HostingUtilities.GetWebRoot(appEnv.ApplicationBasePath),
+            };
+
             var collection = new ServiceCollection();
-            var hostingServices = HostingServices.GetDefaultServices();
+            collection.Add(HostingServices.GetDefaultServices());
+            collection.AddInstance<IHostingEnvironment>(hostingEnv);
+
+            var appServices = collection.BuildServiceProvider(provider);
 
             var config = new Configuration();
-            collection.Add(hostingServices);
-
-            var serviceProvider = collection.BuildServiceProvider(provider);
-            return new TestServer(config, serviceProvider, app);
+            return new TestServer(config, appServices, app);
         }
 
         public HttpMessageHandler CreateHandler()

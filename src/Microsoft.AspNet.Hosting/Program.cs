@@ -29,6 +29,8 @@ namespace Microsoft.AspNet.Hosting
     public class Program
     {
         private const string HostingIniFile = "Microsoft.AspNet.Hosting.ini";
+        private const string DefaultEnvironmentName = "Development";
+        private const string EnvironmentKey = "KRE_ENV";
 
         private readonly IServiceProvider _serviceProvider;
 
@@ -47,11 +49,18 @@ namespace Microsoft.AspNet.Hosting
             config.AddEnvironmentVariables();
             config.AddCommandLine(args);
 
+            var appEnv = _serviceProvider.GetService<IApplicationEnvironment>();
+
+            var hostingEnv = new HostingEnvironment()
+            {
+                EnvironmentName = config.Get(EnvironmentKey) ?? DefaultEnvironmentName,
+                WebRoot = HostingUtilities.GetWebRoot(appEnv.ApplicationBasePath),
+            };
+
             var serviceCollection = new ServiceCollection();
             serviceCollection.Add(HostingServices.GetDefaultServices(config));
+            serviceCollection.AddInstance<IHostingEnvironment>(hostingEnv);
             var services = serviceCollection.BuildServiceProvider(_serviceProvider);
-
-            var appEnvironment = _serviceProvider.GetService<IApplicationEnvironment>();
 
             var context = new HostingContext()
             {
@@ -59,21 +68,12 @@ namespace Microsoft.AspNet.Hosting
                 Configuration = config,
                 ServerName = config.Get("server"), // TODO: Key names
                 ApplicationName = config.Get("app")  // TODO: Key names
-                    ?? appEnvironment.ApplicationName,
-                EnvironmentName = config.Get("env") ?? "Development"
+                    ?? appEnv.ApplicationName,
+                EnvironmentName = hostingEnv.EnvironmentName,
             };
 
             var engine = services.GetService<IHostingEngine>();
-            if (engine == null)
-            {
-                throw new Exception("TODO: IHostingEngine service not available exception");
-            }
-
             var appShutdownService = _serviceProvider.GetService<IApplicationShutdown>();
-            if (appShutdownService == null)
-            {
-                throw new Exception("TODO: IApplicationShutdown service not available");
-            }
             var shutdownHandle = new ManualResetEvent(false);
 
             var serverShutdown = engine.Start(context);
