@@ -23,7 +23,9 @@ namespace Microsoft.AspNet.Builder
             });
         }
 
-        public static IApplicationBuilder UseMvc([NotNull] this IApplicationBuilder app, [NotNull] Action<IRouteBuilder> configureRoutes)
+        public static IApplicationBuilder UseMvc(
+            [NotNull] this IApplicationBuilder app, 
+            [NotNull] Action<IRouteBuilder> configureRoutes)
         {
             // Verify if AddMvc was done before calling UseMvc
             // We use the MvcMarkerService to make sure if all the services were added.
