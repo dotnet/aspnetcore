@@ -23,6 +23,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -109,7 +110,7 @@ namespace Microsoft.Net.Http.Server
             {
                 if (errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF)
                 {
-                    asyncResult.Fail(new WebListenerException((int)errorCode));
+                    asyncResult.Fail(new IOException(string.Empty, new WebListenerException((int)errorCode)));
                 }
                 else
                 {

@@ -178,7 +178,7 @@ namespace Microsoft.Net.Http.Server
                 }
                 if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF)
                 {
-                    Exception exception = new WebListenerException((int)statusCode);
+                    Exception exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
                     LogHelper.LogException(_requestContext.Logger, "Read", exception);
                     Abort();
                     throw exception;
@@ -275,7 +275,7 @@ namespace Microsoft.Net.Http.Server
                     }
                     else
                     {
-                        Exception exception = new WebListenerException((int)statusCode);
+                        Exception exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
                         LogHelper.LogException(_requestContext.Logger, "BeginRead", exception);
                         Abort();
                         throw exception;
@@ -401,7 +401,7 @@ namespace Microsoft.Net.Http.Server
                     }
                     else
                     {
-                        Exception exception = new WebListenerException((int)statusCode);
+                        Exception exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
                         LogHelper.LogException(_requestContext.Logger, "ReadAsync", exception);
                         Abort();
                         throw exception;

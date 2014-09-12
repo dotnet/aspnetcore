@@ -113,7 +113,7 @@ namespace Microsoft.Net.Http.Server
 
                 if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF)
                 {
-                    throw new WebListenerException((int)statusCode);
+                    throw new IOException(string.Empty, new WebListenerException((int)statusCode));
                 }
             }
             catch (Exception e)
@@ -164,7 +164,7 @@ namespace Microsoft.Net.Http.Server
                 }
                 else if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
                 {
-                    throw new WebListenerException((int)statusCode);
+                    throw new IOException(string.Empty, new WebListenerException((int)statusCode));
                 }
             }
             catch (Exception e)
@@ -351,7 +351,7 @@ namespace Microsoft.Net.Http.Server
 
             if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF)
             {
-                Exception exception = new WebListenerException((int)statusCode);
+                Exception exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
                 LogHelper.LogException(_requestContext.Logger, "Write", exception);
                 Abort();
                 throw exception;
@@ -444,7 +444,7 @@ namespace Microsoft.Net.Http.Server
                 }
                 else
                 {
-                    Exception exception = new WebListenerException((int)statusCode);
+                    Exception exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
                     LogHelper.LogException(_requestContext.Logger, "BeginWrite", exception);
                     Abort();
                     throw exception;
@@ -589,7 +589,7 @@ namespace Microsoft.Net.Http.Server
                 }
                 else
                 {
-                    Exception exception = new WebListenerException((int)statusCode);
+                    Exception exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
                     LogHelper.LogException(_requestContext.Logger, "WriteAsync", exception);
                     Abort();
                     throw exception;
@@ -602,7 +602,7 @@ namespace Microsoft.Net.Http.Server
                 asyncResult.IOCompleted(statusCode, bytesSent);
             }
 
-            // Last write, cache it for special cancelation handling.
+            // Last write, cache it for special cancellation handling.
             if ((flags & UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA) == 0)
             {
                 _lastWrite = asyncResult;
@@ -710,7 +710,7 @@ namespace Microsoft.Net.Http.Server
                 }
                 else
                 {
-                    Exception exception = new WebListenerException((int)statusCode);
+                    Exception exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
                     LogHelper.LogException(_requestContext.Logger, "SendFileAsync", exception);
                     Abort();
                     throw exception;
@@ -829,7 +829,7 @@ namespace Microsoft.Net.Http.Server
                         // Don't throw for disconnects, we were already finished with the response.
                         && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_CONNECTION_INVALID)
                     {
-                        Exception exception = new WebListenerException((int)statusCode);
+                        Exception exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
                         LogHelper.LogException(_requestContext.Logger, "Dispose", exception);
                         _requestContext.Abort();
                         throw exception;
