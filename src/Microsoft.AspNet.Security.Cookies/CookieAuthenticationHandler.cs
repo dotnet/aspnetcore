@@ -210,7 +210,7 @@ namespace Microsoft.AspNet.Security.Cookies
                         Context,
                         Options.CookieName,
                         cookieValue,
-                        cookieOptions);
+                        signInContext.CookieOptions);
 
                     var signedInContext = new CookieResponseSignedInContext(
                         Context,
@@ -238,7 +238,7 @@ namespace Microsoft.AspNet.Security.Cookies
                     Options.CookieManager.DeleteCookie(
                         Context,
                         Options.CookieName,
-                        cookieOptions);
+                        context.CookieOptions);
                 }
                 else if (_shouldRenew)
                 {

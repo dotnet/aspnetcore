@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Security.Cookies
         void ApplyRedirect(CookieApplyRedirectContext context);
 
         /// <summary>
-        /// 
+        /// Called during the sign-out flow to augment the cookie cleanup process.
         /// </summary>
         /// <param name="context">Contains information about the login session as well as information about the authentication cookie.</param>
         void ResponseSignOut(CookieResponseSignOutContext context);
