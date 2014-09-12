@@ -3,6 +3,7 @@
 
 using System;
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -124,6 +125,64 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
                 Assert.Equal(expectedContent, responseContent);
             }
+        }
+
+        [Fact]
+        public async Task ActionWithRequireHttps_RedirectsToSecureUrl_ForNonHttpsGetRequests()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/Home/HttpsOnlyAction");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.MovedPermanently, response.StatusCode);
+            Assert.NotNull(response.Headers.Location);
+            Assert.Equal("https://localhost/Home/HttpsOnlyAction", response.Headers.Location.ToString());
+            Assert.Equal(0, response.Content.Headers.ContentLength);
+
+            var responseBytes = await response.Content.ReadAsByteArrayAsync();
+            Assert.Equal(0, responseBytes.Length);
+        }
+
+        [Fact]
+        public async Task ActionWithRequireHttps_ReturnsBadRequestResponse_ForNonHttpsNonGetRequests()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.SendAsync(new HttpRequestMessage(
+                HttpMethod.Post,
+                "http://localhost/Home/HttpsOnlyAction"));
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+            Assert.Equal(0, response.Content.Headers.ContentLength);
+
+            var responseBytes = await response.Content.ReadAsByteArrayAsync();
+            Assert.Equal(0, responseBytes.Length);
+        }
+
+        [Theory]
+        [InlineData("GET")]
+        [InlineData("POST")]
+        public async Task ActionWithRequireHttps_AllowsHttpsRequests(string method)
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = new HttpClient(server.CreateHandler(), false);
+
+            // Act
+            var response = await client.SendAsync(new HttpRequestMessage(
+                new HttpMethod(method),
+                "https://localhost/Home/HttpsOnlyAction"));
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
     }
 }
