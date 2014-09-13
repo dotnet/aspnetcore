@@ -409,4 +409,10 @@ Instead, wrap the contents of the block in "{{}}":
   <data name="TagHelpers_CannotHaveCSharpInTagDeclaration" xml:space="preserve">
     <value>Tag Helpers cannot have C# in an HTML tag element's attribute declaration area.</value>
   </data>
+  <data name="TagHelpers_TagHelperCodeGeneartorMustBeAssociatedWithATagHelperBlock" xml:space="preserve">
+    <value>A TagHelperCodeGenerator must only be used with TagHelperBlocks.</value>
+  </data>
+  <data name="TagHelpers_AttributesThatAreNotStringsMustNotContainAtSymbols" xml:space="preserve">
+    <value>TagHelper attributes that do not expect strings must not have @ symbols within them. Found attribute '{0}' with an invalid value.</value>
+  </data>
 </root>

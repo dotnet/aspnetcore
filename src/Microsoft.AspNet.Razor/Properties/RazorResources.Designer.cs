@@ -1462,6 +1462,38 @@ namespace Microsoft.AspNet.Razor
             return GetString("TagHelpers_CannotHaveCSharpInTagDeclaration");
         }
 
+        /// <summary>
+        /// A TagHelperCodeGenerator must only be used with TagHelperBlocks.
+        /// </summary>
+        internal static string TagHelpers_TagHelperCodeGeneartorMustBeAssociatedWithATagHelperBlock
+        {
+            get { return GetString("TagHelpers_TagHelperCodeGeneartorMustBeAssociatedWithATagHelperBlock"); }
+        }
+
+        /// <summary>
+        /// A TagHelperCodeGenerator must only be used with TagHelperBlocks.
+        /// </summary>
+        internal static string FormatTagHelpers_TagHelperCodeGeneartorMustBeAssociatedWithATagHelperBlock()
+        {
+            return GetString("TagHelpers_TagHelperCodeGeneartorMustBeAssociatedWithATagHelperBlock");
+        }
+
+        /// <summary>
+        /// TagHelper attributes that do not expect strings must not have @ symbols within them. Found attribute '{0}' with an invalid value.
+        /// </summary>
+        internal static string TagHelpers_AttributesThatAreNotStringsMustNotContainAtSymbols
+        {
+            get { return GetString("TagHelpers_AttributesThatAreNotStringsMustNotContainAtSymbols"); }
+        }
+
+        /// <summary>
+        /// TagHelper attributes that do not expect strings must not have @ symbols within them. Found attribute '{0}' with an invalid value.
+        /// </summary>
+        internal static string FormatTagHelpers_AttributesThatAreNotStringsMustNotContainAtSymbols(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpers_AttributesThatAreNotStringsMustNotContainAtSymbols"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

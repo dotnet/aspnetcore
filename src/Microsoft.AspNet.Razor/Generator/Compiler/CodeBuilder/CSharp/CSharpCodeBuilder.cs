@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -56,6 +55,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                     new CSharpHelperVisitor(writer, Context).Accept(Tree.Chunks);
                     new CSharpTypeMemberVisitor(writer, Context).Accept(Tree.Chunks);
                     new CSharpDesignTimeHelpersVisitor(writer, Context).AcceptTree(Tree);
+                    new CSharpTagHelperFieldDeclarationVisitor(writer, Context).Accept(Tree.Chunks);
 
                     BuildConstructor(writer);
 

@@ -12,6 +12,8 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 {
     public class CSharpCodeWriter : CodeWriter
     {
+        private const string InstanceMethodFormat = "{0}.{1}";
+
         public CSharpCodeWriter()
         {
             LineMappingManager = new LineMappingManager();
@@ -208,7 +210,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             return WriteStartMethodInvocation(methodName, new string[0]);
         }
 
-        public CSharpCodeWriter WriteStartMethodInvocation(string methodName, string[] genericArguments)
+        public CSharpCodeWriter WriteStartMethodInvocation(string methodName, params string[] genericArguments)
         {
             Write(methodName);
 
@@ -233,6 +235,33 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             }
 
             return this;
+        }
+
+        // Writes a method invocation for the given instance name.
+        public CSharpCodeWriter WriteInstanceMethodInvocation([NotNull] string instanceName,
+                                                              [NotNull] string methodName,
+                                                              params string[] parameters)
+        {
+            return WriteInstanceMethodInvocation(instanceName, methodName, endLine: true, parameters: parameters);
+        }
+
+        // Writes a method invocation for the given instance name.
+        public CSharpCodeWriter WriteInstanceMethodInvocation([NotNull] string instanceName,
+                                                              [NotNull] string methodName,
+                                                              bool endLine,
+                                                              params string[] parameters)
+        {
+            return WriteMethodInvocation(
+                string.Format(CultureInfo.InvariantCulture, InstanceMethodFormat, instanceName, methodName),
+                endLine,
+                parameters);
+        }
+
+        public CSharpCodeWriter WriteStartInstanceMethodInvocation([NotNull] string instanceName,
+                                                                   [NotNull] string methodName)
+        {
+            return WriteStartMethodInvocation(
+                string.Format(CultureInfo.InvariantCulture, InstanceMethodFormat, instanceName, methodName));
         }
 
         public CSharpCodeWriter WriteMethodInvocation(string methodName, params string[] parameters)

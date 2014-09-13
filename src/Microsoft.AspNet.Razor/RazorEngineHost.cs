@@ -215,5 +215,13 @@ namespace Microsoft.AspNet.Razor
             }
             return incomingBuilder;
         }
+
+        // If a user wants to modify the code generation process they do it via the DecorateCodeGenerator method which
+        // is why this is internal.
+        internal RazorCodeGenerator CreateCodeGenerator(string className, string rootNamespace, string sourceFileName)
+        {
+            return DecorateCodeGenerator(
+                CodeLanguage.CreateCodeGenerator(className, rootNamespace, sourceFileName, host: this));
+        }
     }
 }

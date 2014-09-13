@@ -65,19 +65,25 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                         {
                             // We're in a begin tag block
 
-                            if (IsPotentialTagHelper(tagName, childBlock) && IsRegisteredTagHelper(tagName))
+                            if (IsPotentialTagHelper(tagName, childBlock))
                             {
-                                // Found a new tag helper block
-                                TrackTagHelperBlock(new TagHelperBlockBuilder(tagName, childBlock));
+                                var descriptors = _provider.GetTagHelpers(tagName);
 
-                                // If it's a self closing block then we don't have to worry about nested children 
-                                // within the tag... complete it.
-                                if (IsSelfClosing(childBlock))
+                                // We could be a tag helper, but only if we have descriptors registered
+                                if (descriptors.Any())
                                 {
-                                    BuildCurrentlyTrackedTagHelperBlock();
-                                }
+                                    // Found a new tag helper block
+                                    TrackTagHelperBlock(new TagHelperBlockBuilder(tagName, descriptors, childBlock));
 
-                                continue;
+                                    // If it's a self closing block then we don't have to worry about nested children 
+                                    // within the tag... complete it.
+                                    if (IsSelfClosing(childBlock))
+                                    {
+                                        BuildCurrentlyTrackedTagHelperBlock();
+                                    }
+
+                                    continue;
+                                }
                             }
                         }
                         else

@@ -15,9 +15,6 @@ namespace Microsoft.AspNet.Razor.TagHelpers
     {
         private const string CatchAllDescriptorTarget = "*";
 
-        private static readonly TagHelperDescriptorComparer DefaultTagHelperDescriptorComparer = 
-            new TagHelperDescriptorComparer();
-
         private IDictionary<string, HashSet<TagHelperDescriptor>> _registrations;
 
         /// <summary>
@@ -79,30 +76,11 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             // Ensure there's a List to add the descriptor to.
             if (!_registrations.TryGetValue(descriptor.TagName, out descriptorSet))
             {
-                descriptorSet = new HashSet<TagHelperDescriptor>(DefaultTagHelperDescriptorComparer);
+                descriptorSet = new HashSet<TagHelperDescriptor>(TagHelperDescriptorComparer.Default);
                 _registrations[descriptor.TagName] = descriptorSet;
             }
 
             descriptorSet.Add(descriptor);
-        }
-
-        private class TagHelperDescriptorComparer : IEqualityComparer<TagHelperDescriptor>
-        {
-            public bool Equals(TagHelperDescriptor descriptorX, TagHelperDescriptor descriptorY)
-            {
-                return descriptorX.TagHelperName == descriptorY.TagHelperName &&
-                       descriptorX.TagName == descriptorY.TagName &&
-                       descriptorX.ContentBehavior == descriptorY.ContentBehavior;
-            }
-
-            public int GetHashCode(TagHelperDescriptor descriptor)
-            {
-                return HashCodeCombiner.Start()
-                                       .Add(descriptor.TagName)
-                                       .Add(descriptor.TagHelperName)
-                                       .Add(descriptor.ContentBehavior)
-                                       .CombinedHash;
-            }
         }
     }
 }

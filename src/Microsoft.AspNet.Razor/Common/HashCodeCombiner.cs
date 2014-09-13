@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections;
+using System.Collections.Generic;
 
 namespace Microsoft.Internal.Web.Utils
 {
@@ -44,6 +45,11 @@ namespace Microsoft.Internal.Web.Utils
             int hashCode = (o != null) ? o.GetHashCode() : 0;
             Add(hashCode);
             return this;
+        }
+
+        public HashCodeCombiner Add<TValue>(TValue value, IEqualityComparer<TValue> comparer)
+        {
+            return Add(comparer.GetHashCode(value));
         }
 
         public static HashCodeCombiner Start()

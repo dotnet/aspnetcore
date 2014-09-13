@@ -3,8 +3,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using Microsoft.Internal.Web.Utils;
 
 namespace Microsoft.AspNet.Razor.Generator
 {
@@ -17,34 +15,38 @@ namespace Microsoft.AspNet.Razor.Generator
         public static readonly string DefaultWriteAttributeMethodName = "WriteAttribute";
         public static readonly string DefaultWriteAttributeToMethodName = "WriteAttributeTo";
 
-        public static readonly GeneratedClassContext Default = new GeneratedClassContext(DefaultExecuteMethodName,
-                                                                                         DefaultWriteMethodName,
-                                                                                         DefaultWriteLiteralMethodName);
+        public static readonly GeneratedClassContext Default = 
+            new GeneratedClassContext(DefaultExecuteMethodName,
+                                      DefaultWriteMethodName,
+                                      DefaultWriteLiteralMethodName,
+                                      new GeneratedTagHelperContext());
 
-        public GeneratedClassContext(string executeMethodName, string writeMethodName, string writeLiteralMethodName)
+        public GeneratedClassContext(string executeMethodName,
+                                     string writeMethodName,
+                                     string writeLiteralMethodName,
+                                     [NotNull] GeneratedTagHelperContext generatedTagHelperContext)
             : this()
         {
-            if (String.IsNullOrEmpty(executeMethodName))
+            if (string.IsNullOrEmpty(executeMethodName))
             {
-                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture,
-                                                          CommonResources.Argument_Cannot_Be_Null_Or_Empty,
-                                                          "executeMethodName"),
-                                            "executeMethodName");
+                throw new ArgumentException(
+                    CommonResources.Argument_Cannot_Be_Null_Or_Empty, 
+                    nameof(executeMethodName));
             }
-            if (String.IsNullOrEmpty(writeMethodName))
+            if (string.IsNullOrEmpty(writeMethodName))
             {
-                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture,
-                                                          CommonResources.Argument_Cannot_Be_Null_Or_Empty,
-                                                          "writeMethodName"),
-                                            "writeMethodName");
+                throw new ArgumentException(
+                    CommonResources.Argument_Cannot_Be_Null_Or_Empty, 
+                    nameof(writeMethodName));
             }
-            if (String.IsNullOrEmpty(writeLiteralMethodName))
+            if (string.IsNullOrEmpty(writeLiteralMethodName))
             {
-                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture,
-                                                          CommonResources.Argument_Cannot_Be_Null_Or_Empty,
-                                                          "writeLiteralMethodName"),
-                                            "writeLiteralMethodName");
+                throw new ArgumentException(
+                    CommonResources.Argument_Cannot_Be_Null_Or_Empty, 
+                    nameof(writeLiteralMethodName));
             }
+
+            GeneratedTagHelperContext = generatedTagHelperContext;
 
             WriteMethodName = writeMethodName;
             WriteLiteralMethodName = writeLiteralMethodName;
@@ -65,8 +67,12 @@ namespace Microsoft.AspNet.Razor.Generator
                                      string writeLiteralMethodName,
                                      string writeToMethodName,
                                      string writeLiteralToMethodName,
-                                     string templateTypeName)
-            : this(executeMethodName, writeMethodName, writeLiteralMethodName)
+                                     string templateTypeName,
+                                     GeneratedTagHelperContext generatedTagHelperContext)
+            : this(executeMethodName, 
+                   writeMethodName, 
+                   writeLiteralMethodName,
+                   generatedTagHelperContext)
         {
             WriteToMethodName = writeToMethodName;
             WriteLiteralToMethodName = writeLiteralToMethodName;
@@ -79,8 +85,15 @@ namespace Microsoft.AspNet.Razor.Generator
                                      string writeToMethodName,
                                      string writeLiteralToMethodName,
                                      string templateTypeName,
-                                     string defineSectionMethodName)
-            : this(executeMethodName, writeMethodName, writeLiteralMethodName, writeToMethodName, writeLiteralToMethodName, templateTypeName)
+                                     string defineSectionMethodName,
+                                     GeneratedTagHelperContext generatedTagHelperContext)
+            : this(executeMethodName,
+                   writeMethodName,
+                   writeLiteralMethodName,
+                   writeToMethodName,
+                   writeLiteralToMethodName,
+                   templateTypeName,
+                   generatedTagHelperContext)
         {
             DefineSectionMethodName = defineSectionMethodName;
         }
@@ -93,18 +106,28 @@ namespace Microsoft.AspNet.Razor.Generator
                                      string templateTypeName,
                                      string defineSectionMethodName,
                                      string beginContextMethodName,
-                                     string endContextMethodName)
-            : this(executeMethodName, writeMethodName, writeLiteralMethodName, writeToMethodName, writeLiteralToMethodName, templateTypeName, defineSectionMethodName)
+                                     string endContextMethodName,
+                                     GeneratedTagHelperContext generatedTagHelperContext)
+            : this(executeMethodName,
+                   writeMethodName,
+                   writeLiteralMethodName,
+                   writeToMethodName,
+                   writeLiteralToMethodName,
+                   templateTypeName,
+                   defineSectionMethodName,
+                   generatedTagHelperContext)
         {
             BeginContextMethodName = beginContextMethodName;
             EndContextMethodName = endContextMethodName;
         }
 
+        // Required Items
         public string WriteMethodName { get; private set; }
         public string WriteLiteralMethodName { get; private set; }
         public string WriteToMethodName { get; private set; }
         public string WriteLiteralToMethodName { get; private set; }
         public string ExecuteMethodName { get; private set; }
+        public GeneratedTagHelperContext GeneratedTagHelperContext { get; private set; }
 
         // Optional Items
         public string BeginContextMethodName { get; set; }
@@ -120,17 +143,17 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public bool AllowSections
         {
-            get { return !String.IsNullOrEmpty(DefineSectionMethodName); }
+            get { return !string.IsNullOrEmpty(DefineSectionMethodName); }
         }
 
         public bool AllowTemplates
         {
-            get { return !String.IsNullOrEmpty(TemplateTypeName); }
+            get { return !string.IsNullOrEmpty(TemplateTypeName); }
         }
 
         public bool SupportsInstrumentation
         {
-            get { return !String.IsNullOrEmpty(BeginContextMethodName) && !String.IsNullOrEmpty(EndContextMethodName); }
+            get { return !string.IsNullOrEmpty(BeginContextMethodName) && !string.IsNullOrEmpty(EndContextMethodName); }
         }
 
         public override bool Equals(object obj)
@@ -139,16 +162,16 @@ namespace Microsoft.AspNet.Razor.Generator
             {
                 return false;
             }
-            GeneratedClassContext other = (GeneratedClassContext)obj;
-            return String.Equals(DefineSectionMethodName, other.DefineSectionMethodName, StringComparison.Ordinal) &&
-                   String.Equals(WriteMethodName, other.WriteMethodName, StringComparison.Ordinal) &&
-                   String.Equals(WriteLiteralMethodName, other.WriteLiteralMethodName, StringComparison.Ordinal) &&
-                   String.Equals(WriteToMethodName, other.WriteToMethodName, StringComparison.Ordinal) &&
-                   String.Equals(WriteLiteralToMethodName, other.WriteLiteralToMethodName, StringComparison.Ordinal) &&
-                   String.Equals(ExecuteMethodName, other.ExecuteMethodName, StringComparison.Ordinal) &&
-                   String.Equals(TemplateTypeName, other.TemplateTypeName, StringComparison.Ordinal) &&
-                   String.Equals(BeginContextMethodName, other.BeginContextMethodName, StringComparison.Ordinal) &&
-                   String.Equals(EndContextMethodName, other.EndContextMethodName, StringComparison.Ordinal);
+            var other = (GeneratedClassContext)obj;
+            return string.Equals(DefineSectionMethodName, other.DefineSectionMethodName, StringComparison.Ordinal) &&
+                   string.Equals(WriteMethodName, other.WriteMethodName, StringComparison.Ordinal) &&
+                   string.Equals(WriteLiteralMethodName, other.WriteLiteralMethodName, StringComparison.Ordinal) &&
+                   string.Equals(WriteToMethodName, other.WriteToMethodName, StringComparison.Ordinal) &&
+                   string.Equals(WriteLiteralToMethodName, other.WriteLiteralToMethodName, StringComparison.Ordinal) &&
+                   string.Equals(ExecuteMethodName, other.ExecuteMethodName, StringComparison.Ordinal) &&
+                   string.Equals(TemplateTypeName, other.TemplateTypeName, StringComparison.Ordinal) &&
+                   string.Equals(BeginContextMethodName, other.BeginContextMethodName, StringComparison.Ordinal) &&
+                   string.Equals(EndContextMethodName, other.EndContextMethodName, StringComparison.Ordinal);
         }
 
         public override int GetHashCode()

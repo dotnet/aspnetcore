@@ -53,6 +53,10 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
             {
                 Visit((StatementChunk)chunk);
             }
+            else if(chunk is TagHelperChunk)
+            {
+                Visit((TagHelperChunk)chunk);
+            }
             else if(chunk is SetLayoutChunk)
             {
                 Visit((SetLayoutChunk)chunk);
@@ -110,6 +114,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
         protected abstract void Visit(LiteralChunk chunk);
         protected abstract void Visit(ExpressionChunk chunk);
         protected abstract void Visit(StatementChunk chunk);
+        protected abstract void Visit(TagHelperChunk chunk);
         protected abstract void Visit(UsingChunk chunk);
         protected abstract void Visit(ChunkBlock chunk);
         protected abstract void Visit(DynamicCodeAttributeChunk chunk);

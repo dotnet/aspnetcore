@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
 
 namespace Microsoft.AspNet.Razor.Parser.TagHelpers
@@ -33,12 +34,14 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
         /// and <see cref="BlockBuilder.Type"/> from the <paramref name="startTag"/>.
         /// </summary>
         /// <param name="tagName">An HTML tag name.</param>
+        /// <param name="descriptors">The <see cref="TagHelperDescriptor"/>s associated with the current HTML
+        /// tag.</param>
         /// <param name="startTag">The <see cref="Block"/> that contains all information about the start
         /// of the HTML element.</param>
-        public TagHelperBlockBuilder(string tagName, Block startTag)
+        public TagHelperBlockBuilder(string tagName, IEnumerable<TagHelperDescriptor> descriptors, Block startTag)
         {
             TagName = tagName;
-            CodeGenerator = new TagHelperCodeGenerator();
+            CodeGenerator = new TagHelperCodeGenerator(descriptors);
             Type = startTag.Type;
             Attributes = GetTagAttributes(startTag);
         }
@@ -51,7 +54,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
             TagName = tagName;
             Attributes = attributes;
             Type = BlockType.Tag;
-            CodeGenerator = new TagHelperCodeGenerator();
+            CodeGenerator = new TagHelperCodeGenerator(tagHelperDescriptors: null);
 
             // Children is IList, no AddRange
             foreach (var child in children)

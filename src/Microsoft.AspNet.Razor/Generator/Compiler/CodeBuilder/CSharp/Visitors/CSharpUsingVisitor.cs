@@ -9,6 +9,10 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 {
     public class CSharpUsingVisitor : CodeVisitor<CSharpCodeWriter>
     {
+        private const string TagHelpersRuntimeNamespace = "Microsoft.AspNet.Razor.Runtime.TagHelpers";
+
+        private bool _foundTagHelpers;
+
         public CSharpUsingVisitor(CSharpCodeWriter writer, CodeBuilderContext context)
             : base(writer, context)
         {
@@ -44,6 +48,21 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             if (!mapSemicolon)
             {
                 Writer.WriteLine(";");
+            }
+        }
+
+        protected override void Visit(TagHelperChunk chunk)
+        {
+            if (!_foundTagHelpers)
+            {
+                _foundTagHelpers = true;
+
+                if (!ImportedUsings.Contains(TagHelpersRuntimeNamespace))
+                {
+                    // If we find TagHelpers then we need to add the TagHelper runtime namespace to our list of usings.
+                    Writer.WriteUsing(TagHelpersRuntimeNamespace);
+                    ImportedUsings.Add(TagHelpersRuntimeNamespace);
+                }
             }
         }
     }
