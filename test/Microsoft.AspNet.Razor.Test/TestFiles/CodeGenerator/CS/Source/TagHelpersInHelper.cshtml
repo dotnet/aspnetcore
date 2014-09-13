@@ -1,0 +1,10 @@
+﻿@helper MyHelper(string val)
+{
+    <div>
+        <mytaghelper boundproperty="Current Time: @DateTime.Now" unboundproperty="Current Time: @DateTime.Now">
+            In None ContentBehavior.
+            <nestedtaghelper>Some buffered values with a value of @val</nestedtaghelper>
+        </mytaghelper>
+    </div>
+}
+<mytaghelper>@MyHelper(@<nestedtaghelper>Custom Value</nestedtaghelper>)</mytaghelper>

@@ -38,6 +38,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                                TestSpan[] spans = null,
                                TabTest tabTest = TabTest.Both,
                                Action<RazorEngineHost> hostConfig = null,
+                               Func<RazorTemplateEngine, RazorTemplateEngine> templateEngineConfig = null,
                                Action<GeneratorResults> onResults = null)
         {
             bool testRun = false;
@@ -55,6 +56,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                         spans: spans,
                         withTabs: true,
                         hostConfig: hostConfig,
+                        templateEngineConfig: templateEngineConfig,
                         onResults: onResults);
                 }
 
@@ -74,6 +76,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                         spans: spans,
                         withTabs: false,
                         hostConfig: hostConfig,
+                        templateEngineConfig: templateEngineConfig,
                         onResults: onResults);
                 }
 
@@ -84,14 +87,15 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         }
 
         private void RunTestInternal(string name,
-                               string baselineName,
-                               bool generatePragmas,
-                               bool designTimeMode,
-                               IList<LineMapping> expectedDesignTimePragmas,
-                               TestSpan[] spans,
-                               bool withTabs,
-                               Action<RazorEngineHost> hostConfig,
-                                Action<GeneratorResults> onResults = null)
+                                     string baselineName,
+                                     bool generatePragmas,
+                                     bool designTimeMode,
+                                     IList<LineMapping> expectedDesignTimePragmas,
+                                     TestSpan[] spans,
+                                     bool withTabs,
+                                     Action<RazorEngineHost> hostConfig,
+                                     Func<RazorTemplateEngine, RazorTemplateEngine> templateEngineConfig,
+                                     Action<GeneratorResults> onResults = null)
         {
             // Load the test files
             if (baselineName == null)
@@ -118,7 +122,8 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                                                                    "Template",
                                                                    "DefineSection",
                                                                    "Instrumentation.BeginContext",
-                                                                   "Instrumentation.EndContext")
+                                                                   "Instrumentation.EndContext",
+                                                                   new GeneratedTagHelperContext())
                                                                    {
                                                                        LayoutPropertyName = "Layout",
                                                                        ResolveUrlMethodName = "Href"
@@ -132,6 +137,11 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             host.EnableInstrumentation = true;
 
             RazorTemplateEngine engine = new RazorTemplateEngine(host);
+
+            if(templateEngineConfig != null)
+            {
+                engine = templateEngineConfig(engine);
+            }
 
             // Generate code for the file
             GeneratorResults results = null;

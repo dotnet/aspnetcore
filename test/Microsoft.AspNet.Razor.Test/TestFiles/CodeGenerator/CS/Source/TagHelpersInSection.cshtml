@@ -1,0 +1,12 @@
+﻿@{
+    var code = "some code";
+}
+
+@section MySection {
+    <div>
+        <mytaghelper boundproperty="Current Time: @DateTime.Now" unboundproperty="Current Time: @DateTime.Now">
+            In None ContentBehavior.
+            <nestedtaghelper>Some buffered values with @code</nestedtaghelper>
+        </mytaghelper>
+    </div>
+}

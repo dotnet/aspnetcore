@@ -1,0 +1,20 @@
+﻿@if (true)
+{
+    var checkbox = "checkbox";
+
+    <div class="randomNonTagHelperAttribute">
+        <p time="Current Time: @DateTime.Now">
+            <h1>Set Time:</h1>
+            @if (false)
+            {
+                <p>New Time: <input type="text" value="" placeholder="Enter in a new time..."/></p>
+            }
+            else
+            {
+                <p>Current Time: <input type=@checkbox checked=true /></p>
+                <input type='@(true ? "checkbox" : "anything")' />
+                <input type='@if(true) { <text>checkbox</text> } else { <text>anything</text> }' />
+            }
+        </p>
+    </div>
+}
