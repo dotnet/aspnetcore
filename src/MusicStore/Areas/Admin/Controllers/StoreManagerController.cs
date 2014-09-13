@@ -7,7 +7,8 @@ using MusicStore.Models;
 using System.Linq;
 using MusicStore.Hubs;
 using MusicStore.ViewModels;
-using Microsoft.AspNet.MemoryCache;
+using Microsoft.Framework.Cache.Memory;
+using System;
 
 namespace MusicStore.Areas.Admin.Controllers
 {
@@ -66,14 +67,16 @@ namespace MusicStore.Areas.Admin.Controllers
             string cacheId = string.Format("album_{0}", id);
             var album = cache.GetOrAdd(cacheId, context =>
             {
+                //Remove it from cache if not retrieved in last 10 minutes
+                context.SetSlidingExpiraiton(TimeSpan.FromMinutes(10));
                 //If this returns null how do we prevent the cache to store this. 
-                return db.Albums.Single(a => a.AlbumId == id);
+                return db.Albums.Where(a => a.AlbumId == id).FirstOrDefault();
             });
 
             if (album == null)
             {
                 cache.Remove(cacheId);
-                return HttpNotFound();
+                return View(album);
             }
 
             // TODO [EF] We don't query related data as yet. We have to populate this until we do automatically.
@@ -101,6 +104,7 @@ namespace MusicStore.Areas.Admin.Controllers
                 db.Albums.Add(album);
                 db.SaveChanges();
                 annoucementHub.Clients.All.announcement(new AlbumData() { Title = album.Title, Url = Url.Action("Details", "Store", new { id = album.AlbumId }) });
+                cache.Remove("latestAlbum");
                 return RedirectToAction("Index");
             }
 
@@ -113,11 +117,11 @@ namespace MusicStore.Areas.Admin.Controllers
         // GET: /StoreManager/Edit/5
         public IActionResult Edit(int id)
         {
-            Album album = db.Albums.Single(a => a.AlbumId == id);
+            Album album = db.Albums.Where(a => a.AlbumId == id).FirstOrDefault();
 
             if (album == null)
             {
-                return HttpNotFound();
+                return View(album);
             }
 
             ViewBag.GenreId = new SelectList(db.Genres, "GenreId", "Name", album.GenreId);
@@ -149,11 +153,7 @@ namespace MusicStore.Areas.Admin.Controllers
         // GET: /StoreManager/RemoveAlbum/5
         public IActionResult RemoveAlbum(int id)
         {
-            Album album = db.Albums.Single(a => a.AlbumId == id);
-            if (album == null)
-            {
-                return HttpNotFound();
-            }
+            Album album = db.Albums.Where(a => a.AlbumId == id).FirstOrDefault();
             return View(album);
         }
 
@@ -162,11 +162,16 @@ namespace MusicStore.Areas.Admin.Controllers
         [HttpPost, ActionName("RemoveAlbum")]
         public IActionResult RemoveAlbumConfirmed(int id)
         {
-            Album album = db.Albums.Single(a => a.AlbumId == id);
-            db.Albums.Remove(album);
-            db.SaveChanges();
-            //Remove the cache entry as it is removed
-            cache.Remove(string.Format("album_{0}", id));
+            Album album = db.Albums.Where(a => a.AlbumId == id).FirstOrDefault();
+
+            if (album != null)
+            {
+                db.Albums.Remove(album);
+                db.SaveChanges();
+                //Remove the cache entry as it is removed
+                cache.Remove(string.Format("album_{0}", id));
+            }
+
             return RedirectToAction("Index");
         }
 

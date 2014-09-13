@@ -25,7 +25,7 @@
         "Microsoft.Framework.ConfigurationModel.Json": "1.0.0-*",
         "Microsoft.Framework.OptionsModel": "1.0.0-*",
         "Microsoft.AspNet.SignalR.Server": "3.0.0-*",
-        "Microsoft.AspNet.MemoryCache": "1.0.0-*"
+        "Microsoft.Framework.Cache.Memory": "1.0.0-*"
     },
     "commands": {
         "WebListener": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5002",

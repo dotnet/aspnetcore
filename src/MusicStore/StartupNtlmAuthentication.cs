@@ -10,22 +10,22 @@ using Microsoft.Net.Http.Server;
 using Microsoft.AspNet.Server.WebListener;
 using System.Security.Claims;
 using System.Security.Principal;
-using Microsoft.AspNet.MemoryCache;
+using Microsoft.Framework.Cache.Memory;
 
 namespace MusicStore
 {
     /// <summary>
     /// To make runtime to load an environment based startup class, specify the environment by the following ways: 
     /// 1. Drop a Microsoft.AspNet.Hosting.ini file in the application folder
-    /// 2. Add a setting in the ini file named 'env' with value of the format 'Startup[EnvironmentName]'. For example: To load a Startup class named
-    /// 'StartupNtlmAuthentication' the value of the env should be 'NtlmAuthentication' (eg. env=NtlmAuthentication). Runtime adds a 'Startup' prefix to this and loads 'StartupNtlmAuthentication'. 
+    /// 2. Add a setting in the ini file named 'KRE_ENV' with value of the format 'Startup[EnvironmentName]'. For example: To load a Startup class named
+    /// 'StartupNtlmAuthentication' the value of the env should be 'NtlmAuthentication' (eg. KRE_ENV=NtlmAuthentication). Runtime adds a 'Startup' prefix to this and loads 'StartupNtlmAuthentication'. 
     /// If no environment name is specified the default startup class loaded is 'Startup'. 
     /// https://github.com/aspnet/Helios/issues/53 - Environment based startup class loading is not available on Helios.
     /// Alternative ways to specify environment are:
-    /// 1. Set the environment variable named SET env=NtlmAuthentication
+    /// 1. Set the environment variable named SET KRE_ENV=NtlmAuthentication
     /// 2. For selfhost based servers pass in a command line variable named --env with this value. Eg:
     /// "commands": {
-    ///    "WebListener": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5002 --env NtlmAuthentication",
+    ///    "WebListener": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5002 --KRE_ENV NtlmAuthentication",
     ///  },
     /// </summary>
     public class StartupNtlmAuthentication
@@ -47,6 +47,7 @@ namespace MusicStore
                 var identity = (ClaimsIdentity)context.User.Identity;
 
 #if ASPNET50
+                //no WindowsIdentity yet on CoreCLR
                 if (identity.GetUserName() == Environment.UserDomainName + "\\" + Environment.UserName)
                 {
                     identity.AddClaim(new Claim("ManageStore", "Allowed"));

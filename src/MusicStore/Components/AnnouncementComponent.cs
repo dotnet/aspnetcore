@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
 using MusicStore.Models;
-using Microsoft.AspNet.MemoryCache;
+using Microsoft.Framework.Cache.Memory;
 
 namespace MusicStore.Components
 {
@@ -23,6 +23,7 @@ namespace MusicStore.Components
         {
             var latestAlbum = await cache.GetOrAdd("latestAlbum", async context =>
             {
+                context.SetAbsoluteExpiration(TimeSpan.FromMinutes(10));
                 return await GetLatestAlbum();
             });
 

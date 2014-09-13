@@ -22,7 +22,7 @@
         //This code block necessary only for NTLM authentication
         <ul class="nav navbar-nav navbar-right">
             <li>
-                @Html.ActionLink("Hello " + User.Identity.GetUserName() + "!", null, null, routeValues: null, htmlAttributes: new { title = "Manage" })
+                <p class="nav navbar-text navbar-right">Hello, @User.Identity.GetUserName()!</p>
             </li>
         </ul>
     }

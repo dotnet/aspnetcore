@@ -14,7 +14,7 @@ using Microsoft.AspNet.Security.Google;
 using Microsoft.AspNet.Security.Twitter;
 using Microsoft.AspNet.Security.MicrosoftAccount;
 using Microsoft.AspNet.Security;
-using Microsoft.AspNet.MemoryCache;
+using Microsoft.Framework.Cache.Memory;
 using MusicStore.Mocks.Common;
 using MusicStore.Mocks.Facebook;
 using MusicStore.Mocks.Twitter;

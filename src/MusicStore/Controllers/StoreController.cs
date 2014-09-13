@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNet.MemoryCache;
+﻿using Microsoft.Framework.Cache.Memory;
 using Microsoft.AspNet.Mvc;
 using MusicStore.Models;
+using System;
 using System.Linq;
 
 namespace MusicStore.Controllers
@@ -44,6 +45,9 @@ namespace MusicStore.Controllers
         {
             var album = cache.GetOrAdd(string.Format("album_{0}", id), context =>
             {
+                //Remove it from cache if not retrieved in last 10 minutes
+                context.SetSlidingExpiraiton(TimeSpan.FromMinutes(10));
+
                 var albumData = db.Albums.Single(a => a.AlbumId == id);
 
                 // TODO [EF] We don't query related data as yet. We have to populate this until we do automatically.
