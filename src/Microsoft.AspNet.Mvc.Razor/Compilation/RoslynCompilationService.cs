@@ -52,7 +52,6 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         {
             var sourceText = SourceText.From(compilationContent, Encoding.UTF8);
             var syntaxTrees = new[] { CSharpSyntaxTree.ParseText(sourceText, path: fileInfo.PhysicalPath) };
-            var runtimeFramework = _environment.RuntimeFramework;
 
             var references = _applicationReferences.Value;
 
