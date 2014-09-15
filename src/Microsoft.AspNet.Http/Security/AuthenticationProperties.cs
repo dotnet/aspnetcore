@@ -75,8 +75,7 @@ namespace Microsoft.AspNet.Http.Security
         {
             get
             {
-                string value;
-                return Dictionary.TryGetValue(RedirectUriKey, out value) ? value : null;
+                return Dictionary.TryGetValue(RedirectUriKey, out var value) ? value : null;
             }
             set
             {
@@ -101,11 +100,9 @@ namespace Microsoft.AspNet.Http.Security
         {
             get
             {
-                string value;
-                if (Dictionary.TryGetValue(IssuedUtcKey, out value))
+                if (Dictionary.TryGetValue(IssuedUtcKey, out var value))
                 {
-                    DateTimeOffset dateTimeOffset;
-                    if (DateTimeOffset.TryParseExact(value, UtcDateTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out dateTimeOffset))
+                    if (DateTimeOffset.TryParseExact(value, UtcDateTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var dateTimeOffset))
                     {
                         return dateTimeOffset;
                     }
@@ -135,11 +132,9 @@ namespace Microsoft.AspNet.Http.Security
         {
             get
             {
-                string value;
-                if (Dictionary.TryGetValue(ExpiresUtcKey, out value))
+                if (Dictionary.TryGetValue(ExpiresUtcKey, out var value))
                 {
-                    DateTimeOffset dateTimeOffset;
-                    if (DateTimeOffset.TryParseExact(value, UtcDateTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out dateTimeOffset))
+                    if (DateTimeOffset.TryParseExact(value, UtcDateTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var dateTimeOffset))
                     {
                         return dateTimeOffset;
                     }
@@ -169,11 +164,9 @@ namespace Microsoft.AspNet.Http.Security
         {
             get
             {
-                string value;
-                if (Dictionary.TryGetValue(RefreshKey, out value))
+                if (Dictionary.TryGetValue(RefreshKey, out var value))
                 {
-                    bool refresh;
-                    if (bool.TryParse(value, out refresh))
+                    if (bool.TryParse(value, out var refresh))
                     {
                         return refresh;
                     }
