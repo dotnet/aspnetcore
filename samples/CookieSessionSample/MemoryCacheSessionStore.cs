@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.MemoryCache;
 using Microsoft.AspNet.Security;
 using Microsoft.AspNet.Security.Cookies.Infrastructure;
+using Microsoft.Framework.Cache.Memory;
 
 namespace CookieSessionSample
 {
@@ -33,7 +33,7 @@ namespace CookieSessionSample
                 {
                     context.SetAbsoluteExpiration(expiresUtc.Value);
                 }
-                context.SetSlidingExpiraiton(TimeSpan.FromHours(1)); // TODO: configurable.
+                context.SetSlidingExpiration(TimeSpan.FromHours(1)); // TODO: configurable.
 
                 return (AuthenticationTicket)context.State;
             });

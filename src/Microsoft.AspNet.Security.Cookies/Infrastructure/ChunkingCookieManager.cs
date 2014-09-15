@@ -17,6 +17,8 @@ namespace Microsoft.AspNet.Security.Cookies.Infrastructure
     {
         public ChunkingCookieManager()
         {
+            // Lowest common denominator. Safari has the lowest known limit (4093), and we leave little extra just in case.
+            // See http://browsercookielimits.x64.me/.
             ChunkSize = 4090;
             ThrowForPartialCookies = true;
         }
@@ -40,9 +42,8 @@ namespace Microsoft.AspNet.Security.Cookies.Infrastructure
         {
             if (value != null && value.StartsWith("chunks:", StringComparison.Ordinal))
             {
-                string chunksCountString = value.Substring("chunks:".Length);
-                int chunksCount;
-                if (int.TryParse(chunksCountString, NumberStyles.None, CultureInfo.InvariantCulture, out chunksCount))
+                var chunksCountString = value.Substring("chunks:".Length);
+                if (int.TryParse(chunksCountString, NumberStyles.None, CultureInfo.InvariantCulture, out var chunksCount))
                 {
                     return chunksCount;
                 }
@@ -57,28 +58,23 @@ namespace Microsoft.AspNet.Security.Cookies.Infrastructure
         /// <param name="context"></param>
         /// <param name="key"></param>
         /// <returns>The reassembled cookie, if any, or null.</returns>
-        public string GetRequestCookie(HttpContext context, string key)
+        public string GetRequestCookie([NotNull] HttpContext context, [NotNull] string key)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException("context");
-            }
-
-            IReadableStringCollection requestCookies = context.Request.Cookies;
-            string value = requestCookies[key];
-            int chunksCount = ParseChunksCount(value);
+            var requestCookies = context.Request.Cookies;
+            var value = requestCookies[key];
+            var chunksCount = ParseChunksCount(value);
             if (chunksCount > 0)
             {
-                bool quoted = false;
-                string[] chunks = new string[chunksCount];
-                for (int chunkId = 1; chunkId <= chunksCount; chunkId++)
+                var quoted = false;
+                var chunks = new string[chunksCount];
+                for (var chunkId = 1; chunkId <= chunksCount; chunkId++)
                 {
-                    string chunk = requestCookies[key + "C" + chunkId.ToString(CultureInfo.InvariantCulture)];
+                    var chunk = requestCookies[key + "C" + chunkId.ToString(CultureInfo.InvariantCulture)];
                     if (chunk == null)
                     {
                         if (ThrowForPartialCookies)
                         {
-                            int totalSize = 0;
+                            var totalSize = 0;
                             for (int i = 0; i < chunkId - 1; i++)
                             {
                                 totalSize += chunks[i].Length;
@@ -97,7 +93,7 @@ namespace Microsoft.AspNet.Security.Cookies.Infrastructure
                     }
                     chunks[chunkId - 1] = chunk;
                 }
-                string merged = string.Join(string.Empty, chunks);
+                var merged = string.Join(string.Empty, chunks);
                 if (quoted)
                 {
                     merged = Quote(merged);
@@ -119,25 +115,16 @@ namespace Microsoft.AspNet.Security.Cookies.Infrastructure
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <param name="options"></param>
-        public void AppendResponseCookie(HttpContext context, string key, string value, CookieOptions options)
+        public void AppendResponseCookie([NotNull] HttpContext context, [NotNull] string key, string value, [NotNull] CookieOptions options)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException("context");
-            }
-            if (options == null)
-            {
-                throw new ArgumentNullException("options");
-            }
+            var domainHasValue = !string.IsNullOrEmpty(options.Domain);
+            var pathHasValue = !string.IsNullOrEmpty(options.Path);
+            var expiresHasValue = options.Expires.HasValue;
 
-            bool domainHasValue = !string.IsNullOrEmpty(options.Domain);
-            bool pathHasValue = !string.IsNullOrEmpty(options.Path);
-            bool expiresHasValue = options.Expires.HasValue;
+            var escapedKey = Uri.EscapeDataString(key);
+            var prefix = escapedKey + "=";
 
-            string escapedKey = Uri.EscapeDataString(key);
-            string prefix = escapedKey + "=";
-
-            string suffix = string.Concat(
+            var suffix = string.Concat(
                 !domainHasValue ? null : "; domain=",
                 !domainHasValue ? null : options.Domain,
                 !pathHasValue ? null : "; path=",
@@ -148,19 +135,19 @@ namespace Microsoft.AspNet.Security.Cookies.Infrastructure
                 !options.HttpOnly ? null : "; HttpOnly");
 
             value = value ?? string.Empty;
-            bool quoted = false;
+            var quoted = false;
             if (IsQuoted(value))
             {
                 quoted = true;
                 value = RemoveQuotes(value);
             }
-            string escapedValue = Uri.EscapeDataString(value);
+            var escapedValue = Uri.EscapeDataString(value);
 
             // Normal cookie
-            IHeaderDictionary responseHeaders = context.Response.Headers;
+            var responseHeaders = context.Response.Headers;
             if (!ChunkSize.HasValue || ChunkSize.Value > prefix.Length + escapedValue.Length + suffix.Length + (quoted ? 2 : 0))
             {
-                string setCookieValue = string.Concat(
+                var setCookieValue = string.Concat(
                     prefix,
                     quoted ? Quote(escapedValue) : escapedValue,
                     suffix);
@@ -180,18 +167,18 @@ namespace Microsoft.AspNet.Security.Cookies.Infrastructure
                 // Set-Cookie: CookieNameC1="Segment1"; path=/
                 // Set-Cookie: CookieNameC2="Segment2"; path=/
                 // Set-Cookie: CookieNameC3="Segment3"; path=/
-                int dataSizePerCookie = ChunkSize.Value - prefix.Length - suffix.Length - (quoted ? 2 : 0) - 3; // Budget 3 chars for the chunkid.
-                int cookieChunkCount = (int)Math.Ceiling(escapedValue.Length * 1.0 / dataSizePerCookie);
+                var dataSizePerCookie = ChunkSize.Value - prefix.Length - suffix.Length - (quoted ? 2 : 0) - 3; // Budget 3 chars for the chunkid.
+                var cookieChunkCount = (int)Math.Ceiling(escapedValue.Length * 1.0 / dataSizePerCookie);
 
                 responseHeaders.AppendValues(Constants.Headers.SetCookie, prefix + "chunks:" + cookieChunkCount.ToString(CultureInfo.InvariantCulture) + suffix);
-                
-                string[] chunks = new string[cookieChunkCount];
-                int offset = 0;
-                for (int chunkId = 1; chunkId <= cookieChunkCount; chunkId++)
+
+                var chunks = new string[cookieChunkCount];
+                var offset = 0;
+                for (var chunkId = 1; chunkId <= cookieChunkCount; chunkId++)
                 {
-                    int remainingLength = escapedValue.Length - offset;
-                    int length = Math.Min(dataSizePerCookie, remainingLength);
-                    string segment = escapedValue.Substring(offset, length);
+                    var remainingLength = escapedValue.Length - offset;
+                    var length = Math.Min(dataSizePerCookie, remainingLength);
+                    var segment = escapedValue.Substring(offset, length);
                     offset += length;
 
                     chunks[chunkId - 1] = string.Concat(
@@ -215,34 +202,25 @@ namespace Microsoft.AspNet.Security.Cookies.Infrastructure
         /// <param name="context"></param>
         /// <param name="key"></param>
         /// <param name="options"></param>
-        public void DeleteCookie(HttpContext context, string key, CookieOptions options)
+        public void DeleteCookie([NotNull] HttpContext context, [NotNull] string key, [NotNull] CookieOptions options)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException("context");
-            }
-            if (options == null)
-            {
-                throw new ArgumentNullException("options");
-            }
-
-            string escapedKey = Uri.EscapeDataString(key);
-            List<string> keys = new List<string>();
+            var escapedKey = Uri.EscapeDataString(key);
+            var keys = new List<string>();
             keys.Add(escapedKey + "=");
 
-            string requestCookie = context.Request.Cookies[key];
-            int chunks = ParseChunksCount(requestCookie);
+            var requestCookie = context.Request.Cookies[key];
+            var chunks = ParseChunksCount(requestCookie);
             if (chunks > 0)
             {
                 for (int i = 1; i <= chunks + 1; i++)
                 {
-                    string subkey = escapedKey + "C" + i.ToString(CultureInfo.InvariantCulture);
+                    var subkey = escapedKey + "C" + i.ToString(CultureInfo.InvariantCulture);
                     keys.Add(subkey + "=");
                 }
             }
 
-            bool domainHasValue = !string.IsNullOrEmpty(options.Domain);
-            bool pathHasValue = !string.IsNullOrEmpty(options.Path);
+            var domainHasValue = !string.IsNullOrEmpty(options.Domain);
+            var pathHasValue = !string.IsNullOrEmpty(options.Path);
 
             Func<string, bool> rejectPredicate;
             Func<string, bool> predicate = value => keys.Any(k => value.StartsWith(k, StringComparison.OrdinalIgnoreCase));
@@ -259,8 +237,8 @@ namespace Microsoft.AspNet.Security.Cookies.Infrastructure
                 rejectPredicate = value => predicate(value);
             }
 
-            IHeaderDictionary responseHeaders = context.Response.Headers;
-            IList<string> existingValues = responseHeaders.GetValues(Constants.Headers.SetCookie);
+            var responseHeaders = context.Response.Headers;
+            var existingValues = responseHeaders.GetValues(Constants.Headers.SetCookie);
             if (existingValues != null)
             {
                 responseHeaders.SetValues(Constants.Headers.SetCookie, existingValues.Where(value => !rejectPredicate(value)).ToArray());
@@ -270,7 +248,7 @@ namespace Microsoft.AspNet.Security.Cookies.Infrastructure
                 context,
                 key,
                 string.Empty,
-                new CookieOptions
+                new CookieOptions()
                 {
                     Path = options.Path,
                     Domain = options.Domain,
@@ -283,7 +261,7 @@ namespace Microsoft.AspNet.Security.Cookies.Infrastructure
                     context, 
                     key + "C" + i.ToString(CultureInfo.InvariantCulture),
                     string.Empty,
-                    new CookieOptions
+                    new CookieOptions()
                     {
                         Path = options.Path,
                         Domain = options.Domain,
@@ -292,17 +270,17 @@ namespace Microsoft.AspNet.Security.Cookies.Infrastructure
             }
         }
 
-        private static bool IsQuoted(string value)
+        private static bool IsQuoted([NotNull] string value)
         {
             return value.Length >= 2 && value[0] == '"' && value[value.Length - 1] == '"';
         }
 
-        private static string RemoveQuotes(string value)
+        private static string RemoveQuotes([NotNull] string value)
         {
             return value.Substring(1, value.Length - 2);
         }
 
-        private static string Quote(string value)
+        private static string Quote([NotNull] string value)
         {
             return '"' + value + '"';
         }

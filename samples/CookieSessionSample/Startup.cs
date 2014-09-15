@@ -17,7 +17,7 @@ namespace CookieSessionSample
 
             app.Run(async context =>
             {
-                if (context.User == null || !context.User.Identity.IsAuthenticated)
+                if (context.User.Identity == null || !context.User.Identity.IsAuthenticated)
                 {
                     // Make a large identity
                     var claims = new List<Claim>(1001);

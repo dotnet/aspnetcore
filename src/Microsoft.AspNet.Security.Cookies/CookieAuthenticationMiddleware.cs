@@ -4,7 +4,6 @@
 
 using System;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Security.Cookies.Infrastructure;
 using Microsoft.AspNet.Security.DataHandler;
 using Microsoft.AspNet.Security.DataProtection;
