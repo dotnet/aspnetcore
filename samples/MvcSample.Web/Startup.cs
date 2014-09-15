@@ -31,32 +31,33 @@ namespace MvcSample.Web
             {
                 app.UseMiddleware<MonitoringMiddlware>();
 
-                var services = new ServiceCollection();
+                app.UseServices(services =>
+                {
+                    services.AddMvc();
+                    services.AddSingleton<PassThroughAttribute>();
+                    services.AddSingleton<UserNameService>();
+                    services.AddTransient<ITestService, TestService>();
 
-                services.AddMvc();
-                services.AddSingleton<PassThroughAttribute>();
-                services.AddSingleton<UserNameService>();
-                services.AddTransient<ITestService, TestService>();
-                services.Add(OptionsServices.GetDefaultServices());
-                // Setup services with a test AssemblyProvider so that only the
-                // sample's assemblies are loaded. This prevents loading controllers from other assemblies
-                // when the sample is used in the Functional Tests.
-                services.AddTransient<IControllerAssemblyProvider, TestAssemblyProvider<Startup>>();
+                    // Setup services with a test AssemblyProvider so that only the
+                    // sample's assemblies are loaded. This prevents loading controllers from other assemblies
+                    // when the sample is used in the Functional Tests.
+                    services.AddTransient<IControllerAssemblyProvider, TestAssemblyProvider<Startup>>();
 
-                // Create the autofac container 
-                ContainerBuilder builder = new ContainerBuilder();
+                    // Create the autofac container 
+                    ContainerBuilder builder = new ContainerBuilder();
 
-                // Create the container and use the default application services as a fallback 
-                AutofacRegistration.Populate(
-                    builder,
-                    services,
-                    fallbackServiceProvider: app.ApplicationServices);
+                    // Create the container and use the default application services as a fallback 
+                    AutofacRegistration.Populate(
+                        builder,
+                        services,
+                        fallbackServiceProvider: app.ApplicationServices);
 
-                builder.RegisterModule<MonitoringModule>();
+                    builder.RegisterModule<MonitoringModule>();
 
-                IContainer container = builder.Build();
+                    IContainer container = builder.Build();
 
-                app.UseServices(container.Resolve<IServiceProvider>());
+                    return container.Resolve<IServiceProvider>();
+                });
             }
             else
 #endif
