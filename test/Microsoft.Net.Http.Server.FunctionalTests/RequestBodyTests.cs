@@ -258,7 +258,7 @@ namespace Microsoft.Net.Http.Server
                 var readTask = context.Request.Body.ReadAsync(input, 0, input.Length, cts.Token);
                 Assert.False(readTask.IsCanceled);
                 cts.Cancel();
-                await Assert.ThrowsAsync<WebListenerException>(async () => await readTask);
+                await Assert.ThrowsAsync<IOException>(async () => await readTask);
                 content.Block.Release();
                 context.Dispose();
 
@@ -283,7 +283,7 @@ namespace Microsoft.Net.Http.Server
                 cts.CancelAfter(TimeSpan.FromMilliseconds(100));
                 var readTask = context.Request.Body.ReadAsync(input, 0, input.Length, cts.Token);
                 Assert.False(readTask.IsCanceled);
-                await Assert.ThrowsAsync<WebListenerException>(async () => await readTask);
+                await Assert.ThrowsAsync<IOException>(async () => await readTask);
                 content.Block.Release();
                 context.Dispose();
 
@@ -308,7 +308,7 @@ namespace Microsoft.Net.Http.Server
                 int read = await context.Request.Body.ReadAsync(input, 0, input.Length, context.DisconnectToken);
                 Assert.False(context.DisconnectToken.IsCancellationRequested);
                 // The client should timeout and disconnect, making this read fail.
-                var assertTask = Assert.ThrowsAsync<WebListenerException>(async () => await context.Request.Body.ReadAsync(input, 0, input.Length, context.DisconnectToken));
+                var assertTask = Assert.ThrowsAsync<IOException>(async () => await context.Request.Body.ReadAsync(input, 0, input.Length, context.DisconnectToken));
                 client.CancelPendingRequests();
                 await assertTask;
                 content.Block.Release();
