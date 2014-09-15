@@ -17,7 +17,8 @@
 
 using System;
 using System.IO;
-using Microsoft.Framework.ConfigurationModel;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.Hosting
 {
@@ -38,17 +39,19 @@ namespace Microsoft.AspNet.Hosting
 
         public static string GetWebRoot(string applicationBasePath)
         {
-            try
+            var webroot = applicationBasePath;
+            using (var stream = File.OpenRead(Path.Combine(applicationBasePath, "project.json")))
             {
-                var config = new Configuration();
-                config.AddJsonFile(Path.Combine(applicationBasePath, "project.json"));
-                var webroot = config.Get("webroot") ?? string.Empty;
-                return Path.GetFullPath(Path.Combine(applicationBasePath, webroot));
+                using (var reader = new JsonTextReader(new StreamReader(stream)))
+                {
+                    var project = JObject.Load(reader);
+                    if (project.TryGetValue("webroot", out var token))
+                    {
+                        webroot = Path.Combine(applicationBasePath, token.ToString());
+                    }
+                }
             }
-            catch (Exception)
-            {
-                return applicationBasePath;
-            }
+            return Path.GetFullPath(webroot);
         }
     }
 }
