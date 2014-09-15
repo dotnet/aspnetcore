@@ -1,8 +1,7 @@
 {
-    /*https://github.com/aspnet/Hosting/issues/74*/
-    /*"authors": [
+    "authors": [
         "Microsoft"
-    ],*/
+    ],
     "description": "Music store application on K",
     "version": "1.0.0-*",
     "compilationOptions": { "warningsAsErrors": true },
