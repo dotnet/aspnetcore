@@ -68,7 +68,7 @@ namespace MusicStore.Areas.Admin.Controllers
             var album = cache.GetOrAdd(cacheId, context =>
             {
                 //Remove it from cache if not retrieved in last 10 minutes
-                context.SetSlidingExpiraiton(TimeSpan.FromMinutes(10));
+                context.SetSlidingExpiration(TimeSpan.FromMinutes(10));
                 //If this returns null how do we prevent the cache to store this. 
                 return db.Albums.Where(a => a.AlbumId == id).FirstOrDefault();
             });
