@@ -139,7 +139,7 @@ namespace Microsoft.Net.Http.Server
                 return Helpers.CanceledTask<int>();
             }
 
-            CancellationTokenRegistration cancellationRegistration;
+            var cancellationRegistration = default(CancellationTokenRegistration);
             if (cancellationToken.CanBeCanceled)
             {
                 cancellationRegistration = cancellationToken.Register(RequestContext.AbortDelegate, _requestContext);
@@ -534,7 +534,7 @@ namespace Microsoft.Net.Http.Server
                 return Helpers.CanceledTask<int>();
             }
 
-            CancellationTokenRegistration cancellationRegistration;
+            var cancellationRegistration = default(CancellationTokenRegistration);
             if (cancellationToken.CanBeCanceled)
             {
                 cancellationRegistration = cancellationToken.Register(RequestContext.AbortDelegate, _requestContext);
@@ -640,7 +640,7 @@ namespace Microsoft.Net.Http.Server
                 return Helpers.CanceledTask<int>();
             }
 
-            CancellationTokenRegistration cancellationRegistration;
+            var cancellationRegistration = default(CancellationTokenRegistration);
             if (cancellationToken.CanBeCanceled)
             {
                 cancellationRegistration = cancellationToken.Register(RequestContext.AbortDelegate, _requestContext);

@@ -358,7 +358,7 @@ namespace Microsoft.Net.Http.Server
                     size = MaxReadSize;
                 }
 
-                CancellationTokenRegistration cancellationRegistration;
+                var cancellationRegistration = default(CancellationTokenRegistration);
                 if (cancellationToken.CanBeCanceled)
                 {
                     cancellationRegistration = cancellationToken.Register(RequestContext.AbortDelegate, _requestContext);
