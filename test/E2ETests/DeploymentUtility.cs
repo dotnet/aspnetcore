@@ -92,7 +92,7 @@ namespace E2ETests
 
             //Restore the KRE_DEFAULT_LIB after starting the host process
             Environment.SetEnvironmentVariable("KRE_DEFAULT_LIB", backupKreDefaultLibPath);
-            Environment.SetEnvironmentVariable("ENV", string.Empty);
+            Environment.SetEnvironmentVariable("KRE_ENV", string.Empty);
             return hostProcess;
         }
 

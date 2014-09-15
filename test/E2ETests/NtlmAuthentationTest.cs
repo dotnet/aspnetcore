@@ -10,7 +10,7 @@ namespace E2ETests
     {
         [Theory]
         [InlineData(ServerType.Helios, KreFlavor.DesktopClr, KreArchitecture.x86, "http://localhost:5001/", false)]
-        [InlineData(ServerType.WebListener, KreFlavor.DesktopClr, KreArchitecture.x86, "http://localhost:5002/", false)]
+        //[InlineData(ServerType.WebListener, KreFlavor.DesktopClr, KreArchitecture.x86, "http://localhost:5002/", false)]
         [InlineData(ServerType.Helios, KreFlavor.DesktopClr, KreArchitecture.amd64, "http://localhost:5001/", false)]
         //WindowsIdentity not available on CoreCLR
         //[InlineData(ServerType.Helios, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5001/", false)]
