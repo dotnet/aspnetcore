@@ -1,10 +1,12 @@
 {
-    "authors": [
+    /*https://github.com/aspnet/Hosting/issues/74*/
+    /*"authors": [
         "Microsoft"
-    ],
+    ],*/
     "description": "Music store application on K",
     "version": "1.0.0-*",
     "compilationOptions": { "warningsAsErrors": true },
+    "webroot": "wwwroot",
     "dependencies": {
         "Kestrel": "1.0.0-*",
         "Microsoft.AspNet.Server.IIS": "1.0.0-*",
