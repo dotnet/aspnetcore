@@ -23,10 +23,25 @@ namespace Microsoft.AspNet.Mvc
         /// for the <paramref name="declaredType"/> and <paramref name="contentType"/>.
         /// </summary>
         /// <param name="declaredType">The declared type for which the supported content types are desired.</param>
-        /// <param name="instanceType">The runtime type for which the supported content types are desired.</param>
-        /// <param name="contentType">Content type for which the supported content types are desired.</param>
+        /// <param name="runtimeType">The runtime type for which the supported content types are desired.</param>
+        /// <param name="contentType">
+        /// The content type for which the supported content types are desired, or <c>null</c> if any content 
+        /// type can be used.
+        /// </param>
         /// <returns>Content types which are supported by this formatter.</returns>
-        IReadOnlyList<MediaTypeHeaderValue> GetSupportedContentTypes(Type declaredType, Type instanceType, MediaTypeHeaderValue contentType);
+        /// <remarks>
+        /// If the value of <paramref name="contentType"/> is <c>null</c>, then the formatter should return a list
+        /// of all content types that it can produce for the given data type. This may occur during content 
+        /// negotiation when the HTTP Accept header is not specified, or when no match for the value in the Accept
+        /// header can be found.
+        /// 
+        /// If the value of <paramref name="contentType"/> is not <c>null</c>, then the formatter should return
+        /// a list of all content types that it can produce which match the given data type and content type.
+        /// </remarks>
+        IReadOnlyList<MediaTypeHeaderValue> GetSupportedContentTypes(
+            Type declaredType, 
+            Type runtimeType, 
+            MediaTypeHeaderValue contentType);
 
         /// <summary>
         /// Determines whether this <see cref="IOutputFormatter"/> can serialize

@@ -32,14 +32,19 @@ namespace Microsoft.AspNet.Mvc
         {
         }
 
+        /// <inheritdoc />
+        protected override bool CanWriteType(Type declaredType, Type runtimeType)
+        {
+            return CreateSerializer(GetSerializableType(declaredType, runtimeType)) != null;
+        }
+
         /// <summary>
         /// Create a new instance of <see cref="DataContractSerializer"/> for the given object type.
         /// </summary>
         /// <param name="type">The type of object for which the serializer should be created.</param>
         /// <returns>A new instance of <see cref="DataContractSerializer"/></returns>
-        public override object CreateSerializer([NotNull] Type type)
+        protected virtual DataContractSerializer CreateSerializer([NotNull] Type type)
         {
-            DataContractSerializer serializer = null;
             try
             {
 #if ASPNET50
@@ -47,15 +52,14 @@ namespace Microsoft.AspNet.Mvc
                 FormattingUtilities.XsdDataContractExporter.GetRootElementName(type);
 #endif
                 // If the serializer does not support this type it will throw an exception.
-                serializer = new DataContractSerializer(type);
+                return new DataContractSerializer(type);
             }
             catch (Exception)
             {
                 // We do not surface the caught exception because if CanWriteResult returns
                 // false, then this Formatter is not picked up at all.
+                return null;
             }
-
-            return serializer;
         }
 
         /// <inheritdoc />
@@ -69,7 +73,10 @@ namespace Microsoft.AspNet.Mvc
             using (var outputStream = new DelegatingStream(innerStream))
             using (var xmlWriter = CreateXmlWriter(outputStream, tempWriterSettings))
             {
-                var dataContractSerializer = (DataContractSerializer)CreateSerializer(GetObjectType(context));
+                var runtimeType = context.Object == null ? null : context.Object.GetType();
+
+                var type = GetSerializableType(context.DeclaredType, runtimeType);
+                var dataContractSerializer = CreateSerializer(type);
                 dataContractSerializer.WriteObject(xmlWriter, context.Object);
             }
 

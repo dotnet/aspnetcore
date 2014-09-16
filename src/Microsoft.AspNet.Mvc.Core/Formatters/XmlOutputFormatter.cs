@@ -30,24 +30,23 @@ namespace Microsoft.AspNet.Mvc
         public XmlWriterSettings WriterSettings { get; private set; }
 
         /// <summary>
-        /// Returns a serializer to serialzie the particualr type.
+        /// Gets the type of the object to be serialized.
         /// </summary>
-        /// <param name="type">The type which needs to be serialized.</param>
-        /// <returns>The serializer object.</returns>
-        public abstract object CreateSerializer(Type type);
-
-        /// <inheritdoc />
-        public override bool CanWriteResult([NotNull] OutputFormatterContext context, MediaTypeHeaderValue contentType)
+        /// <param name="declaredType">The declared type.</param>
+        /// <param name="runtimeType">The runtime type.</param>
+        /// <returns>The type of the object to be serialized.</returns>
+        protected virtual Type GetSerializableType(Type declaredType, Type runtimeType)
         {
-            if (base.CanWriteResult(context, contentType))
+            if (declaredType == null ||
+                declaredType == typeof(object))
             {
-                if (CreateSerializer(GetObjectType(context)) != null)
+                if (runtimeType != null)
                 {
-                    return true;
+                    return runtimeType;
                 }
             }
 
-            return false;
+            return declaredType;
         }
 
         /// <summary>
