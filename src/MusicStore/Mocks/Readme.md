@@ -1,1 +1,1 @@
-﻿Only for testing purposes. Not needed for production deployments. 
+﻿# Mock code added only for testing purposes. Not to be used for production deployments.

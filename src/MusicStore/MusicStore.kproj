@@ -21,7 +21,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="CopyAspNetLoader.cmd" />
-    <Content Include="favicon.ico" />
     <Content Include="Helios.cmd" />
     <Content Include="LocalConfig.json" />
     <Content Include="project.json" />
