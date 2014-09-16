@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -31,6 +30,39 @@ namespace Microsoft.AspNet.Mvc.Core
         {
             public string SampleString { get; set; }
             public TestLevelOne TestOne { get; set; }
+        }
+
+        public static IEnumerable<object[]> BasicTypeValues
+        {
+            get
+            {
+                yield return new object[] { "sampleString", "<string>sampleString</string>" };
+                yield return new object[] { 5, "<int>5</int>" };
+                yield return new object[] { 5.43, "<double>5.43</double>" };
+                yield return new object[] { 'a', "<char>97</char>" };
+                yield return new object[] { new DummyClass { SampleInt = 10 }, "<DummyClass xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
+                    "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"><SampleInt>10</SampleInt></DummyClass>" };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(BasicTypeValues))]
+        public async Task XmlSerializerOutputFormatterCanWriteBasicTypes(object input, string expectedOutput)
+        {
+            // Arrange
+            var formatter = new XmlSerializerOutputFormatter();
+            var outputFormatterContext = GetOutputFormatterContext(input, typeof(object));
+
+            // Act
+            await formatter.WriteAsync(outputFormatterContext);
+            
+            // Assert
+            Assert.NotNull(outputFormatterContext.ActionContext.HttpContext.Response.Body);
+            outputFormatterContext.ActionContext.HttpContext.Response.Body.Position = 0;
+            Assert.Equal(expectedOutput,
+                new StreamReader(outputFormatterContext.ActionContext.HttpContext.Response.Body, Encoding.UTF8)
+                        .ReadToEnd());
+            Assert.True(outputFormatterContext.ActionContext.HttpContext.Response.Body.CanRead);
         }
 
         [Fact]
@@ -176,28 +208,35 @@ namespace Microsoft.AspNet.Mvc.Core
             Assert.True(outputFormatterContext.ActionContext.HttpContext.Response.Body.CanRead);
         }
 
-        [Fact]
-        public void XmlSerializer_CanWriteResult_ReturnsFalse_ForNonWritableType()
+        public static IEnumerable<object[]> TypesForCanWriteResult
         {
-            // Arrange
-            var formatter = new XmlSerializerOutputFormatter();
-            var outputFormatterContext = GetOutputFormatterContext(outputValue: null,
-                outputType: typeof(Dictionary<string, string>));
-
-            // Act & Assert
-            Assert.False(formatter.CanWriteResult(outputFormatterContext, MediaTypeHeaderValue.Parse("application/xml")));
+            get
+            {
+                yield return new object[] { null, typeof(string), true };
+                yield return new object[] { null, null, false };
+                yield return new object[] { new DummyClass { SampleInt = 5 }, null, true };
+                yield return new object[] { new DummyClass { SampleInt = 5 }, typeof(object), true };
+                yield return new object[] { null, typeof(object), true };
+                yield return new object[] {
+                    new Dictionary<string, string> { { "Hello", "world" } }, typeof(object), false };
+                yield return new object[] {
+                    new Dictionary<string, string> { { "Hello", "world" } }, typeof(Dictionary<string,string>), false };
+            }
         }
 
-        [Fact]
-        public void XmlDataContractSerializer_CanWriteResult_ReturnsTrue_ForWritableType()
+        [Theory]
+        [MemberData(nameof(TypesForCanWriteResult))]
+        public void XmlSerializer_CanWriteResult(object input, Type declaredType, bool expectedOutput)
         {
             // Arrange
             var formatter = new XmlSerializerOutputFormatter();
-            var outputFormatterContext = GetOutputFormatterContext(outputValue: null,
-                outputType: typeof(string));
+            var outputFormatterContext = GetOutputFormatterContext(input, declaredType);
 
-            // Act & Assert
-            Assert.True(formatter.CanWriteResult(outputFormatterContext, MediaTypeHeaderValue.Parse("application/xml")));
+            // Act
+            var result = formatter.CanWriteResult(outputFormatterContext, MediaTypeHeaderValue.Parse("application/xml"));
+
+            // Assert
+            Assert.Equal(expectedOutput, result);
         }
 
         [Fact]
@@ -213,6 +252,41 @@ namespace Microsoft.AspNet.Mvc.Core
 
             // Act & Assert
             await formatter.WriteAsync(outputFormatterContext);
+        }
+
+        public static IEnumerable<object[]> TypesForGetSupportedContentTypes
+        {
+            get
+            {
+                yield return new object[] { typeof(DummyClass), typeof(DummyClass), "application/xml" };
+                yield return new object[] { typeof(DummyClass), typeof(object), "application/xml" };
+                yield return new object[] { null, typeof(DummyClass), "application/xml" };
+                yield return new object[] { typeof(DummyClass), null, "application/xml" };
+                yield return new object[] { typeof(object), null, "application/xml" };
+                yield return new object[] { null, null, null };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(TypesForGetSupportedContentTypes))]
+        public void XmlSerializer_GetSupportedContentTypes_Returns_SupportedTypes(Type declaredType, Type runtimeType, object expectedOutput)
+        {
+            // Arrange
+            var formatter = new XmlSerializerOutputFormatter();
+
+            // Act
+            var result = formatter.GetSupportedContentTypes(
+                declaredType, runtimeType, MediaTypeHeaderValue.Parse("application/xml"));
+            
+            // Assert
+            if(expectedOutput != null)
+            {
+                Assert.Equal(expectedOutput, Assert.Single(result).RawValue);
+            }
+            else
+            {
+                Assert.Equal(expectedOutput, result);
+            }
         }
 
         private OutputFormatterContext GetOutputFormatterContext(object outputValue, Type outputType,
