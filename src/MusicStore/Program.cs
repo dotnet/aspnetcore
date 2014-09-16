@@ -25,9 +25,10 @@ namespace MusicStore
             //Add command line configuration source to read command line parameters.
             var config = new Configuration();
             config.AddCommandLine(args);
-            
+
             var serviceCollection = new ServiceCollection();
             serviceCollection.Add(HostingServices.GetDefaultServices(config));
+            serviceCollection.AddInstance<IHostingEnvironment>(new HostingEnvironment() { WebRoot = "wwwroot" });
             var services = serviceCollection.BuildServiceProvider(_hostServiceProvider);
 
             var context = new HostingContext()
