@@ -83,12 +83,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var server = TestServer.Create(_services, _app);
             var client = server.CreateClient();
 
+            var getResponse = await client.GetAsync("http://localhost/Account/Login");
+            var resposneBody = await getResponse.Content.ReadAsStringAsync();
+            var formToken = AntiForgeryTestHelper.RetrieveAntiForgeryToken(resposneBody, "Account/Login");
+
             var cookieToken = "asdad";
             var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Account/Login");
             request.Headers.Add("Cookie", "__RequestVerificationToken=" + cookieToken);
-            var formToken = "AQAAANCMnd8BFdERjHoAwE_Cl-sBAAAADBPoDUIPtEee8EZ40kjaOQAAAAACAAAAAAADZgAAwAAAABAAAABx9"+
-                            "2btLE7MLa5AVabrJ3TOAAAAAASAAACgAAAAEAAAAOc8lIs3RfhLkS2fHqBHeuIYAAAACIspnfiEu6QYzrfOul"+
-                            "vXbCNm5E7VyKW8FAAAAOD25c81cu0Zi06Myn8Ne1JLOK2K";
+            
             var nameValueCollection = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string,string>("__RequestVerificationToken", formToken),
@@ -110,9 +112,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var server = TestServer.Create(_services, _app);
             var client = server.CreateClient();
 
-            var cookieToken = "AQAAANCMnd8BFdERjHoAwE_Cl-sBAAAADBPoDUIPtEee8EZ40kjaOQAAAAACAAAAAAADZgAAwAAAABAAAAD"+
-                              "2ZaQPi5Dq1fUTYj06LxMVAAAAAASAAACgAAAAEAAAADVYzWBsC5SHK_AWCieAFsgYAAAA-XHHnq2Yz2GS-e"+
-                              "R8cHq-A2T8BfPHM21GFAAAALpW0H8-5oPxbe2DOKuj8ZG3bohn";
+            var getResponse = await client.GetAsync("http://localhost/Account/Login");
+            var resposneBody = await getResponse.Content.ReadAsStringAsync();
+            var cookieToken = AntiForgeryTestHelper.RetrieveAntiForgeryCookie(getResponse);
             var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Account/Login");
             var formToken = "adsad";
             request.Headers.Add("Cookie", "__RequestVerificationToken=" + cookieToken);
@@ -137,43 +139,20 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var server = TestServer.Create(_services, _app);
             var client = server.CreateClient();
 
-            var cookieToken = "AQAAANCMnd8BFdERjHoAwE_Cl-sBAAAADBPoDUIPtEee8EZ40kjaOQAAAAACAAAAAAADZgAAwAAAABAAAAB"+
-                              "QrVKmVeuzQHJX3jUAzFNNAAAAAASAAACgAAAAEAAAADd2PjKWhB8NmuaPMZDDutgYAAAAXGTjIRTnjLHqwC"+
-                              "KFGx9ZVQOLVfWIGQxiFAAAAIVqLISuhF2sFrd3UQqLDteT0vRu";
+            // do a get response.
+            // We do two requests to get two different sets of anti forgery cookie and token values.
+            var getResponse1 = await client.GetAsync("http://localhost/Account/Login");
+            var resposneBody1 = await getResponse1.Content.ReadAsStringAsync();
+            var formToken1 = AntiForgeryTestHelper.RetrieveAntiForgeryToken(resposneBody1, "Account/Login");
+
+            var getResponse2 = await client.GetAsync("http://localhost/Account/Login");
+            var resposneBody2 = await getResponse2.Content.ReadAsStringAsync();
+            var cookieToken2 = AntiForgeryTestHelper.RetrieveAntiForgeryCookie(getResponse2);
+
+            var cookieToken = cookieToken2;
             var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Account/Login");
             request.Headers.Add("Cookie", "__RequestVerificationToken=" + cookieToken);
-            var formToken = "AQAAANCMnd8BFdERjHoAwE_Cl-sBAAAADBPoDUIPtEee8EZ40kjaOQAAAAACAAAAAAADZgAAwAAAABAAAABx9"+
-                            "2btLE7MLa5AVabrJ3TOAAAAAASAAACgAAAAEAAAAOc8lIs3RfhLkS2fHqBHeuIYAAAACIspnfiEu6QYzrfOul"+
-                            "vXbCNm5E7VyKW8FAAAAOD25c81cu0Zi06Myn8Ne1JLOK2K";
-            var nameValueCollection = new List<KeyValuePair<string, string>>
-            {
-                new KeyValuePair<string,string>("__RequestVerificationToken", formToken),
-                new KeyValuePair<string,string>("UserName", "abra"),
-                new KeyValuePair<string,string>("Password", "cadabra"),
-            };
-
-            request.Content = new FormUrlEncodedContent(nameValueCollection);
-
-            // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => client.SendAsync(request));
-            Assert.Equal("The anti-forgery cookie token and form field token do not match.", ex.Message);
-        }
-
-        [Fact]
-        public async Task IncompatibleFormToken_Throws()
-        {
-            // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
-
-            var cookieToken = "AQAAANCMnd8BFdERjHoAwE_Cl-sBAAAADBPoDUIPtEee8EZ40kjaOQAAAAACAAAAAAADZgAAwAAAABAAAAD"+
-                              "2ZaQPi5Dq1fUTYj06LxMVAAAAAASAAACgAAAAEAAAADVYzWBsC5SHK_AWCieAFsgYAAAA-XHHnq2Yz2GS-e"+
-                              "R8cHq-A2T8BfPHM21GFAAAALpW0H8-5oPxbe2DOKuj8ZG3bohn";
-            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Account/Login");
-            var formToken = "AQAAANCMnd8BFdERjHoAwE_Cl-sBAAAADBPoDUIPtEee8EZ40kjaOQAAAAACAAAAAAADZgAAwAAAABAAAAApj"+
-                            "_D9vARroIdg2t6sfw06AAAAAASAAACgAAAAEAAAAKMz9G6buL-JM_3eknUq4aoYAAAAuPBN2dc0RsRvrde1V6"+
-                            "FBrQYCEuUdx-nSFAAAAEvqGxIwr8zFKO_osS6r953VqjS-";
-            request.Headers.Add("Cookie", "__RequestVerificationToken=" + cookieToken);
+            var formToken = formToken1;
             var nameValueCollection = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string,string>("__RequestVerificationToken", formToken),
@@ -195,10 +174,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var server = TestServer.Create(_services, _app);
             var client = server.CreateClient();
 
+            // do a get response.
+            var getResponse = await client.GetAsync("http://localhost/Account/Login");
+            var resposneBody = await getResponse.Content.ReadAsStringAsync();
+            var formToken = AntiForgeryTestHelper.RetrieveAntiForgeryToken(resposneBody, "Account/Login");
+
             var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Account/Login");
-            var formToken = "AQAAANCMnd8BFdERjHoAwE_Cl-sBAAAADBPoDUIPtEee8EZ40kjaOQAAAAACAAAAAAADZgAAwAAAABAAAABx9"+
-                "2btLE7MLa5AVabrJ3TOAAAAAASAAACgAAAAEAAAAOc8lIs3RfhLkS2fHqBHeuIYAAAACIspnfiEu6QYzrfOulvXbCNm5E7VyK"+
-                "W8FAAAAOD25c81cu0Zi06Myn8Ne1JLOK2K";
             var nameValueCollection = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string,string>("__RequestVerificationToken", formToken),
@@ -219,9 +200,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var server = TestServer.Create(_services, _app);
             var client = server.CreateClient();
-            var cookieToken = "AQAAANCMnd8BFdERjHoAwE_Cl-sBAAAADBPoDUIPtEee8EZ40kjaOQAAAAACAAAAAAADZgAAwAAAABAAAAD"+
-                              "2ZaQPi5Dq1fUTYj06LxMVAAAAAASAAACgAAAAEAAAADVYzWBsC5SHK_AWCieAFsgYAAAA-XHHnq2Yz2GS-e"+
-                              "R8cHq-A2T8BfPHM21GFAAAALpW0H8-5oPxbe2DOKuj8ZG3bohn";
+            var getResponse = await client.GetAsync("http://localhost/Account/Login");
+            var resposneBody = await getResponse.Content.ReadAsStringAsync();
+            var cookieToken = AntiForgeryTestHelper.RetrieveAntiForgeryCookie(getResponse);
+
             var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Account/Login");
             request.Headers.Add("Cookie", "__RequestVerificationToken=" + cookieToken);
             var nameValueCollection = new List<KeyValuePair<string, string>>
