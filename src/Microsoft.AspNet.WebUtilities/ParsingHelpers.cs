@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.WebUtilities.Collections;
 
@@ -89,6 +90,22 @@ namespace Microsoft.AspNet.WebUtilities
             }
             string[] values;
             return store.TryGetValue(key, out values) ? values : null;
+        }
+
+        private static readonly char[] AmpersandAndSemicolon = new[] { '&', ';' };
+
+        internal static IReadableStringCollection GetQuery(string queryString)
+        {
+            if (!string.IsNullOrEmpty(queryString) && queryString[0] == '?')
+            {
+                queryString = queryString.Substring(1);
+            }
+            var accumulator = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+            ParseDelimited(queryString, AmpersandAndSemicolon, AppendItemCallback, accumulator);
+            return new ReadableStringCollection(accumulator.ToDictionary(
+                    item => item.Key,
+                    item => item.Value.ToArray(),
+                    StringComparer.OrdinalIgnoreCase));
         }
     }
 }

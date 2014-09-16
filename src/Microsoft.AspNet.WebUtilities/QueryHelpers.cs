@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.WebUtilities
 {
@@ -42,6 +43,16 @@ namespace Microsoft.AspNet.WebUtilities
                 hasQuery = true;
             }
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Parse a query string into its component key and value parts.
+        /// </summary>
+        /// <param name="text">The raw query string value, with or without the leading '?'.</param>
+        /// <returns>A collection of parsed keys and values.</returns>
+        public static IReadableStringCollection ParseQuery(string text)
+        {
+            return ParsingHelpers.GetQuery(text);
         }
     }
 }

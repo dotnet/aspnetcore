@@ -795,22 +795,6 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
             }
         };
 
-        private static readonly char[] AmpersandAndSemicolon = new[] { '&', ';' };
-
-        internal static IDictionary<string, string[]> GetQuery(string queryString)
-        {
-            if (!string.IsNullOrEmpty(queryString) && queryString[0] == '?')
-            {
-                queryString = queryString.Substring(1);
-            }
-            var accumulator = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-            ParseDelimited(queryString, AmpersandAndSemicolon, AppendItemCallback, accumulator);
-            return accumulator.ToDictionary(
-                    item => item.Key,
-                    item => item.Value.ToArray(),
-                    StringComparer.OrdinalIgnoreCase);
-        }
-
         internal static string GetJoinedValue(IDictionary<string, string[]> store, string key)
         {
             string[] values = GetUnmodifiedValues(store, key);
