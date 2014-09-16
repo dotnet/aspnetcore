@@ -53,7 +53,7 @@ namespace E2ETests
             }
         }
 
-        private const string APP_RELATIVE_PATH = @"..\..\src\MusicStore\";
+        private static string APP_RELATIVE_PATH = Path.Combine("..", "..", "src", "MusicStore");
 
         public static Process StartApplication(StartParameters startParameters, string identityDbName)
         {
@@ -80,6 +80,12 @@ namespace E2ETests
                 //Tweak the %PATH% to the point to the right KREFLAVOR
                 Environment.SetEnvironmentVariable("PATH", SwitchPathToKreFlavor(startParameters.KreFlavor, startParameters.KreArchitecture));
 
+                //Reason to do pack here instead of in a common place is use the right KRE to do the packing. Previous line switches to use the right KRE.
+                if (startParameters.PackApplicationBeforeStart)
+                {
+                    KpmPack(startParameters);
+                }
+
                 if (startParameters.ServerType == ServerType.Helios)
                 {
                     hostProcess = StartHeliosHost(startParameters);
@@ -98,8 +104,10 @@ namespace E2ETests
 
         private static Process StartMonoHost(StartParameters startParameters)
         {
-            //Mono needs this as GetFullPath does not work if it has \
-            startParameters.ApplicationPath = Path.GetFullPath(startParameters.ApplicationPath.Replace('\\', '/'));
+            if (startParameters.PackApplicationBeforeStart)
+            {
+                KpmPack(startParameters);
+            }
 
             //Mono does not have a way to pass in a --appbase switch. So it will be an environment variable. 
             Environment.SetEnvironmentVariable("KRE_APPBASE", startParameters.ApplicationPath);
@@ -173,7 +181,6 @@ namespace E2ETests
 
         private static Process StartSelfHost(StartParameters startParameters, string identityDbName)
         {
-            //ServerType hostType, string applicationPath, string identityDbName
             Console.WriteLine(string.Format("Executing klr.exe --appbase {0} \"Microsoft.Framework.ApplicationHost\" {1}", startParameters.ApplicationPath, startParameters.ServerType.ToString()));
 
             var startInfo = new ProcessStartInfo
@@ -218,6 +225,31 @@ namespace E2ETests
             Console.WriteLine();
             Console.WriteLine("Setting %PATH% value to : {0}", pathValue);
             return pathValue;
+        }
+
+        private static void KpmPack(StartParameters startParameters)
+        {
+            startParameters.PackedApplicationRootPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+
+            var parameters = string.Format("pack {0} -o {1}", startParameters.ApplicationPath, startParameters.PackedApplicationRootPath);
+            Console.WriteLine(string.Format("Executing command kpm {0}", parameters));
+
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "kpm",
+                Arguments = parameters,
+                UseShellExecute = true,
+                CreateNoWindow = true
+            };
+
+            var hostProcess = Process.Start(startInfo);
+            hostProcess.WaitForExit(60 * 1000);
+
+            startParameters.ApplicationPath = (startParameters.ServerType == ServerType.Helios) ?
+                Path.Combine(startParameters.PackedApplicationRootPath, "wwwroot") :
+                Path.Combine(startParameters.PackedApplicationRootPath, "approot", "src", "MusicStore");
+
+            Console.WriteLine("kpm pack finished with exit code : {0}", hostProcess.ExitCode);
         }
 
         //In case of self-host application activation happens immediately unlike iis where activation happens on first request.
@@ -305,6 +337,19 @@ namespace E2ETests
                         //Ignore delete failures - just write a log
                         Console.WriteLine("Failed to delete '{0}'. Exception : {1}", startParameters.ApplicationHostConfigLocation, exception.Message);
                     }
+                }
+            }
+
+            if (startParameters.PackApplicationBeforeStart)
+            {
+                try
+                {
+                    //We've originally packed the application in a temp folder. We need to delete it. 
+                    Directory.Delete(startParameters.PackedApplicationRootPath, true);
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine("Failed to delete directory '{0}'. Exception message: {1}", startParameters.PackedApplicationRootPath, exception.Message);
                 }
             }
         }

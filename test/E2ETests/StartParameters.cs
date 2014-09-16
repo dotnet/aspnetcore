@@ -20,5 +20,9 @@
         public string SiteName { get; set; }
 
         public string ApplicationPath { get; set; }
+
+        public bool PackApplicationBeforeStart { get; set; }
+
+        public string PackedApplicationRootPath { get; set; }
     }
 }
