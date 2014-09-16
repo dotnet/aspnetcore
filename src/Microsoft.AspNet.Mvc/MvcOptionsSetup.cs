@@ -40,12 +40,9 @@ namespace Microsoft.AspNet.Mvc
                                          indent: false));
             options.OutputFormatters.Add(
                 new XmlDataContractSerializerOutputFormatter(XmlOutputFormatter.GetDefaultXmlWriterSettings()));
-            options.OutputFormatters.Add(
-                new XmlSerializerOutputFormatter(XmlOutputFormatter.GetDefaultXmlWriterSettings()));
 
             // Set up default input formatters.
             options.InputFormatters.Add(new JsonInputFormatter());
-            options.InputFormatters.Add(new XmlSerializerInputFormatter());
             options.InputFormatters.Add(new XmlDataContractSerializerInputFormatter());
 
             // Set up ValueProviders

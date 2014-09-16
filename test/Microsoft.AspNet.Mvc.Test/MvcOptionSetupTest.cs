@@ -73,12 +73,11 @@ namespace Microsoft.AspNet.Mvc
             setup.Setup(mvcOptions);
 
             // Assert
-            Assert.Equal(5, mvcOptions.OutputFormatters.Count);
+            Assert.Equal(4, mvcOptions.OutputFormatters.Count);
             Assert.IsType<HttpNoContentOutputFormatter>(mvcOptions.OutputFormatters[0].Instance);
             Assert.IsType<TextPlainFormatter>(mvcOptions.OutputFormatters[1].Instance);
             Assert.IsType<JsonOutputFormatter>(mvcOptions.OutputFormatters[2].Instance);
             Assert.IsType<XmlDataContractSerializerOutputFormatter>(mvcOptions.OutputFormatters[3].Instance);
-            Assert.IsType<XmlSerializerOutputFormatter>(mvcOptions.OutputFormatters[4].Instance);
         }
 
         [Fact]
@@ -92,10 +91,9 @@ namespace Microsoft.AspNet.Mvc
             setup.Setup(mvcOptions);
 
             // Assert
-            Assert.Equal(3, mvcOptions.InputFormatters.Count);
+            Assert.Equal(2, mvcOptions.InputFormatters.Count);
             Assert.IsType<JsonInputFormatter>(mvcOptions.InputFormatters[0].Instance);
-            Assert.IsType<XmlSerializerInputFormatter>(mvcOptions.InputFormatters[1].Instance);
-            Assert.IsType<XmlDataContractSerializerInputFormatter>(mvcOptions.InputFormatters[2].Instance);
+            Assert.IsType<XmlDataContractSerializerInputFormatter>(mvcOptions.InputFormatters[1].Instance);
         }
 
         [Fact]

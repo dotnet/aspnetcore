@@ -1,0 +1,10 @@
+{
+    "dependencies": {
+        "Microsoft.AspNet.Mvc": "",
+        "Microsoft.AspNet.Mvc.TestConfiguration": ""
+    },
+    "configurations": {
+        "aspnet50": { },
+        "aspnetcore50": { }
+    }
+}

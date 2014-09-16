@@ -26,6 +26,7 @@
         "RoutingWebSite": "",
         "RazorWebSite": "",
         "ValueProvidersSite": "",
+        "XmlSerializerWebSite": "",
         "Xunit.KRunner": "1.0.0-*"
     },
     "commands": {

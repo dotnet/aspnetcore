@@ -27,7 +27,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var client = server.CreateClient();
             var sampleInputInt = 10;
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-                "<DummyClass><SampleInt>" + sampleInputInt.ToString() + "</SampleInt></DummyClass>";
+                "<DummyClass xmlns=\"http://schemas.datacontract.org/2004/07/FormatterWebSite\"><SampleInt>"
+                + sampleInputInt.ToString() + "</SampleInt></DummyClass>";
             var content = new StringContent(input, Encoding.UTF8, "application/xml");
 
             // Act
@@ -103,8 +104,5 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("dummy", result.ParameterName);
             Assert.Equal(expectedSource, result.Source);
         }
-
-        // TODO: By default XmlSerializerInputFormatter is called because of the order in which
-        // the formatters are registered. Add a test to call into DataContractSerializerInputFormatter.
     }
 }
