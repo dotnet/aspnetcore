@@ -22,7 +22,7 @@
   <ItemGroup>
     <Content Include="CopyAspNetLoader.cmd" />
     <Content Include="Helios.cmd" />
-    <Content Include="LocalConfig.json" />
+    <Content Include="config.json" />
     <Content Include="project.json" />
     <Content Include="Views\Account\Login.cshtml" />
     <Content Include="Views\Account\Register.cshtml" />

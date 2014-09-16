@@ -58,9 +58,9 @@ namespace MusicStore
 
             //Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources, 
             //then the later source will win. By this way a Local config can be overridden by a different setting while deployed remotely.
-            var configuration = new Configuration();
-            configuration.AddJsonFile("LocalConfig.json");
-            configuration.AddEnvironmentVariables(); //All environment variables in the process's context flow in as configuration values.
+            var configuration = new Configuration()
+                        .AddJsonFile("config.json")
+                        .AddEnvironmentVariables(); //All environment variables in the process's context flow in as configuration values.
 
             //Error page middleware displays a nice formatted HTML page for any unhandled exceptions in the request pipeline.
             //Note: ErrorPageOptions.ShowAll to be used only at development time. Not recommended for production.
