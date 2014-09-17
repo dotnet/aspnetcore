@@ -38,10 +38,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             if (Context.Host.DesignTimeMode && chunk.Association != null)
             {
                 Writer.WriteLine("public");
-                var code = string.Format(CultureInfo.InvariantCulture,
-                                     "{0} {1}",
-                                     chunk.TypeName,
-                                     chunk.MemberName);
+
+                var code = string.IsNullOrEmpty(chunk.MemberName) ?
+                            chunk.TypeName :
+                            chunk.TypeName + ' ' + chunk.MemberName;
                 var csharpVisitor = new CSharpCodeVisitor(Writer, Context);
                 csharpVisitor.CreateExpressionCodeMapping(code, chunk);
                 Writer.WriteLine("{ get; private set; }");

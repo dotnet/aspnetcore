@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var propertyStartLocation = CurrentLocation;
             AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
 
-            if (!hasTypeError && At(CSharpSymbolType.NewLine))
+            if (!hasTypeError && (EndOfFile || At(CSharpSymbolType.NewLine)))
             {
                 // Add an error for the property name only if we successfully read the type name
                 Context.OnError(propertyStartLocation,
@@ -131,6 +131,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                                               propertyName.Trim());
 
             // Output the span and finish the block
+            CompleteBlock();
             Output(SpanKind.Code);
         }
 
