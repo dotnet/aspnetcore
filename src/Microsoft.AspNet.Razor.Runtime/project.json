@@ -1,0 +1,10 @@
+{
+    "version": "4.0.0-*",
+    "dependencies": {
+        "Microsoft.AspNet.Razor": ""
+    },
+    "frameworks": {
+        "net45": { },
+        "aspnetcore50": { }
+    }
+}
