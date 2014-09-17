@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNet.Razor.TagHelpers;
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Generator
@@ -221,7 +222,9 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         {
             Assert.True(spanIndex > 0);
 
-            var parser = new RazorParser(new CSharpCodeParser(), new HtmlMarkupParser());
+            var parser = new RazorParser(new CSharpCodeParser(), 
+                                         new HtmlMarkupParser(),
+                                         tagHelperDescriptorResolver: null);
 
             Span[] spans;
 

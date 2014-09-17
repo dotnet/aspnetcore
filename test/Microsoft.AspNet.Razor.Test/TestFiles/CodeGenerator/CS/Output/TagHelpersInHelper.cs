@@ -1,4 +1,4 @@
-#pragma checksum "TagHelpersInHelper.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "522348d1a7650330b24372fade70f418f61027bd"
+#pragma checksum "TagHelpersInHelper.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "864bdf0afabc2aecf57904d5793a20bb6d12a6a3"
 namespace TestOutput
 {
     using Microsoft.AspNet.Razor.Runtime.TagHelpers;
@@ -8,20 +8,20 @@ namespace TestOutput
     public class TagHelpersInHelper
     {
 public static Template 
-#line 1 "TagHelpersInHelper.cshtml"
+#line 3 "TagHelpersInHelper.cshtml"
 MyHelper(string val)
 {
 
 #line default
 #line hidden
         return new Template((__razor_helper_writer) => {
-#line 2 "TagHelpersInHelper.cshtml"
+#line 4 "TagHelpersInHelper.cshtml"
  
 
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(33, 19, true);
+            Instrumentation.BeginContext(62, 19, true);
             WriteLiteralTo(__razor_helper_writer, "    <div>\r\n        ");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("mytaghelper");
@@ -29,7 +29,7 @@ MyHelper(string val)
             __tagHelperExecutionContext.Add(__MyTagHelper);
             StartWritingScope();
             WriteLiteral("Current Time: ");
-#line 4 "TagHelpersInHelper.cshtml"
+#line 6 "TagHelpersInHelper.cshtml"
 Write(DateTime.Now);
 
 #line default
@@ -39,7 +39,7 @@ Write(DateTime.Now);
             __tagHelperExecutionContext.AddTagHelperAttribute("BoundProperty", __MyTagHelper.BoundProperty);
             StartWritingScope();
             WriteLiteral("Current Time: ");
-#line 4 "TagHelpersInHelper.cshtml"
+#line 6 "TagHelpersInHelper.cshtml"
 Write(DateTime.Now);
 
 #line default
@@ -48,7 +48,7 @@ Write(DateTime.Now);
             __tagHelperExecutionContext.AddHtmlAttribute("unboundproperty", __tagHelperStringValueBuffer.ToString());
             __tagHelperExecutionContext.Output = __tagHelperRunner.RunAsync(__tagHelperExecutionContext).Result;
             WriteLiteralTo(__razor_helper_writer, __tagHelperExecutionContext.Output.GenerateStartTag());
-            Instrumentation.BeginContext(155, 52, true);
+            Instrumentation.BeginContext(184, 52, true);
             WriteLiteralTo(__razor_helper_writer, "\r\n            In None ContentBehavior.\r\n            ");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("nestedtaghelper");
@@ -56,7 +56,7 @@ Write(DateTime.Now);
             __tagHelperExecutionContext.Add(__NestedTagHelper);
             StartWritingScope();
             WriteLiteral("Some buffered values with a value of ");
-#line 6 "TagHelpersInHelper.cshtml"
+#line 8 "TagHelpersInHelper.cshtml"
                                             Write(val);
 
 #line default
@@ -67,22 +67,22 @@ Write(DateTime.Now);
             WriteLiteralTo(__razor_helper_writer, __tagHelperExecutionContext.Output.GenerateContent());
             WriteLiteralTo(__razor_helper_writer, __tagHelperExecutionContext.Output.GenerateEndTag());
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(283, 10, true);
+            Instrumentation.BeginContext(312, 10, true);
             WriteLiteralTo(__razor_helper_writer, "\r\n        ");
             Instrumentation.EndContext();
             WriteLiteralTo(__razor_helper_writer, __tagHelperExecutionContext.Output.GenerateEndTag());
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(307, 14, true);
+            Instrumentation.BeginContext(336, 14, true);
             WriteLiteralTo(__razor_helper_writer, "\r\n    </div>\r\n");
             Instrumentation.EndContext();
-#line 9 "TagHelpersInHelper.cshtml"
+#line 11 "TagHelpersInHelper.cshtml"
 
 #line default
 #line hidden
 
         }
         );
-#line 9 "TagHelpersInHelper.cshtml"
+#line 11 "TagHelpersInHelper.cshtml"
 }
 
 #line default
@@ -103,13 +103,16 @@ Write(DateTime.Now);
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
+            Instrumentation.BeginContext(27, 2, true);
+            WriteLiteral("\r\n");
+            Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("mytaghelper");
             __MyTagHelper = CreateTagHelper<MyTagHelper>();
             __tagHelperExecutionContext.Add(__MyTagHelper);
             __tagHelperExecutionContext.Output = __tagHelperRunner.RunAsync(__tagHelperExecutionContext).Result;
             WriteLiteral(__tagHelperExecutionContext.Output.GenerateStartTag());
-            Instrumentation.BeginContext(338, 9, false);
-#line 10 "TagHelpersInHelper.cshtml"
+            Instrumentation.BeginContext(367, 9, false);
+#line 12 "TagHelpersInHelper.cshtml"
 Write(MyHelper(item => new Template((__razor_template_writer) => {
     __tagHelperExecutionContext = __tagHelperScopeManager.Begin("nestedtaghelper");
     __NestedTagHelper = CreateTagHelper<NestedTagHelper>();
@@ -131,7 +134,7 @@ Write(MyHelper(item => new Template((__razor_template_writer) => {
             Instrumentation.EndContext();
             WriteLiteral(__tagHelperExecutionContext.Output.GenerateEndTag());
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(410, 2, true);
+            Instrumentation.BeginContext(439, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
         }

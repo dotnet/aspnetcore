@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser;
-using Microsoft.AspNet.Razor.Parser.TagHelpers.Internal;
 using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace Microsoft.AspNet.Razor.Test.Generator
@@ -13,43 +14,56 @@ namespace Microsoft.AspNet.Razor.Test.Generator
     {
         protected void RunTagHelperTest(string testName,
                                         string baseLineName = null,
-                                        TagHelperDescriptorProvider tagHelperDescriptorProvider = null,
-                                        Func<RazorEngineHost, RazorEngineHost> hostConfig = null)
+                                        bool designTimeMode = false,
+                                        IEnumerable<TagHelperDescriptor> tagHelperDescriptors = null,
+                                        Func<RazorEngineHost, RazorEngineHost> hostConfig = null,
+                                        IList<LineMapping> expectedDesignTimePragmas = null)
         {
             RunTest(name: testName,
                     baselineName: baseLineName,
+                    designTimeMode: designTimeMode,
+                    tabTest: TabTest.NoTabs,
                     templateEngineConfig: (engine) =>
                     {
-                        return new TagHelperTemplateEngine(engine, tagHelperDescriptorProvider);
+                        return new TagHelperTemplateEngine(engine, tagHelperDescriptors);
                     },
-                    hostConfig: hostConfig);
+                    hostConfig: hostConfig,
+                    expectedDesignTimePragmas: expectedDesignTimePragmas);
+        }
+
+        private class CustomTagHelperDescriptorResolver : ITagHelperDescriptorResolver
+        {
+            private IEnumerable<TagHelperDescriptor> _tagHelperDescriptors;
+
+            public CustomTagHelperDescriptorResolver(IEnumerable<TagHelperDescriptor> tagHelperDescriptors)
+            {
+                _tagHelperDescriptors = tagHelperDescriptors ?? Enumerable.Empty<TagHelperDescriptor>();
+            }
+
+            public IEnumerable<TagHelperDescriptor> Resolve(string lookupText)
+            {
+                return _tagHelperDescriptors;
+            }
         }
 
         private class TagHelperTemplateEngine : RazorTemplateEngine
         {
-            private TagHelperDescriptorProvider _tagHelperDescriptorProvider;
+            private IEnumerable<TagHelperDescriptor> _tagHelperDescriptors;
 
-            public TagHelperTemplateEngine(RazorTemplateEngine engine, TagHelperDescriptorProvider tagHelperDescriptorProvider)
+            public TagHelperTemplateEngine(RazorTemplateEngine engine,
+                                           IEnumerable<TagHelperDescriptor> tagHelperDescriptors)
                 : base(engine.Host)
             {
-                _tagHelperDescriptorProvider = tagHelperDescriptorProvider;
+                _tagHelperDescriptors = tagHelperDescriptors;
             }
 
             protected internal override RazorParser CreateParser()
             {
                 var parser = base.CreateParser();
-                var tagHelperParseTreeRewriter = new TagHelperParseTreeRewriter(_tagHelperDescriptorProvider);
 
-                for (var i = 0; i < parser.Optimizers.Count; i++)
-                {
-                    if (parser.Optimizers[i] is TagHelperParseTreeRewriter)
-                    {
-                        parser.Optimizers[i] = tagHelperParseTreeRewriter;
-                        break;
-                    }
-                }
-
-                return parser;
+                return new RazorParser(parser.CodeParser,
+                                       parser.MarkupParser,
+                                       new CustomTagHelperDescriptorResolver(_tagHelperDescriptors));
             }
         }
     }

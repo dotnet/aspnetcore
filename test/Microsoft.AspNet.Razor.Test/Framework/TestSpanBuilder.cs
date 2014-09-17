@@ -300,6 +300,11 @@ namespace Microsoft.AspNet.Razor.Test.Framework
             return _self.With(new RazorDirectiveAttributeCodeGenerator(key, value));
         }
 
+        public SpanConstructor AsAddTagHelper(string lookupText)
+        {
+            return _self.With(new AddTagHelperCodeGenerator(lookupText));
+        }
+
         public SpanConstructor As(ISpanCodeGenerator codeGenerator)
         {
             return _self.With(codeGenerator);

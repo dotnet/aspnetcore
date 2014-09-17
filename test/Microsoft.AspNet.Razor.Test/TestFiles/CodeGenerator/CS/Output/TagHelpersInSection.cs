@@ -1,4 +1,4 @@
-#pragma checksum "TagHelpersInSection.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "bfe8d61279682f87dc473aa71134e86af554f55e"
+#pragma checksum "TagHelpersInSection.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "2571c1678f925672aa18f5e7ae50916089e8f5cb"
 namespace TestOutput
 {
     using System;
@@ -21,18 +21,21 @@ namespace TestOutput
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
-#line 1 "TagHelpersInSection.cshtml"
+            Instrumentation.BeginContext(27, 2, true);
+            WriteLiteral("\r\n");
+            Instrumentation.EndContext();
+#line 3 "TagHelpersInSection.cshtml"
   
     var code = "some code";
 
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(34, 4, true);
+            Instrumentation.BeginContext(63, 4, true);
             WriteLiteral("\r\n\r\n");
             Instrumentation.EndContext();
             DefineSection("MySection", new Template((__razor_template_writer) => {
-                Instrumentation.BeginContext(58, 21, true);
+                Instrumentation.BeginContext(87, 21, true);
                 WriteLiteralTo(__razor_template_writer, "\r\n    <div>\r\n        ");
                 Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("mytaghelper");
@@ -40,7 +43,7 @@ namespace TestOutput
                 __tagHelperExecutionContext.Add(__MyTagHelper);
                 StartWritingScope();
                 WriteLiteral("Current Time: ");
-#line 7 "TagHelpersInSection.cshtml"
+#line 9 "TagHelpersInSection.cshtml"
 Write(DateTime.Now);
 
 #line default
@@ -50,7 +53,7 @@ Write(DateTime.Now);
                 __tagHelperExecutionContext.AddTagHelperAttribute("BoundProperty", __MyTagHelper.BoundProperty);
                 StartWritingScope();
                 WriteLiteral("Current Time: ");
-#line 7 "TagHelpersInSection.cshtml"
+#line 9 "TagHelpersInSection.cshtml"
 Write(DateTime.Now);
 
 #line default
@@ -59,7 +62,7 @@ Write(DateTime.Now);
                 __tagHelperExecutionContext.AddHtmlAttribute("unboundproperty", __tagHelperStringValueBuffer.ToString());
                 __tagHelperExecutionContext.Output = __tagHelperRunner.RunAsync(__tagHelperExecutionContext).Result;
                 WriteLiteralTo(__razor_template_writer, __tagHelperExecutionContext.Output.GenerateStartTag());
-                Instrumentation.BeginContext(182, 52, true);
+                Instrumentation.BeginContext(211, 52, true);
                 WriteLiteralTo(__razor_template_writer, "\r\n            In None ContentBehavior.\r\n            ");
                 Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("nestedtaghelper");
@@ -67,7 +70,7 @@ Write(DateTime.Now);
                 __tagHelperExecutionContext.Add(__NestedTagHelper);
                 StartWritingScope();
                 WriteLiteral("Some buffered values with ");
-#line 9 "TagHelpersInSection.cshtml"
+#line 11 "TagHelpersInSection.cshtml"
                                  Write(code);
 
 #line default
@@ -78,12 +81,12 @@ Write(DateTime.Now);
                 WriteLiteralTo(__razor_template_writer, __tagHelperExecutionContext.Output.GenerateContent());
                 WriteLiteralTo(__razor_template_writer, __tagHelperExecutionContext.Output.GenerateEndTag());
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
-                Instrumentation.BeginContext(300, 10, true);
+                Instrumentation.BeginContext(329, 10, true);
                 WriteLiteralTo(__razor_template_writer, "\r\n        ");
                 Instrumentation.EndContext();
                 WriteLiteralTo(__razor_template_writer, __tagHelperExecutionContext.Output.GenerateEndTag());
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
-                Instrumentation.BeginContext(324, 14, true);
+                Instrumentation.BeginContext(353, 14, true);
                 WriteLiteralTo(__razor_template_writer, "\r\n    </div>\r\n");
                 Instrumentation.EndContext();
             }

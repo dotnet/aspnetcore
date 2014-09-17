@@ -1,4 +1,6 @@
-﻿@helper MyHelper(string val)
+﻿@addtaghelper "something"
+
+@helper MyHelper(string val)
 {
     <div>
         <mytaghelper boundproperty="Current Time: @DateTime.Now" unboundproperty="Current Time: @DateTime.Now">

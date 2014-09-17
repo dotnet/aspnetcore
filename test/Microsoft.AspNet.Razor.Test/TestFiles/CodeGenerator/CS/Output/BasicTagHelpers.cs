@@ -1,4 +1,4 @@
-#pragma checksum "BasicTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "8d60e58d54168749dc71a0d6d3a95887b2adb5e7"
+#pragma checksum "BasicTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "897cb2042003c7f319b5265ba8e1878fb3043e8e"
 namespace TestOutput
 {
     using Microsoft.AspNet.Razor.Runtime.TagHelpers;
@@ -23,8 +23,8 @@ namespace TestOutput
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
-            Instrumentation.BeginContext(0, 47, true);
-            WriteLiteral("<div class=\"randomNonTagHelperAttribute\">\r\n    ");
+            Instrumentation.BeginContext(27, 49, true);
+            WriteLiteral("\r\n<div class=\"randomNonTagHelperAttribute\">\r\n    ");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p");
             __PTagHelper = CreateTagHelper<PTagHelper>();
@@ -32,7 +32,7 @@ namespace TestOutput
             __tagHelperExecutionContext.AddHtmlAttribute("class", "Hello World");
             __tagHelperExecutionContext.Output = __tagHelperRunner.RunAsync(__tagHelperExecutionContext).Result;
             WriteLiteral(__tagHelperExecutionContext.Output.GenerateStartTag());
-            Instrumentation.BeginContext(70, 10, true);
+            Instrumentation.BeginContext(99, 10, true);
             WriteLiteral("\r\n        ");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p");
@@ -42,7 +42,7 @@ namespace TestOutput
             WriteLiteral(__tagHelperExecutionContext.Output.GenerateStartTag());
             WriteLiteral(__tagHelperExecutionContext.Output.GenerateEndTag());
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(87, 10, true);
+            Instrumentation.BeginContext(116, 10, true);
             WriteLiteral("\r\n        ");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input");
@@ -57,7 +57,7 @@ namespace TestOutput
             WriteLiteral(__tagHelperExecutionContext.Output.GenerateStartTag());
             WriteLiteral(__tagHelperExecutionContext.Output.GenerateEndTag());
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(118, 10, true);
+            Instrumentation.BeginContext(147, 10, true);
             WriteLiteral("\r\n        ");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input");
@@ -74,12 +74,12 @@ namespace TestOutput
             WriteLiteral(__tagHelperExecutionContext.Output.GenerateStartTag());
             WriteLiteral(__tagHelperExecutionContext.Output.GenerateEndTag());
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(167, 6, true);
+            Instrumentation.BeginContext(196, 6, true);
             WriteLiteral("\r\n    ");
             Instrumentation.EndContext();
             WriteLiteral(__tagHelperExecutionContext.Output.GenerateEndTag());
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(177, 8, true);
+            Instrumentation.BeginContext(206, 8, true);
             WriteLiteral("\r\n</div>");
             Instrumentation.EndContext();
         }

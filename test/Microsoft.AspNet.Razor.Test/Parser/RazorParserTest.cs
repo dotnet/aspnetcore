@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Xunit;
 
@@ -13,24 +14,14 @@ namespace Microsoft.AspNet.Razor.Test.Parser
     public class RazorParserTest
     {
         [Fact]
-        public void ConstructorRequiresNonNullCodeParser()
-        {
-            Assert.Throws<ArgumentNullException>("codeParser", () => new RazorParser(null, new HtmlMarkupParser()));
-        }
-
-        [Fact]
-        public void ConstructorRequiresNonNullMarkupParser()
-        {
-            Assert.Throws<ArgumentNullException>("markupParser", () => new RazorParser(new CSharpCodeParser(), null));
-        }
-
-        [Fact]
         public void ParseMethodCallsParseDocumentOnMarkupParserAndReturnsResults()
         {
             var factory = SpanFactory.CreateCsHtml();
 
             // Arrange
-            RazorParser parser = new RazorParser(new CSharpCodeParser(), new HtmlMarkupParser());
+            RazorParser parser = new RazorParser(new CSharpCodeParser(), 
+                                                 new HtmlMarkupParser(),
+                                                 tagHelperDescriptorResolver: null);
 
             // Act/Assert
             ParserTestBase.EvaluateResults(parser.Parse(new StringReader("foo @bar baz")),
@@ -50,7 +41,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser
             var factory = SpanFactory.CreateCsHtml();
 
             // Arrange
-            RazorParser parser = new RazorParser(new CSharpCodeParser(), new HtmlMarkupParser());
+            RazorParser parser = new RazorParser(new CSharpCodeParser(), 
+                                                 new HtmlMarkupParser(),
+                                                 tagHelperDescriptorResolver: null);
 
             // Act
             ParserResults results = parser.Parse(new StringReader("foo @bar baz"));
@@ -78,7 +71,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
             // Arrange
             ParserBase markupParser = new MockMarkupParser();
             ParserBase codeParser = new CSharpCodeParser();
-            RazorParser parser = new RazorParser(codeParser, markupParser);
+            RazorParser parser = new RazorParser(codeParser, markupParser, tagHelperDescriptorResolver: null);
             TextReader expectedReader = new StringReader("foo");
 
             // Act

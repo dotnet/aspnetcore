@@ -1,4 +1,4 @@
-#pragma checksum "SingleTagHelper.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "2c9b5f2ce383fe784f68f84cbb669ab04077c417"
+#pragma checksum "SingleTagHelper.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "61bf4cc89584cdbbac4478b202fe04797ddeb68a"
 namespace TestOutput
 {
     using Microsoft.AspNet.Razor.Runtime.TagHelpers;
@@ -21,6 +21,9 @@ namespace TestOutput
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
+            Instrumentation.BeginContext(27, 2, true);
+            WriteLiteral("\r\n");
+            Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p");
             __PTagHelper = CreateTagHelper<PTagHelper>();
             __tagHelperExecutionContext.Add(__PTagHelper);
@@ -29,7 +32,7 @@ namespace TestOutput
             __tagHelperExecutionContext.AddHtmlAttribute("class", "Hello World");
             __tagHelperExecutionContext.Output = __tagHelperRunner.RunAsync(__tagHelperExecutionContext).Result;
             WriteLiteral(__tagHelperExecutionContext.Output.GenerateStartTag());
-            Instrumentation.BeginContext(34, 11, true);
+            Instrumentation.BeginContext(63, 11, true);
             WriteLiteral("Body of Tag");
             Instrumentation.EndContext();
             WriteLiteral(__tagHelperExecutionContext.Output.GenerateEndTag());

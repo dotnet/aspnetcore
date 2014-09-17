@@ -1,4 +1,4 @@
-#pragma checksum "ContentBehaviorTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "27af4f673a178e8b27e320ea0d869aaf6a16a18b"
+#pragma checksum "ContentBehaviorTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "5aeeb0a2b5283b353efaff2cd2fb0c739020b899"
 namespace TestOutput
 {
     using Microsoft.AspNet.Razor.Runtime.TagHelpers;
@@ -25,6 +25,9 @@ namespace TestOutput
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
+            Instrumentation.BeginContext(27, 2, true);
+            WriteLiteral("\r\n");
+            Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("modify");
             __ModifyTagHelper = CreateTagHelper<ModifyTagHelper>();
             __tagHelperExecutionContext.Add(__ModifyTagHelper);

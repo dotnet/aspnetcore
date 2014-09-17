@@ -13,6 +13,93 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
     public class CSharpDirectivesTest : CsHtmlCodeParserTestBase
     {
         [Fact]
+        public void AddTagHelperDirective_Succeeds()
+        {
+            ParseBlockTest("@addtaghelper \"Foo\"",
+                new DirectiveBlock(
+                    Factory.CodeTransition(),
+                    Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
+                           .Accepts(AcceptedCharacters.None),
+                    Factory.Code("\"Foo\"").AsAddTagHelper("Foo")));
+        }
+
+        [Fact]
+        public void AddTagHelperDirectiveSupportsSpaces()
+        {
+            ParseBlockTest("@addtaghelper   \"  Foo,   Bar \"   ",
+                new DirectiveBlock(
+                    Factory.CodeTransition(),
+                    Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + "   ")
+                           .Accepts(AcceptedCharacters.None),
+                    Factory.Code("\"  Foo,   Bar \"   ").AsAddTagHelper("  Foo,   Bar ")));
+        }
+
+        [Fact]
+        public void AddTagHelperDirectiveRequiresValue()
+        {
+            ParseBlockTest("@addtaghelper ",
+                new DirectiveBlock(
+                    Factory.CodeTransition(),
+                    Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
+                           .Accepts(AcceptedCharacters.None),
+                    Factory.EmptyCSharp().AsAddTagHelper(string.Empty)),
+                 new RazorError(
+                    RazorResources.FormatParseError_DirectiveMustHaveValue(SyntaxConstants.CSharp.AddTagHelperKeyword),
+                    absoluteIndex: 14, lineIndex: 0, columnIndex: 14));
+        }
+
+        [Fact]
+        public void AddTagHelperDirectiveWithStartQuoteRequiresDoubleQuotesAroundValue()
+        {
+            ParseBlockTest("@addtaghelper \"Foo",
+                new DirectiveBlock(
+                    Factory.CodeTransition(),
+                    Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
+                           .Accepts(AcceptedCharacters.None),
+                    Factory.Code("\"Foo").AsAddTagHelper("Foo")),
+                 new RazorError(
+                     RazorResources.ParseError_Unterminated_String_Literal,
+                     absoluteIndex: 14, lineIndex: 0, columnIndex: 14),
+                 new RazorError(
+                     RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
+                        SyntaxConstants.CSharp.AddTagHelperKeyword),
+                        absoluteIndex: 14, lineIndex: 0, columnIndex: 14));
+        }
+
+        [Fact]
+        public void AddTagHelperDirectiveWithEndQuoteRequiresDoubleQuotesAroundValue()
+        {
+            ParseBlockTest("@addtaghelper Foo\"",
+                new DirectiveBlock(
+                    Factory.CodeTransition(),
+                    Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
+                           .Accepts(AcceptedCharacters.None),
+                    Factory.Code("Foo\"").AsAddTagHelper("Foo")),
+                 new RazorError(
+                     RazorResources.ParseError_Unterminated_String_Literal,
+                     absoluteIndex: 17, lineIndex: 0, columnIndex: 17),
+                 new RazorError(
+                     RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
+                        SyntaxConstants.CSharp.AddTagHelperKeyword),
+                        absoluteIndex: 14, lineIndex: 0, columnIndex: 14));
+        }
+
+        [Fact]
+        public void AddTagHelperDirectiveRequiresDoubleQuotesAroundValue()
+        {
+            ParseBlockTest("@addtaghelper Foo",
+                new DirectiveBlock(
+                    Factory.CodeTransition(),
+                    Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
+                           .Accepts(AcceptedCharacters.None),
+                    Factory.Code("Foo").AsAddTagHelper("Foo")),
+                 new RazorError(
+                     RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
+                        SyntaxConstants.CSharp.AddTagHelperKeyword),
+                        absoluteIndex: 14, lineIndex: 0, columnIndex: 14));
+        }
+
+        [Fact]
         public void InheritsDirective()
         {
             ParseBlockTest("@inherits System.Web.WebPages.WebPage",
