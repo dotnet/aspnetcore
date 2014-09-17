@@ -827,7 +827,8 @@ namespace Microsoft.Net.Http.Server
                     }
                     if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF
                         // Don't throw for disconnects, we were already finished with the response.
-                        && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_CONNECTION_INVALID)
+                        && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_CONNECTION_INVALID
+                        && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_INVALID_PARAMETER)
                     {
                         Exception exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
                         LogHelper.LogException(_requestContext.Logger, "Dispose", exception);
