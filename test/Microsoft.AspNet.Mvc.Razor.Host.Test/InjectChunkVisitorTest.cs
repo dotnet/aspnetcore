@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNet.Razor;
@@ -71,18 +72,54 @@ public MyType2 @MyPropertyName2 { get; private set; }
         public void Visit_WithDesignTimeHost_GeneratesPropertiesAndLinePragmas_ForInjectChunks()
         {
             // Arrange
+            var expected = string.Join(Environment.NewLine,
+@"[Microsoft.AspNet.Mvc.ActivateAttribute]",
+@"public",
+@"#line 1 """"",
+@"MyType1 MyPropertyName1",
+"",
+@"#line default",
+@"#line hidden",
+@"{ get; private set; }",
+@"[Microsoft.AspNet.Mvc.ActivateAttribute]",
+@"public",
+@"#line 1 """"",
+@"MyType2 @MyPropertyName2",
+"",
+@"#line default",
+@"#line hidden",
+@"{ get; private set; }",
+"");
+            var writer = new CSharpCodeWriter();
+            var context = CreateContext();
+            context.Host.DesignTimeMode = true;
+
+            var visitor = new InjectChunkVisitor(writer, context, "Microsoft.AspNet.Mvc.ActivateAttribute");
+            var factory = SpanFactory.CreateCsHtml();
+            var node = (Span)factory.Code("Some code")
+                                    .As(new InjectParameterGenerator("MyType", "MyPropertyName"));
+
+            // Act
+            visitor.Accept(new Chunk[]
+            {
+                new LiteralChunk(),
+                new InjectChunk("MyType1", "MyPropertyName1") { Association = node },
+                new InjectChunk("MyType2", "@MyPropertyName2") { Association = node }
+            });
+            var code = writer.GenerateCode();
+
+            // Assert
+            Assert.Equal(expected, code);
+        }
+
+        [Fact]
+        public void Visit_WithDesignTimeHost_GeneratesPropertiesAndLinePragmas_ForPartialInjectChunks()
+        {
+            // Arrange
             var expected = @"[Microsoft.AspNet.Mvc.ActivateAttribute]
 public
 #line 1 """"
-MyType1 MyPropertyName1
-
-#line default
-#line hidden
-{ get; private set; }
-[Microsoft.AspNet.Mvc.ActivateAttribute]
-public
-#line 1 """"
-MyType2 @MyPropertyName2
+MyType1
 
 #line default
 #line hidden
@@ -101,8 +138,7 @@ MyType2 @MyPropertyName2
             visitor.Accept(new Chunk[]
             {
                 new LiteralChunk(),
-                new InjectChunk("MyType1", "MyPropertyName1") { Association = node },
-                new InjectChunk("MyType2", "@MyPropertyName2") { Association = node }
+                new InjectChunk("MyType1", string.Empty) { Association = node },
             });
             var code = writer.GenerateCode();
 
