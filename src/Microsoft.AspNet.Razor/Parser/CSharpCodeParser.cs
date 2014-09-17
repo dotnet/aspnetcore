@@ -425,17 +425,17 @@ namespace Microsoft.AspNet.Razor.Parser
             return false;
         }
 
-        private void CompleteBlock()
+        protected void CompleteBlock()
         {
             CompleteBlock(insertMarkerIfNecessary: true);
         }
 
-        private void CompleteBlock(bool insertMarkerIfNecessary)
+        protected void CompleteBlock(bool insertMarkerIfNecessary)
         {
             CompleteBlock(insertMarkerIfNecessary, captureWhitespaceToEndOfLine: insertMarkerIfNecessary);
         }
 
-        private void CompleteBlock(bool insertMarkerIfNecessary, bool captureWhitespaceToEndOfLine)
+        protected void CompleteBlock(bool insertMarkerIfNecessary, bool captureWhitespaceToEndOfLine)
         {
             if (insertMarkerIfNecessary && Context.LastAcceptedCharacters != AcceptedCharacters.Any)
             {
