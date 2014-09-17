@@ -21,11 +21,15 @@ namespace Microsoft.Net.Http.Server
 
         private IDictionary<string, string[]> Store { get; set; }
 
+        // Readonly after the response has been sent.
+        internal bool Sent { get; set; }
+
         public string this[string key]
         {
             get { return Get(key); }
             set
             {
+                ThrowIfSent();
                 if (string.IsNullOrEmpty(value))
                 {
                     Remove(key);
@@ -40,7 +44,11 @@ namespace Microsoft.Net.Http.Server
         string[] IDictionary<string, string[]>.this[string key]
         {
             get { return Store[key]; }
-            set { Store[key] = value; }
+            set
+            {
+                ThrowIfSent();
+                Store[key] = value;
+            }
         }
 
         public int Count
@@ -50,7 +58,7 @@ namespace Microsoft.Net.Http.Server
 
         public bool IsReadOnly
         {
-            get { return false; }
+            get { return Sent; }
         }
 
         public ICollection<string> Keys
@@ -65,16 +73,19 @@ namespace Microsoft.Net.Http.Server
 
         public void Add(KeyValuePair<string, string[]> item)
         {
+            ThrowIfSent();
             Store.Add(item);
         }
 
         public void Add(string key, string[] value)
         {
+            ThrowIfSent();
             Store.Add(key, value);
         }
 
         public void Append(string key, string value)
         {
+            ThrowIfSent();
             string[] values;
             if (Store.TryGetValue(key, out values))
             {
@@ -91,6 +102,7 @@ namespace Microsoft.Net.Http.Server
 
         public void AppendValues(string key, params string[] values)
         {
+            ThrowIfSent();
             string[] oldValues;
             if (Store.TryGetValue(key, out oldValues))
             {
@@ -107,6 +119,7 @@ namespace Microsoft.Net.Http.Server
 
         public void Clear()
         {
+            ThrowIfSent();
             Store.Clear();
         }
 
@@ -152,21 +165,25 @@ namespace Microsoft.Net.Http.Server
 
         public bool Remove(KeyValuePair<string, string[]> item)
         {
+            ThrowIfSent();
             return Store.Remove(item);
         }
 
         public bool Remove(string key)
         {
+            ThrowIfSent();
             return Store.Remove(key);
         }
 
         public void Set(string key, string value)
         {
+            ThrowIfSent();
             Store[key] = new[] { value };
         }
 
         public void SetValues(string key, params string[] values)
         {
+            ThrowIfSent();
             Store[key] = values;
         }
 
@@ -178,6 +195,14 @@ namespace Microsoft.Net.Http.Server
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+        private void ThrowIfSent()
+        {
+            if (Sent)
+            {
+                throw new InvalidOperationException("The response headers cannot be modified because they have already been sent.");
+            }
         }
     }
 }

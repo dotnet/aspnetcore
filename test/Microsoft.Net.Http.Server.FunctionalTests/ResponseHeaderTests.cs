@@ -233,8 +233,10 @@ namespace Microsoft.Net.Http.Server
                 responseHeaders.SetValues("Custom2", "value2a, value2b");
                 var body = context.Response.Body;
                 body.Flush();
-                Assert.Throws<InvalidOperationException>(() => context.Response.StatusCode = 404);
-                responseHeaders.Add("Custom3", new string[] { "value3a, value3b", "value3c" }); // Ignored
+                var ex = Assert.Throws<InvalidOperationException>(() => context.Response.StatusCode = 404);
+                Assert.Equal("Headers already sent.", ex.Message);
+                ex = Assert.Throws<InvalidOperationException>(() => responseHeaders.Add("Custom3", new string[] { "value3a, value3b", "value3c" }));
+                Assert.Equal("The response headers cannot be modified because they have already been sent.", ex.Message);
 
                 context.Dispose();
 
@@ -265,8 +267,10 @@ namespace Microsoft.Net.Http.Server
                 responseHeaders.SetValues("Custom2", "value2a, value2b");
                 var body = context.Response.Body;
                 await body.FlushAsync();
-                Assert.Throws<InvalidOperationException>(() => context.Response.StatusCode = 404);
-                responseHeaders.SetValues("Custom3", "value3a, value3b", "value3c"); // Ignored
+                var ex = Assert.Throws<InvalidOperationException>(() => context.Response.StatusCode = 404);
+                Assert.Equal("Headers already sent.", ex.Message);
+                ex = Assert.Throws<InvalidOperationException>(() => responseHeaders.Add("Custom3", new string[] { "value3a, value3b", "value3c" }));
+                Assert.Equal("The response headers cannot be modified because they have already been sent.", ex.Message);
 
                 context.Dispose();
 

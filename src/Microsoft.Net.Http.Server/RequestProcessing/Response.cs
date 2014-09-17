@@ -583,6 +583,7 @@ namespace Microsoft.Net.Http.Server
 
         private List<GCHandle> SerializeHeaders(bool isOpaqueUpgrade)
         {
+            Headers.Sent = true; // Prohibit further modifications.
             UnsafeNclNativeMethods.HttpApi.HTTP_UNKNOWN_HEADER[] unknownHeaders = null;
             UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_INFO[] knownHeaderInfo = null;
             List<GCHandle> pinnedHeaders;

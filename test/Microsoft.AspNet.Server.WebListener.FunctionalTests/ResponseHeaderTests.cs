@@ -247,7 +247,7 @@ namespace Microsoft.AspNet.Server.WebListener
                     var body = responseInfo.Body;
                     body.Flush();
                     Assert.Throws<InvalidOperationException>(() => responseInfo.StatusCode = 404);
-                    responseHeaders.Add("Custom3", new string[] { "value3a, value3b", "value3c" }); // Ignored
+                    Assert.Throws<InvalidOperationException>(() => responseHeaders.Add("Custom3", new string[] { "value3a, value3b", "value3c" }));
                     return Task.FromResult(0);
                 }))
             {
@@ -277,7 +277,7 @@ namespace Microsoft.AspNet.Server.WebListener
                     var body = responseInfo.Body;
                     await body.FlushAsync();
                     Assert.Throws<InvalidOperationException>(() => responseInfo.StatusCode = 404);
-                    responseHeaders.Add("Custom3", new string[] { "value3a, value3b", "value3c" }); // Ignored
+                    Assert.Throws<InvalidOperationException>(() => responseHeaders.Add("Custom3", new string[] { "value3a, value3b", "value3c" }));
                 }))
             {
                 HttpResponseMessage response = await SendRequestAsync(address);

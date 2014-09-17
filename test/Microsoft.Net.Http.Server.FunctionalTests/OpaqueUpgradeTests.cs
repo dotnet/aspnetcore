@@ -24,7 +24,7 @@ namespace Microsoft.Net.Http.Server
                 byte[] body = Encoding.UTF8.GetBytes("Hello World");
                 context.Response.Body.Write(body, 0, body.Length);
 
-                context.Response.Headers["Upgrade"] = "WebSocket"; // Win8.1 blocks anything but WebSocket
+                Assert.Throws<InvalidOperationException>(() => context.Response.Headers["Upgrade"] = "WebSocket"); // Win8.1 blocks anything but WebSocket
                 await Assert.ThrowsAsync<InvalidOperationException>(async () => await context.UpgradeAsync());
                 context.Dispose();
                 HttpResponseMessage response = await clientTask;
