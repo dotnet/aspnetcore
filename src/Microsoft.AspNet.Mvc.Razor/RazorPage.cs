@@ -122,27 +122,40 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// For all other types, the encoded result of <see cref="object.ToString"/> is written to the
         /// <paramref name="writer"/>.
         /// </remarks>
-        public virtual void WriteTo(TextWriter writer, object content)
+        public virtual void WriteTo(TextWriter writer, object value)
         {
-            if (content != null)
+            if (value != null)
             {
-                var helperResult = content as HelperResult;
+                var helperResult = value as HelperResult;
                 if (helperResult != null)
                 {
                     helperResult.WriteTo(writer);
                 }
                 else
                 {
-                    var htmlString = content as HtmlString;
+                    var htmlString = value as HtmlString;
                     if (htmlString != null)
                     {
-                        writer.Write(content.ToString());
+                        writer.Write(htmlString.ToString());
                     }
                     else
                     {
-                        writer.Write(WebUtility.HtmlEncode(content.ToString()));
+                        WriteTo(writer, value.ToString());
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Writes the specified <paramref name="value"/> with HTML encoding to <paramref name="writer"/>.
+        /// </summary>
+        /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
+        /// <param name="value">The <see cref="string"/> to write.</param>
+        public virtual void WriteTo(TextWriter writer, string value)
+        {
+            if (value != null)
+            {
+                writer.Write(WebUtility.HtmlEncode(value));
             }
         }
 
@@ -160,11 +173,23 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
         /// <param name="value">The <see cref="object"/> to write.</param>
-        public virtual void WriteLiteralTo(TextWriter writer, object text)
+        public virtual void WriteLiteralTo(TextWriter writer, object value)
         {
-            if (text != null)
+            if (value != null)
             {
-                writer.Write(text.ToString());
+                WriteLiteralTo(writer, value.ToString());
+            }
+        }
+
+        /// <summary>
+        /// Writes the specified <paramref name="value"/> without HTML encoding to <see cref="Output"/>.
+        /// </summary>
+        /// <param name="value">The <see cref="string"/> to write.</param>
+        public virtual void WriteLiteralTo(TextWriter writer, string value)
+        {
+            if (value != null)
+            {
+                writer.Write(value);
             }
         }
 
@@ -211,14 +236,19 @@ namespace Microsoft.AspNet.Mvc.Razor
                     // instead of the string 'true'. If the value is the bool 'false' we don't want to write anything.
                     // Otherwise the value is another object (perhaps an HtmlString) and we'll ask it to format itself.
                     string stringValue;
-                    var boolValue = val.Value as bool?;
-                    if (boolValue == true)
+
+                    // Intentionally using is+cast here for performance reasons. This is more performant than as+bool?
+                    // because of boxing.
+                    if (val.Value is bool)
                     {
-                        stringValue = name;
-                    }
-                    else if (boolValue == false)
-                    {
-                        continue;
+                        if ((bool)val.Value)
+                        {
+                            stringValue = name;
+                        }
+                        else
+                        {
+                            continue;
+                        }
                     }
                     else
                     {
@@ -238,14 +268,25 @@ namespace Microsoft.AspNet.Mvc.Razor
                     // Calculate length of the source span by the position of the next value (or suffix)
                     var sourceLength = next.Position - attrVal.Value.Position;
 
-                    if (attrVal.Literal)
+                    // The extra branching here is to ensure that we call the Write*To(string) overload whe
+                    // possible.
+                    if (attrVal.Literal && stringValue != null)
                     {
-                        WriteLiteralTo(writer, stringValue ?? val.Value);
+                        WriteLiteralTo(writer, stringValue);
+                    }
+                    else if (attrVal.Literal)
+                    {
+                        WriteLiteralTo(writer, val.Value);
+                    }
+                    else if (stringValue != null)
+                    {
+                        WriteTo(writer, stringValue);
                     }
                     else
                     {
-                        WriteTo(writer, stringValue ?? val.Value); // Write value
+                        WriteTo(writer, val.Value);
                     }
+
                     wroteSomething = true;
                 }
                 if (wroteSomething)
