@@ -153,7 +153,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <param name="value">The <see cref="string"/> to write.</param>
         public virtual void WriteTo(TextWriter writer, string value)
         {
-            if (value != null)
+            if (!string.IsNullOrEmpty(value))
             {
                 writer.Write(WebUtility.HtmlEncode(value));
             }
@@ -187,7 +187,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <param name="value">The <see cref="string"/> to write.</param>
         public virtual void WriteLiteralTo(TextWriter writer, string value)
         {
-            if (value != null)
+            if (!string.IsNullOrEmpty(value))
             {
                 writer.Write(value);
             }
