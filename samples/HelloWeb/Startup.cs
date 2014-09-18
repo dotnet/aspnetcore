@@ -4,7 +4,7 @@ namespace KWebStartup
 {
     public class Startup
     {
-        public void Configure(IBuilder app)
+        public void Configure(IApplicationBuilder app)
         {
             app.UseStaticFiles();
             app.UseWelcomePage();
