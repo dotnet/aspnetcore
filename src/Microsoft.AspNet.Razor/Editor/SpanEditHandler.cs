@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Razor.Editor
             }
 
             // If the change is accepted then apply the change
-            if (result.HasFlag(PartialParseResult.Accepted))
+            if ((result & PartialParseResult.Accepted) == PartialParseResult.Accepted)
             {
                 return new EditResult(result, UpdateSpan(target, normalized));
             }

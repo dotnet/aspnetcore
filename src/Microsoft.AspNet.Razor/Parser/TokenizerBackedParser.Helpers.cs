@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Razor.Parser
             TSymbolType right = Language.FlipBracket(left);
             SourceLocation start = CurrentLocation;
             AcceptAndMoveNext();
-            if (EndOfFile && !mode.HasFlag(BalancingModes.NoErrorOnFailure))
+            if (EndOfFile && ((mode & BalancingModes.NoErrorOnFailure) != BalancingModes.NoErrorOnFailure))
             {
                 Context.OnError(start,
                                 RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF(
@@ -91,8 +91,8 @@ namespace Microsoft.AspNet.Razor.Parser
                 do
                 {
                     if (IsAtEmbeddedTransition(
-                        mode.HasFlag(BalancingModes.AllowCommentsAndTemplates),
-                        mode.HasFlag(BalancingModes.AllowEmbeddedTransitions)))
+                        (mode & BalancingModes.AllowCommentsAndTemplates) == BalancingModes.AllowCommentsAndTemplates,
+                        (mode & BalancingModes.AllowEmbeddedTransitions) == BalancingModes.AllowEmbeddedTransitions))
                     {
                         Accept(syms);
                         syms.Clear();
@@ -118,14 +118,14 @@ namespace Microsoft.AspNet.Razor.Parser
 
                 if (nesting > 0)
                 {
-                    if (!mode.HasFlag(BalancingModes.NoErrorOnFailure))
+                    if ((mode & BalancingModes.NoErrorOnFailure) != BalancingModes.NoErrorOnFailure)
                     {
                         Context.OnError(start,
                                         RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF(
                                             Language.GetSample(left),
                                             Language.GetSample(right)));
                     }
-                    if (mode.HasFlag(BalancingModes.BacktrackOnFailure))
+                    if ((mode & BalancingModes.BacktrackOnFailure) == BalancingModes.BacktrackOnFailure)
                     {
                         Context.Source.Position = startPosition;
                         NextToken();

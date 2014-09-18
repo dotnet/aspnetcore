@@ -156,13 +156,13 @@ namespace Microsoft.AspNet.Razor
             }
 
             // If partial parsing failed or there were outstanding parser tasks, start a full reparse
-            if (result.HasFlag(PartialParseResult.Rejected))
+            if ((result & PartialParseResult.Rejected) == PartialParseResult.Rejected)
             {
                 _parser.QueueChange(change);
             }
 
             // Otherwise, remember if this was provisionally accepted for next partial parse
-            LastResultProvisional = result.HasFlag(PartialParseResult.Provisional);
+            LastResultProvisional = (result & PartialParseResult.Provisional) == PartialParseResult.Provisional;
             VerifyFlagsAreValid(result);
 
 #if EDITOR_TRACING
@@ -172,8 +172,8 @@ namespace Microsoft.AspNet.Razor
 #endif
             RazorEditorTrace.TraceLine(
                 RazorResources.FormatTrace_EditorProcessedChange(
-                            Path.GetFileName(FileName), 
-                            changeString, elapsedMs.HasValue ? elapsedMs.Value.ToString(CultureInfo.InvariantCulture) : "?", 
+                            Path.GetFileName(FileName),
+                            changeString, elapsedMs.HasValue ? elapsedMs.Value.ToString(CultureInfo.InvariantCulture) : "?",
                             result.ToString()));
             return result;
         }
@@ -206,7 +206,7 @@ namespace Microsoft.AspNet.Razor
             {
                 EditResult editResult = _lastChangeOwner.EditHandler.ApplyChange(_lastChangeOwner, change);
                 result = editResult.Result;
-                if (!editResult.Result.HasFlag(PartialParseResult.Rejected))
+                if ((editResult.Result & PartialParseResult.Rejected) != PartialParseResult.Rejected)
                 {
                     _lastChangeOwner.ReplaceWith(editResult.EditedSpan);
                 }
@@ -224,13 +224,13 @@ namespace Microsoft.AspNet.Razor
             }
             else if (_lastChangeOwner != null)
             {
-                EditResult editRes = _lastChangeOwner.EditHandler.ApplyChange(_lastChangeOwner, change);
-                result = editRes.Result;
-                if (!editRes.Result.HasFlag(PartialParseResult.Rejected))
+                EditResult editResult = _lastChangeOwner.EditHandler.ApplyChange(_lastChangeOwner, change);
+                result = editResult.Result;
+                if ((editResult.Result & PartialParseResult.Rejected) != PartialParseResult.Rejected)
                 {
-                    _lastChangeOwner.ReplaceWith(editRes.EditedSpan);
+                    _lastChangeOwner.ReplaceWith(editResult.EditedSpan);
                 }
-                if (result.HasFlag(PartialParseResult.AutoCompleteBlock))
+                if ((result & PartialParseResult.AutoCompleteBlock) == PartialParseResult.AutoCompleteBlock)
                 {
                     _lastAutoCompleteSpan = _lastChangeOwner;
                 }
@@ -269,17 +269,17 @@ namespace Microsoft.AspNet.Razor
         [Conditional("DEBUG")]
         private static void VerifyFlagsAreValid(PartialParseResult result)
         {
-            Debug.Assert(result.HasFlag(PartialParseResult.Accepted) ||
-                         result.HasFlag(PartialParseResult.Rejected),
+            Debug.Assert(((result & PartialParseResult.Accepted) == PartialParseResult.Accepted) ||
+                         ((result & PartialParseResult.Rejected) == PartialParseResult.Rejected),
                          "Partial Parse result does not have either of Accepted or Rejected flags set");
-            Debug.Assert(result.HasFlag(PartialParseResult.Rejected) ||
-                         !result.HasFlag(PartialParseResult.SpanContextChanged),
+            Debug.Assert(((result & PartialParseResult.Rejected) == PartialParseResult.Rejected) ||
+                         ((result & PartialParseResult.SpanContextChanged) != PartialParseResult.SpanContextChanged),
                          "Partial Parse result was Accepted AND had SpanContextChanged flag set");
-            Debug.Assert(result.HasFlag(PartialParseResult.Rejected) ||
-                         !result.HasFlag(PartialParseResult.AutoCompleteBlock),
+            Debug.Assert(((result & PartialParseResult.Rejected) == PartialParseResult.Rejected) ||
+                         ((result & PartialParseResult.AutoCompleteBlock) != PartialParseResult.AutoCompleteBlock),
                          "Partial Parse result was Accepted AND had AutoCompleteBlock flag set");
-            Debug.Assert(result.HasFlag(PartialParseResult.Accepted) ||
-                         !result.HasFlag(PartialParseResult.Provisional),
+            Debug.Assert(((result & PartialParseResult.Accepted) == PartialParseResult.Accepted) ||
+                         ((result & PartialParseResult.Provisional) != PartialParseResult.Provisional),
                          "Partial Parse result was Rejected AND had Provisional flag set");
         }
     }

@@ -60,12 +60,12 @@ namespace Microsoft.AspNet.Razor
                 treeBuilder.AppendLine();
                 treeBuilder.AppendFormat(CultureInfo.CurrentCulture, "Partial Parse Result: {0}", result);
                 treeBuilder.AppendLine();
-                if (result.HasFlag(PartialParseResult.Rejected))
+                if ((result & PartialParseResult.Rejected) == PartialParseResult.Rejected)
                 {
                     treeBuilder.AppendFormat(CultureInfo.CurrentCulture, "Tree Structure Changed: {0}", treeStructureChanged);
                     treeBuilder.AppendLine();
                 }
-                if (result.HasFlag(PartialParseResult.AutoCompleteBlock))
+                if ((result & PartialParseResult.AutoCompleteBlock) == PartialParseResult.AutoCompleteBlock)
                 {
                     treeBuilder.AppendFormat(CultureInfo.CurrentCulture, "Auto Complete Insert String: \"{0}\"", parser.GetAutoCompleteString());
                     treeBuilder.AppendLine();
