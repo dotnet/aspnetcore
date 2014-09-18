@@ -53,6 +53,37 @@ namespace E2ETests
             }
         }
 
+        /// <summary>
+        /// Copy klr.iis\[arch] to bin folder
+        /// </summary>
+        /// <param name="applicationPath"></param>
+        private static void CopyKlrIIsBinFolder(StartParameters startParameters)
+        {
+            if (startParameters.ServerType == ServerType.HeliosNativeModule)
+            {
+                Console.WriteLine(@"Copying klr.iis\x86\* content to [ApplicationFolder]\bin\");
+                var archFolderName = startParameters.KreArchitecture.ToString();
+                var sourcePath = Path.Combine(Environment.CurrentDirectory, "NativeModule", "klr.iis", archFolderName);
+                var targetPath = Path.Combine(startParameters.ApplicationPath, "bin", archFolderName);
+                if (!Directory.Exists(targetPath))
+                {
+                    Directory.CreateDirectory(targetPath);
+                }
+
+                try
+                {
+                    foreach (var sourceFile in Directory.EnumerateFiles(sourcePath, "*", SearchOption.AllDirectories))
+                    {
+                        File.Copy(sourceFile, Path.Combine(targetPath, Path.GetFileName(sourceFile)), true);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine("Exception while copying assemblies", exception.Message);
+                }
+            }
+        }
+
         private static string APP_RELATIVE_PATH = Path.Combine("..", "..", "src", "MusicStore");
 
         public static Process StartApplication(StartParameters startParameters, string identityDbName)
@@ -86,7 +117,7 @@ namespace E2ETests
                     KpmPack(startParameters);
                 }
 
-                if (startParameters.ServerType == ServerType.Helios)
+                if (startParameters.ServerType == ServerType.Helios || startParameters.ServerType == ServerType.HeliosNativeModule)
                 {
                     hostProcess = StartHeliosHost(startParameters);
                 }
@@ -146,20 +177,42 @@ namespace E2ETests
 
         private static Process StartHeliosHost(StartParameters startParameters)
         {
-            CopyAspNetLoader(startParameters.ApplicationPath);
+            if (!string.IsNullOrWhiteSpace(startParameters.ApplicationHostConfigTemplateContent))
+            {
+                startParameters.ApplicationHostConfigTemplateContent =
+                    startParameters.ApplicationHostConfigTemplateContent.Replace("[ApplicationPhysicalPath]", startParameters.ApplicationPath);
+            }
+
+            if (startParameters.ServerType == ServerType.HeliosNativeModule)
+            {
+                startParameters.ApplicationHostConfigTemplateContent =
+                    startParameters.ApplicationHostConfigTemplateContent.
+                    Replace("[KlrBootStrapperDirectory]", Path.Combine(Environment.CurrentDirectory, "NativeModule", "klr.iis.bootstrapper"));
+            }
+
+            if (startParameters.ServerType == ServerType.Helios)
+            {
+                CopyAspNetLoader(startParameters.ApplicationPath);
+            }
+            else
+            {
+                //Native module
+                CopyKlrIIsBinFolder(startParameters);
+            }
 
             if (!string.IsNullOrWhiteSpace(startParameters.ApplicationHostConfigTemplateContent))
             {
                 //Pass on the applicationhost.config to iis express. With this don't need to pass in the /path /port switches as they are in the applicationHost.config
                 //We take a copy of the original specified applicationHost.Config to prevent modifying the one in the repo.
+
                 var tempApplicationHostConfig = Path.GetTempFileName();
                 File.WriteAllText(tempApplicationHostConfig, startParameters.ApplicationHostConfigTemplateContent.Replace("[ApplicationPhysicalPath]", startParameters.ApplicationPath));
                 startParameters.ApplicationHostConfigLocation = tempApplicationHostConfig;
             }
 
             var parameters = string.IsNullOrWhiteSpace(startParameters.ApplicationHostConfigLocation) ?
-                                string.Format("/port:5001 /path:{0}", startParameters.ApplicationPath) :
-                                string.Format("/site:{0} /config:{1}", startParameters.SiteName, startParameters.ApplicationHostConfigLocation);
+                            string.Format("/port:5001 /path:{0}", startParameters.ApplicationPath) :
+                            string.Format("/site:{0} /config:{1}", startParameters.SiteName, startParameters.ApplicationHostConfigLocation);
 
             var iisExpressPath = GetIISExpressPath(startParameters.KreArchitecture);
 

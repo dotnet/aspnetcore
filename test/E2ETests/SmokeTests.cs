@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Net.Http;
 using Xunit;
 
@@ -24,7 +25,9 @@ namespace E2ETests
         [InlineData(ServerType.Kestrel, KreFlavor.Mono, KreArchitecture.x86, "http://localhost:5004/", true)]
         [InlineData(ServerType.Helios, KreFlavor.CoreClr, KreArchitecture.amd64, "http://localhost:5001/", false)]
         [InlineData(ServerType.Kestrel, KreFlavor.CoreClr, KreArchitecture.amd64, "http://localhost:5004/", false)]
-        public void SmokeTestSuite(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl, bool RunTestOnMono = false)
+        //Native module variation requires some more work
+        //[InlineData(ServerType.HeliosNativeModule, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5001/", false)]
+        public void SmokeTestSuite(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl, bool RunTestOnMono)
         {
             Console.WriteLine("Variation Details : HostType = {0}, KreFlavor = {1}, Architecture = {2}, applicationBaseUrl = {3}", serverType, kreFlavor, architecture, applicationBaseUrl);
 
@@ -38,7 +41,9 @@ namespace E2ETests
             {
                 ServerType = serverType,
                 KreFlavor = kreFlavor,
-                KreArchitecture = architecture
+                KreArchitecture = architecture,
+                ApplicationHostConfigTemplateContent = (serverType == ServerType.HeliosNativeModule) ? File.ReadAllText("HeliosNativeModuleApplicationHost.config") : null,
+                SiteName = (serverType == ServerType.HeliosNativeModule) ? "MusicStoreNativeModule" : null
             };
 
             var testStartTime = DateTime.Now;

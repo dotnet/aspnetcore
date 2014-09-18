@@ -3,6 +3,7 @@
     public enum ServerType
     {
         Helios,
+        HeliosNativeModule,
         WebListener,
         Kestrel
     }
