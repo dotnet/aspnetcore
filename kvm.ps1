@@ -24,7 +24,7 @@ $feed = $env:KRE_NUGET_API_URL
 
 if (!$feed)
 {
-    $feed = "https://www.myget.org/F/aspnetvnext/api/v2";
+    $feed = "https://www.myget.org/F/aspnetrelease/api/v2";
 }
 
 $scriptPath = $myInvocation.MyCommand.Definition
