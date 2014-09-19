@@ -1,0 +1,5 @@
+﻿{
+    "ServeCDNContent": "true",
+    "CDNServerBaseUrl" :  "http://cdn.contoso.com",
+    "GenerateLowercaseUrls": "true"
+}

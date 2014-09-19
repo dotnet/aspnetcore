@@ -38,10 +38,9 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         [InlineData(null, "~/Home/About", "/Home/About")]
         [InlineData("/", "~/Home/About", "/Home/About")]
         [InlineData("/", "~/", "/")]
-        [InlineData("", "~/Home/About", "/Home/About")]
         [InlineData("/myapproot", "~/", "/myapproot/")]
         [InlineData("", "~/Home/About", "/Home/About")]
-        [InlineData("/myapproot", "~/", "/myapproot/")]
+        [InlineData("/myapproot", "~/Content/bootstrap.css", "/myapproot/Content/bootstrap.css")]
         public void Content_ReturnsAppRelativePath_WhenItStartsWithToken(string appRoot,
                                                                          string contentPath,
                                                                          string expectedPath)
@@ -382,11 +381,11 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Act
             var url = urlHelper.RouteUrl(routeName: "namedroute",
                                          values: new
-                                                    {
-                                                        Action = "newaction",
-                                                        Controller = "home2",
-                                                        id = "someid"
-                                                    },
+                                         {
+                                             Action = "newaction",
+                                             Controller = "home2",
+                                             id = "someid"
+                                         },
                                          protocol: "https");
 
             // Assert
@@ -436,19 +435,74 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Act
             var url = urlHelper.RouteUrl(routeName: "namedroute",
                                          values: new
-                                            {
-                                                Action = "newaction",
-                                                Controller = "home2",
-                                                id = "someid"
-                                            });
+                                         {
+                                             Action = "newaction",
+                                             Controller = "home2",
+                                             id = "someid"
+                                         });
 
             // Assert
             Assert.Equal("/app/named/home2/newaction/someid", url);
         }
 
+        [Fact]
+        public void UrlAction_RouteValuesAsDictionary_CaseSensitive()
+        {
+            // Arrange
+            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+
+            // We're using a dictionary with a case-sensitive comparer and loading it with data 
+            // using casings differently from the route. This should still successfully generate a link.
+            var dict = new Dictionary<string, object>();
+            var id = "suppliedid";
+            var isprint = "true";
+            dict["ID"] = id;
+            dict["isprint"] = isprint;
+
+            // Act
+            var url = urlHelper.Action(
+                                    action: "contact",
+                                    controller: "home",
+                                    values: dict);
+
+            // Assert
+            Assert.Equal(2, dict.Count);
+            Assert.Same(id, dict["ID"]);
+            Assert.Same(isprint, dict["isprint"]);
+            Assert.Equal("/app/home/contact/suppliedid?isprint=true", url);
+        }
+
+        [Fact]
+        public void UrlRouteUrl_RouteValuesAsDictionary_CaseSensitive()
+        {
+            // Arrange
+            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+
+            // We're using a dictionary with a case-sensitive comparer and loading it with data 
+            // using casings differently from the route. This should still successfully generate a link.
+            var dict = new Dictionary<string, object>();
+            var action = "contact";
+            var controller = "home";
+            var id = "suppliedid";
+            
+            dict["ACTION"] = action;
+            dict["Controller"] = controller;
+            dict["ID"] = id;
+            
+            // Act
+            var url = urlHelper.RouteUrl(routeName: "namedroute", values: dict);
+            
+            // Assert
+            Assert.Equal(3, dict.Count);
+            Assert.Same(action, dict["ACTION"]);
+            Assert.Same(controller, dict["Controller"]);
+            Assert.Same(id, dict["ID"]);
+            Assert.Equal("/app/named/home/contact/suppliedid", url);
+        }
+
         private static HttpContext CreateHttpContext(string appRoot, ILoggerFactory factory = null)
         {
-            if(factory == null)
+            if (factory == null)
             {
                 factory = NullLoggerFactory.Instance;
             }
@@ -553,7 +607,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             serviceProviderMock.Setup(o => o.GetService(typeof(IInlineConstraintResolver)))
                                .Returns(new DefaultInlineConstraintResolver(serviceProviderMock.Object,
                                                                             accessorMock.Object));
-          
+
             rt.ServiceProvider = serviceProviderMock.Object;
             rt.MapRoute(string.Empty,
                         "{controller}/{action}/{id}",
