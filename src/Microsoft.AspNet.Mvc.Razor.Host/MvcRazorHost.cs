@@ -58,7 +58,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         public MvcRazorHost(string root) :
             this(new PhysicalFileSystem(root))
         {
-
         }
 #endif
 
@@ -101,6 +100,12 @@ namespace Microsoft.AspNet.Mvc.Razor
             get { return "dynamic"; }
         }
 
+        /// <inheritdoc />
+        public string MainClassNamePrefix
+        {
+            get { return "ASPV_"; }
+        }
+
         /// <summary>
         /// Gets the list of chunks that are injected by default by this host.
         /// </summary>
@@ -121,7 +126,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <inheritdoc />
         public GeneratorResults GenerateCode(string rootRelativePath, Stream inputStream)
         {
-            var className = ParserHelpers.SanitizeClassName(rootRelativePath);
+            // Adding a prefix so that the main view class can be easily identified.
+            var className = MainClassNamePrefix + ParserHelpers.SanitizeClassName(rootRelativePath);
             using (var reader = new StreamReader(inputStream))
             {
                 var engine = new RazorTemplateEngine(this);

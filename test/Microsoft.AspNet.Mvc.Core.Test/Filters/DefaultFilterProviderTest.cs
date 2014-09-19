@@ -28,8 +28,6 @@ namespace Microsoft.AspNet.Mvc.Filters
 
             var provider = CreateProvider();
 
-            //System.Diagnostics.Debugger.Launch();
-            //System.Diagnostics.Debugger.Break();
             // Act
             provider.Invoke(context, () => { });
             var results = context.Results;

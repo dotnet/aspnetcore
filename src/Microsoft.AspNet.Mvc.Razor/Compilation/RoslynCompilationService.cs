@@ -7,12 +7,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using Microsoft.AspNet.FileSystems;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
@@ -31,27 +29,31 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 
         private readonly Lazy<List<MetadataReference>> _applicationReferences;
 
+        private readonly string _classPrefix;
+
         /// <summary>
         /// Initalizes a new instance of the <see cref="RoslynCompilationService"/> class.
         /// </summary>
         /// <param name="environment">The environment for the executing application.</param>
         /// <param name="loaderEngine">The loader used to load compiled assemblies.</param>
         /// <param name="libraryManager">The library manager that provides export and reference information.</param>
+        /// <param name="host">The <see cref="IMvcRazorHost"/> that was used to generate the code.</param>
         public RoslynCompilationService(IApplicationEnvironment environment,
                                         IAssemblyLoaderEngine loaderEngine,
-                                        ILibraryManager libraryManager)
+                                        ILibraryManager libraryManager,
+                                        IMvcRazorHost host)
         {
             _environment = environment;
             _loader = loaderEngine;
             _libraryManager = libraryManager;
             _applicationReferences = new Lazy<List<MetadataReference>>(GetApplicationReferences);
+            _classPrefix = host.MainClassNamePrefix;
         }
 
         /// <inheritdoc />
         public CompilationResult Compile(IFileInfo fileInfo, string compilationContent)
         {
-            var sourceText = SourceText.From(compilationContent, Encoding.UTF8);
-            var syntaxTrees = new[] { CSharpSyntaxTree.ParseText(sourceText, path: fileInfo.PhysicalPath) };
+            var syntaxTrees = new[] { SyntaxTreeGenerator.Generate(compilationContent, fileInfo.PhysicalPath) };
 
             var references = _applicationReferences.Value;
 
@@ -103,9 +105,10 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                     }
 
                     var type = assembly.GetExportedTypes()
-                                       .First();
+                                       .First(t => t.Name.
+                                          StartsWith(_classPrefix, StringComparison.Ordinal));
 
-                    return UncachedCompilationResult.Successful(type, compilationContent);
+                    return UncachedCompilationResult.Successful(type);
                 }
             }
         }

@@ -1,66 +1,48 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Diagnostics.Contracts;
-using System.IO;
 using System.Linq;
-using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.Razor;
-using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
     public class RazorCompilationService : IRazorCompilationService
     {
         // This class must be registered as a singleton service for the caching to work.
-        private readonly CompilerCache _cache = new CompilerCache();
-        private readonly IApplicationEnvironment _environment;
+        private readonly CompilerCache _cache;
         private readonly ICompilationService _baseCompilationService;
         private readonly IMvcRazorHost _razorHost;
-        private readonly string _appRoot;
 
-        public RazorCompilationService(IApplicationEnvironment environment,
-                                       ICompilationService compilationService,
+        public RazorCompilationService(ICompilationService compilationService,
+                                       IControllerAssemblyProvider _controllerAssemblyProvider,
                                        IMvcRazorHost razorHost)
         {
-            _environment = environment;
             _baseCompilationService = compilationService;
             _razorHost = razorHost;
-            _appRoot = EnsureTrailingSlash(environment.ApplicationBasePath);
+            _cache = new CompilerCache(_controllerAssemblyProvider.CandidateAssemblies);
         }
 
-        public CompilationResult Compile([NotNull] IFileInfo file)
+        public CompilationResult Compile([NotNull] RelativeFileInfo file)
         {
             return _cache.GetOrAdd(file, () => CompileCore(file));
         }
 
-        internal CompilationResult CompileCore(IFileInfo file)
+        internal CompilationResult CompileCore(RelativeFileInfo file)
         {
             GeneratorResults results;
-            using (var inputStream = file.CreateReadStream())
+            using (var inputStream = file.FileInfo.CreateReadStream())
             {
-                Contract.Assert(file.PhysicalPath.StartsWith(_appRoot, StringComparison.OrdinalIgnoreCase));
-                var rootRelativePath = file.PhysicalPath.Substring(_appRoot.Length);
-                results = _razorHost.GenerateCode(rootRelativePath, inputStream);
+                results = _razorHost.GenerateCode(
+                    file.RelativePath, inputStream);
             }
 
             if (!results.Success)
             {
                 var messages = results.ParserErrors.Select(e => new CompilationMessage(e.Message));
-                return CompilationResult.Failed(file, results.GeneratedCode, messages);
+                return CompilationResult.Failed(file.FileInfo, results.GeneratedCode, messages);
             }
 
-            return _baseCompilationService.Compile(file, results.GeneratedCode);
-        }
-
-        private static string EnsureTrailingSlash([NotNull]string path)
-        {
-            if (!path.EndsWith(Path.DirectorySeparatorChar.ToString()))
-            {
-                path += Path.DirectorySeparatorChar;
-            }
-            return path;
+            return _baseCompilationService.Compile(file.FileInfo, results.GeneratedCode);
         }
     }
 }

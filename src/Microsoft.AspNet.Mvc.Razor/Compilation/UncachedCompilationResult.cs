@@ -14,6 +14,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
         }
 
+        public string RazorFileContent { get; private set; }
+
         /// <summary>
         /// Creates a <see cref="UncachedCompilationResult"/> that represents a success in compilation.
         /// </summary>

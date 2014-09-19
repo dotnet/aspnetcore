@@ -9,5 +9,15 @@ namespace Microsoft.AspNet.Mvc.Razor
     public interface IMvcRazorHost
     {
         GeneratorResults GenerateCode(string rootRelativePath, Stream inputStream);
+
+        /// <summary>
+        /// Represent the prefix off the main entry class in the view.
+        /// </summary>
+        string MainClassNamePrefix { get; }
+
+        /// <summary>
+        /// Represent the namespace the main entry class in the view.
+        /// </summary>
+        string DefaultNamespace { get; }
     }
 }

@@ -120,7 +120,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     }
                 }
             }
-            catch (IOException)
+            catch (Exception)
             {
                 // Don't throw if reading the file fails.
                 return string.Empty;
