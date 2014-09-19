@@ -13,11 +13,23 @@ namespace Microsoft.AspNet.Mvc
     /// </summary>
     public class HttpNoContentOutputFormatter : IOutputFormatter
     {
+        /// <summary>
+        /// Indicates whether to select this formatter if the returned value from the action
+        /// is null.
+        /// </summary>
+        public bool TreatNullValueAsNoContent { get; set; } = true;
+
         public bool CanWriteResult(OutputFormatterContext context, MediaTypeHeaderValue contentType)
         {
             // ignore the contentType and just look at the content.
             // This formatter will be selected if the content is null. 
-            return context.Object == null;
+            // We check for Task as a user can directly create an ObjectContentResult with the unwrapped type.
+            if(context.DeclaredType == typeof(void) || context.DeclaredType == typeof(Task))
+            {
+                return true;
+            }
+
+            return TreatNullValueAsNoContent && context.Object == null;
         }
 
         public IReadOnlyList<MediaTypeHeaderValue> GetSupportedContentTypes(

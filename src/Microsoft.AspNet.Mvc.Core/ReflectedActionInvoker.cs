@@ -80,7 +80,11 @@ namespace Microsoft.AspNet.Mvc
             if (declaredReturnType == typeof(void) ||
                 declaredReturnType == typeof(Task))
             {
-                return new NoContentResult();
+                return new ObjectResult(null)
+                {
+                    // Treat the declared type as void, which is the unwrapped type for Task.
+                    DeclaredType = typeof(void)
+                };
             }
 
             // Unwrap potential Task<T> types. 

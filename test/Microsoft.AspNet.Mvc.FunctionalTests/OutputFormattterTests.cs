@@ -57,10 +57,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Theory]
-        [InlineData("ReturnTaskOfString_NullValue")]
-        [InlineData("ReturnTaskOfObject_NullValue")]
-        [InlineData("ReturnObject_NullValue")]
-        public async Task NoContentFormatter_ForNullValue_GetsSelectedAndWritesResponse(string actionName)
+        [InlineData("ReturnTask")]
+        [InlineData("ReturnVoid")]
+        public async Task NoContentFormatter_ForVoidAndTaskReturnType_GetsSelectedAndWritesResponse(string actionName)
         {
             // Arrange
             var server = TestServer.Create(_provider, _app);
@@ -76,6 +75,51 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Empty(body);
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
             Assert.Equal(0, response.Content.Headers.ContentLength);
+        }
+
+        [Theory]
+        [InlineData("ReturnTaskOfString_NullValue")]
+        [InlineData("ReturnTaskOfObject_NullValue")]
+        [InlineData("ReturnObject_NullValue")]
+        public async Task NoContentFormatter_ForNullValue_ByDefault_GetsSelectedAndWritesResponse(string actionName)
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/NoContent/" + actionName);
+
+            // Assert
+            Assert.Null(response.Content.Headers.ContentType);
+            var body = await response.Content.ReadAsStringAsync();
+            // Response body is empty instead of null.
+            Assert.Empty(body);
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+            Assert.Equal(0, response.Content.Headers.ContentLength);
+        }
+
+        [Theory]
+        [InlineData("ReturnTaskOfString_NullValue")]
+        [InlineData("ReturnTaskOfObject_NullValue")]
+        [InlineData("ReturnObject_NullValue")]
+        public async Task 
+            NoContentFormatter_ForNullValue_AndTreatNullAsNoContentFlagSetToFalse_DoesNotGetSelected(string actionName)
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/NoContentDoNotTreatNullValueAsNoContent/" +
+                                                 actionName);
+
+            // Assert
+            Assert.Null(response.Content.Headers.ContentType);
+            var body = await response.Content.ReadAsStringAsync();
+            // Response body is empty instead of null.
+            Assert.Empty(body);
+            Assert.Equal(HttpStatusCode.NotAcceptable, response.StatusCode);
         }
     }
 }

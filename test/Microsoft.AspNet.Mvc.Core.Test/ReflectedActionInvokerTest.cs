@@ -1234,13 +1234,17 @@ namespace Microsoft.AspNet.Mvc
         [Theory]
         [InlineData(typeof(void))]
         [InlineData(typeof(Task))]
-        public void CreateActionResult_Types_ReturnsNoContentResultForTaskAndVoidReturnTypes(Type type)
+        public void CreateActionResult_Types_ReturnsObjectResultForTaskAndVoidReturnTypes(Type type)
         {
             // Arrange & Act
-            var result = ReflectedActionInvoker.CreateActionResult(type, null).GetType();
+            var result = ReflectedActionInvoker.CreateActionResult(type, null);
 
             // Assert
-            Assert.Equal(typeof(NoContentResult), (result));
+            var objectResult = Assert.IsType<ObjectResult>(result);
+
+            // Since we unwrap the Task type to void, the expected type will always be void.
+            Assert.Equal(typeof(void), objectResult.DeclaredType);
+            Assert.Null(objectResult.Value);
         }
 
         public static IEnumerable<object[]> CreateActionResult_ReturnsObjectContentResultData
