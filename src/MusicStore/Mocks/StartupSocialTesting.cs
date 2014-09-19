@@ -19,6 +19,8 @@ using MusicStore.Mocks.Common;
 using MusicStore.Mocks.Facebook;
 using MusicStore.Mocks.Twitter;
 using MusicStore.Mocks.Google;
+using Microsoft.Framework.Runtime;
+using System.Threading.Tasks;
 
 namespace MusicStore
 {
@@ -86,6 +88,26 @@ namespace MusicStore
                 //Add InMemoryCache
                 //Currently not able to AddSingleTon
                 services.AddInstance<IMemoryCache>(new MemoryCache());
+            });
+
+            //To gracefully shutdown the server - Not for production scenarios
+            app.Map("/shutdown", shutdown =>
+            {
+                shutdown.Run(async context =>
+                {
+                    var appShutdown = context.ApplicationServices.GetService<IApplicationShutdown>();
+                    appShutdown.RequestShutdown();
+
+                    await Task.Delay(10 * 1000, appShutdown.ShutdownRequested);
+                    if (appShutdown.ShutdownRequested.IsCancellationRequested)
+                    {
+                        await context.Response.WriteAsync("Shutting down gracefully");
+                    }
+                    else
+                    {
+                        await context.Response.WriteAsync("Shutting down token not fired");
+                    }
+                });
             });
 
             //Configure SignalR
