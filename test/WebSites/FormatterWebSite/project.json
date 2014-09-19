@@ -4,7 +4,16 @@
         "Microsoft.AspNet.Mvc.TestConfiguration": ""
     },
     "configurations": {
-        "aspnet50": { },
-        "aspnetcore50": { }
+        "aspnet50": {
+            "dependencies": {
+                "System.Xml": ""
+            }
+        },
+        "aspnetcore50": {
+            "dependencies": {
+                "System.Runtime.Serialization.Xml": "4.0.0.0",
+                "System.Xml.ReaderWriter": "4.0.10.0"
+            }
+        }
     }
 }
