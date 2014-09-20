@@ -2,7 +2,7 @@
 Latest dev version: [![dev version](http://img.shields.io/myget/aspnetvnext/v/KRE-svr50-x64.svg?style=flat)](https://www.myget.org/gallery/aspnetvnext)<br>
 Latest master version: [![master version](http://img.shields.io/myget/aspnetmaster/v/KRE-svr50-x64.svg?style=flat)](https://www.myget.org/gallery/aspnetmaster)
 
-The Home repository is the starting point for people to learn about ASP.NET vNext. This repo contains samples and [documentation](https://github.com/aspnet/Home/wiki) to help folks get started and learn more about what's coming in ASP..NET vNext.
+The Home repository is the starting point for people to learn about ASP.NET vNext. This repo contains samples and [documentation](https://github.com/aspnet/Home/wiki) to help folks get started and learn more about what's coming in ASP.NET vNext.
 
 ASP.NET vNext is being actively developed by the ASP.NET team assigned to the Microsoft Open Tech Hub and in collaboration with a community of open source developers. Together we are dedicated to creating the best possible platform for web development.
 
