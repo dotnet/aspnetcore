@@ -111,6 +111,8 @@ namespace Microsoft.AspNet.Mvc
                 DefaultViewComponentInvokerProvider>();
             yield return describe.Transient<IViewComponentHelper, DefaultViewComponentHelper>();
 
+            yield return describe.Transient<IBodyModelValidator, DefaultBodyModelValidator>();
+
             yield return describe.Transient<IAuthorizationService, DefaultAuthorizationService>();
             yield return describe.Singleton<IClaimUidExtractor, DefaultClaimUidExtractor>();
             yield return describe.Singleton<AntiForgery, AntiForgery>();

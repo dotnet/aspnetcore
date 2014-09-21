@@ -2,11 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc
@@ -22,8 +21,9 @@ namespace Microsoft.AspNet.Mvc
                                       [NotNull] INestedProviderManager<FilterProviderContext> filterProvider,
                                       [NotNull] IControllerFactory controllerFactory,
                                       [NotNull] ReflectedActionDescriptor descriptor,
-                                      [NotNull] IInputFormattersProvider inputFormattersProvider)
-            : base(actionContext, bindingContextProvider, filterProvider)
+                                      [NotNull] IInputFormattersProvider inputFormattersProvider,
+                                      [NotNull] IBodyModelValidator modelValidator)
+            : base(actionContext, bindingContextProvider, filterProvider, modelValidator)
         {
             _descriptor = descriptor;
             _controllerFactory = controllerFactory;

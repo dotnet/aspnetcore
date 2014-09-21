@@ -17,6 +17,7 @@ namespace Microsoft.AspNet.Mvc
     {
         private readonly IActionBindingContextProvider _bindingProvider;
         private readonly INestedProviderManager<FilterProviderContext> _filterProvider;
+        private readonly IBodyModelValidator _modelValidator;
 
         private IFilter[] _filters;
         private FilterCursor _cursor;
@@ -34,11 +35,13 @@ namespace Microsoft.AspNet.Mvc
         public FilterActionInvoker(
             [NotNull] ActionContext actionContext,
             [NotNull] IActionBindingContextProvider bindingContextProvider,
-            [NotNull] INestedProviderManager<FilterProviderContext> filterProvider)
+            [NotNull] INestedProviderManager<FilterProviderContext> filterProvider,
+            [NotNull] IBodyModelValidator modelValidator)
         {
             ActionContext = actionContext;
             _bindingProvider = bindingContextProvider;
             _filterProvider = filterProvider;
+            _modelValidator = modelValidator;
         }
 
         protected ActionContext ActionContext { get; private set; }
@@ -234,9 +237,11 @@ namespace Microsoft.AspNet.Mvc
             for (var i = 0; i < parameters.Count; i++)
             {
                 var parameter = parameters[i];
+                var parameterType = parameter.BodyParameterInfo != null ?
+                    parameter.BodyParameterInfo.ParameterType : parameter.ParameterBindingInfo.ParameterType;
+
                 if (parameter.BodyParameterInfo != null)
                 {
-                    var parameterType = parameter.BodyParameterInfo.ParameterType;
                     var formatterContext = new InputFormatterContext(actionBindingContext.ActionContext,
                                                                      parameterType);
                     var inputFormatter = actionBindingContext.InputFormatterSelector.SelectFormatter(
@@ -250,15 +255,23 @@ namespace Microsoft.AspNet.Mvc
                     else
                     {
                         parameterValues[parameter.Name] = await inputFormatter.ReadAsync(formatterContext);
+                        var modelMetadata =
+                            metadataProvider.GetMetadataForType(modelAccessor: null, modelType: parameterType);
+                        modelMetadata.Model = parameterValues[parameter.Name];
+
+                        // Validate the generated object
+                        var validationContext = new ModelValidationContext(metadataProvider,
+                                                                       actionBindingContext.ValidatorProvider,
+                                                                       modelState,
+                                                                       modelMetadata,
+                                                                       containerMetadata: null);
+                        _modelValidator.Validate(validationContext, parameter.Name);
                     }
                 }
                 else
                 {
-                    var parameterType = parameter.ParameterBindingInfo.ParameterType;
-                    var modelMetadata = metadataProvider.GetMetadataForType(
-                        modelAccessor: null,
-                        modelType: parameterType);
-
+                    var modelMetadata =
+                        metadataProvider.GetMetadataForType(modelAccessor: null, modelType: parameterType);
                     var modelBindingContext = new ModelBindingContext
                     {
                         ModelName = parameter.Name,
