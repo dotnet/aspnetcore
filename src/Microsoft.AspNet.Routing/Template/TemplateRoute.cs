@@ -160,7 +160,7 @@ namespace Microsoft.AspNet.Routing.Template
             }
         }
 
-        public string GetVirtualPath(VirtualPathContext context)
+        public virtual string GetVirtualPath(VirtualPathContext context)
         {
             var values = _binder.GetValues(context.AmbientValues, context.Values);
             if (values == null)
