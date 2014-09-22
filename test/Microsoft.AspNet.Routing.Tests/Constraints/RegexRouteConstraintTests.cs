@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing.Constraints;
+using Microsoft.AspNet.Testing;
 using Moq;
 using Xunit;
 
@@ -68,8 +69,15 @@ namespace Microsoft.AspNet.Routing.Tests
         }
 
         [Fact]
-        public void RegexConstraintIsCultureInsensitiveWhenConstructredWithString()
+        public void RegexConstraintIsCultureInsensitiveWhenConstructedWithString()
         {
+            if (TestPlatformHelper.IsMono)
+            {
+                // The Regex in Mono returns true when matching the Turkish I for the a-z range which causes the test
+                // to fail. Tracked via #100.
+                return;
+            }
+
             // Arrange
             var constraint = new RegexRouteConstraint("^([a-z]+)$");
             var values = new RouteValueDictionary(new { controller = "\u0130" }); // Turkish upper-case dotted I

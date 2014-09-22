@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Routing.Tests
             // Act & Assert
             var ex = Assert.Throws<ArgumentNullException>(() => options.ConstraintMap = null);
             Assert.Equal("The 'ConstraintMap' property of 'Microsoft.AspNet.Routing.RouteOptions' must not be null." +
-                         "\r\nParameter name: value", ex.Message);
+                         Environment.NewLine + "Parameter name: value", ex.Message);
         }
     }
 }

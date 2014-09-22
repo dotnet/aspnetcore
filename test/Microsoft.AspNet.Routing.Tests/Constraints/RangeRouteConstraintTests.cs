@@ -5,6 +5,7 @@
 
 using System;
 using Microsoft.AspNet.Routing.Constraints;
+using Microsoft.AspNet.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Routing.Tests
@@ -35,11 +36,15 @@ namespace Microsoft.AspNet.Routing.Tests
         [Fact]
         public void RangeRouteConstraint_MinGreaterThanMax_Throws()
         {
-            // Arrange Act & Assert
-            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => new RangeRouteConstraint(3, 2));
-            Assert.Equal("The value for argument 'min' should be less than or equal to the value for the argument "+
-                         "'max'.\r\nParameter name: min\r\nActual value was 3.",
-                         ex.Message);
+            // Arrange
+            var expectedMessage = "The value for argument 'min' should be less than or equal to the value for the " +
+                                  "argument 'max'.";
+
+            // Act & Assert
+            ExceptionAssert.ThrowsArgumentOutOfRange(() => new RangeRouteConstraint(3, 2),
+                                                     "min",
+                                                     expectedMessage,
+                                                     3);
         }
     }
 }

@@ -5,6 +5,7 @@
 
 using System;
 using Microsoft.AspNet.Routing.Constraints;
+using Microsoft.AspNet.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Routing.Tests
@@ -31,11 +32,14 @@ namespace Microsoft.AspNet.Routing.Tests
         [Fact]
         public void MinLengthRouteConstraint_SettingMinLengthLessThanZero_Throws()
         {
+            // Arrange
+            var expectedMessage = "Value must be greater than or equal to 0.";
+
             // Act & Assert
-            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => new MinLengthRouteConstraint(-1));
-            Assert.Equal("Value must be greater than or equal to 0.\r\nParameter name: minLength\r\n" +
-                          "Actual value was -1.",
-                          ex.Message);
+            ExceptionAssert.ThrowsArgumentOutOfRange(() => new MinLengthRouteConstraint(-1),
+                                                     "minLength",
+                                                     expectedMessage,
+                                                     -1);
         }
     }
 }

@@ -5,6 +5,7 @@
 
 using System;
 using Microsoft.AspNet.Routing.Constraints;
+using Microsoft.AspNet.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Routing.Tests
@@ -48,41 +49,53 @@ namespace Microsoft.AspNet.Routing.Tests
         [Fact]
         public void LengthRouteConstraint_SettingLengthLessThanZero_Throws()
         {
+            // Arrange
+            var expectedMessage = "Value must be greater than or equal to 0.";
+
             // Act & Assert
-            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => new LengthRouteConstraint(-1));
-            Assert.Equal("Value must be greater than or equal to 0.\r\nParameter name: length\r\n" +
-                          "Actual value was -1.",
-                          ex.Message);
+            ExceptionAssert.ThrowsArgumentOutOfRange(() => new LengthRouteConstraint(-1),
+                                                     "length",
+                                                     expectedMessage,
+                                                     -1);
         }
 
         [Fact]
         public void LengthRouteConstraint_SettingMinLengthLessThanZero_Throws()
         {
+            // Arrange
+            var expectedMessage = "Value must be greater than or equal to 0.";
+
             // Act & Assert
-            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => new LengthRouteConstraint(-1, 3));
-            Assert.Equal("Value must be greater than or equal to 0.\r\nParameter name: minLength\r\n"+
-                         "Actual value was -1.",
-                         ex.Message);
+            ExceptionAssert.ThrowsArgumentOutOfRange(() => new LengthRouteConstraint(-1, 3),
+                                                     "minLength",
+                                                     expectedMessage,
+                                                     -1);
         }
 
         [Fact]
         public void LengthRouteConstraint_SettingMaxLengthLessThanZero_Throws()
         {
+            // Arrange
+            var expectedMessage = "Value must be greater than or equal to 0.";
+
             // Act & Assert
-            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => new LengthRouteConstraint(0, -1));
-            Assert.Equal("Value must be greater than or equal to 0.\r\nParameter name: maxLength\r\n" +
-                        "Actual value was -1.",
-                        ex.Message);
+            ExceptionAssert.ThrowsArgumentOutOfRange(() => new LengthRouteConstraint(0, -1),
+                                                     "maxLength",
+                                                     expectedMessage,
+                                                     -1);
         }
 
         [Fact]
         public void LengthRouteConstraint_MinGreaterThanMax_Throws()
         {
+            // Arrange
+            var expectedMessage = "The value for argument 'minLength' should be less than or equal to the " +                                   "value for the argument 'maxLength'.";
+
             // Arrange Act & Assert
-            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => new LengthRouteConstraint(3, 2));
-            Assert.Equal("The value for argument 'minLength' should be less than or equal to the "+
-                         "value for the argument 'maxLength'.\r\nParameter name: minLength\r\nActual value was 3.",
-                         ex.Message);
+            ExceptionAssert.ThrowsArgumentOutOfRange(() => new LengthRouteConstraint(3, 2),
+                                                     "minLength",
+                                                     expectedMessage,
+                                                     3);
         }
     }
 }
