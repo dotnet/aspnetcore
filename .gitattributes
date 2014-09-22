@@ -4,6 +4,12 @@
 * text=auto
 
 ###############################################################################
+# Make sh files under the build directory always have LF as line endings
+###############################################################################
+build/*.sh eol=lf
+
+
+###############################################################################
 # Set default behavior for command prompt diff.
 #
 # This is need for earlier builds of msysgit that does not have it on by
