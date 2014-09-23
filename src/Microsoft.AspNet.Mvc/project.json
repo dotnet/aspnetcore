@@ -11,7 +11,7 @@
         "Microsoft.AspNet.Mvc.ModelBinding": "6.0.0-*",
         "Microsoft.AspNet.Mvc.Razor": "6.0.0-*",
         "Microsoft.AspNet.Mvc.Razor.Host": "6.0.0-*",
-        "Microsoft.AspNet.Razor": "4.0.0-*",
+    	"Microsoft.AspNet.Razor.Runtime": "4.0.0-*",
         "Microsoft.AspNet.RequestContainer": "1.0.0-*",
         "Microsoft.AspNet.Routing": "1.0.0-*",
         "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
