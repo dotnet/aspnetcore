@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         private readonly string _activateAttribute;
 
         public InjectChunkVisitor([NotNull] CSharpCodeWriter writer,
-                                  [NotNull] CodeGeneratorContext context,
+                                  [NotNull] CodeBuilderContext context,
                                   [NotNull] string activateAttributeName)
             : base(writer, context)
         {

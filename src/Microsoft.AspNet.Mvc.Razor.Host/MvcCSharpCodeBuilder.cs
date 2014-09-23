@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         private readonly string _defaultModel;
         private readonly string _activateAttribute;
 
-        public MvcCSharpCodeBuilder([NotNull] CodeGeneratorContext context,
+        public MvcCSharpCodeBuilder([NotNull] CodeBuilderContext context,
                                     [NotNull] string defaultModel,
                                     [NotNull] string activateAttribute)
             : base(context)

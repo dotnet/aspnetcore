@@ -142,7 +142,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         /// <inheritdoc />
         public override CodeBuilder DecorateCodeBuilder([NotNull] CodeBuilder incomingBuilder,
-                                                        [NotNull] CodeGeneratorContext context)
+                                                        [NotNull] CodeBuilderContext context)
         {
             UpdateCodeBuilder(context);
             return new MvcCSharpCodeBuilder(context, DefaultModel, ActivateAttribute);

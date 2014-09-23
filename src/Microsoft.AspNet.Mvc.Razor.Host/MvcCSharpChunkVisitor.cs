@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc.Razor
     public abstract class MvcCSharpChunkVisitor : CodeVisitor<CSharpCodeWriter>
     {
         public MvcCSharpChunkVisitor([NotNull] CSharpCodeWriter writer,
-                                     [NotNull] CodeGeneratorContext context)
+                                     [NotNull] CodeBuilderContext context)
             : base(writer, context)
         {
         }
