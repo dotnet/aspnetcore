@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Testing;
 using Moq;
 using Xunit;
 
@@ -181,6 +182,12 @@ namespace Microsoft.AspNet.Mvc
         [Fact]
         public async Task XmlDataContractSerializerFormatterThrowsOnExceededMaxDepth()
         {
+            if (TestPlatformHelper.IsMono)
+            {
+                // ReaderQuotas are not honored on Mono
+                return;
+            }
+
             // Arrange
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                         "<TestLevelTwo><SampleString>test</SampleString>" +
@@ -198,6 +205,12 @@ namespace Microsoft.AspNet.Mvc
         [Fact]
         public async Task XmlDataContractSerializerFormatterThrowsWhenReaderQuotasAreChanged()
         {
+            if (TestPlatformHelper.IsMono)
+            {
+                // ReaderQuotas are not honored on Mono
+                return;
+            }
+
             // Arrange
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                         "<TestLevelTwo><SampleString>test</SampleString>" +
@@ -244,6 +257,11 @@ namespace Microsoft.AspNet.Mvc
         public async Task XmlDataContractSerializerFormatterThrowsOnInvalidCharacters()
         {
             // Arrange
+            var expectedException = TestPlatformHelper.IsMono ? typeof(SerializationException) :
+                                                                typeof(XmlException);
+            var expectedMessage = TestPlatformHelper.IsMono ?
+                "Expected element 'TestLevelTwo' in namespace '', but found Element node 'DummyClass' in namespace ''" :
+                "The encoding in the declaration 'UTF-8' does not match the encoding of the document 'utf-16LE'.";
             var inpStart = Encodings.UTF16EncodingLittleEndian.GetBytes("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                 "<DummyClass><SampleInt>");
             byte[] inp = { 192, 193 };
@@ -258,7 +276,8 @@ namespace Microsoft.AspNet.Mvc
             var context = GetInputFormatterContext(contentBytes, typeof(TestLevelTwo));
 
             // Act
-            await Assert.ThrowsAsync(typeof(XmlException), async () => await formatter.ReadAsync(context));
+            var ex = await Assert.ThrowsAsync(expectedException, () => formatter.ReadAsync(context));
+            Assert.Equal(expectedMessage, ex.Message);
         }
 
         [Fact]

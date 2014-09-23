@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Core.Test
@@ -94,13 +95,12 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var actionParameters = new Dictionary<string, object> { { "i", inputParam1 }, { "s", inputParam2 } };
 
             var methodWithTaskOfIntReturnType = new MethodWithTaskOfIntReturnType(_controller.TaskActionWithException);
-            await AssertThrowsAsync<NotImplementedException>(
-                                                    async () => 
-                                                        await ReflectedActionExecutor.ExecuteAsync(
-                                                                            methodWithTaskOfIntReturnType.GetMethodInfo(),
-                                                                            _controller,
-                                                                            actionParameters),
-                                                         "Not Implemented Exception");
+
+            // Act and Assert
+            await Assert.ThrowsAsync<NotImplementedException>(
+                    () => ReflectedActionExecutor.ExecuteAsync(methodWithTaskOfIntReturnType.GetMethodInfo(),
+                                                               _controller,
+                                                               actionParameters));
         }
 
         [Fact]
@@ -111,13 +111,10 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var actionParameters = new Dictionary<string, object> { { "i", inputParam1 }, { "s", inputParam2 } };
 
             var methodWithTaskOfIntReturnType = new MethodWithTaskOfIntReturnType(_controller.TaskActionWithExceptionWithoutAsync);
-            await AssertThrowsAsync<NotImplementedException>(
-                                                async () =>
-                                                    await ReflectedActionExecutor.ExecuteAsync(
-                                                                            methodWithTaskOfIntReturnType.GetMethodInfo(),
-                                                                            _controller,
-                                                                            actionParameters),
-                                                    "Not Implemented Exception");
+            await Assert.ThrowsAsync<NotImplementedException>(
+                        () => ReflectedActionExecutor.ExecuteAsync(methodWithTaskOfIntReturnType.GetMethodInfo(),
+                                                                   _controller,
+                                                                   actionParameters));
         }
 
         [Fact]
@@ -249,6 +246,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                                                                 _controller,
                                                                 actionParameters),
                                                 expectedException);
+
+            Assert.Equal(expectedException, ex.Message);
         }
 
         [Fact]
@@ -275,9 +274,11 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             var actionParameters = new Dictionary<string, object> { { "i", "Some Invalid Value" }, { "s", inputParam2 } };
             var methodWithTaskOfIntReturnType = new MethodWithTaskOfIntReturnType(_controller.TaskValueTypeAction);
+            var message = TestPlatformHelper.IsMono ? "Object type {0} cannot be converted to target type: {1}" :
+                                                      "Object of type '{0}' cannot be converted to type '{1}'.";
             var expectedException = string.Format(
                                             CultureInfo.CurrentCulture,
-                                            "Object of type '{0}' cannot be converted to type '{1}'.",
+                                            message,
                                             typeof (string),
                                             typeof (int));
 

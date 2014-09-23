@@ -8,6 +8,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Testing;
 using Moq;
 using Xunit;
 
@@ -50,6 +51,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public async Task TryUpdateModel_ReturnsFalse_IfModelValidationFails()
         {
             // Arrange
+            var expectedMessage = TestPlatformHelper.IsMono ? "The field MyProperty is invalid." :
+                                                               "The MyProperty field is required.";
             var binders = new IModelBinder[]
             {
                 new TypeConverterModelBinder(),
@@ -79,8 +82,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             // Assert
             Assert.False(result);
-            Assert.Equal("The MyProperty field is required.",
-                         modelStateDictionary["MyProperty"].Errors[0].ErrorMessage);
+            var error = Assert.Single(modelStateDictionary["MyProperty"].Errors);
+            Assert.Equal(expectedMessage, error.ErrorMessage);
         }
 
         [Fact]

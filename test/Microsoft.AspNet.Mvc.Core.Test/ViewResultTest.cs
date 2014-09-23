@@ -125,11 +125,28 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             Assert.Equal(expected, memoryStream.ToArray());
         }
 
+        public static IEnumerable<object[]> ExecuteResultAsync_DoesNotWriteToResponse_OnceExceptionIsThrownData
+        {
+            get
+            {
+                yield return new object[] { 30, 0 };
+
+                if (PlatformHelper.IsMono)
+                {
+                    // The StreamWriter in Mono buffers 2x the buffer size before flushing.
+                    yield return new object[] { ViewResultStreamWriterBufferSize * 2 + 30, ViewResultStreamWriterBufferSize };
+                }
+                else
+                {
+                    yield return new object[] { ViewResultStreamWriterBufferSize + 30, ViewResultStreamWriterBufferSize };
+                }
+            }
+        }
+
         // The StreamWriter used by ViewResult an internal buffer and consequently anything written to this buffer
         // prior to it filling up will not be written to the underlying stream once an exception is thrown.
         [Theory]
-        [InlineData(30, 0)]
-        [InlineData(ViewResultStreamWriterBufferSize + 30, ViewResultStreamWriterBufferSize)]
+        [MemberData(nameof(ExecuteResultAsync_DoesNotWriteToResponse_OnceExceptionIsThrownData))]
         public async Task ExecuteResultAsync_DoesNotWriteToResponse_OnceExceptionIsThrown(int writtenLength, int expectedLength)
         {
             // Arrange

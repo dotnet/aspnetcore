@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Act & Assert
             var ex = Assert.Throws<ArgumentNullException>(() => options.AntiForgeryOptions = null);
             Assert.Equal("The 'AntiForgeryOptions' property of 'Microsoft.AspNet.Mvc.MvcOptions' must not be null." +
-                         "\r\nParameter name: value", ex.Message);
+                         Environment.NewLine + "Parameter name: value", ex.Message);
         }
 
         [Fact]

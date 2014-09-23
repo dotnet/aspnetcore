@@ -3,8 +3,10 @@
 
 using System;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Security.Principal;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Security.DataProtection;
 using Moq;
 using Xunit;
@@ -135,7 +137,10 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var config = new AntiForgeryOptions();
 
             byte[] data = new byte[256 / 8];
-            CryptRand.FillBuffer(new ArraySegment<byte>(data));
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(data);
+            }
             var base64ClaimUId = Convert.ToBase64String(data);
             var expectedClaimUid = new BinaryBlob(256, data);
 
@@ -370,7 +375,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             // Arrange
             var httpContext = new Mock<HttpContext>().Object;
-            ClaimsIdentity identity = new GenericIdentity(identityUsername);
+            var identity = GetAuthenticatedIdentity(identityUsername);
             var sessionToken = new AntiForgeryToken() { IsSessionToken = true };
             var fieldtoken = new AntiForgeryToken()
             {
@@ -402,7 +407,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             // Arrange
             var httpContext = new Mock<HttpContext>().Object;
-            ClaimsIdentity identity = new GenericIdentity("the-user");
+            var identity = GetAuthenticatedIdentity("the-user");
             var sessionToken = new AntiForgeryToken() { IsSessionToken = true };
             var fieldtoken = new AntiForgeryToken()
             {
@@ -435,7 +440,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             // Arrange
             var httpContext = new Mock<HttpContext>().Object;
-            ClaimsIdentity identity = new GenericIdentity(String.Empty);
+            var identity = new ClaimsIdentity();
             var sessionToken = new AntiForgeryToken() { IsSessionToken = true };
             var fieldtoken = new AntiForgeryToken()
             {
@@ -467,7 +472,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             // Arrange
             var httpContext = new Mock<HttpContext>().Object;
-            ClaimsIdentity identity = new GenericIdentity(String.Empty);
+            var identity = new ClaimsIdentity();
             var sessionToken = new AntiForgeryToken() { IsSessionToken = true };
             var fieldtoken = new AntiForgeryToken()
             {
@@ -499,7 +504,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             // Arrange
             var httpContext = new Mock<HttpContext>().Object;
-            ClaimsIdentity identity = new GenericIdentity("the-user");
+            var identity = GetAuthenticatedIdentity("the-user");
             var sessionToken = new AntiForgeryToken() { IsSessionToken = true };
             var fieldtoken = new AntiForgeryToken()
             {
@@ -531,7 +536,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             // Arrange
             var httpContext = new Mock<HttpContext>().Object;
-            ClaimsIdentity identity = new GenericIdentity("the-user");
+            var identity = GetAuthenticatedIdentity("the-user");
             var sessionToken = new AntiForgeryToken() { IsSessionToken = true };
             var fieldtoken = new AntiForgeryToken()
             {
@@ -556,6 +561,12 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             // Assert
             // Nothing to assert - if we got this far, success!
+        }
+
+        private static ClaimsIdentity GetAuthenticatedIdentity(string identityUsername)
+        {
+            var claim = new Claim(ClaimsIdentity.DefaultNameClaimType, identityUsername);
+            return new ClaimsIdentity(new[] { claim }, "Some-Authentication");
         }
 
         private sealed class MyAuthenticatedIdentityWithoutUsername : ClaimsIdentity

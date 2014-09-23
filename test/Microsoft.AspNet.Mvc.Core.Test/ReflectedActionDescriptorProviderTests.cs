@@ -108,7 +108,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 () => provider.GetDescriptors());
 
             // Act
-            Assert.Equal(expectedExceptionMessage, ex.Message);
+            VerifyMultiLineError(expectedExceptionMessage, ex.Message);
         }
 
         [Fact]
@@ -601,7 +601,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var ex = Assert.Throws<InvalidOperationException>(() => { provider.GetDescriptors(); });
 
             // Assert
-            Assert.Equal(expectedMessage, ex.Message);
+            VerifyMultiLineError(expectedMessage, ex.Message);
         }
 
         [Fact]
@@ -806,7 +806,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var exception = Assert.Throws<InvalidOperationException>(() => provider.GetDescriptors());
 
             // Assert
-            Assert.Equal(expectedMessage, exception.Message);
+            VerifyMultiLineError(expectedMessage, exception.Message);
         }
 
         [Fact]
@@ -1188,6 +1188,16 @@ namespace Microsoft.AspNet.Mvc.Test
                 null);
 
             return provider.GetDescriptors();
+        }
+
+        private static void VerifyMultiLineError(string expectedMessage, string actualMessage)
+        {
+            // The error message depends on the order of attributes returned by reflection which is not consistent across
+            // platforms. We'll compare them individually instead.
+            Assert.Equal(expectedMessage.Split(new[] { Environment.NewLine }, StringSplitOptions.None)
+                                        .OrderBy(m => m, StringComparer.Ordinal),
+                         actualMessage.Split(new[] { Environment.NewLine }, StringSplitOptions.None)
+                                      .OrderBy(m => m, StringComparer.Ordinal));
         }
 
         private class HttpMethodController

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
-using System.Security.Principal;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Rendering;
@@ -392,12 +391,10 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
         private Mock<HttpContext> GetHttpContext(bool setupResponse = true)
         {
-            var identity = new GenericIdentity("some-user");
+            var identity = new ClaimsIdentity("some-auth");
             var mockHttpContext = new Mock<HttpContext>();
-
             mockHttpContext.Setup(o => o.User)
-                           .Returns(new GenericPrincipal(identity, new string[0]));
-
+                           .Returns(new ClaimsPrincipal(identity));
 
             if (setupResponse)
             {

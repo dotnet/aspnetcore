@@ -181,7 +181,9 @@ namespace Microsoft.AspNet.Mvc.Test
 
         [Theory]
         [MemberData(nameof(RedirectTestData))]
-        public void RedirectToAction_WithParameterActionControllerRouteValues_SetsResultProperties(object routeValues)
+        public void RedirectToAction_WithParameterActionControllerRouteValues_SetsResultProperties(
+            object routeValues,
+            IEnumerable<KeyValuePair<string, object>> expected)
         {
             // Arrange
             var controller = new Controller();
@@ -194,13 +196,14 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.False(resultTemporary.Permanent);
             Assert.Equal("SampleAction", resultTemporary.ActionName);
             Assert.Equal("SampleController", resultTemporary.ControllerName);
-            Assert.Equal(TypeHelper.ObjectToDictionary(routeValues), resultTemporary.RouteValues);
+            Assert.Equal(expected, resultTemporary.RouteValues);
         }
 
         [Theory]
         [MemberData(nameof(RedirectTestData))]
         public void RedirectToActionPermanent_WithParameterActionControllerRouteValues_SetsResultProperties(
-            object routeValues)
+            object routeValues,
+            IEnumerable<KeyValuePair<string, object>> expected)
         {
             // Arrange
             var controller = new Controller();
@@ -216,12 +219,14 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.True(resultPermanent.Permanent);
             Assert.Equal("SampleAction", resultPermanent.ActionName);
             Assert.Equal("SampleController", resultPermanent.ControllerName);
-            Assert.Equal(TypeHelper.ObjectToDictionary(routeValues), resultPermanent.RouteValues);
+            Assert.Equal(expected, resultPermanent.RouteValues);
         }
 
         [Theory]
         [MemberData(nameof(RedirectTestData))]
-        public void RedirectToAction_WithParameterActionAndRouteValues_SetsResultProperties(object routeValues)
+        public void RedirectToAction_WithParameterActionAndRouteValues_SetsResultProperties(
+            object routeValues,
+            IEnumerable<KeyValuePair<string, object>> expected)
         {
             // Arrange
             var controller = new Controller();
@@ -233,13 +238,14 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.IsType<RedirectToActionResult>(resultTemporary);
             Assert.False(resultTemporary.Permanent);
             Assert.Null(resultTemporary.ActionName);
-            Assert.Equal(TypeHelper.ObjectToDictionary(routeValues), resultTemporary.RouteValues);
+            Assert.Equal(expected, resultTemporary.RouteValues);
         }
 
         [Theory]
         [MemberData(nameof(RedirectTestData))]
         public void RedirectToActionPermanent_WithParameterActionAndRouteValues_SetsResultProperties(
-            object routeValues)
+            object routeValues,
+            IEnumerable<KeyValuePair<string, object>> expected)
         {
             // Arrange
             var controller = new Controller();
@@ -251,12 +257,14 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.IsType<RedirectToActionResult>(resultPermanent);
             Assert.True(resultPermanent.Permanent);
             Assert.Null(resultPermanent.ActionName);
-            Assert.Equal(TypeHelper.ObjectToDictionary(routeValues), resultPermanent.RouteValues);
+            Assert.Equal(expected, resultPermanent.RouteValues);
         }
 
         [Theory]
         [MemberData(nameof(RedirectTestData))]
-        public void RedirectToRoute_WithParameterRouteValues_SetsResultEqualRouteValues(object routeValues)
+        public void RedirectToRoute_WithParameterRouteValues_SetsResultEqualRouteValues(
+            object routeValues,
+            IEnumerable<KeyValuePair<string, object>> expected)
         {
             // Arrange
             var controller = new Controller();
@@ -267,13 +275,14 @@ namespace Microsoft.AspNet.Mvc.Test
             // Assert
             Assert.IsType<RedirectToRouteResult>(resultTemporary);
             Assert.False(resultTemporary.Permanent);
-            Assert.Equal(TypeHelper.ObjectToDictionary(routeValues), resultTemporary.RouteValues);
+            Assert.Equal(expected, resultTemporary.RouteValues);
         }
 
         [Theory]
         [MemberData(nameof(RedirectTestData))]
         public void RedirectToRoutePermanent_WithParameterRouteValues_SetsResultEqualRouteValuesAndPermanent(
-            object routeValues)
+            object routeValues,
+            IEnumerable<KeyValuePair<string, object>> expected)
         {
             // Arrange
             var controller = new Controller();
@@ -284,7 +293,7 @@ namespace Microsoft.AspNet.Mvc.Test
             // Assert
             Assert.IsType<RedirectToRouteResult>(resultPermanent);
             Assert.True(resultPermanent.Permanent);
-            Assert.Equal(TypeHelper.ObjectToDictionary(routeValues), resultPermanent.RouteValues);
+            Assert.Equal(expected, resultPermanent.RouteValues);
         }
 
         [Fact]
@@ -322,7 +331,8 @@ namespace Microsoft.AspNet.Mvc.Test
         [Theory]
         [MemberData(nameof(RedirectTestData))]
         public void RedirectToRoute_WithParameterRouteNameAndRouteValues_SetsResultSameRouteNameAndRouteValues(
-            object routeValues)
+            object routeValues,
+            IEnumerable<KeyValuePair<string, object>> expected)
         {
             // Arrange
             var controller = new Controller();
@@ -335,13 +345,14 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.IsType<RedirectToRouteResult>(resultTemporary);
             Assert.False(resultTemporary.Permanent);
             Assert.Same(routeName, resultTemporary.RouteName);
-            Assert.Equal(TypeHelper.ObjectToDictionary(routeValues), resultTemporary.RouteValues);
+            Assert.Equal(expected, resultTemporary.RouteValues);
         }
 
         [Theory]
         [MemberData(nameof(RedirectTestData))]
         public void RedirectToRoutePermanent_WithParameterRouteNameAndRouteValues_SetsResultProperties(
-            object routeValues)
+            object routeValues,
+            IEnumerable<KeyValuePair<string, object>> expected)
         {
             // Arrange
             var controller = new Controller();
@@ -354,7 +365,7 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.IsType<RedirectToRouteResult>(resultPermanent);
             Assert.True(resultPermanent.Permanent);
             Assert.Same(routeName, resultPermanent.RouteName);
-            Assert.Equal(TypeHelper.ObjectToDictionary(routeValues), resultPermanent.RouteValues);
+            Assert.Equal(expected, resultPermanent.RouteValues);
         }
 
         [Fact]
@@ -524,19 +535,29 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             get
             {
-                yield return new object[] { null };
                 yield return new object[]
-                    {
-                        new Dictionary<string, string>() { { "hello", "world" } },
-                    };
+                {
+                    null,
+                    Enumerable.Empty<KeyValuePair<string, object>>()
+                };
+
                 yield return new object[]
-                    {
-                        new RouteValueDictionary(new Dictionary<string, string>()
-                            {
-                                { "test", "case" },
-                                { "sample", "route" },
-                            }),
-                    };
+                {
+                    new Dictionary<string, object> { { "hello", "world" } },
+                    new[] { new KeyValuePair<string, object>("hello", "world") }
+                };
+
+                var expected2 = new Dictionary<string, object>
+                {
+                    { "test", "case" },
+                    { "sample", "route" },
+                };
+
+                yield return new object[]
+                {
+                    new RouteValueDictionary(expected2),
+                    expected2
+                };
             }
         }
 

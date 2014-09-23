@@ -223,7 +223,7 @@ namespace Microsoft.AspNet.Mvc
             var action = Assert.Single(actionInfos);
             Assert.Equal("Details", action.ActionName);
             Assert.True(action.RequireActionNameMatch);
-            Assert.Equal(new[] { "POST", "GET" }, action.HttpMethods);
+            Assert.Equal(new[] { "GET", "POST" }, action.HttpMethods.OrderBy(m => m, StringComparer.Ordinal));
             Assert.Null(action.AttributeRoute);
         }
 
@@ -242,7 +242,7 @@ namespace Microsoft.AspNet.Mvc
             var action = Assert.Single(actionInfos);
             Assert.Equal("List", action.ActionName);
             Assert.True(action.RequireActionNameMatch);
-            Assert.Equal(new[] { "GET", "PUT", "POST" }, action.HttpMethods);
+            Assert.Equal(new[] { "GET", "POST", "PUT"}, action.HttpMethods.OrderBy(m => m, StringComparer.Ordinal));
             Assert.Null(action.AttributeRoute);
         }
 
@@ -310,7 +310,7 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal("List", action.ActionName);
             Assert.True(action.RequireActionNameMatch);
 
-            Assert.Equal(new[] { "GET", "HEAD" }, action.HttpMethods);
+            Assert.Equal(new[] { "GET", "HEAD" }, action.HttpMethods.OrderBy(m => m, StringComparer.Ordinal));
 
             Assert.NotNull(action.AttributeRoute);
             Assert.Equal("ListAll", action.AttributeRoute.Template);

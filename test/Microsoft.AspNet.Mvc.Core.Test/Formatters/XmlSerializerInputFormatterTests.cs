@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Testing;
 using Moq;
 using Xunit;
 
@@ -180,6 +181,12 @@ namespace Microsoft.AspNet.Mvc
         [Fact]
         public async Task XmlSerializerFormatterThrowsOnExceededMaxDepth()
         {
+            if (TestPlatformHelper.IsMono)
+            {
+                // ReaderQuotas are not honored on Mono
+                return;
+            }
+
             // Arrange
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                         "<TestLevelTwo><SampleString>test</SampleString>" +
@@ -193,12 +200,18 @@ namespace Microsoft.AspNet.Mvc
             var context = GetInputFormatterContext(contentBytes, typeof(TestLevelTwo));
 
             // Act & Assert
-            await Assert.ThrowsAsync(typeof(InvalidOperationException), async () => await formatter.ReadAsync(context));
+            await Assert.ThrowsAsync(typeof(InvalidOperationException), () => formatter.ReadAsync(context));
         }
 
         [Fact]
         public async Task XmlSerializerFormatterThrowsWhenReaderQuotasAreChanged()
         {
+            if (TestPlatformHelper.IsMono)
+            {
+                // ReaderQuotas are not honored on Mono
+                return;
+            }
+
             // Arrange
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                         "<TestLevelTwo><SampleString>test</SampleString>" +
@@ -212,7 +225,7 @@ namespace Microsoft.AspNet.Mvc
             var context = GetInputFormatterContext(contentBytes, typeof(TestLevelTwo));
 
             // Act & Assert
-            await Assert.ThrowsAsync(typeof(InvalidOperationException), async () => await formatter.ReadAsync(context));
+            await Assert.ThrowsAsync(typeof(InvalidOperationException), () => formatter.ReadAsync(context));
         }
 
         [Fact]
@@ -247,6 +260,12 @@ namespace Microsoft.AspNet.Mvc
         public async Task XmlSerializerFormatterThrowsOnInvalidCharacters()
         {
             // Arrange
+            var expectedException = TestPlatformHelper.IsMono ? typeof(InvalidOperationException) :
+                                                                typeof(XmlException);
+            var expectedMessage = TestPlatformHelper.IsMono ?
+                "There is an error in XML document." :
+                "The encoding in the declaration 'UTF-8' does not match the encoding of the document 'utf-16LE'.";
+
             var inpStart = Encodings.UTF16EncodingLittleEndian.GetBytes("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                 "<DummyClass><SampleInt>");
             byte[] inp = { 192, 193 };
@@ -260,8 +279,9 @@ namespace Microsoft.AspNet.Mvc
             var formatter = new XmlSerializerInputFormatter();
             var context = GetInputFormatterContext(contentBytes, typeof(TestLevelTwo));
 
-            // Act
-            await Assert.ThrowsAsync(typeof(XmlException), async () => await formatter.ReadAsync(context));
+            // Act and Assert
+            var ex = await Assert.ThrowsAsync(expectedException, () => formatter.ReadAsync(context));
+            Assert.Equal(expectedMessage, ex.Message);
         }
 
         [Fact]

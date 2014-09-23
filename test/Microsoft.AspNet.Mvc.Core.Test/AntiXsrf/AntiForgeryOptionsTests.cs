@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Act & Assert
             var ex = Assert.Throws<ArgumentNullException>(() => options.CookieName = null);
             Assert.Equal("The 'CookieName' property of 'Microsoft.AspNet.Mvc.AntiForgeryOptions' must not be null." + 
-                         "\r\nParameter name: value", ex.Message);
+                         Environment.NewLine + "Parameter name: value", ex.Message);
         }
 
         [Fact]
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Act & Assert
             var ex = Assert.Throws<ArgumentNullException>(() => options.FormFieldName = null);
             Assert.Equal("The 'FormFieldName' property of 'Microsoft.AspNet.Mvc.AntiForgeryOptions' must not be null." +
-                         "\r\nParameter name: value", ex.Message);
+                         Environment.NewLine + "Parameter name: value", ex.Message);
         }
     }
 }

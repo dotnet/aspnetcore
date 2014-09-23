@@ -57,8 +57,8 @@ namespace Microsoft.AspNet.Mvc.Core
                     "<DummyClass xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\">" +
                     "<SampleInt>10</SampleInt></DummyClass>" };
                 yield return new object[] { new Dictionary<string, string>() { { "Hello", "World" } },
-                    "<ArrayOfKeyValueOfstringstring xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" " + 
-                    "xmlns=\"http://schemas.microsoft.com/2003/10/Serialization/Arrays\"><KeyValueOfstringstring>" + 
+                    "<ArrayOfKeyValueOfstringstring xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" " +
+                    "xmlns=\"http://schemas.microsoft.com/2003/10/Serialization/Arrays\"><KeyValueOfstringstring>" +
                     "<Key>Hello</Key><Value>World</Value></KeyValueOfstringstring></ArrayOfKeyValueOfstringstring>" };
             }
         }

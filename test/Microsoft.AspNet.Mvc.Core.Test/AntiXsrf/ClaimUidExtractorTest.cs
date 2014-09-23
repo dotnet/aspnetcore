@@ -62,11 +62,11 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         [Fact]
         public void DefaultUniqueClaimTypes_NotPresent_SerializesAllClaimTypes()
         {
-            var identity = new MockClaimsIdentity();
-            identity.AddClaim(ClaimTypes.Email, "someone@antifrogery.com");
-            identity.AddClaim(ClaimTypes.GivenName, "some");
-            identity.AddClaim(ClaimTypes.Surname, "one");
-            identity.AddClaim(ClaimTypes.NameIdentifier, String.Empty);
+            var identity = new ClaimsIdentity();
+            identity.AddClaim(new Claim(ClaimTypes.Email, "someone@antifrogery.com"));
+            identity.AddClaim(new Claim(ClaimTypes.GivenName, "some"));
+            identity.AddClaim(new Claim(ClaimTypes.Surname, "one"));
+            identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, String.Empty));
 
             // Arrange
             var claimsIdentity = (ClaimsIdentity)identity;
@@ -90,9 +90,9 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public void DefaultUniqueClaimTypes_Present()
         {
             // Arrange
-            var identity = new MockClaimsIdentity();
-            identity.AddClaim("fooClaim", "fooClaimValue");
-            identity.AddClaim(ClaimTypes.NameIdentifier, "nameIdentifierValue");
+            var identity = new ClaimsIdentity();
+            identity.AddClaim(new Claim("fooClaim", "fooClaimValue"));
+            identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "nameIdentifierValue"));
 
             // Act
             var uniqueIdentifierParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters(identity);
