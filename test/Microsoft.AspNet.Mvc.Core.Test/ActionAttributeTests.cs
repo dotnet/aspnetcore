@@ -88,26 +88,6 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Theory]
-        [InlineData("GET")]
-        [InlineData("POST")]
-        public async Task HttpMethodAttribute_DefaultMethod_IgnoresMethodsWithCustomAttributesAndInvalidMethods(string verb)
-        {
-            // Arrange
-            // Note no action name is passed, hence should return a null action descriptor.
-            var routeContext = new RouteContext(GetHttpContext(verb));
-            routeContext.RouteData.Values = new Dictionary<string, object>
-            {
-                { "controller", "HttpMethodAttributeTests_DefaultMethodValidation" },
-            };
-
-            // Act
-            var result = await InvokeActionSelector(routeContext);
-
-            // Assert
-            Assert.Equal("Index", result.Name);
-        }
-
-        [Theory]
         [InlineData("Put")]
         [InlineData("RPCMethod")]
         [InlineData("RPCMethodWithHttpGet")]
@@ -198,12 +178,9 @@ namespace Microsoft.AspNet.Mvc
             var actionCollectionDescriptorProvider = new DefaultActionDescriptorsCollectionProvider(serviceContainer);
             var decisionTreeProvider = new ActionSelectorDecisionTreeProvider(actionCollectionDescriptorProvider);
 
-            var bindingProvider = new Mock<IActionBindingContextProvider>();
-
             var defaultActionSelector = new DefaultActionSelector(
                 actionCollectionDescriptorProvider, 
                 decisionTreeProvider,
-                bindingProvider.Object,
                 NullLoggerFactory.Instance);
 
             return await defaultActionSelector.SelectAsync(context);
@@ -243,14 +220,15 @@ namespace Microsoft.AspNet.Mvc
 
         private class CustomActionConvention : DefaultActionDiscoveryConventions
         {
-            public override IEnumerable<string> GetSupportedHttpMethods(MethodInfo methodInfo)
+            public override IEnumerable<ActionInfo> GetActions([NotNull]MethodInfo methodInfo, [NotNull]TypeInfo controllerTypeInfo)
             {
-                if (methodInfo.Name.Equals("PostSomething", StringComparison.OrdinalIgnoreCase))
+                var actions = new List<ActionInfo>(base.GetActions(methodInfo, controllerTypeInfo));
+                if (methodInfo.Name == "PostSomething")
                 {
-                    return new[] { "POST" };
+                    actions[0].HttpMethods = new string[] { "POST" };
                 }
 
-                return null;
+                return actions;
             }
         }
 

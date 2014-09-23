@@ -21,16 +21,15 @@ namespace Microsoft.AspNet.Mvc
 {
     public class DefaultActionDiscoveryConventionsActionSelectionTests
     {
-        [Theory]
-        [InlineData("GET")]
-        [InlineData("POST")]
-        public async Task ActionSelection_IndexSelectedByDefaultInAbsenceOfVerbOnlyMethod(string verb)
+        [Fact]
+        public async Task ActionSelection_ActionSelectedByName()
         {
             // Arrange
-            var routeContext = new RouteContext(GetHttpContext(verb));
+            var routeContext = new RouteContext(GetHttpContext("GET"));
             routeContext.RouteData.Values = new Dictionary<string, object>
             {
-                { "controller", "RpcOnly" }
+                { "controller", "RpcOnly" },
+                { "action", "Index" }
             };
 
             // Act
@@ -40,101 +39,7 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal("Index", result.Name);
         }
 
-        [Theory]
-        [InlineData("GET")]
-        [InlineData("POST")]
-        public async Task ActionSelection_PrefersVerbOnlyMethodOverIndex(string verb)
-        {
-            // Arrange
-            var routeContext = new RouteContext(GetHttpContext(verb));
-            routeContext.RouteData.Values = new Dictionary<string, object>
-            {
-                { "controller", "MixedRpcAndRest" }
-            };
-
-            // Act
-            var result = await InvokeActionSelector(routeContext);
-
-            // Assert
-            Assert.Equal(verb, result.Name, StringComparer.OrdinalIgnoreCase);
-        }
-
-        [Theory]
-        [InlineData("PUT")]
-        [InlineData("DELETE")]
-        [InlineData("PATCH")]
-        public async Task ActionSelection_IndexNotSelectedByDefaultExceptGetAndPostVerbs(string verb)
-        {
-            // Arrange
-            var routeContext = new RouteContext(GetHttpContext(verb));
-            routeContext.RouteData.Values = new Dictionary<string, object>
-            {
-                { "controller", "RpcOnly" }
-            };
-
-            // Act
-            var result = await InvokeActionSelector(routeContext);
-
-            // Assert
-            Assert.Equal(null, result);
-        }
-
-        [Theory]
-        [InlineData("HEAD")]
-        [InlineData("OPTIONS")]
-        public async Task ActionSelection_NoConventionBasedRoutingForHeadAndOptions(string verb)
-        {
-            // Arrange
-            var routeContext = new RouteContext(GetHttpContext(verb));
-            routeContext.RouteData.Values = new Dictionary<string, object>
-            {
-                { "controller", "MixedRpcAndRest" },
-            };
-
-            // Act
-            var result = await InvokeActionSelector(routeContext);
-
-            // Assert
-            Assert.Equal(null, result);
-        }
-
-        [Theory]
-        [InlineData("HEAD")]
-        [InlineData("OPTIONS")]
-        public async Task ActionSelection_ActionNameBasedRoutingForHeadAndOptions(string verb)
-        {
-            // Arrange
-            var routeContext = new RouteContext(GetHttpContext(verb));
-            routeContext.RouteData.Values = new Dictionary<string, object>
-            {
-                { "controller", "MixedRpcAndRest" },
-                { "action", verb },
-            };
-
-            // Act
-            var result = await InvokeActionSelector(routeContext);
-
-            // Assert
-            Assert.Equal(verb, result.Name, StringComparer.OrdinalIgnoreCase);
-        }
-
-        [Fact]
-        public async Task ActionSelection_ChangeDefaultConventionPicksCustomMethodForPost_DefaultMethodIsSelectedForGet()
-        {
-            // Arrange
-            var routeContext = new RouteContext(GetHttpContext("GET"));
-            routeContext.RouteData.Values = new Dictionary<string, object>
-            {
-                { "controller", "RpcOnly" }
-            };
-
-            // Act
-            var result = await InvokeActionSelector(routeContext, new CustomActionConvention());
-
-            // Assert
-            Assert.Equal("INDEX", result.Name, StringComparer.OrdinalIgnoreCase);
-        }
-
+        // Uses custom conventions to map a web-api-style action
         [Fact]
         public async Task ActionSelection_ChangeDefaultConventionPicksCustomMethodForPost_CutomMethodIsSelected()
         {
@@ -177,12 +82,9 @@ namespace Microsoft.AspNet.Mvc
             var actionCollectionDescriptorProvider = new DefaultActionDescriptorsCollectionProvider(serviceContainer);
             var decisionTreeProvider = new ActionSelectorDecisionTreeProvider(actionCollectionDescriptorProvider);
 
-            var bindingProvider = new Mock<IActionBindingContextProvider>();
-
             var defaultActionSelector = new DefaultActionSelector(
                 actionCollectionDescriptorProvider,
                 decisionTreeProvider,
-                bindingProvider.Object,
                 NullLoggerFactory.Instance);
 
             return await defaultActionSelector.SelectAsync(context);
@@ -222,64 +124,19 @@ namespace Microsoft.AspNet.Mvc
                     .Contains(typeInfo);
             }
 
-            public override IEnumerable<string> GetSupportedHttpMethods(MethodInfo methodInfo)
+            public override IEnumerable<ActionInfo> GetActions([NotNull]MethodInfo methodInfo, [NotNull]TypeInfo controllerTypeInfo)
             {
-                if (methodInfo.Name.Equals("PostSomething", StringComparison.OrdinalIgnoreCase))
+                var actions = new List<ActionInfo>(
+                    base.GetActions(methodInfo, controllerTypeInfo) ?? 
+                    new List<ActionInfo>());
+
+                if (methodInfo.Name == "PostSomething")
                 {
-                    return new[] { "POST" };
+                    actions[0].HttpMethods = new string[] { "POST" };
+                    actions[0].RequireActionNameMatch = false;
                 }
 
-                return null;
-            }
-        }
-
-        private class MixedRpcAndRestController
-        {
-            public void Index()
-            {
-            }
-
-            public void Get()
-            {
-            }
-
-            public void Post()
-            { }
-
-            public void GetSomething()
-            { }
-
-            // This will be treated as an RPC method.
-            public void Head()
-            {
-            }
-
-            // This will be treated as an RPC method.
-            public void Options()
-            {
-            }
-        }
-
-        private class RestOnlyController
-        {
-            public void Get()
-            {
-            }
-
-            public void Put()
-            {
-            }
-
-            public void Post()
-            {
-            }
-
-            public void Delete()
-            {
-            }
-
-            public void Patch()
-            {
+                return actions;
             }
         }
 

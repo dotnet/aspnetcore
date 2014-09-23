@@ -1482,6 +1482,22 @@ namespace Microsoft.AspNet.Mvc.Core
             return GetString("AttributeRoute_NullTemplateRepresentation");
         }
 
+        /// <summary>
+        /// Multiple actions matched. The following actions matched route data and had all constraints satisfied:{0}{0}{1}
+        /// </summary>
+        internal static string DefaultActionSelector_AmbiguousActions
+        {
+            get { return GetString("DefaultActionSelector_AmbiguousActions"); }
+        }
+
+        /// <summary>
+        /// Multiple actions matched. The following actions matched route data and had all constraints satisfied:{0}{0}{1}
+        /// </summary>
+        internal static string FormatDefaultActionSelector_AmbiguousActions(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("DefaultActionSelector_AmbiguousActions"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

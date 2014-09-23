@@ -402,4 +402,8 @@
   <data name="AttributeRoute_NullTemplateRepresentation" xml:space="preserve">
     <value>(none)</value>
   </data>
+  <data name="DefaultActionSelector_AmbiguousActions" xml:space="preserve">
+    <value>Multiple actions matched. The following actions matched route data and had all constraints satisfied:{0}{0}{1}</value>
+    <comment>0 is the newline - 1 is a newline separate list of action display names</comment>
+  </data>
 </root>

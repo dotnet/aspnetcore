@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.Routing;
 
@@ -12,26 +11,6 @@ namespace Microsoft.AspNet.Mvc
 {
     public class DefaultActionDiscoveryConventions : IActionDiscoveryConventions
     {
-        private static readonly string[] _supportedHttpMethodsByConvention =
-        {
-            "GET",
-            "POST",
-            "PUT",
-            "DELETE",
-            "PATCH",
-        };
-
-        private static readonly string[] _supportedHttpMethodsForDefaultMethod =
-        {
-            "GET",
-            "POST"
-        };
-
-        public virtual string DefaultMethodName
-        {
-            get { return "Index"; }
-        }
-
         public virtual bool IsController([NotNull] TypeInfo typeInfo)
         {
             if (!typeInfo.IsClass ||
@@ -73,15 +52,18 @@ namespace Microsoft.AspNet.Mvc
             }
             else
             {
-                actionInfos = GetActionsForMethodsWithoutCustomAttributes(methodInfo, controllerTypeInfo);
+                // By default the action is just matched by name.
+                actionInfos = new ActionInfo[]
+                {
+                    new ActionInfo()
+                    {
+                        ActionName = methodInfo.Name,
+                        RequireActionNameMatch = true,
+                    }
+                };
             }
 
             return actionInfos;
-        }
-
-        protected virtual bool IsDefaultActionMethod([NotNull] MethodInfo methodInfo)
-        {
-            return String.Equals(methodInfo.Name, DefaultMethodName, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -105,18 +87,6 @@ namespace Microsoft.AspNet.Mvc
 
                 // Overriden methods from Object class, e.g. Equals(Object), GetHashCode(), etc., are not valid.
                 method.GetBaseDefinition().DeclaringType != typeof(object);
-        }
-
-        public virtual IEnumerable<string> GetSupportedHttpMethods(MethodInfo methodInfo)
-        {
-            var supportedHttpMethods =
-                _supportedHttpMethodsByConvention.FirstOrDefault(
-                    httpMethod => methodInfo.Name.Equals(httpMethod, StringComparison.OrdinalIgnoreCase));
-
-            if (supportedHttpMethods != null)
-            {
-                yield return supportedHttpMethods;
-            }
         }
 
         private bool HasCustomAttributes(MethodInfo methodInfo)
@@ -254,70 +224,6 @@ namespace Microsoft.AspNet.Mvc
             }
 
             return null;
-        }
-
-        private IEnumerable<ActionInfo> GetActionsForMethodsWithoutCustomAttributes(
-            MethodInfo methodInfo,
-            TypeInfo controllerTypeInfo)
-        {
-            var actionInfos = new List<ActionInfo>();
-            var httpMethods = GetSupportedHttpMethods(methodInfo);
-            if (httpMethods != null && httpMethods.Any())
-            {
-                return new[]
-                {
-                    new ActionInfo()
-                    {
-                        HttpMethods = httpMethods.ToArray(),
-                        ActionName = methodInfo.Name,
-                        RequireActionNameMatch = false,
-                    }
-                };
-            }
-
-            // For Default Method add an action Info with GET, POST Http Method constraints.
-            // Only constraints (out of GET and POST) for which there are no convention based actions available are
-            // added. If there are existing action infos with http constraints for GET and POST, this action info is
-            // not added for default method.
-            if (IsDefaultActionMethod(methodInfo))
-            {
-                var existingHttpMethods = new HashSet<string>();
-                foreach (var declaredMethodInfo in controllerTypeInfo.DeclaredMethods)
-                {
-                    if (!IsValidActionMethod(declaredMethodInfo) || HasCustomAttributes(declaredMethodInfo))
-                    {
-                        continue;
-                    }
-
-                    httpMethods = GetSupportedHttpMethods(declaredMethodInfo);
-                    if (httpMethods != null)
-                    {
-                        existingHttpMethods.UnionWith(httpMethods);
-                    }
-                }
-                var undefinedHttpMethods = _supportedHttpMethodsForDefaultMethod.Except(
-                                                                                     existingHttpMethods,
-                                                                                     StringComparer.Ordinal)
-                                                                                .ToArray();
-                if (undefinedHttpMethods.Any())
-                {
-                    actionInfos.Add(new ActionInfo()
-                    {
-                        HttpMethods = undefinedHttpMethods,
-                        ActionName = methodInfo.Name,
-                        RequireActionNameMatch = false,
-                    });
-                }
-            }
-
-            actionInfos.Add(
-                new ActionInfo()
-                {
-                    ActionName = methodInfo.Name,
-                    RequireActionNameMatch = true,
-                });
-
-            return actionInfos;
         }
 
         private class ActionAttributes

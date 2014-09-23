@@ -7,7 +7,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Logging;
-using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.Logging;
@@ -18,22 +17,19 @@ namespace Microsoft.AspNet.Mvc
     {
         private readonly IActionDescriptorsCollectionProvider _actionDescriptorsCollectionProvider;
         private readonly IActionSelectorDecisionTreeProvider _decisionTreeProvider;
-        private readonly IActionBindingContextProvider _bindingProvider;
         private ILogger _logger;
 
         public DefaultActionSelector(
             [NotNull] IActionDescriptorsCollectionProvider actionDescriptorsCollectionProvider,
-            [NotNull] IActionSelectorDecisionTreeProvider decisionTreeProvider, 
-            [NotNull] IActionBindingContextProvider bindingProvider,
+            [NotNull] IActionSelectorDecisionTreeProvider decisionTreeProvider,
             [NotNull] ILoggerFactory loggerFactory)
         {
             _actionDescriptorsCollectionProvider = actionDescriptorsCollectionProvider;
             _decisionTreeProvider = decisionTreeProvider;
-            _bindingProvider = bindingProvider;
             _logger = loggerFactory.Create<DefaultActionSelector>();
         }
 
-        public async Task<ActionDescriptor> SelectAsync([NotNull] RouteContext context)
+        public Task<ActionDescriptor> SelectAsync([NotNull] RouteContext context)
         {
             using (_logger.BeginScope("DefaultActionSelector.SelectAsync"))
             {
@@ -67,7 +63,9 @@ namespace Microsoft.AspNet.Mvc
                     matching = matchesWithConstraints;
                 }
 
-                if (matching.Count == 0)
+                var finalMatches = SelectBestActions(matching);
+
+                if (finalMatches.Count == 0)
                 {
                     if (_logger.IsEnabled(TraceType.Information))
                     {
@@ -75,17 +73,17 @@ namespace Microsoft.AspNet.Mvc
                         {
                             ActionsMatchingRouteConstraints = matchingRouteConstraints,
                             ActionsMatchingRouteAndMethodConstraints = matchingRouteAndMethodConstraints,
-                            ActionsMatchingRouteAndMethodAndDynamicConstraints = 
+                            ActionsMatchingRouteAndMethodAndDynamicConstraints =
                                 matchingRouteAndMethodAndDynamicConstraints,
-                            ActionsMatchingWithConstraints = matchesWithConstraints
+                            FinalMatches = finalMatches,
                         });
                     }
 
-                    return null;
+                    return Task.FromResult<ActionDescriptor>(null);
                 }
-                else
+                else if (finalMatches.Count == 1)
                 {
-                    var selectedAction = await SelectBestCandidate(context, matching);
+                    var selectedAction = finalMatches[0];
 
                     if (_logger.IsEnabled(TraceType.Information))
                     {
@@ -95,14 +93,48 @@ namespace Microsoft.AspNet.Mvc
                             ActionsMatchingRouteAndMethodConstraints = matchingRouteAndMethodConstraints,
                             ActionsMatchingRouteAndMethodAndDynamicConstraints = 
                                 matchingRouteAndMethodAndDynamicConstraints,
-                            ActionsMatchingWithConstraints = matchesWithConstraints,
+                            FinalMatches = finalMatches,
                             SelectedAction = selectedAction
                         });
                     }
 
-                    return selectedAction;
+                    return Task.FromResult(selectedAction);
+                }
+                else
+                {
+                    if (_logger.IsEnabled(TraceType.Information))
+                    {
+                        _logger.WriteValues(new DefaultActionSelectorSelectAsyncValues()
+                        {
+                            ActionsMatchingRouteConstraints = matchingRouteConstraints,
+                            ActionsMatchingRouteAndMethodConstraints = matchingRouteAndMethodConstraints,
+                            ActionsMatchingRouteAndMethodAndDynamicConstraints =
+                                matchingRouteAndMethodAndDynamicConstraints,
+                            FinalMatches = finalMatches,
+                        });
+                    }
+
+                    var actionNames = string.Join(
+                        Environment.NewLine,
+                        finalMatches.Select(a => a.DisplayName));
+
+                    var message = Resources.FormatDefaultActionSelector_AmbiguousActions(
+                        Environment.NewLine,
+                        actionNames);
+
+                    throw new AmbiguousActionException(message);
                 }
             }
+        }
+
+        /// <summary>
+        /// Returns the set of best matching actions.
+        /// </summary>
+        /// <param name="actions">The set of actions that satisfy all constraints.</param>
+        /// <returns>A list of the best matching actions.</returns>
+        protected virtual IReadOnlyList<ActionDescriptor> SelectBestActions(IReadOnlyList<ActionDescriptor> actions)
+        {
+            return actions;
         }
 
         private bool MatchMethodConstraints(ActionDescriptor descriptor, RouteContext context)
@@ -115,76 +147,6 @@ namespace Microsoft.AspNet.Mvc
         {
             return descriptor.DynamicConstraints == null ||
                     descriptor.DynamicConstraints.All(c => c.Accept(context));
-        }
-
-        protected virtual async Task<ActionDescriptor> SelectBestCandidate(
-            RouteContext context,
-            List<ActionDescriptor> candidates)
-        {
-            var applicableCandiates = new List<ActionDescriptorCandidate>();
-            foreach (var action in candidates)
-            {
-                var isApplicable = true;
-                var candidate = new ActionDescriptorCandidate()
-                {
-                    Action = action,
-                };
-
-                var actionContext = new ActionContext(context, action);
-                var actionBindingContext = await _bindingProvider.GetActionBindingContextAsync(actionContext);
-
-                foreach (var parameter in action.Parameters.Where(p => p.ParameterBindingInfo != null))
-                {
-                    if (!ValueProviderResult.CanConvertFromString(parameter.ParameterBindingInfo.ParameterType))
-                    {
-                        continue;
-                    }
-
-                    if (await actionBindingContext.ValueProvider.ContainsPrefixAsync(
-                        parameter.ParameterBindingInfo.Prefix))
-                    {
-                        candidate.FoundParameters++;
-                        if (parameter.IsOptional)
-                        {
-                            candidate.FoundOptionalParameters++;
-                        }
-                    }
-                    else if (!parameter.IsOptional)
-                    {
-                        isApplicable = false;
-                        break;
-                    }
-                }
-
-                if (isApplicable)
-                {
-                    applicableCandiates.Add(candidate);
-                }
-            }
-
-            if (applicableCandiates.Count == 0)
-            {
-                return null;
-            }
-
-            var mostParametersSatisfied =
-                applicableCandiates
-                .GroupBy(c => c.FoundParameters)
-                .OrderByDescending(g => g.Key)
-                .First();
-
-            var fewestOptionalParameters =
-                mostParametersSatisfied
-                .GroupBy(c => c.FoundOptionalParameters)
-                .OrderBy(g => g.Key).First()
-                .ToArray();
-
-            if (fewestOptionalParameters.Length > 1)
-            {
-                throw new InvalidOperationException("The actions are ambiguious.");
-            }
-
-            return fewestOptionalParameters[0].Action;
         }
 
         // This method attempts to ensure that the route that's about to generate a link will generate a link
@@ -221,15 +183,6 @@ namespace Microsoft.AspNet.Mvc
             }
 
             return descriptors.Items;
-        }
-
-        private class ActionDescriptorCandidate
-        {
-            public ActionDescriptor Action { get; set; }
-
-            public int FoundParameters { get; set; }
-
-            public int FoundOptionalParameters { get; set; }
         }
     }
 }

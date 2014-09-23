@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Mvc
             Assert.Empty(values.ActionsMatchingRouteConstraints);
             Assert.Empty(values.ActionsMatchingRouteAndMethodConstraints);
             Assert.Empty(values.ActionsMatchingRouteAndMethodAndDynamicConstraints);
-            Assert.Empty(values.ActionsMatchingWithConstraints);
+            Assert.Empty(values.FinalMatches);
             Assert.Null(values.SelectedAction);
         }
 
@@ -106,10 +106,58 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal("DefaultActionSelector.SelectAsync", write.Scope);
             var values = Assert.IsType<DefaultActionSelectorSelectAsyncValues>(write.State);
             Assert.Equal("DefaultActionSelector.SelectAsync", values.Name);
-            Assert.NotEmpty(values.ActionsMatchingRouteConstraints);
-            Assert.NotEmpty(values.ActionsMatchingRouteAndMethodConstraints);
-            Assert.NotEmpty(values.ActionsMatchingWithConstraints);
+            Assert.Equal<ActionDescriptor>(actions, values.ActionsMatchingRouteConstraints);
+            Assert.Equal<ActionDescriptor>(actions, values.ActionsMatchingRouteAndMethodConstraints);
+            Assert.Equal(matched, Assert.Single(values.FinalMatches));
             Assert.Equal(matched, values.SelectedAction);
+        }
+
+        [Fact]
+        public async void SelectAsync_AmbiguousActions_LogIsCorrect()
+        {
+            // Arrange
+            var sink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(sink);
+
+            var actions = new ActionDescriptor[]
+            {
+                new ActionDescriptor() { DisplayName = "A1" },
+                new ActionDescriptor() { DisplayName = "A2" },
+            };
+
+            var selector = CreateSelector(actions, loggerFactory);
+
+            var routeContext = CreateRouteContext("POST");
+
+            // Act
+            await Assert.ThrowsAsync<AmbiguousActionException>(async () =>
+            {
+                await selector.SelectAsync(routeContext);
+            });
+
+            // Assert
+            Assert.Equal(1, sink.Scopes.Count);
+            var scope = sink.Scopes[0];
+            Assert.Equal(typeof(DefaultActionSelector).FullName, scope.LoggerName);
+            Assert.Equal("DefaultActionSelector.SelectAsync", scope.Scope);
+
+            // There is a record for IsEnabled and one for WriteCore.
+            Assert.Equal(2, sink.Writes.Count);
+
+            var enabled = sink.Writes[0];
+            Assert.Equal(typeof(DefaultActionSelector).FullName, enabled.LoggerName);
+            Assert.Equal("DefaultActionSelector.SelectAsync", enabled.Scope);
+            Assert.Null(enabled.State);
+
+            var write = sink.Writes[1];
+            Assert.Equal(typeof(DefaultActionSelector).FullName, write.LoggerName);
+            Assert.Equal("DefaultActionSelector.SelectAsync", write.Scope);
+            var values = Assert.IsType<DefaultActionSelectorSelectAsyncValues>(write.State);
+            Assert.Equal("DefaultActionSelector.SelectAsync", values.Name);
+            Assert.Equal<ActionDescriptor>(actions, values.ActionsMatchingRouteConstraints);
+            Assert.Equal<ActionDescriptor>(actions, values.ActionsMatchingRouteAndMethodConstraints);
+            Assert.Equal<ActionDescriptor>(actions, values.FinalMatches);
+            Assert.Null(values.SelectedAction);
         }
 
         [Fact]
@@ -262,6 +310,43 @@ namespace Microsoft.AspNet.Mvc
             Assert.Null(action);
         }
 
+        [Fact]
+        public async Task SelectAsync_Ambiguous()
+        {
+            // Arrange
+            var expectedMessage =
+                "Multiple actions matched. " + 
+                "The following actions matched route data and had all constraints satisfied:" + Environment.NewLine +
+                Environment.NewLine +
+                "Ambiguous1" + Environment.NewLine +
+                "Ambiguous2";
+
+            var actions = new ActionDescriptor[]
+            {
+                CreateAction(area: null, controller: "Store", action: "Buy"),
+                CreateAction(area: null, controller: "Store", action: "Buy"),
+                CreateAction(area: null, controller: "Store", action: "Cart"),
+            };
+
+            actions[0].DisplayName = "Ambiguous1";
+            actions[1].DisplayName = "Ambiguous2";
+
+            var selector = CreateSelector(actions);
+            var context = CreateRouteContext("GET");
+
+            context.RouteData.Values.Add("controller", "Store");
+            context.RouteData.Values.Add("action", "Buy");
+
+            // Act
+            var ex = await Assert.ThrowsAsync<AmbiguousActionException>(async () =>
+            {
+                await selector.SelectAsync(context);
+            });
+
+            // Assert
+            Assert.Equal(expectedMessage, ex.Message);
+        }
+
         private static ActionDescriptor[] GetActions()
         {
             return new ActionDescriptor[]
@@ -304,12 +389,7 @@ namespace Microsoft.AspNet.Mvc
 
             var decisionTreeProvider = new ActionSelectorDecisionTreeProvider(actionProvider.Object);
 
-            var bindingProvider = new Mock<IActionBindingContextProvider>(MockBehavior.Strict);
-            bindingProvider
-                .Setup(bp => bp.GetActionBindingContextAsync(It.IsAny<ActionContext>()))
-                .Returns(Task.FromResult<ActionBindingContext>(null));
-
-            return new DefaultActionSelector(actionProvider.Object, decisionTreeProvider, bindingProvider.Object, loggerFactory);
+            return new DefaultActionSelector(actionProvider.Object, decisionTreeProvider, loggerFactory);
         }
 
         private static VirtualPathContext CreateContext(object routeValues)

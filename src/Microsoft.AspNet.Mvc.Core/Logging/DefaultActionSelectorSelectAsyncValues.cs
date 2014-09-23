@@ -38,12 +38,12 @@ namespace Microsoft.AspNet.Mvc.Logging
         public IReadOnlyList<ActionDescriptor> ActionsMatchingRouteAndMethodAndDynamicConstraints { get; set; }
 
         /// <summary>
-        /// The actions that matched with at least one constraint.
+        /// The list of actions that are the best matches. These match all constraints.
         /// </summary>
-        public IReadOnlyList<ActionDescriptor> ActionsMatchingWithConstraints { get; set; }
+        public IReadOnlyList<ActionDescriptor> FinalMatches { get; set; }
 
         /// <summary>
-        /// The selected action.
+        /// The selected action. Will be null if no matches are found or more than one match is found.
         /// </summary>
         public ActionDescriptor SelectedAction { get; set; }
 
@@ -65,8 +65,8 @@ namespace Microsoft.AspNet.Mvc.Logging
                 builder.Append("\tActions matching route, method, and dynamic constraints: ");
                 StringBuilderHelpers.Append(builder, ActionsMatchingRouteAndMethodAndDynamicConstraints, Formatter);
                 builder.AppendLine();
-                builder.Append("\tActions matching with at least one constraint: ");
-                StringBuilderHelpers.Append(builder, ActionsMatchingWithConstraints, Formatter);
+                builder.Append("\tBest Matches: ");
+                StringBuilderHelpers.Append(builder, FinalMatches, Formatter);
                 builder.AppendLine();
                 builder.Append("\tSelected action: ");
                 builder.Append(Formatter(SelectedAction));
