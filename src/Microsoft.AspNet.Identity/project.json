@@ -34,6 +34,7 @@
         "System.Security.Cryptography.Hashing.Algorithms": "4.0.0.0",
         "System.Text.Encoding": "4.0.10.0",
         "System.Text.Encoding.Extensions": "4.0.10.0",
+        "System.Text.RegularExpressions": "4.0.0.0",
         "System.Threading.Tasks": "4.0.10.0"
       }
     }

@@ -146,7 +146,7 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
                     options.Password.RequireNonLetterOrDigit = false;
                     options.Password.RequireUppercase = false;
                     options.Password.RequireDigit = false;
-                    options.User.AllowOnlyAlphanumericNames = false;
+                    options.User.UserNameValidationRegex = null;
                 });
                 services.SetupOptions<DbContextOptions>(options =>
                     options.UseSqlServer(ConnectionString));

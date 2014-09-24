@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.True(options.Password.RequireUppercase);
             Assert.Equal(6, options.Password.RequiredLength);
 
-            Assert.True(options.User.AllowOnlyAlphanumericNames);
+            Assert.Equal("^[a-zA-Z0-9@_\\.]+$", options.User.UserNameValidationRegex);
             Assert.False(options.User.RequireUniqueEmail);
 
             Assert.Equal(ClaimTypes.Role, options.ClaimsIdentity.RoleClaimType);
@@ -77,8 +77,7 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.Equal(usernameClaimType, options.ClaimsIdentity.UserNameClaimType);
             Assert.Equal(securityStampClaimType, options.ClaimsIdentity.SecurityStampClaimType);
             Assert.True(options.User.RequireUniqueEmail);
-            Assert.True(options.User.AllowOnlyAlphanumericNames);
-            Assert.True(options.User.AllowOnlyAlphanumericNames);
+            Assert.Equal("^[a-zA-Z0-9@_\\.]+$", options.User.UserNameValidationRegex);
             Assert.False(options.Password.RequireDigit);
             Assert.False(options.Password.RequireLowercase);
             Assert.False(options.Password.RequireNonLetterOrDigit);

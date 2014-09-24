@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
                 options.Password.RequireLowercase = false;
                 options.Password.RequireNonLetterOrDigit = false;
                 options.Password.RequireUppercase = false;
-                options.User.AllowOnlyAlphanumericNames = false;
+                options.User.UserNameValidationRegex = null;
             });
             return services.BuildServiceProvider().GetService<UserManager<IdentityUser>>();
         }
