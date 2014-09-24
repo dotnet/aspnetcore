@@ -1,17 +1,17 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Security.Principal;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
 using MusicStore.Models;
 using System.Linq;
-using Microsoft.AspNet.Http.Security;
+using Microsoft.AspNet.Http;
 
 namespace MusicStore.Controllers
 {
     /// <summary>
     /// Summary description for ManageController
     /// </summary>
+    [Authorize]
     public class ManageController : Controller
     {
         public ManageController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
@@ -139,8 +139,9 @@ namespace MusicStore.Controllers
         {
             // This code allows you exercise the flow without actually sending codes
             // For production use please register a SMS provider in IdentityConfig and generate a code here.
-            var code = await UserManager.GenerateChangePhoneNumberTokenAsync(await GetCurrentUserAsync(), phoneNumber);
-            ViewBag.Code = code;
+#if DEMO
+            ViewBag.Code = await UserManager.GenerateChangePhoneNumberTokenAsync(await GetCurrentUserAsync(), phoneNumber);
+#endif
             return phoneNumber == null ? View("Error") : View(new VerifyPhoneNumberViewModel { PhoneNumber = phoneNumber });
         }
 
@@ -282,6 +283,7 @@ namespace MusicStore.Controllers
         {
             ViewBag.StatusMessage =
                 message == ManageMessageId.RemoveLoginSuccess ? "The external login was removed."
+                : message == ManageMessageId.AddLoginSuccess ? "The external login was added."
                 : message == ManageMessageId.Error ? "An error has occurred."
                 : "";
             var user = await GetCurrentUserAsync();
@@ -290,8 +292,7 @@ namespace MusicStore.Controllers
                 return View("Error");
             }
             var userLogins = await UserManager.GetLoginsAsync(user);
-            var otherLogins = Context.GetAuthenticationTypes().Where(auth => auth.Caption != null && userLogins.All(ul => auth.AuthenticationType != ul.LoginProvider)).ToList();
-            //var otherLogins = AuthenticationManager.GetExternalAuthenticationTypes().Where(auth => userLogins.All(ul => auth.AuthenticationType != ul.LoginProvider)).ToList();
+            var otherLogins = Context.GetExternalAuthenticationTypes().Where(auth => userLogins.All(ul => auth.AuthenticationType != ul.LoginProvider)).ToList();
             ViewBag.ShowRemoveButton = user.PasswordHash != null || userLogins.Count > 1;
             return View(new ManageLoginsViewModel
             {
@@ -307,30 +308,31 @@ namespace MusicStore.Controllers
         public ActionResult LinkLogin(string provider)
         {
             // Request a redirect to the external login provider to link a login for the current user
-            var authenticationProperties = new AuthenticationProperties() { RedirectUri = Url.Action("LinkLoginCallback", "Manage") };
-            authenticationProperties.Dictionary[XsrfKey] = User.Identity.GetUserId();
-            return new ChallengeResult(provider, authenticationProperties);
+            var redirectUrl = Url.Action("LinkLoginCallback", "Manage");
+            var properties = Context.ConfigureExternalAuthenticationProperties(provider, redirectUrl, User.Identity.GetUserId());
+            return new ChallengeResult(provider, properties);
         }
 
         //
         // GET: /Manage/LinkLoginCallback
         public async Task<ActionResult> LinkLoginCallback()
         {
-            //var loginInfo = await AuthenticationManager.GetExternalLoginInfoAsync(XsrfKey, User.Identity.GetUserId());
-            var loginInfo = await Context.AuthenticateAsync("External");
-            if (loginInfo == null || loginInfo.Properties.Dictionary[XsrfKey] != User.Identity.GetUserId())
+            var user = await GetCurrentUserAsync();
+            if(user == null)
+            {
+                return View("Error");
+            }
+            var loginInfo = await Context.GetExternalLoginInfo(User.Identity.GetUserId());
+            if (loginInfo == null)
             {
                 return RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
             }
-            var user = new ApplicationUser() { Id = User.Identity.GetUserId() };
-            var userloginInfo = new UserLoginInfo(loginInfo.Description.AuthenticationType, loginInfo.Description.AuthenticationType, loginInfo.Description.Caption);
-            var result = await UserManager.AddLoginAsync(user, userloginInfo);
-            return result.Succeeded ? RedirectToAction("ManageLogins") : RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
+            var result = await UserManager.AddLoginAsync(user, loginInfo);
+            var message = result.Succeeded ? ManageMessageId.AddLoginSuccess : ManageMessageId.Error;
+            return RedirectToAction("ManageLogins", new { Message = message });
         }
 
         #region Helpers
-        // Used for XSRF protection when adding external logins
-        private const string XsrfKey = "XsrfId";
 
         private void AddErrors(IdentityResult result)
         {
@@ -340,6 +342,7 @@ namespace MusicStore.Controllers
             }
         }
 
+        //TODO: No caller - do we need this?
         private async Task<bool> HasPhoneNumber()
         {
             var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
@@ -353,6 +356,7 @@ namespace MusicStore.Controllers
         public enum ManageMessageId
         {
             AddPhoneSuccess,
+            AddLoginSuccess,
             ChangePasswordSuccess,
             SetTwoFactorSuccess,
             SetPasswordSuccess,

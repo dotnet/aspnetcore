@@ -1,11 +1,12 @@
 ﻿using System.Linq;
 using System.Security.Principal;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Security;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Rendering;
 using MusicStore.Models;
+using Microsoft.AspNet.Http;
+using System.Security.Claims;
 
 namespace MusicStore.Controllers
 {
@@ -63,26 +64,20 @@ namespace MusicStore.Controllers
 
         //
         // GET: /Account/VerifyCode
-        //TODO : Some of the identity helpers not implemented
         [AllowAnonymous]
         public async Task<ActionResult> VerifyCode(string provider, bool rememberMe, string returnUrl = null)
         {
-            //https://github.com/aspnet/Identity/issues/209
-            // Require that the user has already logged in via username/password or external login
-            //if (!await SignInManager.HasBeenVerifiedAsync())
-            if ((await Context.AuthenticateAsync("Microsoft.AspNet.Identity.TwoFactor.UserId")).Identity.GetUserName() == null)
+            var user = await SignInManager.GetTwoFactorAuthenticationUserAsync();
+            if (user == null)
             {
                 return View("Error");
             }
 
-            //https://github.com/aspnet/Identity/issues/207
-            //var user = await UserManager.FindByIdAsync(await SignInManager.GetVerifiedUserIdAsync());
-            var user = await UserManager.FindByIdAsync((await Context.AuthenticateAsync("Microsoft.AspNet.Identity.TwoFactor.UserId")).Identity.GetUserName());
+            // Remove before production
 #if DEMO
             if (user != null)
             {
-                var code = await UserManager.GenerateTwoFactorTokenAsync(user, provider);
-                ViewBag.Code = code;
+                ViewBag.Code = await UserManager.GenerateTwoFactorTokenAsync(user, provider);
             }
 #endif
             return View(new VerifyCodeViewModel { Provider = provider, ReturnUrl = returnUrl, RememberMe = rememberMe });
@@ -104,7 +99,7 @@ namespace MusicStore.Controllers
             // If a user enters incorrect codes for a specified amount of time then the user account 
             // will be locked out for a specified amount of time. 
             // You can configure the account lockout settings in IdentityConfig
-            var result = await SignInManager.TwoFactorSignInAsync(model.Provider, model.Code, isPersistent: model.RememberMe, rememberClient: model.RememberBrowser);
+            var result = await SignInManager.TwoFactorSignInAsync(model.Provider, model.Code, model.RememberMe, model.RememberBrowser);
             switch (result)
             {
                 case SignInStatus.Success:
@@ -174,6 +169,10 @@ namespace MusicStore.Controllers
             }
 
             var user = await SignInManager.UserManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return View("Error");
+            }
             var result = await UserManager.ConfirmEmailAsync(user, code);
             return View(result.Succeeded ? "ConfirmEmail" : "Error");
         }
@@ -208,7 +207,7 @@ namespace MusicStore.Controllers
                 var callbackUrl = Url.Action("ResetPassword", "Account", new { code = code }, protocol: Context.Request.Scheme);
                 await UserManager.SendEmailAsync(user, "Reset Password", "Please reset your password by clicking <a href=\"" + callbackUrl + "\">here</a>");
 #if !DEMO
-                return RedirectToAction("ForgotPasswordConfirmation", "Account");
+                return RedirectToAction("ForgotPasswordConfirmation");
 #else
                 //To display the email link in a friendly page instead of sending email
                 ViewBag.Link = callbackUrl;
@@ -235,6 +234,7 @@ namespace MusicStore.Controllers
         [AllowAnonymous]
         public ActionResult ResetPassword(string code)
         {
+            //TODO: Fix this?
             var resetPasswordViewModel = new ResetPasswordViewModel() { Code = code };
             return code == null ? View("Error") : View(resetPasswordViewModel);
         }
@@ -281,8 +281,9 @@ namespace MusicStore.Controllers
         public ActionResult ExternalLogin(string provider, string returnUrl = null)
         {
             // Request a redirect to the external login provider
-            var redirectUri = Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl });
-            return new ChallengeResult(provider, new AuthenticationProperties() { RedirectUri = redirectUri });
+            var redirectUrl = Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl });
+            var properties = Context.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+            return new ChallengeResult(provider, properties);
         }
 
         //
@@ -290,14 +291,13 @@ namespace MusicStore.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> SendCode(bool rememberMe, string returnUrl = null)
         {
-            //https://github.com/aspnet/Identity/issues/207
-            //var userId = await SignInManager.GetVerifiedUserIdAsync();
-            var userId = (await Context.AuthenticateAsync("Microsoft.AspNet.Identity.TwoFactor.UserId")).Identity.GetUserName();
-            if (userId == null)
+            //TODO : Default rememberMe as well?
+            var user = await SignInManager.GetTwoFactorAuthenticationUserAsync();
+            if (user == null)
             {
                 return View("Error");
             }
-            var userFactors = await UserManager.GetValidTwoFactorProvidersAsync(new ApplicationUser() { Id = userId });
+            var userFactors = await UserManager.GetValidTwoFactorProvidersAsync(user);
             var factorOptions = userFactors.Select(purpose => new SelectListItem { Text = purpose, Value = purpose }).ToList();
             return View(new SendCodeViewModel { Providers = factorOptions, ReturnUrl = returnUrl, RememberMe = rememberMe });
         }
@@ -327,18 +327,14 @@ namespace MusicStore.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> ExternalLoginCallback(string returnUrl = null)
         {
-            //TODO: Helper not available
-            //var loginInfo = await AuthenticationManager.GetExternalLoginInfoAsync();
-            var loginInfo = await Context.AuthenticateAsync("External");
+            var loginInfo = await Context.GetExternalLoginInfo();
             if (loginInfo == null)
             {
                 return RedirectToAction("Login");
             }
 
-            //TODO: Helper not available
             // Sign in the user with this external login provider if the user already has a login
-            //var result = await SignInManager.ExternalSignInAsync(loginInfo, isPersistent: false);
-            var result = SignInStatus.Failure; //Always redirect to a login confirmation page for now. 
+            var result = await SignInManager.ExternalLoginSignInAsync(loginInfo.LoginProvider, loginInfo.ProviderKey, isPersistent: false);
             switch (result)
             {
                 case SignInStatus.Success:
@@ -351,14 +347,15 @@ namespace MusicStore.Controllers
                 default:
                     // If the user does not have an account, then prompt the user to create an account
                     ViewBag.ReturnUrl = returnUrl;
-                    ViewBag.LoginProvider = loginInfo.Identity.AuthenticationType;
-                    return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = loginInfo.Identity.Claims.Single(c => c.Type == System.Security.Claims.ClaimTypes.Email).Value });
+                    ViewBag.LoginProvider = loginInfo.LoginProvider;
+                    // REVIEW: handle case where email not in claims?
+                    var email = loginInfo.ExternalIdentity.FindFirstValue(ClaimTypes.Email);
+                    return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = email });
             }
         }
 
         //
         // POST: /Account/ExternalLoginConfirmation
-        // TODO: Some of the identity helpers not available
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
@@ -372,8 +369,7 @@ namespace MusicStore.Controllers
             if (ModelState.IsValid)
             {
                 // Get the information about the user from the external login provider
-                //var info = await AuthenticationManager.GetExternalLoginInfoAsync();
-                var info = await Context.AuthenticateAsync("External");
+                var info = await Context.GetExternalLoginInfo();
                 if (info == null)
                 {
                     return View("ExternalLoginFailure");
@@ -382,11 +378,9 @@ namespace MusicStore.Controllers
                 var result = await UserManager.CreateAsync(user);
                 if (result.Succeeded)
                 {
-                    var userloginInfo = new UserLoginInfo(info.Description.AuthenticationType, info.Description.AuthenticationType, info.Description.Caption);
-                    result = await UserManager.AddLoginAsync(user, userloginInfo);
+                    result = await UserManager.AddLoginAsync(user, info);
                     if (result.Succeeded)
                     {
-                        // TODO: rememberBrowser option not being taken in SignInAsync
                         await SignInManager.SignInAsync(user, isPersistent: false);
                         return RedirectToLocal(returnUrl);
                     }
