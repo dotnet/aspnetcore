@@ -1,10 +1,8 @@
 using System;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Routing;
-using Microsoft.AspNet.Security.Cookies;
 using Microsoft.Data.Entity;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
@@ -13,7 +11,6 @@ using Microsoft.AspNet.Security.Facebook;
 using Microsoft.AspNet.Security.Google;
 using Microsoft.AspNet.Security.Twitter;
 using Microsoft.AspNet.Security.MicrosoftAccount;
-using Microsoft.AspNet.Security;
 using Microsoft.Framework.Cache.Memory;
 
 namespace MusicStore
@@ -31,8 +28,6 @@ namespace MusicStore
             //Error page middleware displays a nice formatted HTML page for any unhandled exceptions in the request pipeline.
             //Note: ErrorPageOptions.ShowAll to be used only at development time. Not recommended for production.
             app.UseErrorPage(ErrorPageOptions.ShowAll);
-
-            app.SetDefaultSignInAsAuthenticationType("External");
 
             app.UseServices(services =>
             {
@@ -69,8 +64,7 @@ namespace MusicStore
                         });
 
                 // Add Identity services to the services container
-                services.AddIdentitySqlServer<MusicStoreContext, ApplicationUser>()
-                        .AddAuthentication();
+                services.AddDefaultIdentity<MusicStoreContext, ApplicationUser, IdentityRole>(configuration);
 
                 // Add MVC services to the services container
                 services.AddMvc();
@@ -90,21 +84,7 @@ namespace MusicStore
             app.UseStaticFiles();
 
             // Add cookie-based authentication to the request pipeline
-            app.UseCookieAuthentication(new CookieAuthenticationOptions
-            {
-                AuthenticationType = "External",
-                AuthenticationMode = AuthenticationMode.Passive,
-                ExpireTimeSpan = TimeSpan.FromMinutes(5)
-            });
-
-            // Add cookie-based authentication to the request pipeline
-            app.UseCookieAuthentication(new CookieAuthenticationOptions
-            {
-                AuthenticationType = ClaimsIdentityOptions.DefaultAuthenticationType,
-                LoginPath = new PathString("/Account/Login")
-            });
-
-            app.UseTwoFactorSignInCookies();
+            app.UseIdentity();
 
             app.UseFacebookAuthentication(new FacebookAuthenticationOptions()
             {

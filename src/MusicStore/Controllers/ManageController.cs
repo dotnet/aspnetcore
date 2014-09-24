@@ -260,7 +260,7 @@ namespace MusicStore.Controllers
             var user = await GetCurrentUserAsync();
             if (user != null)
             {
-                await SignInManager.RememberTwoFactorClient(user);
+                await SignInManager.RememberTwoFactorClientAsync(user);
                 await SignInManager.SignInAsync(user, isPersistent: false);
             }
             return RedirectToAction("Index", "Manage");

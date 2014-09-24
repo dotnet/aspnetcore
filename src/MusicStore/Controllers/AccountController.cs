@@ -6,7 +6,6 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Rendering;
 using MusicStore.Models;
-using System.Threading;
 
 namespace MusicStore.Controllers
 {
@@ -17,11 +16,6 @@ namespace MusicStore.Controllers
         {
             UserManager = userManager;
             SignInManager = signInManager;
-
-            //TODO: Work around - Identity helpers will be available to do this
-            UserManager.UserTokenProvider = new StaticTokenProvider();
-            UserManager.RegisterTwoFactorProvider("Phone Code", UserManager.UserTokenProvider);
-            UserManager.RegisterTwoFactorProvider("Email Code", UserManager.UserTokenProvider);
         }
 
         public UserManager<ApplicationUser> UserManager { get; private set; }
@@ -110,9 +104,7 @@ namespace MusicStore.Controllers
             // If a user enters incorrect codes for a specified amount of time then the user account 
             // will be locked out for a specified amount of time. 
             // You can configure the account lockout settings in IdentityConfig
-            // TODO : This helper does not take in the remember browser option yet.
-            // var result = await SignInManager.TwoFactorSignInAsync(model.Provider, model.Code, isPersistent: model.RememberMe, rememberBrowser: model.RememberBrowser);
-            var result = await SignInManager.TwoFactorSignInAsync(model.Provider, model.Code, isPersistent: model.RememberMe);
+            var result = await SignInManager.TwoFactorSignInAsync(model.Provider, model.Code, isPersistent: model.RememberMe, rememberClient: model.RememberBrowser);
             switch (result)
             {
                 case SignInStatus.Success:
@@ -452,38 +444,5 @@ namespace MusicStore.Controllers
         }
 
         #endregion
-    }
-
-    /// <summary>
-    /// TODO: Work around until there is a token provider
-    /// </summary>
-    internal class StaticTokenProvider : IUserTokenProvider<ApplicationUser>
-    {
-        public Task<string> GenerateAsync(string purpose, UserManager<ApplicationUser> manager,
-            ApplicationUser user, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            return Task.FromResult(MakeToken(purpose, user));
-        }
-
-        public Task<bool> ValidateAsync(string purpose, string token, UserManager<ApplicationUser> manager,
-            ApplicationUser user, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            return Task.FromResult(token == MakeToken(purpose, user));
-        }
-
-        public Task NotifyAsync(string token, UserManager<ApplicationUser> manager, ApplicationUser user, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            return Task.FromResult(0);
-        }
-
-        public Task<bool> IsValidProviderForUserAsync(UserManager<ApplicationUser> manager, ApplicationUser user, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            return Task.FromResult(true);
-        }
-
-        private static string MakeToken(string purpose, ApplicationUser user)
-        {
-            return string.Join(":", user.Id, purpose, "ImmaToken");
-        }
     }
 }

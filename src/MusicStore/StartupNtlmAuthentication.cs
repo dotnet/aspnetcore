@@ -83,8 +83,7 @@ namespace MusicStore
                         });
 
                 // Add Identity services to the services container
-                services.AddIdentitySqlServer<MusicStoreContext, ApplicationUser>()
-                        .AddAuthentication();
+                services.AddIdentitySqlServer<MusicStoreContext, ApplicationUser>();
 
                 // Add MVC services to the services container
                 services.AddMvc();

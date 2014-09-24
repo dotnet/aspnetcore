@@ -76,8 +76,7 @@ namespace MusicStore
                         });
 
                 // Add Identity services to the services container
-                services.AddIdentitySqlServer<MusicStoreContext, ApplicationUser>()
-                        .AddAuthentication();
+                services.AddIdentitySqlServer<MusicStoreContext, ApplicationUser>();
 
                 // Add MVC services to the services container
                 services.AddMvc();
@@ -116,22 +115,7 @@ namespace MusicStore
             // Add static files to the request pipeline
             app.UseStaticFiles();
 
-            // Add cookie-based authentication to the request pipeline
-            app.UseCookieAuthentication(new CookieAuthenticationOptions
-            {
-                AuthenticationType = "External",
-                AuthenticationMode = AuthenticationMode.Passive,
-                ExpireTimeSpan = TimeSpan.FromMinutes(5)
-            });
-
-            // Add cookie-based authentication to the request pipeline
-            app.UseCookieAuthentication(new CookieAuthenticationOptions
-            {
-                AuthenticationType = ClaimsIdentityOptions.DefaultAuthenticationType,
-                LoginPath = new PathString("/Account/Login")
-            });
-
-            app.UseTwoFactorSignInCookies();
+            app.UseIdentity();
 
             var facebookOptions = new FacebookAuthenticationOptions()
             {
