@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Net;
 using MusicStore.Mocks.Common;
+using Microsoft.AspNet.WebUtilities;
 
 namespace MusicStore.Mocks.Facebook
 {
@@ -14,7 +15,7 @@ namespace MusicStore.Mocks.Facebook
         protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var response = new HttpResponseMessage();
-            var queryParameters = request.RequestUri.ParseQueryString();
+            var queryParameters = QueryHelpers.ParseQuery(request.RequestUri.Query);
 
             if (request.RequestUri.AbsoluteUri.StartsWith("https://graph.facebook.com/oauth/access_token"))
             {

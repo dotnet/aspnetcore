@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net;
 using Xunit;
+using Microsoft.AspNet.WebUtilities;
 
 namespace E2ETests
 {
@@ -27,7 +28,7 @@ namespace E2ETests
             var content = new FormUrlEncodedContent(formParameters.ToArray());
             response = httpClient.PostAsync("Account/ExternalLogin", content).Result;
             Assert.Equal<string>("https://accounts.google.com/o/oauth2/auth", response.Headers.Location.AbsoluteUri.Replace(response.Headers.Location.Query, string.Empty));
-            var queryItems = response.Headers.Location.ParseQueryString();
+            var queryItems = QueryHelpers.ParseQuery(response.Headers.Location.Query);
             Assert.Equal<string>("code", queryItems["response_type"]);
             Assert.Equal<string>("offline", queryItems["access_type"]);
             Assert.Equal<string>("[ClientId]", queryItems["client_id"]);
