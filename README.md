@@ -98,6 +98,21 @@ By default when running ASP.NET vNext applications on the Windows platform you a
 
 **NOTE: There is no Core CLR currently available on OSX/Linux. There is only a single platform (mono45) and a single architecture (x86).**
 
+## Documentation and Further Learning
+
+#### [Community Standup](http://www.youtube.com/playlist?list=PL0M0zPgJ3HSftTAAHttA3JQU4vOjXFquF)
+The community standup is held every week and streamed live to YouTube. You can view past standups in the linked playlist. 
+
+If you have questions you can also jump online during the next standup and have them answered live.
+
+#### [Wiki Documentation] (https://github.com/aspnet/Home/wiki)
+We have some useful documentation on the wiki of this Repo. This wiki is a central spot for docs from any part of the stack.
+
+If you see errors, or want some extra content, then feel free to create an issue or send a pull request (see feedback section below).
+
+#### [ASP.NET/vNext](http://www.asp.net/vnext)
+The vNext page on the ASP.NET site has links to some TechEd videos and articles with some good information about vNext.
+
 # Feedback
 
 Check out the [contributing](https://github.com/aspnet/Home/blob/master/CONTRIBUTING.md) page to see the best places to log issues and start discussions.
