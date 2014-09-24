@@ -7,41 +7,32 @@ namespace Microsoft.AspNet.Identity
 {
     public class ClaimsIdentityOptions
     {
-        /// <summary>
-        ///     ClaimType used for the security stamp by default
-        /// </summary>
         public static readonly string DefaultSecurityStampClaimType = "AspNet.Identity.SecurityStamp";
         public static readonly string DefaultAuthenticationType = typeof(ClaimsIdentityOptions).Namespace + ".Application";
+        public static readonly string DefaultExternalLoginAuthenticationType = typeof(ClaimsIdentityOptions).Namespace + ".ExternalLogin";
+        public static readonly string DefaultTwoFactorRememberMeAuthenticationType = typeof(ClaimsIdentityOptions).Namespace + ".TwoFactorRememberMe";
+        public static readonly string DefaultTwoFactorUserIdAuthenticationType = typeof(ClaimsIdentityOptions).Namespace + ".TwoFactorUserId";
 
-        public ClaimsIdentityOptions()
-        {
-            AuthenticationType = DefaultAuthenticationType;
-            RoleClaimType = ClaimTypes.Role;
-            SecurityStampClaimType = DefaultSecurityStampClaimType;
-            UserIdClaimType = ClaimTypes.NameIdentifier;
-            UserNameClaimType = ClaimTypes.Name;
-        }
-
-        public string AuthenticationType { get; set; }
+        public string AuthenticationType { get; set; } = DefaultAuthenticationType;
 
         /// <summary>
         ///     Claim type used for role claims
         /// </summary>
-        public string RoleClaimType { get; set; }
+        public string RoleClaimType { get; set; } = ClaimTypes.Role;
 
         /// <summary>
         ///     Claim type used for the user name
         /// </summary>
-        public string UserNameClaimType { get; set; }
+        public string UserNameClaimType { get; set; } = ClaimTypes.Name;
 
         /// <summary>
         ///     Claim type used for the user id
         /// </summary>
-        public string UserIdClaimType { get; set; }
+        public string UserIdClaimType { get; set; } = ClaimTypes.NameIdentifier;
 
         /// <summary>
         ///     Claim type used for the user security stamp
         /// </summary>
-        public string SecurityStampClaimType { get; set; }
+        public string SecurityStampClaimType { get; set; } = DefaultSecurityStampClaimType;
     }
 }

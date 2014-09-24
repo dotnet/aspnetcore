@@ -13,25 +13,20 @@ using Microsoft.Data.Entity;
 
 namespace Microsoft.AspNet.Identity.SqlServer
 {
-    public class UserStore : UserStore<IdentityUser>
-    {
-        public UserStore(DbContext context) : base(context) { }
-    }
+    public class UserStore(DbContext context) : UserStore<IdentityUser>(context)
+    { }
 
-    public class UserStore<TUser> : UserStore<TUser, IdentityRole, DbContext> where TUser : IdentityUser, new()
-    {
-        public UserStore(DbContext context) : base(context) { }
-    }
+    public class UserStore<TUser>(DbContext context) : UserStore<TUser, IdentityRole, DbContext>(context)
+        where TUser : IdentityUser, new()
+    { }
 
-    public class UserStore<TUser, TRole, TContext> : UserStore<TUser, TRole, TContext, string>
+    public class UserStore<TUser, TRole, TContext>(TContext context) : UserStore<TUser, TRole, TContext, string>(context)
         where TUser : IdentityUser, new()
         where TRole : IdentityRole, new()
         where TContext : DbContext
-    {
-        public UserStore(TContext context) : base(context) { }
-    }
+    { }
 
-    public class UserStore<TUser, TRole, TContext, TKey> :
+    public class UserStore<TUser, TRole, TContext, TKey>(TContext context) :
         IUserLoginStore<TUser>,
         IUserRoleStore<TUser>,
         IUserClaimStore<TUser>,
@@ -47,24 +42,22 @@ namespace Microsoft.AspNet.Identity.SqlServer
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
-        private bool _disposed;
-
-        public UserStore(TContext context)
+        // Primary constructor
         {
             if (context == null)
             {
                 throw new ArgumentNullException("context");
             }
-            Context = context;
-            AutoSaveChanges = true;
         }
 
-        public TContext Context { get; private set; }
+        private bool _disposed;
+
+        public TContext Context { get; } = context;
 
         /// <summary>
         ///     If true will call SaveChanges after CreateAsync/UpdateAsync/DeleteAsync
         /// </summary>
-        public bool AutoSaveChanges { get; set; }
+        public bool AutoSaveChanges { get; set; } = true;
 
         private Task SaveChanges(CancellationToken cancellationToken)
         {
@@ -507,7 +500,7 @@ namespace Microsoft.AspNet.Identity.SqlServer
             return Task.FromResult(0);
         }
 
-        public virtual Task<IList<UserLoginInfo>> GetLoginsAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IList<UserLoginInfo>> GetLoginsAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -516,9 +509,11 @@ namespace Microsoft.AspNet.Identity.SqlServer
                 throw new ArgumentNullException("user");
             }
             // todo: ensure logins loaded
-            IList<UserLoginInfo> result = user.Logins
-                .Select(l => new UserLoginInfo(l.LoginProvider, l.ProviderKey, l.ProviderDisplayName)).ToList();
-            return Task.FromResult(result);
+            //IList<UserLoginInfo> result = user.Logins
+            //    .Select(l => new UserLoginInfo(l.LoginProvider, l.ProviderKey, l.ProviderDisplayName)).ToList();
+            var userId = user.Id;
+            return await UserLogins.Where(l => l.UserId.Equals(userId))
+                .Select(l => new UserLoginInfo(l.LoginProvider, l.ProviderKey, l.ProviderDisplayName)).ToListAsync();
         }
 
         public async virtual Task<TUser> FindByLoginAsync(string loginProvider, string providerKey,

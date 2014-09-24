@@ -12,43 +12,39 @@ using Microsoft.Data.Entity;
 
 namespace Microsoft.AspNet.Identity.SqlServer
 {
-    public class RoleStore<TRole> : RoleStore<TRole, DbContext, string> where TRole : IdentityRole
-    {
-        public RoleStore(DbContext context) : base(context) { }
-    }
+    public class RoleStore<TRole>(DbContext context) : RoleStore<TRole, DbContext, string>(context) 
+        where TRole : IdentityRole
+    { }
 
-    public class RoleStore<TRole, TContext> : RoleStore<TRole, TContext, string> 
+    public class RoleStore<TRole, TContext>(TContext context) : RoleStore<TRole, TContext, string>(context)
         where TRole : IdentityRole
         where TContext : DbContext
-    {
-        public RoleStore(TContext context) : base(context) { }
-    }
+    { }
 
-    public class RoleStore<TRole, TContext, TKey> : 
-        IQueryableRoleStore<TRole>,
+    public class RoleStore<TRole, TContext, TKey>(TContext context) : 
+        IQueryableRoleStore<TRole>, 
         IRoleClaimStore<TRole>
         where TRole : IdentityRole<TKey>
         where TKey : IEquatable<TKey>
         where TContext : DbContext
     {
-        private bool _disposed;
-
-        public RoleStore(TContext context)
+        // Primary constructor
         {
             if (context == null)
             {
                 throw new ArgumentNullException("context");
             }
-            Context = context;
-            AutoSaveChanges = true;
         }
 
-        public TContext Context { get; private set; }
+        private bool _disposed;
+
+
+        public TContext Context { get; } = context;
 
         /// <summary>
         ///     If true will call SaveChanges after CreateAsync/UpdateAsync/DeleteAsync
         /// </summary>
-        public bool AutoSaveChanges { get; set; }
+        public bool AutoSaveChanges { get; set; } = true;
 
         private async Task SaveChanges(CancellationToken cancellationToken)
         {

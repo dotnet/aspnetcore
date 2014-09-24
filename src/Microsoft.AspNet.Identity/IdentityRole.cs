@@ -33,23 +33,13 @@ namespace Microsoft.AspNet.Identity
     ///     Represents a Role entity
     /// </summary>
     /// <typeparam name="TKey"></typeparam>
-    public class IdentityRole<TKey> where TKey : IEquatable<TKey>
+    public class IdentityRole<TKey>() where TKey : IEquatable<TKey>
     {
         /// <summary>
         ///     Constructor
         /// </summary>
-        public IdentityRole()
-        {
-            Users = new List<IdentityUserRole<TKey>>();
-            Claims = new List<IdentityRoleClaim<TKey>>();
-        }
-
-        /// <summary>
-        ///     Constructor
-        /// </summary>
         /// <param name="roleName"></param>
-        public IdentityRole(string roleName)
-            : this()
+        public IdentityRole(string roleName) : this()
         {
             Name = roleName;
         }
@@ -57,12 +47,12 @@ namespace Microsoft.AspNet.Identity
         /// <summary>
         ///     Navigation property for users in the role
         /// </summary>
-        public virtual ICollection<IdentityUserRole<TKey>> Users { get; private set; }
+        public virtual ICollection<IdentityUserRole<TKey>> Users { get; private set; } = new List<IdentityUserRole<TKey>>();
 
         /// <summary>
         ///     Navigation property for claims in the role
         /// </summary>
-        public virtual ICollection<IdentityRoleClaim<TKey>> Claims { get; private set; }
+        public virtual ICollection<IdentityRoleClaim<TKey>> Claims { get; private set; } = new List<IdentityRoleClaim<TKey>>();
 
         /// <summary>
         ///     Role id

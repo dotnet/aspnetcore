@@ -13,11 +13,11 @@ namespace Microsoft.AspNet.Identity.Test
 {
     public static class MockHelpers
     {
-        public static UserManager<TUser> CreateManager<TUser>(Func<IUserStore<TUser>> storeFunc) where TUser : class
+        public static UserManager<TUser> CreateManager<TUser>(IUserStore<TUser> store) where TUser : class
         {
             var services = new ServiceCollection();
             services.Add(OptionsServices.GetDefaultServices());
-            services.AddIdentity<TUser>().AddUserStore(storeFunc);
+            services.AddIdentity<TUser>().AddUserStore(store);
             services.SetupOptions<IdentityOptions>(options =>
             {
                 options.Password.RequireDigit = false;
@@ -39,7 +39,8 @@ namespace Microsoft.AspNet.Identity.Test
                 new PasswordHasher<TUser>(),
                 new UserValidator<TUser>(),
                 new PasswordValidator<TUser>(),
-                new UpperInvariantUserNameNormalizer());
+                new UpperInvariantUserNameNormalizer(),
+                null);
         }
 
         public static Mock<RoleManager<TRole>> MockRoleManager<TRole>() where TRole : class
@@ -58,7 +59,7 @@ namespace Microsoft.AspNet.Identity.Test
             var options = new OptionsAccessor<IdentityOptions>(null);
             var validator = new Mock<UserValidator<TUser>>();
             var userManager = new UserManager<TUser>(store, options, new PasswordHasher<TUser>(), 
-                validator.Object, new PasswordValidator<TUser>(), new UpperInvariantUserNameNormalizer());
+                validator.Object, new PasswordValidator<TUser>(), new UpperInvariantUserNameNormalizer(), null);
             validator.Setup(v => v.ValidateAsync(userManager, It.IsAny<TUser>(), CancellationToken.None))
                 .Returns(Task.FromResult(IdentityResult.Success)).Verifiable();
             return userManager;

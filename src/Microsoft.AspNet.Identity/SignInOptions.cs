@@ -5,8 +5,6 @@ namespace Microsoft.AspNet.Identity
 {
     public class SignInOptions
     {
-        public SignInOptions() { }
-
         /// <summary>
         ///     If set, requires a confirmed email to sign in
         /// </summary>

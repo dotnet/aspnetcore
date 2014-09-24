@@ -1,6 +1,9 @@
 {
   "version": "3.0.0-*",
   "dependencies": {
+    "Microsoft.AspNet.Http" : "1.0.0-*",
+    "Microsoft.AspNet.Security" : "1.0.0-*",
+    "Microsoft.AspNet.Security.Cookies" : "1.0.0-*",
     "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
     "Microsoft.Framework.DependencyInjection" : "1.0.0-*",
     "Microsoft.Framework.OptionsModel": "1.0.0-*",

@@ -117,9 +117,33 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="DefaultEmailTokenProviderBodyFormat" xml:space="preserve">
+    <value>Your security code is: {0}</value>
+    <comment>Default body format for the email</comment>
+  </data>
+  <data name="DefaultEmailTokenProviderName" xml:space="preserve">
+    <value>Email</value>
+    <comment>Default name for the email token provider</comment>
+  </data>
+  <data name="DefaultEmailTokenProviderSubject" xml:space="preserve">
+    <value>Security Code</value>
+    <comment>Default subject for the email</comment>
+  </data>
   <data name="DefaultError" xml:space="preserve">
     <value>An unknown failure has occured.</value>
     <comment>Default identity result error message</comment>
+  </data>
+  <data name="DefaultPhoneNumberTokenProviderMessageFormat" xml:space="preserve">
+    <value>Your security code is: {0}</value>
+    <comment>Default message format for the phone number token provider</comment>
+  </data>
+  <data name="DefaultPhoneNumberTokenProviderName" xml:space="preserve">
+    <value>Phone</value>
+    <comment>Default name for the phone number token provider</comment>
+  </data>
+  <data name="DefaultTokenProvider" xml:space="preserve">
+    <value>DefaultTokenProvider</value>
+    <comment>Name of the default token provider</comment>
   </data>
   <data name="DuplicateEmail" xml:space="preserve">
     <value>Email '{0}' is already taken.</value>
@@ -150,12 +174,8 @@
     <comment>error when lockout is not enabled</comment>
   </data>
   <data name="NoTokenProvider" xml:space="preserve">
-    <value>No IUserTokenProvider is registered.</value>
+    <value>No IUserTokenProvider named '{0}' is registered.</value>
     <comment>Error when there is no IUserTokenProvider</comment>
-  </data>
-  <data name="NoTwoFactorProvider" xml:space="preserve">
-    <value>No IUserTwoFactorProvider for '{0}' is registered.</value>
-    <comment>Error when there is no provider found</comment>
   </data>
   <data name="PasswordMismatch" xml:space="preserve">
     <value>Incorrect password.</value>

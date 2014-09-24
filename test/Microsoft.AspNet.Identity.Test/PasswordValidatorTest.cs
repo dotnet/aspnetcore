@@ -29,8 +29,8 @@ namespace Microsoft.AspNet.Identity.Test
 
             // Act
             // Assert
-            await Assert.ThrowsAsync<ArgumentNullException>("password", () => validator.ValidateAsync(null, null));
-            await Assert.ThrowsAsync<ArgumentNullException>("manager", () => validator.ValidateAsync("foo", null));
+            await Assert.ThrowsAsync<ArgumentNullException>("password", () => validator.ValidateAsync(null, null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("manager", () => validator.ValidateAsync(null, "foo", null));
         }
 
 
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Identity.Test
             manager.Options.Password.RequireNonLetterOrDigit = false;
             manager.Options.Password.RequireLowercase = false;
             manager.Options.Password.RequireDigit = false;
-            IdentityResultAssert.IsFailure(await valid.ValidateAsync(input, manager), error);
+            IdentityResultAssert.IsFailure(await valid.ValidateAsync(null, input, manager), error);
         }
 
         [Theory]
@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Identity.Test
             manager.Options.Password.RequireNonLetterOrDigit = false;
             manager.Options.Password.RequireLowercase = false;
             manager.Options.Password.RequireDigit = false;
-            IdentityResultAssert.IsSuccess(await valid.ValidateAsync(input, manager));
+            IdentityResultAssert.IsSuccess(await valid.ValidateAsync(null, input, manager));
         }
 
         [Theory]
@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.Identity.Test
             manager.Options.Password.RequireLowercase = false;
             manager.Options.Password.RequireDigit = false;
             manager.Options.Password.RequiredLength = 0;
-            IdentityResultAssert.IsFailure(await valid.ValidateAsync(input, manager),
+            IdentityResultAssert.IsFailure(await valid.ValidateAsync(null, input, manager),
                 "Passwords must have at least one non letter and non digit character.");
         }
 
@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.Identity.Test
             manager.Options.Password.RequireLowercase = false;
             manager.Options.Password.RequireDigit = false;
             manager.Options.Password.RequiredLength = 0;
-            IdentityResultAssert.IsSuccess(await valid.ValidateAsync(input, manager));
+            IdentityResultAssert.IsSuccess(await valid.ValidateAsync(null, input, manager));
         }
 
         [Theory]
@@ -135,11 +135,11 @@ namespace Microsoft.AspNet.Identity.Test
             }
             if (errors.Count == 0)
             {
-                IdentityResultAssert.IsSuccess(await valid.ValidateAsync(input, manager));
+                IdentityResultAssert.IsSuccess(await valid.ValidateAsync(null, input, manager));
             }
             else
             {
-                IdentityResultAssert.IsFailure(await valid.ValidateAsync(input, manager), string.Join(" ", errors));
+                IdentityResultAssert.IsFailure(await valid.ValidateAsync(null, input, manager), string.Join(" ", errors));
             }
         }
     }

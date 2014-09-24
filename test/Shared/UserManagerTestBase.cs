@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Testing;
 using Xunit;
+using Microsoft.AspNet.Security.DataProtection;
 
 namespace Microsoft.AspNet.Identity.Test
 {
@@ -502,6 +503,8 @@ namespace Microsoft.AspNet.Identity.Test
 
         private class StaticTokenProvider : IUserTokenProvider<TUser>
         {
+            public string Name { get; } = "Static";
+
             public Task<string> GenerateAsync(string purpose, UserManager<TUser> manager,
                 TUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
@@ -519,7 +522,7 @@ namespace Microsoft.AspNet.Identity.Test
                 return Task.FromResult(0);
             }
 
-            public Task<bool> IsValidProviderForUserAsync(UserManager<TUser> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(true);
             }
@@ -534,7 +537,8 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task CanResetPasswordWithStaticTokenProvider()
         {
             var manager = CreateManager();
-            manager.UserTokenProvider = new StaticTokenProvider();
+            manager.RegisterTokenProvider(new StaticTokenProvider());
+            manager.Options.PasswordResetTokenProvider = "Static";
             var user = CreateTestUser();
             const string password = "password";
             const string newPassword = "newpassword";
@@ -553,7 +557,8 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task PasswordValidatorCanBlockResetPasswordWithStaticTokenProvider()
         {
             var manager = CreateManager();
-            manager.UserTokenProvider = new StaticTokenProvider();
+            manager.RegisterTokenProvider(new StaticTokenProvider());
+            manager.Options.PasswordResetTokenProvider = "Static";
             var user = CreateTestUser();
             const string password = "password";
             const string newPassword = "newpassword";
@@ -574,7 +579,8 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task ResetPasswordWithStaticTokenProviderFailsWithWrongToken()
         {
             var manager = CreateManager();
-            manager.UserTokenProvider = new StaticTokenProvider();
+            manager.RegisterTokenProvider(new StaticTokenProvider());
+            manager.Options.PasswordResetTokenProvider = "Static";
             var user = CreateTestUser();
             const string password = "password";
             const string newPassword = "newpassword";
@@ -591,23 +597,24 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task CanGenerateAndVerifyUserTokenWithStaticTokenProvider()
         {
             var manager = CreateManager();
-            manager.UserTokenProvider = new StaticTokenProvider();
+            manager.RegisterTokenProvider(new StaticTokenProvider());
             var user = CreateTestUser();
             var user2 = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user2));
-            var token = await manager.GenerateUserTokenAsync("test", user);
-            Assert.True(await manager.VerifyUserTokenAsync(user, "test", token));
-            Assert.False(await manager.VerifyUserTokenAsync(user, "test2", token));
-            Assert.False(await manager.VerifyUserTokenAsync(user, "test", token + "a"));
-            Assert.False(await manager.VerifyUserTokenAsync(user2, "test", token));
+            var token = await manager.GenerateUserTokenAsync(user, "Static", "test");
+            Assert.True(await manager.VerifyUserTokenAsync(user, "Static", "test", token));
+            Assert.False(await manager.VerifyUserTokenAsync(user, "Static", "test2", token));
+            Assert.False(await manager.VerifyUserTokenAsync(user, "Static", "test", token + "a"));
+            Assert.False(await manager.VerifyUserTokenAsync(user2, "Static", "test", token));
         }
 
         [Fact]
         public async Task CanConfirmEmailWithStaticToken()
         {
             var manager = CreateManager();
-            manager.UserTokenProvider = new StaticTokenProvider();
+            manager.RegisterTokenProvider(new StaticTokenProvider());
+            manager.Options.EmailConfirmationTokenProvider = "Static";
             var user = CreateTestUser();
             Assert.False(user.EmailConfirmed);
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -623,7 +630,8 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task ConfirmEmailWithStaticTokenFailsWithWrongToken()
         {
             var manager = CreateManager();
-            manager.UserTokenProvider = new StaticTokenProvider();
+            manager.RegisterTokenProvider(new StaticTokenProvider());
+            manager.Options.EmailConfirmationTokenProvider = "Static";
             var user = CreateTestUser();
             Assert.False(user.EmailConfirmed);
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -631,20 +639,22 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.False(await manager.IsEmailConfirmedAsync(user));
         }
 
-        // TODO: Can't reenable til we have a SecurityStamp linked token provider
-        //[Fact]
-        //public async Task ConfirmTokenFailsAfterPasswordChange()
-        //{
-        //    var manager = CreateManager();
-        //    var user = new TUser() { UserName = "test" };
-        //    Assert.False(user.EmailConfirmed);
-        //    IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, "password"));
-        //    var token = await manager.GenerateEmailConfirmationTokenAsync(user);
-        //    Assert.NotNull(token);
-        //    IdentityResultAssert.IsSuccess(await manager.ChangePasswordAsync(user, "password", "newpassword"));
-        //    IdentityResultAssert.IsFailure(await manager.ConfirmEmailAsync(user, token), "Invalid token.");
-        //    Assert.False(await manager.IsEmailConfirmedAsync(user));
-        //}
+        [Fact]
+        public async Task ConfirmTokenFailsAfterPasswordChange()
+        {
+            var manager = CreateManager();
+            manager.RegisterTokenProvider(new DataProtectorTokenProvider<TUser>(new DataProtectionTokenProviderOptions(),
+                   DataProtectionProvider.CreateFromDpapi().CreateProtector("ASP.NET Identity")));
+            manager.Options.EmailConfirmationTokenProvider = "DataProtection";
+            var user = new TUser() { UserName = "test" };
+            Assert.False(user.EmailConfirmed);
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, "password"));
+            var token = await manager.GenerateEmailConfirmationTokenAsync(user);
+            Assert.NotNull(token);
+            IdentityResultAssert.IsSuccess(await manager.ChangePasswordAsync(user, "password", "newpassword"));
+            IdentityResultAssert.IsFailure(await manager.ConfirmEmailAsync(user, token), "Invalid token.");
+            Assert.False(await manager.IsEmailConfirmedAsync(user));
+        }
 
         // Lockout tests
 
@@ -837,7 +847,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             public const string ErrorMessage = "I'm Bad.";
 
-            public Task<IdentityResult> ValidateAsync(string password, UserManager<TUser> manager, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> ValidateAsync(TUser user, string password, UserManager<TUser> manager, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(IdentityResult.Failed(ErrorMessage));
             }
@@ -1220,73 +1230,16 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.False(await manager.VerifyChangePhoneNumberTokenAsync(user, token1, num2));
         }
 
-        private class EmailTokenProvider : IUserTokenProvider<TUser>
-        {
-            public Task<string> GenerateAsync(string purpose, UserManager<TUser> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken))
-            {
-                return Task.FromResult(MakeToken(purpose));
-            }
-
-            public Task<bool> ValidateAsync(string purpose, string token, UserManager<TUser> manager,
-                TUser user, CancellationToken cancellationToken = default(CancellationToken))
-            {
-                return Task.FromResult(token == MakeToken(purpose));
-            }
-
-            public Task NotifyAsync(string token, UserManager<TUser> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken))
-            {
-                return manager.SendEmailAsync(user, token, token);
-            }
-
-            public async Task<bool> IsValidProviderForUserAsync(UserManager<TUser> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken))
-            {
-                return !string.IsNullOrEmpty(await manager.GetEmailAsync(user));
-            }
-
-            private static string MakeToken(string purpose)
-            {
-                return "email:" + purpose;
-            }
-        }
-
-        private class SmsTokenProvider : IUserTokenProvider<TUser>
-        {
-            public Task<string> GenerateAsync(string purpose, UserManager<TUser> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken))
-            {
-                return Task.FromResult(MakeToken(purpose));
-            }
-
-            public Task<bool> ValidateAsync(string purpose, string token, UserManager<TUser> manager,
-                TUser user, CancellationToken cancellationToken = default(CancellationToken))
-            {
-                return Task.FromResult(token == MakeToken(purpose));
-            }
-
-            public Task NotifyAsync(string token, UserManager<TUser> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken))
-            {
-                return manager.SendSmsAsync(user, token, cancellationToken);
-            }
-
-            public async Task<bool> IsValidProviderForUserAsync(UserManager<TUser> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken))
-            {
-                return !string.IsNullOrEmpty(await manager.GetPhoneNumberAsync(user, cancellationToken));
-            }
-
-            private static string MakeToken(string purpose)
-            {
-                return "sms:" + purpose;
-            }
-        }
-
         [Fact]
         public async Task CanEmailTwoFactorToken()
         {
             var manager = CreateManager();
             var messageService = new TestMessageService();
             manager.EmailService = messageService;
-            const string factorId = "EmailCode";
-            manager.RegisterTwoFactorProvider(factorId, new EmailTokenProvider());
+            const string factorId = "Email";
+            manager.RegisterTokenProvider(new EmailTokenProvider<TUser>());
             var user = new TUser() { UserName = "EmailCodeTest", Email = "foo@foo.com" };
+            user.EmailConfirmed = true;
             const string password = "password";
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, password));
             var stamp = user.SecurityStamp;
@@ -1296,8 +1249,7 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.Null(messageService.Message);
             IdentityResultAssert.IsSuccess(await manager.NotifyTwoFactorTokenAsync(user, factorId, token));
             Assert.NotNull(messageService.Message);
-            Assert.Equal(token, messageService.Message.Subject);
-            Assert.Equal(token, messageService.Message.Body);
+            Assert.Equal("Your security code is: "+token, messageService.Message.Body);
             Assert.True(await manager.VerifyTwoFactorTokenAsync(user, factorId, token));
         }
 
@@ -1310,7 +1262,7 @@ namespace Microsoft.AspNet.Identity.Test
             await
                 ExceptionAssert.ThrowsAsync<NotSupportedException>(
                     async () => await manager.NotifyTwoFactorTokenAsync(user, "Bogus", "token"),
-                    "No IUserTwoFactorProvider for 'Bogus' is registered.");
+                    "No IUserTokenProvider named 'Bogus' is registered.");
         }
 
         [Fact]
@@ -1319,12 +1271,15 @@ namespace Microsoft.AspNet.Identity.Test
             var manager = CreateManager();
             var messageService = new TestMessageService();
             manager.EmailService = messageService;
-            const string factorId = "EmailCode";
-            manager.RegisterTwoFactorProvider(factorId, new EmailTokenProvider<TUser>
+            const string factorId = "EmailTestCode";
+            const string subject = "Custom subject";
+            const string body = "Your code is {0}!";
+            manager.RegisterTokenProvider(new EmailTokenProvider<TUser>(new EmailTokenProviderOptions
             {
-                Subject = "Security Code",
-                BodyFormat = "Your code is: {0}"
-            });
+                Name = factorId,
+                Subject = subject,
+                BodyFormat = body
+            }));
             var user = CreateTestUser();
             user.Email = user.UserName + "@foo.com";
             const string password = "password";
@@ -1336,8 +1291,8 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.Null(messageService.Message);
             IdentityResultAssert.IsSuccess(await manager.NotifyTwoFactorTokenAsync(user, factorId, token));
             Assert.NotNull(messageService.Message);
-            Assert.Equal("Security Code", messageService.Message.Subject);
-            Assert.Equal("Your code is: " + token, messageService.Message.Body);
+            Assert.Equal(subject, messageService.Message.Subject);
+            Assert.Equal(string.Format(body, token), messageService.Message.Body);
             Assert.True(await manager.VerifyTwoFactorTokenAsync(user, factorId, token));
         }
 
@@ -1345,10 +1300,11 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task EmailFactorFailsAfterSecurityStampChangeTest()
         {
             var manager = CreateManager();
-            const string factorId = "EmailCode";
-            manager.RegisterTwoFactorProvider(factorId, new EmailTokenProvider<TUser>());
+            string factorId = "Email"; //default
+            manager.RegisterTokenProvider(new EmailTokenProvider<TUser>());
             var user = CreateTestUser();
             user.Email = user.UserName + "@foo.com";
+            user.EmailConfirmed = true;
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             var stamp = user.SecurityStamp;
             Assert.NotNull(stamp);
@@ -1407,8 +1363,8 @@ namespace Microsoft.AspNet.Identity.Test
             var manager = CreateManager();
             var messageService = new TestMessageService();
             manager.SmsService = messageService;
-            const string factorId = "PhoneCode";
-            manager.RegisterTwoFactorProvider(factorId, new SmsTokenProvider());
+            const string factorId = "Phone"; // default
+            manager.RegisterTokenProvider(new PhoneNumberTokenProvider<TUser>());
             var user = CreateTestUser();
             user.PhoneNumber = "4251234567";
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -1419,7 +1375,7 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.Null(messageService.Message);
             IdentityResultAssert.IsSuccess(await manager.NotifyTwoFactorTokenAsync(user, factorId, token));
             Assert.NotNull(messageService.Message);
-            Assert.Equal(token, messageService.Message.Body);
+            Assert.Equal("Your security code is: "+token, messageService.Message.Body);
             Assert.True(await manager.VerifyTwoFactorTokenAsync(user, factorId, token));
         }
 
@@ -1429,11 +1385,12 @@ namespace Microsoft.AspNet.Identity.Test
             var manager = CreateManager();
             var messageService = new TestMessageService();
             manager.SmsService = messageService;
-            const string factorId = "PhoneCode";
-            manager.RegisterTwoFactorProvider(factorId, new PhoneNumberTokenProvider<TUser>
+            const string factorId = "PhoneTestFactors";
+            manager.RegisterTokenProvider(new PhoneNumberTokenProvider<TUser>(new PhoneNumberTokenProviderOptions
             {
+                Name = factorId,
                 MessageFormat = "Your code is: {0}"
-            });
+            }));
             var user = CreateTestUser();
             user.PhoneNumber = "4251234567";
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -1454,7 +1411,7 @@ namespace Microsoft.AspNet.Identity.Test
             var manager = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
-            const string error = "No IUserTwoFactorProvider for 'bogus' is registered.";
+            const string error = "No IUserTokenProvider named 'bogus' is registered.";
             await
                 ExceptionAssert.ThrowsAsync<NotSupportedException>(
                     () => manager.GenerateTwoFactorTokenAsync(user, "bogus"), error);
@@ -1477,35 +1434,39 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task CanGetValidTwoFactor()
         {
             var manager = CreateManager();
-            manager.RegisterTwoFactorProvider("phone", new SmsTokenProvider());
-            manager.RegisterTwoFactorProvider("email", new EmailTokenProvider());
+            manager.RegisterTokenProvider(new PhoneNumberTokenProvider<TUser>());
+            manager.RegisterTokenProvider(new EmailTokenProvider<TUser>());
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             var factors = await manager.GetValidTwoFactorProvidersAsync(user);
             Assert.NotNull(factors);
-            Assert.True(!factors.Any());
+            Assert.False(factors.Any());
             IdentityResultAssert.IsSuccess(await manager.SetPhoneNumberAsync(user, "111-111-1111"));
+            user.PhoneNumberConfirmed = true;
+            await manager.UpdateAsync(user);
             factors = await manager.GetValidTwoFactorProvidersAsync(user);
             Assert.NotNull(factors);
-            Assert.True(factors.Count() == 1);
-            Assert.Equal("phone", factors[0]);
+            Assert.Equal(1, factors.Count());
+            Assert.Equal("Phone", factors[0]);
             IdentityResultAssert.IsSuccess(await manager.SetEmailAsync(user, "test@test.com"));
+            user.EmailConfirmed = true;
+            await manager.UpdateAsync(user);
             factors = await manager.GetValidTwoFactorProvidersAsync(user);
             Assert.NotNull(factors);
-            Assert.True(factors.Count() == 2);
+            Assert.Equal(2, factors.Count());
             IdentityResultAssert.IsSuccess(await manager.SetEmailAsync(user, null));
             factors = await manager.GetValidTwoFactorProvidersAsync(user);
             Assert.NotNull(factors);
-            Assert.True(factors.Count() == 1);
-            Assert.Equal("phone", factors[0]);
+            Assert.Equal(1, factors.Count());
+            Assert.Equal("Phone", factors[0]);
         }
 
         [Fact]
         public async Task PhoneFactorFailsAfterSecurityStampChangeTest()
         {
             var manager = CreateManager();
-            var factorId = "PhoneCode";
-            manager.RegisterTwoFactorProvider(factorId, new PhoneNumberTokenProvider<TUser>());
+            var factorId = "Phone"; // default
+            manager.RegisterTokenProvider(new PhoneNumberTokenProvider<TUser>());
             var user = CreateTestUser();
             user.PhoneNumber = "4251234567";
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -1521,26 +1482,25 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task VerifyTokenFromWrongTokenProviderFails()
         {
             var manager = CreateManager();
-            manager.RegisterTwoFactorProvider("PhoneCode", new SmsTokenProvider());
-            manager.RegisterTwoFactorProvider("EmailCode", new EmailTokenProvider());
+            manager.RegisterTokenProvider(new PhoneNumberTokenProvider<TUser>());
+            manager.RegisterTokenProvider(new EmailTokenProvider<TUser>());
             var user = CreateTestUser();
             user.PhoneNumber = "4251234567";
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
-            var token = await manager.GenerateTwoFactorTokenAsync(user, "PhoneCode");
+            var token = await manager.GenerateTwoFactorTokenAsync(user, "Phone");
             Assert.NotNull(token);
-            Assert.False(await manager.VerifyTwoFactorTokenAsync(user, "EmailCode", token));
+            Assert.False(await manager.VerifyTwoFactorTokenAsync(user, "Email", token));
         }
 
         [Fact]
         public async Task VerifyWithWrongSmsTokenFails()
         {
             var manager = CreateManager();
-            const string factorId = "PhoneCode";
-            manager.RegisterTwoFactorProvider(factorId, new SmsTokenProvider());
+            manager.RegisterTokenProvider(new PhoneNumberTokenProvider<TUser>());
             var user = CreateTestUser();
             user.PhoneNumber = "4251234567";
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
-            Assert.False(await manager.VerifyTwoFactorTokenAsync(user, factorId, "bogus"));
+            Assert.False(await manager.VerifyTwoFactorTokenAsync(user, "Phone", "bogus"));
         }
 
         public List<TUser> GenerateUsers(string userNamePrefix, int count)

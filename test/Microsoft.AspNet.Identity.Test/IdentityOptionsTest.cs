@@ -91,6 +91,7 @@ namespace Microsoft.AspNet.Identity.Test
         public class PasswordsNegativeLengthSetup : IOptionsSetup<IdentityOptions>
         {
             public int Order { get { return 0; } }
+            public string Name { get; set; }
             public void Setup(IdentityOptions options)
             {
                 options.Password.RequiredLength = -1;

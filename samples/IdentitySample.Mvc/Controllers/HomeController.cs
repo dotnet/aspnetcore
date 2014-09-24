@@ -4,12 +4,13 @@ namespace IdentitySample.Models
 {
     public class HomeController : Controller
     {
+        [HttpGet]
         public IActionResult Index()
         {
             return View();
         }
 
-        [Authorize]
+        [HttpGet]
         public IActionResult About()
         {
             ViewBag.Message = "Your app description page.";
@@ -17,6 +18,7 @@ namespace IdentitySample.Models
             return View();
         }
 
+        [HttpGet]
         public IActionResult Contact()
         {
             ViewBag.Message = "Your contact page.";

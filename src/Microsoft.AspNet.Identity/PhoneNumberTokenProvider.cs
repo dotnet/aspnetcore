@@ -5,23 +5,28 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Identity
 {
-    /// <summary>
-    ///     TokenProvider that generates tokens from the user's security stamp and notifies a user via their phone number
-    /// </summary>
-    /// <typeparam name="TUser"></typeparam>
-    public class PhoneNumberTokenProvider<TUser> : TotpSecurityStampBasedTokenProvider<TUser>
-        where TUser : class
+    public class PhoneNumberTokenProviderOptions
     {
-        private string _body;
+        public string Name { get; set; } = Resources.DefaultPhoneNumberTokenProviderName;
 
         /// <summary>
         ///     Message contents which should contain a format string which the token will be the only argument
         /// </summary>
-        public string MessageFormat
-        {
-            get { return _body ?? "{0}"; }
-            set { _body = value; }
-        }
+        public string MessageFormat { get; set; } = "Your security code is: {0}";
+    }
+
+    /// <summary>
+    ///     TokenProvider that generates tokens from the user's security stamp and notifies a user via their phone number
+    /// </summary>
+    /// <typeparam name="TUser"></typeparam>
+    public class PhoneNumberTokenProvider<TUser>(PhoneNumberTokenProviderOptions options) : TotpSecurityStampBasedTokenProvider<TUser>
+        where TUser : class
+    {
+        public PhoneNumberTokenProvider() : this(new PhoneNumberTokenProviderOptions()) { }
+
+        public PhoneNumberTokenProviderOptions Options { get; } = options;
+
+        public override string Name { get { return Options.Name; } }
 
         /// <summary>
         ///     Returns true if the user has a phone number set
@@ -29,7 +34,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="manager"></param>
         /// <param name="user"></param>
         /// <returns></returns>
-        public override async Task<bool> IsValidProviderForUserAsync(UserManager<TUser> manager, TUser user,
+        public override async Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             if (manager == null)
@@ -72,7 +77,7 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("manager");
             }
-            return manager.SendSmsAsync(user, String.Format(CultureInfo.CurrentCulture, MessageFormat, token), cancellationToken);
+            return manager.SendSmsAsync(user, String.Format(CultureInfo.CurrentCulture, Options.MessageFormat, token), cancellationToken);
         }
     }
 }

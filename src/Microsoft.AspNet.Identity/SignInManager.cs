@@ -6,6 +6,9 @@ using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Security;
+using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Identity
@@ -16,33 +19,33 @@ namespace Microsoft.AspNet.Identity
     /// <typeparam name="TUser"></typeparam>
     public class SignInManager<TUser> where TUser : class
     {
-        public SignInManager(UserManager<TUser> userManager, IAuthenticationManager authenticationManager, 
+        public SignInManager(UserManager<TUser> userManager, IContextAccessor<HttpContext> contextAccessor, 
             IClaimsIdentityFactory<TUser> claimsFactory, IOptionsAccessor<IdentityOptions> optionsAccessor)
         {
             if (userManager == null)
             {
-                throw new ArgumentNullException("userManager");
+                throw new ArgumentNullException(nameof(userManager));
             }
-            if (authenticationManager == null)
+            if (contextAccessor == null || contextAccessor.Value == null)
             {
-                throw new ArgumentNullException("authenticationManager");
+                throw new ArgumentNullException(nameof(contextAccessor));
             }
             if (claimsFactory == null)
             {
-                throw new ArgumentNullException("claimsFactory");
+                throw new ArgumentNullException(nameof(claimsFactory));
             }
             if (optionsAccessor == null || optionsAccessor.Options == null)
             {
-                throw new ArgumentNullException("optionsAccessor");
+                throw new ArgumentNullException(nameof(optionsAccessor));
             }
             UserManager = userManager;
-            AuthenticationManager = authenticationManager;
+            Context = contextAccessor.Value;
             ClaimsFactory = claimsFactory;
             Options = optionsAccessor.Options;
         }
 
         public UserManager<TUser> UserManager { get; private set; }
-        public IAuthenticationManager AuthenticationManager { get; private set; }
+        public HttpContext Context { get; private set; }
         public IClaimsIdentityFactory<TUser> ClaimsFactory { get; private set; }
         public IdentityOptions Options { get; private set; }
 
@@ -50,7 +53,6 @@ namespace Microsoft.AspNet.Identity
         public virtual async Task<ClaimsIdentity> CreateUserIdentityAsync(TUser user,
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            // REVIEW: should sign in manager take options instead of using the user manager instance?
             return await ClaimsFactory.CreateAsync(user, Options.ClaimsIdentity);
         }
 
@@ -68,18 +70,22 @@ namespace Microsoft.AspNet.Identity
         //    return true;
         //}
 
-        public virtual async Task SignInAsync(TUser user, bool isPersistent,
+        public virtual async Task SignInAsync(TUser user, bool isPersistent, string authenticationMethod = null,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             var userIdentity = await CreateUserIdentityAsync(user);
-            AuthenticationManager.SignIn(userIdentity, isPersistent);
+            if (authenticationMethod != null)
+            {
+                userIdentity.AddClaim(new Claim(ClaimTypes.AuthenticationMethod, authenticationMethod));
+            }
+            Context.Response.SignIn(new AuthenticationProperties() { IsPersistent = isPersistent }, userIdentity);
         }
 
         // TODO: Should this be async?
         public virtual void SignOut()
         {
             // REVIEW: need a new home for this option config?
-            AuthenticationManager.SignOut(Options.ClaimsIdentity.AuthenticationType);
+            Context.Response.SignOut(Options.ClaimsIdentity.AuthenticationType);
         }
 
         private async Task<bool> IsLockedOut(TUser user, CancellationToken token)
@@ -138,16 +144,31 @@ namespace Microsoft.AspNet.Identity
             return SignInStatus.Failure;
         }
 
+        private static ClaimsIdentity CreateIdentity(TwoFactorAuthenticationInfo info)
+        {
+            if (info == null)
+            {
+                return null;
+            }
+            var identity = new ClaimsIdentity(ClaimsIdentityOptions.DefaultTwoFactorUserIdAuthenticationType);
+            identity.AddClaim(new Claim(ClaimTypes.Name, info.UserId));
+            if (info.LoginProvider != null)
+            {
+                identity.AddClaim(new Claim(ClaimTypes.AuthenticationMethod, info.LoginProvider));
+            }
+            return identity;
+        }
+
         public virtual async Task<bool> SendTwoFactorCodeAsync(string provider,
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            var userId = await AuthenticationManager.RetrieveUserId();
-            if (userId == null)
+            var twoFactorInfo = await RetrieveTwoFactorInfoAsync(cancellationToken);
+            if (twoFactorInfo == null || twoFactorInfo.UserId == null)
             {
                 return false;
             }
 
-            var user = await UserManager.FindByIdAsync(userId, cancellationToken);
+            var user = await UserManager.FindByIdAsync(twoFactorInfo.UserId, cancellationToken);
             if (user == null)
             {
                 return false;
@@ -162,31 +183,35 @@ namespace Microsoft.AspNet.Identity
             CancellationToken cancellationToken = default(CancellationToken))
         {
             var userId = await UserManager.GetUserIdAsync(user, cancellationToken);
-            return await AuthenticationManager.IsClientRememeberedAsync(userId, cancellationToken);
+            var result =
+                await Context.AuthenticateAsync(ClaimsIdentityOptions.DefaultTwoFactorRememberMeAuthenticationType);
+            return (result != null && result.Identity != null && result.Identity.Name == userId);
         }
 
-        public virtual async Task RememberTwoFactorClient(TUser user,
+        public virtual async Task RememberTwoFactorClientAsync(TUser user,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             var userId = await UserManager.GetUserIdAsync(user, cancellationToken);
-            AuthenticationManager.RememberClient(userId);
+            var rememberBrowserIdentity = new ClaimsIdentity(ClaimsIdentityOptions.DefaultTwoFactorRememberMeAuthenticationType);
+            rememberBrowserIdentity.AddClaim(new Claim(ClaimTypes.Name, userId));
+            Context.Response.SignIn(new AuthenticationProperties { IsPersistent = true }, rememberBrowserIdentity);
         }
 
         public virtual Task ForgetTwoFactorClientAsync()
         {
-            AuthenticationManager.ForgetClient();
+            Context.Response.SignOut(ClaimsIdentityOptions.DefaultTwoFactorRememberMeAuthenticationType);
             return Task.FromResult(0);
         }
 
-        public virtual async Task<SignInStatus> TwoFactorSignInAsync(string provider, string code, bool isPersistent,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<SignInStatus> TwoFactorSignInAsync(string provider, string code, bool isPersistent, 
+            bool rememberClient, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var userId = await AuthenticationManager.RetrieveUserId();
-            if (userId == null)
+            var twoFactorInfo = await RetrieveTwoFactorInfoAsync(cancellationToken);
+            if (twoFactorInfo == null || twoFactorInfo.UserId == null)
             {
                 return SignInStatus.Failure;
             }
-            var user = await UserManager.FindByIdAsync(userId, cancellationToken);
+            var user = await UserManager.FindByIdAsync(twoFactorInfo.UserId, cancellationToken);
             if (user == null)
             {
                 return SignInStatus.Failure;
@@ -199,12 +224,33 @@ namespace Microsoft.AspNet.Identity
             {
                 // When token is verified correctly, clear the access failed count used for lockout
                 await UserManager.ResetAccessFailedCountAsync(user, cancellationToken);
-                await SignInAsync(user, isPersistent);
+                await SignInAsync(user, isPersistent, twoFactorInfo.LoginProvider, cancellationToken);
+                if (rememberClient)
+                {
+                    await RememberTwoFactorClientAsync(user, cancellationToken);
+                }
                 return SignInStatus.Success;
             }
             // If the token is incorrect, record the failure which also may cause the user to be locked out
             await UserManager.AccessFailedAsync(user, cancellationToken);
             return SignInStatus.Failure;
+        }
+
+        /// <summary>
+        /// Returns the user who has started the two factor authentication process
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public virtual async Task<TUser> GetTwoFactorAuthenticationUserAsync(
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var info = await RetrieveTwoFactorInfoAsync(cancellationToken);
+            if (info == null)
+            {
+                return null;
+            }
+
+            return await UserManager.FindByIdAsync(info.UserId, cancellationToken);
         }
 
         public async Task<SignInStatus> ExternalLoginSignInAsync(string loginProvider, string providerKey, bool isPersistent,
@@ -219,24 +265,57 @@ namespace Microsoft.AspNet.Identity
             {
                 return SignInStatus.LockedOut;
             }
-            return await SignInOrTwoFactorAsync(user, isPersistent, cancellationToken);
+            return await SignInOrTwoFactorAsync(user, isPersistent, cancellationToken, loginProvider);
         }
 
         private async Task<SignInStatus> SignInOrTwoFactorAsync(TUser user, bool isPersistent,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken, string loginProvider = null)
         {
-            if (UserManager.SupportsUserTwoFactor && await UserManager.GetTwoFactorEnabledAsync(user))
+            if (UserManager.SupportsUserTwoFactor && 
+                await UserManager.GetTwoFactorEnabledAsync(user, cancellationToken) &&
+                (await UserManager.GetValidTwoFactorProvidersAsync(user, cancellationToken)).Count > 0)
             {
                 if (!await IsTwoFactorClientRememberedAsync(user, cancellationToken))
                 {
                     // Store the userId for use after two factor check
                     var userId = await UserManager.GetUserIdAsync(user, cancellationToken);
-                    await AuthenticationManager.StoreUserId(userId);
+                    Context.Response.SignIn(StoreTwoFactorInfo(userId, loginProvider));
                     return SignInStatus.RequiresVerification;
                 }
             }
-            await SignInAsync(user, isPersistent, cancellationToken);
+            await SignInAsync(user, isPersistent, loginProvider, cancellationToken);
             return SignInStatus.Success;
+        }
+
+        private async Task<TwoFactorAuthenticationInfo> RetrieveTwoFactorInfoAsync(CancellationToken cancellationToken)
+        {
+            var result = await Context.AuthenticateAsync(ClaimsIdentityOptions.DefaultTwoFactorUserIdAuthenticationType);
+            if (result != null && result.Identity != null)
+            {
+                return new TwoFactorAuthenticationInfo
+                {
+                    UserId = result.Identity.Name,
+                    LoginProvider = result.Identity.FindFirstValue(ClaimTypes.AuthenticationMethod)
+                };
+            }
+            return null;
+        }
+
+        internal static ClaimsIdentity StoreTwoFactorInfo(string userId, string loginProvider)
+        {
+            var identity = new ClaimsIdentity(ClaimsIdentityOptions.DefaultTwoFactorUserIdAuthenticationType);
+            identity.AddClaim(new Claim(ClaimTypes.Name, userId));
+            if (loginProvider != null)
+            {
+                identity.AddClaim(new Claim(ClaimTypes.AuthenticationMethod, loginProvider));
+            }
+            return identity;
+        }
+
+        internal class TwoFactorAuthenticationInfo
+        {
+            public string UserId { get; set; }
+            public string LoginProvider { get; set; }
         }
     }
 }

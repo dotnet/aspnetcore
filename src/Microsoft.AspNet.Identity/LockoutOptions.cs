@@ -7,26 +7,19 @@ namespace Microsoft.AspNet.Identity
 {
     public class LockoutOptions
     {
-        public LockoutOptions()
-        {
-            DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-            EnabledByDefault = false;
-            MaxFailedAccessAttempts = 5;
-        }
-
         /// <summary>
         ///     If true, will enable user lockout when users are created
         /// </summary>
-        public bool EnabledByDefault { get; set; }
+        public bool EnabledByDefault { get; set; } = false;
 
         /// <summary>
         ///     Number of access attempts allowed for a user before lockout (if enabled)
         /// </summary>
-        public int MaxFailedAccessAttempts { get; set; }
+        public int MaxFailedAccessAttempts { get; set; } = 5;
 
         /// <summary>
         ///     Default amount of time an user is locked out for after MaxFailedAccessAttempsBeforeLockout is reached
         /// </summary>
-        public TimeSpan DefaultLockoutTimeSpan { get; set; }
+        public TimeSpan DefaultLockoutTimeSpan { get; set; } = TimeSpan.FromMinutes(5);
     }
 }

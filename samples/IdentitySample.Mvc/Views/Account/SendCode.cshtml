@@ -1,0 +1,27 @@
+﻿@model IdentitySample.Models.SendCodeViewModel
+@{
+    //TODO: Until we have a way to specify the layout page at application level.
+    Layout = "/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Send Verification Code";
+}
+
+<h2>@ViewBag.Title.</h2>
+
+@using (Html.BeginForm("SendCode", "Account", new { ReturnUrl = Model.ReturnUrl }, FormMethod.Post, new { @class = "form-horizontal", role = "form" })) {
+    @Html.AntiForgeryToken()
+    @Html.Hidden("rememberMe", @Model.RememberMe)
+    <div class="row">
+        <div class="col-md-8">
+            Two Factor Authentication Provider:
+            @Html.DropDownListFor(model => model.SelectedProvider, Model.Providers)
+            <input type="submit" value="Submit" class="btn btn-default" />
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @*TODO : Until script helpers are available, adding script references manually*@
+    @*@Scripts.Render("~/bundles/jqueryval")*@
+    <script src="@Url.Content("~/Scripts/jquery.validate.js")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.js")"></script>
+}

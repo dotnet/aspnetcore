@@ -5,33 +5,30 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Identity
 {
-    /// <summary>
-    ///     TokenProvider that generates tokens from the user's security stamp and notifies a user via their email
-    /// </summary>
-    /// <typeparam name="TUser"></typeparam>
-    public class EmailTokenProvider<TUser> : TotpSecurityStampBasedTokenProvider<TUser>
-        where TUser : class
+    public class EmailTokenProviderOptions
     {
-        private string _body;
-        private string _subject;
+        public string Name { get; set; } = Resources.DefaultEmailTokenProviderName;
 
-        /// <summary>
-        ///     Email subject used when a token notification is received
-        /// </summary>
-        public string Subject
-        {
-            get { return _subject ?? string.Empty; }
-            set { _subject = value; }
-        }
+        public string Subject { get; set; } = "Security Code";
 
         /// <summary>
         ///     Format string which will be used for the email body, it will be passed the token for the first parameter
         /// </summary>
-        public string BodyFormat
-        {
-            get { return _body ?? "{0}"; }
-            set { _body = value; }
-        }
+        public string BodyFormat { get; set; } = "Your security code is: {0}";
+    }
+
+    /// <summary>
+    ///     TokenProvider that generates tokens from the user's security stamp and notifies a user via their email
+    /// </summary>
+    /// <typeparam name="TUser"></typeparam>
+    public class EmailTokenProvider<TUser>(EmailTokenProviderOptions options) : TotpSecurityStampBasedTokenProvider<TUser>
+        where TUser : class
+    {
+        public EmailTokenProvider() : this(new EmailTokenProviderOptions()) { }
+
+        public EmailTokenProviderOptions Options { get; } = options;
+
+        public override string Name { get { return Options.Name; } }
 
         /// <summary>
         ///     True if the user has an email set
@@ -39,7 +36,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="manager"></param>
         /// <param name="user"></param>
         /// <returns></returns>
-        public override async Task<bool> IsValidProviderForUserAsync(UserManager<TUser> manager, TUser user,
+        public override async Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             var email = await manager.GetEmailAsync(user, cancellationToken);
@@ -74,7 +71,7 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("manager");
             }
-            return manager.SendEmailAsync(user, Subject, String.Format(CultureInfo.CurrentCulture, BodyFormat, token), cancellationToken);
+            return manager.SendEmailAsync(user, Options.Subject, String.Format(CultureInfo.CurrentCulture, Options.BodyFormat, token), cancellationToken);
         }
     }
 }

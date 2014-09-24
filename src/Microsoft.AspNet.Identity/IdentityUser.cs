@@ -19,16 +19,8 @@ namespace Microsoft.AspNet.Identity
         }
     }
 
-    public class IdentityUser<TKey>
-        where TKey : IEquatable<TKey>
+    public class IdentityUser<TKey>() where TKey : IEquatable<TKey>
     {
-        public IdentityUser()
-        {
-            Claims = new List<IdentityUserClaim<TKey>>();
-            Roles = new List<IdentityUserRole<TKey>>();
-            Logins = new List<IdentityUserLogin<TKey>>();
-        }
-
         public IdentityUser(string userName) : this()
         {
             UserName = userName;
@@ -91,16 +83,16 @@ namespace Microsoft.AspNet.Identity
         /// <summary>
         ///     Roles for the user
         /// </summary>
-        public virtual ICollection<IdentityUserRole<TKey>> Roles { get; private set; }
+        public virtual ICollection<IdentityUserRole<TKey>> Roles { get; } = new List<IdentityUserRole<TKey>>();
 
         /// <summary>
         ///     Claims for the user
         /// </summary>
-        public virtual ICollection<IdentityUserClaim<TKey>> Claims { get; private set; }
+        public virtual ICollection<IdentityUserClaim<TKey>> Claims { get; } = new List<IdentityUserClaim<TKey>>();
 
         /// <summary>
         ///     Associated logins for the user
         /// </summary>
-        public virtual ICollection<IdentityUserLogin<TKey>> Logins { get; private set; }
+        public virtual ICollection<IdentityUserLogin<TKey>> Logins { get; } = new List<IdentityUserLogin<TKey>>();
     }
 }

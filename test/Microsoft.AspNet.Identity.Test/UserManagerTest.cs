@@ -24,14 +24,14 @@ namespace Microsoft.AspNet.Identity.Test
             public TestManager(IUserStore<TestUser> store, IOptionsAccessor<IdentityOptions> optionsAccessor,
                 IPasswordHasher<TestUser> passwordHasher, IUserValidator<TestUser> userValidator,
                 IPasswordValidator<TestUser> passwordValidator)
-                : base(store, optionsAccessor, passwordHasher, userValidator, passwordValidator, null) { }
+                : base(store, optionsAccessor, passwordHasher, userValidator, passwordValidator, null, null) { }
         }
 
         [Fact]
         public void EnsureDefaultServicesDefaultsWithStoreWorks()
         {
-            var services = new ServiceCollection {IdentityServices.GetDefaultUserServices<TestUser>()};
-            services.AddInstance<IOptionsAccessor<IdentityOptions>>(new OptionsAccessor<IdentityOptions>(null));
+            var services = new ServiceCollection {IdentityServices.GetDefaultServices<TestUser, IdentityRole>()};
+            services.Add(OptionsServices.GetDefaultServices());
             services.AddTransient<IUserStore<TestUser>, NoopUserStore>();
             services.AddTransient<TestManager>();
             var manager = services.BuildServiceProvider().GetService<TestManager>();
@@ -464,10 +464,11 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task TokenMethodsThrowWithNoTokenProvider()
         {
             var manager = MockHelpers.TestUserManager(new NoopUserStore());
+            var user = new TestUser();
             await Assert.ThrowsAsync<NotSupportedException>(
-                async () => await manager.GenerateUserTokenAsync(null, null));
+                async () => await manager.GenerateUserTokenAsync(user, "bogus", null));
             await Assert.ThrowsAsync<NotSupportedException>(
-                async () => await manager.VerifyUserTokenAsync(null, null, null));
+                async () => await manager.VerifyUserTokenAsync(user, "bogus", null, null));
         }
 
         [Fact]
@@ -581,13 +582,13 @@ namespace Microsoft.AspNet.Identity.Test
             var passwordValidator = new PasswordValidator<TestUser>();
 
             Assert.Throws<ArgumentNullException>("store",
-                () => new UserManager<TestUser>(null, null, null, null, null, null));
+                () => new UserManager<TestUser>(null, null, null, null, null, null, null));
             Assert.Throws<ArgumentNullException>("optionsAccessor",
-                () => new UserManager<TestUser>(store, null, null, null, null, null));
+                () => new UserManager<TestUser>(store, null, null, null, null, null, null));
             Assert.Throws<ArgumentNullException>("passwordHasher",
-                () => new UserManager<TestUser>(store, optionsAccessor, null, null, null, null));
+                () => new UserManager<TestUser>(store, optionsAccessor, null, null, null, null, null));
 
-            var manager = new UserManager<TestUser>(store, optionsAccessor, passwordHasher, userValidator, passwordValidator, null);
+            var manager = new UserManager<TestUser>(store, optionsAccessor, passwordHasher, userValidator, passwordValidator, null, null);
 
             Assert.Throws<ArgumentNullException>("value", () => manager.PasswordHasher = null);
             Assert.Throws<ArgumentNullException>("value", () => manager.Options = null);
@@ -608,9 +609,7 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ArgumentNullException>("providerKey",
                 async () => await manager.RemoveLoginAsync(null, "", null));
             await Assert.ThrowsAsync<ArgumentNullException>("email", async () => await manager.FindByEmailAsync(null));
-            Assert.Throws<ArgumentNullException>("twoFactorProvider",
-                () => manager.RegisterTwoFactorProvider(null, null));
-            Assert.Throws<ArgumentNullException>("provider", () => manager.RegisterTwoFactorProvider("bogus", null));
+            Assert.Throws<ArgumentNullException>("provider", () => manager.RegisterTokenProvider(null));
             await Assert.ThrowsAsync<ArgumentNullException>("roles", async () => await manager.AddToRolesAsync(new TestUser(), null));
             await Assert.ThrowsAsync<ArgumentNullException>("roles", async () => await manager.RemoveFromRolesAsync(new TestUser(), null));
         }
@@ -619,7 +618,7 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task MethodsFailWithUnknownUserTest()
         {
             var manager = MockHelpers.TestUserManager(new EmptyStore());
-            manager.UserTokenProvider = new NoOpTokenProvider();
+            manager.RegisterTokenProvider(new NoOpTokenProvider());
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.GetUserNameAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
@@ -697,7 +696,7 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.GetValidTwoFactorProvidersAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
-                async () => await manager.VerifyUserTokenAsync(null, null, null));
+                async () => await manager.VerifyUserTokenAsync(null, null, null, null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.AccessFailedAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
@@ -763,7 +762,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             public const string ErrorMessage = "I'm Bad.";
 
-            public Task<IdentityResult> ValidateAsync(string password, UserManager<TUser> manager, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> ValidateAsync(TUser user, string password, UserManager<TUser> manager, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(IdentityResult.Failed(ErrorMessage));
             }
@@ -1007,6 +1006,8 @@ namespace Microsoft.AspNet.Identity.Test
 
         private class NoOpTokenProvider : IUserTokenProvider<TestUser>
         {
+            public string Name { get; } = "Noop";
+
             public Task<string> GenerateAsync(string purpose, UserManager<TestUser> manager, TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult("Test");
@@ -1023,7 +1024,7 @@ namespace Microsoft.AspNet.Identity.Test
                 return Task.FromResult(0);
             }
 
-            public Task<bool> IsValidProviderForUserAsync(UserManager<TestUser> manager, TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TestUser> manager, TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(true);
             }

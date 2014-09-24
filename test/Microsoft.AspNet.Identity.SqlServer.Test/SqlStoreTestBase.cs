@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
             {
                 context = CreateTestContext();
             }
-            return MockHelpers.CreateManager(() => new UserStore<TUser, TRole, ApplicationDbContext, TKey>((ApplicationDbContext)context));
+            return MockHelpers.CreateManager(new UserStore<TUser, TRole, ApplicationDbContext, TKey>((ApplicationDbContext)context));
         }
 
         protected override RoleManager<TRole> CreateRoleManager(object context = null)
@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
                 context = CreateTestContext();
             }
             var services = new ServiceCollection();
-            services.AddIdentity<TUser, TRole>().AddRoleStore(() => new RoleStore<TRole, ApplicationDbContext, TKey>((ApplicationDbContext)context));
+            services.AddIdentity<TUser, TRole>().AddRoleStore(new RoleStore<TRole, ApplicationDbContext, TKey>((ApplicationDbContext)context));
             return services.BuildServiceProvider().GetService<RoleManager<TRole>>();
         }
 

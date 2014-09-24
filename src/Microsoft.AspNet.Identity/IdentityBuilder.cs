@@ -9,39 +9,44 @@ namespace Microsoft.AspNet.Identity
 {
     public class IdentityBuilder<TUser, TRole> where TUser : class where TRole : class
     {
-        public ServiceCollection Services { get; private set; }
+        public IServiceCollection Services { get; private set; }
 
-        public IdentityBuilder(ServiceCollection services)
+        public IdentityBuilder(IServiceCollection services)
         {
             Services = services;
         }
 
         // Rename to Add
 
-        public IdentityBuilder<TUser, TRole> AddInstance<T>(Func<T> func)
+        public IdentityBuilder<TUser, TRole> AddInstance<T>(T obj)
         {
-            Services.AddInstance(func());
+            Services.AddInstance(obj);
             return this;
         }
 
-        public IdentityBuilder<TUser, TRole> AddUserStore(Func<IUserStore<TUser>> func)
+        public IdentityBuilder<TUser, TRole> AddUserStore(IUserStore<TUser> store)
         {
-            return AddInstance(func);
+            return AddInstance(store);
         }
 
-        public IdentityBuilder<TUser, TRole> AddRoleStore(Func<IRoleStore<TRole>> func)
+        public IdentityBuilder<TUser, TRole> AddRoleStore(IRoleStore<TRole> store)
         {
-            return AddInstance(func);
+            return AddInstance(store);
         }
 
-        public IdentityBuilder<TUser, TRole> AddPasswordValidator(Func<IPasswordValidator<TUser>> func)
+        public IdentityBuilder<TUser, TRole> AddPasswordValidator(IPasswordValidator<TUser> validator)
         {
-            return AddInstance(func);
+            return AddInstance(validator);
         }
 
-        public IdentityBuilder<TUser, TRole> AddUserValidator(Func<IUserValidator<TUser>> func)
+        public IdentityBuilder<TUser, TRole> AddUserValidator(IUserValidator<TUser> validator)
         {
-            return AddInstance(func);
+            return AddInstance(validator);
+        }
+
+        public IdentityBuilder<TUser, TRole> AddTokenProvider(IUserTokenProvider<TUser> tokenProvider)
+        {
+            return AddInstance(tokenProvider);
         }
 
         public IdentityBuilder<TUser, TRole> SetupOptions(Action<IdentityOptions> action, int order)
@@ -66,11 +71,5 @@ namespace Microsoft.AspNet.Identity
             Services.AddScoped<TManager>();
             return this;
         }
-
-        //public IdentityBuilder<TUser, TRole> UseTwoFactorProviders(Func<IDictionary<string, 
-        //IUserTokenProvider<TUser>>> func)
-        //{
-        //    return Use(func);
-        //}
     }
 }

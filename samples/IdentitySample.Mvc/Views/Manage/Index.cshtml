@@ -10,14 +10,8 @@
 <div class="row">
     <div class="col-md-8">
         <p>
-            @if (Model.HasPassword)
-            {
-                @Html.ActionLink("Change your password", "ChangePassword")
-            }
-            else
-            {
-                @Html.ActionLink("Pick a password", "SetPassword")
-            }
+            @(Model.HasPassword ? Html.ActionLink("Change your password", "ChangePassword") 
+                : Html.ActionLink("Set your password", "SetPassword"))
         </p>
         <p>
             Phone Number: @(Model.PhoneNumber ?? "None") [
@@ -39,39 +33,47 @@
         </p>
         @if (Model.TwoFactor)
         {
-            <form method="post" action="/Manage/DisableTFA">
-                <p>
-                    Two factor is currently enabled:
-                    <input type="submit" value="Disable" class="btn btn-default"/>
-                </p>
-            </form>
+            using (Html.BeginForm("DisableTFA", "Manage", FormMethod.Post, new {@class = "form-horizontal", role = "form"}))
+            {
+                 @Html.AntiForgeryToken()
+                 <p>
+                     Two factor is currently enabled:
+                     <input type="submit" value="Disable" class="btn btn-default"/>
+                 </p>
+            }
         }
         else
         {
-            <form method="post" action="/Manage/EnableTFA">
+            using (Html.BeginForm("EnableTFA", "Manage", FormMethod.Post, new {@class = "form-horizontal", role = "form"}))
+            {
+                @Html.AntiForgeryToken()
                 <p>
                     Two factor is currently disabled:
                     <input type="submit" value="Enable" class="btn btn-default"/>
                 </p>
-            </form>
+            }
         }
         @if (Model.BrowserRemembered)
         {
-            <form method="post" action="/Manage/ForgetBrowser">
+            using (Html.BeginForm("ForgetBrowser", "Manage", FormMethod.Post, new {@class = "form-horizontal", role = "form"}))
+            {
+                @Html.AntiForgeryToken()
                 <p>
                     Browser is curently remembered for two factor:
                     <input type="submit" value="Forget Browser" class="btn btn-default" />
                 </p>
-            </form>
+            }
         }
         else
         {
-            <form method="post" action="/Manage/RememberBrowser">
+            using (Html.BeginForm("RememberBrowser", "Manage", FormMethod.Post, new {@class = "form-horizontal", role = "form"}))
+            {
+                @Html.AntiForgeryToken()
                 <p>
                     Browser is curently not remembered for two factor:
                     <input type="submit" value="Remember Browser" class="btn btn-default"/>
                 </p>
-            </form>
+            }
         }
     </div>
 </div>

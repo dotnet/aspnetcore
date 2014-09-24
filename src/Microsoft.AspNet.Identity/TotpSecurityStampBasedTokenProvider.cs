@@ -10,9 +10,11 @@ namespace Microsoft.AspNet.Identity
     /// </summary>
     /// <typeparam name="TUser"></typeparam>
     /// <typeparam name="TKey"></typeparam>
-    public class TotpSecurityStampBasedTokenProvider<TUser> : IUserTokenProvider<TUser>
+    public abstract class TotpSecurityStampBasedTokenProvider<TUser> : IUserTokenProvider<TUser>
         where TUser : class
     {
+        public abstract string Name { get; }
+
         /// <summary>
         ///     This token provider does not notify the user by default
         /// </summary>
@@ -24,23 +26,6 @@ namespace Microsoft.AspNet.Identity
             CancellationToken cancellationToken = default(CancellationToken))
         {
             return Task.FromResult(0);
-        }
-
-        /// <summary>
-        ///     Returns true if the provider can generate tokens for the user, by default this is equal to
-        ///     manager.SupportsUserSecurityStamp
-        /// </summary>
-        /// <param name="manager"></param>
-        /// <param name="user"></param>
-        /// <returns></returns>
-        public virtual Task<bool> IsValidProviderForUserAsync(UserManager<TUser> manager, TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
-        {
-            if (manager == null)
-            {
-                throw new ArgumentNullException("manager");
-            }
-            return Task.FromResult(manager.SupportsUserSecurityStamp);
         }
 
         /// <summary>
@@ -101,8 +86,10 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("manager");
             }
-            string userId = await manager.GetUserIdAsync(user);
+            var userId = await manager.GetUserIdAsync(user);
             return "Totp:" + purpose + ":" + userId;
         }
+
+        public abstract Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

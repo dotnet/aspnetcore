@@ -1,0 +1,13 @@
+﻿@{
+    //TODO: Until we have a way to specify the layout page at application level.
+    Layout = "/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "DEMO purpose Email Link";
+}
+<h2>@ViewBag.Title.</h2>
+<p class="text-info">
+    Please check your email and confirm your email address.
+</p>
+<p class="text-danger">
+    For DEMO only: You can click this link to confirm the email: <a href="@ViewBag.Link">link</a>
+    Please change this code to register an email service in IdentityConfig to send an email.
+</p>

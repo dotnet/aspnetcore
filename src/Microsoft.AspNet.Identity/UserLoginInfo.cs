@@ -6,34 +6,21 @@ namespace Microsoft.AspNet.Identity
     /// <summary>
     ///     Represents a linked login for a user (i.e. a local username/password or a facebook/google account
     /// </summary>
-    public sealed class UserLoginInfo
+    public class UserLoginInfo(string loginProvider, string providerKey, string displayName)
     {
-        /// <summary>
-        ///     Constructor
-        /// </summary>
-        /// <param name="loginProvider"></param>
-        /// <param name="providerKey"></param>
-        /// <param name="displayName"></param>
-        public UserLoginInfo(string loginProvider, string providerKey, string displayName)
-        {
-            LoginProvider = loginProvider;
-            ProviderKey = providerKey;
-            ProviderDisplayName = displayName;
-        }
-
         /// <summary>
         ///     Provider for the linked login, i.e. Local, Facebook, Google, etc.
         /// </summary>
-        public string LoginProvider { get; set; }
+        public string LoginProvider { get; set; } = loginProvider;
 
         /// <summary>
         ///     Key for the linked login at the provider
         /// </summary>
-        public string ProviderKey { get; set; }
+        public string ProviderKey { get; set; } = providerKey;
 
         /// <summary>
         ///     Display name for the provider
         /// </summary>
-        public string ProviderDisplayName { get; set; }
+        public string ProviderDisplayName { get; set; } = displayName;
     }
 }

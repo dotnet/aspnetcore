@@ -13,34 +13,23 @@ namespace Microsoft.AspNet.Identity
     /// </summary>
     public class IdentityServices
     {
-        public static IEnumerable<IServiceDescriptor> GetDefaultUserServices<TUser>() where TUser : class
+        public static IEnumerable<IServiceDescriptor> GetDefaultServices<TUser, TRole>(IConfiguration config = null)
+            where TUser : class where TRole : class
         {
-            return GetDefaultUserServices<TUser>(new Configuration());
-        }
-
-        public static IEnumerable<IServiceDescriptor> GetDefaultUserServices<TUser>(IConfiguration configuration)
-            where TUser : class
-        {
-            var describe = new ServiceDescriber(configuration);
-
+            ServiceDescriber describe;
+            if (config == null)
+            {
+                describe = new ServiceDescriber();
+            }
+            else
+            {
+                describe = new ServiceDescriber(config);
+            }
             yield return describe.Transient<IUserValidator<TUser>, UserValidator<TUser>>();
             yield return describe.Transient<IPasswordValidator<TUser>, PasswordValidator<TUser>>();
             yield return describe.Transient<IPasswordHasher<TUser>, PasswordHasher<TUser>>();
             yield return describe.Transient<IUserNameNormalizer, UpperInvariantUserNameNormalizer>();
-
-            // TODO: rationalize email/sms/usertoken services
-        }
-
-        public static IEnumerable<IServiceDescriptor> GetDefaultRoleServices<TRole>() where TRole : class
-        {
-            return GetDefaultRoleServices<TRole>(new Configuration());
-        }
-
-        public static IEnumerable<IServiceDescriptor> GetDefaultRoleServices<TRole>(IConfiguration configuration)
-            where TRole : class
-        {
-            var describe = new ServiceDescriber(configuration);
-            yield return describe.Instance<IRoleValidator<TRole>>(new RoleValidator<TRole>());
+            yield return describe.Transient<IRoleValidator<TRole>, RoleValidator<TRole>>();
         }
     }
 }

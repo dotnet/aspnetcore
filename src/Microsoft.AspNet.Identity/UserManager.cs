@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Framework.OptionsModel;
+using Microsoft.AspNet.Security.DataProtection;
 
 namespace Microsoft.AspNet.Identity
 {
@@ -19,7 +20,7 @@ namespace Microsoft.AspNet.Identity
     /// <typeparam name="TUser"></typeparam>
     public class UserManager<TUser> : IDisposable where TUser : class
     {
-        private readonly Dictionary<string, IUserTokenProvider<TUser>> _factors =
+        private readonly Dictionary<string, IUserTokenProvider<TUser>> _tokenProviders =
             new Dictionary<string, IUserTokenProvider<TUser>>();
 
         private TimeSpan _defaultLockout = TimeSpan.Zero;
@@ -38,19 +39,20 @@ namespace Microsoft.AspNet.Identity
         /// <param name="claimsIdentityFactory"></param>
         public UserManager(IUserStore<TUser> store, IOptionsAccessor<IdentityOptions> optionsAccessor,
             IPasswordHasher<TUser> passwordHasher, IUserValidator<TUser> userValidator,
-            IPasswordValidator<TUser> passwordValidator, IUserNameNormalizer userNameNormalizer)
+            IPasswordValidator<TUser> passwordValidator, IUserNameNormalizer userNameNormalizer,
+            IEnumerable<IUserTokenProvider<TUser>> tokenProviders)
         {
             if (store == null)
             {
-                throw new ArgumentNullException("store");
+                throw new ArgumentNullException(nameof(store));
             }
             if (optionsAccessor == null || optionsAccessor.Options == null)
             {
-                throw new ArgumentNullException("optionsAccessor");
+                throw new ArgumentNullException(nameof(optionsAccessor));
             }
             if (passwordHasher == null)
             {
-                throw new ArgumentNullException("passwordHasher");
+                throw new ArgumentNullException(nameof(passwordHasher));
             }
             Store = store;
             Options = optionsAccessor.Options;
@@ -59,6 +61,13 @@ namespace Microsoft.AspNet.Identity
             PasswordValidator = passwordValidator;
             UserNameNormalizer = userNameNormalizer;
             // TODO: Email/Sms/Token services
+
+            if (tokenProviders != null) {
+                foreach (var tokenProvider in tokenProviders)
+                {
+                    RegisterTokenProvider(tokenProvider);
+                }
+            }
         }
 
         /// <summary>
@@ -111,11 +120,6 @@ namespace Microsoft.AspNet.Identity
         ///     Used to send a sms message
         /// </summary>
         public IIdentityMessageService SmsService { get; set; }
-
-        /// <summary>
-        ///     Used for generating ResetPassword and Confirmation Tokens
-        /// </summary>
-        public IUserTokenProvider<TUser> UserTokenProvider { get; set; }
 
         public IdentityOptions Options
         {
@@ -269,14 +273,6 @@ namespace Microsoft.AspNet.Identity
                 }
                 return queryableStore.Users;
             }
-        }
-
-        /// <summary>
-        ///     Dictionary mapping user two factor providers
-        /// </summary>
-        public IDictionary<string, IUserTokenProvider<TUser>> TwoFactorProviders
-        {
-            get { return _factors; }
         }
 
         /// <summary>
@@ -451,7 +447,7 @@ namespace Microsoft.AspNet.Identity
         public virtual async Task UpdateNormalizedUserName(TUser user,
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            string userName = await GetUserNameAsync(user, cancellationToken);
+            var userName = await GetUserNameAsync(user, cancellationToken);
             await Store.SetNormalizedUserNameAsync(user, NormalizeUserName(userName), cancellationToken);
         }
 
@@ -496,7 +492,6 @@ namespace Microsoft.AspNet.Identity
             await Store.SetUserNameAsync(user, userName, cancellationToken);
             await UpdateNormalizedUserName(user, cancellationToken);
         }
-
 
         /// <summary>
         /// Get the user's id
@@ -651,7 +646,7 @@ namespace Microsoft.AspNet.Identity
         {
             if (PasswordValidator != null)
             {
-                var result = await PasswordValidator.ValidateAsync(newPassword, this, cancellationToken);
+                var result = await PasswordValidator.ValidateAsync(user, newPassword, this, cancellationToken);
                 if (!result.Succeeded)
                 {
                     return result;
@@ -736,7 +731,7 @@ namespace Microsoft.AspNet.Identity
             CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
-            return await GenerateUserTokenAsync("ResetPassword", user, cancellationToken);
+            return await GenerateUserTokenAsync(user, Options.PasswordResetTokenProvider, "ResetPassword", cancellationToken);
         }
 
         /// <summary>
@@ -756,7 +751,7 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("user");
             }
             // Make sure the token is valid and the stamp matches
-            if (!await VerifyUserTokenAsync(user, "ResetPassword", token, cancellationToken))
+            if (!await VerifyUserTokenAsync(user, Options.PasswordResetTokenProvider, "ResetPassword", token, cancellationToken))
             {
                 return IdentityResult.Failed(Resources.InvalidToken);
             }
@@ -973,7 +968,6 @@ namespace Microsoft.AspNet.Identity
             }
             return RemoveClaimsAsync(user, new Claim[] { claim }, cancellationToken);
         }
-
 
         /// <summary>
         ///     Remove a user claim
@@ -1271,7 +1265,7 @@ namespace Microsoft.AspNet.Identity
             CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
-            return GenerateUserTokenAsync("Confirmation", user, cancellationToken);
+            return GenerateUserTokenAsync(user, Options.EmailConfirmationTokenProvider, "Confirmation", cancellationToken);
         }
 
         /// <summary>
@@ -1290,7 +1284,7 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            if (!await VerifyUserTokenAsync(user, "Confirmation", token, cancellationToken))
+            if (!await VerifyUserTokenAsync(user, Options.EmailConfirmationTokenProvider, "Confirmation", token, cancellationToken))
             {
                 return IdentityResult.Failed(Resources.InvalidToken);
             }
@@ -1461,20 +1455,24 @@ namespace Microsoft.AspNet.Identity
         /// <param name="token"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<bool> VerifyUserTokenAsync(TUser user, string purpose, string token,
+        public virtual async Task<bool> VerifyUserTokenAsync(TUser user, string tokenProvider, string purpose, string token,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
-            if (UserTokenProvider == null)
-            {
-                throw new NotSupportedException(Resources.NoTokenProvider);
-            }
             if (user == null)
             {
                 throw new ArgumentNullException("user");
             }
+            if (tokenProvider == null)
+            {
+                throw new ArgumentNullException(nameof(tokenProvider));
+            }
+            if (!_tokenProviders.ContainsKey(tokenProvider))
+            {
+                throw new NotSupportedException(string.Format(CultureInfo.CurrentCulture, Resources.NoTokenProvider, tokenProvider));
+            }
             // Make sure the token is valid
-            return await UserTokenProvider.ValidateAsync(purpose, token, this, user, cancellationToken);
+            return await _tokenProviders[tokenProvider].ValidateAsync(purpose, token, this, user, cancellationToken);
         }
 
         /// <summary>
@@ -1484,38 +1482,38 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<string> GenerateUserTokenAsync(string purpose, TUser user,
+        public virtual async Task<string> GenerateUserTokenAsync(TUser user, string tokenProvider, string purpose,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
-            if (UserTokenProvider == null)
-            {
-                throw new NotSupportedException(Resources.NoTokenProvider);
-            }
             if (user == null)
             {
                 throw new ArgumentNullException("user");
             }
-            return await UserTokenProvider.GenerateAsync(purpose, this, user, cancellationToken);
+            if (tokenProvider == null)
+            {
+                throw new ArgumentNullException(nameof(tokenProvider));
+            }
+            if (!_tokenProviders.ContainsKey(tokenProvider))
+            {
+                throw new NotSupportedException(string.Format(CultureInfo.CurrentCulture, Resources.NoTokenProvider, tokenProvider));
+            }
+            return await _tokenProviders[tokenProvider].GenerateAsync(purpose, this, user, cancellationToken);
         }
 
         /// <summary>
-        ///     Register a user two factor provider
+        ///     Register a user token provider
         /// </summary>
         /// <param name="twoFactorProvider"></param>
         /// <param name="provider"></param>
-        public virtual void RegisterTwoFactorProvider(string twoFactorProvider, IUserTokenProvider<TUser> provider)
+        public virtual void RegisterTokenProvider(IUserTokenProvider<TUser> provider)
         {
             ThrowIfDisposed();
-            if (twoFactorProvider == null)
-            {
-                throw new ArgumentNullException("twoFactorProvider");
-            }
             if (provider == null)
             {
                 throw new ArgumentNullException("provider");
             }
-            TwoFactorProviders[twoFactorProvider] = provider;
+            _tokenProviders[provider.Name] = provider;
         }
 
         /// <summary>
@@ -1533,9 +1531,9 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("user");
             }
             var results = new List<string>();
-            foreach (var f in TwoFactorProviders)
+            foreach (var f in _tokenProviders)
             {
-                if (await f.Value.IsValidProviderForUserAsync(this, user, cancellationToken))
+                if (await f.Value.CanGenerateTwoFactorTokenAsync(this, user, cancellationToken))
                 {
                     results.Add(f.Key);
                 }
@@ -1551,7 +1549,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="token"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<bool> VerifyTwoFactorTokenAsync(TUser user, string twoFactorProvider, string token,
+        public virtual async Task<bool> VerifyTwoFactorTokenAsync(TUser user, string tokenProvider, string token,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
@@ -1559,14 +1557,13 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            if (!_factors.ContainsKey(twoFactorProvider))
+            if (!_tokenProviders.ContainsKey(tokenProvider))
             {
                 throw new NotSupportedException(String.Format(CultureInfo.CurrentCulture,
-                    Resources.NoTwoFactorProvider, twoFactorProvider));
+                    Resources.NoTokenProvider, tokenProvider));
             }
             // Make sure the token is valid
-            var provider = _factors[twoFactorProvider];
-            return await provider.ValidateAsync(twoFactorProvider, token, this, user, cancellationToken);
+            return await _tokenProviders[tokenProvider].ValidateAsync("TwoFactor", token, this, user, cancellationToken);
         }
 
         /// <summary>
@@ -1576,7 +1573,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="twoFactorProvider"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<string> GenerateTwoFactorTokenAsync(TUser user, string twoFactorProvider,
+        public virtual async Task<string> GenerateTwoFactorTokenAsync(TUser user, string tokenProvider,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
@@ -1584,23 +1581,23 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            if (!_factors.ContainsKey(twoFactorProvider))
+            if (!_tokenProviders.ContainsKey(tokenProvider))
             {
                 throw new NotSupportedException(String.Format(CultureInfo.CurrentCulture,
-                    Resources.NoTwoFactorProvider, twoFactorProvider));
+                    Resources.NoTokenProvider, tokenProvider));
             }
-            return await _factors[twoFactorProvider].GenerateAsync(twoFactorProvider, this, user, cancellationToken);
+            return await _tokenProviders[tokenProvider].GenerateAsync("TwoFactor", this, user, cancellationToken);
         }
 
         /// <summary>
         ///     Notify a user with a token from a specific user factor provider
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="twoFactorProvider"></param>
+        /// <param name="tokenProvider"></param>
         /// <param name="token"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> NotifyTwoFactorTokenAsync(TUser user, string twoFactorProvider,
+        public virtual async Task<IdentityResult> NotifyTwoFactorTokenAsync(TUser user, string tokenProvider,
             string token, CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
@@ -1608,12 +1605,16 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            if (!_factors.ContainsKey(twoFactorProvider))
+            if (tokenProvider == null)
+            {
+                throw new ArgumentNullException(nameof(tokenProvider));
+            }
+            if (!_tokenProviders.ContainsKey(tokenProvider))
             {
                 throw new NotSupportedException(String.Format(CultureInfo.CurrentCulture, 
-                    Resources.NoTwoFactorProvider, twoFactorProvider));
+                    Resources.NoTokenProvider, tokenProvider));
             }
-            await _factors[twoFactorProvider].NotifyAsync(token, this, user, cancellationToken);
+            await _tokenProviders[tokenProvider].NotifyAsync(token, this, user, cancellationToken);
             return IdentityResult.Success;
         }
 

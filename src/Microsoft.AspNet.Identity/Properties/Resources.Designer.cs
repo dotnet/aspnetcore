@@ -11,6 +11,54 @@ namespace Microsoft.AspNet.Identity
             = new ResourceManager("Microsoft.AspNet.Identity.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// Your security code is: {0}
+        /// </summary>
+        internal static string DefaultEmailTokenProviderBodyFormat
+        {
+            get { return GetString("DefaultEmailTokenProviderBodyFormat"); }
+        }
+
+        /// <summary>
+        /// Your security code is: {0}
+        /// </summary>
+        internal static string FormatDefaultEmailTokenProviderBodyFormat(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("DefaultEmailTokenProviderBodyFormat"), p0);
+        }
+
+        /// <summary>
+        /// Email
+        /// </summary>
+        internal static string DefaultEmailTokenProviderName
+        {
+            get { return GetString("DefaultEmailTokenProviderName"); }
+        }
+
+        /// <summary>
+        /// Email
+        /// </summary>
+        internal static string FormatDefaultEmailTokenProviderName()
+        {
+            return GetString("DefaultEmailTokenProviderName");
+        }
+
+        /// <summary>
+        /// Security Code
+        /// </summary>
+        internal static string DefaultEmailTokenProviderSubject
+        {
+            get { return GetString("DefaultEmailTokenProviderSubject"); }
+        }
+
+        /// <summary>
+        /// Security Code
+        /// </summary>
+        internal static string FormatDefaultEmailTokenProviderSubject()
+        {
+            return GetString("DefaultEmailTokenProviderSubject");
+        }
+
+        /// <summary>
         /// An unknown failure has occured.
         /// </summary>
         internal static string DefaultError
@@ -24,6 +72,54 @@ namespace Microsoft.AspNet.Identity
         internal static string FormatDefaultError()
         {
             return GetString("DefaultError");
+        }
+
+        /// <summary>
+        /// Your security code is: {0}
+        /// </summary>
+        internal static string DefaultPhoneNumberTokenProviderMessageFormat
+        {
+            get { return GetString("DefaultPhoneNumberTokenProviderMessageFormat"); }
+        }
+
+        /// <summary>
+        /// Your security code is: {0}
+        /// </summary>
+        internal static string FormatDefaultPhoneNumberTokenProviderMessageFormat(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("DefaultPhoneNumberTokenProviderMessageFormat"), p0);
+        }
+
+        /// <summary>
+        /// Phone
+        /// </summary>
+        internal static string DefaultPhoneNumberTokenProviderName
+        {
+            get { return GetString("DefaultPhoneNumberTokenProviderName"); }
+        }
+
+        /// <summary>
+        /// Phone
+        /// </summary>
+        internal static string FormatDefaultPhoneNumberTokenProviderName()
+        {
+            return GetString("DefaultPhoneNumberTokenProviderName");
+        }
+
+        /// <summary>
+        /// DefaultTokenProvider
+        /// </summary>
+        internal static string DefaultTokenProvider
+        {
+            get { return GetString("DefaultTokenProvider"); }
+        }
+
+        /// <summary>
+        /// DefaultTokenProvider
+        /// </summary>
+        internal static string FormatDefaultTokenProvider()
+        {
+            return GetString("DefaultTokenProvider");
         }
 
         /// <summary>
@@ -139,7 +235,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// No IUserTokenProvider is registered.
+        /// No IUserTokenProvider named '{0}' is registered.
         /// </summary>
         internal static string NoTokenProvider
         {
@@ -147,27 +243,11 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// No IUserTokenProvider is registered.
+        /// No IUserTokenProvider named '{0}' is registered.
         /// </summary>
-        internal static string FormatNoTokenProvider()
+        internal static string FormatNoTokenProvider(object p0)
         {
-            return GetString("NoTokenProvider");
-        }
-
-        /// <summary>
-        /// No IUserTwoFactorProvider for '{0}' is registered.
-        /// </summary>
-        internal static string NoTwoFactorProvider
-        {
-            get { return GetString("NoTwoFactorProvider"); }
-        }
-
-        /// <summary>
-        /// No IUserTwoFactorProvider for '{0}' is registered.
-        /// </summary>
-        internal static string FormatNoTwoFactorProvider(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("NoTwoFactorProvider"), p0);
+            return string.Format(CultureInfo.CurrentCulture, GetString("NoTokenProvider"), p0);
         }
 
         /// <summary>

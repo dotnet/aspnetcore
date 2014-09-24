@@ -11,8 +11,6 @@ namespace Microsoft.AspNet.Identity.SqlServer
         IdentityDbContext<IdentityUser, IdentityRole, string>
     {
         public IdentityDbContext() { }
-        public IdentityDbContext(IServiceProvider serviceProvider) : base(serviceProvider) { }
-        public IdentityDbContext(DbContextOptions options) : base(options) { }
         public IdentityDbContext(IServiceProvider serviceProvider, DbContextOptions options) : base(serviceProvider, options) { }
     }
 
@@ -21,8 +19,6 @@ namespace Microsoft.AspNet.Identity.SqlServer
         where TUser : IdentityUser
     {
         public IdentityDbContext() { }
-        public IdentityDbContext(IServiceProvider serviceProvider) : base(serviceProvider) { }
-        public IdentityDbContext(DbContextOptions options) : base(options) { }
         public IdentityDbContext(IServiceProvider serviceProvider, DbContextOptions options) : base(serviceProvider, options) { }
     }
 
@@ -39,8 +35,6 @@ namespace Microsoft.AspNet.Identity.SqlServer
         public DbSet<IdentityRoleClaim<TKey>> RoleClaims { get; set; }
 
         public IdentityDbContext() { }
-        public IdentityDbContext(IServiceProvider serviceProvider) : base(serviceProvider) { }
-        public IdentityDbContext(DbContextOptions options) : base(options) { }
         public IdentityDbContext(IServiceProvider serviceProvider, DbContextOptions options) : base(serviceProvider, options) { }
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -48,26 +42,26 @@ namespace Microsoft.AspNet.Identity.SqlServer
             builder.Entity<TUser>(b =>
                 {
                     b.Key(u => u.Id);
-                    b.Property(u => u.UserName);
                     b.ToTable("AspNetUsers");
                 });
 
             builder.Entity<TRole>(b =>
                 {
                     b.Key(r => r.Id);
-                    b.Property(r => r.Name);
                     b.ToTable("AspNetRoles");
                 });
 
             builder.Entity<IdentityUserClaim<TKey>>(b =>
                 {
                     b.Key(uc => uc.Id);
+                    b.ManyToOne<TUser>().ForeignKey(uc => uc.UserId);
                     b.ToTable("AspNetUserClaims");
                 });
 
             builder.Entity<IdentityRoleClaim<TKey>>(b =>
                 {
-                    b.Key(uc => uc.Id);
+                    b.Key(rc => rc.Id);
+                    b.ManyToOne<TRole>().ForeignKey(rc => rc.RoleId);
                     b.ToTable("AspNetRoleClaims");
                 });
 
@@ -76,8 +70,8 @@ namespace Microsoft.AspNet.Identity.SqlServer
             var userClaimType = builder.Model.GetEntityType(typeof(IdentityUserClaim<TKey>));
             var roleClaimType = builder.Model.GetEntityType(typeof(IdentityRoleClaim<TKey>));
             var userRoleType = builder.Model.GetEntityType(typeof(IdentityUserRole<TKey>));
-            var ucfk = userClaimType.GetOrAddForeignKey(userType.GetPrimaryKey(), new[] { userClaimType.GetProperty("UserId") });
-            userType.AddNavigation(new Navigation(ucfk, "Claims", false));
+            //var ucfk = userClaimType.GetOrAddForeignKey(userType.GetPrimaryKey(), new[] { userClaimType.GetProperty("UserId") });
+            //userType.AddNavigation(new Navigation(ucfk, "Claims", false));
             //userClaimType.AddNavigation(new Navigation(ucfk, "User", true));
             //var urfk = userRoleType.GetOrAddForeignKey(userType.GetPrimaryKey(), new[] { userRoleType.GetProperty("UserId") });
             //userType.AddNavigation(new Navigation(urfk, "Roles", false));
@@ -99,10 +93,10 @@ namespace Microsoft.AspNet.Identity.SqlServer
 
             builder.Entity<IdentityUserLogin<TKey>>(b =>
                 {
-                    b.Key(l => new { l.LoginProvider, l.ProviderKey, l.UserId });
+                    b.Key(l => new { l.LoginProvider, l.ProviderKey });
+                    b.ManyToOne<TUser>().ForeignKey(uc => uc.UserId);
                     b.ToTable("AspNetUserLogins");
                 });
-                //.ForeignKeys(fk => fk.ForeignKey<TUser>(f => f.UserId))
         }
     }
 }

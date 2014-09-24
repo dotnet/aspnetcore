@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,6 +11,11 @@ namespace Microsoft.AspNet.Identity
     /// </summary>
     public interface IUserTokenProvider<TUser> where TUser : class
     {
+        /// <summary>
+        /// Name of the token provider
+        /// </summary>
+        string Name { get; }
+
         /// <summary>
         ///     Generate a token for a user
         /// </summary>
@@ -47,13 +51,13 @@ namespace Microsoft.AspNet.Identity
             CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        ///     Returns true if provider can be used for this user, i.e. could require a user to have an email
+        ///     Returns true if provider can be used for this user to generate two factor tokens, i.e. could require a user to have an email
         /// </summary>
         /// <param name="manager"></param>
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<bool> IsValidProviderForUserAsync(UserManager<TUser> manager, TUser user, 
+        Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user, 
             CancellationToken cancellationToken = default(CancellationToken));
     }
 }

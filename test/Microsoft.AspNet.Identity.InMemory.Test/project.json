@@ -2,7 +2,6 @@
   "dependencies": {
     "Microsoft.AspNet.Http" : "1.0.0-*",
     "Microsoft.AspNet.Identity" : "",
-    "Microsoft.AspNet.Identity.Authentication" : "",
     "Microsoft.AspNet.PipelineCore" : "1.0.0-*",
     "Microsoft.AspNet.RequestContainer" : "1.0.0-*",
     "Microsoft.AspNet.Security" : "1.0.0-*",

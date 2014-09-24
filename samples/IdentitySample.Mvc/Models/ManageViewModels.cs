@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNet.Identity;
+﻿using Microsoft.AspNet.Http.Security;
+using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc.Rendering;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -14,11 +15,11 @@ namespace IdentitySample.Models
         public bool BrowserRemembered { get; set; }
     }
 
-    //public class ManageLoginsViewModel
-    //{
-    //    public IList<UserLoginInfo> CurrentLogins { get; set; }
-    //    public IList<AuthenticationDescription> OtherLogins { get; set; }
-    //}
+    public class ManageLoginsViewModel
+    {
+        public IList<UserLoginInfo> CurrentLogins { get; set; }
+        public IList<AuthenticationDescription> OtherLogins { get; set; }
+    }
 
     public class FactorViewModel
     {
@@ -84,5 +85,4 @@ namespace IdentitySample.Models
         public string SelectedProvider { get; set; }
         public ICollection<SelectListItem> Providers { get; set; }
     }
-
 }

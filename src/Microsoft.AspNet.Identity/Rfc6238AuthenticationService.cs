@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Identity
         private static int ComputeTotp(HashAlgorithm hashAlgorithm, ulong timestepNumber, string modifier)
         {
             // # of 0's = length of pin
-            const int mod = 1000000;
+            const int Mod = 1000000;
 
             // See https://tools.ietf.org/html/rfc4226
             // We can add an optional modifier
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Identity
                              | (hash[offset + 2] & 0xff) << 8
                              | (hash[offset + 3] & 0xff);
 
-            return binaryCode % mod;
+            return binaryCode % Mod;
         }
 
         private static byte[] ApplyModifier(byte[] input, string modifier)

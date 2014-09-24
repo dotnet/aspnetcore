@@ -12,10 +12,10 @@ namespace Microsoft.AspNet.Identity
     public interface IPasswordValidator<TUser> where TUser : class
     {
         /// <summary>
-        ///     Validate the item
+        ///     Validate the password for the user
         /// </summary>
         /// <returns></returns>
-        Task<IdentityResult> ValidateAsync(string password, UserManager<TUser> manager,
+        Task<IdentityResult> ValidateAsync(TUser user, string password, UserManager<TUser> manager,
             CancellationToken cancellationToken = default(CancellationToken));
     }
 }

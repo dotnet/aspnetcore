@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
             {
                 context = CreateTestContext();
             }
-            return MockHelpers.CreateManager(() => new ApplicationUserStore((ApplicationDbContext)context));
+            return MockHelpers.CreateManager(new ApplicationUserStore((ApplicationDbContext)context));
         }
 
         protected override RoleManager<GuidRole> CreateRoleManager(object context)
@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
                 context = CreateTestContext();
             }
             var services = new ServiceCollection();
-            services.AddIdentity<GuidUser, GuidRole>().AddRoleStore(() => new ApplicationRoleStore((ApplicationDbContext)context));
+            services.AddIdentity<GuidUser, GuidRole>().AddRoleStore(new ApplicationRoleStore((ApplicationDbContext)context));
             return services.BuildServiceProvider().GetService<RoleManager<GuidRole>>();
         }
     }

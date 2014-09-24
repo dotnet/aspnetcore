@@ -172,7 +172,7 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
 
         public static UserManager<IdentityUser> CreateManager(DbContext context)
         {
-            return MockHelpers.CreateManager(() => new UserStore<IdentityUser>(context));
+            return MockHelpers.CreateManager(new UserStore<IdentityUser>(context));
         }
 
         protected override UserManager<IdentityUser> CreateManager(object context = null)
@@ -187,7 +187,7 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
         public static RoleManager<IdentityRole> CreateRoleManager(IdentityDbContext context)
         {
             var services = new ServiceCollection();
-            services.AddIdentity().AddRoleStore(() => new RoleStore<IdentityRole>(context));
+            services.AddIdentity().AddRoleStore(new RoleStore<IdentityRole>(context));
             return services.BuildServiceProvider().GetService<RoleManager<IdentityRole>>();
         }
 
