@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             object routeValues,
             object htmlAttributes)
         {
-            var url = _urlHelper.Action(actionName, controllerName, routeValues);
+            var url = _urlHelper.Action(actionName, controllerName, routeValues, protocol, hostname, fragment);
             return GenerateLink(linkText, url, GetHtmlAttributeDictionaryOrNull(htmlAttributes));
         }
 

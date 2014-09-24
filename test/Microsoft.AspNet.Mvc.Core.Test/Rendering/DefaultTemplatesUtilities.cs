@@ -48,6 +48,11 @@ namespace Microsoft.AspNet.Mvc.Core
             return GetHtmlHelper<ObjectTemplateModel>(null);
         }
 
+        public static HtmlHelper<ObjectTemplateModel> GetHtmlHelper(IUrlHelper urlHelper)
+        {
+            return GetHtmlHelper<ObjectTemplateModel>(null, urlHelper, CreateViewEngine(), CreateModelMetadataProvider());
+        }
+
         public static HtmlHelper<TModel> GetHtmlHelper<TModel>(TModel model)
         {
             return GetHtmlHelper(model, CreateViewEngine());
@@ -60,16 +65,17 @@ namespace Microsoft.AspNet.Mvc.Core
 
         public static HtmlHelper<TModel> GetHtmlHelper<TModel>(TModel model, IModelMetadataProvider provider)
         {
-            return GetHtmlHelper(model, CreateViewEngine(), provider);
+            return GetHtmlHelper(model, CreateUrlHelper(), CreateViewEngine(), provider);
         }
 
         public static HtmlHelper<TModel> GetHtmlHelper<TModel>(TModel model, ICompositeViewEngine viewEngine)
         {
-            return GetHtmlHelper(model, viewEngine, new DataAnnotationsModelMetadataProvider());
+            return GetHtmlHelper(model, CreateUrlHelper(), viewEngine, CreateModelMetadataProvider());
         }
 
         public static HtmlHelper<TModel> GetHtmlHelper<TModel>(
             TModel model,
+            IUrlHelper urlHelper,
             ICompositeViewEngine viewEngine,
             IModelMetadataProvider provider)
         {
@@ -94,7 +100,6 @@ namespace Microsoft.AspNet.Mvc.Core
                                                                 Mock.Of<IValueProvider>(),
                                                                 Mock.Of<IInputFormatterSelector>(),
                                                                 Mock.Of<IModelValidatorProvider>());
-            var urlHelper = Mock.Of<IUrlHelper>();
             var actionBindingContextProvider = new Mock<IActionBindingContextProvider>();
             actionBindingContextProvider
                .Setup(c => c.GetActionBindingContextAsync(It.IsAny<ActionContext>()))
@@ -179,6 +184,16 @@ namespace Microsoft.AspNet.Mvc.Core
                                 metadata.ModelType == null ? "(null)" : metadata.ModelType.FullName,
                                 metadata.PropertyName ?? "(null)",
                                 metadata.SimpleDisplayText ?? "(null)");
+        }
+
+        private static IUrlHelper CreateUrlHelper()
+        {
+            return Mock.Of<IUrlHelper>();
+        }
+
+        private static IModelMetadataProvider CreateModelMetadataProvider()
+        {
+            return new DataAnnotationsModelMetadataProvider();
         }
     }
 }

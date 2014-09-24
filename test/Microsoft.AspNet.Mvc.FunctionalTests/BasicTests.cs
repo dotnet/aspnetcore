@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -183,6 +184,58 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        public static IEnumerable<object[]> HtmlHelperLinkGenerationData
+        {
+            get
+            {
+                yield return new[] {
+                    "ActionLink_ActionOnSameController",
+                    @"<a href=""/Links/Details"">linktext</a>" };
+                yield return new[] {
+                    "ActionLink_ActionOnOtherController",
+                    @"<a href=""/Products/Details?print=true"">linktext</a>"
+                };
+                yield return new[] {
+                    "ActionLink_SecurePage_ImplicitHostName",
+                    @"<a href=""https://localhost/Products/Details?print=true"">linktext</a>"
+                };
+                yield return new[] {
+                    "ActionLink_HostNameFragmentAttributes",
+                    // note: attributes are alphabetically ordered
+                    @"<a href=""https://www.contoso.com:9000/Products/Details?print=true#details"" p1=""p1-value"">linktext</a>"
+                };
+                yield return new[] {
+                    "RouteLink_RestLinkToOtherController",
+                    @"<a href=""/api/orders/10"">linktext</a>"
+                };
+                yield return new[] {
+                    "RouteLink_SecureApi_ImplicitHostName",
+                    @"<a href=""https://localhost/api/orders/10"">linktext</a>"
+                };
+                yield return new[] {
+                    "RouteLink_HostNameFragmentAttributes",
+                    @"<a href=""https://www.contoso.com:9000/api/orders/10?print=True#details"" p1=""p1-value"">linktext</a>"
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HtmlHelperLinkGenerationData))]
+        public async Task HtmlHelperLinkGeneration(string viewName, string expectedLink)
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = new HttpClient(server.CreateHandler(), false);
+
+            // Act
+            var response = await client.GetAsync("http://localhost/Links/Index?view=" + viewName);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var responseData = await response.Content.ReadAsStringAsync();
+            Assert.Contains(expectedLink, responseData, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
