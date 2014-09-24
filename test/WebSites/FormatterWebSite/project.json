@@ -3,7 +3,7 @@
         "Microsoft.AspNet.Mvc": "",
         "Microsoft.AspNet.Mvc.TestConfiguration": ""
     },
-    "configurations": {
+    "frameworks": {
         "aspnet50": {
             "dependencies": {
                 "System.Xml": ""
