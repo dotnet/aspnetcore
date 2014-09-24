@@ -62,6 +62,7 @@ namespace Microsoft.AspNet.Security.OAuth
             }
 
             Backchannel = new HttpClient(ResolveHttpMessageHandler(Options));
+            Backchannel.DefaultRequestHeaders.UserAgent.ParseAdd("Microsoft ASP.NET OAuth middleware");
             Backchannel.Timeout = Options.BackchannelTimeout;
             Backchannel.MaxResponseContentBufferSize = 1024 * 1024 * 10; // 10 MB
         }

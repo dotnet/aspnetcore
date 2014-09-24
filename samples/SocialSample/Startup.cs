@@ -119,7 +119,6 @@ namespace CookieSample
                         HttpRequestMessage userRequest = new HttpRequestMessage(HttpMethod.Get, context.Options.UserInformationEndpoint);
                         userRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", context.AccessToken);
                         userRequest.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                        userRequest.Headers.UserAgent.ParseAdd("Microsoft ASP.NET OAuth middleware for GitHub");
                         HttpResponseMessage userResponse = await context.Backchannel.SendAsync(userRequest, context.HttpContext.RequestAborted);
                         userResponse.EnsureSuccessStatusCode();
                         var text = await userResponse.Content.ReadAsStringAsync();
