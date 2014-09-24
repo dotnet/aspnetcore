@@ -4,6 +4,8 @@ using System.Security.Principal;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
 using MusicStore.Models;
+using System.Linq;
+using Microsoft.AspNet.Http.Security;
 
 namespace MusicStore.Controllers
 {
@@ -138,7 +140,7 @@ namespace MusicStore.Controllers
             // This code allows you exercise the flow without actually sending codes
             // For production use please register a SMS provider in IdentityConfig and generate a code here.
             var code = await UserManager.GenerateChangePhoneNumberTokenAsync(await GetCurrentUserAsync(), phoneNumber);
-            ViewBag.Status = "For DEMO purposes only, the current code is " + code;
+            ViewBag.Code = code;
             return phoneNumber == null ? View("Error") : View(new VerifyPhoneNumberViewModel { PhoneNumber = phoneNumber });
         }
 
@@ -276,28 +278,60 @@ namespace MusicStore.Controllers
 
         //
         // GET: /Account/Manage
-        //public async Task<IActionResult> ManageLogins(ManageMessageId? message)
-        //{
-        //    ViewBag.StatusMessage =
-        //        message == ManageMessageId.RemoveLoginSuccess ? "The external login was removed."
-        //        : message == ManageMessageId.Error ? "An error has occurred."
-        //        : "";
-        //    var user = await GetCurrentUserAsync();
-        //    if (user == null)
-        //    {
-        //        return View("Error");
-        //    }
-        //    var userLogins = await UserManager.GetLoginsAsync(user);
-        //var otherLogins = AuthenticationManager.GetExternalAuthenticationTypes().Where(auth => userLogins.All(ul => auth.AuthenticationType != ul.LoginProvider)).ToList();
-        //ViewBag.ShowRemoveButton = user.PasswordHash != null || userLogins.Count > 1;
-        //return View(new ManageLoginsViewModel
-        //{
-        //    CurrentLogins = userLogins,
-        //    OtherLogins = otherLogins
-        //});
-        //}
+        public async Task<IActionResult> ManageLogins(ManageMessageId? message = null)
+        {
+            ViewBag.StatusMessage =
+                message == ManageMessageId.RemoveLoginSuccess ? "The external login was removed."
+                : message == ManageMessageId.Error ? "An error has occurred."
+                : "";
+            var user = await GetCurrentUserAsync();
+            if (user == null)
+            {
+                return View("Error");
+            }
+            var userLogins = await UserManager.GetLoginsAsync(user);
+            var otherLogins = Context.GetAuthenticationTypes().Where(auth => auth.Caption != null && userLogins.All(ul => auth.AuthenticationType != ul.LoginProvider)).ToList();
+            //var otherLogins = AuthenticationManager.GetExternalAuthenticationTypes().Where(auth => userLogins.All(ul => auth.AuthenticationType != ul.LoginProvider)).ToList();
+            ViewBag.ShowRemoveButton = user.PasswordHash != null || userLogins.Count > 1;
+            return View(new ManageLoginsViewModel
+            {
+                CurrentLogins = userLogins,
+                OtherLogins = otherLogins
+            });
+        }
+
+        //
+        // POST: /Manage/LinkLogin
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult LinkLogin(string provider)
+        {
+            // Request a redirect to the external login provider to link a login for the current user
+            var authenticationProperties = new AuthenticationProperties() { RedirectUri = Url.Action("LinkLoginCallback", "Manage") };
+            authenticationProperties.Dictionary[XsrfKey] = User.Identity.GetUserId();
+            return new ChallengeResult(provider, authenticationProperties);
+        }
+
+        //
+        // GET: /Manage/LinkLoginCallback
+        public async Task<ActionResult> LinkLoginCallback()
+        {
+            //var loginInfo = await AuthenticationManager.GetExternalLoginInfoAsync(XsrfKey, User.Identity.GetUserId());
+            var loginInfo = await Context.AuthenticateAsync("External");
+            if (loginInfo == null || loginInfo.Properties.Dictionary[XsrfKey] != User.Identity.GetUserId())
+            {
+                return RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
+            }
+            var user = new ApplicationUser() { Id = User.Identity.GetUserId() };
+            var userloginInfo = new UserLoginInfo(loginInfo.Description.AuthenticationType, loginInfo.Description.AuthenticationType, loginInfo.Description.Caption);
+            var result = await UserManager.AddLoginAsync(user, userloginInfo);
+            return result.Succeeded ? RedirectToAction("ManageLogins") : RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
+        }
 
         #region Helpers
+        // Used for XSRF protection when adding external logins
+        private const string XsrfKey = "XsrfId";
+
         private void AddErrors(IdentityResult result)
         {
             foreach (var error in result.Errors)

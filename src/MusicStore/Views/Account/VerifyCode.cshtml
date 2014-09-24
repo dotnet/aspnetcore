@@ -1,19 +1,20 @@
-﻿@model MusicStore.Models.VerifyPhoneNumberViewModel
+﻿@model MusicStore.Models.VerifyCodeViewModel
 @{
-    ViewBag.Title = "Verify Phone Number";
+    ViewBag.Title = "Verify";
 }
 
 <h2>@ViewBag.Title.</h2>
 
-@using (Html.BeginForm("VerifyPhoneNumber", "Manage", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+@using (Html.BeginForm("VerifyCode", "Account", new { ReturnUrl = Model.ReturnUrl }, FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
 {
     @Html.AntiForgeryToken()
-    @Html.Hidden("phoneNumber", @Model.PhoneNumber)
+    @Html.Hidden("provider", @Model.Provider)
+    @Html.Hidden("rememberMe", @Model.RememberMe)
     <h4>Enter verification code</h4>
     <p class="text-danger">
-        For DEMO only: You can type in this code in the below text box to proceed: @ViewBag.Code
+        For DEMO only: You can type in this code in the below text box to proceed: [ @ViewBag.Code ]
         <br />
-        Please change this code to register an SMS service in IdentityConfig to send a text message.
+        Please change this code to register an SMS/Email service in IdentityConfig to send a message.
     </p>
     <hr />
     @Html.ValidationSummary("", new { @class = "text-danger" })
@@ -21,6 +22,14 @@
         @Html.LabelFor(m => m.Code, new { @class = "col-md-2 control-label" })
         <div class="col-md-10">
             @Html.TextBoxFor(m => m.Code, new { @class = "form-control" })
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <div class="checkbox">
+                @Html.CheckBoxFor(m => m.RememberBrowser)
+                @Html.LabelFor(m => m.RememberBrowser)
+            </div>
         </div>
     </div>
     <div class="form-group">

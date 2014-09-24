@@ -84,6 +84,8 @@ namespace E2ETests
                 //Register a valid user
                 var generatedEmail = RegisterValidUser();
 
+                SignInWithUser(generatedEmail, "Password~1");
+
                 //Register a user - Negative scenario : Trying to register a user name that's already registered.
                 RegisterExistingUser(generatedEmail);
 

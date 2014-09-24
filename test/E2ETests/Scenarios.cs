@@ -136,11 +136,17 @@ namespace E2ETests
             var content = new FormUrlEncodedContent(formParameters.ToArray());
             response = httpClient.PostAsync("Account/Register", content).Result;
             responseContent = response.Content.ReadAsStringAsync().Result;
-            Assert.Contains(string.Format("Hello {0}!", generatedEmail), responseContent, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains("Log off", responseContent, StringComparison.OrdinalIgnoreCase);
-            //Verify cookie sent
-            Assert.NotNull(httpClientHandler.CookieContainer.GetCookies(new Uri(ApplicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.Application"));
-            Console.WriteLine("Successfully registered user '{0}' and signed in", generatedEmail);
+
+            //Account verification
+            Assert.Equal<string>(ApplicationBaseUrl + "Account/Register", response.RequestMessage.RequestUri.AbsoluteUri);
+            Assert.Contains("For DEMO only: You can click this link to confirm the email:", responseContent, StringComparison.OrdinalIgnoreCase);
+            var startIndex = responseContent.IndexOf("[[<a href=\"", 0) + "[[<a href=\"".Length;
+            var endIndex = responseContent.IndexOf("\">link</a>]]", startIndex);
+            var confirmUrl = responseContent.Substring(startIndex, endIndex - startIndex);
+            response = httpClient.GetAsync(confirmUrl).Result;
+            ThrowIfResponseStatusNotOk(response);
+            responseContent = response.Content.ReadAsStringAsync().Result;
+            Assert.Contains("Thank you for confirming your email.", responseContent, StringComparison.OrdinalIgnoreCase);
             return generatedEmail;
         }
 

@@ -108,27 +108,27 @@ namespace MusicStore
 
             app.UseFacebookAuthentication(new FacebookAuthenticationOptions()
             {
-                AppId = "[AppId]",
-                AppSecret = "[AppSecret]",
+                AppId = "550624398330273",
+                AppSecret = "10e56a291d6b618da61b1e0dae3a8954",
             });
 
             app.UseGoogleAuthentication(new GoogleAuthenticationOptions()
             {
-                ClientId = "[ClientId]",
-                ClientSecret = "[ClientSecret]",
+                ClientId = "977382855444.apps.googleusercontent.com",
+                ClientSecret = "NafT482F70Vjj_9q1PU4B0pN",
             });
 
             app.UseTwitterAuthentication(new TwitterAuthenticationOptions()
             {
-                ConsumerKey = "[ConsumerKey]",
-                ConsumerSecret = "[ConsumerSecret]",
+                ConsumerKey = "9J3j3pSwgbWkgPFH7nAf0Spam",
+                ConsumerSecret = "jUBYkQuBFyqp7G3CUB9SW3AfflFr9z3oQBiNvumYy87Al0W4h8",
             });
 
             app.UseMicrosoftAccountAuthentication(new MicrosoftAccountAuthenticationOptions()
             {
                 Caption = "MicrosoftAccount - Requires project changes",
-                ClientId = "[ClientId]",
-                ClientSecret = "[ClientSecret]",
+                ClientId = "000000004012C08A",
+                ClientSecret = "GaMQ2hCnqAC6EcDLnXsAeBVIJOLmeutL",
             });
 
             // Add MVC to the request pipeline

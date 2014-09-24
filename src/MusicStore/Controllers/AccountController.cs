@@ -6,6 +6,7 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Rendering;
 using MusicStore.Models;
+using System.Threading;
 
 namespace MusicStore.Controllers
 {
@@ -16,6 +17,11 @@ namespace MusicStore.Controllers
         {
             UserManager = userManager;
             SignInManager = signInManager;
+
+            //TODO: Work around - Identity helpers will be available to do this
+            UserManager.UserTokenProvider = new StaticTokenProvider();
+            UserManager.RegisterTwoFactorProvider("Phone Code", UserManager.UserTokenProvider);
+            UserManager.RegisterTwoFactorProvider("Email Code", UserManager.UserTokenProvider);
         }
 
         public UserManager<ApplicationUser> UserManager { get; private set; }
@@ -64,21 +70,29 @@ namespace MusicStore.Controllers
         //
         // GET: /Account/VerifyCode
         //TODO : Some of the identity helpers not implemented
-        //[AllowAnonymous]
-        //public async Task<ActionResult> VerifyCode(string provider, string returnUrl, bool rememberMe)
-        //{
-        //    // Require that the user has already logged in via username/password or external login
-        //    if (!await SignInManager.HasBeenVerifiedAsync())
-        //    {
-        //        return View("Error");
-        //    }
-        //    var user = await UserManager.FindByIdAsync(await SignInManager.GetVerifiedUserIdAsync());
-        //    if (user != null)
-        //    {
-        //        var code = await UserManager.GenerateTwoFactorTokenAsync(user.Id, provider);
-        //    }
-        //    return View(new VerifyCodeViewModel { Provider = provider, ReturnUrl = returnUrl, RememberMe = rememberMe });
-        //}
+        [AllowAnonymous]
+        public async Task<ActionResult> VerifyCode(string provider, bool rememberMe, string returnUrl = null)
+        {
+            //https://github.com/aspnet/Identity/issues/209
+            // Require that the user has already logged in via username/password or external login
+            //if (!await SignInManager.HasBeenVerifiedAsync())
+            if ((await Context.AuthenticateAsync("Microsoft.AspNet.Identity.TwoFactor.UserId")).Identity.GetUserName() == null)
+            {
+                return View("Error");
+            }
+
+            //https://github.com/aspnet/Identity/issues/207
+            //var user = await UserManager.FindByIdAsync(await SignInManager.GetVerifiedUserIdAsync());
+            var user = await UserManager.FindByIdAsync((await Context.AuthenticateAsync("Microsoft.AspNet.Identity.TwoFactor.UserId")).Identity.GetUserName());
+#if DEMO
+            if (user != null)
+            {
+                var code = await UserManager.GenerateTwoFactorTokenAsync(user, provider);
+                ViewBag.Code = code;
+            }
+#endif
+            return View(new VerifyCodeViewModel { Provider = provider, ReturnUrl = returnUrl, RememberMe = rememberMe });
+        }
 
         //
         // POST: /Account/VerifyCode
@@ -134,19 +148,21 @@ namespace MusicStore.Controllers
                 if (result.Succeeded)
                 {
                     //Bug: Remember browser option missing?
-                    await SignInManager.SignInAsync(user, isPersistent: false);
+                    //Uncomment this and comment the later part if account verification is not needed.
+                    //await SignInManager.SignInAsync(user, isPersistent: false);
 
                     // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
                     // Send an email with this link
-                    //string code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
-                    //var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Context.Request.Scheme);
-                    // await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
-                    // return RedirectToAction("Index", "Home");
-
-                    // TODO: Email libraries not available on Coreclr yet - Checkout a demo implementation below which displays the code in the browser for testing.
-                    //ViewBag.Status = "Navigate to this URL to confirm your account " + callbackUrl;
-                    //return View("DemoCodeDisplay");
+                    string code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
+                    var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Context.Request.Scheme);
+                    await UserManager.SendEmailAsync(user, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
+#if !DEMO
                     return RedirectToAction("Index", "Home");
+#else
+                    //To display the email link in a friendly page instead of sending email
+                    ViewBag.Link = callbackUrl;
+                    return View("DemoLinkDisplay");
+#endif
                 }
                 AddErrors(result);
             }
@@ -157,7 +173,6 @@ namespace MusicStore.Controllers
 
         //
         // GET: /Account/ConfirmEmail
-        //TODO: This does not work yet due to some missing identity features
         [AllowAnonymous]
         public async Task<ActionResult> ConfirmEmail(string userId, string code)
         {
@@ -165,8 +180,8 @@ namespace MusicStore.Controllers
             {
                 return View("Error");
             }
-            var user = new ApplicationUser { Id = userId };
-            //Bug: Throws NullRefException
+
+            var user = await SignInManager.UserManager.FindByIdAsync(userId);
             var result = await UserManager.ConfirmEmailAsync(user, code);
             return View(result.Succeeded ? "ConfirmEmail" : "Error");
         }
@@ -199,13 +214,14 @@ namespace MusicStore.Controllers
                 // Send an email with this link
                 string code = await UserManager.GeneratePasswordResetTokenAsync(user);
                 var callbackUrl = Url.Action("ResetPassword", "Account", new { code = code }, protocol: Context.Request.Scheme);
-                // No libraries to send email on CoreCLR yet
-                // await UserManager.SendEmailAsync(user.Id, "Reset Password", "Please reset your password by clicking <a href=\"" + callbackUrl + "\">here</a>");
-                // return RedirectToAction("ForgotPasswordConfirmation", "Account");
-
-                // TODO: Email libraries not available on Coreclr yet - Checkout a demo implementation below which displays the code in the browser for testing.
-                ViewBag.Status = "Navigate to the URL to reset password " + callbackUrl;
-                return View("DemoCodeDisplay");
+                await UserManager.SendEmailAsync(user, "Reset Password", "Please reset your password by clicking <a href=\"" + callbackUrl + "\">here</a>");
+#if !DEMO
+                return RedirectToAction("ForgotPasswordConfirmation", "Account");
+#else
+                //To display the email link in a friendly page instead of sending email
+                ViewBag.Link = callbackUrl;
+                return View("DemoLinkDisplay");
+#endif
             }
 
             ModelState.AddModelError("", string.Format("We could not locate an account with email : {0}", model.Email));
@@ -282,13 +298,14 @@ namespace MusicStore.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> SendCode(bool rememberMe, string returnUrl = null)
         {
-            // TODO: This currently throws
-            var userId = await GetCurrentUserAsync();
+            //https://github.com/aspnet/Identity/issues/207
+            //var userId = await SignInManager.GetVerifiedUserIdAsync();
+            var userId = (await Context.AuthenticateAsync("Microsoft.AspNet.Identity.TwoFactor.UserId")).Identity.GetUserName();
             if (userId == null)
             {
                 return View("Error");
             }
-            var userFactors = await UserManager.GetValidTwoFactorProvidersAsync(userId);
+            var userFactors = await UserManager.GetValidTwoFactorProvidersAsync(new ApplicationUser() { Id = userId });
             var factorOptions = userFactors.Select(purpose => new SelectListItem { Text = purpose, Value = purpose }).ToList();
             return View(new SendCodeViewModel { Providers = factorOptions, ReturnUrl = returnUrl, RememberMe = rememberMe });
         }
@@ -315,74 +332,79 @@ namespace MusicStore.Controllers
 
         //
         // GET: /Account/ExternalLoginCallback
-        // TODO: Some identity helpers on external login does not exist
-        //[AllowAnonymous]
-        //public async Task<ActionResult> ExternalLoginCallback(string returnUrl)
-        //{
-        //    var loginInfo = await AuthenticationManager.GetExternalLoginInfoAsync();
-        //    if (loginInfo == null)
-        //    {
-        //        return RedirectToAction("Login");
-        //    }
+        [AllowAnonymous]
+        public async Task<ActionResult> ExternalLoginCallback(string returnUrl = null)
+        {
+            //TODO: Helper not available
+            //var loginInfo = await AuthenticationManager.GetExternalLoginInfoAsync();
+            var loginInfo = await Context.AuthenticateAsync("External");
+            if (loginInfo == null)
+            {
+                return RedirectToAction("Login");
+            }
 
-        //    // Sign in the user with this external login provider if the user already has a login
-        //    var result = await SignInManager.ExternalSignInAsync(loginInfo, isPersistent: false);
-        //    switch (result)
-        //    {
-        //        case SignInStatus.Success:
-        //            return RedirectToLocal(returnUrl);
-        //        case SignInStatus.LockedOut:
-        //            return View("Lockout");
-        //        case SignInStatus.RequiresVerification:
-        //            return RedirectToAction("SendCode", new { ReturnUrl = returnUrl, RememberMe = false });
-        //        case SignInStatus.Failure:
-        //        default:
-        //            // If the user does not have an account, then prompt the user to create an account
-        //            ViewBag.ReturnUrl = returnUrl;
-        //            ViewBag.LoginProvider = loginInfo.Login.LoginProvider;
-        //            return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = loginInfo.Email });
-        //    }
-        //}
+            //TODO: Helper not available
+            // Sign in the user with this external login provider if the user already has a login
+            //var result = await SignInManager.ExternalSignInAsync(loginInfo, isPersistent: false);
+            var result = SignInStatus.Failure; //Always redirect to a login confirmation page for now. 
+            switch (result)
+            {
+                case SignInStatus.Success:
+                    return RedirectToLocal(returnUrl);
+                case SignInStatus.LockedOut:
+                    return View("Lockout");
+                case SignInStatus.RequiresVerification:
+                    return RedirectToAction("SendCode", new { ReturnUrl = returnUrl, RememberMe = false });
+                case SignInStatus.Failure:
+                default:
+                    // If the user does not have an account, then prompt the user to create an account
+                    ViewBag.ReturnUrl = returnUrl;
+                    ViewBag.LoginProvider = loginInfo.Identity.AuthenticationType;
+                    return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = loginInfo.Identity.Claims.Single(c => c.Type == System.Security.Claims.ClaimTypes.Email).Value });
+            }
+        }
 
         //
         // POST: /Account/ExternalLoginConfirmation
         // TODO: Some of the identity helpers not available
-        //[HttpPost]
-        //[AllowAnonymous]
-        //[ValidateAntiForgeryToken]
-        //public async Task<ActionResult> ExternalLoginConfirmation(ExternalLoginConfirmationViewModel model, string returnUrl)
-        //{
-        //    if (User.Identity.IsAuthenticated)
-        //    {
-        //        return RedirectToAction("Index", "Manage");
-        //    }
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> ExternalLoginConfirmation(ExternalLoginConfirmationViewModel model, string returnUrl = null)
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Index", "Manage");
+            }
 
-        //    if (ModelState.IsValid)
-        //    {
-        //        // Get the information about the user from the external login provider
-        //        var info = await AuthenticationManager.GetExternalLoginInfoAsync();
-        //        if (info == null)
-        //        {
-        //            return View("ExternalLoginFailure");
-        //        }
-        //        var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
-        //        var result = await UserManager.CreateAsync(user);
-        //        if (result.Succeeded)
-        //        {
-        //            result = await UserManager.AddLoginAsync(user.Id, info.Login);
-        //            if (result.Succeeded)
-        //            {
-        //                // TODO: rememberBrowser option not being taken in SignInAsync
-        //                await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
-        //                return RedirectToLocal(returnUrl);
-        //            }
-        //        }
-        //        AddErrors(result);
-        //    }
+            if (ModelState.IsValid)
+            {
+                // Get the information about the user from the external login provider
+                //var info = await AuthenticationManager.GetExternalLoginInfoAsync();
+                var info = await Context.AuthenticateAsync("External");
+                if (info == null)
+                {
+                    return View("ExternalLoginFailure");
+                }
+                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+                var result = await UserManager.CreateAsync(user);
+                if (result.Succeeded)
+                {
+                    var userloginInfo = new UserLoginInfo(info.Description.AuthenticationType, info.Description.AuthenticationType, info.Description.Caption);
+                    result = await UserManager.AddLoginAsync(user, userloginInfo);
+                    if (result.Succeeded)
+                    {
+                        // TODO: rememberBrowser option not being taken in SignInAsync
+                        await SignInManager.SignInAsync(user, isPersistent: false);
+                        return RedirectToLocal(returnUrl);
+                    }
+                }
+                AddErrors(result);
+            }
 
-        //    ViewBag.ReturnUrl = returnUrl;
-        //    return View(model);
-        //}
+            ViewBag.ReturnUrl = returnUrl;
+            return View(model);
+        }
 
         //
         // POST: /Account/LogOff
@@ -430,5 +452,38 @@ namespace MusicStore.Controllers
         }
 
         #endregion
+    }
+
+    /// <summary>
+    /// TODO: Work around until there is a token provider
+    /// </summary>
+    internal class StaticTokenProvider : IUserTokenProvider<ApplicationUser>
+    {
+        public Task<string> GenerateAsync(string purpose, UserManager<ApplicationUser> manager,
+            ApplicationUser user, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return Task.FromResult(MakeToken(purpose, user));
+        }
+
+        public Task<bool> ValidateAsync(string purpose, string token, UserManager<ApplicationUser> manager,
+            ApplicationUser user, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return Task.FromResult(token == MakeToken(purpose, user));
+        }
+
+        public Task NotifyAsync(string token, UserManager<ApplicationUser> manager, ApplicationUser user, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return Task.FromResult(0);
+        }
+
+        public Task<bool> IsValidProviderForUserAsync(UserManager<ApplicationUser> manager, ApplicationUser user, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return Task.FromResult(true);
+        }
+
+        private static string MakeToken(string purpose, ApplicationUser user)
+        {
+            return string.Join(":", user.Id, purpose, "ImmaToken");
+        }
     }
 }
