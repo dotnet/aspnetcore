@@ -768,7 +768,7 @@ namespace Microsoft.Net.Http.Server
             uint statusCode;
             try
             {
-                statusCode = UnsafeNclNativeMethods.HttpApi.HttpWaitForDisconnect(_requestQueueHandle, connectionId, nativeOverlapped);
+                statusCode = UnsafeNclNativeMethods.HttpApi.HttpWaitForDisconnectEx(_requestQueueHandle, connectionId, 0, nativeOverlapped);
             }
             catch (Win32Exception exception)
             {
