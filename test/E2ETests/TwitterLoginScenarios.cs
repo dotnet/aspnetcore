@@ -55,10 +55,34 @@ namespace E2ETests
 
             //Post a message to the Facebook middleware
             response = httpClient.GetAsync("signin-twitter?oauth_token=valid_oauth_token&oauth_verifier=valid_oauth_verifier").Result;
-            //This should land us in ExternalLoginCallBack - this action is not implemented yet. We need to wait to complete automation.
+            ThrowIfResponseStatusNotOk(response);
+            responseContent = response.Content.ReadAsStringAsync().Result;
 
             //Correlation cookie not getting cleared after successful signin?
             //Assert.Null(httpClientHandler.CookieContainer.GetCookies(new Uri(ApplicationBaseUrl))["__TwitterState"]);
+            Assert.Equal(ApplicationBaseUrl + "Account/ExternalLoginCallback?ReturnUrl=%2F", response.RequestMessage.RequestUri.AbsoluteUri);
+            //Twitter does not give back the email claim for some reason. 
+            //Assert.Contains("AspnetvnextTest@gmail.com", responseContent, StringComparison.OrdinalIgnoreCase);
+
+            formParameters = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("Email", "twitter@test.com"),
+                new KeyValuePair<string, string>("__RequestVerificationToken", HtmlDOMHelper.RetrieveAntiForgeryToken(responseContent, "/Account/ExternalLoginConfirmation?ReturnUrl=%2F")),
+            };
+
+            content = new FormUrlEncodedContent(formParameters.ToArray());
+            response = httpClient.PostAsync("Account/ExternalLoginConfirmation", content).Result;
+            ThrowIfResponseStatusNotOk(response);
+            responseContent = response.Content.ReadAsStringAsync().Result;
+
+            Assert.Contains(string.Format("Hello {0}!", "twitter@test.com"), responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("Log off", responseContent, StringComparison.OrdinalIgnoreCase);
+            //Verify cookie sent
+            Assert.NotNull(httpClientHandler.CookieContainer.GetCookies(new Uri(ApplicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.Application"));
+
+            //https://github.com/aspnet/Identity/issues/210
+            //Assert.Null(httpClientHandler.CookieContainer.GetCookies(new Uri(ApplicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.ExternalLogin"));
+            Console.WriteLine("Successfully signed in with user '{0}'", "twitter@test.com");
         }
     }
 }

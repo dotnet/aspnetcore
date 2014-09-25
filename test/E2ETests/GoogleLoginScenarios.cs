@@ -57,10 +57,33 @@ namespace E2ETests
 
             //Post a message to the Google middleware
             response = httpClient.GetAsync("signin-google?code=ValidCode&state=ValidStateData").Result;
-            //This should land us in ExternalLoginCallBack - this action is not implemented yet. We need to wait to complete automation.
-            
+            ThrowIfResponseStatusNotOk(response);
+            responseContent = response.Content.ReadAsStringAsync().Result;
+
             //Correlation cookie not getting cleared after successful signin?
-            //Assert.Null(httpClientHandler.CookieContainer.GetCookies(new Uri(ApplicationBaseUrl)).GetCookieWithName(".AspNet.Correlation.Google"));
+            Assert.Null(httpClientHandler.CookieContainer.GetCookies(new Uri(ApplicationBaseUrl)).GetCookieWithName(".AspNet.Correlation.Google"));
+            Assert.Equal(ApplicationBaseUrl + "Account/ExternalLoginCallback?ReturnUrl=%2F", response.RequestMessage.RequestUri.AbsoluteUri);
+            Assert.Contains("AspnetvnextTest@gmail.com", responseContent, StringComparison.OrdinalIgnoreCase);
+
+            formParameters = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("Email", "AspnetvnextTest@gmail.com"),
+                new KeyValuePair<string, string>("__RequestVerificationToken", HtmlDOMHelper.RetrieveAntiForgeryToken(responseContent, "/Account/ExternalLoginConfirmation?ReturnUrl=%2F")),
+            };
+
+            content = new FormUrlEncodedContent(formParameters.ToArray());
+            response = httpClient.PostAsync("Account/ExternalLoginConfirmation", content).Result;
+            ThrowIfResponseStatusNotOk(response);
+            responseContent = response.Content.ReadAsStringAsync().Result;
+
+            Assert.Contains(string.Format("Hello {0}!", "AspnetvnextTest@gmail.com"), responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("Log off", responseContent, StringComparison.OrdinalIgnoreCase);
+            //Verify cookie sent
+            Assert.NotNull(httpClientHandler.CookieContainer.GetCookies(new Uri(ApplicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.Application"));
+
+            //https://github.com/aspnet/Identity/issues/210
+            //Assert.Null(httpClientHandler.CookieContainer.GetCookies(new Uri(ApplicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.ExternalLogin"));
+            Console.WriteLine("Successfully signed in with user '{0}'", "AspnetvnextTest@gmail.com");
         }
     }
 }

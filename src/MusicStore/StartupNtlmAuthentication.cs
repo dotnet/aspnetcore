@@ -20,7 +20,6 @@ namespace MusicStore
     /// 2. Add a setting in the ini file named 'KRE_ENV' with value of the format 'Startup[EnvironmentName]'. For example: To load a Startup class named
     /// 'StartupNtlmAuthentication' the value of the env should be 'NtlmAuthentication' (eg. KRE_ENV=NtlmAuthentication). Runtime adds a 'Startup' prefix to this and loads 'StartupNtlmAuthentication'. 
     /// If no environment name is specified the default startup class loaded is 'Startup'. 
-    /// https://github.com/aspnet/Helios/issues/53 - Environment based startup class loading is not available on Helios.
     /// Alternative ways to specify environment are:
     /// 1. Set the environment variable named SET KRE_ENV=NtlmAuthentication
     /// 2. For selfhost based servers pass in a command line variable named --env with this value. Eg:

@@ -76,7 +76,7 @@ namespace MusicStore
                         });
 
                 // Add Identity services to the services container
-                services.AddIdentitySqlServer<MusicStoreContext, ApplicationUser>();
+                services.AddDefaultIdentity<MusicStoreContext, ApplicationUser, IdentityRole>(configuration);
 
                 // Add MVC services to the services container
                 services.AddMvc();
@@ -115,6 +115,7 @@ namespace MusicStore
             // Add static files to the request pipeline
             app.UseStaticFiles();
 
+            // Add cookie-based authentication to the request pipeline
             app.UseIdentity();
 
             var facebookOptions = new FacebookAuthenticationOptions()
@@ -163,7 +164,10 @@ namespace MusicStore
                     OnApplyRedirect = TwitterNotifications.OnApplyRedirect
                 },
                 StateDataFormat = new CustomTwitterStateDataFormat(),
-                BackchannelHttpHandler = new TwitterMockBackChannelHttpHandler()
+                BackchannelHttpHandler = new TwitterMockBackChannelHttpHandler(),
+#if ASPNET50
+                BackchannelCertificateValidator = null
+#endif
             });
 
             app.UseMicrosoftAccountAuthentication(new MicrosoftAccountAuthenticationOptions()

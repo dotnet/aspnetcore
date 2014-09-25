@@ -18,7 +18,7 @@ namespace MusicStore.Mocks.Facebook
             if (context.Identity != null)
             {
                 Helpers.ThrowIfConditionFailed(() => context.AccessToken == "ValidAccessToken", "");
-                Helpers.ThrowIfConditionFailed(() => context.Email == "AspnetvnextTest@gmail.com", "");
+                Helpers.ThrowIfConditionFailed(() => context.Email == "AspnetvnextTest@test.com", "");
                 Helpers.ThrowIfConditionFailed(() => context.Id == "Id", "");
                 Helpers.ThrowIfConditionFailed(() => context.Link == "https://www.facebook.com/myLink", "");
                 Helpers.ThrowIfConditionFailed(() => context.Name == "AspnetvnextTest AspnetvnextTest", "");

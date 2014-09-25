@@ -8,7 +8,7 @@ namespace E2ETests
 {
     public partial class SmokeTests
     {
-        [Theory]
+        //[Theory]
         [InlineData(ServerType.Helios, KreFlavor.DesktopClr, KreArchitecture.x86, "http://localhost:5001/", false)]
         [InlineData(ServerType.WebListener, KreFlavor.DesktopClr, KreArchitecture.x86, "http://localhost:5002/", false)]
         [InlineData(ServerType.Helios, KreFlavor.DesktopClr, KreArchitecture.amd64, "http://localhost:5001/", false)]
@@ -64,12 +64,8 @@ namespace E2ETests
                 //Check if the user name appears in the page
                 Assert.Contains(string.Format("{0}\\{1}", Environment.UserDomainName, Environment.UserName), responseContent, StringComparison.OrdinalIgnoreCase);
 
-                if (serverType != ServerType.Helios)
-                {
-                    //https://github.com/aspnet/Helios/issues/53
-                    //Should be able to access the store as the Startup adds necessary permissions for the current user
-                    AccessStoreWithPermissions();
-                }
+                //Should be able to access the store as the Startup adds necessary permissions for the current user
+                AccessStoreWithPermissions();
 
                 var testCompletionTime = DateTime.Now;
                 Console.WriteLine("[Time]: All tests completed in '{0}' seconds", (testCompletionTime - initializationCompleteTime).TotalSeconds);

@@ -43,7 +43,8 @@ namespace E2ETests
                 KreFlavor = kreFlavor,
                 KreArchitecture = architecture,
                 ApplicationHostConfigTemplateContent = (serverType == ServerType.HeliosNativeModule) ? File.ReadAllText("HeliosNativeModuleApplicationHost.config") : null,
-                SiteName = (serverType == ServerType.HeliosNativeModule) ? "MusicStoreNativeModule" : null
+                SiteName = (serverType == ServerType.HeliosNativeModule) ? "MusicStoreNativeModule" : null,
+                EnvironmentName = "SocialTesting"
             };
 
             var testStartTime = DateTime.Now;
@@ -134,6 +135,15 @@ namespace E2ETests
 
                 //Logout from this user session - This should take back to the home page
                 SignOutUser("Administrator");
+
+                //Google login
+                LoginWithGoogle();
+
+                //Facebook login
+                LoginWithFacebook();
+
+                //Twitter login
+                LoginWithTwitter();
 
                 var testCompletionTime = DateTime.Now;
                 Console.WriteLine("[Time]: All tests completed in '{0}' seconds", (testCompletionTime - initializationCompleteTime).TotalSeconds);
